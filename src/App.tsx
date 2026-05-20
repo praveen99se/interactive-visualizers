@@ -1,0 +1,40 @@
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Home from './pages/Home';
+import ALBNLBVisualizer from './pages/visualizers/ALBNLBVisualizer';
+import NotFound from './pages/NotFound';
+
+export default function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200">
+          <nav className="max-w-7xl mx-auto px-4 py-4">
+            <Link to="/" className="text-2xl font-bold text-cyan-600">
+              🎨 Interactive Visualizers
+            </Link>
+            <p className="text-sm text-gray-600 mt-1">
+              Learn cloud, networking, algorithms & data structures interactively
+            </p>
+          </nav>
+        </header>
+
+        {/* Routes */}
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/visualizers/alb-nlb" element={<ALBNLBVisualizer />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-gray-900 text-white py-8 mt-16">
+          <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">
+            <p>© 2025 Interactive Visualizers | Made with ❤️ by Praveen</p>
+          </div>
+        </footer>
+      </div>
+    </Router>
+  );
+}
