@@ -22,6 +22,36 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '🍪',
     lastUpdated: '2025-01-20',
   },
+  {
+    id: 'asg',
+    title: 'ASG Auto Scaling Group',
+    description: 'Explore Auto Scaling Groups, health checks, and scale policies with an interactive model',
+    category: 'cloud',
+    tags: ['AWS', 'Auto Scaling', 'Cloud'],
+    path: '/visualizers/asg',
+    icon: '📈',
+    lastUpdated: '2026-05-22',
+  },
+  {
+    id: 'rds',
+    title: 'AWS RDS',
+    description: 'Diagrams and simulation for RDS connectivity, Multi-AZ, and read replicas',
+    category: 'cloud',
+    tags: ['AWS', 'RDS', 'Databases'],
+    path: '/visualizers/rds',
+    icon: '🛢️',
+    lastUpdated: '2026-05-22',
+  },
+  {
+    id: 'aurora',
+    title: 'Amazon Aurora',
+    description: 'Aurora architecture, serverless ACU simulation, and failover playbook',
+    category: 'cloud',
+    tags: ['AWS', 'Aurora', 'Databases'],
+    path: '/visualizers/aurora',
+    icon: '🌌',
+    lastUpdated: '2026-05-22',
+  },
   // Add more visualizers here as you create them
 ];
 

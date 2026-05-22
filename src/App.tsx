@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import ALBNLBVisualizer from './pages/visualizers/ALBNLBVisualizer';
+import ASGVisualizer from './pages/visualizers/ASGVisualizer';
+import RDSVisualizer from './pages/visualizers/RDSVisualizer';
+import AuroraVisualizer from './pages/visualizers/AuroraVisualizer';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -24,6 +27,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/visualizers/alb-nlb" element={<ALBNLBVisualizer />} />
+            <Route path="/visualizers/asg" element={<ASGVisualizer />} />
+              <Route path="/visualizers/rds" element={<RDSVisualizer />} />
+            <Route path="/visualizers/aurora" element={<AuroraVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

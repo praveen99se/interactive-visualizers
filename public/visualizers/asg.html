@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ASG Visualizer</title>
+  <style>
+    /* minimal theme vars so the visualizer looks reasonable inside iframe */
+    :root{
+      --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono";
+      --color-text-primary:#0f172a;
+      --color-text-secondary:#475569;
+      --color-text-tertiary:#94a3b8;
+      --color-border-tertiary:#e2e8f0;
+      --color-background-primary:#ffffff;
+      --color-background-secondary:#f8fafc;
+      --color-text-info:#2563eb;
+      --border-radius-md:8px;
+      --border-radius-lg:12px;
+    }
+  </style>
+  <style>
+/* --- inlined visualizer CSS (abbreviated) --- */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary);padding:18px}
+.wrap{padding:12px 16px}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pill{border:0.5px solid var(--color-border-tertiary);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--color-text-secondary);background:var(--color-background-primary);cursor:pointer}
+.pill.active{background:var(--color-text-info);border-color:var(--color-text-info);color:#fff}
+.sec{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;background:var(--color-background-primary);margin-bottom:12px}
+.h{font-weight:500;font-size:14px;margin-bottom:6px}
+.sub{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.lbl{font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.row{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);margin-bottom:6px;font-size:13px;color:var(--color-text-secondary);line-height:1.5}
+.dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:#fff;font-weight:500;background:var(--color-text-info)}
+.badge{font-size:11px;font-weight:500;border-radius:999px;padding:2px 8px;display:inline-block}
+.binfo{background:#dbeafe;color:#1d4ed8}
+.bok{background:#dcfce7;color:#15803d}
+.bwarn{background:#fef3c7;color:#b45309}
+.bbad{background:#fee2e2;color:#b91c1c}
+.kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.k{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px}
+.k .t{font-size:11px;color:var(--color-text-tertiary);margin-bottom:2px}
+.k .v{font-size:18px;font-weight:500}
+.controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:10px}
+.ctrl{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+.ctrl label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+.mono{font-family:var(--font-mono)}
+.btnbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+button{font-size:12px;padding:6px 10px;border-radius:8px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer}
+button.primary{background:var(--color-text-info);border-color:var(--color-text-info);color:#fff}
+.instances{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.inst{border-radius:10px;border:1.5px solid var(--color-border-tertiary);padding:8px 8px;text-align:center;background:var(--color-background-secondary)}
+.inst .name{font-size:11px;font-weight:500;margin-bottom:4px}
+.inst .meta{font-size:10px;color:var(--color-text-tertiary);line-height:1.4}
+.inst.ok{border-color:#16a34a;background:#dcfce7}
+.inst.warm{border-color:#b45309;background:#fef3c7}
+.inst.drain{border-color:#1d4ed8;background:#dbeafe}
+.inst.down{border-color:#dc2626;background:#fee2e2;opacity:.75}
+.log{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:11px;color:var(--color-text-secondary);line-height:1.65;min-height:86px}
+.small{font-size:11px;color:var(--color-text-tertiary);line-height:1.6}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sec">
+    <div class="h">Auto Scaling Group (ASG) — placeholder</div>
+    <div class="sub">This embedded page contains the ASG visualizer. For full interactivity, replace this placeholder with the complete snippet if desired.</div>
+  </div>
+
+  <div class="sec">
+    <div class="h">Live simulation (placeholder)</div>
+    <div class="sub">The full simulation from the user's snippet can be inlined here. This placeholder shows a static sample of how the ASG visualizer will appear inside an iframe.</div>
+
+    <div class="kpi" style="margin-top:12px;">
+      <div class="k"><div class="t">Healthy instances</div><div class="v">3</div></div>
+      <div class="k"><div class="t">Avg CPU (simulated)</div><div class="v">50%</div></div>
+      <div class="k"><div class="t">RPS / target</div><div class="v">200</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+console.log('ASG visualizer placeholder loaded');
+</script>
+</body>
+</html>

@@ -9,6 +9,30 @@ const visualizers = [
     path: '/visualizers/alb-nlb',
     icon: '⚡',
   },
+  {
+    id: 'asg',
+    title: '📈 ASG Auto Scaling Group',
+    description: 'Visualize how ASG scales EC2 instances and integrates with load balancers',
+    tags: ['Cloud', 'AWS', 'Auto Scaling'],
+    path: '/visualizers/asg',
+    icon: '📈',
+  },
+  {
+    id: 'rds',
+    title: '🛢️ AWS RDS',
+    description: 'Diagrams and a live model for RDS Multi-AZ and read replicas',
+    tags: ['Cloud', 'AWS', 'Databases'],
+    path: '/visualizers/rds',
+    icon: '🛢️',
+  },
+  {
+    id: 'aurora',
+    title: '🌌 Amazon Aurora',
+    description: 'Aurora architecture, serverless ACU simulation, and failover playbook',
+    tags: ['Cloud', 'AWS', 'Databases'],
+    path: '/visualizers/aurora',
+    icon: '🌌',
+  },
   // Add more visualizers here as you create them
   {
     id: 'sorting-algorithms',
