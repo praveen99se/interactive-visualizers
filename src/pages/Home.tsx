@@ -49,6 +49,14 @@ const visualizers = [
     path: '/visualizers/route53',
     icon: '🌐',
   },
+  {
+    id: 'ec2',
+    title: '💻 AWS EC2',
+    description: 'Simulations of virtual compute instances, bootstrapping scripts, security groups, spot markets, placement groups, and EBS vs EFS.',
+    tags: ['Cloud', 'AWS', 'Compute'],
+    path: '/visualizers/ec2',
+    icon: '💻',
+  },
   // Add more visualizers here as you create them
   {
     id: 'sorting-algorithms',

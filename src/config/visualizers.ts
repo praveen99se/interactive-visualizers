@@ -72,6 +72,16 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '🌐',
     lastUpdated: '2026-05-23',
   },
+  {
+    id: 'ec2',
+    title: 'AWS EC2',
+    description: 'Interactive simulations of EC2 instances, User Data, Security Groups, Spot Fleets, EBS vs EFS, and lifecycles',
+    category: 'cloud',
+    tags: ['AWS', 'Compute', 'EC2'],
+    path: '/visualizers/ec2',
+    icon: '💻',
+    lastUpdated: '2026-05-24',
+  },
   // Add more visualizers here as you create them
 ];
 
