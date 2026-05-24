@@ -52,6 +52,26 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '🌌',
     lastUpdated: '2026-05-22',
   },
+  {
+    id: 'elasticache',
+    title: 'AWS ElastiCache',
+    description: 'In-memory caching overview, Redis vs Memcached parameters, and cache simulator',
+    category: 'cloud',
+    tags: ['AWS', 'ElastiCache', 'Caching'],
+    path: '/visualizers/elasticache',
+    icon: '⚡',
+    lastUpdated: '2026-05-23',
+  },
+  {
+    id: 'route53',
+    title: 'AWS Route 53',
+    description: 'Explore DNS resolution hierarchy, interactive routing policies, health checks, and VPC private zones',
+    category: 'cloud',
+    tags: ['AWS', 'DNS', 'Networking'],
+    path: '/visualizers/route53',
+    icon: '🌐',
+    lastUpdated: '2026-05-23',
+  },
   // Add more visualizers here as you create them
 ];
 

@@ -33,6 +33,22 @@ const visualizers = [
     path: '/visualizers/aurora',
     icon: '🌌',
   },
+  {
+    id: 'elasticache',
+    title: '⚡ AWS ElastiCache',
+    description: 'Explore ElastiCache, comparison of Redis vs Memcached, and an interactive cache request simulator',
+    tags: ['Cloud', 'AWS', 'Caching'],
+    path: '/visualizers/elasticache',
+    icon: '⚡',
+  },
+  {
+    id: 'route53',
+    title: '🌐 AWS Route 53',
+    description: 'Explore DNS resolution hierarchy, interactive routing policies, health checks, and VPC private zones',
+    tags: ['Cloud', 'AWS', 'Networking'],
+    path: '/visualizers/route53',
+    icon: '🌐',
+  },
   // Add more visualizers here as you create them
   {
     id: 'sorting-algorithms',

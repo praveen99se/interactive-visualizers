@@ -4,6 +4,8 @@ import ALBNLBVisualizer from './pages/visualizers/ALBNLBVisualizer';
 import ASGVisualizer from './pages/visualizers/ASGVisualizer';
 import RDSVisualizer from './pages/visualizers/RDSVisualizer';
 import AuroraVisualizer from './pages/visualizers/AuroraVisualizer';
+import ElastiCacheVisualizer from './pages/visualizers/ElastiCacheVisualizer';
+import Route53Visualizer from './pages/visualizers/Route53Visualizer';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -28,8 +30,10 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/visualizers/alb-nlb" element={<ALBNLBVisualizer />} />
             <Route path="/visualizers/asg" element={<ASGVisualizer />} />
-              <Route path="/visualizers/rds" element={<RDSVisualizer />} />
+            <Route path="/visualizers/rds" element={<RDSVisualizer />} />
             <Route path="/visualizers/aurora" element={<AuroraVisualizer />} />
+            <Route path="/visualizers/elasticache" element={<ElastiCacheVisualizer />} />
+            <Route path="/visualizers/route53" element={<Route53Visualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
