@@ -507,7 +507,7 @@ export default function EC2Visualizer() {
   };
 
   return (
-    <div style={{ maxWidth: '980px', margin: '0 auto' }}>
+    <div>
       <style>{`
         .ec2-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
         .ec2-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
@@ -610,6 +610,59 @@ export default function EC2Visualizer() {
                 <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-primary)' }}>💡 Instance Metadata Service (IMDS) Key Takeaway:</div>
                 <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
                   Notice the `curl` calls inside the Nginx script directed to the endpoint `http://169.254.169.254/latest/meta-data/`. This is a non-routable link local address accessible only from within the running instance. **IMDSv2** (illustrated above) enforces a session-oriented token requirement via a `PUT` request header to defend against Server-Side Request Forgery (SSRF) vulnerabilities.
+                </div>
+              </div>
+            </div>
+
+            <div className="ec2-sec">Amazon Machine Image (AMI) Lifecycle &amp; Golden Images</div>
+            <div className="ec2-card">
+              <div className="ec2-g2">
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>💿 AMI: The Blueprint of Your EC2 VM</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', lineHeight: '1.45' }}>
+                    An **Amazon Machine Image (AMI)** is a pre-packaged boot template containing the Operating System (Linux/Windows), custom system packages, specific software components, and default **Block Device Mappings** (volume specifications).
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.45' }}>
+                    💡 <b>Golden Image Best Practice:</b> Instead of running long User Data bootstrapping scripts on *every* single EC2 boot (which delays horizontal scaling and exposes scripts to repository timeouts), companies configure a baseline server, install all agents/dependencies, and "bake" a custom **Golden AMI**. Launching identical replicas from this pre-baked image then takes under 30 seconds!
+                  </div>
+                </div>
+
+                {/* SVG Baking Flow */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>AMI Baking &amp; Auto-Scaling Launch Pipeline</div>
+                  <svg viewBox="0 0 450 150" width="100%" style={{ background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                    <defs>
+                      <marker id="arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                    </defs>
+                    {/* Source VM */}
+                    <rect x="10" y="45" width="80" height="60" rx="4" fill="#eff6ff" stroke="#1e40af" strokeWidth="1" />
+                    <text x="50" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1e40af">Source EC2</text>
+                    <text x="50" y="90" textAnchor="middle" fontSize="7" fill="#64748b">(Configured Host)</text>
+
+                    <path d="M90,75 L125,75" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+
+                    {/* Snapshot */}
+                    <rect x="125" y="45" width="80" height="60" rx="4" fill="#fdf2f8" stroke="#9d174d" strokeWidth="1" />
+                    <text x="165" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#9d174d">Snapshot</text>
+                    <text x="165" y="90" textAnchor="middle" fontSize="7" fill="#64748b">(Root EBS copy)</text>
+
+                    <path d="M205,75 L240,75" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+
+                    {/* Golden AMI */}
+                    <rect x="240" y="45" width="80" height="60" rx="4" fill="#fef3c7" stroke="#d97706" strokeWidth="1" />
+                    <text x="280" y="70" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#d97706">Golden AMI</text>
+                    <text x="280" y="82" textAnchor="middle" fontSize="7" fill="#64748b">(Baked Image)</text>
+                    <text x="280" y="94" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Ready for Launch</text>
+
+                    <path d="M320,75 L355,55" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+                    <path d="M320,75 L355,95" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+
+                    {/* Scaling Replicas */}
+                    <rect x="355" y="20" width="80" height="40" rx="3" fill="#f0fdf4" stroke="#166534" strokeWidth="0.8" />
+                    <text x="395" y="40" textAnchor="middle" fontSize="8" fill="#166534">EC2 Replica 1</text>
+                    <rect x="355" y="80" width="80" height="40" rx="3" fill="#f0fdf4" stroke="#166534" strokeWidth="0.8" />
+                    <text x="395" y="100" textAnchor="middle" fontSize="8" fill="#166534">EC2 Replica 2</text>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -800,34 +853,118 @@ export default function EC2Visualizer() {
               </div>
 
               <div className="ec2-g3">
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                {/* Cluster PG */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>📍</span> Cluster Placement
+                    <span>📍</span> Cluster Placement Group
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '8px' }}>
-                    Packs instances close together inside a **single Availability Zone** on the same physical rack. Provides the lowest possible latency and highest network bandwidth (up to 100 Gbps).
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                    Packs instances close together inside a **single Availability Zone** on the same physical server rack. Provides ultra-low latency and maximum inter-node throughput (up to 100 Gbps).
                   </div>
-                  <span className="ec2-badge" style={{ background: '#f59e0b', color: '#fff', fontSize: '9px' }}>Scenario: HPC, Distributed training</span>
+
+                  {/* SVG Cluster */}
+                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '6px', textAlign: 'center', marginBottom: '10px' }}>
+                    <svg viewBox="0 0 200 110" width="100%">
+                      <rect x="10" y="5" width="180" height="100" rx="4" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,2" />
+                      <text x="100" y="18" textAnchor="middle" fontSize="7" fill="#f59e0b" fontWeight="600">Single AZ Rack Boundary</text>
+                      
+                      {/* Top Switch */}
+                      <rect x="50" y="26" width="100" height="20" rx="3" fill="#fef3c7" stroke="#d97706" strokeWidth="1" />
+                      <text x="100" y="38" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#d97706">⚡ 100Gbps Local Switch</text>
+
+                      {/* Clustered EC2 nodes */}
+                      <rect x="25" y="66" width="40" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="45" y="80" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-A</text>
+                      
+                      <rect x="80" y="66" width="40" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="100" y="80" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-B</text>
+
+                      <rect x="135" y="66" width="40" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="155" y="80" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-C</text>
+
+                      {/* Connections */}
+                      <path d="M45,66 L70,46" stroke="#94a3b8" strokeWidth="1" />
+                      <path d="M100,66 L100,46" stroke="#94a3b8" strokeWidth="1" />
+                      <path d="M155,66 L130,46" stroke="#94a3b8" strokeWidth="1" />
+                    </svg>
+                  </div>
+                  <span className="ec2-badge" style={{ background: '#f59e0b', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: High Performance Compute (HPC)</span>
                 </div>
 
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                {/* Spread PG */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>📍</span> Spread Placement
+                    <span>📍</span> Spread Placement Group
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '8px' }}>
-                    Forces each instance onto **strictly different physical power racks** and hardware switches. Limits failure correlations to the minimum. Maximum of 7 instances per AZ.
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                    Maps each instance onto **strictly different physical hardware power racks**, separate switches, and isolated power sources. Maximum safety boundary: 7 instances per AZ.
                   </div>
-                  <span className="ec2-badge" style={{ background: '#10b981', color: '#fff', fontSize: '9px' }}>Scenario: Core domain controllers</span>
+
+                  {/* SVG Spread */}
+                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '6px', textAlign: 'center', marginBottom: '10px' }}>
+                    <svg viewBox="0 0 200 110" width="100%">
+                      {/* Rack 1 */}
+                      <rect x="15" y="10" width="45" height="90" rx="3" fill="none" stroke="#10b981" strokeWidth="1" />
+                      <text x="37" y="22" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Rack A</text>
+                      <rect x="22" y="32" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="37" y="43" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-1</text>
+                      <text x="37" y="68" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-A</text>
+                      <text x="37" y="82" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-A</text>
+
+                      {/* Rack 2 */}
+                      <rect x="77" y="10" width="45" height="90" rx="3" fill="none" stroke="#10b981" strokeWidth="1" />
+                      <text x="99" y="22" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Rack B</text>
+                      <rect x="84" y="32" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="99" y="43" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-2</text>
+                      <text x="99" y="68" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-B</text>
+                      <text x="99" y="82" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-B</text>
+
+                      {/* Rack 3 */}
+                      <rect x="140" y="10" width="45" height="90" rx="3" fill="none" stroke="#10b981" strokeWidth="1" />
+                      <text x="162" y="22" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Rack C</text>
+                      <rect x="147" y="32" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="162" y="43" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-3</text>
+                      <text x="162" y="68" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-C</text>
+                      <text x="162" y="82" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-C</text>
+                    </svg>
+                  </div>
+                  <span className="ec2-badge" style={{ background: '#10b981', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Domain Controllers, Core Apps</span>
                 </div>
 
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                {/* Partition PG */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>📍</span> Partition Placement
+                    <span>📍</span> Partition Placement Group
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '8px' }}>
-                    Divides placement into dynamic partitions. Each partition represents a logical rack group. Great for distributed parallel frameworks that scale across partitions.
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                    Divides placement into isolated partitions. Racks in one partition do not share hardware with racks in other partitions. Allows multiple nodes in a single partition.
                   </div>
-                  <span className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '9px' }}>Scenario: Kafka, Hadoop, Cassandra</span>
+
+                  {/* SVG Partition */}
+                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '6px', textAlign: 'center', marginBottom: '10px' }}>
+                    <svg viewBox="0 0 200 110" width="100%">
+                      {/* Partition 1 */}
+                      <rect x="10" y="10" width="85" height="90" rx="3" fill="none" stroke="#0284c7" strokeWidth="1" />
+                      <text x="52" y="22" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Partition 1 (Rack A)</text>
+                      <rect x="18" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="33" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-A1</text>
+                      <rect x="58" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="73" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-A2</text>
+                      <rect x="38" y="62" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="53" y="73" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-A3</text>
+
+                      {/* Partition 2 */}
+                      <rect x="105" y="10" width="85" height="90" rx="3" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,2" />
+                      <text x="147" y="22" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Partition 2 (Rack B)</text>
+                      <rect x="113" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="128" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-B1</text>
+                      <rect x="153" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="168" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-B2</text>
+                      <rect x="133" y="62" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="148" y="73" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-B3</text>
+                    </svg>
+                  </div>
+                  <span className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Kafka, HDFS, Cassandra</span>
                 </div>
               </div>
             </div>
@@ -1075,6 +1212,88 @@ export default function EC2Visualizer() {
                 </div>
               </div>
             </div>
+
+            <div className="ec2-sec">Advanced Storage Features: EBS Multi-Attach &amp; EFS Lifecycle Tiering</div>
+            <div className="ec2-card">
+              <div className="ec2-g2">
+                {/* EFS Storage Classes & Transitions */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>📁 EFS Storage Classes &amp; Lifecycle Transitions</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                    Amazon EFS supports multiple storage classes optimized for different usage patterns. With **EFS Lifecycle Management** and **Intelligent-Tiering**, files are seamlessly transitioned down to colder storage classes after staying idle, dramatically decreasing overall NAS costs.
+                  </div>
+
+                  {/* SVG Lifecycle Transitions */}
+                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '10px', textAlign: 'center', marginBottom: '8px' }}>
+                    <svg viewBox="0 0 320 120" width="100%">
+                      <defs>
+                        <marker id="storage-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                      </defs>
+                      
+                      {/* EFS Standard */}
+                      <rect x="5" y="25" width="80" height="50" rx="3" fill="#ecfdf5" stroke="#059669" strokeWidth="1" />
+                      <text x="45" y="42" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#059669">EFS Standard</text>
+                      <text x="45" y="55" textAnchor="middle" fontSize="6.5" fill="#64748b">(Frequent Access)</text>
+                      <text x="45" y="68" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#111827">$0.30 / GB</text>
+
+                      <path d="M85,50 L115,50" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+
+                      {/* EFS Infrequent Access */}
+                      <rect x="115" y="25" width="85" height="50" rx="3" fill="#eff6ff" stroke="#2563eb" strokeWidth="1" />
+                      <text x="157.5" y="42" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#2563eb">EFS IA</text>
+                      <text x="157.5" y="55" textAnchor="middle" fontSize="6.5" fill="#64748b">(Idle {efsLifecycleDays} Days)</text>
+                      <text x="157.5" y="68" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#111827">$0.025 / GB</text>
+
+                      <path d="M200,50 L230,50" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+
+                      {/* EFS Archive */}
+                      <rect x="230" y="25" width="85" height="50" rx="3" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
+                      <text x="272.5" y="42" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#7c3aed">EFS Archive</text>
+                      <text x="272.5" y="55" textAnchor="middle" fontSize="6.5" fill="#64748b">(Idle 90+ Days)</text>
+                      <text x="272.5" y="68" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#111827">$0.008 / GB</text>
+
+                      <text x="160" y="95" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">Savings: ~92% Cost Reduction on Cold Tiers</text>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* EBS Multi-Attach & Encryption */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>💾 EBS Multi-Attach (io1/io2) &amp; KMS Encryption</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                    - <b>EBS Multi-Attach:</b> Enables mounting a single high-performance **Provisioned IOPS (io1 or io2)** volume concurrently to up to 16 Nitro-based EC2 instances within the *same* AZ. Requires a cluster-aware filesystem (e.g. GFS2) to prevent data corruption.
+                    <br />- <b>Hypervisor-level Encryption:</b> EBS utilizes **AWS KMS Keys (AES-256)** to encrypt data in transit between compute hosts and storage fabrics, data at rest, and all snapshots automatically.
+                  </div>
+
+                  {/* SVG Multiattach & Encryption */}
+                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '10px', textAlign: 'center', marginBottom: '8px' }}>
+                    <svg viewBox="0 0 320 120" width="100%">
+                      {/* EC2 instances */}
+                      <rect x="10" y="10" width="60" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="40" y="24" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">EC2 Host A</text>
+
+                      <rect x="10" y="48" width="60" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="40" y="62" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">EC2 Host B</text>
+
+                      <rect x="10" y="86" width="60" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
+                      <text x="40" y="100" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">EC2 Host C</text>
+
+                      {/* Arrows pointing to shared volume */}
+                      <path d="M70,22 L160,50" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,1" />
+                      <path d="M70,60 L160,60" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,1" />
+                      <path d="M70,98 L160,70" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,1" />
+
+                      {/* Shared KMS Encrypted EBS */}
+                      <rect x="160" y="30" width="150" height="60" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.2" />
+                      <text x="235" y="46" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ef4444">Shared EBS io1/io2 Volume</text>
+                      <text x="235" y="58" textAnchor="middle" fontSize="6.5" fill="#ef4444" fontWeight="600">⛓️ Multi-Attach Enabled (Same AZ)</text>
+                      <text x="235" y="72" textAnchor="middle" fontSize="6.5" fill="#b91c1c" fontWeight="bold">🔒 Encrypted: KMS AES-256</text>
+                      <text x="235" y="82" textAnchor="middle" fontSize="6" fill="#64748b">(In-Transit &amp; At-Rest)</text>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1252,6 +1471,58 @@ export default function EC2Visualizer() {
                   <text x="605" y="85" textAnchor="middle" fontSize="11" fontWeight="600" fill="#065f46">📁 Shared EFS</text>
                   <text x="605" y="105" textAnchor="middle" fontSize="9" fill="#065f46">Multi-AZ NAS Mount</text>
                 </svg>
+              </div>
+            </div>
+
+            <div className="ec2-sec">EBS vs Instance Store: Core Physical Hardware Architecture</div>
+            <div className="ec2-card">
+              <div className="ec2-g2">
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>🔌 Physical Bus Connection vs Network Fabric</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', lineHeight: '1.45' }}>
+                    - <b>Instance Store (Ephemeral NVMe/SSD):</b> Physical SSD drives inserted directly into the physical host motherboard slots hosting your VM. There is no network overhead, resulting in massive, low-latency IOPS. However, if the hardware fails or the VM stops, hypervisors re-allocate the virtual host to another physical blade server in the pool, and the physical local bus is cleared and formatted, resulting in total data loss.
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.45' }}>
+                    - <b>EBS Volume (SAN Block Storage):</b> An independent storage cluster connected to the hypervisor host via a dedicated network link (EBS-Optimized). Since the storage lifecycle is independent of the hypervisor host motherboard, stopping/starting your instance simply detaches the virtual link from one host and attaches it to another with zero data loss.
+                  </div>
+                </div>
+
+                {/* SVG Comparative Hardware */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Physical Hypervisor Host vs SAN Storage Architecture</div>
+                  <svg viewBox="0 0 450 160" width="100%" style={{ background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                    {/* Hypervisor Host Motherboard */}
+                    <rect x="10" y="10" width="200" height="140" rx="6" fill="#fdf2f8" stroke="#9d174d" strokeWidth="1" />
+                    <text x="110" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#9d174d">Physical Host Motherboard (Hypervisor)</text>
+
+                    {/* CPU RAM Core */}
+                    <rect x="25" y="40" width="170" height="30" rx="3" fill="#eff6ff" stroke="#1e40af" strokeWidth="1" />
+                    <text x="110" y="58" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e40af">Virtual EC2 Guest VM (CPU &amp; RAM)</text>
+
+                    {/* Local NVMe Bus Connection */}
+                    <path d="M70,70 L70,100" stroke="#f43f5e" strokeWidth="2.5" />
+                    <text x="76" y="88" fontSize="6.5" fill="#f43f5e" fontWeight="bold">Direct PCIe bus</text>
+
+                    {/* Local Instance Store SSD */}
+                    <rect x="30" y="100" width="80" height="35" rx="3" fill="#ffe4e6" stroke="#f43f5e" strokeWidth="1.2" />
+                    <text x="70" y="116" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#be123c">Instance Store</text>
+                    <text x="70" y="128" textAnchor="middle" fontSize="6.5" fill="#be123c">💥 Ephemeral SSD</text>
+
+                    {/* Network link outwards */}
+                    <path d="M150,70 L150,110 L280,110" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="3,2" />
+                    <text x="210" y="104" fontSize="7" fill="#2563eb" fontWeight="bold">VPC Network Fabric</text>
+
+                    {/* Remote EBS SAN Cluster */}
+                    <rect x="280" y="25" width="160" height="110" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1.2" />
+                    <text x="360" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#166534">EBS Dedicated Storage Cluster (SAN)</text>
+
+                    <rect x="295" y="60" width="130" height="30" rx="3" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
+                    <text x="360" y="78" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#059669">EBS Volume Container</text>
+                    
+                    <text x="360" y="112" textAnchor="middle" fontSize="7" fill="#15803d">✅ Data Persists on Stop/Terminate</text>
+                    <text x="360" y="124" textAnchor="middle" fontSize="6.5" fill="#64748b">(Network Detach &amp; Re-attachable)</text>
+                  </svg>
+                </div>
               </div>
             </div>
 

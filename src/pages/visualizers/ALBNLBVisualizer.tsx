@@ -435,7 +435,7 @@ export default function ALBNLBVisualizer() {
   };
 
   return (
-    <div style={{ maxWidth: '980px', margin: '0 auto' }}>
+    <div>
       <style>{`
         .anl-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
         .anl-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }

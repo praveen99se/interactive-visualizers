@@ -413,7 +413,7 @@ export default function RDSVisualizer() {
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div>
       <style>{`
         /* Encapsulated styling under .rds- */
         .rds-container { font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-text-primary, #0f172a); }
