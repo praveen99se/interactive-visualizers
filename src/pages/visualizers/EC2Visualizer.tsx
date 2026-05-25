@@ -174,7 +174,7 @@ export default function EC2Visualizer() {
   const [selectedBootstrap, setSelectedBootstrap] = useState<'nginx' | 'docker' | 'appsec'>('nginx');
   const [bootTerminalLogs, setBootTerminalLogs] = useState<string[]>([]);
   const [isBootstrapping, setIsBootstrapping] = useState<boolean>(false);
-  const terminalBottomRef = useRef<HTMLDivElement>(null);
+  const bootTerminalRef = useRef<HTMLDivElement>(null);
 
   // Tab 2: Security States
   const [sgRules, setSgRules] = useState([
@@ -205,6 +205,9 @@ export default function EC2Visualizer() {
   const [efsThroughput, setEfsThroughput] = useState<'bursting' | 'elastic' | 'provisioned'>('elastic');
   const [efsPerfMode, setEfsPerfMode] = useState<'general' | 'max_io'>('general');
   const [efsLifecycleDays, setEfsLifecycleDays] = useState<number>(30);
+  const [efsSize, setEfsSize] = useState<number>(500);
+  const [efsProvisionedMb, setEfsProvisionedMb] = useState<number>(50);
+  const [efsInactiveRatio, setEfsInactiveRatio] = useState<number>(70);
 
   // Tab 5: Virtual Console States
   const [consoleInstanceType, setConsoleInstanceType] = useState<string>('t3.medium');
@@ -218,18 +221,18 @@ export default function EC2Visualizer() {
   const [isConsoleSimulatingCpu, setIsConsoleSimulatingCpu] = useState<boolean>(false);
   const [consoleCpuGauge, setConsoleCpuGauge] = useState<number>(3);
   const [vmUserDataTested, setVmUserDataTested] = useState<boolean>(false);
-  const consoleTerminalBottomRef = useRef<HTMLDivElement>(null);
+  const consoleTerminalRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll terminals
   useEffect(() => {
-    if (terminalBottomRef.current) {
-      terminalBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (bootTerminalRef.current) {
+      bootTerminalRef.current.scrollTop = bootTerminalRef.current.scrollHeight;
     }
   }, [bootTerminalLogs]);
 
   useEffect(() => {
-    if (consoleTerminalBottomRef.current) {
-      consoleTerminalBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (consoleTerminalRef.current) {
+      consoleTerminalRef.current.scrollTop = consoleTerminalRef.current.scrollHeight;
     }
   }, [consoleLogs]);
 
@@ -506,25 +509,35 @@ export default function EC2Visualizer() {
     return rate.toFixed(2);
   };
 
+  const getEfsPricing = (useLifecycle: boolean) => {
+    const activeSize = useLifecycle ? efsSize * (100 - efsInactiveRatio) / 100 : efsSize;
+    const inactiveSize = useLifecycle ? efsSize * efsInactiveRatio / 100 : 0;
+    
+    const storageCost = (activeSize * 0.30) + (inactiveSize * 0.025);
+    const throughputCost = efsThroughput === 'provisioned' ? efsProvisionedMb * 6.00 : 0;
+    
+    return (storageCost + throughputCost).toFixed(2);
+  };
+
   return (
-    <div>
+    <div style={{ fontSize: '13.5px' }}>
       <style>{`
         .ec2-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
-        .ec2-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
+        .ec2-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 13.5px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
         .ec2-tb:hover { background: var(--color-background-tertiary); }
         .ec2-tb.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; }
-        .ec2-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; }
-        .ec2-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
+        .ec2-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
+        .ec2-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
         .ec2-sec:first-child { margin-top: 0; }
         .ec2-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .ec2-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .ec2-kv { display: flex; gap: 8px; font-size: 12px; margin: 6px 0; align-items: baseline; }
+        .ec2-kv { display: flex; gap: 8px; font-size: 13px; margin: 6px 0; align-items: baseline; }
         .ec2-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; }
-        .ec2-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
-        .ec2-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.15s; outline: none; }
+        .ec2-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+        .ec2-btn { font-size: 13px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.15s; outline: none; }
         .ec2-btn:hover { background: var(--color-background-secondary); }
         .ec2-btn.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; }
-        .ec2-terminal { background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 11px; padding: 12px; border-radius: 8px; border: 0.5px solid #334155; max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.45; }
+        .ec2-terminal { background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 12px; padding: 12px; border-radius: 8px; border: 0.5px solid #334155; max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.45; }
         
         /* Unified Dropdown Selection Visual Cues */
         .ec2-card select {
@@ -593,7 +606,7 @@ export default function EC2Visualizer() {
 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Interactive Bash logs Console Terminal Output</div>
-                  <div className="ec2-terminal" style={{ flex: 1, maxHeight: '250px' }}>
+                  <div ref={bootTerminalRef} className="ec2-terminal" style={{ flex: 1, maxHeight: '250px' }}>
                     {bootTerminalLogs.length > 0 ? (
                       bootTerminalLogs.map((log, index) => (
                         <div key={index} style={{ color: log.startsWith('$') ? '#f59e0b' : log.includes('===') ? '#10b981' : '#38bdf8' }}>{log}</div>
@@ -601,7 +614,6 @@ export default function EC2Visualizer() {
                     ) : (
                       <div style={{ color: '#64748b' }}>Console idle. Click "Test Bootstrapping Script" to run bash execution pipeline.</div>
                     )}
-                    <div ref={terminalBottomRef} />
                   </div>
                 </div>
               </div>
@@ -1125,8 +1137,8 @@ export default function EC2Visualizer() {
               </div>
 
               {/* EBS Volume Calculator */}
-              <div className="ec2-g2">
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 4, minWidth: '320px', background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>🧮 Interactive EBS Performance Calculator</div>
                   
                   <div style={{ marginBottom: '8px' }}>
@@ -1177,37 +1189,114 @@ export default function EC2Visualizer() {
                 </div>
 
                 {/* EFS settings */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>📁 EFS Performance &amp; Lifecycle Modes</div>
+                <div style={{ flex: 6, minWidth: '320px', background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '10px', color: 'var(--color-text-primary)' }}>📁 EFS Performance, Throughput &amp; Cost Simulator</div>
                   
-                  <div className="ec2-kv">
-                    <span className="ec2-kk" style={{ fontSize: '11px' }}>Throughput mode:</span>
-                    <select value={efsThroughput} onChange={(e) => setEfsThroughput(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '130px' }}>
-                      <option value="bursting">Bursting Mode</option>
-                      <option value="elastic">Elastic (Auto scaling)</option>
-                      <option value="provisioned">Provisioned</option>
-                    </select>
-                  </div>
+                  <div className="ec2-g2" style={{ gap: '16px' }}>
+                    {/* Left Column: Sliders & Selects */}
+                    <div>
+                      <div className="ec2-kv">
+                        <span className="ec2-kk" style={{ fontSize: '11px' }}>Throughput Mode:</span>
+                        <select value={efsThroughput} onChange={(e) => setEfsThroughput(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
+                          <option value="bursting">Bursting Mode (Scales with size + credit accumulation)</option>
+                          <option value="elastic">Elastic (Auto scales dynamically to spikes)</option>
+                          <option value="provisioned">Provisioned (Dedicated speed set by user)</option>
+                        </select>
+                      </div>
 
-                  <div className="ec2-kv">
-                    <span className="ec2-kk" style={{ fontSize: '11px' }}>Performance mode:</span>
-                    <select value={efsPerfMode} onChange={(e) => setEfsPerfMode(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '130px' }}>
-                      <option value="general">General Purpose</option>
-                      <option value="max_io">Max I/O (Scale cluster)</option>
-                    </select>
-                  </div>
+                      {efsThroughput === 'provisioned' && (
+                        <div style={{ marginBottom: '8px', background: 'var(--color-background-primary)', padding: '8px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                            <span>Provisioned Throughput speed:</span>
+                            <b>{efsProvisionedMb} MB/s</b>
+                          </div>
+                          <input 
+                            type="range" min="1" max="256" value={efsProvisionedMb} 
+                            onChange={(e) => setEfsProvisionedMb(Number(e.target.value))} 
+                            style={{ width: '100%', accentColor: '#0284c7' }}
+                          />
+                        </div>
+                      )}
 
-                  <div className="ec2-kv">
-                    <span className="ec2-kk" style={{ fontSize: '11px' }}>EFS Lifecycle Policy:</span>
-                    <select value={efsLifecycleDays} onChange={(e) => setEfsLifecycleDays(Number(e.target.value))} style={{ padding: '4px', fontSize: '11px', width: '130px' }}>
-                      <option value={7}>Move to IA after 7 days</option>
-                      <option value={30}>Move to IA after 30 days</option>
-                      <option value={90}>Move to IA after 90 days</option>
-                    </select>
-                  </div>
+                      <div className="ec2-kv">
+                        <span className="ec2-kk" style={{ fontSize: '11px' }}>Performance Mode:</span>
+                        <select value={efsPerfMode} onChange={(e) => setEfsPerfMode(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
+                          <option value="general">General Purpose (Lowest latency, standard systems)</option>
+                          <option value="max_io">Max I/O (Slightly higher latency, massive scale)</option>
+                        </select>
+                      </div>
 
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.4' }}>
-                    💡 <b>EFS Storage Tiering:</b> Standard storage transitions automatically to EFS Infrequent Access (EFS IA) or EFS Archive when files are not accessed for {efsLifecycleDays} days. Reduces cost by up to 92%!
+                      <div className="ec2-kv">
+                        <span className="ec2-kk" style={{ fontSize: '11px' }}>Lifecycle transition policy:</span>
+                        <select value={efsLifecycleDays} onChange={(e) => setEfsLifecycleDays(Number(e.target.value))} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
+                          <option value={7}>Move to IA after 7 days idle</option>
+                          <option value={30}>Move to IA after 30 days idle</option>
+                          <option value={90}>Move to IA after 90 days idle</option>
+                        </select>
+                      </div>
+
+                      <div style={{ marginTop: '10px', padding: '8px', background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                          <span>Shared NAS Volume Size:</span>
+                          <b>{efsSize} GB</b>
+                        </div>
+                        <input 
+                          type="range" min="10" max="5000" step="50" value={efsSize} 
+                          onChange={(e) => setEfsSize(Number(e.target.value))} 
+                          style={{ width: '100%', accentColor: '#0284c7' }}
+                        />
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '8px' }}>
+                          <span>Inactive File Ratio (IA tier):</span>
+                          <b>{efsInactiveRatio}%</b>
+                        </div>
+                        <input 
+                          type="range" min="0" max="100" step="5" value={efsInactiveRatio} 
+                          onChange={(e) => setEfsInactiveRatio(Number(e.target.value))} 
+                          style={{ width: '100%', accentColor: '#0284c7' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right Column: Dynamic Performance and Savings Calculations */}
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div style={{ background: 'var(--color-background-primary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>⚡ Performance &amp; Latency Profile</div>
+                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#0284c7' }}>
+                          {efsPerfMode === 'general' ? '🟢 GP Mode: Low Latency Focus' : '🔵 Max I/O: Infinite Scale Focus'}
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
+                          {efsPerfMode === 'general' 
+                            ? 'Optimal for single-threaded or low-scale apps (max 35,000 read IOPS). Provides sub-millisecond local caching speeds.' 
+                            : 'Supports thousands of client hosts concurrently. Designed for massive parallel processing, parallel analytics, and high scale data pools.'}
+                        </div>
+                      </div>
+
+                      <div style={{ background: 'var(--color-background-primary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '6px' }}>💰 Interactive Financial Savings Audit</div>
+                        
+                        <div style={{ fontSize: '10.5px', margin: '4px 0', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>Baseline Cost (100% Standard):</span>
+                          <b>${getEfsPricing(false)} / mo</b>
+                        </div>
+                        
+                        <div style={{ fontSize: '10.5px', margin: '4px 0', display: 'flex', justifyContent: 'space-between', color: '#15803d', fontWeight: 'bold' }}>
+                          <span>Tiered Cost (Lifecycle Active):</span>
+                          <span>${getEfsPricing(true)} / mo</span>
+                        </div>
+
+                        <div style={{ borderTop: '1px solid var(--color-border-secondary)', marginTop: '6px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10.5px', fontWeight: 'bold' }}>Monthly Net Savings:</span>
+                          <span className="ec2-badge" style={{ background: '#22c55e', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>
+                            ${(Number(getEfsPricing(false)) - Number(getEfsPricing(true))).toFixed(2)} / mo (Save {efsInactiveRatio}%)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '9.5px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.35' }}>
+                        ℹ️ <b>Throughput pricing:</b> Bursting is bundled. Provisioned charges fixed $6.00 per MB/s. Elastic handles spiky requests automatically ($0.03/GB read). Lifecycle transition is calculated on Standard ($0.30/GB) vs IA ($0.025/GB) tier storage splits.
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1410,7 +1499,7 @@ export default function EC2Visualizer() {
                     <b style={{ color: consoleCpuGauge > 50 ? '#ef4444' : '#10b981' }}>{consoleCpuGauge}%</b>
                   </div>
 
-                  <div className="ec2-terminal" style={{ flex: 1, minHeight: '130px', background: '#090e1a' }}>
+                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '130px', background: '#090e1a' }}>
                     {consoleLogs.map((log, index) => (
                       <div key={index} style={{ 
                         color: log.includes('⚠️') ? '#ef4444' : log.includes('[system]') ? '#10b981' : log.includes('[user-data]') ? '#f59e0b' : '#38bdf8',
@@ -1419,7 +1508,6 @@ export default function EC2Visualizer() {
                         {log}
                       </div>
                     ))}
-                    <div ref={consoleTerminalBottomRef} />
                   </div>
                 </div>
               </div>
@@ -1478,7 +1566,7 @@ export default function EC2Visualizer() {
             <div className="ec2-card">
               <div className="ec2-g2">
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>🔌 Physical Bus Connection vs Network Fabric</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>🔌 Physical Bus Connection(Instance Store) vs Network Fabric(EBS)</div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', lineHeight: '1.45' }}>
                     - <b>Instance Store (Ephemeral NVMe/SSD):</b> Physical SSD drives inserted directly into the physical host motherboard slots hosting your VM. There is no network overhead, resulting in massive, low-latency IOPS. However, if the hardware fails or the VM stops, hypervisors re-allocate the virtual host to another physical blade server in the pool, and the physical local bus is cleared and formatted, resulting in total data loss.
                   </div>
@@ -1526,54 +1614,88 @@ export default function EC2Visualizer() {
               </div>
             </div>
 
-            <div className="ec2-sec">EC2 Troubleshooting Diagnostics Guide</div>
-            <div className="ec2-card">
-              <div className="ec2-g3">
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '11px', marginBottom: '6px', color: '#eab308' }}>⚠️ SSH connection Timeout</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                    **Root Cause:** Subnet missing Route Table pointer to Internet Gateway (IGW), or Inbound Security Group doesn't allow Port 22 from your local IP.
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '11px', marginBottom: '6px', color: '#eab308' }}>⚠️ Permission Denied (publickey)</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                    **Root Cause:** Local `.pem` private key permissions are too open. SSH rejects the connection. Enforce private read parameters by executing:
-                    `chmod 400 keypair.pem`
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '11px', marginBottom: '6px', color: '#eab308' }}>⚠️ EBS Disk Volumes Exhausted</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                    **Root Cause:** Logs filled storage partition. Expand EBS size live in the AWS console, then expand filesystem boundaries using `growpart` and `xfs_growfs`.
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="ec2-sec">EC2 Production Best Practices vs Mistakes</div>
-            <div className="ec2-card">
+            <div className="ec2-card" style={{ padding: '20px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.5' }}>
+                Ensure your virtual servers adhere to the AWS Well-Architected Framework. Avoid standard pitfalls by implementing strict access controls, modern metadata protocols, and stateless compute configurations.
+              </div>
               <div className="ec2-g2">
-                <div style={{ background: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '0.5px solid #bbf7d0' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#166534', marginBottom: '6px' }}>✅ Mandatory Best Practices</div>
-                  <ul style={{ fontSize: '11px', color: '#14532d', paddingLeft: '16px', lineHeight: '1.6' }}>
-                    <li>Use IAM roles instead of long-lived access keys inside EC2 variables.</li>
-                    <li>Always whitelist specific Security Group source references rather than CIDR blocks.</li>
-                    <li>Scale compute groups horizontally via Multi-AZ Auto Scaling Groups.</li>
-                    <li>Enable IMDSv2 to enforce tokens on metadata calls.</li>
-                  </ul>
+                {/* Best Practices */}
+                <div style={{ background: '#f0fdf4', padding: '18px', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#166534', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>✅</span> Mandatory Production Best Practices
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🔑 IAM Role Authorization</div>
+                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                        Attach IAM roles to instances via Instance Profiles. Never hardcode static Access Keys or Secrets within scripts or environment variables.
+                      </div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🛡️ Scoped Security Groups</div>
+                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                        Always whitelist specific Security Group IDs or narrow, trusted CIDR blocks. Adhere strictly to the Principle of Least Privilege.
+                      </div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🚀 Elastic Multi-AZ Scaling</div>
+                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                        Scale compute nodes horizontally across multiple Availability Zones inside private subnets, fronted by an Application Load Balancer.
+                      </div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🔒 IMDSv2 Token Protection</div>
+                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                        Enforce session-oriented Instance Metadata Service v2 (IMDSv2) with hop limit 1 to fully mitigate SSRF credential extraction exploits.
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>💾 Stateless Decoupled Storage</div>
+                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                        Keep EC2 instances completely stateless. Store all persistent transactional data on decoupled network volumes (EBS, shared EFS, or S3).
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ background: '#fef2f2', padding: '12px', borderRadius: '8px', border: '0.5px solid #fecaca' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#991b1b', marginBottom: '6px' }}>❌ Critical Common Mistakes</div>
-                  <ul style={{ fontSize: '11px', color: '#7f1d1d', paddingLeft: '16px', lineHeight: '1.6' }}>
-                    <li>Opening Port 22 to 0.0.0.0/0 (Global Public), exposing host to brute-force threats.</li>
-                    <li>Storing transactional application data on local ephemeral Instance Store partitions.</li>
-                    <li>Hardcoding private credentials inside EC2 User Data bootstrap scripts.</li>
-                    <li>Ignoring termination deletion settings on temporary volume architectures.</li>
-                  </ul>
+                {/* Common Mistakes */}
+                <div style={{ background: '#fef2f2', padding: '18px', borderRadius: '10px', border: '1px solid #fecaca' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#991b1b', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>❌</span> Critical Production Mistakes
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🔓 Wildcard SSH Exposure</div>
+                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                        Opening Port 22 inbound from wildcard <code style={{ background: 'rgba(153, 27, 27, 0.05)', padding: '1px 4px', borderRadius: '3px' }}>0.0.0.0/0</code>, exposing server consoles to relentless global brute-force attacks.
+                      </div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>💥 Ephemeral Data Volatility</div>
+                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                        Storing primary databases or critical logs on local physical Instance Stores. All data is completely formatted if the instance stops.
+                      </div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🔑 User Data Credential Leak</div>
+                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                        Writing plain-text database passwords, API tokens, or SSH private keys inside bootstrapping scripts, which are globally readable via metadata.
+                      </div>
+                    </div>
+                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🗑️ Orphaned Volumes Accumulation</div>
+                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                        Disabling "Delete on Termination" for root or short-term block volumes, causing orphaned, unattached EBS drives to quietly inflate cloud bills.
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🪪 Vulnerable IMDSv1 Legacy</div>
+                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                        Allowing unauthenticated IMDSv1 queries, which lets attackers utilize Server-Side Request Forgery to harvest IAM instance profile credentials.
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

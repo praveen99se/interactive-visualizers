@@ -57,6 +57,14 @@ const visualizers = [
     path: '/visualizers/ec2',
     icon: '💻',
   },
+  {
+    id: 's3',
+    title: '🪣 AWS S3',
+    description: 'Interactive diagrams and simulations for S3 buckets, object versioning, bucket policies, SSE encryption, lifecycle tiering, replication, and performance.',
+    tags: ['Cloud', 'AWS', 'Storage'],
+    path: '/visualizers/s3',
+    icon: '🪣',
+  },
   // Add more visualizers here as you create them
   {
     id: 'sorting-algorithms',

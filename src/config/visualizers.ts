@@ -82,6 +82,16 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '💻',
     lastUpdated: '2026-05-24',
   },
+  {
+    id: 's3',
+    title: 'AWS S3',
+    description: 'Interactive diagrams and simulations for S3 buckets, object versioning, bucket policies, SSE encryption, lifecycle tiering, replication, and performance.',
+    category: 'cloud',
+    tags: ['AWS', 'Storage', 'S3'],
+    path: '/visualizers/s3',
+    icon: '🪣',
+    lastUpdated: '2026-05-25',
+  },
   // Add more visualizers here as you create them
 ];
 
