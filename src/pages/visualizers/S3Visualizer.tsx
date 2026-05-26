@@ -888,14 +888,14 @@ export default function S3Visualizer() {
                   S3 Buckets, Objects &amp; Prefixes
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <span className="s3-hl-cyan">Bucket (globally unique storage container)</span> is a globally unique storage container in the AWS cloud. An <span className="s3-hl-cyan">Object (file data and descriptive metadata)</span> is the fundamental entity stored in a bucket, consisting of file data and descriptive metadata. A <span className="s3-hl-cyan">Prefix (logical folder partition string)</span> is a string prefix (like <code>images/</code>) used to partition keys and simulate a directory structure.
+                  A <span className="s3-hl-cyan">Bucket</span> <span className="s3-desc-mute">(a globally unique, flat storage container that acts as the root namespace for all your files)</span> is a globally unique storage container in the AWS cloud. An <span className="s3-hl-cyan">Object</span> <span className="s3-desc-mute">(the fundamental entity stored in S3, consisting of raw binary payload data, a unique developer-assigned key, and customizable metadata pairs)</span> is the fundamental entity stored in a bucket, consisting of file data and descriptive metadata. A <span className="s3-hl-cyan">Prefix</span> <span className="s3-desc-mute">(a string delimiter prefix, such as <code>images/</code>, used to group objects logically and partition high-throughput request rates)</span> is a string prefix (like <code>images/</code>) used to partition keys and simulate a directory structure.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #0891b2' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0891b2', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">S3 Buckets (globally unique root containers)</span> as globally unique root containers, and <span className="s3-hl-cyan">S3 Objects (files and metadata keys)</span> as the files and metadata stored inside them, organized using <span className="s3-hl-cyan">Prefixes (logical simulated folders)</span>. Which means <span className="s3-hl-cyan">S3 operates as a flat key-value store</span> rather than a traditional hierarchical operating system directory tree, allowing it to scale infinitely and support a baseline rate of 3,500 PUT and 5,500 GET requests per second per prefix.
+                    AWS offers <span className="s3-hl-cyan">S3 Buckets</span> <span className="s3-desc-mute">(globally unique namespace root containers)</span> as globally unique root containers, and <span className="s3-hl-cyan">S3 Objects</span> <span className="s3-desc-mute">(immutable file payloads with structured metadata)</span> as the files and metadata stored inside them, organized using <span className="s3-hl-cyan">Prefixes</span> <span className="s3-desc-mute">(logical simulated folder paths)</span>. Which means <span className="s3-hl-cyan">S3 operates as a flat key-value store</span> rather than a traditional hierarchical operating system directory tree, allowing it to scale infinitely and support a baseline rate of 3,500 PUT and 5,500 GET requests per second per prefix.
                   </div>
                 </div>
               </div>
@@ -906,14 +906,14 @@ export default function S3Visualizer() {
                   Static Website Hosting
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-cyan">Static Website Hosting (serverless HTTP server for static assets)</span> is an S3 feature that allows you to configure a bucket to host website assets (HTML, CSS, JS, images, client scripts) and serve them via an HTTP/HTTPS endpoint directly to users.
+                  <span className="s3-hl-cyan">Static Website Hosting</span> <span className="s3-desc-mute">(a serverless bucket setting that exposes high-performance HTTP/HTTPS web endpoints to serve public static website assets directly to browsers)</span> is an S3 feature that allows you to configure a bucket to host website assets (HTML, CSS, JS, images, client scripts) and serve them via an HTTP/HTTPS endpoint directly to users.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #0891b2' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0891b2', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">S3 Static Website Hosting (HTTP gateway for static assets)</span> to configure a bucket to act as an <span className="s3-hl-cyan">HTTP gateway</span>, serving HTML, CSS, JavaScript, and client-side images directly. Which means you can serve fast, globally scalable frontend applications without the operational overhead, pricing, patching, or scaling stress of running virtual machines (like EC2 or Nginx/Apache servers).
+                    AWS offers <span className="s3-hl-cyan">S3 Static Website Hosting</span> <span className="s3-desc-mute">(direct serverless HTTP/HTTPS content gateways)</span> to configure a bucket to act as an <span className="s3-hl-cyan">HTTP gateway</span>, serving HTML, CSS, JavaScript, and client-side images directly. Which means you can serve fast, globally scalable frontend applications without the operational overhead, pricing, patching, or scaling stress of running virtual machines (like EC2 or Nginx/Apache servers).
                   </div>
                 </div>
               </div>
@@ -924,14 +924,14 @@ export default function S3Visualizer() {
                   CORS &amp; Requester Pays
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-cyan">CORS (Cross-Origin Resource Sharing)</span> is a browser security mechanism that allows web applications loaded in one domain to interact with resources in a different domain (S3). <span className="s3-hl-cyan">Requester Pays (requester-funded bandwidth charges)</span> is a bucket setting that shifts data download fees to the requesting user.
+                  <span className="s3-hl-cyan">CORS (Cross-Origin Resource Sharing)</span> <span className="s3-desc-mute">(a browser security restriction policy that controls and authorizes cross-domain HTTP request fetching of storage assets)</span> is a browser security mechanism that allows web applications loaded in one domain to interact with resources in a different domain (S3). <span className="s3-hl-cyan">Requester Pays</span> <span className="s3-desc-mute">(a storage billing setting shifting data download data-egress fees from the bucket owner to the caller's AWS billing account)</span> is a bucket setting that shifts data download fees to the requesting user.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #0891b2' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0891b2', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">CORS configurations (whitelisted browser request origins)</span> to whitelist origins and <span className="s3-hl-cyan">Requester Pays billing flags (downloader pays egress fees)</span> for buckets. Which means you can securely authorize web applications running on other domains to fetch S3 data through standard browser preflight handshakes, and shift data egress bandwidth costs onto the downloader's AWS account rather than your own.
+                    AWS offers <span className="s3-hl-cyan">CORS configurations</span> <span className="s3-desc-mute">(whitelisting browser HTTP request origins)</span> to whitelist origins and <span className="s3-hl-cyan">Requester Pays billing flags</span> <span className="s3-desc-mute">(shifting data download egress charges to downloaders)</span> for buckets. Which means you can securely authorize web applications running on other domains to fetch S3 data through standard browser preflight handshakes, and shift data egress bandwidth costs onto the downloader's AWS account rather than your own.
                   </div>
                 </div>
               </div>
@@ -1034,14 +1034,14 @@ export default function S3Visualizer() {
                   IAM Policies vs Resource Policies
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <span className="s3-hl-orange">IAM Policy (identity-based JSON permission)</span> is an identity-based JSON policy attached to users, groups, or roles inside your account. A <span className="s3-hl-orange">Resource Policy (S3 Bucket Policy - resource-attached JSON rules)</span> is attached directly to the bucket itself, governing cross-account or public rules.
+                  An <span className="s3-hl-orange">IAM Policy</span> <span className="s3-desc-mute">(an identity-based JSON permission document attached to users, groups, or roles inside your corporate cloud perimeter)</span> is an identity-based JSON policy attached to users, groups, or roles inside your account. A <span className="s3-hl-orange">Resource Policy (S3 Bucket Policy)</span> <span className="s3-desc-mute">(a resource-attached JSON authorization document applied directly to a bucket to govern public or cross-account clients)</span> is attached directly to the bucket itself, governing cross-account or public rules.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #f59e0b' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f59e0b', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers resource-based <span className="s3-hl-orange">S3 Bucket Policies (resource-level control)</span> alongside identity-based <span className="s3-hl-orange">IAM Policies (client-level control)</span>. Which means you can control access from the perspective of both the storage resource itself (the bucket) and the client identity (the user/role), with S3 evaluating both sets of policies simultaneously to decide whether to authorize the request.
+                    AWS offers resource-based <span className="s3-hl-orange">S3 Bucket Policies</span> <span className="s3-desc-mute">(resource-level authorization rules)</span> alongside identity-based <span className="s3-hl-orange">IAM Policies</span> <span className="s3-desc-mute">(client identity access policies)</span>. Which means you can control access from the perspective of both the storage resource itself (the bucket) and the client identity (the user/role), with S3 evaluating both sets of policies simultaneously to decide whether to authorize the request.
                   </div>
                 </div>
               </div>
@@ -1052,14 +1052,14 @@ export default function S3Visualizer() {
                   S3 Policy Conditions (VPC &amp; IP Restricts)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-orange">Policy Conditions (contextual access restrictions)</span> are optional clauses in S3 policies that match specific request context keys, such as source IP range (<code>SourceIp</code>) or the VPC Gateway Endpoint identifier (<code>sourceVpce</code>).
+                  <span className="s3-hl-orange">Policy Conditions</span> <span className="s3-desc-mute">(highly advanced contextual logic clauses matching variables like client source IP addresses, SSL enforcement flags, or specific VPC endpoints)</span> are optional clauses in S3 policies that match specific request context keys, such as source IP range (<code>SourceIp</code>) or the VPC Gateway Endpoint identifier (<code>sourceVpce</code>).
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #f59e0b' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f59e0b', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-orange">S3 Policy Conditions (context-based gates)</span> such as <span className="s3-hl-orange">aws:sourceVpce (VPC endpoint check)</span> and <span className="s3-hl-orange">aws:SourceIp (corporate IP whitelist)</span>. Which means you can lock bucket access down to specific Virtual Private Cloud (VPC) Gateway Endpoints or corporate IP addresses, completely blocking requests that originate from the public internet even if they have valid IAM keys.
+                    AWS offers <span className="s3-hl-orange">S3 Policy Conditions</span> <span className="s3-desc-mute">(contextual authorization filters)</span> such as <span className="s3-hl-orange">aws:sourceVpce</span> <span className="s3-desc-mute">(VPC endpoint restriction gate)</span> and <span className="s3-hl-orange">aws:SourceIp</span> <span className="s3-desc-mute">(corporate IP subnet filter gate)</span>. Which means you can lock bucket access down to specific Virtual Private Cloud (VPC) Gateway Endpoints or corporate IP addresses, completely blocking requests that originate from the public internet even if they have valid IAM keys.
                   </div>
                 </div>
               </div>
@@ -1070,14 +1070,14 @@ export default function S3Visualizer() {
                   Block Public Access Override (BPA)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-orange">Block Public Access (BPA - account/bucket level fail-safe firewall)</span> is a four-tiered master security firewall setting applied at the AWS account or S3 bucket level to block wildcard public access rules from ever taking effect.
+                  <span className="s3-hl-orange">Block Public Access (BPA)</span> <span className="s3-desc-mute">(an absolute centralized account or bucket firewall override setting that guarantees no public policies or wildcard rules take effect)</span> is a four-tiered master security firewall setting applied at the AWS account or S3 bucket level to block wildcard public access rules from ever taking effect.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #f59e0b' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f59e0b', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-orange">S3 Block Public Access (BPA - master override firewall switch)</span> as a centralized, account-level or bucket-level master override switch. Which means S3 places a fail-safe gate that overrides and completely drops public bucket policies and ACL permissions, ensuring human developer configuration errors can never accidentally expose your internal company data to the public internet.
+                    AWS offers <span className="s3-hl-orange">S3 Block Public Access (BPA)</span> <span className="s3-desc-mute">(account-level absolute public override firewall switch)</span> as a centralized, account-level or bucket-level master override switch. Which means S3 places a fail-safe gate that overrides and completely drops public bucket policies and ACL permissions, ensuring human developer configuration errors can never accidentally expose your internal company data to the public internet.
                   </div>
                 </div>
               </div>
@@ -1257,14 +1257,14 @@ export default function S3Visualizer() {
                   Server-Side Encryption Models (SSE)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Server-Side Encryption (SSE - data encrypted at rest by AWS)</span></strong> is the process where S3 automatically encrypts your object data at the hardware level as it writes it to disks in its data centers, and decrypts it when accessed.
+                  <strong><span className="s3-hl-green">Server-Side Encryption (SSE)</span></strong> <span className="s3-desc-mute">(the transparent background process where S3 hardware hypervisors encrypt data payloads at-rest as they are written to disk storage networks, and decrypt them on GET requests)</span> is the process where S3 automatically encrypts your object data at the hardware level as it writes it to disks in its data centers, and decrypts it when accessed.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers three models of <strong><span className="s3-hl-green">Server-Side Encryption</span></strong>: <span className="s3-hl-green">SSE-S3 (S3-managed keys with automatic AES-256)</span>, <span className="s3-hl-green">SSE-KMS (KMS-managed Customer Master Keys with full audit trails)</span>, and <span className="s3-hl-green">SSE-C (keys managed entirely by the customer)</span>. Which means your objects are automatically encrypted with symmetric AES-256 blocks before they are written to the physical storage disks, ensuring compliance with data-at-rest regulatory security mandates.
+                    AWS offers three models of <strong><span className="s3-hl-green">Server-Side Encryption</span></strong>: <span className="s3-hl-green">SSE-S3</span> <span className="s3-desc-mute">(S3-managed symmetric keys using standard AES-256 blocks)</span>, <span className="s3-hl-green">SSE-KMS</span> <span className="s3-desc-mute">(KMS-managed Customer Master Keys with advanced key rotation schedules and full audit logs)</span>, and <span className="s3-hl-green">SSE-C</span> <span className="s3-desc-mute">(keys managed entirely by the customer, where S3 never stores or retains the symmetric key vector)</span>. Which means your objects are automatically encrypted with symmetric AES-256 blocks before they are written to the physical storage disks, ensuring compliance with data-at-rest regulatory security mandates.
                   </div>
                 </div>
               </div>
@@ -1275,14 +1275,14 @@ export default function S3Visualizer() {
                   KMS Envelope Encryption &amp; Data Keys
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Envelope Encryption (encrypting data keys with a master key)</span></strong> is the practice of encrypting data with a <span className="s3-hl-green">Plaintext Data Key (local AES-256 key)</span>, and then encrypting that data key under a highly secure, non-exportable <span className="s3-hl-green">Customer Master Key (CMK - KMS master key)</span> managed inside KMS.
+                  <strong><span className="s3-hl-green">Envelope Encryption</span></strong> <span className="s3-desc-mute">(a multi-key security practice that encrypts high-volume data payloads with a unique local data key, and then encrypts that data key under a secure master key managed inside a centralized key store)</span> is the practice of encrypting data with a <span className="s3-hl-green">Plaintext Data Key</span> <span className="s3-desc-mute">(the transient AES-256 key utilized to perform symmetric block ciphers inside RAM)</span>, and then encrypting that data key under a highly secure, non-exportable <span className="s3-hl-green">Customer Master Key (CMK)</span> <span className="s3-desc-mute">(centralized KMS non-exportable hardware-protected master key)</span> managed inside KMS.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-green">Envelope Encryption (dual-key security)</span></strong> by utilizing an AWS KMS <span className="s3-hl-green">Customer Master Key (CMK)</span> to generate unique data keys. Which means S3 requests a data key from KMS, uses the <span className="s3-hl-green">Plaintext Data Key</span> version to encrypt the large data file locally in memory, and stores the <span className="s3-hl-green">Encrypted Data Key</span> alongside the encrypted object on disk before discarding the plaintext key, protecting the master key from network exposure.
+                    AWS offers <strong><span className="s3-hl-green">Envelope Encryption</span></strong> <span className="s3-desc-mute">(dual-key modular cryptographic pipeline)</span> by utilizing an AWS KMS <span className="s3-hl-green">Customer Master Key (CMK)</span> to generate unique data keys. Which means S3 requests a data key from KMS, uses the <span className="s3-hl-green">Plaintext Data Key</span> version to encrypt the large data file locally in memory, and stores the <span className="s3-hl-green">Encrypted Data Key</span> alongside the encrypted object on disk before discarding the plaintext key, protecting the master key from network exposure.
                   </div>
                 </div>
               </div>
@@ -1293,14 +1293,14 @@ export default function S3Visualizer() {
                   Transient Memory Key Scrubbing
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Key Scrubbing (instant RAM register zeroization)</span></strong> is a hypervisor-level security function that instantly overwrites or zeroizes the active physical RAM registers holding the plaintext version of a symmetric cryptographic key.
+                  <strong><span className="s3-hl-green">Key Scrubbing</span></strong> <span className="s3-desc-mute">(a hypervisor-level microsecond register zeroization that zeroizes and overwrites RAM containing symmetric keys the instant a block cipher finishes execution)</span> is a hypervisor-level security function that instantly overwrites or zeroizes the active physical RAM registers holding the plaintext version of a symmetric cryptographic key.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers hypervisor-level <strong><span className="s3-hl-green">memory zeroization / scrubbing (hypervisor-level memory shredding)</span></strong> for transient encryption keys. Which means S3 shreds and wipes plaintext key vectors from its active hypervisor registers and memory blocks the microsecond a write block symmetric cipher completes, maintaining absolute security and isolation between multi-tenant virtual machines.
+                    AWS offers hypervisor-level <strong><span className="s3-hl-green">memory zeroization / scrubbing</span></strong> <span className="s3-desc-mute">(hypervisor-level RAM register shredding)</span> for transient encryption keys. Which means S3 shreds and wipes plaintext key vectors from its active hypervisor registers and memory blocks the microsecond a write block symmetric cipher completes, maintaining absolute security and isolation between multi-tenant virtual machines.
                   </div>
                 </div>
               </div>
@@ -1497,14 +1497,14 @@ export default function S3Visualizer() {
                   S3 Object Versioning &amp; Delete Markers
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">Object Versioning (running stack of file history)</span></strong> is a bucket-level setting that maintains a running stack of historical files under unique Version IDs. A <strong><span className="s3-hl-indigo">Delete Marker (zero-byte placeholder)</span></strong> is a zero-byte placeholder placed at the top of the stack when an object is deleted, logically hiding the file.
+                  <strong><span className="s3-hl-indigo">Object Versioning</span></strong> <span className="s3-desc-mute">(a bucket-level configuration that preserves historical copies of files in a chronological stack under unique Version IDs)</span> is a bucket-level setting that maintains a running stack of historical files under unique Version IDs. A <strong><span className="s3-hl-indigo">Delete Marker</span></strong> <span className="s3-desc-mute">(a zero-byte logical placeholder placed at the top of a version stack to hide the object from standard logical namespace listings)</span> is a zero-byte placeholder placed at the top of the stack when an object is deleted, logically hiding the file.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">S3 Object Versioning (historical file recovery)</span></strong> to preserve, retrieve, and restore every iteration of an object stored in a bucket. Which means S3 maintains a stack of file historical copies under unique Version IDs; deleting an object merely places a logical '<span className="s3-hl-indigo">Delete Marker (logical file hiding marker)</span>' at the top of the version stack to hide it, making it trivial to restore objects or recover from accidental deletions.
+                    AWS offers <strong><span className="s3-hl-indigo">S3 Object Versioning</span></strong> <span className="s3-desc-mute">(running stack version preservation)</span> to preserve, retrieve, and restore every iteration of an object stored in a bucket. Which means S3 maintains a stack of file historical copies under unique Version IDs; deleting an object merely places a logical '<span className="s3-hl-indigo">Delete Marker</span>' <span className="s3-desc-mute">(logical file listing hider)</span> at the top of the version stack to hide it, making it trivial to restore objects or recover from accidental deletions.
                   </div>
                 </div>
               </div>
@@ -1515,14 +1515,14 @@ export default function S3Visualizer() {
                   S3 MFA Delete Protection
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">MFA Delete (hardware token authorized destructive edits)</span></strong> is an S3 security control requiring the configuration of a physical hardware Multi-Factor Authentication (MFA) token to complete permanently destructive API requests.
+                  <strong><span className="s3-hl-indigo">MFA Delete</span></strong> <span className="s3-desc-mute">(an S3 security protocol that requires the supply of a physical hardware token TOTP code to complete permanently destructive API requests or change versioning settings)</span> is an S3 security control requiring the configuration of a physical hardware Multi-Factor Authentication (MFA) token to complete permanently destructive API requests.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">S3 MFA Delete (multi-factor destructive action guard)</span></strong> to require multi-factor authentication for critical version operations. Which means suspensions of bucket versioning or permanent purges of historical object versions from the stack must supply a live passcode from a physical MFA hardware token, preventing ransomware or compromised administrative credentials from destroying data.
+                    AWS offers <strong><span className="s3-hl-indigo">S3 MFA Delete</span></strong> <span className="s3-desc-mute">(physical hardware MFA gate for destructive actions)</span> to require multi-factor authentication for critical version operations. Which means suspensions of bucket versioning or permanent purges of historical object versions from the stack must supply a live passcode from a physical MFA hardware token, preventing ransomware or compromised administrative credentials from destroying data.
                   </div>
                 </div>
               </div>
@@ -1533,14 +1533,14 @@ export default function S3Visualizer() {
                   S3 Object Lock (WORM Compliancy)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">S3 Object Lock (WORM - Write Once Read Many immutability)</span></strong> is a WORM (Write Once Read Many) mechanism enforcing immutability. It includes <span className="s3-hl-indigo">Compliance Mode</span> (locked for everyone), <span className="s3-hl-indigo">Governance Mode</span> (bypassed with admin keys), and <span className="s3-hl-indigo">Legal Holds</span> (manual locks).
+                  <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> <span className="s3-desc-mute">(a WORM regulatory lock system guaranteeing file immutability by blocking deletes and edits for the duration of a defined compliance or legal timeline)</span> is a WORM (Write Once Read Many) mechanism enforcing immutability. It includes <span className="s3-hl-indigo">Compliance Mode</span> <span className="s3-desc-mute">(strict lock preventing anyone, root user included, from deleting or modifying files)</span>, <span className="s3-hl-indigo">Governance Mode</span> <span className="s3-desc-mute">(flexible lock bypassable by specifically privileged admin users)</span>, and <span className="s3-hl-indigo">Legal Holds</span> <span className="s3-desc-mute">(custom manual infinite-duration locks with no expiration dates)</span>.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> in <strong><span className="s3-hl-indigo">Compliance Mode (strict block for all users, root included)</span></strong>, <strong><span className="s3-hl-indigo">Governance Mode (bypassable with dedicated admin permissions)</span></strong>, and <strong><span className="s3-hl-indigo">Legal Holds (infinite retention lock manually toggled)</span></strong>. Which means you can enforce Write-Once-Read-Many (WORM) configurations, legally guaranteeing that compliance audit logs and historical ledger records can neither be edited nor deleted for a designated retention period.
+                    AWS offers <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> in <strong><span className="s3-hl-indigo">Compliance Mode</span></strong> <span className="s3-desc-mute">(absolute block for root user included)</span>, <strong><span className="s3-hl-indigo">Governance Mode</span></strong> <span className="s3-desc-mute">(custom administrative bypass options)</span>, and <strong><span className="s3-hl-indigo">Legal Holds</span></strong> <span className="s3-desc-mute">(manual infinite-duration compliance locks)</span>. Which means you can enforce Write-Once-Read-Many (WORM) configurations, legally guaranteeing that compliance audit logs and historical ledger records can neither be edited nor deleted for a designated retention period.
                   </div>
                 </div>
               </div>
@@ -1804,14 +1804,14 @@ export default function S3Visualizer() {
                   S3 Storage Classes Specs
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-purple">S3 Storage Class (performance &amp; cost hardware tier)</span></strong> is a storage tier configured for specific data access patterns, availability SLA targets, minimum storage durations, and pricing structures.
+                  An <strong><span className="s3-hl-purple">S3 Storage Class</span></strong> <span className="s3-desc-mute">(a storage hardware tier configured for specific data access frequency patterns, durability SLAs, minimum file lifetimes, data retrieval fees, and physical media architectures)</span> is a storage tier configured for specific data access patterns, availability SLA targets, minimum storage durations, and pricing structures.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #a855f7' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a855f7', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers seven unique <strong><span className="s3-hl-purple">S3 Storage Classes</span></strong>: <span className="s3-hl-purple">Standard (active hot data)</span>, <span className="s3-hl-purple">Standard-IA (Infrequent Access with millisecond access)</span>, <span className="s3-hl-purple">One Zone-IA (cheap single AZ for recreatable data)</span>, <span className="s3-hl-purple">Intelligent-Tiering (automated access pattern shifts)</span>, <span className="s3-hl-purple">Glacier Instant Retrieval (archives accessed in milliseconds)</span>, <span className="s3-hl-purple">Glacier Flexible Retrieval (archives accessed in 1-5 hours)</span>, and <span className="s3-hl-purple">Glacier Deep Archive (hyper-cheap archives accessed in 12 hours)</span>. Which means you can optimize hosting costs by matching access patterns to hardware tiers, keeping active files on high-performance hot disks and shifting older, rarely-accessed datasets to archival tapes for up to a 90%+ cost reduction.
+                    AWS offers seven unique <strong><span className="s3-hl-purple">S3 Storage Classes</span></strong>: <span className="s3-hl-purple">Standard</span> <span className="s3-desc-mute">(active hot data accessed frequently)</span>, <span className="s3-hl-purple">Standard-IA</span> <span className="s3-desc-mute">(Infrequent Access with millisecond retrievals)</span>, <span className="s3-hl-purple">One Zone-IA</span> <span className="s3-desc-mute">(single Availability Zone storage for non-critical, recreatable datasets)</span>, <span className="s3-hl-purple">Intelligent-Tiering</span> <span className="s3-desc-mute">(automated machine-learning based transitions between hot and cold access tiers)</span>, <span className="s3-hl-purple">Glacier Instant Retrieval</span> <span className="s3-desc-mute">(archived data retrievable in milliseconds)</span>, <span className="s3-hl-purple">Glacier Flexible Retrieval</span> <span className="s3-desc-mute">(cold tape archives retrievable in 1 to 5 hours)</span>, and <span className="s3-hl-purple">Glacier Deep Archive</span> <span className="s3-desc-mute">(hyper-cheap taped archives retrievable in 12 hours)</span>. Which means you can optimize hosting costs by matching access patterns to hardware tiers, keeping active files on high-performance hot disks and shifting older, rarely-accessed datasets to archival tapes for up to a 90%+ cost reduction.
                   </div>
                 </div>
               </div>
@@ -1822,14 +1822,14 @@ export default function S3Visualizer() {
                   Automated Lifecycle Transitions
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-purple">S3 Lifecycle Policy (automated storage tier rules)</span></strong> is a set of XML rules that automates storage tier migrations (<i>Transition Actions</i>) or object purges (<i>Expiration Actions</i>) based on the age of the file.
+                  An <strong><span className="s3-hl-purple">S3 Lifecycle Policy</span></strong> <span className="s3-desc-mute">(a set of rule triggers that automates data tier migration ciphers or permanent deletion actions as objects age)</span> is a set of XML rules that automates storage tier migrations (<i>Transition Actions</i>) or object purges (<i>Expiration Actions</i>) based on the age of the file.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #a855f7' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a855f7', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-purple">S3 Lifecycle Policies</span></strong> containing <span className="s3-hl-purple">Transition Actions (automatic migration to colder storage tiers)</span> and <span className="s3-hl-purple">Expiration Actions (automatic file deletion rules)</span>. Which means you can define XML rules that automatically shift objects to colder classes or permanently delete them after a certain number of days, automating cold-tier optimization without any manual scripts or operational overhead.
+                    AWS offers <strong><span className="s3-hl-purple">S3 Lifecycle Policies</span></strong> containing <span className="s3-hl-purple">Transition Actions</span> <span className="s3-desc-mute">(automatic migrations to cheaper, colder storage classes)</span> and <span className="s3-hl-purple">Expiration Actions</span> <span className="s3-desc-mute">(automatic file deletions and purge cycles)</span>. Which means you can define XML rules that automatically shift objects to colder classes or permanently delete them after a certain number of days, automating cold-tier optimization without any manual scripts or operational overhead.
                   </div>
                 </div>
               </div>
@@ -1840,14 +1840,14 @@ export default function S3Visualizer() {
                   Glacier Vault Locks (WORM Vaults)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-purple">Glacier Vault Lock (immutable archive policy)</span></strong> is an immutable resource policy attached directly to a Glacier vault that enforces unalterable, regulatory compliance locks.
+                  A <strong><span className="s3-hl-purple">Glacier Vault Lock</span></strong> <span className="s3-desc-mute">(an immutable compliance policy applied directly to long-term archives that cannot be modified, overridden, or deleted by any system administrator or root user once committed)</span> is an immutable resource policy attached directly to a Glacier vault that enforces unalterable, regulatory compliance locks.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #a855f7' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a855f7', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-purple">S3 Glacier Vault Lock (write-once immutable regulatory lock)</span></strong> as an immutable, write-once policy attached directly to a Glacier vault. Which means once a vault lock policy is committed and locked, the policy becomes unchangeable and un-deletable, ensuring absolute legal compliance for long-term records preservation.
+                    AWS offers <strong><span className="s3-hl-purple">S3 Glacier Vault Lock</span></strong> <span className="s3-desc-mute">(write-once immutable regulatory tape vault lock)</span> as an immutable, write-once policy attached directly to a Glacier vault. Which means once a vault lock policy is committed and locked, the policy becomes unchangeable and un-deletable, ensuring absolute legal compliance for long-term records preservation.
                   </div>
                 </div>
               </div>
@@ -2016,14 +2016,14 @@ export default function S3Visualizer() {
                   Gateway VPC Endpoints
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-cyan">Gateway VPC Endpoint (private route-table S3 route)</span></strong> is a highly available, logical routing destination established inside a Virtual Private Cloud subnet that connects resources directly to regional S3 services.
+                  A <strong><span className="s3-hl-cyan">Gateway VPC Endpoint</span></strong> <span className="s3-desc-mute">(a secure, private routing gateway that connects Virtual Private Clouds directly to S3 over regional backplane routing tables without using public IP gateways)</span> is a highly available, logical routing destination established inside a Virtual Private Cloud subnet that connects resources directly to regional S3 services.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #06b6d4' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#06b6d4', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-cyan">Gateway VPC Endpoints (private routing connection interfaces)</span></strong> for S3 as a highly available, routing-table destination inside your Virtual Private Cloud. Which means private virtual machines (like EC2) can establish secure connections directly to S3 endpoints over AWS's private high-speed network backplane, bypassing the public internet and avoiding expensive NAT Gateway transit charges.
+                    AWS offers <strong><span className="s3-hl-cyan">Gateway VPC Endpoints</span></strong> <span className="s3-desc-mute">(direct routing connections to internal S3 backplanes)</span> for S3 as a highly available, routing-table destination inside your Virtual Private Cloud. Which means private virtual machines (like EC2) can establish secure connections directly to S3 endpoints over AWS's private high-speed network backplane, bypassing the public internet and avoiding expensive NAT Gateway transit charges.
                   </div>
                 </div>
               </div>
@@ -2034,14 +2034,14 @@ export default function S3Visualizer() {
                   S3 Prefix Lists &amp; Route Table Priorities
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-cyan">S3 Prefix List (regional S3 IP blocks set)</span></strong> is a regional, AWS-managed set of public S3 IP address blocks (e.g. <code>pl-63a5400a</code>) used to simplify and prioritize routing rules inside VPC route tables.
+                  A <strong><span className="s3-hl-cyan">S3 Prefix List</span></strong> <span className="s3-desc-mute">(a regional set of public AWS S3 IP address blocks managed automatically by AWS to simplify corporate firewall and route-table rules)</span> is a regional, AWS-managed set of public S3 IP address blocks (e.g. <code>pl-63a5400a</code>) used to simplify and prioritize routing rules inside VPC route tables.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #06b6d4' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#06b6d4', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers regional <strong><span className="s3-hl-cyan">S3 Prefix Lists (AWS-managed IP routing filters)</span></strong> (like <code>pl-63a5400a</code>) for network routing configuration. Which means your subnet route tables automatically prioritize S3-destined traffic through the private Gateway Endpoint interface over default internet gateway routes, ensuring seamless, secure private transit without modifying server OS code.
+                    AWS offers regional <strong><span className="s3-hl-cyan">S3 Prefix Lists</span></strong> <span className="s3-desc-mute">(AWS-managed IP routing filters)</span> (like <code>pl-63a5400a</code>) for network routing configuration. Which means your subnet route tables automatically prioritize S3-destined traffic through the private Gateway Endpoint interface over default internet gateway routes, ensuring seamless, secure private transit without modifying server OS code.
                   </div>
                 </div>
               </div>
@@ -2052,14 +2052,14 @@ export default function S3Visualizer() {
                   S3 Access Points
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-cyan">S3 Access Point (isolated directory routing endpoints)</span></strong> is an additional, named network endpoint with hostnames scoped specifically for a single directory or bucket path, each enforcing its own customized access rules.
+                  An <strong><span className="s3-hl-cyan">S3 Access Point</span></strong> <span className="s3-desc-mute">(a dedicated named network gateway hostname with its own focused IAM resource policy scoped for individual directory paths)</span> is an additional, named network endpoint with hostnames scoped specifically for a single directory or bucket path, each enforcing its own customized access rules.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #06b6d4' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#06b6d4', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-cyan">S3 Access Points (dedicated hostnames for isolated subpaths)</span></strong> as dedicated, named network endpoints attached to S3 buckets. Which means you can partition shared enterprise buckets into isolated directory-level routes (e.g. <code>/accounting</code> vs <code>/marketing</code>), each with its own focused access control policy to prevent a single bucket policy from growing too complex or hitting size limits.
+                    AWS offers <strong><span className="s3-hl-cyan">S3 Access Points</span></strong> <span className="s3-desc-mute">(dedicated hostnames for isolated subpaths)</span> as dedicated, named network endpoints attached to S3 buckets. Which means you can partition shared enterprise buckets into isolated directory-level routes (e.g. <code>/accounting</code> vs <code>/marketing</code>), each with its own focused access control policy to prevent a single bucket policy from growing too complex or hitting size limits.
                   </div>
                 </div>
               </div>
@@ -2169,14 +2169,14 @@ export default function S3Visualizer() {
                   S3 Transfer Acceleration
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-cyan">Transfer Acceleration (geo-optimized edge ingestion upload-booster)</span></strong> is a geographic upload-optimization feature that routes your file uploads through the globally distributed Amazon CloudFront Edge network.
+                  <strong><span className="s3-hl-cyan">Transfer Acceleration</span></strong> <span className="s3-desc-mute">(a performance optimization feature that routes geographic uploads through the closest Amazon CloudFront Edge location to travel over AWS\'s private high-speed fiber backbone)</span> is a geographic upload-optimization feature that routes your file uploads through the globally distributed Amazon CloudFront Edge network.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #3b82f6' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-cyan">S3 Transfer Acceleration (global CloudFront edge ingestion)</span></strong> utilizing the globally distributed Amazon CloudFront Edge Location network. Which means upload packets are ingested at the nearest geographic edge location and routed over AWS's private high-speed fiber backbone to the target bucket, reducing latency and boosting upload speeds by up to 300% for international clients.
+                    AWS offers <strong><span className="s3-hl-cyan">S3 Transfer Acceleration</span></strong> <span className="s3-desc-mute">(global CloudFront Edge ingestion routing)</span> utilizing the globally distributed Amazon CloudFront Edge Location network. Which means upload packets are ingested at the nearest geographic edge location and routed over AWS\'s private high-speed fiber backbone to the target bucket, reducing latency and boosting upload speeds by up to 300% for international clients.
                   </div>
                 </div>
               </div>
@@ -2187,14 +2187,14 @@ export default function S3Visualizer() {
                   S3 Replication (SRR &amp; CRR)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-cyan">S3 Replication (asynchronous copy engine)</span></strong> is a bucket-level feature that executes automated, asynchronous copy tasks of newly uploaded files to separate destination buckets in the same region (<i>Same-Region Replication / SRR</i>) or different regions (<i>Cross-Region Replication / CRR</i>).
+                  <strong><span className="s3-hl-cyan">S3 Replication</span></strong> <span className="s3-desc-mute">(an asynchronous storage engine that automatically copies new object writes to separate buckets in the same region or different countries)</span> is a bucket-level feature that executes automated, asynchronous copy tasks of newly uploaded files to separate destination buckets in the same region (<i>Same-Region Replication / SRR</i> <span className="s3-desc-mute">(standby backup copies in the same region)</span>) or different regions (<i>Cross-Region Replication / CRR</i> <span className="s3-desc-mute">(standby backup copies across different geographic regions)</span>).
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #3b82f6' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">Same-Region Replication (SRR - standby copies in the same region)</span> and <span className="s3-hl-cyan">Cross-Region Replication (CRR - geo-standby/residency compliance copies)</span> as automated asynchronous copy engines. Which means S3 instantly replicates uploaded objects to separate destination buckets in either the same region (for standby disaster recovery) or a different country (to comply with data residency laws or minimize latency for remote users).
+                    AWS offers <span className="s3-hl-cyan">Same-Region Replication</span> <span className="s3-desc-mute">(SRR - standby copies in the same region)</span> and <span className="s3-hl-cyan">Cross-Region Replication</span> <span className="s3-desc-mute">(CRR - compliance/disaster recovery global standby copies)</span> as automated asynchronous copy engines. Which means S3 instantly replicates uploaded objects to separate destination buckets in either the same region (for standby disaster recovery) or a different country (to comply with data residency laws or minimize latency for remote users).
                   </div>
                 </div>
               </div>
@@ -2205,14 +2205,14 @@ export default function S3Visualizer() {
                   S3 Presigned URLs
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-cyan">Presigned URL (temporary cryptographically-signed link)</span></strong> is a secure, temporary web link generated with embedded credentials that grants limited read or write access to specific S3 object paths for a designated timeframe.
+                  A <strong><span className="s3-hl-cyan">Presigned URL</span></strong> <span className="s3-desc-mute">(a secure web link cryptographically signed with corporate credentials that authorizes clients to directly read or write objects for a temporary timeframe)</span> is a secure, temporary web link generated with embedded credentials that grants limited read or write access to specific S3 object paths for a designated timeframe.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #3b82f6' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers temporal <strong><span className="s3-hl-cyan">S3 Presigned URLs (temporal cryptographically-signed credentials)</span></strong> cryptographically signed by an application server's IAM credentials. Which means clients can directly upload to or download from designated bucket paths for a limited time without possessing AWS credentials, keeping the bucket secure and avoiding app server bandwidth bottlenecks.
+                    AWS offers temporal <strong><span className="s3-hl-cyan">S3 Presigned URLs</span></strong> <span className="s3-desc-mute">(cryptographically signed temporal credential links)</span> cryptographically signed by an application server's IAM credentials. Which means clients can directly upload to or download from designated bucket paths for a limited time without possessing AWS credentials, keeping the bucket secure and avoiding app server bandwidth bottlenecks.
                   </div>
                 </div>
               </div>
@@ -2346,14 +2346,14 @@ export default function S3Visualizer() {
                   Decoupled Event Notifications
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-pink">S3 Event Notification (serverless real-time event alerts)</span></strong> is an asynchronous event trigger configured on a bucket to automatically publish standard alert messages to SNS, SQS, or Lambda when write/delete operations occur.
+                  An <strong><span className="s3-hl-pink">S3 Event Notification</span></strong> <span className="s3-desc-mute">(an asynchronous bucket trigger that automatically publishes standard alert payloads to SNS, SQS, or Lambda when write or delete operations occur)</span> is an asynchronous event trigger configured on a bucket to automatically publish standard alert messages to SNS, SQS, or Lambda when write/delete operations occur.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #ec4899' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ec4899', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers asynchronous <strong><span className="s3-hl-pink">S3 Event Notifications (serverless event publishers)</span></strong> integrated with Amazon SNS, SQS, and AWS Lambda. Which means your systems can react instantly the millisecond a file is uploaded or deleted (e.g., resizing an image or updating a database), building responsive serverless workflows instead of wasting resource cycles polling folders.
+                    AWS offers asynchronous <strong><span className="s3-hl-pink">S3 Event Notifications</span></strong> <span className="s3-desc-mute">(serverless event publishers)</span> integrated with Amazon SNS, SQS, and AWS Lambda. Which means your systems can react instantly the millisecond a file is uploaded or deleted (e.g., resizing an image or updating a database), building responsive serverless workflows instead of wasting resource cycles polling folders.
                   </div>
                 </div>
               </div>
@@ -2364,14 +2364,14 @@ export default function S3Visualizer() {
                   S3 Batch Operations
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-pink">S3 Batch Operations (large-scale parallel bulk administrator)</span></strong> is an enterprise-scale bulk object management service that automates administrative tasks across billions of objects in parallel using an input CSV/inventory catalog.
+                  <strong><span className="s3-hl-pink">S3 Batch Operations</span></strong> <span className="s3-desc-mute">(an enterprise-scale large volume execution engine that processes bulk tag updates, encryption overrides, or WORM locks across billions of files simultaneously using a CSV manifest or S3 inventory report)</span> is an enterprise-scale bulk object management service that automates administrative tasks across billions of objects in parallel using an input CSV/inventory catalog.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #ec4899' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ec4899', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-pink">S3 Batch Operations (fully-managed bulk object processor)</span></strong> as a fully managed large-scale bulk object management service. Which means you can execute administrative actions (like modifying tags, replacing object locks, or copying files) in parallel across billions of objects using a simple CSV manifest, eliminating the need to write, host, and debug custom migration scripts.
+                    AWS offers <strong><span className="s3-hl-pink">S3 Batch Operations</span></strong> <span className="s3-desc-mute">(fully-managed bulk object processor)</span> as a fully managed large-scale bulk object management service. Which means you can execute administrative actions (like modifying tags, replacing object locks, or copying files) in parallel across billions of objects using a simple CSV manifest, eliminating the need to write, host, and debug custom migration scripts.
                   </div>
                 </div>
               </div>
@@ -2382,14 +2382,14 @@ export default function S3Visualizer() {
                   S3 Storage Lens Analytics
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-pink">S3 Storage Lens Analytics (centralized structural health analytics)</span></strong> is a centralized operational and analytical dashboard that scans organization-wide bucket metadata daily, providing unified metrics and recommendations.
+                  <strong><span className="s3-hl-pink">S3 Storage Lens Analytics</span></strong> <span className="s3-desc-mute">(an organization-wide daily metadata scanning and analytics dashboard that offers unified usage metrics, configuration visibility, security alerts, and cost recommendations)</span> is a centralized operational and analytical dashboard that scans organization-wide bucket metadata daily, providing unified metrics and recommendations.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #ec4899' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ec4899', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-pink">S3 Storage Lens (organization-wide multi-account storage metrics)</span></strong> as an organization-wide storage monitoring and optimization service. Which means you get centralized, multi-account dashboards that scan metadata globally, automatically identifying security vulnerabilities (like unencrypted buckets) and outlining actionable cost-saving opportunities (like orphaned delete markers).
+                    AWS offers <strong><span className="s3-hl-pink">S3 Storage Lens</span></strong> <span className="s3-desc-mute">(organization-wide daily metadata scans and recommendation dashboard)</span> as an organization-wide storage monitoring and optimization service. Which means you get centralized, multi-account dashboards that scan metadata globally, automatically identifying security vulnerabilities (like unencrypted buckets) and outlining actionable cost-saving opportunities (like orphaned delete markers).
                   </div>
                 </div>
               </div>

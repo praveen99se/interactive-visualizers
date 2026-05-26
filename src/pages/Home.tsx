@@ -65,6 +65,30 @@ const visualizers = [
     path: '/visualizers/s3',
     icon: '🪣',
   },
+  {
+    id: 'cloudfront',
+    title: '⚡ Amazon CloudFront',
+    description: 'Explore global edge content delivery, origin integrations (S3 OAC vs ALB VPC Origin), geo-restriction boundaries, cache invalidation pipelines, and an interactive global request routing simulator.',
+    tags: ['Cloud', 'AWS', 'Networking', 'Caching'],
+    path: '/visualizers/cloudfront',
+    icon: '⚡',
+  },
+  {
+    id: 'storage-fs',
+    title: '📂 Shared Filesystems & FSx',
+    description: 'Explore POSIX file systems and the four Amazon FSx engines: Windows File Server (Single vs Multi-AZ), Lustre (HPC S3 integration), NetApp ONTAP, and OpenZFS via a dynamic multi-scenario simulation.',
+    tags: ['Cloud', 'AWS', 'Storage', 'Infrastructure'],
+    path: '/visualizers/storage-fs',
+    icon: '📂',
+  },
+  {
+    id: 'integration-messaging',
+    title: '✉️ AWS Integration & Messaging',
+    description: 'Deep-dive SQS queues, SNS Pub/Sub filtering, SQS+SNS Fanout configurations, Kinesis Streams & Firehose ingestion, and ActiveMQ/RabbitMQ protocols via an interactive message flow simulator.',
+    tags: ['Cloud', 'AWS', 'Messaging', 'Integration'],
+    path: '/visualizers/integration-messaging',
+    icon: '✉️',
+  },
   // Add more visualizers here as you create them
   {
     id: 'sorting-algorithms',

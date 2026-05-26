@@ -8,6 +8,9 @@ import ElastiCacheVisualizer from './pages/visualizers/ElastiCacheVisualizer';
 import Route53Visualizer from './pages/visualizers/Route53Visualizer';
 import EC2Visualizer from './pages/visualizers/EC2Visualizer';
 import S3Visualizer from './pages/visualizers/S3Visualizer';
+import CloudfrontVisualizer from './pages/visualizers/CloudfrontVisualizer';
+import FilesAndStorageVisualizer from './pages/visualizers/FilesAndStorageVisualizer';
+import IntegrationAndMessagingVisualizer from './pages/visualizers/IntegrationAndMessagingVisualizer';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -38,6 +41,9 @@ export default function App() {
             <Route path="/visualizers/route53" element={<Route53Visualizer />} />
             <Route path="/visualizers/ec2" element={<EC2Visualizer />} />
             <Route path="/visualizers/s3" element={<S3Visualizer />} />
+            <Route path="/visualizers/cloudfront" element={<CloudfrontVisualizer />} />
+            <Route path="/visualizers/storage-fs" element={<FilesAndStorageVisualizer />} />
+            <Route path="/visualizers/integration-messaging" element={<IntegrationAndMessagingVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

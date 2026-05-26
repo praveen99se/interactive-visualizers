@@ -92,6 +92,36 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '🪣',
     lastUpdated: '2026-05-25',
   },
+  {
+    id: 'cloudfront',
+    title: 'AWS CloudFront',
+    description: 'Explore global edge content delivery, origin integrations (S3 OAC vs ALB VPC Origin), geo-restriction boundaries, cache invalidation pipelines, and an interactive global request routing simulator.',
+    category: 'cloud',
+    tags: ['AWS', 'CloudFront', 'Caching', 'Networking'],
+    path: '/visualizers/cloudfront',
+    icon: '⚡',
+    lastUpdated: '2026-05-26',
+  },
+  {
+    id: 'storage-fs',
+    title: 'Shared Filesystems & FSx',
+    description: 'Explore POSIX file systems and the four Amazon FSx engines: Windows File Server (Single vs Multi-AZ), Lustre (HPC S3 integration), NetApp ONTAP, and OpenZFS via a dynamic multi-scenario simulation.',
+    category: 'cloud',
+    tags: ['AWS', 'Storage', 'FSx', 'Infrastructure'],
+    path: '/visualizers/storage-fs',
+    icon: '📂',
+    lastUpdated: '2026-05-26',
+  },
+  {
+    id: 'integration-messaging',
+    title: 'AWS Integration & Messaging',
+    description: 'Deep-dive SQS queues, SNS Pub/Sub filtering, SQS+SNS Fanout configurations, Kinesis Streams & Firehose ingestion, and ActiveMQ/RabbitMQ protocols via an interactive message flow simulator.',
+    category: 'cloud',
+    tags: ['AWS', 'Messaging', 'Integration', 'Queues'],
+    path: '/visualizers/integration-messaging',
+    icon: '✉️',
+    lastUpdated: '2026-05-26',
+  },
   // Add more visualizers here as you create them
 ];
 
