@@ -159,7 +159,7 @@ export default function S3Visualizer() {
   }, [selectedPolicyTemplate]);
 
   // TAB 3: ENCRYPTION STATE & CUSTOM KEYS
-  const [encryptionType, setEncryptionType] = useState<'sse-s3' | 'sse-kms' | 'sse-c'>('sse-s3');
+  const [encryptionType, setEncryptionType] = useState<'sse-s3' | 'sse-kms' | 'sse-c' | 'dsse-kms'>('sse-s3');
   const [customKmsArn, setCustomKmsArn] = useState('arn:aws:kms:us-east-1:123456789012:key/3c5b9e0b-8d1a-4c2f-89bc-de1a38fa928b');
   const [customSsecKey, setCustomSsecKey] = useState('MzI4OWE5MmVkOGExYjQyZjg5YmM4ZGFmMTlhM2I4ZmE=');
   const [uploadContent, setUploadContent] = useState('My Highly Confidential Enterprise Ledger.csv');
@@ -212,6 +212,32 @@ export default function S3Visualizer() {
   const [lifecycleCurrentClass, setLifecycleCurrentClass] = useState('Standard');
   const [lifecycleCostSaved, setLifecycleCostSaved] = useState(0);
 
+  // TAB 7 & 8: INTERACTIVE DIAGRAM MODES
+  const [transferRouteMode, setTransferRouteMode] = useState<'standard' | 'accelerated'>('accelerated');
+  const [eventRoutingMode, setEventRoutingMode] = useState<'direct' | 'eventbridge'>('eventbridge');
+
+  // TAB 7: TRANSFER ACCELERATION SIMULATOR
+  const [transferStep, setTransferStep] = useState(0);
+  const [transferIsRunning, setTransferIsRunning] = useState(false);
+  const [transferLogs, setTransferLogs] = useState<string[]>([]);
+  const transferTerminalRef = useRef<HTMLDivElement>(null);
+
+  // TAB 8: EVENT NOTIFICATIONS SIMULATOR
+  const [eventStep, setEventStep] = useState(0);
+  const [eventIsRunning, setEventIsRunning] = useState(false);
+  const [eventLogs, setEventLogs] = useState<string[]>([]);
+  const [simulatedObjectKey, setSimulatedObjectKey] = useState('uploads/image.png');
+  const [simulatedObjectSize, setSimulatedObjectSize] = useState(12.5); // MB
+  const eventTerminalRef = useRef<HTMLDivElement>(null);
+
+  // TAB 8: BATCH OPERATIONS SIMULATOR
+  const [batchStep, setBatchStep] = useState(0);
+  const [batchIsRunning, setBatchIsRunning] = useState(false);
+  const [batchLogs, setBatchLogs] = useState<string[]>([]);
+  const [batchTotalObjects, setBatchTotalObjects] = useState(124500);
+  const [batchProgressPercentage, setBatchProgressPercentage] = useState(0);
+  const batchTerminalRef = useRef<HTMLDivElement>(null);
+
   // Refs for console terminals
   const encryptionTerminalRef = useRef<HTMLDivElement>(null);
   const policyTerminalRef = useRef<HTMLDivElement>(null);
@@ -229,6 +255,18 @@ export default function S3Visualizer() {
   useEffect(() => {
     if (wormTerminalRef.current) wormTerminalRef.current.scrollTop = wormTerminalRef.current.scrollHeight;
   }, [wormAuditLogs]);
+
+  useEffect(() => {
+    if (transferTerminalRef.current) transferTerminalRef.current.scrollTop = transferTerminalRef.current.scrollHeight;
+  }, [transferLogs]);
+
+  useEffect(() => {
+    if (eventTerminalRef.current) eventTerminalRef.current.scrollTop = eventTerminalRef.current.scrollHeight;
+  }, [eventLogs]);
+
+  useEffect(() => {
+    if (batchTerminalRef.current) batchTerminalRef.current.scrollTop = batchTerminalRef.current.scrollHeight;
+  }, [batchLogs]);
 
   // Tab 2: Policy Ingress Simulator with Live JSON Evaluation
   const testPolicyIngress = () => {
@@ -425,11 +463,17 @@ export default function S3Visualizer() {
           `[s3-service] Intercepted WriteObject header. Initializing SSE-KMS envelope...`,
           `[s3-service] Dispatching GenerateDataKey request to KMS. Target CMK: "${customKmsArn}"`
         ]);
-      } else {
+      } else if (encryptionType === 'sse-c') {
         setEncryptionLogs(l => [
           ...l,
           `[s3-service] Intercepted WriteObject header. Initializing SSE-C direct customer cipher...`,
           `[s3-service] Handshaking with secure headers. Loaded client AES Base64 key: "${customSsecKey.substring(0, 16)}..."`
+        ]);
+      } else if (encryptionType === 'dsse-kms') {
+        setEncryptionLogs(l => [
+          ...l,
+          `[s3-service] Intercepted WriteObject header. Initializing DSSE-KMS double envelope...`,
+          `[s3-service] Dispatching 2x GenerateDataKey requests to KMS. CMK A: "${customKmsArn.substring(0, 42)}...", CMK B: "${customKmsArn.substring(0, 42)}...-9b8a"`
         ]);
       }
     }, 1000);
@@ -460,7 +504,7 @@ export default function S3Visualizer() {
           `[kms-service] Generated Ciphertext Data Key: "${encHex}"`,
           `[kms-service] Generating secure Audit Trail log in AWS CloudTrail.`
         ]);
-      } else {
+      } else if (encryptionType === 'sse-c') {
         // SSE-C generates key derivations locally
         const localDerivationHex = 'SSEC-DERIVED-' + plainHex.substring(0, 16);
         setPlaintextKeyHex(customSsecKey.substring(0, 16).toUpperCase() + '...');
@@ -470,18 +514,41 @@ export default function S3Visualizer() {
           `[s3-service] Validated customer-provided raw key headers in hypervisor bus.`,
           `[s3-service] Derived active transient AES key: "${localDerivationHex}"`
         ]);
+      } else if (encryptionType === 'dsse-kms') {
+        const plainHexB = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('').toUpperCase();
+        const encHexB = Array.from({ length: 48 }, () => Math.floor(Math.random() * 16).toString(16)).join('').toUpperCase();
+        setPlaintextKeyHex(`Key A: ${plainHex.substring(0, 8)}... | Key B: ${plainHexB.substring(0, 8)}...`);
+        setEncryptedKeyHex(`Cipher A: ${encHex.substring(0, 8)}... | Cipher B: ${encHexB.substring(0, 8)}...`);
+        setEncryptionLogs(l => [
+          ...l,
+          `[kms-service] Authorizing double kms:GenerateDataKey requests...`,
+          `[kms-service] Generated Data Key A: Plaintext="${plainHex.substring(0, 12)}...", Ciphertext="${encHex.substring(0, 12)}..."`,
+          `[kms-service] Generated Data Key B: Plaintext="${plainHexB.substring(0, 12)}...", Ciphertext="${encHexB.substring(0, 12)}..."`,
+          `[kms-service] Generated dual CloudTrail audit trails (kms:GenerateDataKey calls logged).`
+        ]);
       }
     }, 2200);
 
     // Step 4: Encrypting in Memory & scrubbing plaintext key from RAM
     setTimeout(() => {
       setEncryptionStep(4);
-      setEncryptionLogs(l => [
-        ...l,
-        `[hypervisor-memory] Initializing AES-256 symmetric block cipher...`,
-        `[hypervisor-memory] Plaintext string payload successfully encrypted into ciphertext blocks.`,
-        `[hypervisor-memory] ⚠️ RAM SHREDDING TRIGGERED: Scrubbing plaintext encryption keys from hypervisor RAM blocks for absolute host isolation.`
-      ]);
+      if (encryptionType === 'dsse-kms') {
+        setEncryptionLogs(l => [
+          ...l,
+          `[hypervisor-memory] Initializing DSSE-KMS dual block cipher pipelines...`,
+          `[hypervisor-memory] executing Layer 1 Encryption: cipher payload under Plaintext Data Key A (AES-256)...`,
+          `[hypervisor-memory] executing Layer 2 Encryption: encrypt resulting block under Plaintext Data Key B (AES-256)...`,
+          `[hypervisor-memory] Double-layer encryption complete! Immutable ciphertext structure established.`,
+          `[hypervisor-memory] ⚠️ TWIN RAM WIPE ENGAGED: Scrubbing both Plaintext Keys A & B from hypervisor active memory buffers.`
+        ]);
+      } else {
+        setEncryptionLogs(l => [
+          ...l,
+          `[hypervisor-memory] Initializing AES-256 symmetric block cipher...`,
+          `[hypervisor-memory] Plaintext string payload successfully encrypted into ciphertext blocks.`,
+          `[hypervisor-memory] ⚠️ RAM SHREDDING TRIGGERED: Scrubbing plaintext encryption keys from hypervisor RAM blocks for absolute host isolation.`
+        ]);
+      }
       // Shred Plaintext key from state!
       setPlaintextKeyHex(null);
     }, 3800);
@@ -498,6 +565,13 @@ export default function S3Visualizer() {
           `[s3-storage] Writing encrypted blocks ("${cipherTextMock}") to physical disk arrays.`,
           `[s3-storage] S3 drops customer plaintext key from active processor registers entirely.`,
           `✅ [system] Write complete! Payload secure. S3 retains NO keys. You must provide the exact same key to read this file.`
+        ]);
+      } else if (encryptionType === 'dsse-kms') {
+        setEncryptionLogs(l => [
+          ...l,
+          `[s3-storage] Writing dual-encrypted blocks ("DUAL-${cipherTextMock}") to physical disk storage racks.`,
+          `[s3-storage] Appending both Ciphertext Data Key A and Ciphertext Data Key B metadata to S3 partition headers.`,
+          `✅ [system] Write complete! Dual-layer envelope security successfully committed to disk at rest.`
         ]);
       } else {
         setEncryptionLogs(l => [
@@ -743,6 +817,244 @@ export default function S3Visualizer() {
 
     return () => clearInterval(interval);
   }, [lifecycleRunState, lifecycleIa, lifecycleGlacier, lifecycleExpiration, lifecycleVolume]);
+
+  // TAB 7: S3 Transfer Acceleration Simulation Handler
+  const startTransferSimulation = () => {
+    if (transferIsRunning) return;
+    setTransferIsRunning(true);
+    setTransferStep(1);
+    setTransferLogs([
+      `[client-init] Preparing data transmission payload: file_name=big_dataset.tar, size=1.2 GB...`,
+      `[client-init] Resolving host routing paths...`
+    ]);
+
+    if (transferRouteMode === 'standard') {
+      setTimeout(() => {
+        setTransferStep(2);
+        setTransferLogs(l => [
+          ...l,
+          `[route-hop] 🌐 Packet dispatched onto public BGP routing tables.`,
+          `[route-hop] Hop 1: Local ISP (AS7922 Comcast Chicago) ➔ Latency: 12ms`,
+          `[route-hop] Hop 2: Regional Transit Exchange (Equinix Ashburn) ➔ Latency: 32ms`
+        ]);
+      }, 1000);
+
+      setTimeout(() => {
+        setTransferStep(3);
+        setTransferLogs(l => [
+          ...l,
+          `[trans-pacific] 🌊 Packet traversing public trans-pacific undersea cables.`,
+          `[trans-pacific] Hop 5: public transit backbone router (San Jose AS2914 NTT) ➔ Latency: 120ms`,
+          `[trans-pacific] Hop 8: public sea-cable carrier (AS4608 Honolulu) ➔ Latency: 340ms`,
+          `[trans-pacific] Hop 12: Pacific crossing node (AS4826 Sydney) ➔ Latency: 740ms (High jitter/packet drop rate: 1.8%)`
+        ]);
+      }, 2500);
+
+      setTimeout(() => {
+        setTransferStep(4);
+        setTransferLogs(l => [
+          ...l,
+          `[destination] Reached S3 Sydney public endpoint: s3.ap-southeast-2.amazonaws.com`,
+          `[destination] S3 assembly of multi-part chunks complete. Integrity MD5 validated.`,
+          `❌ [summary] Upload completed in 8.2 seconds. Average Latency: 820ms. Ingestion Speed: ~146 MB/s (highly throttled by public hop congestion)`
+        ]);
+        setTransferIsRunning(false);
+      }, 4000);
+
+    } else {
+      setTimeout(() => {
+        setTransferStep(2);
+        setTransferLogs(l => [
+          ...l,
+          `[edge-ingest] 🚀 Packet redirected to local CloudFront Edge location POP: s3-accelerate.amazonaws.com`,
+          `[edge-ingest] Ingested at nearest USA edge node (Chicago CloudFront POP) ➔ Latency: 4.2ms`,
+          `[edge-ingest] TCP handshake terminated locally at Edge. Multipart chunk slicing initiated immediately.`
+        ]);
+      }, 1000);
+
+      setTimeout(() => {
+        setTransferStep(3);
+        setTransferLogs(l => [
+          ...l,
+          `[aws-backbone] ⚡ Chunks shifted onto private AWS dark-fiber optic global backbone.`,
+          `[aws-backbone] USA Backbone ➔ Seattle Fiber Node ➔ Undersea Private Trans-pacific High-speed Optic Channels ➔ Sydney AWS Exchange Node.`,
+          `[aws-backbone] Congestion-free routing, zero public internet peerings, active packet deduplication ➔ Latency: 182ms (Stable, 0% Packet Loss)`
+        ]);
+      }, 2500);
+
+      setTimeout(() => {
+        setTransferStep(4);
+        setTransferLogs(l => [
+          ...l,
+          `[destination] Direct arrival at internal target bucket: my-accelerated-bucket.s3.ap-southeast-2.amazonaws.com`,
+          `[destination] Multi-part chunk commits to Sydney NVMe array partition complete.`,
+          `✅ [summary] Upload completed in 1.9 seconds! Average Latency: 190ms. Ingestion Speed: ~631 MB/s. SPEEDUP FACTOR: 326% FAST! ⚡`
+        ]);
+        setTransferIsRunning(false);
+      }, 4000);
+    }
+  };
+
+  // TAB 8: S3 Event Notifications Simulation Handler
+  const startEventSimulation = () => {
+    if (eventIsRunning) return;
+    setEventIsRunning(true);
+    setEventStep(1);
+    setEventLogs([
+      `[s3-bucket] PutObject trigger intercepted: key="${simulatedObjectKey}", size=${simulatedObjectSize} MB...`,
+      `[s3-bucket] Generating standard JSON event notification payload: "s3:ObjectCreated:Put"...`
+    ]);
+
+    if (eventRoutingMode === 'direct') {
+      setTimeout(() => {
+        setEventStep(2);
+        setEventLogs(l => [
+          ...l,
+          `[permissions-gate] 🔒 Initiating direct target permission handshake...`,
+          `[permissions-gate] Evaluating target Access Policy for IAM authorization.`,
+          `[permissions-gate] Target resource ARN: "arn:aws:sqs:us-east-1:123456789012:my-event-queue"`,
+          `[permissions-gate] Verification rule check: Does SQS Resource Access Policy grant "sqs:SendMessage" to "s3.amazonaws.com" source?`
+        ]);
+      }, 1000);
+
+      setTimeout(() => {
+        setEventStep(3);
+        setEventLogs(l => [
+          ...l,
+          `[permissions-gate] ✅ IAM resource validation successful! Source bucket matches policy resource ARN constraint.`,
+          `[filter-match] Applying direct S3 bucket filters: suffix matches ".png" or ".pdf"...`,
+          `[filter-match] Object Key "${simulatedObjectKey}" matches configured suffix criteria. Filter passed.`
+        ]);
+      }, 2200);
+
+      setTimeout(() => {
+        setEventStep(4);
+        setEventLogs(l => [
+          ...l,
+          `[delivery] Direct S3 event notification published successfully.`,
+          `[delivery] Payload size: 1.2 KB. Dispatch time: 14ms.`,
+          `✅ [verdict] Event committed to target SQS queue: HTTP 200 OK.`
+        ]);
+        setEventIsRunning(false);
+      }, 3500);
+
+    } else {
+      setTimeout(() => {
+        setEventStep(2);
+        setEventLogs(l => [
+          ...l,
+          `[eventbridge-route] ⚙️ native EventBridge integration active. S3 publishes payload instantly to default Event Bus.`,
+          `[eventbridge-route] Handshake complete: zero direct IAM target policies required.`,
+          `[eventbridge-route] Event ingested into AWS EventBridge Router: eventID="e8f9a2b1-38fa-4c2a"`,
+          `[eventbridge-route] Compiling advanced Event Pattern filter JSON rules...`
+        ]);
+      }, 1000);
+
+      setTimeout(() => {
+        const prefixMatch = simulatedObjectKey.startsWith('uploads/') ? 'MATCHED' : 'FAILED';
+        const sizeMatch = simulatedObjectSize > 5 ? 'MATCHED (Size > 5MB)' : 'FAILED (Size <= 5MB)';
+        setEventStep(3);
+        setEventLogs(l => [
+          ...l,
+          `[filter-match] Running Advanced JSON Rule evaluation:`,
+          `[filter-match] Rule 1: Prefix "uploads/" matches "${simulatedObjectKey}" ➔ ${prefixMatch}`,
+          `[filter-match] Rule 2: Object size > 5,242,880 bytes matches ${simulatedObjectSize} MB ➔ ${sizeMatch}`,
+          prefixMatch === 'MATCHED' && sizeMatch === 'MATCHED (Size > 5MB)'
+            ? `[filter-match] ✅ ADVANCED MATCH SUCCESSFUL! Rule target routing triggers committed.`
+            : `[filter-match] ❌ Advanced match rule failed conditions. Default routing fallback activated.`
+        ]);
+      }, 2200);
+
+      setTimeout(() => {
+        const prefixMatch = simulatedObjectKey.startsWith('uploads/');
+        const sizeMatch = simulatedObjectSize > 5;
+        if (prefixMatch && sizeMatch) {
+          setEventLogs(l => [
+            ...l,
+            `[delivery] EventBridge router successfully dispatched trigger to:`,
+            `[delivery] ➔ Target 1: AWS Step Functions state machine (Resize Workflow)`,
+            `[delivery] ➔ Target 2: Amazon Kinesis stream (Analytics ingest)`,
+            `[delivery] ➔ Target 3: Amazon ECS container task (Deep processing)`,
+            `✅ [verdict] Multi-target fanout routing successfully coordinated over 18+ services!`
+          ]);
+        } else {
+          setEventLogs(l => [
+            ...l,
+            `[delivery] Default fallback target triggered: logged event to CloudWatch Logs.`,
+            `✅ [verdict] Fallback matching committed.`
+          ]);
+        }
+        setEventIsRunning(false);
+      }, 3500);
+    }
+  };
+
+  // TAB 8: S3 Batch Operations Simulation Handler
+  const startBatchSimulation = () => {
+    if (batchIsRunning) return;
+    setBatchIsRunning(true);
+    setBatchStep(1);
+    setBatchProgressPercentage(0);
+    setBatchLogs([
+      `[batch-init] Initiating bulk administrative job for ${batchTotalObjects.toLocaleString()} objects...`,
+      `[batch-init] Phase 1: Requesting S3 Inventory Daily Report...`
+    ]);
+
+    setTimeout(() => {
+      setBatchStep(2);
+      setBatchLogs(l => [
+        ...l,
+        `[s3-inventory] ✅ S3 Inventory Daily Report catalog generated: size=12.8 MB (Gzipped CSV).`,
+        `[athena-query] Amazon Athena serverless engine parsing S3 Inventory dataset...`,
+        `[athena-query] SQL Executing: SELECT key, versionId FROM s3_inventory WHERE size_bytes > 50000000 AND key LIKE 'uploads/%'`,
+        `[athena-query] SQL query completed in 1.2s. Scanned 12.8 MB daily records.`,
+        `[athena-query] Exporting manifest CSV catalog containing matching rows...`
+      ]);
+    }, 1200);
+
+    setTimeout(() => {
+      setBatchStep(3);
+      setBatchLogs(l => [
+        ...l,
+        `[batch-operator] ✅ Manifest CSV compiled successfully: manifest.csv (18,450 objects matched).`,
+        `[batch-operator] Submitting Manifest and target operation to S3 Batch Operations controller.`,
+        `[batch-operator] Selected Operation: Overwrite SSE headers (AES-256 to SSE-KMS with key rotation).`,
+        `[batch-operator] S3 Batch controller spawning parallel cluster executor threads...`
+      ]);
+    }, 2500);
+
+    setTimeout(() => {
+      setBatchStep(4);
+      let pct = 0;
+      const interval = setInterval(() => {
+        pct += 20;
+        setBatchProgressPercentage(pct);
+        const processed = Math.min(18450, Math.floor((pct / 100) * 18450));
+        
+        setBatchLogs(l => [
+          ...l,
+          `[workers] Distributed task progress: ${pct}% complete. Processed: ${processed.toLocaleString()} / 18,450. Speed: 3,250 objs/sec.`,
+          pct === 20 ? `[workers] Thread-01 processing partition: uploads/financials/ (success: 3,690)` :
+          pct === 40 ? `[workers] Thread-02 processing partition: uploads/archives/ (success: 7,380)` :
+          pct === 60 ? `[workers] Thread-03 processing partition: uploads/assets/ (success: 11,070)` :
+          pct === 80 ? `[workers] Thread-04 processing partition: uploads/images/ (success: 14,760, retrying 4 fails...)` :
+          `[workers] Distributed batch merge complete. Thread pools shut down. All operations validated.`
+        ]);
+
+        if (pct >= 100) {
+          clearInterval(interval);
+          setBatchStep(5);
+          setBatchLogs(l => [
+            ...l,
+            `[completion] Generating S3 Batch Job Execution Completion Report...`,
+            `[completion] Report written to s3://my-audit-bucket/batch-reports/job-c8f9.csv`,
+            `✅ [summary] Batch Job succeeded! Processed: 18,450 objects. Success Rate: 100% (18,446 succeeded, 4 retries resolved). Total duration: 3.4 seconds.`
+          ]);
+          setBatchIsRunning(false);
+        }
+      }, 600);
+    }, 3800);
+  };
 
   return (
     <div style={{ fontSize: '13.5px' }}>
@@ -1264,7 +1576,7 @@ export default function S3Visualizer() {
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers three models of <strong><span className="s3-hl-green">Server-Side Encryption</span></strong>: <span className="s3-hl-green">SSE-S3</span> <span className="s3-desc-mute">(S3-managed symmetric keys using standard AES-256 blocks)</span>, <span className="s3-hl-green">SSE-KMS</span> <span className="s3-desc-mute">(KMS-managed Customer Master Keys with advanced key rotation schedules and full audit logs)</span>, and <span className="s3-hl-green">SSE-C</span> <span className="s3-desc-mute">(keys managed entirely by the customer, where S3 never stores or retains the symmetric key vector)</span>. Which means your objects are automatically encrypted with symmetric AES-256 blocks before they are written to the physical storage disks, ensuring compliance with data-at-rest regulatory security mandates.
+                    AWS offers four models of <strong><span className="s3-hl-green">Server-Side Encryption</span></strong>: <span className="s3-hl-green">SSE-S3</span> <span className="s3-desc-mute">(AWS-managed standard AES-256 keys)</span>, <span className="s3-hl-green">SSE-KMS</span> <span className="s3-desc-mute">(KMS-managed Customer Master Keys with advanced key rotation schedules and full audit trails)</span>, <span className="s3-hl-green">SSE-C</span> <span className="s3-desc-mute">(keys managed entirely by the customer, only via CLI/API over HTTPS)</span>, and <strong><span className="s3-hl-green">DSSE-KMS</span></strong> <span className="s3-desc-mute">(Dual-layer Server-Side Encryption with two independent KMS keys for absolute compliance)</span>. Which means your objects are automatically encrypted before they are written to disk, complying with data-at-rest security rules.
                   </div>
                 </div>
               </div>
@@ -1272,17 +1584,17 @@ export default function S3Visualizer() {
               <div className="s3-edu-card-new">
                 <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
                 <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  KMS Envelope Encryption &amp; Data Keys
+                  KMS Envelope Encryption &amp; API Quota Limits
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Envelope Encryption</span></strong> <span className="s3-desc-mute">(a multi-key security practice that encrypts high-volume data payloads with a unique local data key, and then encrypts that data key under a secure master key managed inside a centralized key store)</span> is the practice of encrypting data with a <span className="s3-hl-green">Plaintext Data Key</span> <span className="s3-desc-mute">(the transient AES-256 key utilized to perform symmetric block ciphers inside RAM)</span>, and then encrypting that data key under a highly secure, non-exportable <span className="s3-hl-green">Customer Master Key (CMK)</span> <span className="s3-desc-mute">(centralized KMS non-exportable hardware-protected master key)</span> managed inside KMS.
+                  <strong><span className="s3-hl-green">Envelope Encryption</span></strong> <span className="s3-desc-mute">(a multi-key security practice that encrypts high-volume data payloads with a unique local data key, and then encrypts that data key under a secure master key managed inside a centralized key store)</span> is the practice of encrypting data with a Plaintext Data Key, and then encrypting that key under a highly secure, non-exportable Customer Master Key (CMK) managed inside KMS.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-green">Envelope Encryption</span></strong> <span className="s3-desc-mute">(dual-key modular cryptographic pipeline)</span> by utilizing an AWS KMS <span className="s3-hl-green">Customer Master Key (CMK)</span> to generate unique data keys. Which means S3 requests a data key from KMS, uses the <span className="s3-hl-green">Plaintext Data Key</span> version to encrypt the large data file locally in memory, and stores the <span className="s3-hl-green">Encrypted Data Key</span> alongside the encrypted object on disk before discarding the plaintext key, protecting the master key from network exposure.
+                    AWS offers **KMS Envelope Encryption** where every object upload/download makes direct KMS calls: <strong><span className="s3-hl-green">GenerateDataKey</span></strong> (for uploads) and <strong><span className="s3-hl-green">Decrypt</span></strong> (for downloads). Which means high-volume traffic is subject to regional KMS API limits <span className="s3-desc-mute">(e.g. 5,500 / 10,000 / 30,000 requests per second per region)</span>; exceeding these thresholds triggers a `KMS:ThrottlingException`. To mitigate this, you can request a **KMS Quota Increase** using the Service Quotas Console.
                   </div>
                 </div>
               </div>
@@ -1290,61 +1602,219 @@ export default function S3Visualizer() {
               <div className="s3-edu-card-new">
                 <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
                 <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Transient Memory Key Scrubbing
+                  S3 Bucket Keys &amp; Key Scrubbing
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Key Scrubbing</span></strong> <span className="s3-desc-mute">(a hypervisor-level microsecond register zeroization that zeroizes and overwrites RAM containing symmetric keys the instant a block cipher finishes execution)</span> is a hypervisor-level security function that instantly overwrites or zeroizes the active physical RAM registers holding the plaintext version of a symmetric cryptographic key.
+                  <strong><span className="s3-hl-green">Key Scrubbing</span></strong> <span className="s3-desc-mute">(a hypervisor-level microsecond register zeroization that zeroizes and overwrites RAM containing symmetric keys the instant a block cipher finishes execution)</span> is a hypervisor security function. An **S3 Bucket Key** is a secure, bucket-level caching key that reduces KMS transit requests.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers hypervisor-level <strong><span className="s3-hl-green">memory zeroization / scrubbing</span></strong> <span className="s3-desc-mute">(hypervisor-level RAM register shredding)</span> for transient encryption keys. Which means S3 shreds and wipes plaintext key vectors from its active hypervisor registers and memory blocks the microsecond a write block symmetric cipher completes, maintaining absolute security and isolation between multi-tenant virtual machines.
+                    AWS offers <strong><span className="s3-hl-green">S3 Bucket Keys</span></strong> <span className="s3-desc-mute">(bucket-level data key caching)</span> to cache keys at the S3 bucket layer. Which means instead of calling KMS on every single object operations, S3 caches a bucket-level key transiently in memory to derive folder keys locally, reducing outbound KMS API requests and transit cost by **up to 99%** while maintaining standard hypervisor **Memory Key Scrubbing** zeroization.
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* 🎨 Architectural SVG */}
-            <div className="s3-sec">SSE KMS Envelope Encryption write Pipeline</div>
+            {/* 🎨 Dynamic Architectural SVG based on selection */}
+            <div className="s3-sec">
+              {encryptionType === 'sse-s3' && '🔒 SSE-S3: S3-Managed Server-Side Encryption'}
+              {encryptionType === 'sse-kms' && '🔐 SSE-KMS: AWS KMS Key Server-Side Envelope Ingestion'}
+              {encryptionType === 'sse-c' && '💼 SSE-C: Customer-Provided Key Server-Side Encryption'}
+              {encryptionType === 'dsse-kms' && '🛡️ DSSE-KMS: Dual-Layer KMS Server-Side Envelope Encryption'}
+            </div>
             <div className="s3-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                Trace the data payload and key exchanges between S3 hypervisors, KMS servers, and physical block networks.
+              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+                {encryptionType === 'sse-s3' && 'Default encryption method. S3 automatically encrypts object blocks in transit using standard AES-256, managed entirely by AWS.'}
+                {encryptionType === 'sse-kms' && 'Enables key rotation schedules and audit controls. AWS KMS generates plaintext data keys to encrypt blocks in RAM, then shreds the plaintext key, preserving only the encrypted key.'}
+                {encryptionType === 'sse-c' && 'You provide the key in the HTTP header over HTTPS. S3 performs symmetric ciphers in RAM and erases the key. S3 never stores your key.'}
+                {encryptionType === 'dsse-kms' && 'Double-layer envelope protection. S3 requests two distinct master keys from KMS, executing two independent layers of AES-256 symmetric ciphers on object payloads for extreme compliance (FIPS 140-3).'}
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Step 1: Plaintext payload */}
-                <rect x="15" y="45" width="90" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="60" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">Step 1</text>
-                <text x="60" y="90" textAnchor="middle" fontSize="9" fill="#10b981" fontWeight="bold">📄 Plaintext</text>
-                <text x="60" y="105" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Payload</text>
 
-                <path d="M105,90 L150,90" stroke="#94a3b8" strokeWidth="1.5" />
+              {encryptionType === 'sse-s3' && (
+                <svg viewBox="0 0 700 180" width="100%" style={{ background: '#f0fdf4', borderRadius: '6px', border: '0.5px solid #a7f3d0' }}>
+                  <defs>
+                    <marker id="arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857" /></marker>
+                  </defs>
+                  
+                  {/* User Client */}
+                  <rect x="25" y="45" width="120" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="85" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#334155">💻 Client (User)</text>
+                  <rect x="35" y="80" width="100" height="40" rx="4" fill="#f8fafc" stroke="#e2e8f0" />
+                  <text x="85" y="93" textAnchor="middle" fontSize="6.5" fill="#475569">HTTPS upload request</text>
+                  <text x="85" y="103" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#047857">"x-amz-server-side-encryption":</text>
+                  <text x="85" y="112" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#047857">"AES-256"</text>
 
-                {/* Step 2: S3 Endpoint */}
-                <rect x="150" y="45" width="140" height="90" rx="6" fill="var(--color-background-primary)" stroke="#10b981" strokeWidth="1.5" />
-                <text x="220" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#10b981">Step 2: S3 Service</text>
-                <text x="220" y="85" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Requests Data Key</text>
-                <text x="220" y="98" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">from KMS</text>
+                  {/* Flow Arrow */}
+                  <path d="M145,90 L210,90" stroke="#047857" strokeWidth="1.5" markerEnd="url(#arr-green)" />
+                  <text x="177" y="82" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Upload ➔</text>
 
-                {/* KMS Step */}
-                <path d="M220,45 L220,15 M220,15 L430,15 L430,45" fill="none" stroke="#eab308" strokeWidth="1.5" strokeDasharray="3,2" />
+                  {/* S3 Service Node */}
+                  <rect x="220" y="45" width="160" height="90" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="300" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#065f46">🪣 S3 Service Engine</text>
+                  <text x="300" y="80" textAnchor="middle" fontSize="7.5" fill="#047857">Header Match: AES-256</text>
+                  <rect x="235" y="92" width="130" height="30" rx="3" fill="#ecfdf5" stroke="#a7f3d0" />
+                  <text x="300" y="102" textAnchor="middle" fontSize="7" fill="#065f46" fontWeight="bold">S3 Key (Owned by AWS)</text>
+                  <text x="300" y="112" textAnchor="middle" fontSize="6.5" fill="#047857">AES-256 Symmetric Cipher</text>
 
-                <rect x="380" y="45" width="100" height="90" rx="6" fill="#eff6ff" stroke="#1d4ed8" strokeWidth="1" />
-                <text x="430" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e40af">Step 3: AWS KMS</text>
-                <text x="430" y="90" textAnchor="middle" fontSize="8.5" fill="#1e40af" fontWeight="bold">🔑 Master CMK</text>
-                <text x="430" y="105" textAnchor="middle" fontSize="7.5" fill="#1e40af">Generates Data Keys</text>
+                  {/* Flow Arrow */}
+                  <path d="M380,90 L445,90" stroke="#047857" strokeWidth="1.5" markerEnd="url(#arr-green)" />
+                  <text x="412" y="82" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Encrypt ➔</text>
 
-                <path d="M480,90 L525,90" stroke="#94a3b8" strokeWidth="1.5" />
+                  {/* S3 Storage Target */}
+                  <rect x="455" y="45" width="220" height="90" rx="6" fill="#ffffff" stroke="#047857" strokeWidth="1.5" />
+                  <text x="565" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#065f46">🗄️ Physical SSD Disk Sectors</text>
+                  <rect x="470" y="80" width="190" height="42" rx="4" fill="#f0fdf4" stroke="#86efac" />
+                  <text x="565" y="93" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#166534">🔒 Ciphertext Object Payload</text>
+                  <text x="565" y="105" textAnchor="middle" fontSize="7" fill="#15803d">Stored securely in target prefix</text>
+                  <text x="565" y="115" textAnchor="middle" fontSize="6.5" fill="#065f46" fontStyle="italic">Decryption requires matching IAM GET permission</text>
+                </svg>
+              )}
 
-                {/* Step 4: Storage cipher */}
-                <rect x="525" y="45" width="160" height="90" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1.5" />
-                <text x="605" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#166534">Step 4: SAN Disks</text>
-                <text x="605" y="85" textAnchor="middle" fontSize="8.5" fill="#166534" fontWeight="bold">🔒 Ciphertext Payload</text>
-                <text x="605" y="100" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">+ Encrypted Data Key</text>
-                <text x="605" y="112" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold">(Plaintext Key Erased!)</text>
-              </svg>
+              {encryptionType === 'sse-kms' && (
+                <svg viewBox="0 0 700 190" width="100%" style={{ background: '#f0f9ff', borderRadius: '6px', border: '0.5px solid #bae6fd' }}>
+                  <defs>
+                    <marker id="arr-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
+                    <marker id="arr-gold" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#d97706" /></marker>
+                  </defs>
+
+                  {/* User Client */}
+                  <rect x="15" y="55" width="115" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="72" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#334155">💻 Client (User)</text>
+                  <rect x="25" y="90" width="95" height="40" rx="4" fill="#f8fafc" stroke="#e2e8f0" />
+                  <text x="72" y="103" textAnchor="middle" fontSize="6" fill="#475569">HTTPS upload request</text>
+                  <text x="72" y="113" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#0284c7">"x-amz-server-side-encryption":</text>
+                  <text x="72" y="122" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#0284c7">"aws:kms"</text>
+
+                  {/* Flow Arrow */}
+                  <path d="M130,100 L185,100" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#arr-blue)" />
+                  <text x="157" y="92" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Upload ➔</text>
+
+                  {/* S3 Service Engine */}
+                  <rect x="185" y="55" width="145" height="90" rx="6" fill="#ffffff" stroke="#0ea5e9" strokeWidth="1.5" />
+                  <text x="257" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#0369a1">🪣 S3 Service Engine</text>
+                  <text x="257" y="90" textAnchor="middle" fontSize="7" fill="#0284c7">Requests Data Key</text>
+                  <rect x="195" y="105" width="125" height="25" rx="3" fill="#f0f9ff" stroke="#bae6fd" />
+                  <text x="257" y="115" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="bold">GenerateDataKey Request</text>
+
+                  {/* S3 to KMS loop */}
+                  <path d="M257,55 L257,25 L405,25 L405,55" fill="none" stroke="#d97706" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-gold)" />
+                  <text x="331" y="18" textAnchor="middle" fontSize="6.5" fill="#b45309" fontWeight="bold">KMS API Call 🔄 (CloudTrail Audited)</text>
+
+                  {/* AWS KMS Block */}
+                  <rect x="350" y="55" width="110" height="90" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                  <text x="405" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#b45309">🔑 AWS KMS</text>
+                  <text x="405" y="90" textAnchor="middle" fontSize="7.5" fill="#b45309"><b>CMK Master Key</b></text>
+                  <rect x="360" y="105" width="90" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
+                  <text x="405" y="115" textAnchor="middle" fontSize="6.5" fill="#78350f">Returns Plain+Cipher Key</text>
+
+                  {/* Flow Arrow */}
+                  <path d="M460,100 L515,100" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#arr-blue)" />
+                  <text x="487" y="92" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Encrypt ➔</text>
+
+                  {/* Physical disks storage */}
+                  <rect x="515" y="55" width="170" height="90" rx="6" fill="#ffffff" stroke="#166534" strokeWidth="1.5" />
+                  <text x="600" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#15803d">🗄️ SSD Disk storage</text>
+                  <rect x="525" y="90" width="150" height="42" rx="4" fill="#f0fdf4" stroke="#bbf7d0" />
+                  <text x="600" y="103" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#166534">🔒 Ciphertext + Cipher Key</text>
+                  <text x="600" y="113" textAnchor="middle" fontSize="6.5" fill="#14532d">Plaintext Data Key is Erased 🚫</text>
+                  <text x="600" y="123" textAnchor="middle" fontSize="5.5" fill="#047857" fontStyle="italic">(RAM register completely scrubbed)</text>
+                </svg>
+              )}
+
+              {encryptionType === 'sse-c' && (
+                <svg viewBox="0 0 700 180" width="100%" style={{ background: '#faf5ff', borderRadius: '6px', border: '0.5px solid #d8b4fe' }}>
+                  <defs>
+                    <marker id="arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#6d28d9" /></marker>
+                  </defs>
+
+                  {/* User Client */}
+                  <rect x="25" y="45" width="125" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="87" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#334155">💻 Client (User)</text>
+                  <rect x="35" y="80" width="105" height="40" rx="4" fill="#faf5ff" stroke="#e9d5ff" />
+                  <text x="87" y="93" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">HTTPS Only (SSL/TLS)</text>
+                  <text x="87" y="103" textAnchor="middle" fontSize="6" fill="#7c3aed">Header: base64 Customer Key</text>
+                  <text x="87" y="112" textAnchor="middle" fontSize="6" fill="#7c3aed" fontStyle="italic">(Only configured via CLI/API)</text>
+
+                  {/* Flow Arrow */}
+                  <path d="M150,90 L215,90" stroke="#6d28d9" strokeWidth="1.5" markerEnd="url(#arr-purple)" />
+                  <text x="182" y="82" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Key Header ➔</text>
+
+                  {/* S3 Service Engine */}
+                  <rect x="220" y="45" width="165" height="90" rx="6" fill="#ffffff" stroke="#a855f7" strokeWidth="1.5" />
+                  <text x="302" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6b21a8">🪣 S3 Service Engine</text>
+                  <text x="302" y="80" textAnchor="middle" fontSize="7.5" fill="#7c3aed">RAM Symmetric Encryption</text>
+                  <rect x="230" y="92" width="145" height="30" rx="3" fill="#faf5ff" stroke="#ddd6fe" />
+                  <text x="302" y="102" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">🔑 Custom Key Used in RAM</text>
+                  <text x="302" y="112" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="bold">Scrubbed immediately on write! ❌</text>
+
+                  {/* Flow Arrow */}
+                  <path d="M385,90 L450,90" stroke="#6d28d9" strokeWidth="1.5" markerEnd="url(#arr-purple)" />
+                  <text x="417" y="82" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Encrypt ➔</text>
+
+                  {/* S3 Storage Disk */}
+                  <rect x="460" y="45" width="215" height="90" rx="6" fill="#ffffff" stroke="#6d28d9" strokeWidth="1.5" />
+                  <text x="567" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#581c87">🗄️ SSD Disk storage</text>
+                  <rect x="475" y="80" width="185" height="42" rx="4" fill="#faf5ff" stroke="#e9d5ff" />
+                  <text x="567" y="93" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#6d28d9">🔒 Ciphertext Payload ONLY</text>
+                  <text x="567" y="105" textAnchor="middle" fontSize="7" fill="#7c3aed">S3 does NOT store your key!</text>
+                  <text x="567" y="115" textAnchor="middle" fontSize="6.5" fill="#581c87" fontStyle="italic">(Loss of key means data is lost forever)</text>
+                </svg>
+              )}
+
+              {encryptionType === 'dsse-kms' && (
+                <svg viewBox="0 0 700 190" width="100%" style={{ background: '#fffbeb', borderRadius: '6px', border: '0.5px solid #fed7aa' }}>
+                  <defs>
+                    <marker id="arr-orange-dsse" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
+                    <marker id="arr-gold-dsse" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#d97706" /></marker>
+                  </defs>
+
+                  {/* User Client */}
+                  <rect x="15" y="55" width="115" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="72" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#334155">💻 Client (User)</text>
+                  <rect x="25" y="90" width="95" height="40" rx="4" fill="#fffbeb" stroke="#ffedd5" />
+                  <text x="72" y="103" textAnchor="middle" fontSize="6" fill="#475569">HTTPS upload request</text>
+                  <text x="72" y="113" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#ea580c">"x-amz-server-side-encryption":</text>
+                  <text x="72" y="122" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#ea580c">"aws:kms:dsse"</text>
+
+                  {/* Flow Arrow */}
+                  <path d="M130,100 L185,100" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#arr-orange-dsse)" />
+                  <text x="157" y="92" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold">Upload ➔</text>
+
+                  {/* S3 Service Engine */}
+                  <rect x="185" y="55" width="145" height="90" rx="6" fill="#ffffff" stroke="#ea580c" strokeWidth="1.5" />
+                  <text x="257" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#c2410c">🪣 S3 Service Engine</text>
+                  <text x="257" y="90" textAnchor="middle" fontSize="7" fill="#ea580c">Requests 2 Master Keys</text>
+                  <rect x="195" y="105" width="125" height="25" rx="3" fill="#fffbeb" stroke="#fed7aa" />
+                  <text x="257" y="115" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">2x GenerateDataKey calls</text>
+
+                  {/* S3 to KMS loop */}
+                  <path d="M257,55 L257,25 L405,25 L405,55" fill="none" stroke="#d97706" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-gold-dsse)" />
+                  <text x="331" y="18" textAnchor="middle" fontSize="6.5" fill="#b45309" fontWeight="bold">Twin KMS Calls 🔄 (2x CMK Audited)</text>
+
+                  {/* AWS KMS Block */}
+                  <rect x="350" y="55" width="110" height="90" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                  <text x="405" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#b45309">🔑 AWS KMS CMKs</text>
+                  <text x="405" y="92" textAnchor="middle" fontSize="7" fill="#b45309">Key A + Key B</text>
+                  <rect x="360" y="105" width="90" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
+                  <text x="405" y="115" textAnchor="middle" fontSize="6" fill="#78350f">Returns 2x Plain+Cipher</text>
+
+                  {/* Flow Arrow */}
+                  <path d="M460,100 L515,100" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#arr-orange-dsse)" />
+                  <text x="487" y="92" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold">Double Enc ➔</text>
+
+                  {/* Physical disks storage */}
+                  <rect x="515" y="55" width="170" height="90" rx="6" fill="#ffffff" stroke="#ea580c" strokeWidth="1.5" />
+                  <text x="600" y="72" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#ea580c">🗄️ SSD Dual-Cipher Disk</text>
+                  <rect x="522" y="86" width="156" height="48" rx="4" fill="#fffbeb" stroke="#fed7aa" />
+                  <text x="600" y="98" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#b45309">🔒 Layer 1 AES + Layer 2 AES</text>
+                  <text x="600" y="108" textAnchor="middle" fontSize="6.5" fill="#7c2d12">Plaintext Keys A &amp; B Wiped 🚫</text>
+                  <text x="600" y="118" textAnchor="middle" fontSize="5.5" fill="#b45309" fontStyle="italic">(Scrubbed transient hypervisor RAM)</text>
+                </svg>
+              )}
             </div>
 
             {/* 🎮 Interactive Playground */}
@@ -1386,6 +1856,22 @@ export default function S3Visualizer() {
                           value={customSsecKey}
                           onChange={e => setCustomSsecKey(e.target.value)}
                           style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px' }}
+                        />
+                      </div>
+                    )}
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
+                      <input type="radio" name="enc" checked={encryptionType === 'dsse-kms'} onChange={() => setEncryptionType('dsse-kms')} />
+                      <div><b>DSSE-KMS:</b> Dual-Layer AWS KMS Key (Double ciphers, FIPS 140-3 WORM)</div>
+                    </label>
+                    {encryptionType === 'dsse-kms' && (
+                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
+                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>KMS CMK A &amp; B ARNs (Dual-Keys):</label>
+                        <input
+                          type="text"
+                          value={customKmsArn + ', ' + customKmsArn.replace('key/', 'key/9b8a')}
+                          disabled
+                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', opacity: 0.8 }}
                         />
                       </div>
                     )}
@@ -1533,14 +2019,14 @@ export default function S3Visualizer() {
                   S3 Object Lock (WORM Compliancy)
                 </div>
                 <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> <span className="s3-desc-mute">(a WORM regulatory lock system guaranteeing file immutability by blocking deletes and edits for the duration of a defined compliance or legal timeline)</span> is a WORM (Write Once Read Many) mechanism enforcing immutability. It includes <span className="s3-hl-indigo">Compliance Mode</span> <span className="s3-desc-mute">(strict lock preventing anyone, root user included, from deleting or modifying files)</span>, <span className="s3-hl-indigo">Governance Mode</span> <span className="s3-desc-mute">(flexible lock bypassable by specifically privileged admin users)</span>, and <span className="s3-hl-indigo">Legal Holds</span> <span className="s3-desc-mute">(custom manual infinite-duration locks with no expiration dates)</span>.
+                  <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> <span className="s3-desc-mute">(a WORM regulatory lock system guaranteeing file immutability by blocking deletes and edits)</span> is a WORM (Write Once Read Many) mechanism. It includes <strong><span className="s3-hl-indigo">Retention Periods</span></strong> <span className="s3-desc-mute">(which protect objects for a fixed period and can be extended)</span> and <strong><span className="s3-hl-indigo">Legal Holds</span></strong> <span className="s3-desc-mute">(which protect objects indefinitely and require the s3:PutObjectLegalHold IAM permission)</span>.
                 </div>
                 <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
                   <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> in <strong><span className="s3-hl-indigo">Compliance Mode</span></strong> <span className="s3-desc-mute">(absolute block for root user included)</span>, <strong><span className="s3-hl-indigo">Governance Mode</span></strong> <span className="s3-desc-mute">(custom administrative bypass options)</span>, and <strong><span className="s3-hl-indigo">Legal Holds</span></strong> <span className="s3-desc-mute">(manual infinite-duration compliance locks)</span>. Which means you can enforce Write-Once-Read-Many (WORM) configurations, legally guaranteeing that compliance audit logs and historical ledger records can neither be edited nor deleted for a designated retention period.
+                    AWS offers <strong><span className="s3-hl-indigo">Retention Periods</span></strong> <span className="s3-desc-mute">(fixed WORM duration blocks)</span> to protect objects for a set duration, which can be extended. It also offers <strong><span className="s3-hl-indigo">Legal Holds</span></strong> <span className="s3-desc-mute">(indefinite compliance blocks)</span> which protect objects infinitely and independently from any retention period. Which means you can ensure total, tamper-proof file immutability, with legal holds overriding all deletion calls until explicitly removed by authorized admins carrying the <code>s3:PutObjectLegalHold</code> IAM permission.
                   </div>
                 </div>
               </div>
@@ -2153,6 +2639,95 @@ export default function S3Visualizer() {
                 <text x="435" y="132" fontSize="8" fill="#047857" fontWeight="bold">✔ SECURE INTERNAL NETWORK LINK (No Public IPs)</text>
               </svg>
             </div>
+
+            {/* 🎨 S3 Access Points Multi-Tenant Access Control SVG Diagram */}
+            <div className="s3-sec">S3 Access Points — Dedicated Subpath Gateways &amp; Partitioned Bucket Security</div>
+            <div className="s3-card" style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+                Access Points act as unique entry gates with their own scoped IAM resource policies. They eliminate complex monolithic bucket policies by isolating users to their respective subfolders.
+              </div>
+              <svg viewBox="0 0 740 310" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                <defs>
+                  <marker id="ap-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                  <marker id="ap-arr-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0d9488" /></marker>
+                  <marker id="ap-arr-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
+                  <marker id="ap-arr-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
+                </defs>
+
+                {/* Left Column: Department Users */}
+                {/* Finance User */}
+                <rect x="15" y="25" width="110" height="65" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" />
+                <text x="70" y="45" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Finance Dept</text>
+                <text x="70" y="60" textAnchor="middle" fontSize="8" fill="#8b5cf6" fontWeight="bold">👤 Finance User</text>
+                <path d="M125,57 L175,57" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
+
+                {/* Sales User */}
+                <rect x="15" y="115" width="110" height="65" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" />
+                <text x="70" y="135" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Sales Dept</text>
+                <text x="70" y="150" textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">👤 Sales User</text>
+                <path d="M125,147 L175,147" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
+
+                {/* Analytics Platform */}
+                <rect x="15" y="205" width="110" height="65" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" />
+                <text x="70" y="225" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Analytics Sys</text>
+                <text x="70" y="240" textAnchor="middle" fontSize="8" fill="#ea580c" fontWeight="bold">🤖 Analytics App</text>
+                <path d="M125,237 L175,237" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
+
+                {/* Middle Column: Scoped Access Points + Policies */}
+                {/* Finance Access Point */}
+                <rect x="175" y="20" width="165" height="75" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1.5" />
+                <text x="257" y="36" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#6d28d9">🔑 Finance Access Point</text>
+                <text x="187" y="52" fontSize="7.5" fill="#7c3aed" fontWeight="bold">✔ Scoped: /finance/* prefix</text>
+                <text x="187" y="65" fontSize="7" fill="var(--color-text-secondary)">Policy: Grant R/W to Finance</text>
+                <rect x="315" y="70" width="16" height="12" rx="2" fill="#8b5cf6" />
+                <text x="323" y="79" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">✔</text>
+                <path d="M340,57 L440,57 L440,90 L480,90" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
+
+                {/* Sales Access Point */}
+                <rect x="175" y="110" width="165" height="75" rx="6" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" />
+                <text x="257" y="126" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#0f766e">🔑 Sales Access Point</text>
+                <text x="187" y="142" fontSize="7.5" fill="#0f766e" fontWeight="bold">✔ Scoped: /sales/* prefix</text>
+                <text x="187" y="155" fontSize="7" fill="var(--color-text-secondary)">Policy: Grant R/W to Sales</text>
+                <rect x="315" y="160" width="16" height="12" rx="2" fill="#0d9488" />
+                <text x="323" y="169" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">✔</text>
+                <path d="M340,147 L480,147" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
+
+                {/* Analytics Access Point */}
+                <rect x="175" y="200" width="165" height="75" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
+                <text x="257" y="216" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#c2410c">🔑 Analytics Access Point</text>
+                <text x="187" y="232" fontSize="7.5" fill="#c2410c" fontWeight="bold">✔ Scoped: Entire Bucket</text>
+                <text x="187" y="245" fontSize="7" fill="var(--color-text-secondary)">Policy: Grant Read to all prefixes</text>
+                <rect x="315" y="250" width="16" height="12" rx="2" fill="#ea580c" />
+                <text x="323" y="259" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">✔</text>
+                <path d="M340,237 L440,237 L440,205 L480,205" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
+
+                {/* Right Column: Shared S3 Bucket */}
+                <rect x="480" y="20" width="245" height="255" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                <text x="602" y="38" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1e40af">🪣 Shared S3 Bucket</text>
+
+                {/* Red Monolithic Policy warning */}
+                <rect x="620" y="48" width="95" height="35" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                <text x="667" y="60" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#991b1b">Bucket Policy</text>
+                <text x="667" y="72" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">❌ Simplified!</text>
+
+                {/* Folders (Subpaths) */}
+                {/* /finance */}
+                <rect x="495" y="90" width="215" height="60" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1.5" />
+                <text x="505" y="106" fontSize="9.5" fontWeight="bold" fill="#6b21a8">📂 /finance/ subpath</text>
+                <text x="505" y="122" fontSize="7.5" fill="var(--color-text-secondary)">Holds cost reports, ledgers &amp; invoices</text>
+                <text x="505" y="136" fontSize="7.5" fill="#6b21a8" fontWeight="bold">Authorized for: Finance User &amp; Analytics</text>
+
+                {/* /sales */}
+                <rect x="495" y="170" width="215" height="60" rx="4" fill="#ffffff" stroke="#2dd4bf" strokeWidth="1.5" />
+                <text x="505" y="186" fontSize="9.5" fontWeight="bold" fill="#0f766e">📂 /sales/ subpath</text>
+                <text x="505" y="202" fontSize="7.5" fill="var(--color-text-secondary)">Holds customer contracts &amp; pipelines</text>
+                <text x="505" y="216" fontSize="7.5" fill="#0f766e" fontWeight="bold">Authorized for: Sales User &amp; Analytics</text>
+
+                {/* Divider Line */}
+                <line x1="480" y1="245" x2="725" y2="245" stroke="#bfdbfe" strokeWidth="1" />
+                <text x="602" y="260" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#2563eb">✔ Access Management: Simplify security management for S3 Buckets</text>
+              </svg>
+            </div>
           </div>
         )}
 
@@ -2221,41 +2796,182 @@ export default function S3Visualizer() {
 
             {/* 🎨 Transfer Acceleration SVG Diagram */}
             <div className="s3-sec">Standard Routing vs. S3 Transfer Acceleration Route Map</div>
-            <div className="s3-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                Note how Transfer Acceleration redirects packets onto AWS's private high-speed global fiber lines at the closest Edge Location.
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, marginBottom: '8px' }}>⚡ Trans-Pacific Speed Simulator</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+                    Trigger a live trans-pacific network routing trace from the **USA terminal** to the **Australia ap-southeast-2 bucket** to compare latency and packet delivery channels.
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Configure Ingestion Route Channel:</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button className={`s3-btn ${transferRouteMode === 'standard' ? 's3-on' : ''}`} style={{ flex: 1, fontWeight: 'bold' }} onClick={() => { setTransferRouteMode('standard'); setTransferStep(0); setTransferLogs([]); }}>⚠️ Public Route</button>
+                      <button className={`s3-btn ${transferRouteMode === 'accelerated' ? 's3-on' : ''}`} style={{ flex: 1, fontWeight: 'bold' }} onClick={() => { setTransferRouteMode('accelerated'); setTransferStep(0); setTransferLogs([]); }}>⚡ Accelerated Route</button>
+                    </div>
+                  </div>
+
+                  <button onClick={startTransferSimulation} disabled={transferIsRunning} className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', marginBottom: '12px' }}>
+                    {transferIsRunning ? '⚡ Packet in Transit...' : '🚀 Dispatch Test Payload Upload'}
+                  </button>
+
+                  {/* Performance Indicators Grid */}
+                  <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
+                    <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>Est. Latency</div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: transferRouteMode === 'accelerated' ? '#10b981' : '#ef4444', fontFamily: 'monospace' }}>
+                        {transferRouteMode === 'accelerated' ? '190 ms' : '820 ms'}
+                      </div>
+                      <div style={{ fontSize: '8px', color: 'var(--color-text-secondary)' }}>Trans-Pacific Avg</div>
+                    </div>
+
+                    <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>Throughput</div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: transferRouteMode === 'accelerated' ? '#10b981' : '#ef4444', fontFamily: 'monospace' }}>
+                        {transferRouteMode === 'accelerated' ? '631 MB/s' : '146 MB/s'}
+                      </div>
+                      <div style={{ fontSize: '8px', color: 'var(--color-text-secondary)' }}>326% Speedup Factor!</div>
+                    </div>
+                  </div>
+
+                  {/* Terminal log panel */}
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Network route tracer logs:</div>
+                    <div ref={transferTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
+                      {transferLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting upload simulation dispatch...</div>
+                      ) : (
+                        transferLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚡') ? '#10b981' : '#38bdf8',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* SVG Route Visualization with animated packet */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  {transferRouteMode === 'standard' ? (
+                    <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: '#fef2f2', borderRadius: '6px', border: '0.5px solid #fecaca' }}>
+                      <defs>
+                        <marker id="arr-accel-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                      </defs>
+
+                      {/* Nodes */}
+                      {/* USA Terminal */}
+                      <rect x="15" y="25" width="90" height="50" rx="4" fill="var(--color-background-primary)" stroke="#fca5a5" strokeWidth="1" />
+                      <text x="60" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">💻 Client (USA)</text>
+                      <text x="60" y="54" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">Standard GET/PUT</text>
+
+                      {/* ISP hop */}
+                      <circle cx="60" cy="125" r="16" fill="#fff" stroke="#ef4444" strokeWidth="1" />
+                      <text x="60" y="128" textAnchor="middle" fontSize="7.5" fill="#b91c1c" fontWeight="bold">Local ISP</text>
+
+                      {/* BGP 1 hop */}
+                      <circle cx="160" cy="90" r="16" fill="#fff" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,1" />
+                      <text x="160" y="93" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">AS-Peer A</text>
+
+                      {/* BGP 2 hop */}
+                      <circle cx="160" cy="170" r="16" fill="#fff" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,1" />
+                      <text x="160" y="173" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">AS-Peer B</text>
+
+                      {/* Sydney S3 Bucket */}
+                      <rect x="235" y="120" width="100" height="70" rx="4" fill="var(--color-background-primary)" stroke="#ef4444" strokeWidth="1.5" />
+                      <text x="285" y="140" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">🪣 Target S3</text>
+                      <text x="285" y="155" textAnchor="middle" fontSize="8" fill="#c53030" fontWeight="bold">🇦🇺 Australia</text>
+                      <text x="285" y="168" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">Standard Route</text>
+
+                      {/* Paths */}
+                      <path d="M60,75 L60,109" fill="none" stroke="#fca5a5" strokeWidth="1" markerEnd="url(#arr-accel-red)" />
+                      <path d="M76,120 L144,95" fill="none" stroke="#fca5a5" strokeWidth="1" markerEnd="url(#arr-accel-red)" />
+                      <path d="M160,106 L160,154" fill="none" stroke="#fca5a5" strokeWidth="1" markerEnd="url(#arr-accel-red)" />
+                      <path d="M176,170 L235,155" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
+
+                      <text x="175" y="225" textAnchor="middle" fontSize="8" fill="#b91c1c" fontWeight="bold">🐌 Multi-Hop Congested Public WWW (~820ms)</text>
+
+                      {/* Glowing animated data packet */}
+                      {transferIsRunning && (
+                        <circle cx={
+                          transferStep === 1 ? 60 :
+                          transferStep === 2 ? 60 :
+                          transferStep === 3 ? 160 :
+                          285
+                        } cy={
+                          transferStep === 1 ? 50 :
+                          transferStep === 2 ? 125 :
+                          transferStep === 3 ? 170 :
+                          155
+                        } r="6" fill="#ef4444" className="s3-g-circle">
+                          <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
+                        </circle>
+                      )}
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: '#ecfdf5', borderRadius: '6px', border: '0.5px solid #a7f3d0' }}>
+                      <defs>
+                        <marker id="arr-accel-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                      </defs>
+
+                      {/* Nodes */}
+                      {/* USA Terminal */}
+                      <rect x="15" y="25" width="90" height="50" rx="4" fill="var(--color-background-primary)" stroke="#86efac" strokeWidth="1" />
+                      <text x="60" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">💻 Client (USA)</text>
+                      <text x="60" y="54" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold">Accelerated Host</text>
+
+                      {/* USA POP Ingestion */}
+                      <rect x="15" y="115" width="100" height="42" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
+                      <text x="65" y="130" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#065f46">USA POP Edge</text>
+                      <text x="65" y="142" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">CloudFront Node</text>
+
+                      {/* Sydney S3 Bucket */}
+                      <rect x="235" y="120" width="100" height="70" rx="4" fill="var(--color-background-primary)" stroke="#166534" strokeWidth="1.5" />
+                      <text x="285" y="140" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">🪣 Target S3</text>
+                      <text x="285" y="155" textAnchor="middle" fontSize="8" fill="#166534" fontWeight="bold">🇦🇺 Australia</text>
+                      <text x="285" y="168" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">ap-southeast-2</text>
+
+                      {/* Paths */}
+                      <path d="M60,75 L60,115" fill="none" stroke="#10b981" strokeWidth="2" markerEnd="url(#arr-accel-green)" />
+                      <path d="M115,136 L235,136" fill="none" stroke="#10b981" strokeWidth="2.5" markerEnd="url(#arr-accel-green)" />
+
+                      <text x="175" y="120" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">⚡ Undersea Dark Fiber</text>
+                      <text x="175" y="225" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="bold">⚡ Dedicated AWS Backbone Transit (~190ms)</text>
+
+                      {/* Glowing animated data packet */}
+                      {transferIsRunning && (
+                        <circle cx={
+                          transferStep === 1 ? 60 :
+                          transferStep === 2 ? 60 :
+                          transferStep === 3 ? 175 :
+                          285
+                        } cy={
+                          transferStep === 1 ? 50 :
+                          transferStep === 2 ? 136 :
+                          transferStep === 3 ? 136 :
+                          155
+                        } r="6" fill="#10b981" className="s3-g-circle">
+                          <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
+                        </circle>
+                      )}
+                    </svg>
+                  )}
+                </div>
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Tokyo Upload Terminal */}
-                <rect x="20" y="45" width="110" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="75" y="70" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Client in Tokyo</text>
-                <text x="75" y="85" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Uploading file.mp4</text>
-                <rect x="35" y="98" width="80" height="20" rx="3" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.8" />
-                <text x="75" y="111" textAnchor="middle" fontSize="8" fill="#1e40af" fontWeight="bold">💻 Tokyo Terminal</text>
 
-                {/* Route A: Public congested internet */}
-                <path d="M130,70 L280,30 L450,30 L550,45" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" />
-                <text x="310" y="24" fontSize="7.5" fill="#ef4444" fontWeight="bold">Congested Public Web: Tokyo ➔ Virginia (14+ slow network hops)</text>
-
-                {/* Route B: S3 Transfer Acceleration */}
-                <path d="M130,110 L220,110" fill="none" stroke="#10b981" strokeWidth="2.5" />
-                <text x="175" y="102" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Fast Edge Hop</text>
-
-                {/* Tokyo CloudFront Edge Location */}
-                <rect x="220" y="85" width="120" height="50" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                <text x="280" y="102" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065f46">Tokyo Edge Location</text>
-                <text x="280" y="115" textAnchor="middle" fontSize="7.5" fill="#047857">(S3 Acceleration Host)</text>
-
-                {/* Secure AWS Backbone */}
-                <path d="M340,110 L550,110" fill="none" stroke="#10b981" strokeWidth="2.5" />
-                <text x="445" y="123" textAnchor="middle" fontSize="7.5" fill="#065f46" fontWeight="bold">⚡ AWS Private Fiber Backbone Transit (Ultra-Fast)</text>
-
-                {/* S3 US-East-1 Bucket */}
-                <rect x="550" y="45" width="130" height="90" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1.5" />
-                <text x="615" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#166534">Target S3 Bucket</text>
-                <text x="615" y="85" textAnchor="middle" fontSize="8.5" fill="#166534" fontWeight="bold">🇺🇸 Virginia Region</text>
-                <text x="615" y="100" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">us-east-1 partition</text>
-              </svg>
+              {/* Inbound acceleration note points from notes */}
+              <div style={{ marginTop: '12px', background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-around', fontSize: '11px', flexWrap: 'wrap', gap: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                <div>🚀 <b>Mainly from Outside:</b> Best for external clients uploading into remote regional buckets.</div>
+                <div>📦 <b>Multipart Upload Compatible:</b> Accelerates segmented large block transfers concurrently.</div>
+                <div>🐘 <b>Helpful for Big Data:</b> Optimizes heavy data ingestion pipelines across geographical boundaries.</div>
+                <div>🔒 <b>AWS Private Backbone:</b> Uses dedicated high-speed fiber channels for guaranteed secure packets delivery.</div>
+              </div>
             </div>
 
             {/* 🎨 CRR/SRR Replication SVG Diagram */}
@@ -2389,95 +3105,361 @@ export default function S3Visualizer() {
                     💡 AWS Offers &amp; What It Means
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-pink">S3 Storage Lens</span></strong> <span className="s3-desc-mute">(organization-wide daily metadata scans and recommendation dashboard)</span> as an organization-wide storage monitoring and optimization service. Which means you get centralized, multi-account dashboards that scan metadata globally, automatically identifying security vulnerabilities (like unencrypted buckets) and outlining actionable cost-saving opportunities (like orphaned delete markers).
+                    AWS offers <strong><span className="s3-hl-pink">S3 Storage Lens Analytics</span></strong> <span className="s3-desc-mute">(centralized metadata scanning dashboard)</span> to view setups. Which means you can audit organization-wide object counts, identify inactive prefixes, detect public buckets, and view recommendations in a single visual interface to optimize costs.
                   </div>
                 </div>
               </div>
-
             </div>
 
-            {/* 🎨 Architectural SVG */}
-            <div className="s3-sec">Decoupled Serverless S3 Event Notification Pipeline</div>
-            <div className="s3-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                How S3 directly triggers serverless compute actions when new files are written, bypassing active poll scripts.
+            {/* 🎨 Decoupled S3 Event Notification Pipeline SVG */}
+            <div className="s3-sec">Decoupled Serverless S3 Event Notification Pipeline (Direct vs. EventBridge)</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>📡 Event Notification Trigger Simulator</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+                    Configure target routing criteria, trigger a simulated `PutObject` write, and trace the serverless event payload routing behavior in real-time.
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '11px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Event Notification Channel:</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button className={`s3-btn ${eventRoutingMode === 'direct' ? 's3-on' : ''}`} style={{ flex: 1, fontSize: '10.5px' }} onClick={() => { setEventRoutingMode('direct'); setEventStep(0); setEventLogs([]); }}>📥 Direct S3 Targets</button>
+                      <button className={`s3-btn ${eventRoutingMode === 'eventbridge' ? 's3-on' : ''}`} style={{ flex: 1, fontSize: '10.5px' }} onClick={() => { setEventRoutingMode('eventbridge'); setEventStep(0); setEventLogs([]); }}>⚙️ EventBridge Router</button>
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '10px' }}>
+                    <div className="s3-g2" style={{ gap: '8px', marginBottom: '8px' }}>
+                      <div>
+                        <label style={{ fontSize: '10.5px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Simulated Object Key:</label>
+                        <select value={simulatedObjectKey} onChange={e => { setSimulatedObjectKey(e.target.value); setEventStep(0); setEventLogs([]); }} style={{ width: '100%', padding: '4px 6px', fontSize: '11px' }}>
+                          <option value="uploads/avatar.png">uploads/avatar.png (Matched)</option>
+                          <option value="uploads/financials.pdf">uploads/financials.pdf (Matched)</option>
+                          <option value="corporate/system.log">corporate/system.log (Fails Prefix)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '10.5px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Object Size: <b>{simulatedObjectSize} MB</b></label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="20"
+                          step="0.5"
+                          value={simulatedObjectSize}
+                          onChange={e => { setSimulatedObjectSize(parseFloat(e.target.value)); setEventStep(0); setEventLogs([]); }}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <button onClick={startEventSimulation} disabled={eventIsRunning} className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', marginBottom: '12px' }}>
+                    {eventIsRunning ? '⚡ Distributing event payload...' : '📡 Trigger Simulated Write (s3:PutObject)'}
+                  </button>
+
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Serverless routing execution logs:</div>
+                    <div ref={eventTerminalRef} className="s3-terminal" style={{ height: '100px' }}>
+                      {eventLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting simulated write trigger...</div>
+                      ) : (
+                        eventLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚙️') ? '#a855f7' : '#38bdf8',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  {eventRoutingMode === 'direct' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <svg viewBox="0 0 350 170" width="100%" height="170" style={{ background: '#fffbeb', borderRadius: '6px', border: '0.5px solid #fde68a' }}>
+                        <defs>
+                          <marker id="arr-notify-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b45309" /></marker>
+                        </defs>
+
+                        {/* S3 Bucket */}
+                        <rect x="15" y="55" width="90" height="60" rx="4" fill="#f0fdf4" stroke="#166534" strokeWidth="1" />
+                        <text x="60" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#166534">🪣 Source S3</text>
+                        <text x="60" y="90" textAnchor="middle" fontSize="7.5" fill="#15803d">my-premium-bucket</text>
+                        <rect x="23" y="98" width="74" height="12" rx="2" fill="#e8f5e9" stroke="#81c784" strokeWidth="0.5" />
+                        <text x="60" y="106" textAnchor="middle" fontSize="6.5" fill="#1b5e20" fontWeight="bold">PutObject Event</text>
+
+                        {/* Paths */}
+                        <path d="M105,75 L160,35" fill="none" stroke="#b45309" strokeWidth="1" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M105,85 L160,85" fill="none" stroke="#b45309" strokeWidth="1" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M105,95 L160,135" fill="none" stroke="#b45309" strokeWidth="1" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+
+                        {/* Targets */}
+                        <rect x="170" y="15" width="160" height="30" rx="3" fill="#ffffff" stroke="#f97316" strokeWidth="1" />
+                        <text x="250" y="33" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ea580c">📥 Amazon SNS Topic</text>
+
+                        <rect x="170" y="70" width="160" height="30" rx="3" fill="#ffffff" stroke="#2563eb" strokeWidth="1" />
+                        <text x="250" y="88" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1d4ed8">📥 Amazon SQS Queue</text>
+
+                        <rect x="170" y="125" width="160" height="30" rx="3" fill="#ffffff" stroke="#a855f7" strokeWidth="1" />
+                        <text x="250" y="143" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#7c3aed">📥 AWS Lambda Function</text>
+
+                        {/* Animated Glowing Packet */}
+                        {eventIsRunning && (
+                          <circle cx={
+                            eventStep === 1 ? 60 :
+                            eventStep === 2 ? 100 :
+                            eventStep === 3 ? 160 :
+                            250
+                          } cy={
+                            eventStep === 1 ? 85 :
+                            eventStep === 2 ? 85 :
+                            eventStep === 3 ? 85 :
+                            88
+                          } r="5" fill="#b45309" className="s3-g-circle">
+                            <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                      </svg>
+
+                      {/* Code preview block */}
+                      <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', fontSize: '10.5px' }}>
+                        <div style={{ color: '#94a3b8', fontWeight: 'bold', fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px' }}>📝 Target SQS Access Resource Policy Constraint:</div>
+                        <pre style={{ margin: 0, fontFamily: 'monospace', color: '#38bdf8', whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>
+{`{
+  "Effect": "Allow",
+  "Principal": { "Service": "s3.amazonaws.com" },
+  "Action": "sqs:SendMessage",
+  "Resource": "arn:aws:sqs:us-east-1:123456789012:my-queue",
+  "Condition": {
+    "ArnEquals": { "aws:SourceArn": "arn:aws:s3:::my-premium-bucket" }
+  }
+}`}
+                        </pre>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <svg viewBox="0 0 350 170" width="100%" height="170" style={{ background: '#faf5ff', borderRadius: '6px', border: '0.5px solid #d8b4fe' }}>
+                        <defs>
+                          <marker id="arr-notify-eb" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                        </defs>
+
+                        {/* S3 Bucket */}
+                        <rect x="15" y="55" width="90" height="60" rx="4" fill="#fdf4ff" stroke="#a855f7" strokeWidth="1" />
+                        <text x="60" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#701a75">🪣 Source S3</text>
+                        <text x="60" y="90" textAnchor="middle" fontSize="7.5" fill="#a21caf">EventBridge Natively On</text>
+
+                        {/* Path */}
+                        <path d="M105,85 L155,85" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arr-notify-eb)" />
+
+                        {/* EventBridge Router */}
+                        <rect x="155" y="35" width="80" height="95" rx="4" fill="#ffffff" stroke="#7c3aed" strokeWidth="1.5" />
+                        <text x="195" y="52" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#5b21b6">⚙️ EventBridge</text>
+                        <rect x="162" y="65" width="66" height="52" rx="2" fill="#faf5ff" stroke="#ddd6fe" />
+                        <text x="195" y="76" textAnchor="middle" fontSize="6.5" fill="#6d28d9" fontWeight="bold">JSON Rule Match</text>
+                        <text x="195" y="86" textAnchor="middle" fontSize="5.5" fill="var(--color-text-secondary)">Prefix: uploads/</text>
+                        <text x="195" y="96" textAnchor="middle" fontSize="5.5" fill="var(--color-text-secondary)">Size &gt; 5MB</text>
+                        <text x="195" y="108" textAnchor="middle" fontSize="6" fontWeight="bold" color={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '#10b981' : '#ef4444'}>
+                          {simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '✔ Matched' : '❌ Ignored'}
+                        </text>
+
+                        {/* Target Egress */}
+                        <path d="M235,85 L260,85" stroke="#7c3aed" strokeWidth="1.2" markerEnd="url(#arr-notify-eb)" />
+
+                        {/* 18+ services */}
+                        <rect x="260" y="45" width="80" height="75" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1" />
+                        <text x="300" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e40af">🎯 18+ Target</text>
+                        <text x="300" y="78" textAnchor="middle" fontSize="7" fill="#1e40af">Step Functions</text>
+                        <text x="300" y="90" textAnchor="middle" fontSize="7" fill="#1e40af">Kinesis Streams</text>
+                        <text x="300" y="102" textAnchor="middle" fontSize="7" fill="#1e40af">ECS Clusters</text>
+
+                        {/* Animated Glowing Packet */}
+                        {eventIsRunning && (
+                          <circle cx={
+                            eventStep === 1 ? 60 :
+                            eventStep === 2 ? 130 :
+                            eventStep === 3 ? 195 :
+                            300
+                          } cy={
+                            eventStep === 1 ? 85 :
+                            eventStep === 2 ? 85 :
+                            eventStep === 3 ? 85 :
+                            85
+                          } r="5" fill="#7c3aed" className="s3-g-circle">
+                            <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                      </svg>
+
+                      {/* Code preview block */}
+                      <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', fontSize: '10.5px' }}>
+                        <div style={{ color: '#94a3b8', fontWeight: 'bold', fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px' }}>📝 Advanced EventBridge Filter Pattern JSON Rule:</div>
+                        <pre style={{ margin: 0, fontFamily: 'monospace', color: '#a855f7', whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>
+{`{
+  "source": ["aws.s3"],
+  "detail-type": ["Object Created"],
+  "detail": {
+    "bucket": { "name": ["my-premium-bucket"] },
+    "object": {
+      "key": [{ "prefix": "uploads/" }],
+      "size": [{ "numeric": [">", 5242880] }]
+    }
+  }
+}`}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Client upload */}
-                <rect x="25" y="45" width="120" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="85" y="70" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Client Application</text>
-                <text x="85" y="85" textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="bold">💻 PUT logo.png</text>
-                <text x="85" y="100" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">directly to bucket</text>
-
-                <path d="M145,90 L200,90" stroke="#94a3b8" strokeWidth="1.5" />
-
-                {/* S3 Bucket Trigger */}
-                <rect x="200" y="45" width="130" height="90" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1.5" />
-                <text x="265" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#166534">S3 Storage Bucket</text>
-                <text x="265" y="85" textAnchor="middle" fontSize="8" fill="#15803d">Publishes event alert</text>
-                <rect x="215" y="98" width="100" height="20" rx="3" fill="#e8f5e9" stroke="#81c784" strokeWidth="0.8" />
-                <text x="265" y="111" textAnchor="middle" fontSize="8" fill="#1b5e20" fontWeight="bold">ObjectCreated:Put</text>
-
-                <path d="M330,90 L380,90" stroke="#94a3b8" strokeWidth="1.5" />
-
-                {/* Event Queue Topic */}
-                <rect x="380" y="45" width="120" height="90" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
-                <text x="440" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#b45309">SQS Queue / SNS</text>
-                <text x="440" y="85" textAnchor="middle" fontSize="8" fill="#d97706">Decouples alerts</text>
-                <rect x="395" y="98" width="90" height="20" rx="3" fill="#fffde7" stroke="#fbc02d" strokeWidth="0.8" />
-                <text x="440" y="111" textAnchor="middle" fontSize="7.5" fill="#f57f17" fontWeight="bold">📥 Buffer message</text>
-
-                <path d="M500,90 L550,90" stroke="#94a3b8" strokeWidth="1.5" />
-
-                {/* Serverless compute */}
-                <rect x="550" y="45" width="130" height="90" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" />
-                <text x="615" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6b21a8">AWS Lambda</text>
-                <text x="615" y="85" textAnchor="middle" fontSize="8" fill="#a855f7">Serverless script runs</text>
-                <rect x="560" y="98" width="110" height="20" rx="3" fill="#f3e5f5" stroke="#ba68c8" strokeWidth="0.8" />
-                <text x="615" y="111" textAnchor="middle" fontSize="7.5" fill="#4a148c" fontWeight="bold">⚡ Resize image now</text>
-              </svg>
             </div>
 
-            {/* 🎨 Storage Lens & Batch Jobs Pipeline SVG Diagram */}
-            <div className="s3-sec">S3 Storage Lens Analytics and S3 Batch Jobs Pipeline</div>
-            <div className="s3-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                How Storage Lens monitors the organization, exports secure CSV manifests of insecure buckets, and feeds them into automated S3 Batch Jobs for bulk parallel remediation.
+            {/* 🎨 S3 Batch Operations SVG Diagram */}
+            <div className="s3-sec">S3 Batch Operations and SQL Athena Manifest Pipeline</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, marginBottom: '8px' }}>⚙️ Enterprise Bulk Operations Simulator</div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+                    Simulate how S3 Inventory, Athena SQL filters, and S3 Batch Operations coordinate to run heavy updates across millions of files in parallel.
+                  </div>
+
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                      <span>S3 Inventory Target Catalog Size:</span>
+                      <b>{batchTotalObjects.toLocaleString()} Objects</b>
+                    </div>
+                    <input
+                      type="range"
+                      min="50000"
+                      max="500000"
+                      step="25000"
+                      value={batchTotalObjects}
+                      onChange={e => { setBatchTotalObjects(parseInt(e.target.value)); setBatchStep(0); setBatchLogs([]); setBatchProgressPercentage(0); }}
+                      style={{ width: '100%', accentColor: '#ec4899' }}
+                    />
+                  </div>
+
+                  <button onClick={startBatchSimulation} disabled={batchIsRunning} className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', marginBottom: '12px', borderColor: '#ec4899', background: '#ec4899' }}>
+                    {batchIsRunning ? '⚙️ Processing Batch workers...' : '🚀 Dispatch Bulk Batch Job'}
+                  </button>
+
+                  {/* Batch Progress Bar Indicator */}
+                  {batchStep >= 3 && (
+                    <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', marginBottom: '4px', fontWeight: 600 }}>
+                        <span>Bulk Operations Status: {
+                          batchStep === 3 ? 'Spinning up Thread pools...' :
+                          batchStep === 4 ? 'Distributing tasks...' :
+                          'Completed Successfully!'
+                        }</span>
+                        <span>{batchProgressPercentage}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', background: '#334155', borderRadius: '999px', overflow: 'hidden' }}>
+                        <div style={{ width: `${batchProgressPercentage}%`, height: '100%', background: '#ec4899', transition: 'width 0.4s' }} />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Distributed batch trace logs:</div>
+                    <div ref={batchTerminalRef} className="s3-terminal" style={{ height: '100px', borderColor: '#475569' }}>
+                      {batchLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting bulk batch job submission...</div>
+                      ) : (
+                        batchLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#ec4899' : log.includes('SUCCESS') ? '#10b981' : '#38bdf8',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* S3 Batch Pipeline SVG with animated packet */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                    <defs>
+                      <marker id="arr-batch-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
+                      <marker id="arr-batch-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#166534" /></marker>
+                    </defs>
+
+                    {/* S3 Inventory */}
+                    <rect x="15" y="25" width="85" height="50" rx="4" fill="#fdf2f8" stroke="#ec4899" strokeWidth="1" />
+                    <text x="57" y="45" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#be185d">📋 S3 Inventory</text>
+                    <text x="57" y="55" textAnchor="middle" fontSize="6.5" fill="#db2777">Daily Object Audit</text>
+
+                    {/* Path 1 */}
+                    <path d="M100,50 L140,50" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3,1" markerEnd="url(#arr-batch-blue)" />
+
+                    {/* Athena */}
+                    <rect x="140" y="25" width="85" height="50" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.2" />
+                    <text x="182" y="45" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e40af">🔍 Athena SQL</text>
+                    <text x="182" y="55" textAnchor="middle" fontSize="6.5" fill="#2563eb">Compiles CSV list</text>
+
+                    {/* Path 2 */}
+                    <path d="M225,50 L265,50" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="3,1" markerEnd="url(#arr-batch-green)" />
+
+                    {/* Batch Job */}
+                    <rect x="265" y="25" width="70" height="50" rx="4" fill="#f0fdf4" stroke="#166534" strokeWidth="1.2" />
+                    <text x="300" y="45" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#14532d">⚙️ Batch Job</text>
+                    <text x="300" y="55" textAnchor="middle" fontSize="6" fill="#15803d">Saves manifest.csv</text>
+
+                    {/* Distributed threads radiating out */}
+                    <path d="M300,75 L300,120" stroke="#166534" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
+                    <path d="M265,65 L170,120" stroke="#166534" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
+                    <path d="M335,65 L335,120" stroke="#166534" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
+
+                    {/* Heavy process targets */}
+                    <rect x="120" y="120" width="100" height="42" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="170" y="135" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#475569">📄 uploads/financials/*</text>
+                    <text x="170" y="147" textAnchor="middle" fontSize="6.5" fill="#94a3b8">Overwrote encryption key</text>
+
+                    <rect x="235" y="120" width="100" height="42" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="285" y="135" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#475569">📄 uploads/archives/*</text>
+                    <text x="285" y="147" textAnchor="middle" fontSize="6.5" fill="#94a3b8">WORM Retention Set</text>
+
+                    <rect x="175" y="175" width="120" height="30" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                    <text x="235" y="193" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#047857">SUCCESS! ✅ JOB COMPLETE</text>
+
+                    {/* Animated Manifest Glowing Packet */}
+                    {batchIsRunning && (
+                      <circle cx={
+                        batchStep === 1 ? 57 :
+                        batchStep === 2 ? 182 :
+                        batchStep === 3 ? 300 :
+                        batchStep === 4 ? (batchProgressPercentage < 50 ? 170 : 285) :
+                        235
+                      } cy={
+                        batchStep === 1 ? 50 :
+                        batchStep === 2 ? 50 :
+                        batchStep === 3 ? 50 :
+                        batchStep === 4 ? 135 :
+                        193
+                      } r="6" fill="#ec4899" className="s3-g-circle">
+                        <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                  </svg>
+
+                  {/* Detail label */}
+                  <div style={{ marginTop: '8px', fontSize: '10.5px', color: 'var(--color-text-secondary)', textAlign: 'center', lineHeight: '1.4' }}>
+                    S3 Inventory compiles a daily listing ➔ Athena SQL executes precise filters to generate a target manifest CSV ➔ S3 Batch distributed worker threads fetch manifest rows and execute updates concurrently.
+                  </div>
+                </div>
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Storage Lens scanner */}
-                <rect x="25" y="45" width="140" height="90" rx="6" fill="#fdf2f8" stroke="#ec4899" strokeWidth="1.5" />
-                <text x="95" y="70" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#be185d">📊 Storage Lens</text>
-                <text x="95" y="85" textAnchor="middle" fontSize="8" fill="#db2777">Audits 1000+ buckets</text>
-                <text x="95" y="98" textAnchor="middle" fontSize="8" fill="#be185d" fontWeight="bold">Scans: Unencrypted</text>
-                <rect x="35" y="108" width="120" height="18" rx="3" fill="#fbcfe8" stroke="#f472b6" strokeWidth="0.8" />
-                <text x="95" y="120" textAnchor="middle" fontSize="7.5" fill="#9d174d" fontWeight="bold">Generates CSV Manifest</text>
-
-                <path d="M165,90 L220,90" stroke="#ec4899" strokeWidth="1.5" />
-
-                {/* CSV Manifest Output */}
-                <rect x="220" y="65" width="100" height="50" rx="4" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="270" y="85" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">manifest.csv</text>
-                <text x="270" y="98" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">List of target files</text>
-
-                <path d="M320,90 L380,90" stroke="#94a3b8" strokeWidth="1.5" />
-
-                {/* S3 Batch Jobs */}
-                <rect x="380" y="45" width="140" height="90" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1.5" />
-                <text x="450" y="70" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#15803d">⚙️ S3 Batch Jobs</text>
-                <text x="450" y="85" textAnchor="middle" fontSize="8" fill="#1b5e20">Spawns parallel tasks</text>
-                <text x="450" y="98" textAnchor="middle" fontSize="8" fill="#166534" fontWeight="bold">Bulk Remediations</text>
-                <rect x="390" y="108" width="120" height="18" rx="3" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.8" />
-                <text x="450" y="120" textAnchor="middle" fontSize="7" fill="#14532d" fontWeight="bold">Applies Encryption tags</text>
-
-                <path d="M520,90 L570,90" stroke="#94a3b8" strokeWidth="1.5" />
-
-                {/* Restored Buckets */}
-                <rect x="570" y="45" width="110" height="90" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1" />
-                <text x="625" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e40af">Secure Buckets</text>
-                <text x="625" y="90" textAnchor="middle" fontSize="8" fill="#1d4ed8">100% encrypted</text>
-                <text x="625" y="105" textAnchor="middle" fontSize="7.5" fill="#166534" fontWeight="bold">Remediated! ✅</text>
-              </svg>
             </div>
           </div>
         )}

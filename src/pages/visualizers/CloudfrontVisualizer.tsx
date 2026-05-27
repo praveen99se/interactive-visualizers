@@ -506,6 +506,78 @@ export default function CloudfrontVisualizer() {
                 </div>
               </div>
 
+              </div>
+
+              {/* 🎨 New Origins Security SVG Diagram */}
+              <div className="cf-sec">VPC Private Origins, S3 OAC request signing &amp; Custom Header Verification Pipelines</div>
+              <div className="cf-card" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+                  CloudFront provides multiple ways to lock down backend ingress. Trace the three standard security architectures below:
+                </div>
+                <svg viewBox="0 0 740 320" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                  <defs>
+                    <marker id="arr-cf-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
+                    <marker id="arr-cf-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                    <marker id="arr-cf-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                    <marker id="arr-cf-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                  </defs>
+
+                  {/* Public Client Ingress */}
+                  <rect x="15" y="115" width="115" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
+                  <text x="72" y="140" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Global Users</text>
+                  <text x="72" y="155" textAnchor="middle" fontSize="8" fill="#3b82f6" fontWeight="bold">💻 Web Requests</text>
+                  <text x="72" y="170" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">HTTPS / HTTP/3</text>
+                  <text x="72" y="185" textAnchor="middle" fontSize="6.5" fill="#10b981" fontWeight="bold">Accelerated CDN Route</text>
+
+                  {/* CloudFront Edge Controller */}
+                  <rect x="180" y="85" width="145" height="150" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="2" />
+                  <text x="252" y="105" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#6d28d9">⚡ CloudFront Edge</text>
+                  <rect x="190" y="125" width="125" height="30" rx="3" fill="#ffffff" stroke="#ddd6fe" />
+                  <text x="252" y="136" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#6d28d9">SigV4 OAC Signer</text>
+                  <text x="252" y="147" textAnchor="middle" fontSize="6" fill="#7c3aed">(For S3 Bucket Origin)</text>
+
+                  <rect x="190" y="165" width="125" height="30" rx="3" fill="#ffffff" stroke="#ddd6fe" />
+                  <text x="252" y="176" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0284c7">VPC Endpoint Link</text>
+                  <text x="252" y="187" textAnchor="middle" fontSize="6" fill="#0369a1">(For Private ALB Subnet)</text>
+
+                  <rect x="190" y="202" width="125" height="25" rx="3" fill="#ffffff" stroke="#ddd6fe" />
+                  <text x="252" y="212" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#be185d">Inject: X-Origin-Verify</text>
+
+                  {/* Connectors from Client */}
+                  <path d="M130,160 L175,160" stroke="#3b82f6" strokeWidth="2" markerEnd="url(#arr-cf-blue)" />
+
+                  {/* Integration A: S3 Private Origin + OAC */}
+                  <path d="M325,120 L400,60" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#arr-cf-green)" />
+                  <text x="365" y="80" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">SigV4 Signed</text>
+
+                  <rect x="400" y="15" width="310" height="70" rx="4" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="415" y="32" textAnchor="start" fontSize="9" fontWeight="bold" fill="#065f46">🪣 Option A: S3 Bucket Origin with OAC</text>
+                  <text x="415" y="44" textAnchor="start" fontSize="7" fill="#047857">S3 Bucket is 100% PRIVATE. Public WWW bypass attempts are rejected (HTTP 403) ❌</text>
+                  <text x="415" y="56" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#15803d">✔ S3 accepts signed request payload carrying verified CloudFront OAC credentials</text>
+
+                  {/* Integration B: CloudFront VPC Private Origin */}
+                  <path d="M325,160 L400,160" fill="none" stroke="#0ea5e9" strokeWidth="1.5" markerEnd="url(#arr-cf-blue)" />
+                  <text x="365" y="152" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold">Private Link</text>
+
+                  <rect x="400" y="100" width="310" height="85" rx="4" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="1.5" />
+                  <text x="415" y="118" textAnchor="start" fontSize="9" fontWeight="bold" fill="#0369a1">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
+                  <text x="415" y="130" textAnchor="start" fontSize="7" fill="#0284c7">CloudFront establishes private VPC endpoints inside your private backend subnets.</text>
+                  <text x="415" y="142" textAnchor="start" fontSize="7" fill="#0284c7">ALBs and EC2 nodes have NO public IPs and cannot be probed from public WWW.</text>
+                  <text x="415" y="156" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#0284c7">✔ 100% private transit over dedicated internal network routes 🔒</text>
+
+                  {/* Integration C: Public Custom Origin + Ingress Header Restriction */}
+                  <path d="M325,200 L400,250" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#arr-cf-purple)" />
+                  <text x="365" y="235" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="bold">Secret Token</text>
+
+                  <rect x="400" y="200" width="310" height="105" rx="4" fill="#fff1f2" stroke="#ec4899" strokeWidth="1.5" />
+                  <text x="415" y="218" textAnchor="start" fontSize="9" fontWeight="bold" fill="#9f1239">⚡ Option C: Custom Origin with Ingress Headers</text>
+                  <text x="415" y="230" textAnchor="start" fontSize="7" fill="#be185d">ALB is in a public subnet. Public hackers try to bypass CloudFront to attack ALB directly 👿</text>
+                  <text x="415" y="244" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#9f1239">⚠ ALB validates request for headers: "X-Origin-Verify: shared-secret-key"</text>
+                  <text x="415" y="258" textAnchor="start" fontSize="7" fill="#be185d">If header matches: Accept write traffic ✅</text>
+                  <text x="415" y="270" textAnchor="start" fontSize="7" fill="#b91c1c">If header is missing/mismatched: REJECT request instantly with HTTP 403 Access Denied ❌</text>
+                </svg>
+              </div>
+
               {/* Side-by-side: CloudFront vs S3 Cross-Region Replication (CRR) */}
               <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', marginTop: '14px' }}>
                 <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#4f46e5' }}>
@@ -554,7 +626,6 @@ export default function CloudfrontVisualizer() {
                 </table>
               </div>
             </div>
-          </div>
         )}
 
 
