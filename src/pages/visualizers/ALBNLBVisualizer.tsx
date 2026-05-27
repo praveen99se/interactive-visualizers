@@ -1162,18 +1162,18 @@ Connection: keep-alive`}</pre>
 
                 {/* ALB Premium Mnemonic Card */}
                 <div className="anl-card" style={{
-                  border: '1px solid #fb923c',
-                  background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)',
+                  border: '1.5px solid #fdba74',
+                  background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
                   padding: '12px 14px',
                   borderRadius: '8px'
                 }}>
-                  <div style={{ color: '#fb923c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  <div style={{ color: '#c2410c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
                     🧠 Systems Memory Mnemonic
                   </div>
-                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#ffedd5', marginBottom: '4px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#7c2d12', marginBottom: '4px' }}>
                     ALB = "The Intelligent Postmaster"
                   </div>
-                  <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  <div style={{ fontSize: '11px', color: '#431407', lineHeight: '1.4' }}>
                     Unlike raw routers, the Postmaster opens the HTTP envelope (SSL Decryption), reads the Host and Path letters (Host/Path listener rules), checks the return cookie (stickiness), and handles delivery to the exact AZ microservice targets.
                   </div>
                 </div>
@@ -1452,18 +1452,18 @@ Target Server Index:
 
                 {/* NLB Premium Mnemonic Card */}
                 <div className="anl-card" style={{
-                  border: '1px solid #38bdf8',
-                  background: 'linear-gradient(135deg, #022c22 0%, #0f172a 100%)',
+                  border: '1.5px solid #7dd3fc',
+                  background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
                   padding: '12px 14px',
                   borderRadius: '8px'
                 }}>
-                  <div style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  <div style={{ color: '#0369a1', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
                     🧠 Systems Memory Mnemonic
                   </div>
-                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#ffedd5', marginBottom: '4px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0c4a6e', marginBottom: '4px' }}>
                     NLB = "The Lightspeed Track Switcher"
                   </div>
-                  <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                  <div style={{ fontSize: '11px', color: '#0c4a6e', lineHeight: '1.4' }}>
                     The Track Switcher does not open cargo or read envelopes. It simply hashes the standard 5-tuple connection data in hardware ASICs (Protocol, Source IP/Port, Dest IP/Port) and maps the connection deterministic to the track with microsecond latencies.
                   </div>
                 </div>
@@ -1679,7 +1679,7 @@ Target Server Index:
               <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
                 
                 {/* Left: Dynamic Widescreen SVG Map */}
-                <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)', padding: '16px' }}>
+                <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f7fcf6ff', border: '0.5px solid var(--color-border-secondary)', padding: '16px' }}>
                   <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
                       🔍 {currentScenarioTitle}
@@ -1926,18 +1926,18 @@ Target Server Index:
                   {/* Golden memory hooks based on active scenario */}
                   {infraScenario === 'alb_ingress' && (
                     <div className="anl-card" style={{
-                      border: '1.5px solid #fb923c',
-                      background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)',
+                      border: '1.5px solid #fdba74',
+                      background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
                       padding: '12px 14px',
                       borderRadius: '8px'
                     }}>
-                      <div style={{ color: '#fb923c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <div style={{ color: '#c2410c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
                         🧠 Systems Memory Mnemonic
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#ffedd5', marginBottom: '4px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#7c2d12', marginBottom: '4px' }}>
                         ALB = "The Smart Concierge at L7"
                       </div>
-                      <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                      <div style={{ fontSize: '11px', color: '#431407', lineHeight: '1.4' }}>
                         The Concierge is smart. She opens client packages (SSL Decryption), checks their query string badges (WAF inspection), verifies dynamic host paths (Host/Path listener rules), and directs guests to AZ private suites.
                       </div>
                     </div>
@@ -1945,18 +1945,18 @@ Target Server Index:
 
                   {infraScenario === 'nlb_throughput' && (
                     <div className="anl-card" style={{
-                      border: '1.5px solid #38bdf8',
-                      background: 'linear-gradient(135deg, #0f172a 0%, #022c22 100%)',
+                      border: '1.5px solid #7dd3fc',
+                      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
                       padding: '12px 14px',
                       borderRadius: '8px'
                     }}>
-                      <div style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <div style={{ color: '#0369a1', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
                         🧠 Systems Memory Mnemonic
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#e0f2fe', marginBottom: '4px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0c4a6e', marginBottom: '4px' }}>
                         NLB = "The High-Speed Bullet Train at L4"
                       </div>
-                      <div style={{ fontSize: '11px', color: '#e0f2fe', opacity: 0.85, lineHeight: '1.4' }}>
+                      <div style={{ fontSize: '11px', color: '#0c4a6e', lineHeight: '1.4' }}>
                         The Train does not open bags. It reads raw L4 socket tickets instantly in hardware, hashes them determinants, fires down dedicated AZ subnet tracks, and allows servers to write back directly (DSR) to client IPs.
                       </div>
                     </div>
@@ -1964,19 +1964,19 @@ Target Server Index:
 
                   {infraScenario === 'privatelink' && (
                     <div className="anl-card" style={{
-                      border: '1.5px solid #c084fc',
-                      background: 'linear-gradient(135deg, #1e1b4b 0%, #172554 100%)',
+                      border: '1.5px solid #d8b4fe',
+                      background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
                       padding: '12px 14px',
                       borderRadius: '8px'
                     }}>
-                      <div style={{ color: '#c084fc', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      <div style={{ color: '#7e22ce', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
                         🧠 Systems Memory Mnemonic
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#faf5ff', marginBottom: '4px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#581c87', marginBottom: '4px' }}>
                         PrivateLink = "The Secure Underground Highway"
                       </div>
-                      <div style={{ fontSize: '11px', color: '#faf5ff', opacity: 0.85, lineHeight: '1.4' }}>
-                        Bypasses all public roads (Public internet, internet gateways). Connects consumer vault directly to provider vault through a secure underground highway drilled straight through solid AWS physical fiber backbone bedrock.
+                      <div style={{ fontSize: '11px', color: '#581c87', lineHeight: '1.4' }}>
+                        Bypasses all public roads (Public internet, internet gateways). Connects consumer vault directly to provider vault through a secure underground highway drilled straight through solid AWS physical fiber bedrock.
                       </div>
                     </div>
                   )}
