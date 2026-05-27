@@ -15,7 +15,7 @@ import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
-    <Router>
+    <Router basename="/interactive-visualizers">
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">
