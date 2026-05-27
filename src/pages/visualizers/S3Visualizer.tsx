@@ -1618,7 +1618,156 @@ export default function S3Visualizer() {
               </div>
 
             </div>
+            {/* 🎮 Interactive Playground */}
+            <div className="s3-sec">🔒 SSE Envelope write execution simulator</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
+                      <input type="radio" name="enc" checked={encryptionType === 'sse-s3'} onChange={() => setEncryptionType('sse-s3')} />
+                      <div><b>SSE-S3:</b> AES-256 S3-Managed Master Key (Simple, automatic)</div>
+                    </label>
 
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
+                      <input type="radio" name="enc" checked={encryptionType === 'sse-kms'} onChange={() => setEncryptionType('sse-kms')} />
+                      <div><b>SSE-KMS:</b> AWS KMS Managed Key (Configurable rotation &amp; audits)</div>
+                    </label>
+                    {encryptionType === 'sse-kms' && (
+                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
+                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>KMS CMK ARN:</label>
+                        <input
+                          type="text"
+                          value={customKmsArn}
+                          onChange={e => setCustomKmsArn(e.target.value)}
+                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px' }}
+                        />
+                      </div>
+                    )}
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
+                      <input type="radio" name="enc" checked={encryptionType === 'sse-c'} onChange={() => setEncryptionType('sse-c')} />
+                      <div><b>SSE-C:</b> Customer Managed AES-256 keys (No keys stored in AWS)</div>
+                    </label>
+                    {encryptionType === 'sse-c' && (
+                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
+                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Customer 256-bit AES Key (Base64 - 44 Chars):</label>
+                        <input
+                          type="text"
+                          value={customSsecKey}
+                          onChange={e => setCustomSsecKey(e.target.value)}
+                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px' }}
+                        />
+                      </div>
+                    )}
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
+                      <input type="radio" name="enc" checked={encryptionType === 'dsse-kms'} onChange={() => setEncryptionType('dsse-kms')} />
+                      <div><b>DSSE-KMS:</b> Dual-Layer AWS KMS Key (Double ciphers, FIPS 140-3 WORM)</div>
+                    </label>
+                    {encryptionType === 'dsse-kms' && (
+                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
+                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>KMS CMK A &amp; B ARNs (Dual-Keys):</label>
+                        <input
+                          type="text"
+                          value={customKmsArn + ', ' + customKmsArn.replace('key/', 'key/9b8a')}
+                          disabled
+                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', opacity: 0.8 }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Write Object Payload String:</label>
+                    <input
+                      type="text"
+                      value={uploadContent}
+                      onChange={e => setUploadContent(e.target.value)}
+                      style={{ width: '100%', padding: '6px', fontSize: '11.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px' }}
+                    />
+                  </div>
+
+                  <button onClick={testEncryption} className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold' }}>
+                    Execute SSE Envelope Write
+                  </button>
+                </div>
+
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: 600, marginBottom: '10px' }}>⚡ SSE Horizontal Progress Pipeline</div>
+
+                  {/* Horizontal progress steps */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', height: '2px', background: '#334155', zIndex: 1 }} />
+                    <div style={{ position: 'absolute', top: '10px', left: '10px', width: `${((Math.max(1, encryptionStep) - 1) / 4) * 100}%`, height: '2px', background: '#10b981', zIndex: 1, transition: 'width 0.4s' }} />
+
+                    {[
+                      { s: 1, text: 'Client' },
+                      { s: 2, text: 'Hypervisor' },
+                      { s: 3, text: 'KMS Key' },
+                      { s: 4, text: 'RAM Shred' },
+                      { s: 5, text: 'Disk Disk' }
+                    ].map(step => (
+                      <div key={step.s} style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: '50%',
+                          background: encryptionStep >= step.s ? '#10b981' : '#1e293b',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '10.5px',
+                          fontWeight: 'bold',
+                          border: '2px solid #334155',
+                          transition: 'background 0.3s'
+                        }}>
+                          {step.s}
+                        </div>
+                        <span style={{ fontSize: '9px', marginTop: '2px', color: encryptionStep >= step.s ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>{step.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Encryption hex output display */}
+                  <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', marginBottom: '10px', fontSize: '11px', fontFamily: 'monospace' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: '#94a3b8' }}>Plaintext Key (hypervisor RAM):</span>
+                      <span style={{ color: plaintextKeyHex ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>
+                        {plaintextKeyHex ? plaintextKeyHex.substring(0, 16) + '...' : '[SCRUBBED / ZEROIZED]'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: '#94a3b8' }}>Encrypted Key (sector metadata):</span>
+                      <span style={{ color: encryptedKeyHex ? '#10b981' : '#64748b' }}>
+                        {encryptedKeyHex ? encryptedKeyHex.substring(0, 16) + '...' : '[Awaiting encryption]'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Encryption execution Logs:</div>
+                    <div ref={encryptionTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
+                      {encryptionLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting envelope write simulation...</div>
+                      ) : (
+                        encryptionLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚠️') ? '#f59e0b' : '#38bdf8',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* 🎨 Dynamic Architectural SVG based on selection */}
             <div className="s3-sec">
               {encryptionType === 'sse-s3' && '🔒 SSE-S3: S3-Managed Server-Side Encryption'}
@@ -1817,156 +1966,7 @@ export default function S3Visualizer() {
               )}
             </div>
 
-            {/* 🎮 Interactive Playground */}
-            <div className="s3-sec">🔒 SSE Envelope write execution simulator</div>
-            <div className="s3-card">
-              <div className="s3-g2">
-                <div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
-                      <input type="radio" name="enc" checked={encryptionType === 'sse-s3'} onChange={() => setEncryptionType('sse-s3')} />
-                      <div><b>SSE-S3:</b> AES-256 S3-Managed Master Key (Simple, automatic)</div>
-                    </label>
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
-                      <input type="radio" name="enc" checked={encryptionType === 'sse-kms'} onChange={() => setEncryptionType('sse-kms')} />
-                      <div><b>SSE-KMS:</b> AWS KMS Managed Key (Configurable rotation &amp; audits)</div>
-                    </label>
-                    {encryptionType === 'sse-kms' && (
-                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
-                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>KMS CMK ARN:</label>
-                        <input
-                          type="text"
-                          value={customKmsArn}
-                          onChange={e => setCustomKmsArn(e.target.value)}
-                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px' }}
-                        />
-                      </div>
-                    )}
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
-                      <input type="radio" name="enc" checked={encryptionType === 'sse-c'} onChange={() => setEncryptionType('sse-c')} />
-                      <div><b>SSE-C:</b> Customer Managed AES-256 keys (No keys stored in AWS)</div>
-                    </label>
-                    {encryptionType === 'sse-c' && (
-                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
-                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Customer 256-bit AES Key (Base64 - 44 Chars):</label>
-                        <input
-                          type="text"
-                          value={customSsecKey}
-                          onChange={e => setCustomSsecKey(e.target.value)}
-                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px' }}
-                        />
-                      </div>
-                    )}
-
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', cursor: 'pointer' }}>
-                      <input type="radio" name="enc" checked={encryptionType === 'dsse-kms'} onChange={() => setEncryptionType('dsse-kms')} />
-                      <div><b>DSSE-KMS:</b> Dual-Layer AWS KMS Key (Double ciphers, FIPS 140-3 WORM)</div>
-                    </label>
-                    {encryptionType === 'dsse-kms' && (
-                      <div style={{ marginLeft: '20px', marginBottom: '4px' }}>
-                        <label style={{ fontSize: '10px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>KMS CMK A &amp; B ARNs (Dual-Keys):</label>
-                        <input
-                          type="text"
-                          value={customKmsArn + ', ' + customKmsArn.replace('key/', 'key/9b8a')}
-                          disabled
-                          style={{ width: '100%', padding: '4px 6px', fontSize: '10.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', opacity: 0.8 }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ marginBottom: '12px' }}>
-                    <label style={{ fontSize: '11px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Write Object Payload String:</label>
-                    <input
-                      type="text"
-                      value={uploadContent}
-                      onChange={e => setUploadContent(e.target.value)}
-                      style={{ width: '100%', padding: '6px', fontSize: '11.5px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px' }}
-                    />
-                  </div>
-
-                  <button onClick={testEncryption} className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold' }}>
-                    Execute SSE Envelope Write
-                  </button>
-                </div>
-
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: '12.5px', fontWeight: 600, marginBottom: '10px' }}>⚡ SSE Horizontal Progress Pipeline</div>
-
-                  {/* Horizontal progress steps */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', height: '2px', background: '#334155', zIndex: 1 }} />
-                    <div style={{ position: 'absolute', top: '10px', left: '10px', width: `${((Math.max(1, encryptionStep) - 1) / 4) * 100}%`, height: '2px', background: '#10b981', zIndex: 1, transition: 'width 0.4s' }} />
-
-                    {[
-                      { s: 1, text: 'Client' },
-                      { s: 2, text: 'Hypervisor' },
-                      { s: 3, text: 'KMS Key' },
-                      { s: 4, text: 'RAM Shred' },
-                      { s: 5, text: 'Disk Disk' }
-                    ].map(step => (
-                      <div key={step.s} style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{
-                          width: '22px',
-                          height: '22px',
-                          borderRadius: '50%',
-                          background: encryptionStep >= step.s ? '#10b981' : '#1e293b',
-                          color: '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '10.5px',
-                          fontWeight: 'bold',
-                          border: '2px solid #334155',
-                          transition: 'background 0.3s'
-                        }}>
-                          {step.s}
-                        </div>
-                        <span style={{ fontSize: '9px', marginTop: '2px', color: encryptionStep >= step.s ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>{step.text}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Encryption hex output display */}
-                  <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', marginBottom: '10px', fontSize: '11px', fontFamily: 'monospace' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ color: '#94a3b8' }}>Plaintext Key (hypervisor RAM):</span>
-                      <span style={{ color: plaintextKeyHex ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>
-                        {plaintextKeyHex ? plaintextKeyHex.substring(0, 16) + '...' : '[SCRUBBED / ZEROIZED]'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#94a3b8' }}>Encrypted Key (sector metadata):</span>
-                      <span style={{ color: encryptedKeyHex ? '#10b981' : '#64748b' }}>
-                        {encryptedKeyHex ? encryptedKeyHex.substring(0, 16) + '...' : '[Awaiting encryption]'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Encryption execution Logs:</div>
-                    <div ref={encryptionTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
-                      {encryptionLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting envelope write simulation...</div>
-                      ) : (
-                        encryptionLogs.map((log, idx) => (
-                          <div key={idx} style={{
-                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚠️') ? '#f59e0b' : '#38bdf8',
-                            fontFamily: 'monospace',
-                            fontSize: '11px',
-                            marginBottom: '2px'
-                          }}>
-                            {log}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            
           </div>
         )}
 
