@@ -60,6 +60,316 @@ export default function CloudfrontVisualizer() {
   // Pricing State
   const [activePriceClass, setActivePriceClass] = useState<PriceClass>('200');
 
+  // --- UPGRADED CLOUDFRONT STATES ---
+  // Cache Key & Forwarding Optimizer State
+  const [cfQsForwarding, setCfQsForwarding] = useState<'none' | 'whitelist' | 'all'>('none');
+  const [cfHeaderForwarding, setCfHeaderForwarding] = useState<'none' | 'whitelist' | 'all'>('none');
+  const [cfCookieForwarding, setCfCookieForwarding] = useState<'none' | 'all'>('none');
+  const [cfChrRate, setCfChrRate] = useState<number | null>(null);
+  const [cfChrTesting, setCfChrTesting] = useState<boolean>(false);
+  const [cfCacheHistory, setCfCacheHistory] = useState<string[]>([]);
+
+  // Origin Group Failover State
+  const [cfPrimaryOriginStatus, setCfPrimaryOriginStatus] = useState<'healthy' | 'outage'>('healthy');
+  const [cfActiveOrigin, setCfActiveOrigin] = useState<'primary' | 'secondary' | null>(null);
+  const [cfFailoverLogs, setCfFailoverLogs] = useState<string[]>([
+    'Origin Group sandbox ready. Select Primary Status and click "Simulate Request".'
+  ]);
+  const [cfFailoverStep, setCfFailoverStep] = useState<number>(0);
+  const [cfFailoverIsSimulating, setCfFailoverIsSimulating] = useState<boolean>(false);
+
+  // Edge Computing States
+  const [cfSelectedTemplate, setCfSelectedTemplate] = useState<'hsts' | 'rewrite' | 'ab'>('hsts');
+  const [cfEdgeTesting, setCfEdgeTesting] = useState<boolean>(false);
+  const [cfEdgeLogs, setCfEdgeLogs] = useState<string[]>([
+    'Edge scripting environment initialized. Select a template and click "Execute Script at Edge".'
+  ]);
+  const [cfEdgeStep, setCfEdgeStep] = useState<number>(0);
+  const [cfEdgeLatency, setCfEdgeLatency] = useState<number | null>(null);
+
+  // Helper dictionary of templates
+  const scriptTemplates = {
+    hsts: {
+      name: 'Add HSTS Security Headers',
+      type: 'CloudFront Functions',
+      stage: 'Viewer Response',
+      language: 'JavaScript',
+      latency: 'Sub-1ms execution (highly optimized V8 isolate)',
+      description: 'Forces clients to communicate exclusively via secure HTTPS by appending Strict-Transport-Security headers.',
+      code: `function handler(event) {
+  var response = event.response;
+  var headers = response.headers;
+
+  // Set HSTS security header for a duration of 1 year
+  headers['strict-transport-security'] = { 
+    value: 'max-age=31536000; includeSubDomains; preload' 
+  };
+  
+  // Set anti-clickjacking headers
+  headers['x-frame-options'] = { value: 'DENY' };
+  headers['x-content-type-options'] = { value: 'nosniff' };
+
+  return response;
+}`,
+      inputHeaders: `{
+  "Host": "cdn.example.com",
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+  "Accept": "text/html,application/xhtml+xml"
+}`,
+      outputHeaders: `{
+  "Host": "cdn.example.com",
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+  "Accept": "text/html,application/xhtml+xml",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff"
+}`
+    },
+    rewrite: {
+      name: 'URL Rewrite for Clean Paths',
+      type: 'CloudFront Functions',
+      stage: 'Viewer Request',
+      language: 'JavaScript',
+      latency: 'Sub-1ms execution (highly optimized V8 isolate)',
+      description: 'Rewrites user-friendly clean URLs (e.g. /profile) to internal S3 file structures (e.g. /profile/index.html).',
+      code: `function handler(event) {
+  var request = event.request;
+  var uri = request.uri;
+
+  // If URI does not contain a file extension, append /index.html
+  if (!uri.includes('.')) {
+    if (uri.endsWith('/')) {
+      request.uri = uri + 'index.html';
+    } else {
+      request.uri = uri + '/index.html';
+    }
+  }
+
+  return request;
+}`,
+      inputHeaders: `{
+  "Host": "cdn.example.com",
+  "URI": "/docs/getting-started",
+  "User-Agent": "Mozilla/5.0 Chrome/120.0.0"
+}`,
+      outputHeaders: `{
+  "Host": "cdn.example.com",
+  "URI": "/docs/getting-started/index.html",
+  "User-Agent": "Mozilla/5.0 Chrome/120.0.0",
+  "X-Original-URI": "/docs/getting-started"
+}`
+    },
+    ab: {
+      name: 'A/B Testing Origin Routing',
+      type: 'Lambda@Edge',
+      stage: 'Origin Request',
+      language: 'Node.js (Lambda)',
+      latency: '30ms execution (includes dynamic cold-start overhead)',
+      description: 'Inspects a user cookie to dynamically route them to S3 Bucket A (Control) or S3 Bucket B (Variant) to perform secure A/B testing at the edge.',
+      code: `exports.handler = async (event) => {
+  const request = event.Records[0].cf.request;
+  const headers = request.headers;
+
+  let bucketName = 'my-control-bucket-us-east-1'; // Bucket A
+  
+  if (headers.cookie) {
+    for (let i = 0; i < headers.cookie.length; i++) {
+      if (headers.cookie[i].value.includes('experiment_group=variant_b')) {
+        bucketName = 'my-variant-bucket-us-east-1'; // Bucket B
+        break;
+      }
+    }
+  }
+
+  // Rewrite origin host header dynamically to point to variant S3 bucket
+  request.origin.s3.domainName = \`\${bucketName}.s3.amazonaws.com\`;
+  request.headers['host'] = [{ key: 'host', value: \`\${bucketName}.s3.amazonaws.com\` }];
+
+  return request;
+};`,
+      inputHeaders: `{
+  "Host": "cdn.example.com",
+  "Cookie": "session_id=abc123xyz; experiment_group=variant_b",
+  "Origin-Domain": "my-control-bucket-us-east-1.s3.amazonaws.com"
+}`,
+      outputHeaders: `{
+  "Host": "my-variant-bucket-us-east-1.s3.amazonaws.com",
+  "Cookie": "session_id=abc123xyz; experiment_group=variant_b",
+  "Origin-Domain": "my-variant-bucket-us-east-1.s3.amazonaws.com",
+  "X-Routed-By": "LambdaAtEdge-ABTesting"
+}`
+    }
+  };
+
+  const getCompiledCacheKey = () => {
+    let query = 'None';
+    if (cfQsForwarding === 'whitelist') query = 'v=2.1';
+    else if (cfQsForwarding === 'all') query = 'v=2.1&session_id=9a8b7c';
+
+    let header = 'None';
+    if (cfHeaderForwarding === 'whitelist') header = 'Accept-Language=en';
+    else if (cfHeaderForwarding === 'all') header = 'User-Agent=Mozilla/5.0_Accept-Language=en_Cookie=xyz';
+
+    let cookie = 'None';
+    if (cfCookieForwarding === 'all') cookie = 'session_id=8f2a1d';
+
+    return `Domain: cdn.app | Path: /static/style.css | Query: [${query}] | Header: [${header}] | Cookie: [${cookie}]`;
+  };
+
+  const handleChrEvaluation = () => {
+    if (cfChrTesting) return;
+    setCfChrTesting(true);
+    setCfChrRate(null);
+    setCfCacheHistory([]);
+
+    const currentHistory: string[] = [];
+    
+    // Simulate Request 1
+    setTimeout(() => {
+      currentHistory.push('Request 1 (Chrome Desktop): MISS ⚪ (First cold cache lookup)');
+      setCfCacheHistory([...currentHistory]);
+      
+      // Simulate Request 2
+      setTimeout(() => {
+        let isHit = true;
+        let reason = '';
+        if (cfHeaderForwarding === 'all') {
+          isHit = false;
+          reason = 'Firefox User-Agent difference created a unique Cache Key';
+        } else if (cfCookieForwarding === 'all') {
+          isHit = false;
+          reason = 'Firefox session Cookie difference created a unique Cache Key';
+        }
+
+        if (isHit) {
+          currentHistory.push('Request 2 (Firefox Mobile): HIT 🟢 (Cached asset retrieved in 1ms)');
+        } else {
+          currentHistory.push(`Request 2 (Firefox Mobile): MISS ⚪ (${reason})`);
+        }
+        setCfCacheHistory([...currentHistory]);
+
+        // Simulate Request 3
+        setTimeout(() => {
+          let isHit3 = true;
+          let reason3 = '';
+          if (cfHeaderForwarding === 'all') {
+            isHit3 = false;
+            reason3 = 'Safari Tablet User-Agent difference created a unique Cache Key';
+          } else if (cfCookieForwarding === 'all') {
+            isHit3 = false;
+            reason3 = 'Safari session Cookie difference created a unique Cache Key';
+          }
+
+          if (isHit3) {
+            currentHistory.push('Request 3 (Safari Tablet): HIT 🟢 (Cached asset retrieved in 1ms)');
+          } else {
+            currentHistory.push(`Request 3 (Safari Tablet): MISS ⚪ (${reason3})`);
+          }
+          setCfCacheHistory([...currentHistory]);
+          
+          // Calculate overall hit rate
+          let hits = 0;
+          if (cfHeaderForwarding !== 'all' && cfCookieForwarding !== 'all') {
+            hits = 2; // Req 2 and Req 3 hit
+          }
+          const finalChr = Math.round((hits / 3) * 100);
+          setCfChrRate(finalChr);
+          setCfChrTesting(false);
+        }, 600);
+      }, 600);
+    }, 400);
+  };
+
+  const handleOriginFailover = () => {
+    if (cfFailoverIsSimulating) return;
+    setCfFailoverIsSimulating(true);
+    setCfFailoverStep(1);
+    setCfActiveOrigin(null);
+    setCfFailoverLogs([
+      `[${new Date().toLocaleTimeString()}] 🚀 Ingress Client request received. Resolving DNS Anycast to Edge location...`
+    ]);
+
+    const log = (msg: string) => {
+      setCfFailoverLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+    };
+
+    setTimeout(() => {
+      setCfFailoverStep(2);
+      log('Steering request from Edge POP to Primary Origin S3 (us-east-1)...');
+
+      setTimeout(() => {
+        if (cfPrimaryOriginStatus === 'healthy') {
+          setCfFailoverStep(6);
+          setCfActiveOrigin('primary');
+          setCfFailoverIsSimulating(false);
+          log('✅ SUCCESS: Primary S3 Bucket responded with HTTP 200 OK. Returning response to client.');
+        } else {
+          setCfFailoverStep(3);
+          log('⚠️ CRITICAL: Primary S3 Bucket returned HTTP 502 Bad Gateway (Outage detected!).');
+
+          setTimeout(() => {
+            setCfFailoverStep(4);
+            log('🔄 INTERCEPTED: CloudFront Origin Group catches 502. Activating active-passive failover policy...');
+
+            setTimeout(() => {
+              setCfFailoverStep(5);
+              log('Steering backup request to Secondary Origin S3 (eu-west-1)...');
+
+              setTimeout(() => {
+                setCfFailoverStep(6);
+                setCfActiveOrigin('secondary');
+                setCfFailoverIsSimulating(false);
+                log('✅ FAILOVER SUCCESS: Secondary S3 Bucket responded with HTTP 200 OK. Client served silently! 🛡️');
+              }, 1000);
+            }, 800);
+          }, 800);
+        }
+      }, 1000);
+    }, 800);
+  };
+
+  const handleEdgeScriptExecution = () => {
+    if (cfEdgeTesting) return;
+    setCfEdgeTesting(true);
+    setCfEdgeStep(1);
+    setCfEdgeLatency(null);
+    const template = scriptTemplates[cfSelectedTemplate];
+    
+    setCfEdgeLogs([
+      `[${new Date().toLocaleTimeString()}] 🚀 Initiating request matching caching behavior rules.`,
+      `[${new Date().toLocaleTimeString()}] Intercepting at stage: [${template.stage}] using ${template.type}.`
+    ]);
+
+    const log = (msg: string) => {
+      setCfEdgeLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+    };
+
+    setTimeout(() => {
+      setCfEdgeStep(2);
+      log(`Booting script environment isolate (${template.language})...`);
+      log(`Executing handler code block at Edge location...`);
+
+      setTimeout(() => {
+        setCfEdgeStep(3);
+        if (cfSelectedTemplate === 'hsts') {
+          log('Appended Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options headers to response.');
+        } else if (cfSelectedTemplate === 'rewrite') {
+          log(`Rewrote request URI path from /docs/getting-started to /docs/getting-started/index.html.`);
+        } else if (cfSelectedTemplate === 'ab') {
+          log('Inspected cookie header: "experiment_group=variant_b". Steering origin hostname to Variant S3 Bucket.');
+        }
+
+        setTimeout(() => {
+          setCfEdgeStep(4);
+          const latency = cfSelectedTemplate === 'ab' ? 30 : 1;
+          setCfEdgeLatency(latency);
+          setCfEdgeTesting(false);
+          log(`✅ Execution complete. Edge Latency overhead: ${latency}ms. Served response to client.`);
+        }, 800);
+      }, 900);
+    }, 700);
+  };
+
   const addLog = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setSimLogs((prev) => [
       { timestamp: new Date().toLocaleTimeString(), type, message },
@@ -625,6 +935,223 @@ export default function CloudfrontVisualizer() {
                   </tbody>
                 </table>
               </div>
+              {/* --- ADVANCED CACHE KEY OPTIMIZER PLAYGROUND --- */}
+              <div className="cf-sec">🔌 Interactive Cache Key &amp; Forwarding Optimizer Sandbox</div>
+              <div className="cf-card">
+                <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+                  CloudFront uses a lookup key (the <strong>Cache Key</strong>) to identify cached resources. By default, it consists of only the URL path. If you forward query strings, cookies, or headers, they are added to the key. This sandbox illustrates the direct trade-off between configuration flexibility and caching performance.
+                </div>
+
+                <div className="cf-grid2" style={{ gap: '16px' }}>
+                  {/* Control Panel */}
+                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '10px', color: '#6366f1' }}>Forwarding Configuration Policies</div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div className="cf-ctrl" style={{ padding: '8px', background: '#fff' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Query Strings Forwarding</label>
+                        <select value={cfQsForwarding} onChange={(e) => setCfQsForwarding(e.target.value as any)} style={{ fontSize: '11px', padding: '4px' }}>
+                          <option value="none">None (Ignore all query parameters)</option>
+                          <option value="whitelist">Whitelist (Forward only ?v=... version tag)</option>
+                          <option value="all">Forward All Query Strings (Uniqueness-heavy)</option>
+                        </select>
+                      </div>
+
+                      <div className="cf-ctrl" style={{ padding: '8px', background: '#fff' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Request Headers Forwarding</label>
+                        <select value={cfHeaderForwarding} onChange={(e) => setCfHeaderForwarding(e.target.value as any)} style={{ fontSize: '11px', padding: '4px' }}>
+                          <option value="none">None (Static assets only)</option>
+                          <option value="whitelist">Whitelist (Forward only Accept-Language)</option>
+                          <option value="all">Forward All Headers (⚠️ User-Agent included)</option>
+                        </select>
+                      </div>
+
+                      <div className="cf-ctrl" style={{ padding: '8px', background: '#fff' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Cookies Forwarding</label>
+                        <select value={cfCookieForwarding} onChange={(e) => setCfCookieForwarding(e.target.value as any)} style={{ fontSize: '11px', padding: '4px' }}>
+                          <option value="none">None (Ignore tracking/session cookies)</option>
+                          <option value="all">Forward All Cookies (⚠️ Unique sessions)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <button 
+                      className="cf-btn cf-primary" 
+                      onClick={handleChrEvaluation} 
+                      disabled={cfChrTesting}
+                      style={{ width: '100%', marginTop: '12px', padding: '8px', fontWeight: 600 }}
+                    >
+                      {cfChrTesting ? '⌛ Evaluating Caching Hit Ratio...' : '⚡ Evaluate Cache Key Caching'}
+                    </button>
+                  </div>
+
+                  {/* Inspector Panel */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px', flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#334155' }}>Live Compiled Cache Key:</div>
+                      <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '6px', padding: '8px', fontFamily: 'monospace', fontSize: '10.5px', color: '#38bdf8', wordBreak: 'break-all', lineHeight: '1.4' }}>
+                        {getCompiledCacheKey()}
+                      </div>
+                      
+                      <div style={{ marginTop: '10px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Sequential Test Requests (Varying Client Devices):</div>
+                        <div style={{ background: '#ffffff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '8px', minHeight: '80px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {cfCacheHistory.length === 0 ? (
+                            <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>Click "Evaluate Cache Key Caching" to run device lookup sequence...</span>
+                          ) : (
+                            cfCacheHistory.map((item, index) => (
+                              <div key={index} style={{ fontFamily: 'monospace', fontSize: '10px', color: item.includes('HIT') ? '#16a34a' : '#c2410c' }}>
+                                {item}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {cfChrRate !== null && (
+                      <div style={{ background: cfChrRate === 0 ? '#fef2f2' : '#f0fdf4', border: `1px solid ${cfChrRate === 0 ? '#fca5a5' : '#86efac'}`, borderRadius: '8px', padding: '10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <div style={{ fontSize: '20px' }}>{cfChrRate === 0 ? '❌' : '🟢'}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '11.5px', fontWeight: 700, color: cfChrRate === 0 ? '#991b1b' : '#166534' }}>
+                            Calculated Cache Hit Ratio (CHR): {cfChrRate}%
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: cfChrRate === 0 ? '#b91c1c' : '#15803d', marginTop: '2px', lineHeight: '1.3' }}>
+                            {cfChrRate === 0 ? (
+                              <strong>⚠️ CACHE EFFICIENCY DESTROYED!</strong>
+                            ) : (
+                              <strong>🚀 HIGHLY OPTIMIZED CACHING!</strong>
+                            )}
+                            {' '}
+                            {cfHeaderForwarding === 'all' && 'Forwarding all headers (including varying User-Agents) forces a costly Origin Fetch on every browser request.'}
+                            {cfCookieForwarding === 'all' && 'Forwarding all cookies renders the Cache Key completely unique to individual client sessions.'}
+                            {cfHeaderForwarding !== 'all' && cfCookieForwarding !== 'all' && 'By omitting unique headers and cookies from the Cache Key, CloudFront can deliver cached content in under 1ms to subsequent global visitors!'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* --- ADVANCED ORIGIN GROUPS FAILOVER SANDBOX --- */}
+              <div className="cf-sec">🛡️ Active-Passive Origin Group Failover Topology Sandbox</div>
+              <div className="cf-card">
+                <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+                  An <strong>Origin Group</strong> establishes high-availability failover configurations by coupling a Primary origin with a Secondary backup. When CloudFront receives error codes (e.g. 502 Bad Gateway) from the Primary origin, it transparently reroutes traffic to the backup region in seconds.
+                </div>
+
+                <div className="cf-grid2" style={{ gap: '16px' }}>
+                  {/* Left Controls column */}
+                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#b91c1c' }}>HA Origin Group Configuration</div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', marginBottom: '12px' }}>
+                      <div style={{ background: '#fff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Primary Origin: <strong>S3 Bucket (Virginia)</strong></span>
+                        <span className="cf-badge cf-bok">Primary</span>
+                      </div>
+                      <div style={{ background: '#fff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Backup Origin: <strong>S3 Bucket (Dublin)</strong></span>
+                        <span className="cf-badge cf-binfo">Secondary</span>
+                      </div>
+                      <div style={{ background: '#fff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Failover Trigger Codes:</span>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#b91c1c' }}>500, 502, 503, 504</span>
+                      </div>
+                    </div>
+
+                    <div className="cf-ctrl" style={{ padding: '8px', background: '#fff', marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Primary Origin Health Status</label>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button 
+                          className={`cf-tb ${cfPrimaryOriginStatus === 'healthy' ? 'cf-on' : ''}`}
+                          onClick={() => setCfPrimaryOriginStatus('healthy')}
+                          style={{ flex: 1, padding: '4px', fontSize: '11px', background: cfPrimaryOriginStatus === 'healthy' ? '#16a34a' : '', borderColor: cfPrimaryOriginStatus === 'healthy' ? '#16a34a' : '' }}
+                        >
+                          🟢 Healthy
+                        </button>
+                        <button 
+                          className={`cf-tb ${cfPrimaryOriginStatus === 'outage' ? 'cf-on' : ''}`}
+                          onClick={() => setCfPrimaryOriginStatus('outage')}
+                          style={{ flex: 1, padding: '4px', fontSize: '11px', background: cfPrimaryOriginStatus === 'outage' ? '#ef4444' : '', borderColor: cfPrimaryOriginStatus === 'outage' ? '#ef4444' : '' }}
+                        >
+                          🔴 Outage (502 Error)
+                        </button>
+                      </div>
+                    </div>
+
+                    <button 
+                      className="cf-btn cf-primary" 
+                      onClick={handleOriginFailover}
+                      disabled={cfFailoverIsSimulating}
+                      style={{ width: '100%', padding: '8px', fontWeight: 600 }}
+                    >
+                      {cfFailoverIsSimulating ? '⌛ Tracing failover pathway...' : '🚀 Simulate Request'}
+                    </button>
+                  </div>
+
+                  {/* Right SVG and log output column */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '10px', background: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', alignSelf: 'flex-start', marginBottom: '6px' }}>Failover Route Topology:</span>
+                      
+                      <svg width="100%" height="110" viewBox="0 0 320 110" style={{ background: '#f8fafc', borderRadius: '6px', border: '0.5px solid #e2e8f0' }}>
+                        {/* Client Node */}
+                        <circle cx="25" cy="55" r="10" fill="#6366f1" />
+                        <text x="25" y="55" textAnchor="middle" dominantBaseline="central" fontSize="7" fill="#fff" fontWeight="bold">Cli</text>
+                        <text x="25" y="72" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="600">Client</text>
+
+                        {/* Edge Node */}
+                        <rect x="80" y="35" width="40" height="40" rx="3" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="100" y="50" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">CloudFront</text>
+                        <text x="100" y="62" textAnchor="middle" fontSize="6" fill="#7c3aed">Edge</text>
+
+                        {/* Primary S3 (Virginia) */}
+                        <rect x="180" y="10" width="55" height="35" rx="3" fill={cfActiveOrigin === 'primary' ? '#ecfdf5' : '#ffffff'} stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? '#10b981' : '#cbd5e1'} strokeWidth={cfActiveOrigin === 'primary' || cfFailoverStep >= 3 ? 1.5 : 1} />
+                        <text x="207.5" y="22" textAnchor="middle" fontSize="7" fill="#334155" fontWeight="bold">S3 Primary</text>
+                        <text x="207.5" y="32" textAnchor="middle" fontSize="6" fill={cfFailoverStep >= 3 ? '#ef4444' : '#64748b'}>
+                          {cfPrimaryOriginStatus === 'healthy' ? '🟢 us-east-1' : '🔴 502 Bad'}
+                        </text>
+
+                        {/* Secondary S3 (Dublin) */}
+                        <rect x="180" y="65" width="55" height="35" rx="3" fill={cfActiveOrigin === 'secondary' ? '#eff6ff' : '#ffffff'} stroke={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#cbd5e1'} strokeWidth={cfActiveOrigin === 'secondary' ? 1.5 : 1} />
+                        <text x="207.5" y="77" textAnchor="middle" fontSize="7" fill="#334155" fontWeight="bold">S3 Backup</text>
+                        <text x="207.5" y="87" textAnchor="middle" fontSize="6" fill={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#64748b'}>🔵 eu-west-1</text>
+
+                        {/* Arrows */}
+                        {/* Client to Edge */}
+                        <path d="M 35 55 L 80 55" stroke={cfFailoverStep >= 1 ? '#6366f1' : '#cbd5e1'} strokeWidth="1" strokeDasharray={cfFailoverIsSimulating && cfFailoverStep === 1 ? '3,3' : ''} />
+                        
+                        {/* Edge to Primary */}
+                        <path d="M 120 50 L 180 27" fill="none" stroke={cfFailoverStep === 3 ? '#ef4444' : cfFailoverStep >= 2 ? '#6366f1' : '#cbd5e1'} strokeWidth="1" />
+                        
+                        {/* Edge to Backup */}
+                        <path d="M 120 60 L 180 82" fill="none" stroke={cfFailoverStep >= 5 ? '#3b82f6' : '#cbd5e1'} strokeWidth="1" strokeDasharray={cfFailoverStep === 5 ? '3,3' : ''} />
+
+                        {/* Failover Shield status logo */}
+                        {cfFailoverStep === 4 && (
+                          <g>
+                            <circle cx="150" cy="55" r="9" fill="#fee2e2" stroke="#ef4444" strokeWidth="1" />
+                            <text x="150" y="55" textAnchor="middle" dominantBaseline="central" fontSize="7.5" fill="#b91c1c" fontWeight="bold">⚠️</text>
+                          </g>
+                        )}
+                      </svg>
+                    </div>
+
+                    {/* Terminal Failover Logs */}
+                    <div style={{ background: '#1e293b', borderRadius: '6px', padding: '8px', minHeight: '90px', maxHeight: '120px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '9.5px', color: '#cbd5e1', lineHeight: '1.45' }}>
+                      {cfFailoverLogs.map((logLine, logIdx) => (
+                        <div key={logIdx} style={{ marginBottom: '3px' }}>
+                          <span style={{ color: logLine.includes('✅') ? '#4ade80' : logLine.includes('⚠️') ? '#f87171' : logLine.includes('🔄') ? '#fbbf24' : '#94a3b8' }}>
+                            {logLine}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
         )}
 
@@ -870,6 +1397,163 @@ export default function CloudfrontVisualizer() {
                 <div style={{ fontWeight: 600, color: '#1e40af', marginBottom: '4px' }}>💡 Interactive Testing Tip:</div>
                 You can test both **Geo-Restrictions** and **Cache Invalidations** in real-time inside the **Live Global Request Simulator** tab!
                 Toggle country blockades to see requests instantly rejected at the edge, or trigger an invalidation path to wipe cache states and witness a live cache miss animation.
+              </div>
+            </div>
+
+            {/* --- ADVANCED EDGE COMPUTING PLAYROOM --- */}
+            <div className="cf-sec">⚡ Interactive Edge Computing Scripting Playroom</div>
+            <div className="cf-card">
+              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+                Execute high-speed compute logic globally at AWS Edge datacenters. Choose between lightweight **CloudFront Functions** (sub-millisecond HTTP header rewrites running in secure V8 sandboxes) and full **Lambda@Edge** servers (supporting NodeJS/Python runtimes and database connectivity).
+              </div>
+
+              <div className="cf-grid2" style={{ gap: '16px' }}>
+                {/* Left Column: Selector & Editor */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#6366f1' }}>Select Script Template Policy:</div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <button 
+                        className={`cf-tb ${cfSelectedTemplate === 'hsts' ? 'cf-on' : ''}`}
+                        onClick={() => { setCfSelectedTemplate('hsts'); setCfEdgeStep(0); setCfEdgeLatency(null); }}
+                        style={{ textAlign: 'left', display: 'block', width: '100%', padding: '8px', fontSize: '11.5px' }}
+                      >
+                        🛡️ Add HSTS Headers (CloudFront Functions)
+                      </button>
+                      <button 
+                        className={`cf-tb ${cfSelectedTemplate === 'rewrite' ? 'cf-on' : ''}`}
+                        onClick={() => { setCfSelectedTemplate('rewrite'); setCfEdgeStep(0); setCfEdgeLatency(null); }}
+                        style={{ textAlign: 'left', display: 'block', width: '100%', padding: '8px', fontSize: '11.5px' }}
+                      >
+                        🔗 URL Rewrite Clean Paths (CloudFront Functions)
+                      </button>
+                      <button 
+                        className={`cf-tb ${cfSelectedTemplate === 'ab' ? 'cf-on' : ''}`}
+                        onClick={() => { setCfSelectedTemplate('ab'); setCfEdgeStep(0); setCfEdgeLatency(null); }}
+                        style={{ textAlign: 'left', display: 'block', width: '100%', padding: '8px', fontSize: '11.5px' }}
+                      >
+                        ⚖ A/B Test Origin Routing (Lambda@Edge)
+                      </button>
+                    </div>
+
+                    {/* Educational specifications box */}
+                    <div style={{ marginTop: '12px', borderTop: '0.5px solid #cbd5e1', paddingTop: '8px', fontSize: '11px', lineHeight: '1.45', color: '#475569' }}>
+                      <div><strong>Engine:</strong> <span style={{ color: '#0284c7', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].type}</span></div>
+                      <div><strong>Stage:</strong> <span style={{ color: '#6d28d9', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].stage}</span></div>
+                      <div><strong>Performance:</strong> <span style={{ color: '#16a34a', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].latency}</span></div>
+                      <p style={{ margin: '4px 0 0 0', fontStyle: 'italic', fontSize: '10px' }}>
+                        {scriptTemplates[cfSelectedTemplate].description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Editor Mockup */}
+                  <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+                      <span style={{ fontSize: '10.5px', fontFamily: 'monospace', color: '#94a3b8' }}>📄 handler.js (Read-only Editor)</span>
+                      <span className="cf-badge cf-binfo" style={{ padding: '2px 6px', fontSize: '8px' }}>{scriptTemplates[cfSelectedTemplate].language}</span>
+                    </div>
+                    <pre style={{ margin: 0, overflowX: 'auto', fontFamily: 'monospace', fontSize: '10.5px', color: '#38bdf8', flex: 1, whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                      {scriptTemplates[cfSelectedTemplate].code}
+                    </pre>
+                  </div>
+                </div>
+
+                {/* Right Column: Execution Terminal and Latency Indicator */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#334155' }}>Edge Execution Console</div>
+                    
+                    <button 
+                      className="cf-btn cf-primary" 
+                      onClick={handleEdgeScriptExecution}
+                      disabled={cfEdgeTesting}
+                      style={{ width: '100%', padding: '8px', fontWeight: 600, marginBottom: '10px' }}
+                    >
+                      {cfEdgeTesting ? '⚡ Executing script globally...' : '⚡ Execute Script at Edge'}
+                    </button>
+
+                    {/* Micro-animations and phase indicator */}
+                    <div style={{ background: '#ffffff', border: '0.5px solid #cbd5e1', borderRadius: '6px', padding: '8px', fontSize: '10.5px' }}>
+                      <div style={{ fontWeight: 700, color: '#475569', marginBottom: '6px' }}>Pipeline Progress Stages:</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ color: cfEdgeStep >= 1 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 1 ? 'bold' : 'normal' }}>
+                          {cfEdgeStep >= 1 ? '🟢' : '⚪'} Stage 1: Request Interception ({scriptTemplates[cfSelectedTemplate].stage})
+                        </div>
+                        <div style={{ color: cfEdgeStep >= 2 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 2 ? 'bold' : 'normal' }}>
+                          {cfEdgeStep >= 2 ? '🟢' : '⚪'} Stage 2: Sandbox Isolate compilation
+                        </div>
+                        <div style={{ color: cfEdgeStep >= 3 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 3 ? 'bold' : 'normal' }}>
+                          {cfEdgeStep >= 3 ? '🟢' : '⚪'} Stage 3: Request/Response Header Mutation
+                        </div>
+                        <div style={{ color: cfEdgeStep >= 4 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 4 ? 'bold' : 'normal' }}>
+                          {cfEdgeStep >= 4 ? '🟢' : '⚪'} Stage 4: Execution successfully finished!
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Latency Gauges */}
+                    {cfEdgeLatency !== null && (
+                      <div style={{ marginTop: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>
+                          <span>Dynamic Latency Overhead:</span>
+                          <span style={{ color: cfEdgeLatency === 1 ? '#16a34a' : '#be185d' }}>
+                            {cfEdgeLatency} ms ({cfEdgeLatency === 1 ? 'Ultra optimized V8 isolate' : 'Node Lambda container'})
+                          </span>
+                        </div>
+                        
+                        {/* Visual progress bar */}
+                        <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div 
+                            style={{ 
+                              height: '100%', 
+                              width: cfEdgeLatency === 1 ? '4%' : '90%', 
+                              background: cfEdgeLatency === 1 ? '#16a34a' : '#db2777',
+                              transition: 'width 0.4s ease-out'
+                            }} 
+                          />
+                        </div>
+                        
+                        <div style={{ fontSize: '9.5px', color: '#64748b', marginTop: '4px', fontStyle: 'italic' }}>
+                          {cfEdgeLatency === 1 
+                            ? 'CloudFront Functions execute in lightweight threads. Zero cold-start latency.'
+                            : 'Lambda@Edge invokes a full Node.js server container. Supports extensive computational power at a slight startup cost.'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Console Logs & Modified Headers Terminals */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Logs console */}
+                    <div style={{ background: '#1e293b', borderRadius: '6px', padding: '8px', height: '80px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '9.5px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                      {cfEdgeLogs.map((logLine, logIdx) => (
+                        <div key={logIdx} style={{ marginBottom: '3px', color: logLine.includes('✅') ? '#4ade80' : '#cbd5e1' }}>
+                          {logLine}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Header Diff side-by-side */}
+                    {cfEdgeStep >= 3 && (
+                      <div className="cf-grid2" style={{ gap: '8px', flex: 1 }}>
+                        <div style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#b91c1c', marginBottom: '4px' }}>Inbound Header:</span>
+                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '9px', color: '#475569', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                            {scriptTemplates[cfSelectedTemplate].inputHeaders}
+                          </pre>
+                        </div>
+                        <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '6px', padding: '6px', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Modified Header (At Edge):</span>
+                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '9px', color: '#15803d', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                            {scriptTemplates[cfSelectedTemplate].outputHeaders}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
