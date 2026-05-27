@@ -140,6 +140,46 @@ const BUCKET_POLICIES = {
 export default function S3Visualizer() {
   const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'encryption' | 'versioning' | 'storage' | 'networking' | 'transfer' | 'operations'>('overview');
 
+  // TAB 1: BUCKET CONCEPTS STATE VARIABLES
+  const [bucketType, setBucketType] = useState<'general' | 'directory'>('general');
+  const [directoryAz, setDirectoryAz] = useState<'use1-az4' | 'use1-az6'>('use1-az4');
+  const [bucketNameInput, setBucketNameInput] = useState<string>('my-premium-bucket');
+  const [urlRegion, setUrlRegion] = useState<string>('us-east-1');
+  const [urlKey, setUrlKey] = useState<string>('images/photo.jpg');
+  
+  const [corsOriginInput, setCorsOriginInput] = useState<string>('https://domain-a.com');
+  const [corsMethodInput, setCorsMethodInput] = useState<string>('GET');
+  const [corsLogs, setCorsLogs] = useState<Array<{ timestamp: string; type: 'info' | 'success' | 'warning' | 'error'; message: string }>>([
+    { timestamp: new Date().toLocaleTimeString(), type: 'info', message: 'CORS preflight OPTIONS simulator ready.' }
+  ]);
+  const [corsAnimationState, setCorsAnimationState] = useState<'idle' | 'preflight' | 'authorized' | 'blocked'>('idle');
+
+  const [replicateStep, setReplicateStep] = useState<number>(0);
+  const [replicateIsRunning, setReplicateIsRunning] = useState<boolean>(false);
+  const [replicateLogs, setReplicateLogs] = useState<string[]>([]);
+  const [replicatePayload, setReplicatePayload] = useState<string>('ledger.pdf');
+
+  const [consistencyMode, setConsistencyMode] = useState<'strong' | 'eventual'>('strong');
+  const [consistencyReadStep, setConsistencyReadStep] = useState<number>(0);
+  const [consistencyIsRunning, setConsistencyIsRunning] = useState<boolean>(false);
+  const [consistencyLogs, setConsistencyLogs] = useState<string[]>([]);
+
+  // TAB 6 & 7 ADVANCED CONCEPTS HOOKS
+  const [apIdentity, setApIdentity] = useState<'finance_user' | 'sales_user' | 'auditor'>('finance_user');
+  const [apEndpoint, setApEndpoint] = useState<'bucket_root' | 'finance_ap' | 'sales_ap'>('finance_ap');
+  const [apAction, setApAction] = useState<'read_finance' | 'read_sales'>('read_finance');
+  const [apResultLogs, setApResultLogs] = useState<string[]>([]);
+  const [apAnimationState, setApAnimationState] = useState<'idle' | 'routing' | 'granted' | 'denied'>('idle');
+
+  const [mpFileSize, setMpFileSize] = useState<number>(200);
+  const [mpPartSize, setMpPartSize] = useState<number>(50);
+  const [mpGlitch, setMpGlitch] = useState<boolean>(false);
+  const [mpStep, setMpStep] = useState<number>(0);
+  const [mpUploadId, setMpUploadId] = useState<string>('');
+  const [mpIsRunning, setMpIsRunning] = useState<boolean>(false);
+  const [mpLogs, setMpLogs] = useState<string[]>([]);
+  const [mpParts, setMpParts] = useState<Array<{ id: number; status: 'idle' | 'uploading' | 'completed' | 'failed'; progress: number }>>([]);
+
   // TAB 2: SECURITY STATE & LIVE EDITOR
   const [selectedPolicyTemplate, setSelectedPolicyTemplate] = useState<'public' | 'https' | 'vpce'>('public');
   const [bucketPolicyText, setBucketPolicyText] = useState<string>(BUCKET_POLICIES.public);
@@ -242,6 +282,11 @@ export default function S3Visualizer() {
   const encryptionTerminalRef = useRef<HTMLDivElement>(null);
   const policyTerminalRef = useRef<HTMLDivElement>(null);
   const wormTerminalRef = useRef<HTMLDivElement>(null);
+  const replicateTerminalRef = useRef<HTMLDivElement>(null);
+  const consistencyTerminalRef = useRef<HTMLDivElement>(null);
+  const corsTerminalRef = useRef<HTMLDivElement>(null);
+  const apTerminalRef = useRef<HTMLDivElement>(null);
+  const mpTerminalRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll terminals
   useEffect(() => {
@@ -267,6 +312,367 @@ export default function S3Visualizer() {
   useEffect(() => {
     if (batchTerminalRef.current) batchTerminalRef.current.scrollTop = batchTerminalRef.current.scrollHeight;
   }, [batchLogs]);
+
+  useEffect(() => {
+    if (replicateTerminalRef.current) replicateTerminalRef.current.scrollTop = replicateTerminalRef.current.scrollHeight;
+  }, [replicateLogs]);
+
+  useEffect(() => {
+    if (consistencyTerminalRef.current) consistencyTerminalRef.current.scrollTop = consistencyTerminalRef.current.scrollHeight;
+  }, [consistencyLogs]);
+
+  useEffect(() => {
+    if (corsTerminalRef.current) corsTerminalRef.current.scrollTop = corsTerminalRef.current.scrollHeight;
+  }, [corsLogs]);
+
+  useEffect(() => {
+    if (apTerminalRef.current) apTerminalRef.current.scrollTop = apTerminalRef.current.scrollHeight;
+  }, [apResultLogs]);
+
+  useEffect(() => {
+    if (mpTerminalRef.current) mpTerminalRef.current.scrollTop = mpTerminalRef.current.scrollHeight;
+  }, [mpLogs]);
+
+  // Tab 6: Interactive S3 Access Points Scoped Gateway Handler
+  const handleAccessPointRoute = () => {
+    if (apAnimationState !== 'idle') return;
+    setApAnimationState('routing');
+    setApResultLogs([
+      `[access-point-gateway] Intercepting request: Caller=${apIdentity === 'finance_user' ? 'Finance Team IAM User' : apIdentity === 'sales_user' ? 'Sales Team IAM User' : 'External Regulatory Auditor'}` ,
+      `[access-point-gateway] Connection entrypoint endpoint: ${apEndpoint === 'bucket_root' ? 'arn:aws:s3:::my-premium-bucket' : apEndpoint === 'finance_ap' ? 'arn:aws:s3:us-east-1:123456789012:accesspoint/finance-ap' : 'arn:aws:s3:us-east-1:123456789012:accesspoint/sales-ap'}`,
+      `[access-point-gateway] Inbound Action: s3:GetObject, Target Resource Path: "${apAction === 'read_finance' ? 'finance/ledger.xlsx' : 'sales/contracts.pdf'}"`,
+      `[access-point-gateway] Evaluating endpoint policy mapping rules...`
+    ]);
+
+    setTimeout(() => {
+      if (apEndpoint === 'bucket_root') {
+        setApAnimationState('denied');
+        setApResultLogs(prev => [
+          ...prev,
+          `[iam-engine] ❌ ACCESS BLOCKED AT MAIN BUCKET GATE!`,
+          `[iam-engine] Security best-practice enforcement: Direct bucket root entrypoints are disabled for standard users.`,
+          `[iam-engine] Caller must route requests via their designated team-scoped Access Point.`,
+          `❌ [verdict] Access Denied: Direct root channel requires s3:ListBucket & wildcard GET on bucket root. (HTTP 403)`
+        ]);
+      } else if (apEndpoint === 'finance_ap') {
+        const pathMatch = apAction === 'read_finance';
+        const identityMatch = apIdentity === 'finance_user' || apIdentity === 'auditor';
+
+        if (identityMatch && pathMatch) {
+          setApAnimationState('granted');
+          setApResultLogs(prev => [
+            ...prev,
+            `[finance-ap-evaluator] ✅ Access Point endpoint matched context correctly.`,
+            `[finance-ap-evaluator] Policy check: Identity is whitelisted in AP IAM resource policy.`,
+            `[finance-ap-evaluator] Prefix constraint check: Target path "finance/*" matches AP path scope perfectly.`,
+            `[finance-ap-evaluator] Forwarding request to S3 storage hypervisors...`,
+            `✅ [verdict] Authorized: GET 200 OK. Scoped Access Point successfully completed direct folder handshake.`
+          ]);
+        } else {
+          setApAnimationState('denied');
+          setApResultLogs(prev => [
+            ...prev,
+            `[finance-ap-evaluator] ❌ PERMISSION OR PATH MISMATCH!`,
+            !identityMatch 
+              ? `[finance-ap-evaluator] Security mismatch: Caller identity is not whitelisted to access finance-ap.` 
+              : `[finance-ap-evaluator] Target path mismatch: finance-ap is strictly locked to Prefix "finance/*". Path "${apAction === 'read_sales' ? 'sales/contracts.pdf' : ''}" is out of bounds!`,
+            `❌ [verdict] Access Denied: Endpoint policy blocked cross-tenant request. (HTTP 403)`
+          ]);
+        }
+      } else if (apEndpoint === 'sales_ap') {
+        const pathMatch = apAction === 'read_sales';
+        const identityMatch = apIdentity === 'sales_user' || apIdentity === 'auditor';
+
+        if (identityMatch && pathMatch) {
+          setApAnimationState('granted');
+          setApResultLogs(prev => [
+            ...prev,
+            `[sales-ap-evaluator] ✅ Access Point endpoint matched context correctly.`,
+            `[sales-ap-evaluator] Policy check: Identity is whitelisted in AP IAM resource policy.`,
+            `[sales-ap-evaluator] Prefix constraint check: Target path "sales/*" matches AP path scope perfectly.`,
+            `[sales-ap-evaluator] Forwarding request to S3 storage hypervisors...`,
+            `✅ [verdict] Authorized: GET 200 OK. Scoped Access Point successfully completed direct folder handshake.`
+          ]);
+        } else {
+          setApAnimationState('denied');
+          setApResultLogs(prev => [
+            ...prev,
+            `[sales-ap-evaluator] ❌ PERMISSION OR PATH MISMATCH!`,
+            !identityMatch 
+              ? `[sales-ap-evaluator] Security mismatch: Caller identity is not whitelisted to access sales-ap.` 
+              : `[sales-ap-evaluator] Target path mismatch: sales-ap is strictly locked to Prefix "sales/*". Path "${apAction === 'read_finance' ? 'finance/ledger.xlsx' : ''}" is out of bounds!`,
+            `❌ [verdict] Access Denied: Endpoint policy blocked cross-tenant request. (HTTP 403)`
+          ]);
+        }
+      }
+    }, 1600);
+  };
+
+  // Tab 7: High-Throughput Multipart Upload Simulator Handlers
+  const handleMultipartUpload = () => {
+    if (mpIsRunning) return;
+    setMpIsRunning(true);
+    setMpStep(1);
+    const newUploadId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    setMpUploadId(newUploadId);
+    setMpLogs([
+      `[multipart-client] Initializing S3 Multipart Upload sequence: file_size=${mpFileSize} MB...`,
+      `[multipart-client] Slicing file payload into uniform parts: Part Size=${mpPartSize} MB.`,
+      `[multipart-client] Dispatching InitiateMultipartUpload API request to S3 bucket...`
+    ]);
+
+    setTimeout(() => {
+      setMpStep(2);
+      setMpLogs(prev => [
+        ...prev,
+        `[s3-server] Handshake established. Created active upload session partition.`,
+        `[s3-server] Assigned session ID: UploadId="${newUploadId}"`,
+        `[multipart-client] Preparing concurrent thread pools to upload chunks in parallel...`
+      ]);
+    }, 1200);
+
+    setTimeout(() => {
+      setMpStep(3);
+      const totalPartsCount = Math.ceil(mpFileSize / mpPartSize);
+      const initialPartsList = Array.from({ length: totalPartsCount }, (_, i) => ({
+        id: i + 1,
+        status: 'uploading' as const,
+        progress: 0
+      }));
+      setMpParts(initialPartsList);
+      setMpLogs(prev => [
+        ...prev,
+        `[multipart-client] 🚀 Dispatching ${totalPartsCount} parallel threads to transmit chunk bytes...`,
+        `[workers] Part 1 to Part ${totalPartsCount} upload streams initiated concurrently.`
+      ]);
+
+      let currentTick = 0;
+      const progressInterval = setInterval(() => {
+        currentTick += 1;
+        setMpParts(prevParts => {
+          let hasGlitchTriggered = false;
+          const nextParts = prevParts.map(part => {
+            if (part.status === 'completed' || part.status === 'failed') return part;
+
+            if (mpGlitch && (part.id === 3 || part.id === 2) && currentTick === 5) {
+              hasGlitchTriggered = true;
+              return { ...part, status: 'failed' as const, progress: 45 };
+            }
+
+            const nextProgress = part.progress + Math.floor(Math.random() * 20 + 20);
+            if (nextProgress >= 100) {
+              return { ...part, status: 'completed' as const, progress: 100 };
+            }
+            return { ...part, progress: nextProgress };
+          });
+
+          if (hasGlitchTriggered) {
+            clearInterval(progressInterval);
+            setMpStep(4);
+            setMpIsRunning(false);
+            setMpLogs(l => [
+              ...l,
+              `[workers] ❌ THREAD FAULT DETECTED: Network jitter triggered packet drop on [Part 3]!`,
+              `[workers] Part 3 upload stream aborted (HTTP 502 Gateway Timeout).`,
+              `[multipart-client] Parallel ingest paused. Partial segments successfully stored in temporary S3 allocation.`,
+              `💡 [tip] Don't panic! Click "Retry Failed Parts" to demonstrate S3's efficient single-chunk re-upload saving bandwidth.`
+            ]);
+          }
+
+          return nextParts;
+        });
+
+        setMpParts(latestParts => {
+          const allDone = latestParts.every(p => p.status === 'completed');
+          if (allDone && latestParts.length > 0) {
+            clearInterval(progressInterval);
+            triggerMultipartCompletion(newUploadId, latestParts.length);
+          }
+          return latestParts;
+        });
+      }, 400);
+    }, 2500);
+  };
+
+  const retryFailedMultipart = () => {
+    if (mpIsRunning) return;
+    setMpIsRunning(true);
+    setMpStep(3);
+    setMpLogs(prev => [
+      ...prev,
+      `[multipart-client] Resuming Upload Session: UploadId="${mpUploadId}"`,
+      `[multipart-client] 🔄 Target re-upload triggered ONLY for failed or missing chunk streams...`,
+      `[workers] Spawning recovery thread pool...`
+    ]);
+
+    setMpParts(prevParts => {
+      return prevParts.map(part => {
+        if (part.status === 'failed') {
+          return { ...part, status: 'uploading' as const, progress: 0 };
+        }
+        return part;
+      });
+    });
+
+    setTimeout(() => {
+      const progressInterval = setInterval(() => {
+        setMpParts(prevParts => {
+          return prevParts.map(part => {
+            if (part.status !== 'uploading') return part;
+
+            const nextProgress = part.progress + Math.floor(Math.random() * 30 + 30);
+            if (nextProgress >= 100) {
+              return { ...part, status: 'completed' as const, progress: 100 };
+            }
+            return { ...part, progress: nextProgress };
+          });
+        });
+
+        setMpParts(latestParts => {
+          const allDone = latestParts.every(p => p.status === 'completed');
+          if (allDone && latestParts.length > 0) {
+            clearInterval(progressInterval);
+            triggerMultipartCompletion(mpUploadId, latestParts.length);
+          }
+          return latestParts;
+        });
+      }, 400);
+    }, 1200);
+  };
+
+  const triggerMultipartCompletion = (uploadId: string, count: number) => {
+    setMpStep(5);
+    setMpIsRunning(false);
+    const mockETag = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    setMpLogs(prev => [
+      ...prev,
+      `[multipart-client] All ${count} chunk uploads completed successfully.`,
+      `[multipart-client] Dispatching CompleteMultipartUpload API request to S3 (UploadId: "${uploadId}")...`,
+      `[s3-server] Consolidated ${count} chunk segments. Reassembling physical blocks on storage partitions...`,
+      `[s3-server] Parity validation successful. Computed global object ETag hash: "${mockETag}-${count}"`,
+      `✅ [verdict] Multipart upload transaction SUCCESS! Object stored at rest. (HTTP 200)`
+    ]);
+  };
+
+  // Tab 1: CORS Preflight Handler
+  const handleCorsPreflight = () => {
+    if (corsAnimationState !== 'idle') return;
+    
+    setCorsAnimationState('preflight');
+    setCorsLogs([
+      { timestamp: new Date().toLocaleTimeString(), type: 'info', message: `OPTIONS preflight request initiated: Origin=${corsOriginInput}, Method=${corsMethodInput}` },
+      { timestamp: new Date().toLocaleTimeString(), type: 'info', message: `Checking S3 CORS whitelists for target bucket: ${bucketNameInput}.s3.amazonaws.com` }
+    ]);
+
+    setTimeout(() => {
+      const originMatch = corsOriginInput === 'https://domain-a.com';
+      const methodMatch = corsMethodInput === 'GET' || corsMethodInput === 'PUT' || corsMethodInput === 'HEAD';
+      
+      if (originMatch && methodMatch) {
+        setCorsAnimationState('authorized');
+        setCorsLogs(prev => [
+          ...prev,
+          { timestamp: new Date().toLocaleTimeString(), type: 'success', message: `OPTIONS SUCCESS: Origin '${corsOriginInput}' is whitelisted. Method '${corsMethodInput}' is whitelisted.` },
+          { timestamp: new Date().toLocaleTimeString(), type: 'success', message: `Browser CORS preflight passed (200 OK). Initializing actual ${corsMethodInput} data transfer.` }
+        ]);
+      } else {
+        setCorsAnimationState('blocked');
+        setCorsLogs(prev => [
+          ...prev,
+          { 
+            timestamp: new Date().toLocaleTimeString(), 
+            type: 'error', 
+            message: `CORS BLOCK: Origin '${corsOriginInput}' or Method '${corsMethodInput}' is NOT whitelisted.` 
+          },
+          { timestamp: new Date().toLocaleTimeString(), type: 'error', message: `OPTIONS Preflight Failed: Browser blocks actual ${corsMethodInput} cross-origin request (403 Forbidden).` }
+        ]);
+      }
+    }, 1500);
+  };
+
+  // Tab 1: S3 AZ Active Replication Ingestion Simulator
+  const handleReplicationSimulation = () => {
+    if (replicateIsRunning) return;
+    setReplicateIsRunning(true);
+    setReplicateStep(1);
+    setReplicateLogs([
+      `[s3-ingest] PUT request received for object key: "${urlKey}"`,
+      `[s3-ingest] Payload size validation: ${(replicatePayload === 'ledger.pdf' ? '12.4 MB' : '45.1 MB')} - OK`,
+      `[s3-ingest] Allocating distributed block mapping table...`
+    ]);
+
+    setTimeout(() => {
+      setReplicateStep(2);
+      setReplicateLogs(prev => [
+        ...prev,
+        `[s3-router] Ingest Gateway splits object payload into immutable chunk parity blocks.`,
+        `[s3-router] Resolving target datacenter routes within Region: ${urlRegion}...`,
+        `[s3-router] Dispatching parallel write tasks to 3 isolated Availability Zones...`
+      ]);
+    }, 1200);
+
+    setTimeout(() => {
+      setReplicateStep(3);
+      setReplicateLogs(prev => [
+        ...prev,
+        `[s3-replicator] ⚡ AZ-1 (datacenter: ${urlRegion}a) physical sector commit SUCCESS! [Bytes written]`,
+        `[s3-replicator] ⚡ AZ-2 (datacenter: ${urlRegion}b) physical sector commit SUCCESS! [Bytes written]`,
+        `[s3-replicator] ⚡ AZ-3 (datacenter: ${urlRegion}c) physical sector commit SUCCESS! [Bytes written]`,
+        `[s3-replicator] Replicating parity data blocks for automatic disaster recovery isolation.`
+      ]);
+    }, 2500);
+
+    setTimeout(() => {
+      setReplicateStep(4);
+      setReplicateLogs(prev => [
+        ...prev,
+        `[s3-replicator] Parallel datacenter commits confirmed. MD5 checksum validated successfully.`,
+        `✅ [verdict] PUT 200 OK. Object successfully stored at rest with guaranteed 99.999999999% (11 9s) durability SLA.`
+      ]);
+      setReplicateIsRunning(false);
+    }, 3800);
+  };
+
+  // Tab 1: S3 Strong vs Eventual Read Consistency Simulator
+  const handleConsistencySimulation = () => {
+    if (consistencyIsRunning) return;
+    setConsistencyIsRunning(true);
+    setConsistencyReadStep(1);
+    setConsistencyLogs([
+      `[writer] Triggering PUT request to update key "${urlKey}" to [Version 2.0]`,
+      `[s3-index] Locking database catalog metadata row...`,
+      `[s3-index] Committing atomic version mapping...`
+    ]);
+
+    setTimeout(() => {
+      setConsistencyReadStep(2);
+      setConsistencyLogs(prev => [
+        ...prev,
+        `[writer] PUT [Version 2.0] success returned: 200 OK.`,
+        `[reader] Immediate GET request issued for key "${urlKey}" exactly 1ms later...`
+      ]);
+    }, 1200);
+
+    setTimeout(() => {
+      setConsistencyReadStep(3);
+      if (consistencyMode === 'strong') {
+        setConsistencyLogs(prev => [
+          ...prev,
+          `[s3-index] Guaranteed read safety constraint active: Read-After-Write Atomic Lock check.`,
+          `[s3-index] Reading primary index block. Found atomic update commit.`,
+          `✅ [reader] Success! GET returned [Version 2.0] immediately. Read-after-write consistency guaranteed. (HTTP 200)`
+        ]);
+      } else {
+        setConsistencyLogs(prev => [
+          ...prev,
+          `[s3-index] Eventual consistency model active: Asynchronous mirroring propagation delay.`,
+          `[s3-index] Mirror node ${urlRegion}a-mirror-3 has not resolved database updates yet.`,
+          `⚠️ [reader] STALE READ! GET returned legacy [Version 1.0]. Propagation sync pending. (HTTP 200)`
+        ]);
+      }
+      setConsistencyIsRunning(false);
+    }, 2800);
+  };
 
   // Tab 2: Policy Ingress Simulator with Live JSON Evaluation
   const testPolicyIngress = () => {
@@ -1162,6 +1568,10 @@ export default function S3Visualizer() {
         @keyframes draw {
           to { stroke-dashoffset: 0; }
         }
+        @keyframes pulse-red {
+          from { box-shadow: 0 0 4px rgba(220, 38, 38, 0.2); background: #fef2f2; }
+          to { box-shadow: 0 0 16px rgba(220, 38, 38, 0.55); background: #fee2e2; }
+        }
       `}</style>
 
       {/* Header */}
@@ -1292,8 +1702,481 @@ export default function S3Visualizer() {
               </svg>
             </div>
 
+            {/* DNS Validator & URL Generator */}
+            <div className="s3-sec">🔒 Interactive S3 Bucket Namespace &amp; DNS Compliances Playground</div>
+            <div className="s3-g2" style={{ marginBottom: '24px' }}>
+              
+              {/* Part A: DNS Validator */}
+              <div className="s3-card">
+                <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🪣</span> S3 Bucket DNS Compliancy Validator
+                </div>
+                <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
+                  Bucket names must be globally unique across all AWS accounts and regions, conforming to strict DNS rules.
+                </div>
+
+                {/* S3 Architecture class toggle */}
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ fontSize: '10.5px', fontWeight: 600, display: 'block', marginBottom: '4px', color: 'var(--color-text-secondary)' }}>S3 Bucket Architecture Class:</label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button className={`s3-btn ${bucketType === 'general' ? 's3-on' : ''}`} style={{ flex: 1, padding: '4px 8px', fontSize: '11px' }} onClick={() => { setBucketType('general'); setBucketNameInput('my-premium-bucket'); }}>
+                      🌐 General Purpose
+                    </button>
+                    <button className={`s3-btn ${bucketType === 'directory' ? 's3-on' : ''}`} style={{ flex: 1, padding: '4px 8px', fontSize: '11px' }} onClick={() => { setBucketType('directory'); setBucketNameInput('my-fast-bucket--use1-az4--x-s3'); }}>
+                      ⚡ Express One Zone
+                    </button>
+                  </div>
+                </div>
+
+                {bucketType === 'directory' && (
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={{ fontSize: '10.5px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Availability Zone Target Placement:</label>
+                    <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #cbd5e1' }} value={directoryAz} onChange={(e) => {
+                      const az = e.target.value as any;
+                      setDirectoryAz(az);
+                      setBucketNameInput(`my-fast-bucket--${az}--x-s3`);
+                    }}>
+                      <option value="use1-az4">use1-az4 (us-east-1a / Rack AZ 4)</option>
+                      <option value="use1-az6">use1-az6 (us-east-1b / Rack AZ 6)</option>
+                    </select>
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="s3-sec" style={{ margin: '0 0 6px 0', fontSize: '10.5px' }}>Bucket Name Input</label>
+                  <input
+                    type="text"
+                    className="s3-btn"
+                    style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', textTransform: 'lowercase', fontFamily: 'monospace', textAlign: 'left', cursor: 'text' }}
+                    value={bucketNameInput}
+                    onChange={(e) => setBucketNameInput(e.target.value.toLowerCase())}
+                    placeholder={bucketType === 'general' ? "e.g. my-cool-bucket" : "e.g. my-fast-bucket--use1-az4--x-s3"}
+                  />
+                </div>
+
+                {/* Validation checklist calculations */}
+                {(() => {
+                  const isLengthValid = bucketType === 'general'
+                    ? (bucketNameInput.length >= 3 && bucketNameInput.length <= 63)
+                    : (bucketNameInput.length >= 3 && bucketNameInput.length <= 64);
+
+                  const isCharsValid = bucketType === 'general'
+                    ? /^[a-z0-9.-]+$/.test(bucketNameInput)
+                    : /^[a-z0-9-]+$/.test(bucketNameInput); // no periods allowed in directory buckets!
+
+                  const isStartEndValid = /^[a-z0-9]/.test(bucketNameInput) && /[a-z0-9]$/.test(bucketNameInput);
+
+                  const isAdjacentValid = bucketType === 'general'
+                    ? (!bucketNameInput.includes('..') && !bucketNameInput.includes('--') && !bucketNameInput.includes('.-') && !bucketNameInput.includes('-.'))
+                    : (!bucketNameInput.split('--')[0]?.includes('..') && !bucketNameInput.split('--')[0]?.includes('--'));
+
+                  const isIpAddressValid = !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(bucketNameInput);
+
+                  const isSuffixValid = bucketType === 'general'
+                    ? true
+                    : bucketNameInput.endsWith(`--${directoryAz}--x-s3`);
+
+                  const isDnsCompliant = isLengthValid && isCharsValid && isStartEndValid && isAdjacentValid && isIpAddressValid && isSuffixValid;
+
+                  return (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11.5px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{isLengthValid ? '🟢' : '❌'}</span>
+                          <span style={{ color: isLengthValid ? '#166534' : '#991b1b' }}>
+                            Length is between 3 and {bucketType === 'general' ? 63 : 64} characters (Current: {bucketNameInput.length})
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{isCharsValid ? '🟢' : '❌'}</span>
+                          <span style={{ color: isCharsValid ? '#166534' : '#991b1b' }}>
+                            {bucketType === 'general'
+                              ? 'Consists only of lowercase letters, numbers, periods (.), and hyphens (-)'
+                              : 'Consists ONLY of lowercase letters, numbers, and hyphens (NO periods allowed!)'
+                            }
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{isStartEndValid ? '🟢' : '❌'}</span>
+                          <span style={{ color: isStartEndValid ? '#166534' : '#991b1b' }}>
+                            Must start and end with a letter or number
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>{isAdjacentValid ? '🟢' : '❌'}</span>
+                          <span style={{ color: isAdjacentValid ? '#166534' : '#991b1b' }}>
+                            {bucketType === 'general'
+                              ? 'No adjacent special symbols `..` or `--` or `.-`'
+                              : 'No adjacent special symbols `..` or `--` inside custom prefix'
+                            }
+                          </span>
+                        </div>
+                        {bucketType === 'general' ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>{isIpAddressValid ? '🟢' : '❌'}</span>
+                            <span style={{ color: isIpAddressValid ? '#166534' : '#991b1b' }}>
+                              Must not be formatted as an IPv4 address
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>{isSuffixValid ? '🟢' : '❌'}</span>
+                            <span style={{ color: isSuffixValid ? '#166534' : '#991b1b' }}>
+                              Enforces Directory Bucket suffix: `--${directoryAz}--x-s3`
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{
+                        marginTop: '16px',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        background: isDnsCompliant ? '#ecfdf5' : '#fef2f2',
+                        border: isDnsCompliant ? '1px solid #a7f3d0' : '1px solid #fca5a5',
+                        color: isDnsCompliant ? '#065f46' : '#991b1b'
+                      }}>
+                        {isDnsCompliant 
+                          ? `✅ DNS NAMESPACE COMPLIANT (${bucketType === 'general' ? 'GENERAL PURPOSE' : 'DIRECTORY BUCKET'})` 
+                          : '❌ DNS NAMESPACE NON-COMPLIANT'}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Part B: URL Generator */}
+              <div className="s3-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🔗</span> S3 Endpoint &amp; Object Address URL Generator
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
+                    {bucketType === 'general' 
+                      ? 'Since 2020, S3 deprecates Path-style access in favor of Virtual Hosted-style, allowing DNS subdomain load balancing.'
+                      : 'Express One Zone Directory buckets do not support legacy Path-style or standard REST URLs. They use specialized low-latency endpoints.'
+                    }
+                  </div>
+
+                  <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>AWS Region</label>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '6px' }} value={urlRegion} onChange={(e) => setUrlRegion(e.target.value)}>
+                        <option value="us-east-1">us-east-1 (N. Virginia)</option>
+                        <option value="eu-west-1">eu-west-1 (Ireland)</option>
+                        <option value="ap-southeast-2">ap-southeast-2 (Sydney)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Object Key Path</label>
+                      <input 
+                        type="text" 
+                        value={urlKey} 
+                        onChange={(e) => setUrlKey(e.target.value)} 
+                        style={{ padding: '6px', fontSize: '12px', width: '100%', border: '1px solid #cbd5e1', borderRadius: '6px' }} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Generated URLs display */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: '#f8fafc', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+                    {bucketType === 'general' ? (
+                      <>
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#0369a1', textTransform: 'uppercase' }}>✅ Virtual Hosted-Style URL (Standard)</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#0f172a', wordBreak: 'break-all', marginTop: '3px' }}>
+                            https://<span style={{ color: '#0891b2', fontWeight: 'bold' }}>{bucketNameInput}</span>.s3.<span style={{ color: '#0284c7', fontWeight: 'bold' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: '#4f46e5', fontWeight: 'bold' }}>{urlKey}</span>
+                          </div>
+                          <div style={{ fontSize: '9.5px', color: '#64748b', marginTop: '2px', fontStyle: 'italic' }}>
+                            routes subdomain directly to specific S3 frontend DNS server pools for infinite horizontal scaling.
+                          </div>
+                        </div>
+                        
+                        <div style={{ borderTop: '0.5px solid #e2e8f0', paddingTop: '8px' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#991b1b', textTransform: 'uppercase' }}>❌ Path-Style URL (Deprecated since 2020)</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#64748b', wordBreak: 'break-all', marginTop: '3px', textDecoration: 'line-through' }}>
+                            https://s3.<span style={{ color: '#0284c7' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: '#0891b2' }}>{bucketNameInput}</span>/<span style={{ color: '#4f46e5' }}>{urlKey}</span>
+                          </div>
+                          <div style={{ fontSize: '9.5px', color: '#991b1b', marginTop: '2px', fontWeight: 600 }}>
+                            forces all buckets to share a single DNS namespace, bottlenecking request thresholds!
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#15803d', textTransform: 'uppercase' }}>⚡ Directory Bucket High-Performance Endpoint URL</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#0f172a', wordBreak: 'break-all', marginTop: '3px' }}>
+                            https://<span style={{ color: '#059669', fontWeight: 'bold' }}>{bucketNameInput}</span>.s3express-<span style={{ color: '#0f766e', fontWeight: 'bold' }}>{directoryAz}</span>.<span style={{ color: '#0284c7', fontWeight: 'bold' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: '#4f46e5', fontWeight: 'bold' }}>{urlKey}</span>
+                          </div>
+                          <div style={{ fontSize: '9.5px', color: '#059669', marginTop: '2px', fontWeight: 600 }}>
+                            Direct connection into specialized low-latency hypervisor hardware for single-digit ms processing!
+                          </div>
+                        </div>
+
+                        <div style={{ borderTop: '0.5px solid #e2e8f0', paddingTop: '8px' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#991b1b', textTransform: 'uppercase' }}>❌ Standard REST or Path URLs</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#64748b', marginTop: '3px', textDecoration: 'line-through' }}>
+                            https://s3.{urlRegion}.amazonaws.com/{bucketNameInput}
+                          </div>
+                          <div style={{ fontSize: '9.5px', color: '#991b1b', marginTop: '2px', fontStyle: 'italic' }}>
+                            Completely rejected. S3 Directory Buckets reside inside a single AZ and require specialized Zonal routing endpoints.
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* S3 Durability AZ replication sandbox */}
+            <div className="s3-sec">⚡ PUT Request Ingestion &amp; 3-AZ Parallel Replication Simulator</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
+                    Surviving Datacenter Disasters: Standard 3-AZ Synchronous Writes
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
+                    S3 standard guarantees <b>99.999999999% (11 9s)</b> durability by synchronously copying object bytes across a minimum of three distinct physically isolated Availability Zones (AZs) before returning 200 OK.
+                  </div>
+
+                  <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Select Object Payload:</label>
+                      <select value={replicatePayload} onChange={(e) => setReplicatePayload(e.target.value)} style={{ width: '100%', padding: '6px', fontSize: '12px' }}>
+                        <option value="ledger.pdf">ledger.pdf (Corporate ledger - 12.4 MB)</option>
+                        <option value="backup.tar">backup.tar (System snapshot - 45.1 MB)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#0891b2', color: '#fff' }} onClick={handleReplicationSimulation} disabled={replicateIsRunning}>
+                    {replicateIsRunning ? '⚡ Executing parallel AZ writes...' : '🚀 Ingest PUT Object Payload'}
+                  </button>
+
+                  <div style={{ marginTop: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Parallel Ingestion Audit logs:</div>
+                    <div ref={replicateTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
+                      {replicateLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting upload replication trigger...</div>
+                      ) : (
+                        replicateLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚡') ? '#eab308' : '#0284c7',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* AZ replication topology SVG */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+                    <defs>
+                      <marker id="arr-repl-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                    </defs>
+
+                    {/* S3 Ingest Gateway */}
+                    <rect x="120" y="15" width="110" height="40" rx="6" fill="#eff6ff" stroke="#0891b2" strokeWidth="1.5" />
+                    <text x="175" y="32" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#025a70">🪣 Ingest Gateway</text>
+                    <text x="175" y="44" textAnchor="middle" fontSize="6.5" fill="#0891b2">Strong SSL Boundary</text>
+
+                    {/* AZ Datacenters */}
+                    {/* AZ-1 */}
+                    <rect x="15" y="130" width="90" height="70" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1} />
+                    <text x="60" y="148" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#334155">🏢 AZ-1</text>
+                    <text x="60" y="162" textAnchor="middle" fontSize="8" fill="#64748b">{urlRegion}a</text>
+                    <text x="60" y="185" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#10b981">
+                      {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
+                    </text>
+
+                    {/* AZ-2 */}
+                    <rect x="130" y="130" width="90" height="70" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1} />
+                    <text x="175" y="148" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#334155">🏢 AZ-2</text>
+                    <text x="175" y="162" textAnchor="middle" fontSize="8" fill="#64748b">{urlRegion}b</text>
+                    <text x="175" y="185" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#10b981">
+                      {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
+                    </text>
+
+                    {/* AZ-3 */}
+                    <rect x="245" y="130" width="90" height="70" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1} />
+                    <text x="290" y="148" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#334155">🏢 AZ-3</text>
+                    <text x="290" y="162" textAnchor="middle" fontSize="8" fill="#64748b">{urlRegion}c</text>
+                    <text x="290" y="185" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#10b981">
+                      {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
+                    </text>
+
+                    {/* Propagation lines */}
+                    <path d="M140,55 L75,130" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 2 ? 1.8 : 1} markerEnd="url(#arr-repl-green)" />
+                    <path d="M175,55 L175,130" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 2 ? 1.8 : 1} markerEnd="url(#arr-repl-green)" />
+                    <path d="M210,55 L275,130" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 2 ? 1.8 : 1} markerEnd="url(#arr-repl-green)" />
+
+                    <text x="175" y="225" textAnchor="middle" fontSize="8" fill={replicateStep === 4 ? '#166534' : '#475569'} fontWeight="bold">
+                      {replicateStep === 4 ? '🎉 100% Replicated cross 3 datacenters (200 OK)' : 'Synchronous replication pipelines'}
+                    </text>
+
+                    {/* Animated particles */}
+                    {replicateIsRunning && replicateStep === 2 && (
+                      <>
+                        <circle cx="155" cy="70" r="4" fill="#0891b2" className="s3-g-circle" />
+                        <circle cx="175" cy="75" r="4" fill="#0891b2" className="s3-g-circle" />
+                        <circle cx="195" cy="70" r="4" fill="#0891b2" className="s3-g-circle" />
+                      </>
+                    )}
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Read-After-Write Consistency Simulator */}
+            <div className="s3-sec">🔁 S3 Read-After-Write Strong Consistency vs. Eventual Consistency Model</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
+                    Atomic Read-After-Write guarantees vs. Legacy Eventual Mirror Delays
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
+                    S3 now guarantees <b>Strong read-after-write consistency</b> for PUTs and DELETEs of objects in all regions. Toggling eventual consistency illustrates legacy mirror propagation lags.
+                  </div>
+
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '11px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Catalog Consistency Model:</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button className={`s3-btn ${consistencyMode === 'strong' ? 's3-on' : ''}`} style={{ flex: 1 }} onClick={() => { setConsistencyMode('strong'); setConsistencyLogs([]); setConsistencyReadStep(0); }}>
+                        🟢 Strong Read-After-Write (Current)
+                      </button>
+                      <button className={`s3-btn ${consistencyMode === 'eventual' ? 's3-on' : ''}`} style={{ flex: 1 }} onClick={() => { setConsistencyMode('eventual'); setConsistencyLogs([]); setConsistencyReadStep(0); }}>
+                        ⚠️ Eventual Consistency (Legacy Pre-2020)
+                      </button>
+                    </div>
+                  </div>
+
+                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#4f46e5', color: '#fff', borderColor: '#4f46e5' }} onClick={handleConsistencySimulation} disabled={consistencyIsRunning}>
+                    {consistencyIsRunning ? '⚡ Executing concurrent reads/writes...' : '🚀 Trigger Update PUT & Immediate Read GET'}
+                  </button>
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Consistency Verification Trace:</div>
+                    <div ref={consistencyTerminalRef} className="s3-terminal" style={{ height: '120px' }}>
+                      {consistencyLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting concurrent transaction trigger...</div>
+                      ) : (
+                        consistencyLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') || log.includes('⚠️') ? '#ef4444' : log.includes('✅') ? '#10b981' : '#334155',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {consistencyReadStep === 3 && (
+                    <div style={{
+                      marginTop: '8px',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: 'bold',
+                      background: consistencyMode === 'strong' ? '#ecfdf5' : '#fef2f2',
+                      border: consistencyMode === 'strong' ? '1px solid #a7f3d0' : '1px solid #fca5a5',
+                      color: consistencyMode === 'strong' ? '#065f46' : '#991b1b',
+                      textAlign: 'center'
+                    }}>
+                      {consistencyMode === 'strong' 
+                        ? '✅ Atomic transaction succeeded. Reader gets updated Version 2.0.' 
+                        : '❌ Eventual Sync Delay matched! Reader gets stale legacy Version 1.0.'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive CORS OPTIONS Preflight Handshake Playground */}
+            <div className="s3-sec">🌐 CORS OPTIONS Preflight Handshake Sandbox</div>
+            <div className="s3-g2" style={{ marginBottom: '24px' }}>
+              <div className="s3-card">
+                <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🔒</span> Preflight Parameters Configuration
+                </div>
+                <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
+                  Configure incoming HTTP request headers to simulate S3 CORS whitelist evaluation.
+                </div>
+
+                <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Origin Domain</label>
+                    <select className="s3-card select" style={{ width: '100%', padding: '6px' }} value={corsOriginInput} onChange={(e) => setCorsOriginInput(e.target.value)}>
+                      <option value="https://domain-a.com">https://domain-a.com (Whitelisted)</option>
+                      <option value="https://hacker-site.org">https://hacker-site.org (Unlisted)</option>
+                      <option value="https://my-app.net">https://my-app.net (Unlisted)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Request Method</label>
+                    <select className="s3-card select" style={{ width: '100%', padding: '6px' }} value={corsMethodInput} onChange={(e) => setCorsMethodInput(e.target.value)}>
+                      <option value="GET">GET Method (Whitelisted)</option>
+                      <option value="PUT">PUT Method (Whitelisted)</option>
+                      <option value="DELETE">DELETE Method (Blocked)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#0891b2', color: '#fff' }} onClick={handleCorsPreflight} disabled={corsAnimationState === 'preflight'}>
+                  {corsAnimationState === 'preflight' ? '⌛ Preflight OPTIONS Ping Flight...' : '⚡ Test OPTIONS CORS Preflight'}
+                </button>
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>CORS PREFLIGHT RESULTS CONSOLE:</div>
+                  <div ref={corsTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
+                    {corsLogs.map((log, idx) => (
+                      <div key={idx} style={{ color: log.type === 'success' ? '#16a34a' : log.type === 'error' ? '#dc2626' : '#0284c7', marginBottom: '2px' }}>
+                        [{log.timestamp}] {log.message}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {corsAnimationState !== 'idle' && (
+                  <div style={{
+                    marginTop: '8px',
+                    padding: '8px',
+                    borderRadius: '6px',
+                    fontSize: '11.5px',
+                    fontWeight: 'bold',
+                    background: corsAnimationState === 'authorized' ? '#ecfdf5' : '#fef2f2',
+                    border: corsAnimationState === 'authorized' ? '1px solid #a7f3d0' : '1px solid #fca5a5',
+                    color: corsAnimationState === 'authorized' ? '#065f46' : '#991b1b',
+                    textAlign: 'center'
+                  }}>
+                    {corsAnimationState === 'preflight' ? '⌛ Dispatching Preflight Ping...' : corsAnimationState === 'authorized' ? '✅ CORS Handshake Accepted! Data flow whitelisted.' : '❌ CORS Handshake Rejected! Browser blocks transfer.'}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* 🎨 S3 static web hosting & CORS Preflight SVG Diagram */}
-            <div className="s3-sec">S3 Static Web Hosting &amp; Inbound CORS OPTIONS Preflight Handshake</div>
+            <div className="s3-sec">S3 Static Web Hosting &amp; Inbound CORS OPTIONS Preflight Handshake Reference</div>
             <div className="s3-card" style={{ textAnchor: 'middle', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 How browsers issue CORS preflight check requests (HTTP OPTIONS) to secure resources across domains.
@@ -1503,6 +2386,27 @@ export default function S3Visualizer() {
                     {ingressExplanation && (
                       <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
                         {ingressExplanation}
+                      </div>
+                    )}
+                    {ingressPacketStatus === 'blocked' && bpaPolicies && selectedPolicyTemplate === 'public' && (
+                      <div style={{
+                        marginTop: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        background: '#fef2f2',
+                        border: '1.5px dashed #dc2626',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        animation: 'pulse-red 1.5s infinite alternate'
+                      }}>
+                        <div style={{ fontSize: '28px' }}>🛡️💥</div>
+                        <div>
+                          <div style={{ fontWeight: 'bold', color: '#991b1b', fontSize: '11.5px' }}>BPA FIREWALL SHIELD ENGAGED</div>
+                          <div style={{ color: '#7f1d1d', fontSize: '10px', lineHeight: '1.3' }}>
+                            S3 Block Public Access actively overrode the `Principal: "*"` Allow rule. Public packet discarded at Gate 1.
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2728,6 +3632,120 @@ export default function S3Visualizer() {
                 <text x="602" y="260" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#2563eb">✔ Access Management: Simplify security management for S3 Buckets</text>
               </svg>
             </div>
+
+            {/* 🛡️ Interactive Access Point Scoped Gateway Sandbox */}
+            <div className="s3-sec">🛡️ Interactive Multi-Tenant Access Points Routing Gateway Sandbox</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
+                    Multi-Tenant Traffic Control Sandbox
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
+                    Access Points prevent administrative bottlenecks by delegating bucket directory permissions to specific endpoints. Test different identities and routing paths.
+                  </div>
+
+                  <div className="s3-g3" style={{ gap: '10px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>1. Inbound Identity</label>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apIdentity} onChange={(e) => setApIdentity(e.target.value as any)}>
+                        <option value="finance_user">👤 Finance IAM User</option>
+                        <option value="sales_user">👤 Sales IAM User</option>
+                        <option value="auditor">🔎 Compliance Auditor</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>2. Connection Gateway</label>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apEndpoint} onChange={(e) => setApEndpoint(e.target.value as any)}>
+                        <option value="bucket_root">🪣 Main Bucket Endpoint</option>
+                        <option value="finance_ap">🔌 Finance Access Point</option>
+                        <option value="sales_ap">🔌 Sales Access Point</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>3. Target Folder Path</label>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apAction} onChange={(e) => setApAction(e.target.value as any)}>
+                        <option value="read_finance">📁 Read /finance/ledger.xlsx</option>
+                        <option value="read_sales">📁 Read /sales/contracts.pdf</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#8b5cf6', color: '#fff', borderColor: '#8b5cf6' }} onClick={handleAccessPointRoute} disabled={apAnimationState === 'routing'}>
+                    {apAnimationState === 'routing' ? '⚡ Routing packet through Access Point policy...' : '🚀 Dispatch Request Packet'}
+                  </button>
+
+                  <div style={{ marginTop: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Access Point evaluation logs:</div>
+                    <div ref={apTerminalRef} className="s3-terminal" style={{ height: '110px', color: '#a78bfa', borderColor: '#7c3aed' }}>
+                      {apResultLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting request dispatch...</div>
+                      ) : (
+                        apResultLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('gateway') ? '#8b5cf6' : '#a78bfa',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Overlay and Diagram Visual */}
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Live Routing Visualization:</div>
+                  
+                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '120px', margin: '8px 0' }}>
+                    {apAnimationState === 'idle' && (
+                      <div style={{ textAlign: 'center', color: '#64748b' }}>
+                        <div style={{ fontSize: '28px' }}>💤</div>
+                        <div style={{ fontSize: '11px', marginTop: '6px' }}>Ready to analyze. Configure variables and dispatch a packet.</div>
+                      </div>
+                    )}
+                    {apAnimationState === 'routing' && (
+                      <div style={{ textAlign: 'center', color: '#8b5cf6', animation: 'draw 2s linear infinite' }}>
+                        <div style={{ fontSize: '32px' }}>⚡📡</div>
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', marginTop: '6px' }}>EVALUATING ACCESS POINT POLICIES...</div>
+                      </div>
+                    )}
+                    {apAnimationState === 'granted' && (
+                      <div style={{ textAlign: 'center', color: '#166534', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '12px', borderRadius: '8px', width: '100%' }}>
+                        <div style={{ fontSize: '28px' }}>✅🎉</div>
+                        <div style={{ fontSize: '12.5px', fontWeight: 'bold', marginTop: '4px' }}>GET 200 AUTHORIZED!</div>
+                        <div style={{ fontSize: '10.5px', color: '#15803d', marginTop: '4px', lineHeight: '1.3' }}>
+                          Scoped Access Point policy verified the client credentials and matched the requested directory prefix `{apAction === 'read_finance' ? 'finance/' : 'sales/'}` perfectly.
+                        </div>
+                      </div>
+                    )}
+                    {apAnimationState === 'denied' && (
+                      <div style={{ textAlign: 'center', color: '#991b1b', background: '#fef2f2', border: '1px solid #fca5a5', padding: '12px', borderRadius: '8px', width: '100%' }}>
+                        <div style={{ fontSize: '28px' }}>❌🚫</div>
+                        <div style={{ fontSize: '12.5px', fontWeight: 'bold', marginTop: '4px' }}>ACCESS DENIED (HTTP 403)</div>
+                        <div style={{ fontSize: '10.5px', color: '#b91c1c', marginTop: '4px', lineHeight: '1.3' }}>
+                          {apEndpoint === 'bucket_root' 
+                            ? 'Root directory is blocked for standard team accounts under security baseline profiles.' 
+                            : `Endpoint restriction mismatch: Scoped AP does not permit this identity or folder pathway.`}
+                        </div>
+                        <button className="s3-btn" style={{ fontSize: '9px', padding: '2px 8px', marginTop: '8px', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => setApAnimationState('idle')}>
+                          Reset Sandbox
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {apAnimationState === 'granted' && (
+                    <button className="s3-btn" style={{ fontSize: '11px', width: '100%', fontWeight: 600 }} onClick={() => setApAnimationState('idle')}>
+                      Clear &amp; Run Next Test
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -3046,6 +4064,140 @@ export default function S3Visualizer() {
                 <text x="600" y="102" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">&amp; Expiration Timer</text>
               </svg>
             </div>
+
+            {/* ⚡ Interactive Multipart Upload Parallel Ingestion Sandbox */}
+            <div className="s3-sec">⚡ Interactive High-Throughput Multipart Upload Sandbox</div>
+            <div className="s3-card">
+              <div className="s3-g2">
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
+                    S3 Concurrent Chunk Slicer &amp; Parallel Uploader
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', lineHeight: '1.4' }}>
+                    S3 mandates Multipart Uploads for large objects (up to 5 TB). Slices files into chunks, uploads them in parallel, and reassembles them at rest. If a chunk fails, only that single part is re-sent.
+                  </div>
+
+                  <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Object Payload Size</label>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={mpFileSize} onChange={(e) => { setMpFileSize(parseInt(e.target.value)); setMpStep(0); setMpLogs([]); setMpParts([]); }}>
+                        <option value="200">200 MB Dataset (Standard)</option>
+                        <option value="500">500 MB Archive (Large)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Slicing Part Size</label>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={mpPartSize} onChange={(e) => { setMpPartSize(parseInt(e.target.value)); setMpStep(0); setMpLogs([]); setMpParts([]); }}>
+                        <option value="50">50 MB Parts (More Chunks)</option>
+                        <option value="100">100 MB Parts (Fewer Chunks)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '12px' }}>
+                    <input type="checkbox" checked={mpGlitch} onChange={(e) => setMpGlitch(e.target.checked)} id="mpGlitch" style={{ accentColor: '#0891b2' }} />
+                    <label htmlFor="mpGlitch" style={{ fontSize: '11.5px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      💥 Simulate Network Glitch (drop Part 3 thread mid-upload)
+                    </label>
+                  </div>
+
+                  {mpStep === 4 ? (
+                    <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#dc2626', color: '#fff', borderColor: '#dc2626' }} onClick={retryFailedMultipart} disabled={mpIsRunning}>
+                      🔄 Retry Failed Parts (Resends Part 3 Only!)
+                    </button>
+                  ) : (
+                    <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#0891b2', color: '#fff', borderColor: '#0891b2' }} onClick={handleMultipartUpload} disabled={mpIsRunning}>
+                      {mpIsRunning ? '⚡ Transmitting parallel segments...' : '🚀 Initiate Multipart Upload'}
+                    </button>
+                  )}
+
+                  <div style={{ marginTop: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Multipart API transaction logs:</div>
+                    <div ref={mpTerminalRef} className="s3-terminal" style={{ height: '110px', color: '#38bdf8', borderColor: '#0891b2' }}>
+                      {mpLogs.length === 0 ? (
+                        <div style={{ color: '#64748b' }}>[idle] Awaiting upload initialization...</div>
+                      ) : (
+                        mpLogs.map((log, idx) => (
+                          <div key={idx} style={{
+                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('workers') ? '#38bdf8' : '#0284c7',
+                            fontFamily: 'monospace',
+                            fontSize: '11px',
+                            marginBottom: '2px'
+                          }}>
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Parallel Upload Progress Channels Grid */}
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                      Parallel Chunk Ingestion Streams: {mpUploadId && `[Session ID: ${mpUploadId}]`}
+                    </div>
+
+                    {mpStep === 0 && (
+                      <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b' }}>
+                        <div style={{ fontSize: '32px' }}>💤</div>
+                        <div style={{ fontSize: '11.5px', marginTop: '6px' }}>Simulation idle. Trigger multipart to see concurrent threads.</div>
+                      </div>
+                    )}
+
+                    {mpStep === 1 && (
+                      <div style={{ textAlign: 'center', padding: '40px 0', color: '#0891b2' }}>
+                        <div style={{ fontSize: '32px', animation: 'draw 2s linear infinite' }}>⚙️</div>
+                        <div style={{ fontSize: '12px', fontWeight: 'bold', marginTop: '6px' }}>INITIATING MULTIPART SESSION...</div>
+                      </div>
+                    )}
+
+                    {mpStep >= 2 && mpParts.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                        {mpParts.map((part) => (
+                          <div key={part.id} style={{ background: 'var(--color-background-primary)', padding: '8px 10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '10.5px' }}>
+                              <span style={{ fontWeight: 'bold' }}>📁 Part #{part.id} ({mpPartSize} MB)</span>
+                              <span style={{
+                                fontWeight: 'bold',
+                                color: part.status === 'completed' ? '#166534' : part.status === 'failed' ? '#991b1b' : '#0369a1',
+                                background: part.status === 'completed' ? '#ecfdf5' : part.status === 'failed' ? '#fef2f2' : '#eff6ff',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                fontSize: '9px'
+                              }}>
+                                {part.status.toUpperCase()} ({part.progress}%)
+                              </span>
+                            </div>
+                            <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${part.progress}%`,
+                                height: '100%',
+                                background: part.status === 'completed' ? '#10b981' : part.status === 'failed' ? '#ef4444' : '#0891b2',
+                                transition: 'width 0.2s'
+                              }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {mpStep === 5 && (
+                    <div style={{ marginTop: '12px', padding: '10px', borderRadius: '6px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', textAlign: 'center', fontSize: '11.5px', fontWeight: 'bold' }}>
+                      🎉 MULTIPART WRITE VERIFIED! (Consolidated &amp; stored safely)
+                    </div>
+                  )}
+
+                  {mpStep === 4 && (
+                    <div style={{ marginTop: '12px', padding: '10px', borderRadius: '6px', background: '#fef2f2', border: '1px solid #fca5a5', color: '#991b1b', textAlign: 'center', fontSize: '11.5px', fontWeight: 'bold' }}>
+                      ⚠️ PARTIAL ERROR: Thread 3 packet dropped mid-air. Click retry!
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -3106,6 +4258,67 @@ export default function S3Visualizer() {
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
                     AWS offers <strong><span className="s3-hl-pink">S3 Storage Lens Analytics</span></strong> <span className="s3-desc-mute">(centralized metadata scanning dashboard)</span> to view setups. Which means you can audit organization-wide object counts, identify inactive prefixes, detect public buckets, and view recommendations in a single visual interface to optimize costs.
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* 📊 S3 Storage Lens HUD Panel */}
+            <div className="s3-sec">📊 S3 Storage Lens Organization HUD</div>
+            <div className="s3-card" style={{ background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Interactive daily metadata diagnostics for S3 resource footprint (auto-synced with bucket setups):</span>
+                <span className="s3-badge" style={{ background: '#e2e8f0', color: '#334155' }}>Diagnostic HUD</span>
+              </div>
+              <div className="s3-g3">
+                {/* Metric 1: Total Volume */}
+                <div style={{ background: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>📁 Storage Volume</div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#0f172a', fontFamily: 'monospace' }}>
+                    {lifecycleVolume >= 1000 ? `${(lifecycleVolume / 1000).toFixed(2)} TB` : `${lifecycleVolume} GB`}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>
+                    Objects: <b>{(batchTotalObjects * 3).toLocaleString()}</b> · Prefixes: <b>142</b>
+                  </div>
+                </div>
+
+                {/* Metric 2: Public Exposure risk */}
+                <div style={{
+                  background: '#ffffff',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid #cbd5e1',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  borderTop: !(bpaAcls && bpaPolicies) ? '4px solid #f59e0b' : '4px solid #10b981'
+                }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>🛡️ Public Risk Exposure</div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: !(bpaAcls && bpaPolicies) ? '#d97706' : '#16a34a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{!(bpaAcls && bpaPolicies) ? '⚠️ HIGH' : '🟢 SECURE'}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#475569' }}>
+                      ({!(bpaAcls && bpaPolicies) ? 'BPA disabled' : '100% Protected'})
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#475569', marginTop: '4px', lineHeight: '1.2' }}>
+                    {!(bpaAcls && bpaPolicies) 
+                      ? 'Wildcard access policies or public ACL overrides are allowed!'
+                      : 'BPA is fully active. All public policy doors locked.'}
+                  </div>
+                </div>
+
+                {/* Metric 3: Encryption Coverage */}
+                <div style={{
+                  background: '#ffffff',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid #cbd5e1',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  borderTop: encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '4px solid #10b981' : '4px solid #f59e0b'
+                }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>🔒 Encryption Coverage</div>
+                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '#16a34a' : '#d97706', fontFamily: 'monospace' }}>
+                    {encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '100%' : '95%'}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>
+                    Method: <b>{encryptionType.toUpperCase()}</b> {encryptionType === 'sse-c' && '(Customer Keys)'}
                   </div>
                 </div>
               </div>

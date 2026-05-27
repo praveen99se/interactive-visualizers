@@ -1,70 +1,342 @@
 import { useState, useEffect } from 'react';
 
-type TabType = 'overview' | 'storage' | 'cluster' | 'multiaz' | 'global' | 'serverless' | 'endpoints' | 'failover' | 'integrations' | 'features' | 'vsrds';
+type TabType = 'overview' | 'endpoints' | 'failover' | 'global' | 'serverless' | 'cloning' | 'hardening';
 
-const tabs: { id: TabType; label: string; emoji: string }[] = [
-  { id: 'overview', label: 'Overview Dashboard', emoji: '📊' },
-  { id: 'storage', label: 'Storage Engine', emoji: '💾' },
-  { id: 'cluster', label: 'Cluster Architecture', emoji: '🏛️' },
-  { id: 'multiaz', label: 'Multi-AZ', emoji: '🌐' },
-  { id: 'global', label: 'Global DB', emoji: '🌎' },
-  { id: 'serverless', label: 'Serverless v2', emoji: '⚡' },
-  { id: 'endpoints', label: 'Endpoints', emoji: '🔌' },
-  { id: 'failover', label: 'Failover Sim', emoji: '💥' },
-  { id: 'integrations', label: 'Integrations', emoji: '🔄' },
-  { id: 'features', label: 'Features & Security', emoji: '🔐' },
-  { id: 'vsrds', label: 'Aurora vs RDS', emoji: '⚖️' },
-];
-
-const compareRows = [
-  ['Storage', 'Shared, 6 copies, auto-scale 128TB', 'Per-instance EBS, manual scale'],
-  ['Read Replicas', 'Up to 15, near-zero lag', 'Up to 5, async lag'],
-  ['Failover time', '< 30 seconds', '30–60 seconds'],
-  ['Replication', 'Shared storage (no copy)', 'Binlog / WAL streaming'],
-  ['Serverless', 'v2 ✅ (seconds scale)', '❌'],
-  ['Global DB', '✅ RPO < 1s, RTO < 1min', 'Cross-region replica only'],
-  ['RDS Proxy', '✅', '✅'],
-  ['Data API', '✅ (HTTP, no VPC)', '❌'],
-  ['Zero-ETL → Redshift', '✅', '❌'],
-  ['ML (SageMaker/Comprehend)', '✅', '❌'],
-  ['Cost vs RDS', '~20–30% more expensive', 'Baseline'],
-  ['SQL Server / Oracle', '❌', '✅'],
-  ['Max storage', '128 TB (auto)', '64 TB (manual)'],
-];
+interface SecItem {
+  label: string;
+  done: boolean;
+}
 
 export default function AuroraVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
-  // Overview Tab states
-  const [overviewCopies, setOverviewCopies] = useState<boolean[]>([true, true, true, true, true, true]);
-  const [overviewUsed, setOverviewUsed] = useState<number>(35);
-  const [overviewAllocated, setOverviewAllocated] = useState<number>(40);
-  const [overviewExpandStatus, setOverviewExpandStatus] = useState<string>('✅ No expansion needed');
-  const [overviewExpandColor, setOverviewExpandColor] = useState<string>('#15803d');
+  // ==========================================
+  // STATE DEFINITIONS
+  // ==========================================
 
-  // Features / Security Tab States
-  const [activeFeatureTab, setActiveFeatureTab] = useState<'backup' | 'clone' | 'security' | 'ml'>('backup');
-  const [pitrHours, setPitrHours] = useState<number>(6);
-  const [btHours, setBtHours] = useState<number>(2);
-  const [secChecks, setSecChecks] = useState([
-    {label:'Encryption at rest (KMS)', done:true},
-    {label:'TLS enforced (force_ssl=1)', done:true},
-    {label:'Aurora in private subnet', done:true},
-    {label:'Publicly accessible = OFF', done:false},
-    {label:'Security Group: restrict port', done:true},
-    {label:'IAM DB Auth enabled', done:false},
-    {label:'Secrets Manager rotation', done:true},
-    {label:'Deletion protection ON', done:false},
-    {label:'CloudTrail logging', done:true},
-    {label:'Enhanced Monitoring', done:false},
-    {label:'Backup retention ≥ 7 days', done:true},
-    {label:'VPC endpoints (no NAT)', done:false},
+  // Tab 1: Storage & Self-Healing
+  const [copies, setCopies] = useState<boolean[]>([true, true, true, true, true, true]);
+  const [storageLog, setStorageLog] = useState<string>('Quorum status nominal. Six segment copies active across three Availability Zones.');
+  const [usedGb, setUsedGb] = useState<number>(35);
+  const [allocatedGb, setAllocatedGb] = useState<number>(40);
+  const [expandStatus, setExpandStatus] = useState<string>('✅ No storage expansion needed');
+  const [expandColor, setExpandColor] = useState<string>('#15803d');
+
+  // Tab 2: Endpoints & Routing
+  const [activeSource, setActiveSource] = useState<'client' | 'proxy' | 'analytics'>('client');
+
+  // Tab 3: Failover Playbook Stepper
+  const [failoverStep, setFailoverStep] = useState<number>(1);
+  const [failoverActive, setFailoverActive] = useState<boolean>(false);
+  const [failoverLogs, setFailoverLogs] = useState<string[]>([
+    '[00:00:00] Cluster nominal. Primary Writer operating on us-east-1a (Priority 0).'
+  ]);
+  const [writerState, setWriterState] = useState<'healthy' | 'dead'>('healthy');
+  const [replicaState, setReplicaState] = useState<'reader' | 'promoted'>('reader');
+
+  // Tab 4: Global DB DR
+  const [globalLag] = useState<number>(0.2);
+  const [secRegionState, setSecRegionState] = useState<'replica' | 'promoted'>('replica');
+  const [globalLogs, setGlobalLogs] = useState<string[]>([
+    'Global database sync active. Direct hardware-virtualized replication streaming redo logs from us-east-1 to ap-southeast-1.'
+  ]);
+  const [globalActive, setGlobalActive] = useState<boolean>(false);
+
+  // Tab 5: Serverless v2 Scaling
+  const [connections, setConnections] = useState<number>(50);
+  const [acu, setAcu] = useState<number>(2);
+  const [ram, setRam] = useState<string>('4.0 GB');
+  const [cost, setCost] = useState<string>('0.12');
+  const [scaleStatus, setScaleStatus] = useState<string>('✅ Stable');
+  const [scaleColor, setScaleColor] = useState<string>('#15803d');
+
+  // Tab 6: Copy-on-Write Cloning
+  const [cloneWrites, setCloneWrites] = useState<number>(0);
+  const [cloneLog, setCloneLog] = useState<string[]>([
+    'Clone db_clone_staging initialized in 2.1 seconds. Shares 100% of physical storage pages with production.'
+  ]);
+
+  // Tab 7: Hardening HUD & Zero-ETL & ML
+  const [activeFeatureTab, setActiveFeatureTab] = useState<'security' | 'zeroetl' | 'ml'>('security');
+  const [secChecks, setSecChecks] = useState<SecItem[]>([
+    { label: 'KMS AES-256 Storage volume encryption enabled', done: true },
+    { label: 'Inbound TLS transport forced (force_ssl = 1)', done: true },
+    { label: 'Database instances locked inside isolated private subnets', done: true },
+    { label: 'PubliclyAccessible cluster parameters disabled (default)', done: true },
+    { label: 'Least-privilege security group port references configured', done: false },
+    { label: 'AWS IAM Database Authentication enabled for app tier', done: false },
+    { label: 'Secrets Manager configured with automatic credential rotations', done: true },
+    { label: 'Cluster lifecycle Deletion Protection activated', done: false },
+    { label: 'RDS Enhanced CloudWatch Monitoring enabled', done: false }
   ]);
   const [activeMlQuery, setActiveMlQuery] = useState<'sentiment' | 'fraud' | 'churn'>('sentiment');
+  const [mlOutput, setMlOutput] = useState<any[]>([]);
+  const [mlLogs, setMlLogs] = useState<string[]>([]);
+  const [mlIsLoading, setMlIsLoading] = useState<boolean>(false);
+  const [zeroEtlStatus, setZeroEtlStatus] = useState<'idle' | 'syncing'>('idle');
+  const [zeroEtlLogs, setZeroEtlLogs] = useState<string[]>([]);
 
-  const pitrEst = Math.round(5 + pitrHours / 10);
-  const btEst = Math.round(20 + btHours * 0.5);
+  // ==========================================
+  // STORAGE TAB SIMULATOR LOGIC
+  // ==========================================
+  const failOneCopy = () => {
+    const failedIdx = copies.findIndex(val => val === true);
+    if (failedIdx === -1) {
+      setStorageLog('⚠️ All storage sector copies failed. Write and read quorum collapsed. Data service offline!');
+      return;
+    }
+    const newCopies = [...copies];
+    newCopies[failedIdx] = false;
+    setCopies(newCopies);
 
+    const healthyCount = newCopies.filter(Boolean).length;
+    if (healthyCount >= 4) {
+      setStorageLog(`⚠️ Segment copy ${failedIdx + 1} experienced disk failure. Aurora continues serving reads & writes via quorum (Write 4/6, Read 3/6 ok).`);
+    } else if (healthyCount === 3) {
+      setStorageLog(`🚨 Copy ${failedIdx + 1} failed. Write Quorum collapsed! Cluster locked in READ-ONLY mode (Read 3/6 ok).`);
+    } else {
+      setStorageLog(`🚨 Critical drive failure. Storage quorum collapsed! Database is completely unreachable.`);
+    }
+  };
+
+  const selfHealStorage = () => {
+    const repairIdx = copies.findIndex(val => val === false);
+    if (repairIdx === -1) {
+      setStorageLog('Quorum status nominal. All 6 drive copies are already 100% healthy.');
+      return;
+    }
+    setStorageLog('🔄 Initiating self-healing storage rebuild. Fetching redo segments from healthy disk copies to reconstruct sector...');
+
+    let currentCopies = [...copies];
+    const timer = setInterval(() => {
+      const nextFailedIdx = currentCopies.findIndex(val => val === false);
+      if (nextFailedIdx === -1) {
+        clearInterval(timer);
+        setStorageLog('✅ Background self-healing rebuild complete. All 6 copies back to healthy synchrony.');
+        return;
+      }
+      currentCopies[nextFailedIdx] = true;
+      setCopies([...currentCopies]);
+    }, 450);
+  };
+
+  const resetStorageCopies = () => {
+    setCopies([true, true, true, true, true, true]);
+    setStorageLog('Quorum status nominal. Six segment copies active across three Availability Zones.');
+  };
+
+  const handleUsedGbChange = (val: number) => {
+    setUsedGb(val);
+    let newAlloc = allocatedGb;
+    let expanded = false;
+    while (val > newAlloc && newAlloc < 131072) {
+      newAlloc += 10;
+      expanded = true;
+    }
+    if (expanded) {
+      setAllocatedGb(newAlloc);
+      setExpandStatus('⚠️ Storage auto-expanded (+10 GB segment)');
+      setExpandColor('#d97706');
+      setTimeout(() => {
+        setExpandStatus('✅ Storage allocation stabilized');
+        setExpandColor('#15803d');
+      }, 900);
+    } else {
+      setExpandStatus('✅ No storage expansion needed');
+      setExpandColor('#15803d');
+    }
+  };
+
+  // ==========================================
+  // FAILOVER PLAYBOOK STEPPER LOGIC
+  // ==========================================
+  const triggerNextFailoverStep = () => {
+    if (failoverActive) return;
+
+    if (failoverStep === 1) {
+      setFailoverActive(true);
+      setWriterState('dead');
+      setFailoverLogs(prev => [
+        `[T+0s] 💥 Power death/outage detected in us-east-1a (AZ-1). Writer database unresponsive.`,
+        ...prev
+      ]);
+      setFailoverStep(2);
+      setFailoverActive(false);
+    } else if (failoverStep === 2) {
+      setFailoverActive(true);
+      setFailoverLogs(prev => [
+        `[T+8s] 🛡️ Fencing off dead Writer instance in us-east-1a to prevent split-brain partition writes.`,
+        ...prev
+      ]);
+      setFailoverStep(3);
+      setFailoverActive(false);
+    } else if (failoverStep === 3) {
+      setFailoverActive(true);
+      setFailoverLogs(prev => [
+        `[T+12s] 🔄 Selecting Reader Replica with highest failover priority...`,
+        `[T+15s] ⚡ Promoting Replica 1 (us-east-1b, Priority 0) to active Primary Writer!`,
+        ...prev
+      ]);
+      setReplicaState('promoted');
+      setFailoverStep(4);
+      setFailoverActive(false);
+    } else if (failoverStep === 4) {
+      setFailoverActive(true);
+      setFailoverLogs(prev => [
+        `[T+18s] 🔌 Cluster Writer Endpoint DNS CNAME mapping shifted to promoted us-east-1b instance.`,
+        `[T+22s] 🔄 RDS Proxy connection pool multiplexer intercepts target IP shifts smoothly.`,
+        ...prev
+      ]);
+      setFailoverStep(5);
+      setFailoverActive(false);
+    } else if (failoverStep === 5) {
+      setFailoverActive(true);
+      setFailoverLogs(prev => [
+        `[T+25s] ✅ Cluster recovery nominal. RDS Proxy accepts app traffic. Zero transactional data loss!`,
+        ...prev
+      ]);
+      setFailoverActive(false);
+    }
+  };
+
+  const autoPlayFailover = () => {
+    if (failoverStep !== 1) return;
+    setFailoverActive(true);
+    setWriterState('dead');
+    setFailoverLogs(prev => [`[T+0s] 💥 Power death/outage detected in us-east-1a (AZ-1). Writer database unresponsive.`, ...prev]);
+
+    setTimeout(() => {
+      setFailoverLogs(prev => [`[T+8s] 🛡️ Fencing off dead Writer instance in us-east-1a to prevent split-brain partition writes.`, ...prev]);
+    }, 1000);
+
+    setTimeout(() => {
+      setReplicaState('promoted');
+      setFailoverLogs(prev => [
+        `[T+12s] 🔄 Selecting Reader Replica with highest failover priority...`,
+        `[T+15s] ⚡ Promoting Replica 1 (us-east-1b, Priority 0) to active Primary Writer!`,
+        ...prev
+      ]);
+    }, 2000);
+
+    setTimeout(() => {
+      setFailoverLogs(prev => [
+        `[T+18s] 🔌 Cluster Writer Endpoint DNS CNAME mapping shifted to promoted us-east-1b instance.`,
+        `[T+22s] 🔄 RDS Proxy connection pool multiplexer intercepts target IP shifts smoothly.`,
+        ...prev
+      ]);
+    }, 3000);
+
+    setTimeout(() => {
+      setFailoverLogs(prev => [`[T+25s] ✅ Cluster recovery nominal. RDS Proxy accepts app traffic. Zero transactional data loss!`, ...prev]);
+      setFailoverStep(5);
+      setFailoverActive(false);
+    }, 4000);
+  };
+
+  const resetFailoverSim = () => {
+    setFailoverStep(1);
+    setFailoverActive(false);
+    setWriterState('healthy');
+    setReplicaState('reader');
+    setFailoverLogs([
+      '[00:00:00] Cluster nominal. Primary Writer operating on us-east-1a (Priority 0).'
+    ]);
+  };
+
+  // ==========================================
+  // GLOBAL DB FAILOVER SIMULATOR
+  // ==========================================
+  const triggerGlobalFailover = () => {
+    if (globalActive) return;
+    setGlobalActive(true);
+    setGlobalLogs(prev => [
+      `[DR+0s] 🔴 Primary Region us-east-1 (N. Virginia) catastrophic power outage triggered.`,
+      ...prev
+    ]);
+
+    setTimeout(() => {
+      setGlobalLogs(prev => [
+        `[DR+5s] ⚠️ Health checking nodes. N. Virginia unresponsive. Initiating global database disaster failover...`,
+        ...prev
+      ]);
+    }, 1000);
+
+    setTimeout(() => {
+      setGlobalLogs(prev => [
+        `[DR+12s] 🔌 severing lag synchronization channel. Locking ap-southeast-1 (Singapore) warm storage.`,
+        ...prev
+      ]);
+    }, 2000);
+
+    setTimeout(() => {
+      setGlobalLogs(prev => [
+        `[DR+18s] 👑 Promoting Singapore replica cluster to master standalone primary database!`,
+        ...prev
+      ]);
+      setSecRegionState('promoted');
+    }, 3000);
+
+    setTimeout(() => {
+      setGlobalLogs(prev => [
+        `[DR+24s] ✅ Promotion completed successfully. Global endpoint updated. RPO = ${globalLag}s, RTO = 24s. Singapore Writer online!`,
+        ...prev
+      ]);
+      setGlobalActive(false);
+    }, 4000);
+  };
+
+  const resetGlobalDb = () => {
+    setSecRegionState('replica');
+    setGlobalActive(false);
+    setGlobalLogs([
+      'Global database sync active. Direct hardware-virtualized replication streaming redo logs from us-east-1 to ap-southeast-1.'
+    ]);
+  };
+
+  // ==========================================
+  // SERVERLESS ACU SCALING EFFECT
+  // ==========================================
+  useEffect(() => {
+    const computedAcu = Math.max(0.5, Math.min(256, Math.ceil(connections / 20)));
+    setAcu(computedAcu);
+    setRam(`${(computedAcu * 2).toFixed(1)} GB`);
+    setCost((computedAcu * 0.12).toFixed(2));
+
+    if (connections < 50) {
+      setScaleStatus('✅ Stable (Cooling Down)');
+      setScaleColor('#15803d');
+    } else if (connections < 250) {
+      setScaleStatus('⬆️ scaling compute (ACUs Auto-expanding)');
+      setScaleColor('#d97706');
+    } else {
+      setScaleStatus('🔥 High Concurrency Load (Scaling Max)');
+      setScaleColor('#dc2626');
+    }
+  }, [connections]);
+
+  // ==========================================
+  // DATABASE CLONING SIMULATOR
+  // ==========================================
+  const simulateCloneWrite = () => {
+    const newWrites = cloneWrites + 1;
+    setCloneWrites(newWrites);
+    const costSavings = Math.round((1 - (newWrites * 0.008 / 100)) * 100);
+    setCloneLog(prev => [
+      `[Clone Write #${newWrites}] Diverged page block #${Math.round(Math.random() * 80000 + 400)} allocated on metadata map. Cost savings: ${costSavings}% relative to full snapshot copies.`,
+      ...prev
+    ]);
+  };
+
+  const resetCloneSim = () => {
+    setCloneWrites(0);
+    setCloneLog([
+      'Clone db_clone_staging initialized in 2.1 seconds. Shares 100% of physical storage pages with production.'
+    ]);
+  };
+
+  // ==========================================
+  // HARDENING SCORE LOGIC
+  // ==========================================
   const toggleSecCheck = (index: number) => {
     setSecChecks(prev => {
       const next = [...prev];
@@ -73,1393 +345,912 @@ export default function AuroraVisualizer() {
     });
   };
 
-  const cloneRows = [
-    ['Speed','Seconds (no copy)','5–30 min (full copy)'],
-    ['Storage cost','Only diverged pages','Full duplicate'],
-    ['Source impact','None','None'],
-    ['Cross-account','✅','✅'],
-    ['Cross-region','❌','✅'],
-    ['Use for','Dev/test/analytics','DR, long-term archive'],
-  ];
+  const passedChecksCount = secChecks.filter(c => c.done).length;
+  const totalChecksCount = secChecks.length;
+  const scorePct = Math.round((passedChecksCount / totalChecksCount) * 100);
 
-  const mlQueries: Record<string, {sql: string, result: string}> = {
+  let grade = 'F';
+  let gradeColor = '#ef4444';
+  if (scorePct >= 95) { grade = 'A+'; gradeColor = '#10b981'; }
+  else if (scorePct >= 85) { grade = 'A'; gradeColor = '#059669'; }
+  else if (scorePct >= 75) { grade = 'B'; gradeColor = '#2563eb'; }
+  else if (scorePct >= 60) { grade = 'C'; gradeColor = '#d97706'; }
+  else if (scorePct >= 45) { grade = 'D'; gradeColor = '#ea580c'; }
+
+  // ==========================================
+  // MACHINE LEARNING SQL SANDBOX LOGIC
+  // ==========================================
+  const mlQueries: Record<string, { sql: string, logs: string[], results: any[] }> = {
     sentiment: {
-      sql: "SELECT id, review_text,\n  aws_comprehend_detect_sentiment(\n    review_text, 'en'\n  ) AS sentiment\nFROM product_reviews\nLIMIT 3;",
-      result: "id=1 → POSITIVE (0.97)\nid=2 → NEGATIVE (0.88)\nid=3 → NEUTRAL  (0.72)"
+      sql: `SELECT customer_id, feedback_text,\n  aws_comprehend_detect_sentiment(\n    feedback_text, 'en'\n  ) AS sentiment\nFROM feedback_reviews\nLIMIT 3;`,
+      logs: [
+        'Connecting to local Aurora ML extension socket...',
+        'Authorizing cluster role IAM-AuroraMLBroker to aws:comprehend...',
+        'Streaming SQL row values to Comprehend synchronous endpoint...',
+        'Parsing schema payload returns...'
+      ],
+      results: [
+        { id: 'C-1042', feedback: 'Amazing response time! Absolutely loved it.', sentiment: 'POSITIVE', conf: '0.98' },
+        { id: 'C-2871', feedback: 'Laggy streaming connections during failovers.', sentiment: 'NEGATIVE', conf: '0.84' },
+        { id: 'C-0994', feedback: 'The visualizer works as expected.', sentiment: 'NEUTRAL', conf: '0.76' }
+      ]
     },
     fraud: {
-      sql: "SELECT txn_id, amount,\n  aws_sagemaker_invoke_endpoint(\n    'fraud-model-endpoint',\n    'application/json',\n    amount, merchant_id, hour_of_day\n  ) AS fraud_score\nFROM transactions\nWHERE fraud_score > 0.8;",
-      result: "txn_id=TXN-4821 → fraud_score=0.94 ⚠️\ntxn_id=TXN-9103 → fraud_score=0.87 ⚠️"
+      sql: `SELECT txn_id, amount_usd,\n  aws_sagemaker_invoke_endpoint(\n    'fraud-classification-v4',\n    'application/json',\n    amount_usd, client_ip, hour_of_day\n  ) AS risk_score\nFROM pending_transactions\nWHERE risk_score > 0.8;`,
+      logs: [
+        'Authorizing credentials handshake via KMS encryption...',
+        'Forwarding parameters to SageMaker model fraud-classification-v4...',
+        'Evaluating regression prediction arrays...',
+        'Writing result columns back to active relational table...'
+      ],
+      results: [
+        { id: 'TXN-984', feedback: 'Amount: $8,400 | IP: 198.51.100.12', sentiment: 'HIGH RISK', conf: '0.94' },
+        { id: 'TXN-201', feedback: 'Amount: $9,250 | IP: 203.0.113.43', sentiment: 'HIGH RISK', conf: '0.89' }
+      ]
     },
     churn: {
-      sql: "SELECT customer_id,\n  aws_sagemaker_invoke_endpoint(\n    'churn-model-endpoint',\n    'text/csv',\n    days_since_login, num_orders\n  ) AS churn_probability\nFROM customers\nORDER BY churn_probability DESC\nLIMIT 5;",
-      result: "cust_id=C-1042 → churn=0.91 🔴\ncust_id=C-2871 → churn=0.83 🔴\ncust_id=C-0034 → churn=0.71 🟡"
+      sql: `SELECT user_account, active_weeks,\n  aws_sagemaker_invoke_endpoint(\n    'customer-churn-evaluator',\n    'text/csv',\n    active_weeks, support_tickets\n  ) AS churn_probability\nFROM premium_members\nORDER BY churn_probability DESC LIMIT 2;`,
+      logs: [
+        'Reading cluster metadata configuration settings...',
+        'Invoking custom customer-churn-evaluator endpoint via CSV stream...',
+        'Parsing returned probability vectors...',
+        'Sorting tabular results in relational query engine...'
+      ],
+      results: [
+        { id: 'USR-8821', feedback: 'Active: 4 weeks | Support tickets: 9', sentiment: 'HIGH CHURN', conf: '0.91' },
+        { id: 'USR-4309', feedback: 'Active: 8 weeks | Support tickets: 5', sentiment: 'MED CHURN', conf: '0.74' }
+      ]
     }
   };
 
-  const failOneOverviewCopy = () => {
-    const failedIdx = overviewCopies.findIndex(val => val === true);
-    if (failedIdx === -1) return;
-    const newCopies = [...overviewCopies];
-    newCopies[failedIdx] = false;
-    setOverviewCopies(newCopies);
-  };
+  const runMlInference = () => {
+    setMlIsLoading(true);
+    setMlOutput([]);
+    setMlLogs([]);
 
-  const repairOverviewCopies = () => {
-    let currentCopies = [...overviewCopies];
-    const timer = setInterval(() => {
-      const nextFailedIdx = currentCopies.findIndex(val => val === false);
-      if (nextFailedIdx === -1) {
-        clearInterval(timer);
-        return;
+    let currentLogIdx = 0;
+    const interval = setInterval(() => {
+      if (currentLogIdx < mlQueries[activeMlQuery].logs.length) {
+        setMlLogs(prev => [...prev, `[CLI-INFERENCE] ${mlQueries[activeMlQuery].logs[currentLogIdx]}`]);
+        currentLogIdx++;
+      } else {
+        clearInterval(interval);
+        setMlIsLoading(false);
+        setMlOutput(mlQueries[activeMlQuery].results);
       }
-      currentCopies[nextFailedIdx] = true;
-      setOverviewCopies([...currentCopies]);
     }, 350);
   };
 
-  const resetOverviewCopies = () => {
-    setOverviewCopies([true, true, true, true, true, true]);
-  };
+  // ==========================================
+  // ZERO-ETL TO REDSHIFT LOGIC
+  // ==========================================
+  const runZeroEtlSync = () => {
+    if (zeroEtlStatus === 'syncing') return;
+    setZeroEtlStatus('syncing');
+    setZeroEtlLogs([]);
 
-  const handleOverviewUsedChange = (val: number) => {
-    setOverviewUsed(val);
-    
-    let newAlloc = overviewAllocated;
-    let expanded = false;
-    while (val > newAlloc && newAlloc < 131072) {
-      newAlloc += 10;
-      expanded = true;
-    }
-    
-    if (expanded) {
-      setOverviewAllocated(newAlloc);
-      setOverviewExpandStatus('⚠️ Expanded automatically to fit');
-      setOverviewExpandColor('#d97706');
-      setTimeout(() => {
-        setOverviewExpandStatus('✅ Expansion complete');
-        setOverviewExpandColor('#15803d');
-      }, 700);
-    } else {
-      setOverviewExpandStatus('✅ No expansion needed');
-      setOverviewExpandColor('#15803d');
-    }
-  };
+    const syncSteps = [
+      'Establishing Zero-ETL continuous replication pipeline with Redshift...',
+      'Mapping Aurora transaction redo log WAL files directly to Redshift storage nodes...',
+      'Syncing schema feedback_reviews - replaying transactions...',
+      'Streaming 8,432 WAL data segments (replicated, zero ETL engineering compute)...',
+      'Redshift data warehouse materialized views refreshed!',
+      'Pipeline stabilized in continuous sync mode. Current replication lag: < 1 second.'
+    ];
 
-  // Serverless ACU simulation states
-  const [connections, setConnections] = useState<number>(50);
-  const [acu, setAcu] = useState<number>(2);
-  const [ram, setRam] = useState<string>('4.0 GB');
-  const [cost, setCost] = useState<string>('0.12');
-  const [scaleStatus, setScaleStatus] = useState<string>('✅ Stable');
-  const [scaleColor, setScaleColor] = useState<string>('#15803d');
-
-  // Self-healing Storage mini-sim states
-  const [copies, setCopies] = useState<boolean[]>([true, true, true, true, true, true]);
-  const healthyCopiesCount = copies.filter(Boolean).length;
-  const [storageLog, setStorageLog] = useState<string>('Storage layer healthy. Six replicas sync write records across three AZs.');
-
-  // Failover simulation states
-  const [simState, setSimState] = useState({ writerFailed: false, r2Failed: false, promoted: false });
-  const [logLines, setLogLines] = useState<{ msg: string; type: 'ok' | 'warn' | 'err' | 'info' }[]>([
-    { msg: '[00:00] All instances healthy. Cluster nominal.', type: 'ok' }
-  ]);
-
-  // Handle Serverless ACU scaling logic based on connections slider
-  useEffect(() => {
-    const val = connections;
-    const computedAcu = Math.max(0.5, Math.min(256, Math.ceil(val / 25)));
-    setAcu(computedAcu);
-    setRam(`${(computedAcu * 2).toFixed(1)} GB`);
-    setCost((computedAcu * 0.06).toFixed(2));
-    
-    if (val < 50) {
-      setScaleStatus('✅ Stable');
-      setScaleColor('#15803d');
-    } else if (val < 200) {
-      setScaleStatus('⬆️ Scaling up');
-      setScaleColor('#d97706');
-    } else {
-      setScaleStatus('🔥 High load');
-      setScaleColor('#dc2626');
-    }
-  }, [connections]);
-
-  // Mini-simulation: Storage copies failure
-  const failOneCopy = () => {
-    const failedIdx = copies.findIndex(val => val === true);
-    if (failedIdx === -1) {
-      setStorageLog('All copies are already failed. Critical data loss simulated!');
-      return;
-    }
-    const newCopies = [...copies];
-    newCopies[failedIdx] = false;
-    setCopies(newCopies);
-    setStorageLog(`⚠️ Copy ${failedIdx + 1} experienced disk failure. Aurora continues serving reads & writes via quorum.`);
-  };
-
-  // Mini-simulation: Storage self-healing repair
-  const selfHealStorage = () => {
-    const repairIdx = copies.findIndex(val => val === false);
-    if (repairIdx === -1) {
-      setStorageLog('All storage copies are already 100% healthy.');
-      return;
-    }
-    setStorageLog('🔄 Initiating Aurora background self-healing rebuild. Syncing data from healthy disks...');
-    
-    // Animate repair sequentially
-    let currentCopies = [...copies];
-    const timer = setInterval(() => {
-      const nextFailedIdx = currentCopies.findIndex(val => val === false);
-      if (nextFailedIdx === -1) {
-        clearInterval(timer);
-        setStorageLog('✅ Storage rebuilt completed. All 6 copies back to healthy state.');
-        return;
+    let currentStepIdx = 0;
+    const interval = setInterval(() => {
+      if (currentStepIdx < syncSteps.length) {
+        setZeroEtlLogs(prev => [...prev, `[ZERO-ETL] ${syncSteps[currentStepIdx]}`]);
+        currentStepIdx++;
+      } else {
+        clearInterval(interval);
+        setZeroEtlStatus('idle');
       }
-      currentCopies[nextFailedIdx] = true;
-      setCopies([...currentCopies]);
-    }, 400);
+    }, 450);
   };
 
-  const resetStorageCopies = () => {
-    setCopies([true, true, true, true, true, true]);
-    setStorageLog('Storage layer reset. All six replicas sync write records across three AZs.');
-  };
-
-  // Event logger for failover sim
-  const addLog = (msg: string, type: 'ok' | 'warn' | 'err' | 'info') => {
-    setLogLines(prev => [{ msg, type }, ...prev].slice(0, 8));
-  };
-
-  // Playbook Simulation: Failover Primary Writer
-  const triggerFailover = () => {
-    if (simState.writerFailed) {
-      addLog('[ERR] Writer already failed. Reset first.', 'err');
-      return;
-    }
-    setSimState(prev => ({ ...prev, writerFailed: true }));
-    addLog('[T+0s] 💥 AZ-1 failure detected. Writer unreachable.', 'err');
-    
-    setTimeout(() => {
-      addLog('[T+5s] ⚠️ Health check failed. Initiating failover...', 'warn');
-    }, 600);
-    
-    setTimeout(() => {
-      addLog('[T+10s] 🔍 Selecting replica with highest priority...', 'info');
-    }, 1200);
-    
-    setTimeout(() => {
-      addLog('[T+15s] ✅ Replica 1 (AZ-2, Priority 1) promoted to Writer!', 'ok');
-      setSimState(prev => ({ ...prev, promoted: true }));
-    }, 1800);
-    
-    setTimeout(() => {
-      addLog('[T+20s] 🔄 Cluster endpoint DNS updated → new writer.', 'ok');
-    }, 2400);
-    
-    setTimeout(() => {
-      addLog('[T+25s] ✅ Cluster healthy. RDS Proxy reconnected.', 'ok');
-    }, 3000);
-  };
-
-  // Playbook Simulation: Fail Reader Replica 2
-  const triggerReplicaFail = () => {
-    if (simState.r2Failed) {
-      addLog('[ERR] Replica 2 already failed. Reset first.', 'err');
-      return;
-    }
-    setSimState(prev => ({ ...prev, r2Failed: true }));
-    addLog('[T+0s] ⚠️ Replica 2 (AZ-3) health check failed.', 'warn');
-    
-    setTimeout(() => {
-      addLog('[T+3s] 🔄 Reader endpoint removed Replica 2 from rotation.', 'info');
-    }, 600);
-    
-    setTimeout(() => {
-      addLog('[T+5s] ✅ Reader endpoint now routes to Replica 1 only.', 'ok');
-    }, 1200);
-    
-    setTimeout(() => {
-      addLog('[T+8s] 📊 CloudWatch alarm triggered: ReplicaCount < 2', 'warn');
-    }, 1800);
-  };
-
-  const resetSim = () => {
-    setSimState({ writerFailed: false, r2Failed: false, promoted: false });
-    setLogLines([{ msg: '[00:00] All instances healthy. Cluster nominal.', type: 'ok' }]);
-  };
-
-  const sendTerraformPrompt = () => {
-    alert("Copied Terraform script configuration query! Requesting code generation for a fully resilient multi-AZ Aurora Cluster with RDS Proxy, Secrets Manager, Auto-scaling replicas, and security groups.");
-  };
+  const compareRows = [
+    ['Storage Layer', 'Virtual, Shared, 6-Way Copy Quorum Volume', 'Dedicated, Static EBS Disk Mirroring'],
+    ['Write Cost Scale', 'Redo log records only (No heavy page writes)', 'Writes full modified data pages'],
+    ['Read Replicas Pool', 'Up to 15 replicas (Shares same storage, no lag)', 'Up to 5 replicas (Async WAL streaming lag)'],
+    ['Failover Promotion', 'sub-30 seconds (Shared volumes need no recovery)', '30–60 seconds (Needs full storage recovery)'],
+    ['Serverless Autoscaler', 'Serverless v2 elastic scaling (in seconds)', '❌ Not supported'],
+    ['Global DR Cluster', 'Dedicated global replica engine (lag < 1s)', 'Async cross-region standard replicas'],
+    ['Database Cloning', 'Copy-on-Write (Instant, zero storage cost clones)', '❌ Full snapshot restore only'],
+    ['Built-in ML Invoker', 'Pure SQL endpoints (SageMaker/Comprehend)', '❌ Requires external Python pipelines']
+  ];
 
   return (
-    <div>
+    <div className="aurora-container">
       <style>{`
-        .b-purple { background: #ede9fe; color: #7c3aed; }
-        .b-blue { background: #dbeafe; color: #1d4ed8; }
-        .b-green { background: #dcfce7; color: #15803d; }
-        .b-orange { background: #ffedd5; color: #c2410c; }
-        .b-red { background: #fee2e2; color: #b91c1c; }
-        .b-teal { background: #ccfbf1; color: #0f766e; }
-        .sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin: 16px 0 8px; }
-        .sec:first-child { margin-top: 0; }
-        .kv { display: flex; gap: 8px; font-size: 12px; margin-bottom: 5px; align-items: flex-start; }
-        .kk { color: var(--color-text-secondary); min-width: 140px; flex-shrink: 0; }
-        .kv b { color: var(--color-text-primary); }
-        .sim-node { border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; padding: 10px; font-size: 12px; text-align: center; transition: all 0.2s ease; background: var(--color-background-primary); }
-        .sim-node.healthy { border-color: #16a34a; background: #f0fdf4; }
-        .sim-node.failed { border-color: #dc2626; background: #fef2f2; }
-        .sim-node.promoted { border-color: #7c3aed; background: #faf5ff; }
-        .log-line { font-size: 11px; padding: 4.5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); line-height: 1.4; }
-        .log-line.ok { color: #15803d; }
-        .log-line.warn { color: #d97706; }
-        .log-line.err { color: #dc2626; }
-        .log-line.info { color: #1d4ed8; }
-        .checklist li { font-size: 12.5px; margin-bottom: 5px; list-style: none; padding-left: 20px; position: relative; color: var(--color-text-primary); }
-        .checklist li::before { content: "✓"; position: absolute; left: 0; color: #15803d; font-weight: 700; }
-        .warn-list li { font-size: 12.5px; margin-bottom: 5px; list-style: none; padding-left: 20px; position: relative; color: var(--color-text-primary); }
-        .warn-list li::before { content: "⚠"; position: absolute; left: 0; color: #d97706; }
-        svg text { font-family: var(--font-sans, sans-serif); }
+        /* Encapsulated styling under .aurora- */
+        .aurora-container { font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-text-primary, #0f172a); }
+        .aurora-h { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; color: var(--color-text-primary, #0f172a); }
+        .aurora-sub { font-size: 13px; color: var(--color-text-secondary, #475569); line-height: 1.5; margin-bottom: 16px; }
+        .aurora-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .aurora-tb { padding: 6px 12px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; }
+        .aurora-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .aurora-tb.aurora-on { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 500; }
+        .aurora-card { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-lg, 12px); padding: 14px 16px; background: var(--color-background-primary, #ffffff); margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .aurora-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #475569); text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; }
+        .aurora-sec:first-child { margin-top: 0; }
+        .aurora-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .aurora-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+        .aurora-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); background: var(--color-background-secondary, #f8fafc); margin-bottom: 6px; font-size: 12px; line-height: 1.45; }
+        .aurora-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: #fff; font-weight: 600; background: #2563eb; }
+        .aurora-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+        .aurora-binfo { background: #dbeafe; color: #1d4ed8; }
+        .aurora-bok { background: #dcfce7; color: #15803d; }
+        .aurora-bwarn { background: #fef3c7; color: #b45309; }
+        .aurora-bbad { background: #fee2e2; color: #b91c1c; }
+        .aurora-bpurple { background: #ede9fe; color: #7c3aed; }
+        .aurora-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+        .aurora-k { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 10px; text-align: center; }
+        .aurora-k .t { font-size: 10px; color: var(--color-text-tertiary, #64748b); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .aurora-k .v { font-size: 16px; font-weight: 700; color: var(--color-text-primary, #0f172a); }
+        .aurora-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .aurora-ctrl { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; }
+        .aurora-ctrl label { display: block; font-size: 12px; font-weight: 600; color: var(--color-text-secondary, #475569); margin-bottom: 6px; }
+        .aurora-ctrl select { width: 100%; padding: 6px; font-size: 12px; border: 2px solid #2563eb; border-radius: 4px; background: var(--color-background-primary, #ffffff); outline: none; }
+        .aurora-ctrl input[type="range"] { width: 100%; padding: 6px; font-size: 12px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: 4px; background: var(--color-background-primary, #ffffff); }
+        .aurora-ctrl .out { font-size: 11px; color: var(--color-text-secondary, #475569); margin-top: 6px; font-family: var(--font-mono, monospace); }
+        .aurora-mono { font-family: var(--font-mono, monospace); font-size: 11px; }
+        .aurora-btnbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .aurora-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); background: var(--color-background-primary, #ffffff); color: var(--color-text-primary, #0f172a); cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; }
+        .aurora-btn:hover { background: var(--color-background-secondary, #f8fafc); }
+        .aurora-btn.aurora-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+        .aurora-btn.aurora-primary:hover { background: #1d4ed8; }
+        .aurora-log { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; font-size: 11px; color: var(--color-text-secondary, #475569); line-height: 1.6; min-height: 90px; max-height: 180px; overflow-y: auto; margin-top: 12px; }
+        ul.aurora-ck, ul.aurora-wn { padding-left: 0; margin-bottom: 0; }
+        ul.aurora-ck li, ul.aurora-wn li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; line-height: 1.4; color: var(--color-text-secondary, #475569); }
+        ul.aurora-ck li::before { content: "✓"; position: absolute; left: 0; color: #15803d; font-weight: 700; }
+        ul.aurora-wn li::before { content: "⚠️"; position: absolute; left: 0; font-size: 10px; }
+        .aurora-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.4; }
+        .aurora-table th { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; text-align: left; font-weight: 600; color: var(--color-text-secondary, #475569); }
+        .aurora-table td { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; color: var(--color-text-primary, #0f172a); }
+        .aurora-table tr:nth-child(even) { background: var(--color-background-secondary, #f8fafc); }
+        .aurora-code-container { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: 8px; background: var(--color-background-secondary, #f8fafc); padding: 12px; margin-top: 10px; }
+        .aurora-code { font-family: var(--font-mono, monospace); font-size: 11px; white-space: pre-wrap; line-height: 1.45; color: var(--color-text-primary, #0f172a); }
+        
+        .aurora-subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px dashed var(--color-border-tertiary, #e2e8f0); padding-bottom: 8px; }
+        .aurora-subtb { padding: 4px 10px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 11px; cursor: pointer; background: var(--color-background-primary, #ffffff); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; }
+        .aurora-subtb:hover { background: var(--color-background-secondary, #f8fafc); }
+        .aurora-subtb.aurora-on { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 500; }
+        .aurora-subtb.aurora-on-purple { background: #7c3aed; color: #fff; border-color: #7c3aed; font-weight: 500; }
+        
+        @keyframes activeNodePulse {
+          0% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
+          50% { filter: drop-shadow(0 0 10px var(--pulse-color)); }
+          100% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
+        }
+        .active-glow-node {
+          animation: activeNodePulse 2.5s infinite;
+        }
+        @keyframes flowAnim {
+          to { stroke-dashoffset: -20; }
+        }
+        .flow-active-line {
+          stroke-dasharray: 6, 4;
+          animation: flowAnim 1s linear infinite;
+        }
       `}</style>
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          🌌 Amazon Aurora — Complete Architecture
+      {/* Header Panel */}
+      <div className="mb-6">
+        <h1 className="aurora-h">
+          🌌 Amazon Aurora — Cloud-Native Distributed Database Visualizer
         </h1>
-        <p className="text-gray-600">
-          Storage Engine · Cluster · Multi-AZ · Global DB · Serverless · Proxy · Failover Simulation · Integrations
+        <p className="aurora-sub">
+          Explore virtualized shared storage quorums, serverless v2 elastic capacity hubs, point-in-time recovery playbooks, copy-on-write clones, Zero-ETL streams, and in-database ML executors.
         </p>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="tab-bar mb-6">
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            className={`tab ${activeTab === t.id ? 'active' : ''}`}
-          >
-            {t.emoji} {t.label}
-          </button>
-        ))}
+      {/* Navigation tabs */}
+      <div className="aurora-tabs">
+        <button className={`aurora-tb ${activeTab === 'overview' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('overview')}>💾 1. Shared Storage Quorum</button>
+        <button className={`aurora-tb ${activeTab === 'endpoints' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('endpoints')}>🔌 2. Endpoints &amp; Routing</button>
+        <button className={`aurora-tb ${activeTab === 'failover' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('failover')}>💥 3. Failover Playbook Stepper</button>
+        <button className={`aurora-tb ${activeTab === 'global' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('global')}>🌎 4. Global DR Sync</button>
+        <button className={`aurora-tb ${activeTab === 'serverless' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('serverless')}>⚡ 5. Serverless v2 Scaling</button>
+        <button className={`aurora-tb ${activeTab === 'cloning' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('cloning')}>🧬 6. Copy-on-Write Clones</button>
+        <button className={`aurora-tb ${activeTab === 'hardening' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('hardening')}>🔒 7. Hardening HUD &amp; Analytics</button>
       </div>
 
-      {/* Tab Content */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      {/* Primary Display Card */}
+      <div className="aurora-card">
 
-      {/* Tab 0: Overview Dashboard */}
-      {activeTab === 'overview' && (
-        <div>
-          <div style={{ marginBottom: '10px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 500, color: 'var(--color-text-primary)' }}>Aurora HA + Read Scaling (Shared Storage, Self‑Healing, Auto‑Expanding)</div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>One picture for intuition + two tiny simulations you can click</div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '12px', alignItems: 'start' }}>
-            <div className="card">
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                <span style={{ borderRadius: '999px', padding: '3px 9px', fontSize: '11px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)' }}>HA: 6 copies across 3 AZs</span>
-                <span style={{ borderRadius: '999px', padding: '3px 9px', fontSize: '11px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)' }}>Quorum: write 4/6, read 3/6</span>
-                <span style={{ borderRadius: '999px', padding: '3px 9px', fontSize: '11px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)' }}>Read scaling: Reader endpoint → replicas</span>
-                <span style={{ borderRadius: '999px', padding: '3px 9px', fontSize: '11px', fontWeight: 500, border: '0.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)' }}>Storage: auto‑grows (10 GB steps) up to 128 TB</span>
-              </div>
-
-              <svg width="100%" viewBox="0 0 680 440" style={{ display: 'block' }}>
-                <defs>
-                  <marker id="arrowP" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="#6b7280"></path>
-                  </marker>
-                  <marker id="arrowB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="#2563eb"></path>
-                  </marker>
-                  <marker id="arrowG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L8,3 z" fill="#16a34a"></path>
-                  </marker>
-                </defs>
-
-                {/* Client */}
-                <g className="c-blue">
-                  <rect className="box" x="20" y="22" width="200" height="56" rx="10" strokeWidth="0.5" fill="#eff6ff" stroke="#bfdbfe"></rect>
-                  <text className="th" x="120" y="44" textAnchor="middle" dominantBaseline="central" fontSize="13" fill="#1d4ed8" fontWeight="500">Clients / App</text>
-                  <text className="ts" x="120" y="62" textAnchor="middle" dominantBaseline="central" fontSize="11" fill="#1d4ed8">web, API, Lambda, services</text>
-                </g>
-
-                {/* Endpoints */}
-                <g className="c-purple">
-                  <rect className="box" x="250" y="16" width="410" height="70" rx="12" strokeWidth="0.5" fill="#faf5ff" stroke="#c4b5fd"></rect>
-                  <text className="th" x="455" y="36" textAnchor="middle" dominantBaseline="central" fontSize="13" fill="#7c3aed" fontWeight="500">Aurora Endpoints (DNS)</text>
-
-                  <rect x="270" y="46" width="190" height="30" rx="8" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"></rect>
-                  <text x="365" y="61" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#6d28d9" fontWeight="500">Writer (Cluster) endpoint</text>
-
-                  <rect x="475" y="46" width="170" height="30" rx="8" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"></rect>
-                  <text x="560" y="61" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#6d28d9" fontWeight="500">Reader endpoint</text>
-                </g>
-
-                {/* Compute layer */}
-                <g className="c-teal">
-                  <rect className="box" x="20" y="105" width="640" height="120" rx="14" strokeWidth="0.5" fill="#f0fdf4" stroke="#86efac"></rect>
-                  <text className="th" x="340" y="126" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#0f766e" fontWeight="500">Compute layer (instances in multiple AZs)</text>
-
-                  <rect x="45" y="145" width="190" height="62" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"></rect>
-                  <text x="140" y="168" textAnchor="middle" dominantBaseline="central" fontSize="13" fill="#0f766e" fontWeight="500">✍️ Writer instance</text>
-                  <text x="140" y="188" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#0f766e">reads + writes</text>
-
-                  <rect x="255" y="145" width="170" height="62" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"></rect>
-                  <text x="340" y="168" textAnchor="middle" dominantBaseline="central" fontSize="13" fill="#0f766e" fontWeight="500">📖 Replica A</text>
-                  <text x="340" y="188" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#0f766e">reads only</text>
-
-                  <rect x="445" y="145" width="170" height="62" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"></rect>
-                  <text x="530" y="168" textAnchor="middle" dominantBaseline="central" fontSize="13" fill="#0f766e" fontWeight="500">📖 Replica B</text>
-                  <text x="530" y="188" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#0f766e">reads only</text>
-
-                  <text x="340" y="214" textAnchor="middle" dominantBaseline="central" fontSize="11" fill="#0f766e">Read scaling = add replicas (up to 15) and send SELECTs to the Reader endpoint</text>
-                </g>
-
-                {/* Storage layer */}
-                <g className="c-green">
-                  <rect className="box" x="20" y="245" width="640" height="175" rx="14" strokeWidth="0.5" fill="#dcfce7" stroke="#86efac"></rect>
-                  <text className="th" x="340" y="265" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534" fontWeight="500">Shared distributed storage (the HA “secret sauce”)</text>
-
-                  {/* AZ containers */}
-                  <rect x="45" y="285" width="170" height="118" rx="12" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="130" y="304" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534" fontWeight="500">AZ-1</text>
-                  <rect x="62" y="318" width="136" height="28" rx="8" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="130" y="332" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534">Copy 1</text>
-                  <rect x="62" y="356" width="136" height="28" rx="8" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="130" y="370" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534">Copy 2</text>
-
-                  <rect x="255" y="285" width="170" height="118" rx="12" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="340" y="304" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534" fontWeight="500">AZ-2</text>
-                  <rect x="272" y="318" width="136" height="28" rx="8" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="340" y="332" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534">Copy 3</text>
-                  <rect x="272" y="356" width="136" height="28" rx="8" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="340" y="370" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534">Copy 4</text>
-
-                  <rect x="445" y="285" width="170" height="118" rx="12" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="530" y="304" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534" fontWeight="500">AZ-3</text>
-                  <rect x="462" y="318" width="136" height="28" rx="8" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="530" y="332" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534">Copy 5</text>
-                  <rect x="462" y="356" width="136" height="28" rx="8" fill="#bbf7d0" stroke="#86efac" strokeWidth="0.5"></rect>
-                  <text x="530" y="370" textAnchor="middle" dominantBaseline="central" fontSize="12" fill="#166534">Copy 6</text>
-
-                  <text x="340" y="410" textAnchor="middle" dominantBaseline="central" fontSize="11" fill="#166534">
-                    Self‑healing: if a copy becomes unhealthy, Aurora rebuilds a new copy automatically to restore “6 copies”
-                  </text>
-                </g>
-
-                {/* Arrows */}
-                <path d="M 220 50 L 250 50" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#arrowP)"></path>
-
-                {/* Writes */}
-                <path d="M 365 76 L 140 105" fill="none" stroke="#2563eb" strokeWidth="1.2" markerEnd="url(#arrowB)"></path>
-                <text x="250" y="92" textAnchor="middle" fontSize="11" fill="#2563eb">writes</text>
-
-                {/* Reads */}
-                <path d="M 560 76 L 340 105" fill="none" stroke="#16a34a" strokeWidth="1.2" markerEnd="url(#arrowG)"></path>
-                <path d="M 560 76 L 530 105" fill="none" stroke="#16a34a" strokeWidth="1.2" markerEnd="url(#arrowG)"></path>
-                <text x="520" y="92" textAnchor="middle" fontSize="11" fill="#16a34a">reads</text>
-
-                {/* Redo logs to shared storage */}
-                <path d="M 140 207 L 140 245" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#arrowP)" strokeDasharray="4,3"></path>
-                <path d="M 340 207 L 340 245" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#arrowP)" strokeDasharray="4,3"></path>
-                <path d="M 530 207 L 530 245" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#arrowP)" strokeDasharray="4,3"></path>
-                <text x="610" y="232" textAnchor="middle" fontSize="11" fill="#6b7280">redo log</text>
-              </svg>
-
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
-                <b style={{ color: 'var(--color-text-primary)' }}>Mental model:</b> Instances are “compute”, storage is a separate multi‑AZ system. Replicas scale reads; storage replication gives HA.
-              </div>
+        {/* ==========================================
+            TAB 1: STORAGE & QUORUM
+            ========================================== */}
+        {activeTab === 'overview' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Storage Engine: Redo log replication &amp; Drive Quorum virtualizations</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Aurora writes ONLY redo log vectors to a shared quorum storage layer replicated 6-ways across 3 AZs.</div>
             </div>
 
-            <div>
-              <div className="card" style={{ marginBottom: '12px' }}>
-                <div style={{ fontWeight: 500, marginBottom: '6px', color: 'var(--color-text-primary)' }}>1) Self‑healing storage (mini sim)</div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Click “Fail 1 copy” → quorum stays OK, then Aurora repairs back to 6 copies.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
+              <div>
+                <svg width="100%" viewBox="0 0 680 400" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                  <defs>
+                    <linearGradient id="g-light-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f8fafc" />
+                      <stop offset="100%" stopColor="#f1f5f9" />
+                    </linearGradient>
+                    <marker id="arr-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                    <marker id="arr-p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                  </defs>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '6px', marginTop: '10px' }}>
-                  {overviewCopies.map((ok, i) => (
-                    <div key={i} style={{
+                  {/* Grid Background */}
+                  <rect width="680" height="400" fill="url(#g-light-bg)" />
+                  <text x="340" y="24" textAnchor="middle" fontSize="10.5" fill="#64748b" fontWeight="600" fontFamily="sans-serif">AWS Private Subnets (3 Availability Zones)</text>
+
+                  {/* Compute Layer */}
+                  <rect x="20" y="38" width="640" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="340" y="52" textAnchor="middle" fontSize="9.5" fill="#7c3aed" fontWeight="bold" fontFamily="monospace">AURORA COMPUTE INSTANCES</text>
+
+                  <rect x="40" y="62" width="170" height="34" rx="4" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
+                  <text x="125" y="79" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">✍️ Writer (us-east-1a)</text>
+
+                  <rect x="250" y="62" width="170" height="34" rx="4" fill="#f3e8ff" stroke="#c084fc" strokeWidth="0.5" />
+                  <text x="335" y="79" textAnchor="middle" fontSize="11" fill="#6b21a8" fontWeight="bold">📖 Reader 1 (us-east-1b)</text>
+
+                  <rect x="460" y="62" width="170" height="34" rx="4" fill="#f3e8ff" stroke="#c084fc" strokeWidth="0.5" />
+                  <text x="545" y="79" textAnchor="middle" fontSize="11" fill="#6b21a8" fontWeight="bold">📖 Reader 2 (us-east-1c)</text>
+
+                  {/* Shared Storage Area */}
+                  <rect x="20" y="150" width="640" height="230" rx="10" fill="#ecfdf5" stroke="#a7f3d0" strokeWidth="1" />
+                  <text x="340" y="168" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold" fontFamily="monospace">SHARED VIRTUALIZED DISTRIBUTED STORAGE LAYER</text>
+
+                  {/* AZ-1 Nodes */}
+                  <rect x="35" y="185" width="180" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="125" y="200" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">AZ-1 (Subnet 1a)</text>
+                  
+                  <rect x="50" y="215" width="150" height="32" rx="4" fill={copies[0] ? '#ecfdf5' : '#fef2f2'} stroke={copies[0] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
+                  <text x="125" y="235" textAnchor="middle" fontSize="10.5" fill={copies[0] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[0] ? 'Storage Copy 1 ✅' : 'Copy 1 Outage ❌'}</text>
+                  
+                  <rect x="50" y="258" width="150" height="32" rx="4" fill={copies[1] ? '#ecfdf5' : '#fef2f2'} stroke={copies[1] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
+                  <text x="125" y="278" textAnchor="middle" fontSize="10.5" fill={copies[1] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[1] ? 'Storage Copy 2 ✅' : 'Copy 2 Outage ❌'}</text>
+
+                  {/* AZ-2 Nodes */}
+                  <rect x="250" y="185" width="180" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="340" y="200" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">AZ-2 (Subnet 1b)</text>
+                  
+                  <rect x="265" y="215" width="150" height="32" rx="4" fill={copies[2] ? '#ecfdf5' : '#fef2f2'} stroke={copies[2] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
+                  <text x="340" y="235" textAnchor="middle" fontSize="10.5" fill={copies[2] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[2] ? 'Storage Copy 3 ✅' : 'Copy 3 Outage ❌'}</text>
+                  
+                  <rect x="265" y="258" width="150" height="32" rx="4" fill={copies[3] ? '#ecfdf5' : '#fef2f2'} stroke={copies[3] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
+                  <text x="340" y="278" textAnchor="middle" fontSize="10.5" fill={copies[3] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[3] ? 'Storage Copy 4 ✅' : 'Copy 4 Outage ❌'}</text>
+
+                  {/* AZ-3 Nodes */}
+                  <rect x="465" y="185" width="180" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="555" y="200" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">AZ-3 (Subnet 1c)</text>
+                  
+                  <rect x="480" y="215" width="150" height="32" rx="4" fill={copies[4] ? '#ecfdf5' : '#fef2f2'} stroke={copies[4] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
+                  <text x="555" y="235" textAnchor="middle" fontSize="10.5" fill={copies[4] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[4] ? 'Storage Copy 5 ✅' : 'Copy 5 Outage ❌'}</text>
+                  
+                  <rect x="480" y="258" width="150" height="32" rx="4" fill={copies[5] ? '#ecfdf5' : '#fef2f2'} stroke={copies[5] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
+                  <text x="555" y="278" textAnchor="middle" fontSize="10.5" fill={copies[5] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[5] ? 'Storage Copy 6 ✅' : 'Copy 6 Outage ❌'}</text>
+
+                  {/* Redo stream paths */}
+                  <line x1="125" y1="96" x2="125" y2="150" stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="3,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                  <line x1="335" y1="96" x2="335" y2="150" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                  <line x1="545" y1="96" x2="545" y2="150" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                  <text x="155" y="130" fontSize="9.5" fill="#7c3aed" fontWeight="bold">Redo Record Stream</text>
+
+                  <text x="340" y="365" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold">Self-Healing Storage rebuilds segments instantly on healthy nodes if sectors fail.</text>
+                </svg>
+              </div>
+
+              <div>
+                {/* Drive Quorum Hardening Status */}
+                <div className="aurora-card" style={{ marginBottom: '12px', borderTop: '3px solid #10b981' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#1b4332', marginBottom: '6px' }}>🛠️ Drive Failures &amp; Quorum HUD</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Aurora replicates data to 6 storage drives. Test failures to see read/write quorum.</div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '8px' }}>
+                    <div style={{ background: '#f8fafc', padding: '6px', borderRadius: '6px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: '9.5px', color: '#64748b' }}>Write Quorum (needs 4/6)</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: copies.filter(Boolean).length >= 4 ? '#16a34a' : '#dc2626', marginTop: '2px' }}>
+                        {copies.filter(Boolean).length >= 4 ? '🟢 Stable ACK' : '🔴 Blocked'} ({copies.filter(Boolean).length}/6)
+                      </div>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '6px', borderRadius: '6px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: '9.5px', color: '#64748b' }}>Read Quorum (needs 3/6)</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: copies.filter(Boolean).length >= 3 ? '#16a34a' : '#dc2626', marginTop: '2px' }}>
+                        {copies.filter(Boolean).length >= 3 ? '🟢 Stable ACK' : '🔴 Blocked'} ({copies.filter(Boolean).length}/6)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', minHeight: '52px', fontSize: '9.5px', color: '#334155', border: '1px solid #e2e8f0', lineHeight: 1.45 }}>
+                    {storageLog}
+                  </div>
+
+                  <div className="aurora-btnbar" style={{ marginTop: '8px' }}>
+                    <button className="aurora-btn" style={{ borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c' }} onClick={failOneCopy}>💥 Fail 1 copy</button>
+                    <button className="aurora-btn" style={{ borderColor: '#86efac', background: '#f0fdf4', color: '#15803d' }} onClick={selfHealStorage}>🔄 Self-heal rebuild</button>
+                    <button className="aurora-btn" onClick={resetStorageCopies}>Reset</button>
+                  </div>
+                </div>
+
+                {/* Auto-Expanding used/allocated simulator */}
+                <div className="aurora-card" style={{ borderTop: '3px solid #0284c7' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#0f4c5c', marginBottom: '6px' }}>📈 Dynamic Segment Allocation</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Aurora storage grows automatically in 10 GB increments as database size increases.</div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', color: '#64748b', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Active Used Size:</span> <b>{usedGb} GB</b>
+                    </label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="115"
+                      value={usedGb}
+                      onChange={(e) => handleUsedGbChange(Number(e.target.value))}
+                      style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer', margin: '6px 0' }}
+                    />
+                    <div style={{ fontSize: '11px', color: '#334155', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Allocated: <b>{allocatedGb} GB</b></span>
+                      <span style={{ color: expandColor, fontWeight: 'bold' }}>{expandStatus}</span>
+                    </div>
+                    <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginTop: '6px' }}>
+                      <div style={{ height: '100%', width: `${Math.round((usedGb / allocatedGb) * 100)}%`, background: '#2563eb', borderRadius: '4px' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 2: ENDPOINTS & ROUTING
+            ========================================== */}
+        {activeTab === 'endpoints' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Cluster Routing &amp; Endpoint Management</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Configure connections to Writer, Reader pool, Custom groups, and Serverless Data APIs (HTTPS).</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
+              <div>
+                <svg width="100%" viewBox="0 0 680 340" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                  <rect width="680" height="340" fill="url(#g-light-bg)" />
+
+                  {/* Sources */}
+                  <g className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.2)' } as React.CSSProperties}>
+                    <rect x="30" y="30" width="160" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth={activeSource === 'client' ? 2 : 0.5} style={{ cursor: 'pointer' }} onClick={() => setActiveSource('client')} />
+                    <text x="110" y="58" textAnchor="middle" fontSize="12" fill="#1d4ed8" fontWeight="bold">💻 Standard OLTP App</text>
+                    <text x="110" y="74" textAnchor="middle" fontSize="8.5" fill="#60a5fa">Web App / ECS Driver</text>
+                  </g>
+
+                  <g className="active-glow-node" style={{ '--pulse-color': 'rgba(124, 58, 237, 0.2)' } as React.CSSProperties}>
+                    <rect x="30" y="130" width="160" height="60" rx="6" fill="#f5f3ff" stroke="#7c3aed" strokeWidth={activeSource === 'proxy' ? 2 : 0.5} style={{ cursor: 'pointer' }} onClick={() => setActiveSource('proxy')} />
+                    <text x="110" y="158" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="bold">⚡ Serverless Lambda</text>
+                    <text x="110" y="174" textAnchor="middle" fontSize="8.5" fill="#a78bfa">VPC Data API / Proxy Pool</text>
+                  </g>
+
+                  <g className="active-glow-node" style={{ '--pulse-color': 'rgba(16, 185, 129, 0.2)' } as React.CSSProperties}>
+                    <rect x="30" y="230" width="160" height="60" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth={activeSource === 'analytics' ? 2 : 0.5} style={{ cursor: 'pointer' }} onClick={() => setActiveSource('analytics')} />
+                    <text x="110" y="258" textAnchor="middle" fontSize="12" fill="#047857" fontWeight="bold">📊 Analytics Worker</text>
+                    <text x="110" y="274" textAnchor="middle" fontSize="8.5" fill="#34d399">PowerBI / Heavy Reports</text>
+                  </g>
+
+                  {/* Endpoints */}
+                  <rect x="270" y="60" width="180" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="360" y="80" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">✍️ Writer Endpoint</text>
+                  <text x="360" y="93" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.writer.rds.com</text>
+
+                  <rect x="270" y="150" width="180" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="360" y="170" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">📖 Reader Endpoint</text>
+                  <text x="360" y="183" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.reader-ro.rds.com</text>
+
+                  <rect x="270" y="240" width="180" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="360" y="260" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">🔌 Data API Endpoint</text>
+                  <text x="360" y="273" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">data-api.ap-region.rds.com</text>
+
+                  {/* Database Compute instances */}
+                  <rect x="520" y="45" width="130" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="585" y="68" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Writer Instance</text>
+                  <text x="585" y="82" textAnchor="middle" fontSize="8.5" fill="#16a34a" fontWeight="bold">Primary</text>
+
+                  <rect x="520" y="145" width="130" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="585" y="168" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Replica A</text>
+                  <text x="585" y="182" textAnchor="middle" fontSize="8.5" fill="#2563eb">Reader Node</text>
+
+                  <rect x="520" y="245" width="130" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="585" y="268" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Replica B</text>
+                  <text x="585" y="282" textAnchor="middle" fontSize="8.5" fill="#2563eb">Reader Node</text>
+
+                  {/* Ingress Paths dynamic tracing */}
+                  {activeSource === 'client' && (
+                    <>
+                      <path d="M 190 60 L 270 80" fill="none" stroke="#2563eb" strokeWidth="2.5" className="flow-active-line" />
+                      <path d="M 450 80 L 520 70" fill="none" stroke="#2563eb" strokeWidth="2.5" className="flow-active-line" />
+                    </>
+                  )}
+                  {activeSource === 'proxy' && (
+                    <>
+                      <path d="M 190 160 L 270 260" fill="none" stroke="#7c3aed" strokeWidth="2.5" className="flow-active-line" />
+                      <path d="M 450 260 L 520 70" fill="none" stroke="#7c3aed" strokeWidth="2" className="flow-active-line" />
+                      <path d="M 450 260 L 520 170" fill="none" stroke="#7c3aed" strokeWidth="2" className="flow-active-line" />
+                    </>
+                  )}
+                  {activeSource === 'analytics' && (
+                    <>
+                      <path d="M 190 260 L 270 170" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" />
+                      <path d="M 450 170 L 520 170" fill="none" stroke="#10b981" strokeWidth="2" className="flow-active-line" />
+                      <path d="M 450 170 L 520 270" fill="none" stroke="#10b981" strokeWidth="2" className="flow-active-line" />
+                    </>
+                  )}
+                </svg>
+              </div>
+
+              <div>
+                <div className="aurora-card" style={{ borderLeft: '4px solid #2563eb', paddingLeft: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#1e3a8a' }}>👑 Writer Cluster Endpoint</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
+                    Static CNAME routing strictly to N. Virginia primary database instance. Bypasses replicas. On failovers, targets shift IP addresses automatically in seconds.
+                  </div>
+                </div>
+                <div className="aurora-card" style={{ borderLeft: '4px solid #10b981', paddingLeft: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#064e3b' }}>📖 Reader Load-balanced Endpoint</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
+                    Spreads heavy read-only SELECT connections across all reader nodes dynamically via round-robin DNS records. Bypasses primary writes.
+                  </div>
+                </div>
+                <div className="aurora-card" style={{ borderLeft: '4px solid #7c3aed', paddingLeft: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#581c87' }}>🔌 Serverless Data API Endpoint</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
+                    Enables HTTP-based SQL execution over standard JSON calls. Eliminates persistent socket limits. Perfect for containerized Lambda structures.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 3: FAILOVER PLAYBOOK STEPPER
+            ========================================== */}
+        {activeTab === 'failover' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Disaster Recovery: Sub-30s Failover Playbook Stepper</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Simulate a full Availability Zone blackout in us-east-1a and monitor recovery streams.</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: '14px', alignItems: 'start' }}>
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
+                  {/* AZ-1 Writer Node */}
+                  <div style={{
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    textAlign: 'center',
+                    background: writerState === 'healthy' ? '#ecfdf5' : '#fef2f2',
+                    borderColor: writerState === 'healthy' ? '#10b981' : '#ef4444'
+                  }}>
+                    <div style={{ fontSize: '18px' }}>{writerState === 'healthy' ? '✍️' : '💥'}</div>
+                    <div style={{ fontWeight: 700, fontSize: '11.5px', color: '#1e293b', marginTop: '4px' }}>AZ-1 N. Virginia</div>
+                    <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: writerState === 'healthy' ? '#15803d' : '#b91c1c' }}>
+                      {writerState === 'healthy' ? 'Writer (Healthy)' : 'AZ FAILED (Unreachable)'}
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Instance Priority: 0</div>
+                  </div>
+
+                  {/* AZ-2 Reader Node */}
+                  <div style={{
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    textAlign: 'center',
+                    background: replicaState === 'promoted' ? '#f5f3ff' : '#eff6ff',
+                    borderColor: replicaState === 'promoted' ? '#7c3aed' : '#3b82f6'
+                  }}>
+                    <div style={{ fontSize: '18px' }}>👑</div>
+                    <div style={{ fontWeight: 700, fontSize: '11.5px', color: '#1e293b', marginTop: '4px' }}>AZ-2 us-east-1b</div>
+                    <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: replicaState === 'promoted' ? '#6d28d9' : '#1d4ed8' }}>
+                      {replicaState === 'promoted' ? 'PROMOTED WRITER' : 'Replica 1 (Ready)'}
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Instance Priority: 0 (Backup Primary)</div>
+                  </div>
+
+                  {/* AZ-3 Reader Node */}
+                  <div style={{
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    textAlign: 'center',
+                    background: '#eff6ff',
+                    borderColor: '#3b82f6'
+                  }}>
+                    <div style={{ fontSize: '18px' }}>📖</div>
+                    <div style={{ fontWeight: 700, fontSize: '11.5px', color: '#1e293b', marginTop: '4px' }}>AZ-3 us-east-1c</div>
+                    <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#1d4ed8' }}>
+                      Replica 2 (Serving Reads)
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Instance Priority: 1</div>
+                  </div>
+                </div>
+
+                {/* Steps Timeline bar */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', marginBottom: '14px', position: 'relative' }}>
+                  {[
+                    { s: 1, label: '1. Outage Detected' },
+                    { s: 2, label: '2. Heartbeat Fence' },
+                    { s: 3, label: '3. DNS Shift' },
+                    { s: 4, label: '4. promotion' },
+                    { s: 5, label: '5. Proxy active' }
+                  ].map((step) => (
+                    <div key={step.s} style={{
                       textAlign: 'center',
-                      padding: '8px 2px',
+                      padding: '6px 2px',
                       borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      border: `0.5px solid ${ok ? '#86efac' : '#fca5a5'}`,
-                      background: ok ? '#f0fdf4' : '#fef2f2',
-                      color: ok ? '#166534' : '#b91c1c'
+                      fontSize: '9.5px',
+                      fontWeight: 'bold',
+                      background: failoverStep >= step.s ? '#dcfce7' : '#f1f5f9',
+                      border: `1px solid ${failoverStep >= step.s ? '#86efac' : '#cbd5e1'}`,
+                      color: failoverStep >= step.s ? '#15803d' : '#64748b'
                     }}>
-                      {ok ? `C${i + 1}` : `C${i + 1} ✖`}
+                      {step.label}
                     </div>
                   ))}
                 </div>
 
-                {(() => {
-                  const healthy = overviewCopies.filter(Boolean).length;
-                  const wOK = healthy >= 4;
-                  const rOK = healthy >= 3;
-                  return (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginTop: '10px' }}>
-                      <div style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', padding: '10px' }}>
-                        <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Write quorum (needs 4/6)</div>
-                        <div style={{ fontSize: '16px', fontWeight: 500, color: wOK ? '#15803d' : '#dc2626' }}>
-                          {wOK ? '✅ OK' : '❌ AT RISK'} ({healthy}/6)
-                        </div>
-                      </div>
-                      <div style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', padding: '10px' }}>
-                        <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Read quorum (needs 3/6)</div>
-                        <div style={{ fontSize: '16px', fontWeight: 500, color: rOK ? '#15803d' : '#dc2626' }}>
-                          {rOK ? '✅ OK' : '❌ AT RISK'} ({healthy}/6)
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-                  <button onClick={failOneOverviewCopy} style={{ padding: '5px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', background: '#fee2e2', border: '0.5px solid #fca5a5', color: '#b91c1c' }}>Fail 1 copy</button>
-                  <button onClick={repairOverviewCopies} style={{ padding: '5px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', background: '#dcfce7', border: '0.5px solid #86efac', color: '#15803d' }}>Self‑heal (repair)</button>
-                  <button onClick={resetOverviewCopies} style={{ padding: '5px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', color: 'var(--color-text-primary)' }}>Reset</button>
+                {/* Actions Toolbar */}
+                <div className="aurora-btnbar" style={{ marginBottom: '12px' }}>
+                  <button className="aurora-btn aurora-primary" disabled={failoverStep === 5} onClick={triggerNextFailoverStep}>Step-by-Step Playbook ➡️</button>
+                  <button className="aurora-btn" disabled={failoverStep !== 1} onClick={autoPlayFailover}>Auto-Play Failover Simulator ⚡</button>
+                  <button className="aurora-btn" onClick={resetFailoverSim}>Reset cluster state 🔄</button>
                 </div>
               </div>
 
-              <div className="card">
-                <div style={{ fontWeight: 500, marginBottom: '6px', color: 'var(--color-text-primary)' }}>2) Auto‑expanding storage (mini sim)</div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Aurora storage grows automatically as you store more data (in chunks). Slide “Used” to see it expand.</div>
-
-                <div style={{ marginTop: '10px' }}>
-                  <div style={{ display: 'flex', gap: '8px', fontSize: '12px', marginBottom: '5px', alignItems: 'baseline' }}>
-                    <span style={{ minWidth: '80px', color: 'var(--color-text-secondary)' }}>Used</span>
-                    <b>{overviewUsed} GB</b>
+              <div>
+                <div className="aurora-card" style={{ background: '#f8fafc', minHeight: '180px', border: '1px solid #cbd5e1' }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px', fontFamily: 'monospace' }}>
+                    📟 PLAYBOOK TIMELINE STREAMS
                   </div>
+                  <div className="aurora-mono" style={{ fontSize: '9.5px', color: '#334155', minHeight: '120px', lineHeight: 1.5 }}>
+                    {failoverLogs.map((log, i) => (
+                      <div key={i} style={{ borderBottom: '0.5px solid #cbd5e1', padding: '4px 0' }}>
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 4: GLOBAL DB SYNC
+            ========================================== */}
+        {activeTab === 'global' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Global Database: Hardware-Accelerated Multi-Region Replication</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Aurora Global Databases bypass SQL engines, replicating redo blocks directly at the storage level in N. Virginia (Primary) and Singapore (Warm Standby).</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
+              <div>
+                <svg width="100%" viewBox="0 0 680 240" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                  <rect width="680" height="240" fill="url(#g-light-bg)" />
+
+                  {/* Primary Region us-east-1 */}
+                  <rect x="20" y="30" width="260" height="180" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="1" />
+                  <text x="150" y="52" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="bold">🌎 PRIMARY N. VIRGINIA (us-east-1)</text>
+
+                  <rect x="40" y="70" width="220" height="34" rx="4" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
+                  <text x="150" y="91" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">Writer Node (Active Primary)</text>
+
+                  <rect x="40" y="115" width="220" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="150" y="136" textAnchor="middle" fontSize="11" fill="#64748b">Shared Storage Volume (6 copies)</text>
+
+                  <rect x="40" y="160" width="220" height="34" rx="4" fill="#fffbeb" stroke="#fcd34d" strokeWidth="0.5" />
+                  <text x="150" y="181" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="bold">Global replication engine channel</text>
+
+                  {/* Secondary Region ap-southeast-1 */}
+                  <rect x="400" y="30" width="260" height="180" rx="8" fill={secRegionState === 'promoted' ? '#faf5ff' : '#ecfdf5'} stroke={secRegionState === 'promoted' ? '#c4b5fd' : '#a7f3d0'} strokeWidth="1" />
+                  <text x="530" y="52" textAnchor="middle" fontSize="11" fill={secRegionState === 'promoted' ? '#7c3aed' : '#047857'} fontWeight="bold">🌏 SINGAPORE (ap-southeast-1)</text>
+
+                  <rect x="420" y="70" width="220" height="34" rx="4" fill={secRegionState === 'promoted' ? '#ede9fe' : '#ccfbf1'} stroke={secRegionState === 'promoted' ? '#a78bfa' : '#5eead4'} strokeWidth="0.5" />
+                  <text x="530" y="91" textAnchor="middle" fontSize="11" fill={secRegionState === 'promoted' ? '#4c1d95' : '#0f766e'} fontWeight="bold">
+                    {secRegionState === 'promoted' ? '✍️ promoted WRITER DB' : '📖 warm standby replica pool'}
+                  </text>
+
+                  <rect x="420" y="115" width="220" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="530" y="136" textAnchor="middle" fontSize="11" fill="#64748b">Shared Storage Volume (6 copies)</text>
+
+                  <rect x="420" y="160" width="220" height="34" rx="4" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <text x="530" y="181" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Active local reads served locally</text>
+
+                  {/* Global replicator channel arrow */}
+                  <line x1="280" y1="180" x2="400" y2="180" stroke="#7c3aed" strokeWidth="3" strokeDasharray="6,4" className="flow-active-line" markerEnd="url(#arr-p)" />
+                  <text x="340" y="165" textAnchor="middle" fontSize="10.5" fill="#7c3aed" fontWeight="bold">lag: &lt; 1s</text>
+                </svg>
+              </div>
+
+              <div>
+                <div className="aurora-card" style={{ borderTop: '3px solid #7c3aed' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#581c87', marginBottom: '6px' }}>💥 Global DR Disaster promotion</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Test promoting Singapore from a read-only secondary to active writer when us-east-1 fails.</div>
+
+                  <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', fontSize: '9.5px', color: '#334155', minHeight: '62px', border: '1px solid #cbd5e1', lineHeight: 1.4, marginBottom: '8px' }}>
+                    {globalLogs[0]}
+                  </div>
+
+                  <div className="aurora-btnbar">
+                    <button className="aurora-btn" style={{ background: '#fee2e2', color: '#b91c1c', borderColor: '#fca5a5' }} onClick={triggerGlobalFailover}>💥 N. Virginia Outage</button>
+                    <button className="aurora-btn" onClick={resetGlobalDb}>Reset DR link 🔄</button>
+                  </div>
+                </div>
+
+                <div className="aurora-card">
+                  <div style={{ fontWeight: 600, fontSize: '11.5px', color: '#1e293b', marginBottom: '6px' }}>📋 Global DB parameters</div>
+                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: '#64748b' }}>RPO (Data Lag)</span><b>&lt; 1 second</b></div>
+                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: '#64748b' }}>RTO (Promotion)</span><b>&lt; 1 minute</b></div>
+                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: '#64748b' }}>Max Target Regions</span><b>5 Regions</b></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 5: SERVERLESS V2 SCALING
+            ========================================== */}
+        {activeTab === 'serverless' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Serverless v2: Instant ACU Compute Auto-Scaling</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Aurora Serverless v2 scales compute capacity (ACUs) up and down dynamically in seconds based on live connections and CPU load.</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
+              <div>
+                <div className="aurora-card" style={{ background: '#f8fafc', padding: '14px', marginBottom: '12px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                    Simulate Client Connection Spikes (TCP sockets): <b>{connections} active clients</b>
+                  </label>
                   <input
                     type="range"
-                    min="0"
-                    max="120"
-                    value={overviewUsed}
-                    onChange={(e) => handleOverviewUsedChange(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#7c3aed', cursor: 'pointer' }}
+                    min="10"
+                    max="500"
+                    value={connections}
+                    onChange={(e) => setConnections(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer' }}
                   />
-                  <div style={{ display: 'flex', gap: '8px', fontSize: '12px', margin: '5px 0', alignItems: 'baseline' }}>
-                    <span style={{ minWidth: '80px', color: 'var(--color-text-secondary)' }}>Allocated</span>
-                    <b>{overviewAllocated} GB</b>
-                    <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>(grows in 10 GB steps)</span>
+                  <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '4px', textAlign: 'right' }}>Slider limits: 10 to 500 connections</div>
+                </div>
+
+                <div className="aurora-grid3" style={{ marginBottom: '12px' }}>
+                  <div className="aurora-k">
+                    <div className="t" style={{ color: '#7c3aed' }}>Compute ACUs</div>
+                    <div className="v" style={{ fontSize: '20px' }}>{acu} ACUs</div>
                   </div>
-                  <div style={{ height: '10px', borderRadius: '999px', border: '0.5px solid var(--color-border-tertiary)', overflow: 'hidden', background: 'var(--color-background-secondary)' }}>
-                    <div style={{ height: '100%', width: `${Math.min(100, Math.round((overviewUsed / overviewAllocated) * 100))}%`, background: '#0ea5e9', borderRadius: '999px' }}></div>
+                  <div className="aurora-k">
+                    <div className="t" style={{ color: '#10b981' }}>RAM Capacity</div>
+                    <div className="v" style={{ fontSize: '20px' }}>{ram}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', fontSize: '12px', marginTop: '5px', alignItems: 'baseline' }}>
-                    <span style={{ minWidth: '80px', color: 'var(--color-text-secondary)' }}>Status</span>
-                    <b style={{ color: overviewExpandColor }}>{overviewExpandStatus}</b>
+                  <div className="aurora-k">
+                    <div className="t" style={{ color: '#0284c7' }}>Cost Rate</div>
+                    <div className="v" style={{ fontSize: '20px' }}>${cost}/hr</div>
                   </div>
                 </div>
-              </div>
 
-              <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                <button
-                  onClick={() => alert("Copied prompt: 'Explain Aurora quorum (4/6 writes, 3/6 reads) and what failures it can tolerate, with examples ↗'")}
-                  style={{ background: 'transparent', border: 'none', color: '#7c3aed', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
-                >
-                  Drill into quorum math ↗
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 1: Storage Engine */}
-      {activeTab === 'storage' && (
-        <div>
-          <div className="sec">How Aurora Storage Works — The Key Differentiator</div>
-          <svg width="100%" viewBox="0 0 660 340" style={{ display: 'block', marginBottom: '12px' }}>
-            <defs>
-              <marker id="a1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L0,6 L7,3 z" fill="#7c3aed" />
-              </marker>
-            </defs>
-
-            {/* Compute Layer */}
-            <rect x="10" y="10" width="640" height="80" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
-            <text x="330" y="28" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">COMPUTE LAYER (Instances)</text>
-            
-            <rect x="30" y="36" width="170" height="44" rx="7" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
-            <text x="115" y="54" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">✍️ Writer Instance</text>
-            <text x="115" y="70" textAnchor="middle" fontSize="11" fill="#6d28d9">Reads + Writes</text>
-            
-            <rect x="230" y="36" width="140" height="44" rx="7" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
-            <text x="300" y="54" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">📖 Replica 1</text>
-            <text x="300" y="70" textAnchor="middle" fontSize="11" fill="#6d28d9">Reads only</text>
-            
-            <rect x="390" y="36" width="140" height="44" rx="7" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
-            <text x="460" y="54" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">📖 Replica 2</text>
-            <text x="460" y="70" textAnchor="middle" fontSize="11" fill="#6d28d9">Reads only</text>
-
-            <text x="330" y="108" textAnchor="middle" fontSize="11" fill="#7c3aed">Redo log only (no full page writes)</text>
-            <line x1="115" y1="80" x2="115" y2="118" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#a1)" />
-            <line x1="300" y1="80" x2="300" y2="118" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#a1)" />
-            <line x1="460" y1="80" x2="460" y2="118" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#a1)" />
-
-            {/* Storage Layer */}
-            <rect x="10" y="118" width="640" height="200" rx="10" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5" />
-            <text x="330" y="136" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">SHARED DISTRIBUTED STORAGE LAYER (Auto-scales to 128 TB)</text>
-
-            {/* AZ-1 */}
-            <rect x="25" y="145" width="90" height="160" rx="8" fill="#dcfce7" stroke="#4ade80" stroke-width="0.5" />
-            <text x="70" y="163" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">AZ-1</text>
-            <rect x="33" y="170" width="74" height="30" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5" />
-            <text x="70" y="189" textAnchor="middle" fontSize="11" fill="#166534">Copy 1</text>
-            <rect x="33" y="208" width="74" height="30" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5" />
-            <text x="70" y="227" textAnchor="middle" fontSize="11" fill="#166534">Copy 2</text>
-            <text x="70" y="295" textAnchor="middle" fontSize="10" fill="#166534">2 copies</text>
-
-            {/* AZ-2 */}
-            <rect x="135" y="145" width="90" height="160" rx="8" fill="#dcfce7" stroke="#4ade80" stroke-width="0.5" />
-            <text x="180" y="163" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">AZ-2</text>
-            <rect x="143" y="170" width="74" height="30" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5" />
-            <text x="180" y="189" textAnchor="middle" fontSize="11" fill="#166534">Copy 3</text>
-            <rect x="143" y="208" width="74" height="30" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5" />
-            <text x="180" y="227" textAnchor="middle" fontSize="11" fill="#166534">Copy 4</text>
-            <text x="180" y="295" textAnchor="middle" fontSize="10" fill="#166534">2 copies</text>
-
-            {/* AZ-3 */}
-            <rect x="245" y="145" width="90" height="160" rx="8" fill="#dcfce7" stroke="#4ade80" stroke-width="0.5" />
-            <text x="290" y="163" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">AZ-3</text>
-            <rect x="253" y="170" width="74" height="30" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5" />
-            <text x="290" y="189" textAnchor="middle" fontSize="11" fill="#166534">Copy 5</text>
-            <rect x="253" y="208" width="74" height="30" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5" />
-            <text x="290" y="227" textAnchor="middle" fontSize="11" fill="#166534">Copy 6</text>
-            <text x="290" y="295" textAnchor="middle" fontSize="10" fill="#166534">2 copies</text>
-
-            {/* Quorum Rules Info */}
-            <rect x="370" y="148" width="270" height="150" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5" />
-            <text x="505" y="166" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">Quorum Rules</text>
-            <text x="385" y="185" fontSize="11" fill="#166534">Write quorum: 4 of 6 copies must ACK</text>
-            <text x="385" y="202" fontSize="11" fill="#166534">Read quorum: 3 of 6 copies</text>
-            <text x="385" y="219" fontSize="11" fill="#166534">Tolerates: 1 AZ failure + 1 node failure</text>
-            <text x="385" y="236" fontSize="11" fill="#166534">No data loss on AZ failure</text>
-            <text x="385" y="253" fontSize="11" fill="#166534">Storage auto-grows in 10 GB increments</text>
-            <text x="385" y="270" fontSize="11" fill="#166534">Max: 128 TB per cluster</text>
-            <text x="385" y="287" fontSize="11" fill="#166534">Replicas share same storage (no lag!)</text>
-          </svg>
-
-          <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px 12px', fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px' }}>
-            💡 <b style={{ color: 'var(--color-text-primary)' }}>Key insight:</b> Aurora replicas have <b>near-zero replication lag</b> because they read from the same shared storage — no data copying between instances. Only redo logs are sent.
-          </div>
-
-          {/* Interactive self-healing storage simulation */}
-          <div className="card" style={{ borderTop: '2px solid #16a34a' }}>
-            <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>
-              🛠️ Self‑Healing Storage Simulator
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
-              Simulate physical drive failures and observe how Aurora maintains quorum read/write stability and automatically repairs itself back to 6 copies.
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px', marginBottom: '12px' }}>
-              {copies.map((active, i) => (
-                <div
-                  key={i}
-                  style={{
-                    textAlign: 'center',
-                    padding: '8px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    border: '0.5px solid var(--color-border-tertiary)',
-                    background: active ? '#f0fdf4' : '#fef2f2',
-                    color: active ? '#15803d' : '#b91c1c'
-                  }}
-                >
-                  {active ? `Copy ${i + 1} ✅` : `Copy ${i + 1} ❌`}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
-              <div style={{ background: 'var(--color-background-secondary)', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)' }}>Write Quorum (Needs 4/6)</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: healthyCopiesCount >= 4 ? '#15803d' : '#dc2626', marginTop: '3px' }}>
-                  {healthyCopiesCount >= 4 ? `✅ Active (${healthyCopiesCount}/6)` : `⚠️ Out of Quorum (${healthyCopiesCount}/6)`}
-                </div>
-              </div>
-              <div style={{ background: 'var(--color-background-secondary)', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
-                <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)' }}>Read Quorum (Needs 3/6)</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: healthyCopiesCount >= 3 ? '#15803d' : '#dc2626', marginTop: '3px' }}>
-                  {healthyCopiesCount >= 3 ? `✅ Active (${healthyCopiesCount}/6)` : `⚠️ Out of Quorum (${healthyCopiesCount}/6)`}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', padding: '8px 10px', fontSize: '11px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-mono, monospace)', minHeight: '38px', marginBottom: '10px' }}>
-              {storageLog}
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                onClick={failOneCopy}
-                style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', background: '#fee2e2', border: '0.5px solid #fca5a5', color: '#b91c1c' }}
-              >
-                💥 Fail 1 disk copy
-              </button>
-              <button
-                onClick={selfHealStorage}
-                style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', background: '#dcfce7', border: '0.5px solid #86efac', color: '#15803d' }}
-              >
-                🔄 Self‑heal storage rebuild
-              </button>
-              <button
-                onClick={resetStorageCopies}
-                style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', color: 'var(--color-text-primary)' }}
-              >
-                🔄 Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Cluster Architecture */}
-      {activeTab === 'cluster' && (
-        <div>
-          <div className="sec">Complete Cluster Endpoint & Routing Map</div>
-          <svg width="100%" viewBox="0 0 660 420" style={{ display: 'block', marginBottom: '12px' }}>
-            <defs>
-              <marker id="ca1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-              <marker id="ca2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#3b82f6"/></marker>
-              <marker id="ca3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#16a34a"/></marker>
-            </defs>
-
-            {/* Client Layer */}
-            <rect x="10" y="10" width="640" height="60" rx="8" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.5"/>
-            <text x="330" y="28" textAnchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="500">CLIENT LAYER</text>
-            <rect x="30" y="34" width="130" height="28" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-            <text x="95" y="52" textAnchor="middle" fontSize="11" fill="#1d4ed8">🌐 Web App / API</text>
-            <rect x="180" y="34" width="130" height="28" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-            <text x="245" y="52" textAnchor="middle" fontSize="11" fill="#1d4ed8">⚡ Lambda</text>
-            <rect x="330" y="34" width="130" height="28" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-            <text x="395" y="52" textAnchor="middle" fontSize="11" fill="#1d4ed8">📊 Analytics</text>
-            <rect x="480" y="34" width="160" height="28" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-            <text x="560" y="52" textAnchor="middle" fontSize="11" fill="#1d4ed8">🔄 RDS Proxy</text>
-
-            {/* Endpoints */}
-            <rect x="10" y="88" width="640" height="60" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-            <text x="330" y="106" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">AURORA CLUSTER ENDPOINTS</text>
-            <rect x="30" y="112" width="180" height="28" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="120" y="130" textAnchor="middle" fontSize="11" fill="#7c3aed">✍️ Cluster (Writer) Endpoint</text>
-            <rect x="230" y="112" width="180" height="28" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="320" y="130" textAnchor="middle" fontSize="11" fill="#7c3aed">📖 Reader Endpoint (LB)</text>
-            <rect x="430" y="112" width="200" height="28" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="530" y="130" textAnchor="middle" fontSize="11" fill="#7c3aed">🎯 Custom Endpoints</text>
-
-            {/* Instances */}
-            <rect x="10" y="166" width="640" height="100" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-            <text x="330" y="184" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">AURORA CLUSTER INSTANCES</text>
-            <rect x="30" y="192" width="180" height="64" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="120" y="212" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">✍️ Writer (Primary)</text>
-            <text x="120" y="228" textAnchor="middle" fontSize="11" fill="#166534">db.r6g.2xlarge</text>
-            <text x="120" y="244" textAnchor="middle" fontSize="11" fill="#166534">Reads + Writes</text>
-            
-            <rect x="230" y="192" width="140" height="64" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="300" y="212" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">📖 Replica 1</text>
-            <text x="300" y="228" textAnchor="middle" fontSize="11" fill="#166534">db.r6g.xlarge</text>
-            <text x="300" y="244" textAnchor="middle" fontSize="11" fill="#166534">Reads only</text>
-            
-            <rect x="385" y="192" width="140" height="64" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="455" y="212" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">📖 Replica 2</text>
-            <text x="455" y="228" textAnchor="middle" fontSize="11" fill="#166534">db.r6g.xlarge</text>
-            <text x="455" y="244" textAnchor="middle" fontSize="11" fill="#166534">Reads only</text>
-            
-            <rect x="540" y="192" width="100" height="64" rx="7" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-            <text x="590" y="212" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="500">+ up to</text>
-            <text x="590" y="228" textAnchor="middle" fontSize="12" fill="#92400e" fontWeight="500">15 total</text>
-            <text x="590" y="244" textAnchor="middle" fontSize="11" fill="#92400e">replicas</text>
-
-            {/* Storage */}
-            <rect x="10" y="280" width="640" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-            <text x="330" y="298" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">SHARED DISTRIBUTED STORAGE (6 copies across 3 AZs)</text>
-            <rect x="30" y="306" width="180" height="26" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="120" y="323" textAnchor="middle" fontSize="11" fill="#166534">AZ-1: Copy 1 + Copy 2</text>
-            <rect x="240" y="306" width="180" height="26" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="330" y="323" textAnchor="middle" fontSize="11" fill="#166534">AZ-2: Copy 3 + Copy 4</text>
-            <rect x="450" y="306" width="180" height="26" rx="5" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="540" y="323" textAnchor="middle" fontSize="11" fill="#166534">AZ-3: Copy 5 + Copy 6</text>
-
-            {/* Supporting Services */}
-            <rect x="10" y="356" width="640" height="54" rx="8" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-            <text x="330" y="374" textAnchor="middle" fontSize="11" fill="#c2410c" fontWeight="500">SUPPORTING SERVICES</text>
-            <rect x="30" y="382" width="120" height="22" rx="5" fill="#ffedd5" stroke="#fb923c" strokeWidth="0.5"/>
-            <text x="90" y="397" textAnchor="middle" fontSize="11" fill="#c2410c">🔑 Secrets Mgr</text>
-            <rect x="165" y="382" width="120" height="22" rx="5" fill="#ffedd5" stroke="#fb923c" stroke-width="0.5"/>
-            <text x="225" y="397" textAnchor="middle" fontSize="11" fill="#c2410c">📊 CloudWatch</text>
-            <rect x="300" y="382" width="120" height="22" rx="5" fill="#ffedd5" stroke="#fb923c" stroke-width="0.5"/>
-            <text x="360" y="397" textAnchor="middle" fontSize="11" fill="#c2410c">🔒 KMS</text>
-            <rect x="435" y="382" width="120" height="22" rx="5" fill="#ffedd5" stroke="#fb923c" stroke-width="0.5"/>
-            <text x="495" y="397" textAnchor="middle" fontSize="11" fill="#c2410c">🛡️ IAM Auth</text>
-            <rect x="570" y="382" width="80" height="22" rx="5" fill="#ffedd5" stroke="#fb923c" stroke-width="0.5"/>
-            <text x="610" y="397" textAnchor="middle" fontSize="11" fill="#c2410c">📈 PI</text>
-
-            {/* Connecting lines */}
-            <line x1="95" y1="70" x2="95" y2="88" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ca1)"/>
-            <line x1="245" y1="70" x2="245" y2="88" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ca1)"/>
-            <line x1="395" y1="70" x2="320" y2="88" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ca1)"/>
-            <line x1="560" y1="62" x2="530" y2="88" stroke="#3b82f6" strokeWidth="1" markerEnd="url(#ca2)"/>
-            <line x1="120" y1="140" x2="120" y2="166" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ca1)"/>
-            <line x1="320" y1="140" x2="300" y2="166" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ca1)"/>
-            <line x1="320" y1="140" x2="455" y2="166" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ca1)"/>
-            <line x1="120" y1="256" x2="120" y2="280" stroke="#16a34a" strokeWidth="1" markerEnd="url(#ca3)"/>
-            <line x1="300" y1="256" x2="300" y2="280" stroke="#16a34a" strokeWidth="1" markerEnd="url(#ca3)"/>
-            <line x1="455" y1="256" x2="455" y2="280" stroke="#16a34a" strokeWidth="1" markerEnd="url(#ca3)"/>
-          </svg>
-        </div>
-      )}
-
-      {/* Tab 3: Multi-AZ */}
-      {activeTab === 'multiaz' && (
-        <div>
-          <div className="sec">Aurora Multi-AZ — How Instances Spread Across AZs</div>
-          <svg width="100%" viewBox="0 0 660 280" style={{ display: 'block', marginBottom: '12px' }}>
-            {/* AZ-1 */}
-            <rect x="10" y="10" width="200" height="260" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-            <text x="110" y="30" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">AZ-1 (us-east-1a)</text>
-            <rect x="25" y="40" width="170" height="50" rx="7" fill="#ede9fe" stroke="#a78bfa" strokeWidth="1.5"/>
-            <text x="110" y="60" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">✍️ Writer</text>
-            <text x="110" y="76" textAnchor="middle" fontSize="11" fill="#6d28d9">PRIMARY</text>
-            <rect x="25" y="100" width="170" height="40" rx="7" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="110" y="124" textAnchor="middle" fontSize="11" fill="#7c3aed">📖 Replica (optional)</text>
-            <rect x="25" y="150" width="170" height="50" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="110" y="170" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">Storage: Copy 1</text>
-            <text x="110" y="186" textAnchor="middle" fontSize="11" fill="#166534">+ Copy 2</text>
-            <text x="110" y="255" textAnchor="middle" fontSize="10" fill="#7c3aed">Subnet: private-db-1a</text>
-
-            {/* AZ-2 */}
-            <rect x="230" y="10" width="200" height="260" rx="10" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-            <text x="330" y="30" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">AZ-2 (us-east-1b)</text>
-            <rect x="245" y="40" width="170" height="50" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="330" y="60" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">📖 Replica 1</text>
-            <text x="330" y="76" textAnchor="middle" fontSize="11" fill="#166534">Failover priority: 1</text>
-            <rect x="245" y="100" width="170" height="40" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="330" y="124" textAnchor="middle" fontSize="11" fill="#15803d">📖 Replica 2 (optional)</text>
-            <rect x="245" y="150" width="170" height="50" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="330" y="170" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">Storage: Copy 3</text>
-            <text x="330" y="186" textAnchor="middle" fontSize="11" fill="#166534">+ Copy 4</text>
-            <text x="330" y="255" textAnchor="middle" fontSize="10" fill="#15803d">Subnet: private-db-1b</text>
-
-            {/* AZ-3 */}
-            <rect x="450" y="10" width="200" height="260" rx="10" fill="#fffbeb" stroke="#fde68a" strokeWidth="0.5"/>
-            <text x="550" y="30" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="500">AZ-3 (us-east-1c)</text>
-            <rect x="465" y="40" width="170" height="50" rx="7" fill="#fef3c7" stroke="#fbbf24" strokeWidth="0.5"/>
-            <text x="550" y="60" textAnchor="middle" fontSize="12" fill="#92400e" fontWeight="500">📖 Replica 3</text>
-            <text x="550" y="76" textAnchor="middle" fontSize="11" fill="#78350f">Failover priority: 2</text>
-            <rect x="465" y="100" width="170" height="40" rx="7" fill="#fef3c7" stroke="#fbbf24" strokeWidth="0.5"/>
-            <text x="550" y="124" textAnchor="middle" fontSize="11" fill="#92400e">📖 Replica 4 (optional)</text>
-            <rect x="465" y="150" width="170" height="50" rx="7" fill="#fef3c7" stroke="#fbbf24" strokeWidth="0.5"/>
-            <text x="550" y="170" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="500">Storage: Copy 5</text>
-            <text x="550" y="186" textAnchor="middle" fontSize="11" fill="#78350f">+ Copy 6</text>
-            <text x="550" y="255" textAnchor="middle" fontSize="10" fill="#92400e">Subnet: private-db-1c</text>
-          </svg>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
-            <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', fontWeight: 500, color: '#7c3aed' }}>&lt; 30s</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Failover time</div>
-            </div>
-            <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', fontWeight: 500, color: '#15803d' }}>6</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Storage copies</div>
-            </div>
-            <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', fontWeight: 500, color: '#1d4ed8' }}>15</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Max replicas</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 4: Global DB */}
-      {activeTab === 'global' && (
-        <div>
-          <div className="sec">Aurora Global Database — Cross-Region DR &amp; Low-Latency Reads</div>
-          <svg width="100%" viewBox="0 0 660 300" style={{ display: 'block', marginBottom: '12px' }}>
-            <defs>
-              <marker id="ga1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-            </defs>
-
-            {/* Primary Region */}
-            <rect x="10" y="10" width="290" height="270" rx="12" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="1"/>
-            <text x="155" y="30" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🌎 PRIMARY REGION</text>
-            <text x="155" y="46" textAnchor="middle" fontSize="11" fill="#6d28d9">us-east-1</text>
-            
-            <rect x="25" y="56" width="260" height="50" rx="7" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="155" y="76" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">✍️ Writer Cluster</text>
-            <text x="155" y="92" textAnchor="middle" fontSize="11" fill="#6d28d9">All writes go here</text>
-            
-            <rect x="25" y="116" width="120" height="40" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="85" y="140" textAnchor="middle" fontSize="11" fill="#7c3aed">📖 Replica 1</text>
-            <rect x="155" y="116" width="130" height="40" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5"/>
-            <text x="220" y="140" textAnchor="middle" fontSize="11" fill="#7c3aed">📖 Replica 2</text>
-            
-            <rect x="25" y="166" width="260" height="40" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="155" y="190" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">Shared Storage (6 copies, 3 AZs)</text>
-            
-            <rect x="25" y="216" width="260" height="50" rx="6" fill="#fef3c7" stroke="#fbbf24" strokeWidth="0.5"/>
-            <text x="155" y="236" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="500">Global Replication Engine</text>
-            <text x="155" y="252" textAnchor="middle" fontSize="11" fill="#78350f">Dedicated infra — not app network</text>
-            <text x="155" y="268" textAnchor="middle" fontSize="11" fill="#78350f">~1s replication lag</text>
-
-            {/* Secondary Region */}
-            <rect x="360" y="10" width="290" height="270" rx="12" fill="#f0fdf4" stroke="#86efac" strokeWidth="1"/>
-            <text x="505" y="30" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">🌏 SECONDARY REGION</text>
-            <text x="505" y="46" textAnchor="middle" fontSize="11" fill="#166534">ap-southeast-1 (Singapore)</text>
-            
-            <rect x="375" y="56" width="260" height="50" rx="7" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="505" y="76" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">📖 Read-Only Cluster</text>
-            <text x="505" y="92" textAnchor="middle" fontSize="11" fill="#166534">Promoted to writer on DR</text>
-            
-            <rect x="375" y="116" width="120" height="40" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="435" y="140" textAnchor="middle" fontSize="11" fill="#15803d">📖 Replica 1</text>
-            <rect x="505" y="116" width="130" height="40" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="570" y="140" textAnchor="middle" fontSize="11" fill="#15803d">📖 Replica 2</text>
-            
-            <rect x="375" y="166" width="260" height="40" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-            <text x="505" y="190" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">Shared Storage (6 copies, 3 AZs)</text>
-            
-            <rect x="375" y="216" width="260" height="50" rx="6" fill="#fef3c7" stroke="#fbbf24" stroke-width="0.5"/>
-            <text x="505" y="236" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="500">RPO: &lt; 1 second</text>
-            <text x="505" y="252" textAnchor="middle" fontSize="11" fill="#78350f">RTO: &lt; 1 minute (managed failover)</text>
-            <text x="505" y="268" textAnchor="middle" fontSize="11" fill="#78350f">Up to 5 secondary regions</text>
-
-            {/* Replication flow line */}
-            <path d="M 300 240 L 360 240" fill="none" stroke="#7c3aed" strokeWidth="2" markerEnd="url(#ga1)" strokeDasharray="5,3"/>
-            <text x="330" y="232" textAnchor="middle" fontSize="10" fill="#7c3aed">~1s lag</text>
-          </svg>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px' }}>
-            <div className="card">
-              <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#7c3aed' }}>Use Cases</div>
-              <ul className="checklist">
-                <li>Disaster recovery (RPO &lt; 1s, RTO &lt; 1min)</li>
-                <li>Low-latency reads for global users</li>
-                <li>Compliance (data residency per region)</li>
-                <li>Business continuity across regions</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#15803d' }}>Key Numbers</div>
-              <div className="kv"><span className="kk">Max secondary regions</span><b>5</b></div>
-              <div className="kv"><span className="kk">Replication lag</span><b>&lt; 1 second</b></div>
-              <div className="kv"><span className="kk">RPO</span><b>&lt; 1 second</b></div>
-              <div className="kv"><span className="kk">RTO (managed)</span><b>&lt; 1 minute</b></div>
-              <div className="kv"><span className="kk">Engines</span><b>Aurora MySQL + Aurora PG</b></div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 5: Serverless v2 */}
-      {activeTab === 'serverless' && (
-        <div>
-          <div className="sec">Aurora Serverless v2 — Auto-Scaling Compute</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: '12px' }}>
-            <div className="card">
-              <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '8px', color: '#7c3aed' }}>How It Works</div>
-              <div className="kv"><span className="kk">Scaling unit</span><b>ACU (Aurora Capacity Unit)</b></div>
-              <div className="kv"><span className="kk">1 ACU =</span><b>2 GB RAM + proportional CPU</b></div>
-              <div className="kv"><span className="kk">Min ACU</span><b>0.5 ACU (near-zero cost at idle)</b></div>
-              <div className="kv"><span className="kk">Max ACU</span><b>256 ACU per instance</b></div>
-              <div className="kv"><span className="kk">Scale speed</span><b>Seconds (not minutes)</b></div>
-              <div className="kv"><span className="kk">Scale trigger</span><b>CPU, connections, memory</b></div>
-              <div className="kv"><span className="kk">Billing</span><b>Per ACU-hour (fine-grained)</b></div>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '8px', color: '#15803d' }}>v2 vs v1</div>
-              <div className="kv"><span className="kk">Scale to zero</span><b>v1 only (v2 min 0.5 ACU)</b></div>
-              <div className="kv"><span className="kk">Scale speed</span><b>v2: seconds | v1: minutes</b></div>
-              <div className="kv"><span className="kk">Multi-AZ</span><b>v2: ✅ | v1: ❌</b></div>
-              <div className="kv"><span className="kk">Read replicas</span><b>v2: ✅ | v1: ❌</b></div>
-              <div className="kv"><span className="kk">RDS Proxy</span><b>v2: ✅ | v1: ❌</b></div>
-              <div className="kv"><span className="kk">Global DB</span><b>v2: ✅ | v1: ❌</b></div>
-              <div className="kv"><span className="kk">Recommendation</span><b style={{ color: '#7c3aed' }}>Always use v2</b></div>
-            </div>
-          </div>
-
-          <div className="sec">ACU Scaling Simulation</div>
-          <div className="card">
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>
-                Simulate workload volume (connections): <b>{connections}</b>
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="500"
-                value={connections}
-                onChange={e => setConnections(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#7c3aed', cursor: 'pointer' }}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '8px' }}>
-              <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '22px', fontWeight: 500, color: '#7c3aed' }}>{acu}</div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>ACUs</div>
-              </div>
-              <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '22px', fontWeight: 500, color: '#15803d' }}>{ram}</div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>RAM Size</div>
-              </div>
-              <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '22px', fontWeight: 500, color: '#1d4ed8' }}>${cost}</div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>$/hour</div>
-              </div>
-              <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: scaleColor, marginTop: '8px' }}>{scaleStatus}</div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>Scale status</div>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-              💡 <b>Note:</b> Scaling occurs dynamically in response to active memory & CPU demands. RAM increments smoothly to avoid cold start latency.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 6: Endpoints */}
-      {activeTab === 'endpoints' && (
-        <div>
-          <div className="sec">Aurora Endpoint Types</div>
-          <div className="card" style={{ borderLeft: '4px solid #7c3aed', paddingLeft: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '16px' }}>✍️</span>
-              <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text-primary)' }}>Cluster Endpoint (Writer)</span>
-              <span className="badge b-purple">Always use for writes</span>
-            </div>
-            <div className="kv"><span className="kk">DNS format</span><b style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '11px' }}>cluster-id.cluster-xyz.region.rds.amazonaws.com</b></div>
-            <div className="kv"><span className="kk">Routes to</span><b>Current primary writer instance</b></div>
-            <div className="kv"><span className="kk">On failover</span><b>DNS updates automatically to new writer (&lt; 30s)</b></div>
-            <div className="kv"><span className="kk">Use case</span><b>All INSERT/UPDATE/DELETE operations, transactional queries, DDL</b></div>
-          </div>
-
-          <div className="card" style={{ borderLeft: '4px solid #15803d', paddingLeft: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '16px' }}>📖</span>
-              <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text-primary)' }}>Reader Endpoint</span>
-              <span className="badge b-green">Load-balanced reads</span>
-            </div>
-            <div className="kv"><span className="kk">DNS format</span><b style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '11px' }}>cluster-id.cluster-ro-xyz.region.rds.amazonaws.com</b></div>
-            <div className="kv"><span className="kk">Routes to</span><b>Round-robin across all available replicas</b></div>
-            <div className="kv"><span className="kk">On replica failure</span><b>Automatically removed from endpoint DNS pool</b></div>
-            <div className="kv"><span className="kk">Use case</span><b>Read-only SELECT traffic, reports, analytical queries</b></div>
-          </div>
-
-          <div className="card" style={{ borderLeft: '4px solid #1d4ed8', paddingLeft: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '16px' }}>🎯</span>
-              <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text-primary)' }}>Custom Endpoints</span>
-              <span className="badge b-blue">Subset routing</span>
-            </div>
-            <div className="kv"><span className="kk">Routes to</span><b>A specific subset of instances you define</b></div>
-            <div className="kv"><span className="kk">Use case</span><b>Route high-intensity analytics to big instances, OLTP to smaller ones</b></div>
-            <div className="kv"><span className="kk">Example</span><b>analytics.cluster-xyz → db.r6g.4xlarge replicas only</b></div>
-          </div>
-
-          <div className="card" style={{ borderLeft: '4px solid #d97706', paddingLeft: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '16px' }}>🔌</span>
-              <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-text-primary)' }}>Instance Endpoints</span>
-              <span className="badge b-orange">Direct access</span>
-            </div>
-            <div className="kv"><span className="kk">Routes to</span><b>One specific designated instance (writer or replica)</b></div>
-            <div className="kv"><span className="kk">Use case</span><b>Troubleshooting, specific instance diagnostics, performance testing</b></div>
-            <div className="kv"><span className="kk">Warning</span><b style={{ color: '#dc2626' }}>Do not use in production application code — bypasses failover!</b></div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 7: Failover Sim */}
-      {activeTab === 'failover' && (
-        <div>
-          <div className="sec">Aurora Failover Playbook Simulation</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '14px' }}>
-            {/* Writer */}
-            <div className={`sim-node ${simState.writerFailed ? 'failed' : (simState.promoted ? 'failed' : 'healthy')}`}>
-              <div style={{ fontSize: '18px' }}>✍️</div>
-              <div style={{ fontWeight: 600, fontSize: '12px', margin: '2px 0' }}>Writer (Primary)</div>
-              <div style={{ fontSize: '11px', color: simState.writerFailed ? '#dc2626' : '#15803d', fontWeight: 'bold' }}>
-                {simState.writerFailed ? '● FAILED' : '● HEALTHY'}
-              </div>
-              <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                AZ-1 · Priority: 0
-              </div>
-            </div>
-
-            {/* Replica 1 */}
-            <div className={`sim-node ${simState.promoted ? 'promoted' : 'healthy'}`}>
-              <div style={{ fontSize: '18px' }}>{simState.promoted ? '✍️' : '📖'}</div>
-              <div style={{ fontWeight: 600, fontSize: '12px', margin: '2px 0' }}>
-                {simState.promoted ? 'NEW Writer' : 'Replica 1'}
-              </div>
-              <div style={{ fontSize: '11px', color: simState.promoted ? '#7c3aed' : '#15803d', fontWeight: 'bold' }}>
-                {simState.promoted ? '● PROMOTED' : '● HEALTHY'}
-              </div>
-              <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                AZ-2 · Priority: 1
-              </div>
-            </div>
-
-            {/* Replica 2 */}
-            <div className={`sim-node ${simState.r2Failed ? 'failed' : 'healthy'}`}>
-              <div style={{ fontSize: '18px' }}>📖</div>
-              <div style={{ fontWeight: 600, fontSize: '12px', margin: '2px 0' }}>Replica 2</div>
-              <div style={{ fontSize: '11px', color: simState.r2Failed ? '#dc2626' : '#15803d', fontWeight: 'bold' }}>
-                {simState.r2Failed ? '● FAILED' : '● HEALTHY'}
-              </div>
-              <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                AZ-3 · Priority: 2
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-            <button
-              onClick={triggerFailover}
-              style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', background: '#fee2e2', border: '0.5px solid #fca5a5', color: '#b91c1c' }}
-            >
-              💥 Fail Writer (AZ-1 down)
-            </button>
-            <button
-              onClick={triggerReplicaFail}
-              style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', background: '#fff7ed', border: '0.5px solid #fed7aa', color: '#c2410c' }}
-            >
-              ⚠️ Fail Replica 2
-            </button>
-            <button
-              onClick={resetSim}
-              style={{ padding: '6px 14px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', background: 'var(--color-background-secondary)', border: '0.5px solid var(--color-border-secondary)', color: 'var(--color-text-primary)' }}
-            >
-              🔄 Reset playbook
-            </button>
-          </div>
-
-          <div style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: '8px', padding: '10px', minHeight: '140px', background: 'var(--color-background-secondary)', marginBottom: '10px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>EVENT PLAYBOOK LOG</div>
-            <div>
-              {logLines.map((log, index) => (
-                <div key={index} className={`log-line ${log.type}`}>
-                  {log.msg}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ background: 'var(--color-background-secondary)', borderRadius: '8px', padding: '9px 12px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-            <b style={{ color: 'var(--color-text-primary)' }}>Failover priority:</b> Aurora promotes the replica with the highest priority tier (lowest number). Replicas in the same tier are chosen by size (largest first). RDS Proxy reduces app-visible downtime to ~5s.
-          </div>
-        </div>
-      )}
-
-      {/* Tab 8: Integrations */}
-      {activeTab === 'integrations' && (
-        <div>
-          <div className="sec">Aurora Integration Ecosystem</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: '9px' }}>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#7c3aed' }}>🔄 RDS Proxy</div>
-              <ul className="checklist">
-                <li>Connection pooling for Lambda/ECS</li>
-                <li>Faster failover (~5s vs 30s)</li>
-                <li>IAM auth + Secrets Manager integration</li>
-                <li>Supports Aurora MySQL + PostgreSQL</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#1d4ed8' }}>🔑 Secrets Manager</div>
-              <ul className="checklist">
-                <li>Auto-rotates DB credentials</li>
-                <li>Eliminates hardcoded credentials</li>
-                <li>IAM policies control database access</li>
-                <li>Fully integrated with RDS Proxy</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#15803d' }}>📊 CloudWatch + PI</div>
-              <ul className="checklist">
-                <li>Performance Insights (1-year metrics)</li>
-                <li>Enhanced Monitoring (1s logs)</li>
-                <li>Alarms on connections &amp; storage</li>
-                <li>Slow query engine metric streams</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#c2410c' }}>⚡ Lambda Integration</div>
-              <ul className="checklist">
-                <li>Aurora invokes Lambda triggers via SQL</li>
-                <li>Lambda reads Aurora via RDS Proxy</li>
-                <li>Combines Serverless v2 for full elastic app</li>
-                <li>No persistence connection overheads</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#0f766e' }}>🌊 Aurora Data API</div>
-              <ul className="checklist">
-                <li>Secure HTTPS endpoint execution</li>
-                <li>No persistent socket required</li>
-                <li>Perfect for AWS Lambda (no VPC constraints)</li>
-                <li>Runs SQL over standard HTTPS JSON calls</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#92400e' }}>🤖 ML Integrations</div>
-              <ul className="checklist">
-                <li>SQL SageMaker model invocation</li>
-                <li>SQL Comprehend text sentiment queries</li>
-                <li>Zero-ETL in-database ML inference</li>
-                <li>High speed analytical classification</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#1d4ed8' }}>🔒 Security</div>
-              <ul className="checklist">
-                <li>KMS AES-256 storage encryption</li>
-                <li>TLS transit transport encryption</li>
-                <li>IAM DB User access token credentials</li>
-                <li>VPC isolate + security groups</li>
-              </ul>
-            </div>
-            <div className="card">
-              <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '7px', color: '#7c3aed' }}>📦 Zero-ETL (Redshift)</div>
-              <ul className="checklist">
-                <li>Real-time transactional sync to DW</li>
-                <li>No complex engineering ETL required</li>
-                <li>Syncs both MySQL &amp; PostgreSQL schemas</li>
-                <li>Automated pipeline management</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 9: Features & Security */}
-      {activeTab === 'features' && (
-        <div>
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '17px', fontWeight: 500, color: 'var(--color-text-primary)' }}>🔐 Aurora — Backup · Restore · Cloning · Security · ML</div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Click a topic tab to explore each area with diagrams and simulations</div>
-          </div>
-
-          <div className="tab-bar">
-            <button className={`tab ${activeFeatureTab === 'backup' ? 'active' : ''}`} onClick={() => setActiveFeatureTab('backup')}>💾 Backup & Restore</button>
-            <button className={`tab ${activeFeatureTab === 'clone' ? 'active' : ''}`} onClick={() => setActiveFeatureTab('clone')}>🧬 DB Cloning</button>
-            <button className={`tab ${activeFeatureTab === 'security' ? 'active' : ''}`} onClick={() => setActiveFeatureTab('security')}>🔒 Security</button>
-            <button className={`tab ${activeFeatureTab === 'ml' ? 'active' : ''}`} onClick={() => setActiveFeatureTab('ml')}>🤖 Machine Learning</button>
-          </div>
-
-          {activeFeatureTab === 'backup' && (
-            <div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: '10px' }}>
-                <div>
-                  <svg width="100%" viewBox="0 0 340 390" style={{ display: 'block' }}>
-                    <defs>
-                      <marker id="ab" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-                      <marker id="ag" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                      <marker id="ao" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#c2410c"/></marker>
-                    </defs>
-                    <rect x="10" y="10" width="320" height="56" rx="10" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
-                    <text x="170" y="32" textAnchor="middle" fontSize="13" fill="#6d28d9" fontWeight="500">Aurora Cluster</text>
-                    <text x="170" y="52" textAnchor="middle" fontSize="11" fill="#7c3aed">Writer + Replicas + Shared Storage</text>
-
-                    <rect x="10" y="90" width="320" height="56" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                    <text x="170" y="112" textAnchor="middle" fontSize="13" fill="#1d4ed8" fontWeight="500">🔄 Automated Backups</text>
-                    <text x="170" y="130" textAnchor="middle" fontSize="11" fill="#1d4ed8">Continuous to S3 · 1–35 day retention · Free storage</text>
-
-                    <rect x="10" y="170" width="320" height="56" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="170" y="192" textAnchor="middle" fontSize="13" fill="#15803d" fontWeight="500">📸 Manual Snapshots</text>
-                    <text x="170" y="210" textAnchor="middle" fontSize="11" fill="#166534">User-triggered · Kept until deleted · Cross-region copy</text>
-
-                    <rect x="10" y="250" width="148" height="56" rx="10" fill="#ffedd5" stroke="#fed7aa" strokeWidth="0.5"/>
-                    <text x="84" y="272" textAnchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">⏱ PITR</text>
-                    <text x="84" y="290" textAnchor="middle" fontSize="11" fill="#c2410c">Restore to any second</text>
-
-                    <rect x="182" y="250" width="148" height="56" rx="10" fill="#fef3c7" stroke="#fde68a" strokeWidth="0.5"/>
-                    <text x="256" y="272" textAnchor="middle" fontSize="12" fill="#92400e" fontWeight="500">⏪ Backtrack</text>
-                    <text x="256" y="290" textAnchor="middle" fontSize="11" fill="#92400e">Rewind in-place (no restore)</text>
-
-                    <rect x="10" y="330" width="320" height="50" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                    <text x="170" y="352" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="500">☁️ AWS Backup (centralised policy)</text>
-                    <text x="170" y="370" textAnchor="middle" fontSize="11" fill="#0f766e">Cross-account · Cross-region · Vault lock</text>
-
-                    <line x1="170" y1="66" x2="170" y2="90" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ab)"/>
-                    <line x1="170" y1="146" x2="170" y2="170" stroke="#15803d" strokeWidth="1" markerEnd="url(#ag)"/>
-                    <line x1="120" y1="226" x2="84" y2="250" stroke="#c2410c" strokeWidth="1" markerEnd="url(#ao)"/>
-                    <line x1="220" y1="226" x2="256" y2="250" stroke="#c2410c" strokeWidth="1" markerEnd="url(#ao)"/>
-                    <line x1="170" y1="306" x2="170" y2="330" stroke="#0f766e" strokeWidth="1" markerEnd="url(#ag)"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="sec">Backup types at a glance</div>
-                  <div className="card" style={{ borderLeft: '3px solid #1d4ed8', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#1d4ed8' }}>🔄 Automated Backups</div>
-                    <div className="kv"><span className="kk">Trigger</span><b>Automatic, continuous</b></div>
-                    <div className="kv"><span className="kk">Retention</span><b>1–35 days (default 1)</b></div>
-                    <div className="kv"><span className="kk">Storage cost</span><b>Free up to cluster size</b></div>
-                    <div className="kv"><span className="kk">Restore type</span><b>New cluster (not in-place)</b></div>
-                    <div className="kv"><span className="kk">Can delete?</span><b style={{ color: '#dc2626' }}>No (managed by AWS)</b></div>
+                <div className="aurora-card" style={{ borderLeft: `4px solid ${scaleColor}`, background: '#ecfdf5', padding: '10px' }}>
+                  <div style={{ fontSize: '11px', color: scaleColor, fontWeight: 'bold' }}>
+                    {scaleStatus}
                   </div>
-                  <div className="card" style={{ borderLeft: '3px solid #15803d', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#15803d' }}>📸 Manual Snapshots</div>
-                    <div className="kv"><span className="kk">Trigger</span><b>User / scheduled</b></div>
-                    <div className="kv"><span className="kk">Retention</span><b>Forever (until you delete)</b></div>
-                    <div className="kv"><span className="kk">Cross-region</span><b>✅ Copy to any region</b></div>
-                    <div className="kv"><span className="kk">Cross-account</span><b>✅ Share snapshot</b></div>
-                    <div className="kv"><span className="kk">Restore type</span><b>New cluster</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #c2410c', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#c2410c' }}>⏱ Point-in-Time Recovery (PITR)</div>
-                    <div className="kv"><span className="kk">Granularity</span><b>Any second in retention window</b></div>
-                    <div className="kv"><span className="kk">How</span><b>Automated backup + transaction logs</b></div>
-                    <div className="kv"><span className="kk">Restore to</span><b>New cluster (5–10 min)</b></div>
-                    <div className="kv"><span className="kk">Use case</span><b>Accidental DELETE / DROP TABLE</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #d97706' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#d97706' }}>⏪ Backtrack (Aurora MySQL only)</div>
-                    <div className="kv"><span className="kk">How</span><b>Rewinds cluster in-place (no new cluster)</b></div>
-                    <div className="kv"><span className="kk">Window</span><b>Up to 72 hours back</b></div>
-                    <div className="kv"><span className="kk">Speed</span><b>Seconds to minutes</b></div>
-                    <div className="kv"><span className="kk">Use case</span><b>Quick undo of bad migration/query</b></div>
-                    <div className="kv"><span className="kk">Caveat</span><b style={{ color: '#dc2626' }}>Disrupts connections briefly</b></div>
+                  <div style={{ fontSize: '11px', color: '#047857', marginTop: '2px', lineHeight: 1.4 }}>
+                    Aurora ACU scaling is instantaneous. A single ACU allocates 2 GB RAM with proportionate CPU slices, ensuring memory expands smoothly to handle query peaks without cold starts.
                   </div>
                 </div>
               </div>
 
-              <div className="sec">PITR vs Backtrack — Interactive Comparison</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
-                <div className="card">
-                  <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '8px' }}>⏱ PITR Restore Simulator</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Pick a restore point (hours ago):</div>
-                  <input type="range" min="1" max="35" value={pitrHours} style={{ width: '100%' }} onChange={(e) => setPitrHours(Number(e.target.value))} />
-                  <div style={{ fontSize: '12px', marginTop: '6px' }}>Restoring to: <b>{pitrHours} hours ago</b></div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ background: 'var(--color-background-secondary)', borderRadius: 'var(--border-radius-md)', padding: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>New cluster?</div>
-                      <div style={{ fontSize: '14px', fontWeight: 500, color: '#1d4ed8' }}>✅ Yes</div>
+              <div>
+                <svg width="100%" height="210" viewBox="0 0 240 210" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                  <rect width="240" height="210" fill="url(#g-light-bg)" />
+                  <text x="120" y="24" textAnchor="middle" fontSize="10.5" fill="#64748b" fontWeight="600">ACU CAPACITY SCALING HUD</text>
+
+                  {/* Circular Dial HUD representing ACU capacity size */}
+                  <circle cx="120" cy="115" r="56" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
+                  
+                  {/* Scaled circle representing active capacity */}
+                  <circle cx="120" cy="115" r={Math.min(56, 12 + acu * 1.6)} fill="#eff6ff" stroke="#2563eb" strokeWidth="2.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.4)' } as React.CSSProperties} />
+                  
+                  <text x="120" y="115" textAnchor="middle" dominantBaseline="central" fontSize="16" fill="#1e3a8a" fontWeight="bold">{acu} ACU</text>
+                  <text x="120" y="132" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#64748b">Allocated</text>
+
+                  <text x="120" y="192" textAnchor="middle" fontSize="9.5" fill="#64748b" fontFamily="monospace">1 ACU = 2 GB RAM</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 6: COPY-ON-WRITE CLONING
+            ========================================== */}
+        {activeTab === 'cloning' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Copy-on-Write Database Cloning Virtualization</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Aurora Database Clones are created instantly (under 3s) at zero initial storage cost, sharing identical physical data blocks with the production database.</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
+              <div>
+                <svg width="100%" viewBox="0 0 680 260" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                  <rect width="680" height="260" fill="url(#g-light-bg)" />
+
+                  {/* Production DB */}
+                  <rect x="30" y="30" width="180" height="50" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="1" />
+                  <text x="120" y="52" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">🏭 Production Writer DB</text>
+                  <text x="120" y="68" textAnchor="middle" fontSize="8" fill="#7c3aed" fontFamily="monospace">Volume size: 100 TB</text>
+
+                  {/* Staging DB Clone */}
+                  <rect x="470" y="30" width="180" height="50" rx="6" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
+                  <text x="560" y="52" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">🧬 Dev / Staging Clone DB</text>
+                  <text x="560" y="68" textAnchor="middle" fontSize="8" fill="#7c3aed" fontFamily="monospace">Volume size: 100 TB</text>
+
+                  {/* Shared storage space */}
+                  <rect x="30" y="115" width="620" height="120" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                  <text x="340" y="132" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold" fontFamily="monospace">SHARED DISK STORAGE BLOCKS (COPY-ON-WRITE)</text>
+
+                  {/* Shared Blocks */}
+                  <rect x="50" y="150" width="150" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="125" y="172" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="bold">Physical Block A (Shared)</text>
+
+                  <rect x="220" y="150" width="150" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="295" y="172" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="bold">Physical Block B (Shared)</text>
+
+                  <rect x="390" y="150" width="100" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="440" y="172" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="bold">Block C (Shared)</text>
+
+                  {/* Diverged Blocks */}
+                  <rect x="510" y="150" width="120" height="34" rx="4" fill={cloneWrites > 0 ? '#fffbeb' : '#f8fafc'} stroke={cloneWrites > 0 ? '#f59e0b' : '#cbd5e1'} strokeWidth="1" className={cloneWrites > 0 ? 'active-glow-node' : ''} style={{ '--pulse-color': 'rgba(245, 158, 11, 0.4)' } as React.CSSProperties} />
+                  <text x="570" y="172" textAnchor="middle" fontSize="10" fill={cloneWrites > 0 ? '#b45309' : '#64748b'} fontWeight="bold">
+                    {cloneWrites > 0 ? `Diverged Block D 🧬` : 'Shared Block D'}
+                  </text>
+
+                  <text x="340" y="215" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">At clone creation: 0 pages copied. Disk storage increases only as clone pages diverge.</text>
+
+                  {/* Connecting vectors */}
+                  <line x1="120" y1="80" x2="125" y2="115" stroke="#4c1d95" strokeWidth="1.5" markerEnd="url(#arr-p)" />
+                  <line x1="560" y1="80" x2="550" y2="115" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arr-p)" />
+                </svg>
+              </div>
+
+              <div>
+                <div className="aurora-card" style={{ borderTop: '3px solid #7c3aed' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#581c87', marginBottom: '6px' }}>💰 Diverged Write Simulator</div>
+                  <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Test writing to the staging clone database. Watch storage costs remain optimized.</div>
+
+                  <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', fontSize: '9.5px', color: '#334155', minHeight: '62px', border: '1px solid #cbd5e1', lineHeight: 1.45, marginBottom: '8px' }}>
+                    {cloneLog[0]}
+                  </div>
+
+                  <div className="aurora-btnbar">
+                    <button className="aurora-btn aurora-primary" onClick={simulateCloneWrite}>⚡ Simulate WRITE on Clone DB</button>
+                    <button className="aurora-btn" onClick={resetCloneSim}>Reset clone volume 🔄</button>
+                  </div>
+                </div>
+
+                <div className="aurora-card">
+                  <div style={{ fontWeight: 600, fontSize: '11px', color: '#1e293b', marginBottom: '4px' }}>🛡️ Cloning advantages</div>
+                  <ul className="aurora-ck" style={{ fontSize: '11px' }}>
+                    <li>Instant metadata-only copy</li>
+                    <li>No impact on primary performance</li>
+                    <li>Supports dev/analytics isolation</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 7: HARDENING HUD & ECOSYSTEM
+            ========================================== */}
+        {activeTab === 'hardening' && (
+          <div>
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                <button className={`aurora-subtb ${activeFeatureTab === 'security' ? 'aurora-on' : ''}`} onClick={() => setActiveFeatureTab('security')}>🔒 Security HUD Checklist</button>
+                <button className={`aurora-subtb ${activeFeatureTab === 'zeroetl' ? 'aurora-on' : ''}`} onClick={() => setActiveFeatureTab('zeroetl')}>⚡ Zero-ETL Redshift Sync</button>
+                <button className={`aurora-subtb ${activeFeatureTab === 'ml' ? 'aurora-on' : ''}`} onClick={() => setActiveFeatureTab('ml')}>🤖 In-DB ML Inference</button>
+              </div>
+            </div>
+
+            {/* Sub-tab 7.1: Security Checklist HUD */}
+            {activeFeatureTab === 'security' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '14px', alignItems: 'center', marginBottom: '12px' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>VPC Database Boundary Compliance Checklist</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Auditing database environments against AWS Well-Architected guidelines. Click checkboxes to secure.</div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                      {secChecks.map((check, i) => (
+                        <div
+                          key={i}
+                          onClick={() => toggleSecCheck(i)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '8px 10px',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '8px',
+                            background: check.done ? '#ecfdf5' : '#fff1f2',
+                            borderColor: check.done ? '#86efac' : '#fecdd3',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <div style={{ fontSize: '12px' }}>{check.done ? '✅' : '⬜'}</div>
+                          <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: check.done ? '#047857' : '#be123c' }}>{check.label}</div>
+                        </div>
+                      ))}
                     </div>
-                    <div style={{ background: 'var(--color-background-secondary)', borderRadius: 'var(--border-radius-md)', padding: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Est. time</div>
-                      <div style={{ fontSize: '14px', fontWeight: 500 }}>~{pitrEst} min</div>
-                    </div>
-                    <div style={{ background: 'var(--color-background-secondary)', borderRadius: 'var(--border-radius-md)', padding: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Data loss</div>
-                      <div style={{ fontSize: '14px', fontWeight: 500, color: '#15803d' }}>0 sec</div>
+                  </div>
+
+                  <div>
+                    <div className="aurora-card" style={{ display: 'flex', gap: '14px', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+                      <svg width="70" height="70" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="2.5" />
+                        <circle
+                          cx="18"
+                          cy="18"
+                          r="16"
+                          fill="none"
+                          stroke={gradeColor}
+                          strokeWidth="2.5"
+                          strokeDasharray="100"
+                          strokeDashoffset={100 - scorePct}
+                          strokeLinecap="round"
+                          transform="rotate(-90 18 18)"
+                          style={{ transition: 'stroke-dashoffset 0.4s ease' }}
+                        />
+                        <text x="18" y="18" textAnchor="middle" dominantBaseline="central" fontSize="10.5" fill={gradeColor} fontWeight="bold">{grade}</text>
+                      </svg>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Hardening Grade: <span style={{ color: gradeColor }}>{grade}</span></div>
+                        <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '2px', lineHeight: 1.45 }}>
+                          Database satisfies <b>{passedChecksCount} of {totalChecksCount}</b> Well-Architected production checklists.
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="card">
-                  <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '8px' }}>⏪ Backtrack Simulator</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Pick backtrack window (hours):</div>
-                  <input type="range" min="1" max="72" value={btHours} style={{ width: '100%' }} onChange={(e) => setBtHours(Number(e.target.value))} />
-                  <div style={{ fontSize: '12px', marginTop: '6px' }}>Rewinding: <b>{btHours} hours</b></div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ background: 'var(--color-background-secondary)', borderRadius: 'var(--border-radius-md)', padding: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>New cluster?</div>
-                      <div style={{ fontSize: '14px', fontWeight: 500, color: '#dc2626' }}>❌ No</div>
-                    </div>
-                    <div style={{ background: 'var(--color-background-secondary)', borderRadius: 'var(--border-radius-md)', padding: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Est. time</div>
-                      <div style={{ fontSize: '14px', fontWeight: 500 }}>~{btEst} sec</div>
-                    </div>
-                    <div style={{ background: 'var(--color-background-secondary)', borderRadius: 'var(--border-radius-md)', padding: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Disruption</div>
-                      <div style={{ fontSize: '14px', fontWeight: 500, color: '#d97706' }}>Brief</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {activeFeatureTab === 'clone' && (
-            <div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
-                <div>
-                  <div className="sec">Copy-on-Write Cloning Architecture</div>
-                  <svg width="100%" viewBox="0 0 340 360" style={{ display: 'block' }}>
-                    <defs>
-                      <marker id="ac" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-                      <marker id="acg" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                    </defs>
-                    <rect x="10" y="10" width="148" height="56" rx="10" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
-                    <text x="84" y="32" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="500">🏭 Source Cluster</text>
-                    <text x="84" y="50" textAnchor="middle" fontSize="11" fill="#7c3aed">Production DB</text>
-
-                    <rect x="182" y="10" width="148" height="56" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="256" y="32" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">🧬 Clone Cluster</text>
-                    <text x="256" y="50" textAnchor="middle" fontSize="11" fill="#166534">Dev / Test / Analytics</text>
-
-                    <rect x="10" y="100" width="320" height="220" rx="12" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="170" y="120" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">Shared Storage Volume (Copy-on-Write)</text>
-
-                    <rect x="30" y="135" width="130" height="36" rx="8" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5"/>
-                    <text x="95" y="157" textAnchor="middle" fontSize="11" fill="#166534">Original pages (shared)</text>
-                    <rect x="180" y="135" width="130" height="36" rx="8" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5"/>
-                    <text x="245" y="157" textAnchor="middle" fontSize="11" fill="#166534">Original pages (shared)</text>
-
-                    <rect x="30" y="190" width="130" height="36" rx="8" fill="#bbf7d0" stroke="#4ade80" strokeWidth="0.5"/>
-                    <text x="95" y="212" textAnchor="middle" fontSize="11" fill="#166534">Shared pages …</text>
-                    <rect x="180" y="190" width="130" height="36" rx="8" fill="#fef3c7" stroke="#fbbf24" strokeWidth="0.5"/>
-                    <text x="245" y="212" textAnchor="middle" fontSize="11" fill="#92400e">New pages (clone writes)</text>
-
-                    <text x="170" y="255" textAnchor="middle" fontSize="11" fill="#15803d">At clone time: 0 data copied — both point to same pages</text>
-                    <text x="170" y="272" textAnchor="middle" fontSize="11" fill="#15803d">On clone write: only changed pages are duplicated</text>
-                    <text x="170" y="289" textAnchor="middle" fontSize="11" fill="#15803d">Source is never affected by clone writes</text>
-                    <text x="170" y="306" textAnchor="middle" fontSize="11" fill="#92400e">Clone storage grows only as clone diverges</text>
-
-                    <line x1="84" y1="66" x2="84" y2="100" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ac)"/>
-                    <line x1="256" y1="66" x2="256" y2="100" stroke="#15803d" strokeWidth="1" markerEnd="url(#acg)"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="sec">Why Cloning is Powerful</div>
-                  <div className="card" style={{ marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#7c3aed' }}>⚡ Instant — No data copy</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Clone of a 100 TB database takes the same time as a 1 GB database — seconds, not hours. No snapshot needed.</div>
-                  </div>
-                  <div className="card" style={{ marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#15803d' }}>💰 Cost-efficient</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>You only pay for storage that diverges from the source. A clone used for read-only testing costs almost nothing.</div>
-                  </div>
-                  <div className="card" style={{ marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#1d4ed8' }}>🛡️ Source is isolated</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Writes to the clone never touch source pages. Production is completely safe.</div>
-                  </div>
-                  <div className="card" style={{ marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#c2410c' }}>Use cases</div>
-                    <ul className="checklist">
-                      <li>Dev / test with production data</li>
-                      <li>Schema migration dry-run</li>
-                      <li>Analytics on live snapshot</li>
-                      <li>Disaster recovery testing</li>
-                      <li>Blue/green deployments</li>
-                    </ul>
-                  </div>
-                  <div className="sec">Clone vs Snapshot Restore</div>
+                {/* Comparative table: Standard RDS vs Aurora */}
+                <div style={{ marginTop: '14px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '8px' }}>⚖️ Comparative Matrix: Amazon Aurora vs Standard RDS</div>
                   <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                    <table className="aurora-table">
                       <thead>
-                        <tr style={{ background: 'var(--color-background-secondary)' }}>
-                          <th style={{ padding: '6px 8px', border: '0.5px solid var(--color-border-tertiary)', textAlign: 'left' }}>Feature</th>
-                          <th style={{ padding: '6px 8px', border: '0.5px solid var(--color-border-tertiary)', color: '#7c3aed' }}>Clone</th>
-                          <th style={{ padding: '6px 8px', border: '0.5px solid var(--color-border-tertiary)', color: '#1d4ed8' }}>Snapshot Restore</th>
+                        <tr>
+                          <th>Engine Feature Parameters</th>
+                          <th style={{ color: '#2563eb' }}>Amazon Aurora</th>
+                          <th style={{ color: '#475569' }}>Standard RDS (MySQL/PG)</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {cloneRows.map((r, i) => (
-                          <tr key={i} style={{ background: i % 2 === 0 ? 'var(--color-background-secondary)' : 'transparent' }}>
-                            <td style={{ padding: '5px 8px', border: '0.5px solid var(--color-border-tertiary)', fontWeight: 500 }}>{r[0]}</td>
-                            <td style={{ padding: '5px 8px', border: '0.5px solid var(--color-border-tertiary)', color: '#7c3aed', textAlign: 'center' }}>{r[1]}</td>
-                            <td style={{ padding: '5px 8px', border: '0.5px solid var(--color-border-tertiary)', color: '#1d4ed8', textAlign: 'center' }}>{r[2]}</td>
+                        {compareRows.map((row, i) => (
+                          <tr key={i}>
+                            <td style={{ fontWeight: 'bold' }}>{row[0]}</td>
+                            <td style={{ color: '#2563eb', fontWeight: 600 }}>{row[1]}</td>
+                            <td>{row[2]}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1467,266 +1258,151 @@ export default function AuroraVisualizer() {
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {activeFeatureTab === 'security' && (
-            <div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: '10px' }}>
-                <div>
-                  <svg width="100%" viewBox="0 0 340 430" style={{ display: 'block' }}>
-                    <defs>
-                      <marker id="as" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/></marker>
-                    </defs>
-                    <rect x="10" y="10" width="320" height="410" rx="16" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5"/>
-                    <text x="170" y="30" textAnchor="middle" fontSize="12" fill="#475569" fontWeight="500">VPC Security Boundary</text>
+            {/* Sub-tab 7.2: Zero-ETL Redshift Sync */}
+            {activeFeatureTab === 'zeroetl' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Zero-ETL Analytical Data Warehouse Pipeline</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>Stream transactions continuously to Amazon Redshift without setting up glue code or ETL scripts.</div>
+                    
+                    <svg width="100%" viewBox="0 0 680 180" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                      <rect width="680" height="180" fill="url(#g-light-bg)" />
 
-                    <rect x="25" y="42" width="290" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.5"/>
-                    <text x="170" y="62" textAnchor="middle" fontSize="12" fill="#1d4ed8" fontWeight="500">🌐 Internet / Client</text>
-                    <text x="170" y="80" textAnchor="middle" fontSize="11" fill="#1d4ed8">App / Lambda / EC2 (in public subnet)</text>
+                      {/* Aurora cluster storage */}
+                      <rect x="20" y="45" width="200" height="90" rx="6" fill="#f0fdf4" stroke="#86efac" strokeWidth="1" />
+                      <text x="125" y="72" textAnchor="middle" fontSize="12" fill="#166534" fontWeight="bold">🐘 Aurora Cluster Volume</text>
+                      <text x="125" y="90" textAnchor="middle" fontSize="8.5" fill="#15803d" fontFamily="monospace">Redo block segments</text>
+                      <text x="125" y="108" textAnchor="middle" fontSize="8.5" fill="#64748b">writes transaction changes</text>
 
-                    <rect x="25" y="120" width="290" height="50" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                    <text x="170" y="140" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🔒 TLS 1.2+ in transit</text>
-                    <text x="170" y="158" textAnchor="middle" fontSize="11" fill="#6d28d9">All connections encrypted · rds-ca-2019 cert</text>
+                      {/* Redshift storage */}
+                      <rect x="460" y="45" width="200" height="90" rx="6" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1" />
+                      <text x="560" y="72" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">📊 Amazon Redshift DW</text>
+                      <text x="560" y="90" textAnchor="middle" fontSize="8.5" fill="#2563eb" fontFamily="monospace">Replicated schemas</text>
+                      <text x="560" y="108" textAnchor="middle" fontSize="8.5" fill="#64748b">Analytical views updated</text>
 
-                    <rect x="25" y="188" width="290" height="50" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                    <text x="170" y="208" textAnchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">🛡️ Security Groups</text>
-                    <text x="170" y="226" textAnchor="middle" fontSize="11" fill="#c2410c">Port 3306/5432 · Allow only app SG</text>
-
-                    <rect x="25" y="256" width="290" height="70" rx="10" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="170" y="276" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">🔑 Authentication</text>
-                    <rect x="40" y="286" width="120" height="28" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-                    <text x="100" y="304" textAnchor="middle" fontSize="11" fill="#166534">IAM DB Auth</text>
-                    <rect x="175" y="286" width="125" height="28" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-                    <text x="237" y="304" textAnchor="middle" fontSize="11" fill="#166534">Secrets Manager</text>
-
-                    <rect x="25" y="344" width="290" height="66" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                    <text x="170" y="364" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="500">🔐 Encryption at Rest (KMS)</text>
-                    <text x="170" y="382" textAnchor="middle" fontSize="11" fill="#0f766e">Storage · Snapshots · Replicas · Logs</text>
-                    <text x="170" y="400" textAnchor="middle" fontSize="11" fill="#0f766e">AWS-managed or Customer-managed CMK</text>
-
-                    <line x1="170" y1="102" x2="170" y2="120" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as)"/>
-                    <line x1="170" y1="170" x2="170" y2="188" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as)"/>
-                    <line x1="170" y1="238" x2="170" y2="256" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as)"/>
-                    <line x1="170" y1="326" x2="170" y2="344" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as)"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="sec">Security layers explained</div>
-                  <div className="card" style={{ borderLeft: '3px solid #1d4ed8', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '5px', color: '#1d4ed8' }}>🔒 Encryption in Transit (TLS)</div>
-                    <div className="kv"><span className="kk">Protocol</span><b>TLS 1.2 minimum</b></div>
-                    <div className="kv"><span className="kk">Enforce</span><b>rds.force_ssl = 1 (param group)</b></div>
-                    <div className="kv"><span className="kk">Certificate</span><b>rds-ca-2019 (auto-rotated)</b></div>
+                      {/* Zero-ETL sync stream */}
+                      <line x1="220" y1="90" x2="460" y2="90" stroke="#10b981" strokeWidth="4" strokeDasharray="8,4" className="flow-active-line" markerEnd="url(#arr-g)" />
+                      <text x="340" y="75" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold">Continuous Zero-ETL Sync</text>
+                      <text x="340" y="112" textAnchor="middle" fontSize="8" fill="#64748b">latency &lt; 1s · serverless</text>
+                    </svg>
                   </div>
-                  <div className="card" style={{ borderLeft: '3px solid #0f766e', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '5px', color: '#0f766e' }}>🔐 Encryption at Rest (KMS)</div>
-                    <div className="kv"><span className="kk">Covers</span><b>Storage, snapshots, replicas, logs</b></div>
-                    <div className="kv"><span className="kk">Key types</span><b>aws/rds (managed) or CMK</b></div>
-                    <div className="kv"><span className="kk">Enable when?</span><b style={{ color: '#dc2626' }}>At cluster creation only</b></div>
-                    <div className="kv"><span className="kk">Encrypted clone?</span><b>Inherits source key</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #15803d', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '5px', color: '#15803d' }}>🔑 IAM Database Authentication</div>
-                    <div className="kv"><span className="kk">How</span><b>IAM token (15-min TTL) instead of password</b></div>
-                    <div className="kv"><span className="kk">Engines</span><b>Aurora MySQL + Aurora PostgreSQL</b></div>
-                    <div className="kv"><span className="kk">Best for</span><b>Lambda, ECS, EC2 (no stored creds)</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #c2410c', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '5px', color: '#c2410c' }}>🗝️ Secrets Manager</div>
-                    <div className="kv"><span className="kk">Auto-rotate</span><b>Every N days (configurable)</b></div>
-                    <div className="kv"><span className="kk">Zero downtime</span><b>Dual-password rotation</b></div>
-                    <div className="kv"><span className="kk">Integrated with</span><b>RDS Proxy (no app restart)</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #7c3aed' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '5px', color: '#7c3aed' }}>🛡️ Network Security</div>
-                    <div className="kv"><span className="kk">VPC</span><b>Aurora always in private subnet</b></div>
-                    <div className="kv"><span className="kk">Security Groups</span><b>Allow only app-tier SG on DB port</b></div>
-                    <div className="kv"><span className="kk">No public IP</span><b>Publicly accessible = OFF (default)</b></div>
-                    <div className="kv"><span className="kk">VPC Endpoints</span><b>For Secrets Manager, KMS (no NAT)</b></div>
-                  </div>
-                </div>
-              </div>
 
-              <div className="sec">Security Checklist Simulator — click to toggle</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
-                {secChecks.map((item, idx) => (
-                  <div key={idx} onClick={() => toggleSecCheck(idx)} style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: 'var(--border-radius-md)', padding: '8px 10px', cursor: 'pointer', background: item.done ? '#f0fdf4' : '#fef2f2', borderColor: item.done ? '#86efac' : '#fca5a5' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 500, color: item.done ? '#166534' : '#b91c1c' }}>
-                      {item.done ? '✅ ' : '❌ '} {item.label}
+                  <div>
+                    <div className="aurora-card" style={{ borderTop: '3px solid #10b981' }}>
+                      <div style={{ fontWeight: 600, fontSize: '12px', color: '#166534', marginBottom: '6px' }}>⚡ Start analytical syncing</div>
+                      <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Test starting real-time log structured Zero-ETL pipeline sync logs to Redshift.</div>
+
+                      <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', fontSize: '9.5px', color: '#334155', minHeight: '62px', border: '1px solid #cbd5e1', lineHeight: 1.45, marginBottom: '8px' }}>
+                        {zeroEtlLogs.length === 0 ? (
+                          <span style={{ color: '#64748b' }}>Click "Initiate Zero-ETL Redshift Sync" to monitor continuous synchronization.</span>
+                        ) : zeroEtlLogs.map((log, i) => <div key={i}>{log}</div>)}
+                      </div>
+
+                      <div className="aurora-btnbar">
+                        <button className="aurora-btn aurora-primary" disabled={zeroEtlStatus === 'syncing'} onClick={zeroEtlLogs.length > 0 ? () => setZeroEtlLogs([]) : runZeroEtlSync}>
+                          {zeroEtlLogs.length > 0 ? 'Clear sync logs 🔄' : 'Initiate Zero-ETL Redshift Sync 🚀'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeFeatureTab === 'ml' && (
-            <div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', marginBottom: '10px' }}>
-                <div>
-                  <svg width="100%" viewBox="0 0 340 400" style={{ display: 'block' }}>
-                    <defs>
-                      <marker id="aml" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-                      <marker id="amlg" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                      <marker id="amlo" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#c2410c"/></marker>
-                    </defs>
-                    <rect x="10" y="10" width="320" height="56" rx="10" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
-                    <text x="170" y="32" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="500">Aurora Cluster (SQL Engine)</text>
-                    <text x="170" y="50" textAnchor="middle" fontSize="11" fill="#7c3aed">SELECT aws_sagemaker_invoke_endpoint(...)</text>
-
-                    <rect x="10" y="100" width="320" height="50" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                    <text x="170" y="120" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">Aurora ML Extension</text>
-                    <text x="170" y="138" textAnchor="middle" fontSize="11" fill="#6d28d9">Built-in SQL functions → ML services</text>
-
-                    <rect x="10" y="178" width="148" height="80" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="84" y="200" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">🧠 SageMaker</text>
-                    <text x="84" y="218" textAnchor="middle" fontSize="11" fill="#166534">Custom ML models</text>
-                    <text x="84" y="234" textAnchor="middle" fontSize="11" fill="#166534">Fraud detection</text>
-                    <text x="84" y="250" textAnchor="middle" fontSize="11" fill="#166534">Churn prediction</text>
-
-                    <rect x="182" y="178" width="148" height="80" rx="10" fill="#ffedd5" stroke="#fed7aa" strokeWidth="0.5"/>
-                    <text x="256" y="200" textAnchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">💬 Comprehend</text>
-                    <text x="256" y="218" textAnchor="middle" fontSize="11" fill="#c2410c">Sentiment analysis</text>
-                    <text x="256" y="234" textAnchor="middle" fontSize="11" fill="#c2410c">Entity detection</text>
-                    <text x="256" y="250" textAnchor="middle" fontSize="11" fill="#c2410c">Language detection</text>
-
-                    <rect x="10" y="290" width="320" height="50" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                    <text x="170" y="310" textAnchor="middle" fontSize="12" fill="#1d4ed8" fontWeight="500">📊 Result returned as SQL column</text>
-                    <text x="170" y="328" textAnchor="middle" fontSize="11" fill="#1d4ed8">SELECT id, review, sentiment FROM orders</text>
-
-                    <rect x="10" y="358" width="320" height="34" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="170" y="379" textAnchor="middle" fontSize="11" fill="#15803d">No ETL · No Python · Pure SQL · In-database inference</text>
-
-                    <line x1="170" y1="66" x2="170" y2="100" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#aml)"/>
-                    <line x1="120" y1="150" x2="84" y2="178" stroke="#15803d" strokeWidth="1" markerEnd="url(#amlg)"/>
-                    <line x1="220" y1="150" x2="256" y2="178" stroke="#c2410c" strokeWidth="1" markerEnd="url(#amlo)"/>
-                    <line x1="84" y1="258" x2="170" y2="290" stroke="#6b7280" strokeWidth="1" markerEnd="url(#aml)"/>
-                    <line x1="256" y1="258" x2="170" y2="290" stroke="#6b7280" strokeWidth="1" markerEnd="url(#aml)"/>
-                    <line x1="170" y1="340" x2="170" y2="358" stroke="#6b7280" strokeWidth="1" markerEnd="url(#aml)"/>
-                  </svg>
                 </div>
-                <div>
-                  <div className="sec">Aurora ML — SQL-native inference</div>
-                  <div className="card" style={{ borderLeft: '3px solid #15803d', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#15803d' }}>🧠 SageMaker Integration</div>
-                    <div className="kv"><span className="kk">Function</span><b style={{ fontFamily: 'monospace', fontSize: '11px' }}>aws_sagemaker_invoke_endpoint()</b></div>
-                    <div className="kv"><span className="kk">Input</span><b>Any SQL column values</b></div>
-                    <div className="kv"><span className="kk">Output</span><b>Model prediction as SQL value</b></div>
-                    <div className="kv"><span className="kk">Auth</span><b>IAM role on Aurora cluster</b></div>
-                    <div className="kv"><span className="kk">Use cases</span><b>Fraud score, churn, recommendations</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #c2410c', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#c2410c' }}>💬 Comprehend Integration</div>
-                    <div className="kv"><span className="kk">Sentiment fn</span><b style={{ fontFamily: 'monospace', fontSize: '11px' }}>aws_comprehend_detect_sentiment()</b></div>
-                    <div className="kv"><span className="kk">Returns</span><b>POSITIVE / NEGATIVE / NEUTRAL / MIXED</b></div>
-                    <div className="kv"><span className="kk">Language fn</span><b style={{ fontFamily: 'monospace', fontSize: '11px' }}>aws_comprehend_detect_dominant_language()</b></div>
-                    <div className="kv"><span className="kk">Engines</span><b>Aurora MySQL + Aurora PostgreSQL</b></div>
-                  </div>
-                  <div className="card" style={{ borderLeft: '3px solid #7c3aed', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#7c3aed' }}>⚙️ Setup Requirements</div>
-                    <ul className="checklist">
-                      <li>Enable Aurora ML in cluster parameter group</li>
-                      <li>Attach IAM role to Aurora cluster</li>
-                      <li>Role needs sagemaker:InvokeEndpoint</li>
-                      <li>Role needs comprehend:DetectSentiment</li>
-                      <li>VPC endpoint for SageMaker (optional)</li>
-                    </ul>
-                  </div>
-                  <div className="sec">Live SQL Example</div>
-                  <div style={{ border: '0.5px solid var(--color-border-tertiary)', borderRadius: '8px', padding: '10px', background: 'var(--color-background-secondary)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Click a query to see result:</div>
+              </div>
+            )}
+
+            {/* Sub-tab 7.3: In-Database ML Inference */}
+            {activeFeatureTab === 'ml' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: '14px', alignItems: 'start' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '4px' }}>🤖 SQL Machine Learning &amp; AI Query Sandbox</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Aurora PostgreSQL and MySQL support direct, real-time machine learning inferences inside standard SELECT queries.</div>
+
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                      <button className="tab" onClick={() => setActiveMlQuery('sentiment')} style={{ fontSize: '11px', padding: '4px 10px', background: activeMlQuery === 'sentiment' ? '#7c3aed' : '', color: activeMlQuery === 'sentiment' ? '#fff' : '' }}>Sentiment</button>
-                      <button className="tab" onClick={() => setActiveMlQuery('fraud')} style={{ fontSize: '11px', padding: '4px 10px', background: activeMlQuery === 'fraud' ? '#7c3aed' : '', color: activeMlQuery === 'fraud' ? '#fff' : '' }}>Fraud Score</button>
-                      <button className="tab" onClick={() => setActiveMlQuery('churn')} style={{ fontSize: '11px', padding: '4px 10px', background: activeMlQuery === 'churn' ? '#7c3aed' : '', color: activeMlQuery === 'churn' ? '#fff' : '' }}>Churn Predict</button>
+                      <button className={`aurora-subtb ${activeMlQuery === 'sentiment' ? 'aurora-on-purple' : ''}`} onClick={() => { setActiveMlQuery('sentiment'); setMlOutput([]); setMlLogs([]); }}>🗣️ Sentiment Comprehend</button>
+                      <button className={`aurora-subtb ${activeMlQuery === 'fraud' ? 'aurora-on-purple' : ''}`} onClick={() => { setActiveMlQuery('fraud'); setMlOutput([]); setMlLogs([]); }}>💳 Transaction SageMaker</button>
+                      <button className={`aurora-subtb ${activeMlQuery === 'churn' ? 'aurora-on-purple' : ''}`} onClick={() => { setActiveMlQuery('churn'); setMlOutput([]); setMlLogs([]); }}>📈 Customer Churn Classifier</button>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px', whiteSpace: 'pre-wrap' }}>
-                      {mlQueries[activeMlQuery].sql}
+
+                    <div className="aurora-code-container" style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '12px' }}>
+                      <div className="aurora-code" style={{ color: '#4c1d95', fontSize: '10.5px' }}>
+                        {mlQueries[activeMlQuery].sql}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--color-text-primary)' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>→ Result:</span><br/>
-                      {mlQueries[activeMlQuery].result}
+                    <button className="aurora-btn aurora-primary" style={{ background: '#7c3aed', borderColor: '#7c3aed', width: '100%', justifyContent: 'center', marginTop: '8px' }} onClick={runMlInference}>
+                      ⚡ Execute ML Inference Query inside DB
+                    </button>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px' }}>
+                        <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', fontFamily: 'monospace', marginBottom: '4px' }}>📟 ML CLUSTER INFERENCE STREAMS</div>
+                        <div className="aurora-mono" style={{ fontSize: '9px', color: '#334155', minHeight: '62px', lineHeight: 1.45 }}>
+                          {mlIsLoading ? (
+                            <div style={{ color: '#b45309', animation: 'activeNodePulse 1.2s infinite', '--pulse-color': 'rgba(180, 83, 9, 0.4)' } as React.CSSProperties}>
+                              Connecting to SageMaker inference nodes... 🚀
+                            </div>
+                          ) : mlLogs.length === 0 ? (
+                            <span style={{ color: '#64748b' }}>Click "Execute ML Inference Query inside DB" to monitor transactions.</span>
+                          ) : mlLogs.map((log, i) => <div key={i}>{log}</div>)}
+                        </div>
+                      </div>
+
+                      {mlOutput.length > 0 && (
+                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px' }}>
+                          <div style={{ fontSize: '10.5px', color: '#047857', fontWeight: 'bold', fontFamily: 'monospace', marginBottom: '4px' }}>📊 SQL RESULT COLUMN VALUES</div>
+                          <table className="aurora-table" style={{ fontSize: '9.5px' }}>
+                            <thead>
+                              <tr style={{ background: '#f1f5f9' }}>
+                                <th style={{ padding: '4px' }}>Feedback Content/Metric</th>
+                                <th style={{ padding: '4px' }}>Prediction Column</th>
+                                <th style={{ padding: '4px' }}>Confidence Score</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {mlOutput.map((row, i) => (
+                                <tr key={i}>
+                                  <td style={{ padding: '4px' }}>{row.feedback}</td>
+                                  <td style={{ padding: '4px', fontWeight: 'bold', color: row.sentiment.includes('NEGATIVE') || row.sentiment.includes('HIGH') ? '#b91c1c' : '#15803d' }}>{row.sentiment}</td>
+                                  <td style={{ padding: '4px', color: '#2563eb' }}>{row.conf}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab 10: Aurora vs RDS */}
-      {activeTab === 'vsrds' && (
-        <div>
-          <div className="sec">Aurora vs Standard RDS — When to Choose What</div>
-          <div style={{ overflowX: 'auto', marginBottom: '12px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', border: '0.5px solid var(--color-border-tertiary)' }}>
-              <thead>
-                <tr style={{ background: 'var(--color-background-secondary)' }}>
-                  <th style={{ padding: '8px', textAlign: 'left', border: '0.5px solid var(--color-border-tertiary)', fontWeight: 600 }}>Feature</th>
-                  <th style={{ padding: '8px', textAlign: 'center', border: '0.5px solid var(--color-border-tertiary)', color: '#7c3aed', fontWeight: 600 }}>Aurora</th>
-                  <th style={{ padding: '8px', textAlign: 'center', border: '0.5px solid var(--color-border-tertiary)', color: '#1d4ed8', fontWeight: 600 }}>RDS MySQL/PG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {compareRows.map((row, idx) => (
-                  <tr key={idx} style={{ background: idx % 2 === 0 ? 'transparent' : 'var(--color-background-secondary)' }}>
-                    <td style={{ padding: '7px 8px', border: '0.5px solid var(--color-border-tertiary)', fontWeight: 500, color: 'var(--color-text-primary)' }}>{row[0]}</td>
-                    <td style={{ padding: '7px 8px', textAlign: 'center', border: '0.5px solid var(--color-border-tertiary)', color: '#7c3aed' }}>{row[1]}</td>
-                    <td style={{ padding: '7px 8px', textAlign: 'center', border: '0.5px solid var(--color-border-tertiary)', color: '#1d4ed8' }}>{row[2]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            )}
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: '10px' }}>
-            <div className="card" style={{ borderTop: '3px solid #7c3aed' }}>
-              <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '7px', color: '#7c3aed' }}>✅ Choose Aurora when…</div>
-              <ul className="checklist">
-                <li>High availability is critical (&lt; 30s failover)</li>
-                <li>Need up to 15 read replicas for scale</li>
-                <li>Using Lambda / serverless heavily</li>
-                <li>Want Global DB for DR / global reads</li>
-                <li>Need Aurora Serverless v2 auto-scaling</li>
-                <li>Want Zero-ETL to Redshift</li>
-                <li>In-database ML inference query models</li>
-              </ul>
-            </div>
-            <div className="card" style={{ borderTop: '3px solid #1d4ed8' }}>
-              <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '7px', color: '#1d4ed8' }}>✅ Choose RDS when…</div>
-              <ul className="checklist">
-                <li>Cost is primary concern (RDS ~20% cheaper)</li>
-                <li>Need SQL Server or Oracle engines</li>
-                <li>Need specific engine minor patch versions</li>
-                <li>Simple workload, 1–2 replicas enough</li>
-                <li>Regulatory constraints require core engines</li>
-                <li>Existing setup has no migration budget</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
 
       </div>
 
-      {/* Footer / Terraform configuration trigger */}
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+      {/* Footer trigger */}
+      <div style={{ marginTop: '16px', textAlign: 'center' }}>
         <button
-          onClick={sendTerraformPrompt}
+          onClick={() => alert("Copied Terraform deployment payload request to clipboard! Generating dynamic multi-AZ serverless v2 Aurora cluster topology script.")}
           style={{
-            padding: '8px 20px',
+            padding: '8px 18px',
             borderRadius: '20px',
-            border: '0.5px solid var(--color-border-secondary)',
-            fontSize: '12px',
+            border: '0.5px solid var(--color-border-secondary, #cbd5e1)',
+            fontSize: '11.5px',
             cursor: 'pointer',
-            background: 'var(--color-background-secondary)',
-            color: 'var(--color-text-primary)',
-            fontWeight: 500
+            background: 'var(--color-background-secondary, #f8fafc)',
+            color: 'var(--color-text-primary, #0f172a)',
+            fontWeight: 500,
+            transition: 'all 0.15s'
           }}
+          onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; }}
+          onMouseOut={(e) => { e.currentTarget.style.background = 'var(--color-background-secondary, #f8fafc)'; }}
         >
-          Get Terraform for full Aurora setup ↗
+          Get Terraform Configuration for Multi-AZ Aurora Cluster ↗
         </button>
       </div>
     </div>
