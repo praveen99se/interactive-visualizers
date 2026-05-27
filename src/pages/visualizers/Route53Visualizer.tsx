@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-type TabType = 'dns' | 'r53' | 'records' | 'routing' | 'health' | 'arch';
+type TabType = 'dns' | 'r53' | 'records' | 'routing' | 'health' | 'hybrid' | 'arch';
 type RecordType = 'A' | 'AAAA' | 'CNAME' | 'ALIAS' | 'MX' | 'TXT' | 'NS' | 'SOA' | 'SRV' | 'PTR';
 type PolicyType = 'simple' | 'weighted' | 'latency' | 'failover' | 'geo' | 'geoprox' | 'multivalue' | 'ipbased';
 
@@ -308,6 +308,56 @@ export default function Route53Visualizer() {
   const [dnsInput, setDnsInput] = useState('www.example.com');
   const [dnsSteps, setDnsSteps] = useState<string[]>([]);
   const [isResolving, setIsResolving] = useState(false);
+  const [dnsStepIndex, setDnsStepIndex] = useState<number>(-1);
+  const [isCacheHit, setIsCacheHit] = useState(false);
+
+  // Hybrid DNS Simulator states
+  const [hybridMode, setHybridMode] = useState<'inbound' | 'outbound'>('inbound');
+  const [hybridStep, setHybridStep] = useState<number>(-1);
+  const [hybridIsRunning, setHybridIsRunning] = useState<boolean>(false);
+  const [hybridLogs, setHybridLogs] = useState<string[]>([]);
+  const [hybridSimulatedDomain, setHybridSimulatedDomain] = useState<string>('db.internal');
+
+  // Refs for auto-scrolling log consoles
+  const dnsLogRef = useRef<HTMLDivElement | null>(null);
+  const hybridLogRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll side effects
+  useEffect(() => {
+    if (dnsLogRef.current) {
+      dnsLogRef.current.scrollTop = dnsLogRef.current.scrollHeight;
+    }
+  }, [dnsSteps]);
+
+  useEffect(() => {
+    if (hybridLogRef.current) {
+      hybridLogRef.current.scrollTop = hybridLogRef.current.scrollHeight;
+    }
+  }, [hybridLogs]);
+
+  // DNS Local Cache state mapping domain -> { ip, ttl, maxTtl }
+  const [dnsCache, setDnsCache] = useState<Record<string, { ip: string; ttl: number; maxTtl: number }>>({});
+
+  // Real-time DNS Cache TTL countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDnsCache((prev) => {
+        const next = { ...prev };
+        let updated = false;
+        for (const domain in next) {
+          if (next[domain].ttl > 1) {
+            next[domain] = { ...next[domain], ttl: next[domain].ttl - 1 };
+            updated = true;
+          } else {
+            delete next[domain];
+            updated = true;
+          }
+        }
+        return updated ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Records Explorer
   const [activeRecord, setActiveRecord] = useState<RecordType>('A');
@@ -326,6 +376,9 @@ export default function Route53Visualizer() {
   // Health check failover simulator states
   const [primHealthy, setPrimHealthy] = useState(true);
   const [secHealthy, setSecHealthy] = useState(true);
+
+  // Architecture interactive states
+  const [archScenario, setArchScenario] = useState<'public_web' | 'private_vpc' | 'hybrid_corp'>('public_web');
 
   // All Routing Policy Simulator States & Handlers
   const [simpleDomain, setSimpleDomain] = useState('www.example.com');
@@ -501,28 +554,187 @@ export default function Route53Visualizer() {
     if (isResolving) return;
     setIsResolving(true);
     setDnsSteps([]);
-    const domain = dnsInput.trim() || 'www.example.com';
-    const steps = [
-      `🔍 Resolving Fully Qualified Domain Name (FQDN): ${domain}`,
-      `📦 Step 1: Querying local DNS caches (Browser cache, Operating System cache)...`,
-      `❌ Cache MISS. Forwarding DNS request to recursive DNS resolver (ISP / 8.8.8.8)...`,
-      `🌍 Step 2: Recursive resolver queries Root Nameserver (a.root-servers.net)...`,
-      `➡️ Root Nameserver responds: "I do not know the IP for ${domain}, but here are the TLD Nameservers for the .${domain.split('.').pop()} TLD."`,
-      `🏷️ Step 3: Recursive resolver queries TLD Nameserver (com.gtld-servers.net)...`,
-      `➡️ TLD Nameserver responds: "I do not know the IP address, but here are the authoritative Nameservers for ${domain.split('.').slice(-2).join('.')}."`,
-      `   └─ NS: ns-123.awsdns.com (Route 53 authoritative nameserver cluster)`,
-      `📍 Step 4: Recursive resolver queries Authoritative Route 53 Nameserver...`,
-      `➡️ Route 53 processes rules & returns the authoritative DNS record:`,
-      `   └─ Record Type: A | TTL: 300s | Value: 1.2.3.4 (IPv4 endpoint)`,
-      `💾 Step 5: Recursive resolver caches response for 300s (TTL) and forwards it to the Browser.`,
-      `✅ Success! Resolution complete. Browser connecting to 1.2.3.4 over TCP port 443.`
+    setDnsStepIndex(-1);
+
+    const domain = dnsInput.trim().toLowerCase() || 'www.example.com';
+    const cachedEntry = dnsCache[domain];
+
+    if (cachedEntry && cachedEntry.ttl > 0) {
+      setIsCacheHit(true);
+
+      setDnsStepIndex(0);
+      setDnsSteps([`🔍 Initiating DNS resolution for: ${domain}`]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      setDnsStepIndex(1);
+      setDnsSteps((prev) => [
+        ...prev,
+        `📦 Step 1: Querying local DNS caches (Browser cache, Operating System cache)...`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      setDnsSteps((prev) => [
+        ...prev,
+        `⚡ Cache HIT! Valid record found locally:`,
+        `   └─ Mapping: ${domain} ➔ ${cachedEntry.ip}`,
+        `   └─ TTL Remaining: ${cachedEntry.ttl} seconds`,
+        `🚀 Bypassing external WAN queries (Root, TLD, Route 53 Authoritative Nameservers bypassed completely!)`
+      ]);
+      await new Promise((r) => setTimeout(r, 1000));
+
+      setDnsStepIndex(6);
+      setDnsSteps((prev) => [
+        ...prev,
+        `✅ Success! Resolved directly from local cache. Browser connecting to ${cachedEntry.ip} over HTTPS (TCP port 443).`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+    } else {
+      setIsCacheHit(false);
+
+      setDnsStepIndex(0);
+      setDnsSteps([`🔍 Resolving Fully Qualified Domain Name (FQDN): ${domain}`]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      setDnsStepIndex(1);
+      setDnsSteps((prev) => [
+        ...prev,
+        `📦 Step 1: Querying local DNS caches (Browser cache, Operating System cache)...`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      setDnsSteps((prev) => [
+        ...prev,
+        `❌ Cache MISS. Domain record is empty or has expired in local cache.`,
+        `   Forwarding recursive DNS query to public resolver (ISP / 8.8.8.8)...`
+      ]);
+      await new Promise((r) => setTimeout(r, 1000));
+
+      setDnsStepIndex(2);
+      setDnsSteps((prev) => [
+        ...prev,
+        `🌍 Step 2: Recursive resolver queries Root Nameserver (a.root-servers.net)...`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      setDnsSteps((prev) => [
+        ...prev,
+        `➡️ Root Nameserver responds: "I do not know the IP for ${domain}, but here are the TLD Nameservers for the .${domain.split('.').pop() || 'com'} TLD."`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      setDnsStepIndex(3);
+      setDnsSteps((prev) => [
+        ...prev,
+        `🏷️ Step 3: Recursive resolver queries TLD Nameserver (com.gtld-servers.net)...`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      const domainParts = domain.split('.');
+      const apexDomain = domainParts.slice(-2).join('.');
+      setDnsSteps((prev) => [
+        ...prev,
+        `➡️ TLD Nameserver responds: "I do not know the IP address, but here are the authoritative Nameservers for ${apexDomain}."`,
+        `   └─ NS: ns-123.awsdns.com (Route 53 authoritative nameserver cluster)`
+      ]);
+      await new Promise((r) => setTimeout(r, 1000));
+
+      setDnsStepIndex(4);
+      setDnsSteps((prev) => [
+        ...prev,
+        `📍 Step 4: Recursive resolver queries Authoritative Route 53 Nameserver...`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+
+      // Resolve to a stable/consistent IP based on the domain name
+      let resolvedIP = '1.2.3.4';
+      if (domain !== 'www.example.com') {
+        const hash = domain.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        resolvedIP = `192.0.2.${(hash % 250) + 1}`;
+      }
+
+      setDnsSteps((prev) => [
+        ...prev,
+        `➡️ Route 53 processes records & returns authoritative answer:`,
+        `   └─ Record Type: A | TTL: 300s | Value: ${resolvedIP}`
+      ]);
+      await new Promise((r) => setTimeout(r, 1000));
+
+      setDnsStepIndex(5);
+      // Store in local cache!
+      setDnsCache((prev) => ({
+        ...prev,
+        [domain]: { ip: resolvedIP, ttl: 300, maxTtl: 300 }
+      }));
+
+      setDnsSteps((prev) => [
+        ...prev,
+        `💾 Step 5: Recursive resolver caches response for 300s (TTL) and forwards it to the Browser.`,
+        `   📥 Record cached in local Browser/OS storage!`
+      ]);
+      await new Promise((r) => setTimeout(r, 1000));
+
+      setDnsStepIndex(6);
+      setDnsSteps((prev) => [
+        ...prev,
+        `✅ Success! Resolution complete. Browser connecting to ${resolvedIP} over TCP port 443.`
+      ]);
+      await new Promise((r) => setTimeout(r, 800));
+    }
+
+    setIsResolving(false);
+  };
+
+  // Hybrid DNS simulation runner
+  const runHybridSim = async () => {
+    if (hybridIsRunning) return;
+    setHybridIsRunning(true);
+    setHybridLogs([]);
+    setHybridStep(0);
+
+    const isRuleInbound = hybridMode === 'inbound';
+    const domain = hybridSimulatedDomain;
+
+    const inboundLogs = [
+      `🔍 [CLIENT] DNS Query initiated for domain: '${domain}' (Record Type A)`,
+      `📦 [ON-PREM DNS] DNS Server (192.168.1.10) received query. Searching local Active Directory database...`,
+      `❌ [ON-PREM DNS] Cache MISS. Domain is not in local authoritative zones (*.onprem.local).`,
+      `🎯 [ON-PREM DNS] Evaluating conditional forwarders: Matches rule [*.internal] -> Forward to AWS Inbound Endpoint [10.0.1.53]`,
+      `🔐 [IPSEC VPN] Encrypting DNS query packet. Forwarding across AWS Site-to-Site VPN Tunnel...`,
+      `☁️ [VIRTUAL GATEWAY] AWS Virtual Private Gateway decrypted packet. Route to subnet 10.0.1.0/24.`,
+      `🔌 [AWS RESOLVER] Inbound Endpoint ENI (10.0.1.53) received query. Forwarding to Route 53 Resolver (10.0.0.2)...`,
+      `🔍 [ROUTE 53] Query matching associated Private Hosted Zone 'internal' in vpc-0a1b2c3d...`,
+      `✅ [ROUTE 53] Match found! 'db.internal' -> Record: A -> IP 10.0.2.99 (RDS Database Instance)`,
+      `📤 [AWS RESOLVER] Returning response [db.internal. A 10.0.2.99] back via Inbound Endpoint ENI...`,
+      `🔐 [IPSEC VPN] Encrypting and tunneling response packet back to On-Premises Gateway...`,
+      `📦 [ON-PREM DNS] Received resolved payload. Returning IP 10.0.2.99 to client and caching (TTL: 300s).`,
+      `✅ [CLIENT] DNS Resolution SUCCESS! Direct connection established to private RDS database at 10.0.2.99 over secure IPSec tunnel!`
     ];
 
-    for (let i = 0; i < steps.length; i++) {
-      setDnsSteps((prev) => [...prev, steps[i]]);
-      await new Promise((resolve) => setTimeout(resolve, 200));
+    const outboundLogs = [
+      `🔍 [EC2 INSTANCE] DNS Query initiated inside VPC for: '${domain}' (Record Type A)`,
+      `🔌 [ROUTE 53] Query received at local Route 53 Resolver IP (10.0.0.2 - AmazonProvidedDNS)...`,
+      `❌ [ROUTE 53] Cache MISS. Evaluating Outbound resolver rules...`,
+      `🎯 [ROUTE 53] Found Rule Match: [*.onprem.local] -> Forward to On-Premises AD DNS Server [192.168.10.10]`,
+      `🔌 [AWS RESOLVER] Routing query packet to Outbound Endpoint ENI (IP 10.0.1.250)...`,
+      `🔐 [IPSEC VPN] Outbound Endpoint routes packet across Site-to-Site VPN tunnel to On-Premises Gateway...`,
+      `🏢 [ON-PREM GATEWAY] Packet decrypted. Forwarded to Active Directory Domain Controller (192.168.10.10)...`,
+      `🏢 [ON-PREM DNS] Query received. Local Zone Match found: '${domain}' -> Record: A -> 192.168.10.100`,
+      `🔐 [IPSEC VPN] Tunneling response packet [A -> 192.168.10.100] back to AWS VPC...`,
+      `🔌 [AWS RESOLVER] Outbound Endpoint ENI (10.0.1.250) received response payload.`,
+      `🔌 [ROUTE 53] Resolver cached record and returned payload back to client EC2 Instance.`,
+      `✅ [EC2 INSTANCE] DNS Resolution SUCCESS! Establishing direct secure private connection to corporate server at 192.168.10.100!`
+    ];
+
+    const logs = isRuleInbound ? inboundLogs : outboundLogs;
+    const stepMapping = isRuleInbound ? [0, 1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5, 6] : [0, 1, 1, 1, 2, 3, 3, 4, 5, 5, 5, 6];
+
+    for (let i = 0; i < logs.length; i++) {
+      setHybridLogs((prev) => [...prev, logs[i]]);
+      setHybridStep(stepMapping[i]);
+      await new Promise((resolve) => setTimeout(resolve, 800));
     }
-    setIsResolving(false);
+
+    setHybridIsRunning(false);
   };
 
   // Redraw Weighted Routing Canvas
@@ -611,6 +823,31 @@ export default function Route53Visualizer() {
 
   const failoverOutcome = getFailoverOutcome();
 
+  const hasCacheItems = Object.keys(dnsCache).length > 0;
+
+  // Cache Cabinet styling classes
+  let cacheBoxClass = '';
+  let cacheBoxStroke = '#334155';
+  let cacheBoxStrokeWidth = 1;
+
+  if (dnsStepIndex === 1) {
+    if (isResolving) {
+      if (isCacheHit) {
+        cacheBoxClass = 'cache-query-hit';
+        cacheBoxStroke = '#22c55e';
+        cacheBoxStrokeWidth = 2.5;
+      } else {
+        cacheBoxClass = 'cache-query-miss';
+        cacheBoxStroke = '#f97316';
+        cacheBoxStrokeWidth = 2.5;
+      }
+    }
+  } else if (hasCacheItems && !isResolving) {
+    cacheBoxClass = 'cache-active-pulse';
+    cacheBoxStroke = '#22c55e';
+    cacheBoxStrokeWidth = 1.5;
+  }
+
   return (
     <div>
       <style>{`
@@ -638,6 +875,65 @@ export default function Route53Visualizer() {
           box-shadow: 0 0 0 3px rgba(245,158,11,0.2) !important;
           outline: none;
         }
+        @keyframes cachePulse {
+          0% { stroke: #22c55e; stroke-width: 1.5px; filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.5)); }
+          50% { stroke: #4ade80; stroke-width: 2.5px; filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.9)); }
+          100% { stroke: #22c55e; stroke-width: 1.5px; filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.5)); }
+        }
+        @keyframes cacheQueryHit {
+          0% { stroke: #22c55e; stroke-width: 2.5px; filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.7)); }
+          50% { stroke: #10b981; stroke-width: 4.5px; filter: drop-shadow(0 0 20px rgba(16, 185, 129, 1)); }
+          100% { stroke: #22c55e; stroke-width: 2.5px; filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.7)); }
+        }
+        @keyframes cacheQueryMiss {
+          0% { stroke: #f97316; stroke-width: 2.5px; filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.7)); }
+          50% { stroke: #ef4444; stroke-width: 4.5px; filter: drop-shadow(0 0 20px rgba(239, 68, 68, 1)); }
+          100% { stroke: #f97316; stroke-width: 2.5px; filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.7)); }
+        }
+        .cache-active-pulse {
+          animation: cachePulse 2s infinite ease-in-out;
+        }
+        .cache-query-hit {
+          animation: cacheQueryHit 0.8s infinite ease-in-out;
+        }
+        .cache-query-miss {
+          animation: cacheQueryMiss 0.8s infinite ease-in-out;
+        }
+        @keyframes heartbeatPulse {
+          0% { stroke-dashoffset: 40; }
+          100% { stroke-dashoffset: 0; }
+        }
+        @keyframes alarmLed {
+          0%, 100% { fill: #ef4444; opacity: 1; filter: drop-shadow(0 0 3px #ef4444); }
+          50% { fill: #7f1d1d; opacity: 0.3; filter: none; }
+        }
+        @keyframes breathingGreen {
+          0%, 100% { stroke: #22c55e; stroke-width: 1.5px; filter: drop-shadow(0 0 2px rgba(34, 197, 94, 0.4)); }
+          50% { stroke: #4ade80; stroke-width: 2.5px; filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.8)); }
+        }
+        @keyframes breathingRed {
+          0%, 100% { stroke: #dc2626; stroke-width: 1.5px; filter: drop-shadow(0 0 2px rgba(220, 38, 38, 0.4)); }
+          50% { stroke: #f87171; stroke-width: 2.5px; filter: drop-shadow(0 0 10px rgba(248, 113, 113, 0.8)); }
+        }
+        .ping-line-ok {
+          stroke: #10b981;
+          stroke-dasharray: 6, 4;
+          animation: heartbeatPulse 1.5s linear infinite;
+        }
+        .ping-line-fail {
+          stroke: #ef4444;
+          stroke-dasharray: 4, 3;
+          animation: heartbeatPulse 0.8s linear infinite;
+        }
+        .server-healthy-glow {
+          animation: breathingGreen 2.5s infinite ease-in-out;
+        }
+        .server-unhealthy-glow {
+          animation: breathingRed 1.2s infinite ease-in-out;
+        }
+        .alarm-indicator {
+          animation: alarmLed 0.5s infinite steps(1);
+        }
       `}</style>
 
       {/* Header */}
@@ -658,6 +954,7 @@ export default function Route53Visualizer() {
           <button className={`r53-tb ${activeSection === 'records' ? 'r53-on' : ''}`} onClick={() => setActiveSection('records')}>📋 Records &amp; Zones</button>
           <button className={`r53-tb ${activeSection === 'routing' ? 'r53-on' : ''}`} onClick={() => setActiveSection('routing')}>🗺️ Routing Policies</button>
           <button className={`r53-tb ${activeSection === 'health' ? 'r53-on' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health Checks</button>
+          <button className={`r53-tb ${activeSection === 'hybrid' ? 'r53-on' : ''}`} onClick={() => setActiveSection('hybrid')}>🔌 Hybrid DNS</button>
           <button className={`r53-tb ${activeSection === 'arch' ? 'r53-on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
         </div>
       </div>
@@ -670,123 +967,308 @@ export default function Route53Visualizer() {
           <div>
             <div className="r53-sec">How DNS Resolution Works — Step-by-Step Flow</div>
             <div className="r53-card">
-              <svg width="100%" viewBox="0 0 680 260" style={{ display: 'block', margin: '0 auto' }}>
+              <svg width="60%" viewBox="0 0 680 270" style={{ display: 'block', margin: '0 auto' }}>
                 <defs>
-                  <marker id="d1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-                  <marker id="d2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                  <marker id="d3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0369a1"/></marker>
-                  <marker id="d4" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#c2410c"/></marker>
+                  {/* Neon Glow Filters */}
+                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="5" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                  <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="6" result="blur" />
+                    <feComponentTransfer in="blur" result="glow1">
+                      <feFuncA type="linear" slope="0.8" />
+                    </feComponentTransfer>
+                    <feMerge>
+                      <feMergeNode in="glow1" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+
+                  {/* Flow Markers */}
+                  <marker id="d1" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c084fc" /></marker>
+                  <marker id="d2" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#4ade80" /></marker>
+                  <marker id="d3" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#60a5fa" /></marker>
+                  <marker id="d4" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f97316" /></marker>
                 </defs>
-                <rect x="10" y="100" width="110" height="60" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                <text x="65" y="124" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">💻 Browser</text>
-                <text x="65" y="142" textAnchor="middle" fontSize="11" fill="#7c3aed">www.example.com</text>
 
-                <rect x="160" y="100" width="120" height="60" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                <text x="220" y="120" textAnchor="middle" fontSize="11" fill="#c2410c" fontWeight="500">🔄 Recursive</text>
-                <text x="220" y="136" textAnchor="middle" fontSize="11" fill="#c2410c">Resolver</text>
-                <text x="220" y="152" textAnchor="middle" fontSize="10" fill="#c2410c">(ISP / 8.8.8.8)</text>
+                {/* BACKGROUND CONNECTIVITY PIPES */}
+                {/* Browser to Resolver */}
+                <line x1="120" y1="130" x2="160" y2="130" stroke="#475569" strokeWidth="2" strokeDasharray="3,2" />
+                {/* Resolver to Root */}
+                <path d="M 280 130 Q 305 130 305 38 L 330 38" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                {/* Resolver to TLD */}
+                <line x1="280" y1="130" x2="330" y2="130" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                {/* Resolver to Auth */}
+                <path d="M 280 130 Q 305 130 305 220 L 330 220" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                {/* Client direct to Web Server */}
+                <path
+                  d="M 65 160 Q 65 260 305 260 Q 610 260 610 160"
+                  fill="none"
+                  stroke={dnsStepIndex === 6 ? (isCacheHit ? "#10b981" : "#0ea5e9") : "#0ea5e9"}
+                  strokeWidth={dnsStepIndex === 6 ? (isCacheHit ? 3.0 : 2) : 2}
+                  strokeOpacity={dnsStepIndex === 6 ? 1 : 0.15}
+                  strokeDasharray={dnsStepIndex === 6 ? "5,3" : "none"}
+                  style={{ transition: 'all 0.3s' }}
+                >
+                  {dnsStepIndex === 6 && (
+                    <animate attributeName="stroke-dashoffset" values="50;0" dur={isCacheHit ? "1.2s" : "2s"} repeatCount="indefinite" />
+                  )}
+                </path>
 
-                <rect x="330" y="10" width="120" height="56" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="390" y="30" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">🌍 Root NS</text>
-                <text x="390" y="48" text-anchor="middle" fontSize="11" fill="#dc2626">13 root servers</text>
-                <text x="390" y="62" text-anchor="middle" fontSize="10" fill="#dc2626">a.root-servers.net</text>
+                {/* 1. LAPTOP BROWSER CLIENT */}
+                <g filter={(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "url(#glow)" : undefined}>
+                  <polygon points="20,150 100,150 115,160 5,160" fill="#475569" stroke="#334155" strokeWidth="1" />
+                  <rect x="45" y="142" width="30" height="9" fill="#64748b" />
+                  <rect x="10" y="102" width="100" height="42" rx="4" fill="#0f172a" stroke={(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "#a855f7" : "#475569"} strokeWidth="1.5" />
+                  <rect x="14" y="105" width="92" height="34" rx="2" fill="#1e1b4b" />
+                  <rect x="18" y="109" width="84" height="4" rx="1" fill="#4338ca" />
+                  <circle cx="22" cy="117" r="1.5" fill="#f43f5e" />
+                  <circle cx="27" cy="117" r="1.5" fill="#eab308" />
+                  <circle cx="32" cy="117" r="1.5" fill="#22c55e" />
+                  <rect x="38" y="115" width="60" height="4" rx="1.5" fill="#1e293b" />
+                  <text x="42" y="119" fontSize="4.5" fill="#e2e8f0" fontFamily="monospace" fontWeight="bold">example.com</text>
+                  <line x1="20" y1="126" x2="90" y2="126" stroke="#312e81" strokeWidth="1" />
+                  <line x1="20" y1="131" x2="70" y2="131" stroke="#312e81" strokeWidth="1" />
+                  <text x="60" y="156" textAnchor="middle" fontSize="9" fill="#e2e8f0" fontWeight="600">💻 Browser</text>
+                </g>
 
-                <rect x="330" y="100" width="120" height="60" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                <text x="390" y="120" text-anchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="500">🏷️ TLD NS</text>
-                <text x="390" y="136" text-anchor="middle" fontSize="11" fill="#1d4ed8">.com / .org / .io</text>
-                <text x="390" y="152" text-anchor="middle" fontSize="10" fill="#1d4ed8">Verisign servers</text>
+                {/* 2. RECURSIVE RESOLVER (Server Rack) */}
+                <g filter={(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "url(#glow)" : undefined}>
+                  <rect x="160" y="100" width="120" height="60" rx="8" fill="#1e293b" stroke={(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "#f97316" : "#475569"} strokeWidth="1.5" />
+                  <rect x="162" y="102" width="116" height="56" rx="6" fill="#0f172a" />
+                  {/* Blinking LEDs */}
+                  <circle cx="256" cy="112" r="3" fill="#22c55e"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
+                  <circle cx="268" cy="112" r="3" fill="#eab308"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <circle cx="256" cy="124" r="3" fill="#22c55e"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.2s" repeatCount="indefinite" /></circle>
+                  <circle cx="268" cy="124" r="3" fill="#22c55e"><animate attributeName="opacity" values="1;0.1;1" dur="1.0s" repeatCount="indefinite" /></circle>
+                  <circle cx="256" cy="136" r="3" fill="#ef4444"><animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.4s" repeatCount="indefinite" /></circle>
+                  <circle cx="268" cy="136" r="3" fill="#22c55e"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.5s" repeatCount="indefinite" /></circle>
+                  {/* Slots */}
+                  <line x1="170" y1="112" x2="240" y2="112" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="170" y1="124" x2="240" y2="124" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="170" y1="136" x2="240" y2="136" stroke="#334155" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="170" y1="148" x2="220" y2="148" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
+                  <text x="220" y="94" textAnchor="middle" fontSize="9" fill="#fdba74" fontWeight="600">🔄 Recursive Resolver</text>
+                  <text x="220" y="172" textAnchor="middle" fontSize="8" fill="#94a3b8">(ISP / 8.8.8.8)</text>
+                </g>
 
-                <rect x="330" y="190" width="120" height="60" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                <text x="390" y="210" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">📍 Auth NS</text>
-                <text x="390" y="226" text-anchor="middle" fontSize="11" fill="#15803d">Route 53 / NS</text>
-                <text x="390" y="242" text-anchor="middle" fontSize="10" fill="#15803d">ns-123.awsdns.com</text>
+                {/* 3. ROOT NAMESERVER (Red Chassis Server) */}
+                <g filter={dnsStepIndex === 2 ? "url(#glow)" : undefined}>
+                  <rect x="330" y="10" width="120" height="56" rx="8" fill="#1e293b" stroke={dnsStepIndex === 2 ? "#ef4444" : "#475569"} strokeWidth="1.5" />
+                  <rect x="332" y="12" width="116" height="52" rx="6" fill="#1e1b1b" />
+                  {/* Blinking LEDs */}
+                  <circle cx="426" cy="22" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="1;0.2;1" dur="0.5s" repeatCount="indefinite" /></circle>
+                  <circle cx="438" cy="22" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.7s" repeatCount="indefinite" /></circle>
+                  <circle cx="426" cy="34" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="1;0.1;1" dur="1.1s" repeatCount="indefinite" /></circle>
+                  <circle cx="438" cy="34" r="2.5" fill="#eab308"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.9s" repeatCount="indefinite" /></circle>
+                  {/* Vents */}
+                  <line x1="340" y1="22" x2="410" y2="22" stroke="#451a03" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="340" y1="34" x2="410" y2="34" stroke="#451a03" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="340" y1="46" x2="390" y2="46" stroke="#451a03" strokeWidth="2" strokeLinecap="round" />
+                  <text x="390" y="6" textAnchor="middle" fontSize="9" fill="#fca5a5" fontWeight="600">🌍 Root NS (a.root-servers.net)</text>
+                </g>
 
-                <rect x="550" y="100" width="120" height="60" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                <text x="610" y="124" text-anchor="middle" fontSize="12" fill="#854d0e" fontWeight="500">🖥️ Server</text>
-                <text x="610" y="142" text-anchor="middle" fontSize="11" fill="#854d0e">1.2.3.4 (IP)</text>
+                {/* 4. TLD NAMESERVER (Blue Chassis Server) */}
+                <g filter={dnsStepIndex === 3 ? "url(#glow)" : undefined}>
+                  <rect x="330" y="100" width="120" height="60" rx="8" fill="#1e293b" stroke={dnsStepIndex === 3 ? "#3b82f6" : "#475569"} strokeWidth="1.5" />
+                  <rect x="332" y="102" width="116" height="56" rx="6" fill="#172554" />
+                  {/* Blinking LEDs */}
+                  <circle cx="426" cy="112" r="2.5" fill="#3b82f6"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <circle cx="438" cy="112" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
+                  <circle cx="426" cy="124" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.3s" repeatCount="indefinite" /></circle>
+                  <circle cx="438" cy="124" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.0s" repeatCount="indefinite" /></circle>
+                  {/* Vents */}
+                  <line x1="340" y1="112" x2="410" y2="112" stroke="#1e3a8a" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="340" y1="124" x2="410" y2="124" stroke="#1e3a8a" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="340" y1="136" x2="390" y2="136" stroke="#1e3a8a" strokeWidth="2.5" strokeLinecap="round" />
+                  <text x="390" y="94" textAnchor="middle" fontSize="9" fill="#93c5fd" fontWeight="600">🏷️ TLD NS (.com / .net)</text>
+                </g>
 
-                <line x1="120" y1="130" x2="158" y2="130" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#d1)"/>
-                <text x="139" y="124" textAnchor="middle" fontSize="10" fill="#7c3aed">①</text>
+                {/* 5. AUTHORITATIVE NAMESERVER (AWS Route 53 Golden Orbit Node) */}
+                <g filter={dnsStepIndex === 4 ? "url(#glow)" : undefined}>
+                  <rect x="330" y="190" width="120" height="60" rx="8" fill="#3b0764" stroke={dnsStepIndex === 4 ? "#d8b4fe" : "#475569"} strokeWidth="1.5" />
+                  <rect x="332" y="192" width="116" height="56" rx="6" fill="#120024" />
+                  {/* Golden Rotating Orbit Circle */}
+                  <circle cx="360" cy="220" r="16" fill="#eab308" opacity="0.1" />
+                  <circle cx="360" cy="220" r="13" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3,2">
+                    <animateTransform attributeName="transform" type="rotate" from="0 360 220" to="360 360 220" dur="4s" repeatCount="indefinite" />
+                  </circle>
+                  {/* Routing arrows */}
+                  <path d="M 354 220 A 6 6 0 0 1 366 220" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" />
+                  <path d="M 366 220 A 6 6 0 0 1 354 220" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" />
+                  <polygon points="364,218 367,221 370,218" fill="#f59e0b" />
+                  <polygon points="350,222 353,219 356,222" fill="#f59e0b" />
+                  {/* Signal Lines */}
+                  <line x1="385" y1="208" x2="435" y2="208" stroke="#4a044e" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="385" y1="220" x2="435" y2="220" stroke="#4a044e" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="385" y1="232" x2="425" y2="232" stroke="#4a044e" strokeWidth="2" strokeLinecap="round" />
+                  {/* Blinking Dots */}
+                  <circle cx="395" cy="208" r="1.5" fill="#a855f7"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.4s" repeatCount="indefinite" /></circle>
+                  <circle cx="410" cy="220" r="1.5" fill="#22c55e"><animate attributeName="opacity" values="1;0.1;1" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <circle cx="420" cy="232" r="1.5" fill="#eab308"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.8s" repeatCount="indefinite" /></circle>
+                  <text x="390" y="184" textAnchor="middle" fontSize="9" fill="#c084fc" fontWeight="600">📍 Route 53 (Authoritative)</text>
+                </g>
 
-                <path d="M280 115 L305 115 L305 38 L328 38" fill="none" stroke="#c2410c" strokeWidth="1" markerEnd="url(#d4)"/>
-                <text x="295" y="72" textAnchor="middle" fontSize="10" fill="#c2410c">②</text>
+                {/* 6. WEB SERVER TARGET */}
+                <g filter={dnsStepIndex === 6 ? "url(#glow-orange)" : undefined}>
+                  <rect x="550" y="100" width="120" height="60" rx="8" fill="#0f172a" stroke={dnsStepIndex === 6 ? "#0ea5e9" : "#475569"} strokeWidth="1.5" />
+                  <rect x="552" y="102" width="116" height="56" rx="6" fill="#020617" />
+                  {/* Disk drive shapes */}
+                  <rect x="560" y="112" width="40" height="10" rx="2" fill="#1e293b" />
+                  <circle cx="566" cy="117" r="2" fill="#22c55e"><animate attributeName="opacity" values="1;0.2;1" dur="0.3s" repeatCount="indefinite" /></circle>
+                  <line x1="576" y1="117" x2="594" y2="117" stroke="#475569" strokeWidth="1.5" />
 
-                <path d="M390 66 L390 98" fill="none" stroke="#dc2626" strokeWidth="1" markerEnd="url(#d4)"/>
-                <text x="400" y="86" textAnchor="start" fontSize="10" fill="#dc2626">③ .com NS?</text>
+                  <rect x="560" y="126" width="40" height="10" rx="2" fill="#1e293b" />
+                  <circle cx="566" cy="131" r="2" fill="#22c55e"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <line x1="576" y1="131" x2="594" y2="131" stroke="#475569" strokeWidth="1.5" />
 
-                <path d="M390 160 L390 188" fill="none" stroke="#1d4ed8" strokeWidth="1" markerEnd="url(#d3)"/>
-                <text x="400" y="178" textAnchor="start" fontSize="10" fill="#1d4ed8">④ Auth NS?</text>
+                  <rect x="560" y="140" width="40" height="10" rx="2" fill="#1e293b" />
+                  <circle cx="566" cy="145" r="2" fill="#ef4444"><animate attributeName="opacity" values="0.8;0.2;0.8" dur="0.9s" repeatCount="indefinite" /></circle>
+                  <line x1="576" y1="145" x2="594" y2="145" stroke="#475569" strokeWidth="1.5" />
 
-                <path d="M450 220 L520 220 L520 145 L548 145" fill="none" stroke="#15803d" strokeWidth="1" markerEnd="url(#d2)"/>
-                <text x="490" y="214" textAnchor="middle" fontSize="10" fill="#15803d">⑤ IP!</text>
+                  {/* Server Grille slots */}
+                  <line x1="614" y1="114" x2="654" y2="114" stroke="#334155" strokeWidth="2" />
+                  <line x1="614" y1="126" x2="654" y2="126" stroke="#334155" strokeWidth="2" />
+                  <line x1="614" y1="138" x2="654" y2="138" stroke="#334155" strokeWidth="2" />
+                  <line x1="614" y1="148" x2="644" y2="148" stroke="#334155" strokeWidth="2" />
 
-                <line x1="548" y1="130" x2="452" y2="130" stroke="#854d0e" strokeWidth="1.5" markerEnd="url(#d4)"/>
-                <text x="500" y="124" textAnchor="middle" fontSize="10" fill="#854d0e">⑥ return</text>
+                  <text x="610" y="94" textAnchor="middle" fontSize="9" fill="#38bdf8" fontWeight="600">🖥️ Web Server</text>
+                  <text x="610" y="172" textAnchor="middle" fontSize="8" fill="#94a3b8">IP: 1.2.3.4 (Host)</text>
+                </g>
 
-                <line x1="280" y1="145" x2="158" y2="145" stroke="#854d0e" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#d4)"/>
-                <text x="219" y="160" textAnchor="middle" fontSize="10" fill="#854d0e">⑦ cache + return</text>
+                {/* 7. PRIVATE CACHE CABINET */}
+                <g opacity="0.95">
+                  <rect
+                    x="10"
+                    y="10"
+                    width="130"
+                    height="72"
+                    rx="8"
+                    fill="#0f172a"
+                    stroke={cacheBoxStroke}
+                    strokeWidth={cacheBoxStrokeWidth}
+                    className={cacheBoxClass}
+                    style={{ transition: 'all 0.3s ease' }}
+                  />
+                  <text x="75" y="24" textAnchor="middle" fontSize="10" fill={hasCacheItems ? "#4ade80" : "#94a3b8"} fontWeight="bold">📦 DNS Caches</text>
+                  {/* Small folders */}
+                  <rect
+                    x="20"
+                    y="32"
+                    width="22"
+                    height="14"
+                    rx="2"
+                    fill="#1e293b"
+                    stroke={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#22c55e" : "#475569")}
+                    strokeWidth="0.8"
+                    strokeOpacity={dnsStepIndex === 1 ? 1 : (hasCacheItems ? 0.8 : 0.4)}
+                    style={{ transition: 'all 0.3s' }}
+                  />
+                  <text x="31" y="42" textAnchor="middle" fontSize="6.5" fill="#e2e8f0">Browser</text>
 
-                <rect x="10" y="10" width="130" height="72" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-                <text x="75" y="28" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">📦 DNS Cache</text>
-                <text x="75" y="44" textAnchor="middle" fontSize="10" fill="#166534">Browser cache</text>
-                <text x="75" y="58" textAnchor="middle" fontSize="10" fill="#166534">OS cache</text>
-                <text x="75" y="72" textAnchor="middle" fontSize="10" fill="#166534">Resolver cache</text>
+                  <rect
+                    x="54"
+                    y="32"
+                    width="22"
+                    height="14"
+                    rx="2"
+                    fill="#1e293b"
+                    stroke={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#22c55e" : "#475569")}
+                    strokeWidth="0.8"
+                    strokeOpacity={dnsStepIndex === 1 ? 1 : (hasCacheItems ? 0.8 : 0.4)}
+                    style={{ transition: 'all 0.3s' }}
+                  />
+                  <text x="65" y="42" textAnchor="middle" fontSize="6.5" fill="#e2e8f0">OS</text>
+
+                  <rect
+                    x="88"
+                    y="32"
+                    width="22"
+                    height="14"
+                    rx="2"
+                    fill="#1e293b"
+                    stroke={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#22c55e" : "#475569")}
+                    strokeWidth="0.8"
+                    strokeOpacity={dnsStepIndex === 1 ? 1 : (hasCacheItems ? 0.8 : 0.4)}
+                    style={{ transition: 'all 0.3s' }}
+                  />
+                  <text x="99" y="42" textAnchor="middle" fontSize="6.5" fill="#e2e8f0">Resolver</text>
+
+                  <text
+                    x="75"
+                    y="64"
+                    textAnchor="middle"
+                    fontSize="7.5"
+                    fill={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#34d399" : "#64748b")}
+                    fontStyle="italic"
+                    fontWeight={dnsStepIndex === 1 || hasCacheItems ? "bold" : "normal"}
+                    style={{ transition: 'all 0.3s' }}
+                  >
+                    {dnsStepIndex === 1
+                      ? (isCacheHit ? "⚡ CACHE HIT!" : "❌ CACHE MISS!")
+                      : (hasCacheItems ? "🟢 Active Cache Records" : "Caches prevent external lookups")}
+                  </text>
+                </g>
+
+                {/* ANIMATED PACKETS */}
+                {dnsStepIndex === 1 && (
+                  <>
+                    {isCacheHit ? (
+                      <>
+                        {/* Packet from Browser to Cache */}
+                        <circle cx="60" cy="130" r="4" fill="#10b981" filter="url(#glow)">
+                          <animate attributeName="cx" values="60;75" dur="0.8s" repeatCount="indefinite" />
+                          <animate attributeName="cy" values="130;46" dur="0.8s" repeatCount="indefinite" />
+                        </circle>
+                        {/* Packet returning from Cache to Browser */}
+                        <circle cx="75" cy="46" r="4" fill="#34d399" filter="url(#glow)">
+                          <animate attributeName="cx" values="75;60" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
+                          <animate attributeName="cy" values="46;130" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
+                        </circle>
+                      </>
+                    ) : (
+                      <>
+                        {/* Orange/Red Cache query showing Miss */}
+                        <circle cx="60" cy="130" r="4" fill="#f97316" filter="url(#glow)">
+                          <animate attributeName="cx" values="60;75" dur="0.8s" repeatCount="indefinite" />
+                          <animate attributeName="cy" values="130;46" dur="0.8s" repeatCount="indefinite" />
+                        </circle>
+                        {/* Original resolver packet trail starts on Cache Miss */}
+                        <circle cx="145" cy="130" r="5" fill="#ef4444" filter="url(#glow)">
+                          <animate attributeName="cx" values="75;215" dur="0.8s" repeatCount="indefinite" />
+                        </circle>
+                      </>
+                    )}
+                  </>
+                )}
+                {dnsStepIndex === 2 && (
+                  <circle cx="305" cy="85" r="5" fill="#ef4444" filter="url(#glow)">
+                    <animate attributeName="cx" values="220;330;220" dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="130;38;130" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                )}
+                {dnsStepIndex === 3 && (
+                  <circle cx="275" cy="130" r="5" fill="#3b82f6" filter="url(#glow)">
+                    <animate attributeName="cx" values="220;330;220" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                )}
+                {dnsStepIndex === 4 && (
+                  <circle cx="305" cy="175" r="5" fill="#c084fc" filter="url(#glow)">
+                    <animate attributeName="cx" values="220;330;220" dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="130;220;130" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                )}
+                {dnsStepIndex === 5 && (
+                  <circle cx="145" cy="130" r="5" fill={isCacheHit ? "#10b981" : "#f97316"} filter="url(#glow)">
+                    <animate attributeName="cx" values="220;75" dur="0.8s" repeatCount="indefinite" />
+                  </circle>
+                )}
               </svg>
             </div>
 
             <div className="r53-g2">
               <div>
-                <div className="r53-sec">DNS Terminology</div>
-                <div className="r53-card" style={{ borderLeft: '3px solid #7c3aed', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '8px', color: '#7c3aed' }}>Key Terms Explained</div>
-                  <div className="r53-kv"><span className="r53-kk">Domain Name</span><b>Human-readable address (example.com)</b></div>
-                  <div className="r53-kv"><span className="r53-kk">IP Address</span><b>Machine address (1.2.3.4 or IPv6)</b></div>
-                  <div className="r53-kv"><span className="r53-kk">DNS Resolver</span><b>Recursive server that does the lookup lookup work</b></div>
-                  <div className="r53-kv"><span className="r53-kk">Root Nameserver</span><b>Top of DNS hierarchy (13 root clusters globally)</b></div>
-                  <div className="r53-kv"><span className="r53-kk">TLD Nameserver</span><b>Handles .com, .org, .io, .in etc. (Top Level Domains)</b></div>
-                  <div className="r53-kv"><span className="r53-kk">Authoritative NS</span><b>Final answer holder — stores actual DNS records</b></div>
-                  <div className="r53-kv"><span className="r53-kk">TTL</span><b>Time-to-live — how long a record can be cached</b></div>
-                  <div className="r53-kv"><span className="r53-kk">Zone</span><b>A managed portion of DNS namespace (e.g., example.com)</b></div>
-                  <div className="r53-kv"><span className="r53-kk">FQDN</span><b>Fully Qualified Domain Name (e.g., www.example.com.)</b></div>
-                </div>
-              </div>
-
-              <div>
-                <div className="r53-sec">DNS Hierarchy Visualized</div>
-                <div className="r53-card" style={{ display: 'flex', justifyContent: 'center', padding: '10px 14px' }}>
-                  <svg width="100%" viewBox="0 0 320 250" style={{ display: 'block' }}>
-                    <rect x="120" y="5" width="80" height="34" rx="8" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                    <text x="160" y="26" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">. (Root)</text>
-
-                    <rect x="20" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                    <text x="60" y="91" textAnchor="middle" fontSize="11" fill="#1d4ed8">.com TLD</text>
-                    <rect x="120" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                    <text x="160" y="91" text-anchor="middle" fontSize="11" fill="#1d4ed8">.org TLD</text>
-                    <rect x="220" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                    <text x="260" y="91" text-anchor="middle" fontSize="11" fill="#1d4ed8">.io TLD</text>
-
-                    <rect x="20" y="136" width="90" height="34" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="65" y="157" text-anchor="middle" fontSize="11" fill="#15803d">example.com</text>
-                    <rect x="130" y="136" width="90" height="34" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="175" y="157" text-anchor="middle" fontSize="11" fill="#15803d">google.com</text>
-
-                    <rect x="20" y="202" width="90" height="34" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                    <text x="65" y="216" text-anchor="middle" fontSize="10" fill="#854d0e">www.</text>
-                    <text x="65" y="230" text-anchor="middle" fontSize="9" fill="#854d0e">example.com</text>
-                    <rect x="130" y="202" width="90" height="34" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                    <text x="175" y="216" text-anchor="middle" fontSize="10" fill="#854d0e">api.</text>
-                    <text x="175" y="230" text-anchor="middle" fontSize="9" fill="#854d0e">example.com</text>
-
-                    <line x1="160" y1="39" x2="60" y2="70" stroke="#6b7280" strokeWidth="0.5"/>
-                    <line x1="160" y1="39" x2="160" y2="70" stroke="#6b7280" strokeWidth="0.5"/>
-                    <line x1="160" y1="39" x2="260" y2="70" stroke="#6b7280" strokeWidth="0.5"/>
-                    <line x1="60" y1="104" x2="65" y2="136" stroke="#6b7280" strokeWidth="0.5"/>
-                    <line x1="60" y1="104" x2="175" y2="136" stroke="#6b7280" strokeWidth="0.5"/>
-                    <line x1="65" y1="170" x2="65" y2="202" stroke="#6b7280" strokeWidth="0.5"/>
-                    <line x1="65" y1="170" x2="175" y2="202" stroke="#6b7280" strokeWidth="0.5"/>
-                  </svg>
-                </div>
-
                 <div className="r53-sec">DNS Resolution Simulator</div>
                 <div className="r53-card">
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Type a domain name and simulate standard DNS lookup steps:</div>
@@ -811,10 +1293,171 @@ export default function Route53Visualizer() {
                       {isResolving ? 'Resolving...' : 'Resolve ▶'}
                     </button>
                   </div>
-                  <div className="r53-log" style={{ minHeight: '120px', maxHeight: '180px', overflowY: 'auto' }}>
+                  <div ref={dnsLogRef} className="r53-log" style={{ minHeight: '120px', maxHeight: '180px', overflowY: 'auto' }}>
                     {dnsSteps.length === 0 ? '; Waiting for resolution...\n; Enter domain name and click Resolve above.' : dnsSteps.join('\n')}
                   </div>
                 </div>
+                <div className="r53-sec">DNS Terminology</div>
+                <div className="r53-card" style={{ borderLeft: '3px solid #7c3aed', marginBottom: '8px' }}>
+                  <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '8px', color: '#7c3aed' }}>Key Terms Explained</div>
+                  <div className="r53-kv"><span className="r53-kk">Domain Name</span><b>Human-readable address (example.com)</b></div>
+                  <div className="r53-kv"><span className="r53-kk">IP Address</span><b>Machine address (1.2.3.4 or IPv6)</b></div>
+                  <div className="r53-kv"><span className="r53-kk">DNS Resolver</span><b>Recursive server that does the lookup lookup work</b></div>
+                  <div className="r53-kv"><span className="r53-kk">Root Nameserver</span><b>Top of DNS hierarchy (13 root clusters globally)</b></div>
+                  <div className="r53-kv"><span className="r53-kk">TLD Nameserver</span><b>Handles .com, .org, .io, .in etc. (Top Level Domains)</b></div>
+                  <div className="r53-kv"><span className="r53-kk">Authoritative NS</span><b>Final answer holder — stores actual DNS records</b></div>
+                  <div className="r53-kv"><span className="r53-kk">TTL</span><b>Time-to-live — how long a record can be cached</b></div>
+                  <div className="r53-kv"><span className="r53-kk">Zone</span><b>A managed portion of DNS namespace (e.g., example.com)</b></div>
+                  <div className="r53-kv"><span className="r53-kk">FQDN</span><b>Fully Qualified Domain Name (e.g., www.example.com.)</b></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="r53-sec">📦 Active DNS Cache Status</div>
+                <div className="r53-card" style={{ borderLeft: '3px solid #10b981', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                      Real-Time TTL Countdown &amp; Cache Monitor
+                    </span>
+                    <button
+                      className="r53-btn"
+                      onClick={() => setDnsCache({})}
+                      style={{
+                        padding: '2px 8px',
+                        fontSize: '10px',
+                        borderColor: '#ef4444',
+                        color: '#ef4444',
+                        background: 'transparent',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        cursor: 'pointer'
+                      }}
+                      title="Flush all DNS cache records"
+                    >
+                      🗑️ Clear Cache
+                    </button>
+                  </div>
+
+                  {Object.keys(dnsCache).length === 0 ? (
+                    <div style={{
+                      padding: '24px 12px',
+                      textAlign: 'center',
+                      fontSize: '11px',
+                      color: 'var(--color-text-secondary)',
+                      fontStyle: 'italic',
+                      background: 'var(--color-background-secondary)',
+                      borderRadius: '6px',
+                      border: '0.5px dashed var(--color-border-secondary)'
+                    }}>
+                      🔌 Cache is empty. Run a DNS resolution to see records populate here.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {Object.entries(dnsCache).map(([domain, data]) => {
+                        const pct = Math.max(0, Math.min(100, (data.ttl / data.maxTtl) * 100));
+                        const progressColor = data.ttl > 60 ? '#10b981' : data.ttl > 15 ? '#eab308' : '#ef4444';
+
+                        return (
+                          <div
+                            key={domain}
+                            style={{
+                              background: 'var(--color-background-secondary)',
+                              border: '0.5px solid var(--color-border-secondary)',
+                              borderRadius: '6px',
+                              padding: '8px 10px',
+                              position: 'relative',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '4px' }}>
+                              <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: 'monospace' }}>
+                                {domain}
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className="r53-badge" style={{ background: '#1e293b', color: '#38bdf8', padding: '1px 5px', fontSize: '9px', border: '0.5px solid #0284c7' }}>
+                                  A Record
+                                </span>
+                                <span style={{ fontWeight: 'bold', color: progressColor, fontFamily: 'monospace' }}>
+                                  ⏳ {data.ttl}s
+                                </span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
+                              <span>IP: <strong style={{ color: 'var(--color-text-primary)', fontFamily: 'monospace' }}>{data.ip}</strong></span>
+                              <span style={{ fontStyle: 'italic', fontSize: '9px' }}>TTL Max: {data.maxTtl}s</span>
+                            </div>
+                            {/* Progress bar */}
+                            <div style={{ width: '100%', height: '4px', background: '#334155', borderRadius: '999px', overflow: 'hidden' }}>
+                              <div
+                                style={{
+                                  width: `${pct}%`,
+                                  height: '100%',
+                                  background: progressColor,
+                                  boxShadow: `0 0 4px ${progressColor}`,
+                                  transition: 'width 1s linear, background-color 0.5s'
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Educational block */}
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    background: '#022c22',
+                    border: '0.5px solid #064e3b',
+                    fontSize: '11.5px',
+                    lineHeight: '1.45',
+                    color: '#a7f3d0'
+                  }}>
+                    <strong style={{ color: '#34d399', display: 'block', marginBottom: '2px' }}>💡 How Caching Works:</strong>
+                    When you query a domain for the first time (Cache Miss), the resolver performs the full recursive lookup and stores it in your local cache for the duration of the Time-To-Live (TTL = 300s). Subsequent queries within this window (Cache Hit) are served instantly from the local cache without any external network request, bypassing Root, TLD, and Route 53 completely!
+                  </div>
+                </div>
+
+                <div className="r53-sec">DNS Hierarchy Visualized</div>
+                <div className="r53-card" style={{ display: 'flex', justifyContent: 'center', padding: '10px 14px' }}>
+                  <svg width="100%" viewBox="0 0 320 250" style={{ display: 'block' }}>
+                    <rect x="120" y="5" width="80" height="34" rx="8" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5" />
+                    <text x="160" y="26" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">. (Root)</text>
+
+                    <rect x="20" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
+                    <text x="60" y="91" textAnchor="middle" fontSize="11" fill="#1d4ed8">.com TLD</text>
+                    <rect x="120" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
+                    <text x="160" y="91" text-anchor="middle" fontSize="11" fill="#1d4ed8">.org TLD</text>
+                    <rect x="220" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
+                    <text x="260" y="91" text-anchor="middle" fontSize="11" fill="#1d4ed8">.io TLD</text>
+
+                    <rect x="20" y="136" width="90" height="34" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
+                    <text x="65" y="157" text-anchor="middle" fontSize="11" fill="#15803d">example.com</text>
+                    <rect x="130" y="136" width="90" height="34" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
+                    <text x="175" y="157" text-anchor="middle" fontSize="11" fill="#15803d">google.com</text>
+
+                    <rect x="20" y="202" width="90" height="34" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
+                    <text x="65" y="216" text-anchor="middle" fontSize="10" fill="#854d0e">www.</text>
+                    <text x="65" y="230" text-anchor="middle" fontSize="9" fill="#854d0e">example.com</text>
+                    <rect x="130" y="202" width="90" height="34" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
+                    <text x="175" y="216" text-anchor="middle" fontSize="10" fill="#854d0e">api.</text>
+                    <text x="175" y="230" text-anchor="middle" fontSize="9" fill="#854d0e">example.com</text>
+
+                    <line x1="160" y1="39" x2="60" y2="70" stroke="#6b7280" strokeWidth="0.5" />
+                    <line x1="160" y1="39" x2="160" y2="70" stroke="#6b7280" strokeWidth="0.5" />
+                    <line x1="160" y1="39" x2="260" y2="70" stroke="#6b7280" strokeWidth="0.5" />
+                    <line x1="60" y1="104" x2="65" y2="136" stroke="#6b7280" strokeWidth="0.5" />
+                    <line x1="60" y1="104" x2="175" y2="136" stroke="#6b7280" strokeWidth="0.5" />
+                    <line x1="65" y1="170" x2="65" y2="202" stroke="#6b7280" strokeWidth="0.5" />
+                    <line x1="65" y1="170" x2="175" y2="202" stroke="#6b7280" strokeWidth="0.5" />
+                  </svg>
+                </div>
+
+
               </div>
             </div>
           </div>
@@ -862,50 +1505,50 @@ export default function Route53Visualizer() {
                   <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Route 53 Operational Architecture</div>
                   <svg width="100%" viewBox="0 0 340 420" style={{ display: 'block' }}>
                     <defs>
-                      <marker id="r1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-                      <marker id="r2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
+                      <marker id="r1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed" /></marker>
+                      <marker id="r2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d" /></marker>
                     </defs>
-                    <rect x="10" y="10" width="320" height="52" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="10" y="10" width="320" height="52" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="170" y="30" text-anchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🌐 User requests domain.com</text>
                     <text x="170" y="48" text-anchor="middle" fontSize="11" fill="#7c3aed">Browser / App / Client device</text>
 
-                    <rect x="10" y="86" width="320" height="52" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
+                    <rect x="10" y="86" width="320" height="52" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5" />
                     <text x="170" y="106" text-anchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">🔄 DNS Resolver (8.8.8.8 / ISP)</text>
                     <text x="170" y="124" text-anchor="middle" fontSize="11" fill="#c2410c">Performs recursive checks → queries Route 53</text>
 
-                    <rect x="10" y="162" width="320" height="72" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="10" y="162" width="320" height="72" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="170" y="182" text-anchor="middle" fontSize="13" fill="#7c3aed" fontWeight="500">🚀 Route 53 DNS</text>
-                    <rect x="22" y="194" width="90" height="28" rx="6" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="22" y="194" width="90" height="28" rx="6" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="67" y="212" text-anchor="middle" fontSize="10" fill="#6d28d9">Hosted Zone</text>
-                    <rect x="125" y="194" width="90" height="28" rx="6" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="125" y="194" width="90" height="28" rx="6" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="170" y="212" text-anchor="middle" fontSize="10" fill="#6d28d9">Routing Rules</text>
-                    <rect x="228" y="194" width="90" height="28" rx="6" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="228" y="194" width="90" height="28" rx="6" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="273" y="212" text-anchor="middle" fontSize="10" fill="#6d28d9">Health Status</text>
 
-                    <rect x="10" y="258" width="148" height="52" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
+                    <rect x="10" y="258" width="148" height="52" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
                     <text x="84" y="278" text-anchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="500">⚖️ ALB / NLB</text>
                     <text x="84" y="296" text-anchor="middle" fontSize="11" fill="#1d4ed8">Elastic Load Balancer</text>
-                    <rect x="182" y="258" width="148" height="52" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
+                    <rect x="182" y="258" width="148" height="52" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
                     <text x="256" y="278" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">☁️ CloudFront</text>
                     <text x="256" y="296" text-anchor="middle" fontSize="11" fill="#166534">Global CDN Distribution</text>
 
-                    <rect x="10" y="334" width="90" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
+                    <rect x="10" y="334" width="90" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
                     <text x="55" y="354" text-anchor="middle" fontSize="11" fill="#854d0e" fontWeight="500">EC2</text>
                     <text x="55" y="372" text-anchor="middle" fontSize="10" fill="#854d0e">VM Instances</text>
-                    <rect x="115" y="334" width="90" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
+                    <rect x="115" y="334" width="90" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
                     <text x="160" y="354" text-anchor="middle" fontSize="11" fill="#854d0e" fontWeight="500">ECS/EKS</text>
                     <text x="160" y="372" text-anchor="middle" fontSize="10" fill="#854d0e">Containers</text>
-                    <rect x="220" y="334" width="110" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
+                    <rect x="220" y="334" width="110" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
                     <text x="275" y="354" text-anchor="middle" fontSize="11" fill="#854d0e" fontWeight="500">S3 / Lambda</text>
                     <text x="275" y="372" text-anchor="middle" fontSize="10" fill="#854d0e">Serverless Hosting</text>
 
-                    <line x1="170" y1="62" x2="170" y2="86" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#r1)"/>
-                    <line x1="170" y1="138" x2="170" y2="162" stroke="#c2410c" strokeWidth="1" markerEnd="url(#r1)"/>
-                    <line x1="110" y1="234" x2="84" y2="258" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#r1)"/>
-                    <line x1="230" y1="234" x2="256" y2="258" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#r1)"/>
-                    <line x1="84" y1="310" x2="55" y2="334" stroke="#15803d" strokeWidth="1" markerEnd="url(#r2)"/>
-                    <line x1="84" y1="310" x2="160" y2="334" stroke="#15803d" strokeWidth="1" markerEnd="url(#r2)"/>
-                    <line x1="256" y1="310" x2="275" y2="334" stroke="#15803d" strokeWidth="1" markerEnd="url(#r2)"/>
+                    <line x1="170" y1="62" x2="170" y2="86" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#r1)" />
+                    <line x1="170" y1="138" x2="170" y2="162" stroke="#c2410c" strokeWidth="1" markerEnd="url(#r1)" />
+                    <line x1="110" y1="234" x2="84" y2="258" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#r1)" />
+                    <line x1="230" y1="234" x2="256" y2="258" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#r1)" />
+                    <line x1="84" y1="310" x2="55" y2="334" stroke="#15803d" strokeWidth="1" markerEnd="url(#r2)" />
+                    <line x1="84" y1="310" x2="160" y2="334" stroke="#15803d" strokeWidth="1" markerEnd="url(#r2)" />
+                    <line x1="256" y1="310" x2="275" y2="334" stroke="#15803d" strokeWidth="1" markerEnd="url(#r2)" />
                   </svg>
                 </div>
               </div>
@@ -1029,139 +1672,139 @@ export default function Route53Visualizer() {
 
                 {activePolicy === 'simple' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <circle cx="160" cy="30" r="18" fill="#ede9fe" stroke="#c4b5fd"/>
+                    <circle cx="160" cy="30" r="18" fill="#ede9fe" stroke="#c4b5fd" />
                     <text x="160" y="34" textAnchor="middle" fontSize="14">💻</text>
                     <text x="160" y="60" textAnchor="middle" fontSize="10" fill="#7c3aed" fontWeight="bold">Global User</text>
 
-                    <rect x="100" y="90" width="120" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="100" y="90" width="120" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="114" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (Simple)</text>
 
-                    <rect x="40" y="170" width="100" height="36" rx="6" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
+                    <rect x="40" y="170" width="100" height="36" rx="6" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
                     <text x="90" y="192" textAnchor="middle" fontSize="10" fill="#854d0e">IP: 1.2.3.4 (Static)</text>
-                    <rect x="180" y="170" width="100" height="36" rx="6" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
+                    <rect x="180" y="170" width="100" height="36" rx="6" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
                     <text x="230" y="192" text-anchor="middle" fontSize="10" fill="#854d0e">IP: 1.2.3.5 (Static)</text>
 
-                    <line x1="160" y1="65" x2="160" y2="88" stroke="#6b7280" strokeWidth="1" strokeDasharray="3,2"/>
-                    <line x1="140" y1="130" x2="90" y2="168" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="180" y1="130" x2="230" y2="168" stroke="#7c3aed" strokeWidth="1"/>
+                    <line x1="160" y1="65" x2="160" y2="88" stroke="#6b7280" strokeWidth="1" strokeDasharray="3,2" />
+                    <line x1="140" y1="130" x2="90" y2="168" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="180" y1="130" x2="230" y2="168" stroke="#7c3aed" strokeWidth="1" />
                   </svg>
                 )}
 
                 {activePolicy === 'weighted' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <circle cx="160" cy="30" r="18" fill="#ede9fe" stroke="#c4b5fd"/>
+                    <circle cx="160" cy="30" r="18" fill="#ede9fe" stroke="#c4b5fd" />
                     <text x="160" y="34" text-anchor="middle" fontSize="14">💻</text>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (Weighted)</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
+                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5" />
                     <text x="80" y="178" textAnchor="middle" fontSize="10" fill="#dc2626" fontWeight="bold">Region A (70%)</text>
                     <text x="80" y="194" textAnchor="middle" fontSize="9" fill="#dc2626">us-east-1 ALB</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
+                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
                     <text x="240" y="178" text-anchor="middle" fontSize="10" fill="#1d4ed8" fontWeight="bold">Region B (30%)</text>
                     <text x="240" y="194" text-anchor="middle" fontSize="9" fill="#1d4ed8">eu-west-1 ALB</text>
 
-                    <line x1="160" y1="50" x2="160" y2="78" stroke="#6b7280" strokeWidth="1"/>
-                    <line x1="120" y1="120" x2="80" y2="158" stroke="#7c3aed" strokeWidth="1.5"/>
+                    <line x1="160" y1="50" x2="160" y2="78" stroke="#6b7280" strokeWidth="1" />
+                    <line x1="120" y1="120" x2="80" y2="158" stroke="#7c3aed" strokeWidth="1.5" />
                     <text x="90" y="136" fontSize="9" fill="#7c3aed" fontWeight="bold">70% traffic</text>
-                    <line x1="200" y1="120" x2="240" y2="158" stroke="#7c3aed" strokeWidth="1"/>
+                    <line x1="200" y1="120" x2="240" y2="158" stroke="#7c3aed" strokeWidth="1" />
                     <text x="220" y="136" fontSize="9" fill="#7c3aed">30% traffic</text>
                   </svg>
                 )}
 
                 {activePolicy === 'latency' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <circle cx="60" cy="30" r="16" fill="#fef2f2" stroke="#fca5a5"/>
+                    <circle cx="60" cy="30" r="16" fill="#fef2f2" stroke="#fca5a5" />
                     <text x="60" y="34" textAnchor="middle" fontSize="12">🇺🇸</text>
-                    <circle cx="260" cy="30" r="16" fill="#dcfce7" stroke="#86efac"/>
+                    <circle cx="260" cy="30" r="16" fill="#dcfce7" stroke="#86efac" />
                     <text x="260" y="34" textAnchor="middle" fontSize="12">🇮🇳</text>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (Latency)</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
+                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5" />
                     <text x="80" y="178" text-anchor="middle" fontSize="10" fill="#c2410c" fontWeight="bold">us-east-1 (12ms)</text>
                     <text x="80" y="192" text-anchor="middle" fontSize="9" fill="#c2410c">Closest to USA</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
+                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
                     <text x="240" y="178" text-anchor="middle" fontSize="10" fill="#15803d" fontWeight="bold">ap-south-1 (18ms)</text>
                     <text x="240" y="192" text-anchor="middle" fontSize="9" fill="#15803d">Closest to India</text>
 
-                    <line x1="70" y1="46" x2="115" y2="80" stroke="#dc2626" strokeWidth="1"/>
-                    <line x1="250" y1="46" x2="205" y2="80" stroke="#15803d" strokeWidth="1"/>
-                    <line x1="120" y1="120" x2="80" y2="160" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="200" y1="120" x2="240" y2="160" stroke="#7c3aed" strokeWidth="1"/>
+                    <line x1="70" y1="46" x2="115" y2="80" stroke="#dc2626" strokeWidth="1" />
+                    <line x1="250" y1="46" x2="205" y2="80" stroke="#15803d" strokeWidth="1" />
+                    <line x1="120" y1="120" x2="80" y2="160" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="200" y1="120" x2="240" y2="160" stroke="#7c3aed" strokeWidth="1" />
                   </svg>
                 )}
 
                 {activePolicy === 'failover' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <circle cx="160" cy="25" r="16" fill="#ede9fe" stroke="#c4b5fd"/>
+                    <circle cx="160" cy="25" r="16" fill="#ede9fe" stroke="#c4b5fd" />
                     <text x="160" y="29" textAnchor="middle" fontSize="12">💻</text>
 
-                    <rect x="90" y="70" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="90" y="70" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="94" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (Failover)</text>
 
-                    <rect x="20" y="150" width="120" height="50" rx="6" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
+                    <rect x="20" y="150" width="120" height="50" rx="6" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
                     <text x="80" y="168" textAnchor="middle" fontSize="10" fill="#15803d" fontWeight="bold">Primary Writer</text>
                     <text x="80" y="182" text-anchor="middle" fontSize="9" fill="#166534">✅ HEALTHY</text>
                     <text x="80" y="194" text-anchor="middle" fontSize="8" fill="#166534">us-east-1</text>
 
-                    <rect x="180" y="150" width="120" height="50" rx="6" fill="#fee2e2" stroke="#fca5a5" strokeWidth="0.5"/>
+                    <rect x="180" y="150" width="120" height="50" rx="6" fill="#fee2e2" stroke="#fca5a5" strokeWidth="0.5" />
                     <text x="240" y="168" text-anchor="middle" fontSize="10" fill="#991b1b" fontWeight="bold">Secondary Standby</text>
                     <text x="240" y="182" text-anchor="middle" fontSize="9" fill="#991b1b">💤 PASSIVE STANDBY</text>
                     <text x="240" y="194" text-anchor="middle" fontSize="8" fill="#991b1b">eu-west-1</text>
 
-                    <line x1="160" y1="42" x2="160" y2="68" stroke="#6b7280" strokeWidth="1"/>
-                    <line x1="120" y1="110" x2="80" y2="150" stroke="#15803d" strokeWidth="2"/>
-                    <line x1="200" y1="110" x2="240" y2="150" stroke="#991b1b" strokeWidth="1" strokeDasharray="4,2"/>
+                    <line x1="160" y1="42" x2="160" y2="68" stroke="#6b7280" strokeWidth="1" />
+                    <line x1="120" y1="110" x2="80" y2="150" stroke="#15803d" strokeWidth="2" />
+                    <line x1="200" y1="110" x2="240" y2="150" stroke="#991b1b" strokeWidth="1" strokeDasharray="4,2" />
                   </svg>
                 )}
 
                 {activePolicy === 'geo' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <circle cx="70" cy="30" r="16" fill="#ede9fe" stroke="#c4b5fd"/>
+                    <circle cx="70" cy="30" r="16" fill="#ede9fe" stroke="#c4b5fd" />
                     <text x="70" y="34" textAnchor="middle" fontSize="12">🇪🇺</text>
                     <text x="70" y="54" textAnchor="middle" fontSize="9" fill="#6d28d9">Europe User</text>
 
-                    <circle cx="250" cy="30" r="16" fill="#ede9fe" stroke="#c4b5fd"/>
+                    <circle cx="250" cy="30" r="16" fill="#ede9fe" stroke="#c4b5fd" />
                     <text x="250" y="34" textAnchor="middle" fontSize="12">🇯🇵</text>
                     <text x="250" y="54" textAnchor="middle" fontSize="9" fill="#6d28d9">Japan User</text>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (Geo)</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
+                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
                     <text x="80" y="178" text-anchor="middle" fontSize="10" fill="#1d4ed8" fontWeight="bold">eu-west-1 ALB</text>
                     <text x="80" y="192" text-anchor="middle" fontSize="9" fill="#1d4ed8">Bound: Europe Continent</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
+                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
                     <text x="240" y="178" text-anchor="middle" fontSize="10" fill="#1d4ed8" fontWeight="bold">ap-northeast-1 ALB</text>
                     <text x="240" y="192" text-anchor="middle" fontSize="9" fill="#1d4ed8">Bound: Japan Country</text>
 
-                    <line x1="85" y1="46" x2="120" y2="80" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="235" y1="46" x2="200" y2="80" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="120" y1="120" x2="80" y2="160" stroke="#1d4ed8" strokeWidth="1.5"/>
-                    <line x1="200" y1="120" x2="240" y2="160" stroke="#1d4ed8" strokeWidth="1.5"/>
+                    <line x1="85" y1="46" x2="120" y2="80" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="235" y1="46" x2="200" y2="80" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="120" y1="120" x2="80" y2="160" stroke="#1d4ed8" strokeWidth="1.5" />
+                    <line x1="200" y1="120" x2="240" y2="160" stroke="#1d4ed8" strokeWidth="1.5" />
                   </svg>
                 )}
 
                 {activePolicy === 'geoprox' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <rect x="10" y="10" width="300" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5"/>
-                    
+                    <rect x="10" y="10" width="300" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
+
                     {/* Region Circles */}
-                    <circle cx="90" cy="110" r="50" fill="#fee2e2" stroke="#fca5a5" strokeWidth="1" strokeDasharray="3,2"/>
-                    <circle cx="230" cy="110" r="70" fill="#dbeafe" stroke="#93c5fd" strokeWidth="1"/>
-                    
-                    <circle cx="90" cy="110" r="4" fill="#dc2626"/>
+                    <circle cx="90" cy="110" r="50" fill="#fee2e2" stroke="#fca5a5" strokeWidth="1" strokeDasharray="3,2" />
+                    <circle cx="230" cy="110" r="70" fill="#dbeafe" stroke="#93c5fd" strokeWidth="1" />
+
+                    <circle cx="90" cy="110" r="4" fill="#dc2626" />
                     <text x="90" y="125" text-anchor="middle" fontSize="9" fill="#dc2626" fontWeight="bold">US East (No Bias)</text>
-                    
-                    <circle cx="230" cy="110" r="4" fill="#1d4ed8"/>
+
+                    <circle cx="230" cy="110" r="4" fill="#1d4ed8" />
                     <text x="230" y="125" text-anchor="middle" fontSize="9" fill="#1d4ed8" fontWeight="bold">EU West (+30 Bias)</text>
-                    
+
                     <text x="160" y="40" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">Geographic Proximity Map Bias</text>
                     <text x="160" y="55" textAnchor="middle" fontSize="8" fill="#64748b">Expanded bias shifts proximity borders</text>
                   </svg>
@@ -1169,56 +1812,56 @@ export default function Route53Visualizer() {
 
                 {activePolicy === 'multivalue' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <circle cx="160" cy="25" r="16" fill="#ede9fe" stroke="#c4b5fd"/>
+                    <circle cx="160" cy="25" r="16" fill="#ede9fe" stroke="#c4b5fd" />
                     <text x="160" y="29" text-anchor="middle" fontSize="12">💻</text>
 
-                    <rect x="90" y="66" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="90" y="66" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="90" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (Multi-Value)</text>
 
                     {/* Returning healthy IPs */}
-                    <rect x="20" y="130" width="85" height="30" rx="4" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
+                    <rect x="20" y="130" width="85" height="30" rx="4" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
                     <text x="625" y="148" textAnchor="middle" fontSize="9" fill="#15803d" transform="translate(-562, 0)">10.0.1.10 ✅</text>
 
-                    <rect x="117.5" y="130" width="85" height="30" rx="4" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
+                    <rect x="117.5" y="130" width="85" height="30" rx="4" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
                     <text x="160" y="148" textAnchor="middle" fontSize="9" fill="#15803d">10.0.1.20 ✅</text>
 
-                    <rect x="215" y="130" width="85" height="30" rx="4" fill="#fee2e2" stroke="#fca5a5" strokeWidth="0.5"/>
+                    <rect x="215" y="130" width="85" height="30" rx="4" fill="#fee2e2" stroke="#fca5a5" strokeWidth="0.5" />
                     <text x="257.5" y="148" text-anchor="middle" fontSize="9" fill="#b91c1c">10.0.1.30 ❌</text>
 
                     <text x="160" y="195" text-anchor="middle" fontSize="10" fill="#475569">Returns all healthy values (up to 8) to client</text>
-                    
-                    <line x1="160" y1="41" x2="160" y2="66" stroke="#6b7280" strokeWidth="1"/>
-                    <line x1="110" y1="106" x2="62" y2="130" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="160" y1="106" x2="160" y2="130" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="210" y1="106" x2="257" y2="130" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2"/>
+
+                    <line x1="160" y1="41" x2="160" y2="66" stroke="#6b7280" strokeWidth="1" />
+                    <line x1="110" y1="106" x2="62" y2="130" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="160" y1="106" x2="160" y2="130" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="210" y1="106" x2="257" y2="130" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
                   </svg>
                 )}
 
                 {activePolicy === 'ipbased' && (
                   <svg width="100%" viewBox="0 0 320 220" style={{ display: 'block' }}>
-                    <rect x="20" y="16" width="100" height="36" rx="6" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="0.5"/>
+                    <rect x="20" y="16" width="100" height="36" rx="6" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="0.5" />
                     <text x="70" y="32" text-anchor="middle" fontSize="9" fill="#475569" fontWeight="bold">CIDR Collection A</text>
                     <text x="70" y="44" text-anchor="middle" fontSize="8" fill="#64748b">192.168.1.0/24</text>
 
-                    <rect x="200" y="16" width="100" height="36" rx="6" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="0.5"/>
+                    <rect x="200" y="16" width="100" height="36" rx="6" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="0.5" />
                     <text x="250" y="32" text-anchor="middle" fontSize="9" fill="#475569" fontWeight="bold">Any Other Subnet</text>
                     <text x="250" y="44" text-anchor="middle" fontSize="8" fill="#64748b">0.0.0.0/0 (Default)</text>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
+                    <rect x="90" y="80" width="140" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5" />
                     <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🚀 Route 53 (IP-Based)</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
+                    <rect x="20" y="160" width="120" height="44" rx="6" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
                     <text x="80" y="178" text-anchor="middle" fontSize="10" fill="#15803d" fontWeight="bold">Corporate Proxy</text>
                     <text x="80" y="192" text-anchor="middle" fontSize="9" fill="#15803d">Target A (Internal)</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
+                    <rect x="180" y="160" width="120" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
                     <text x="240" y="178" text-anchor="middle" fontSize="10" fill="#1d4ed8" fontWeight="bold">Public ALB</text>
                     <text x="240" y="192" text-anchor="middle" fontSize="9" fill="#1d4ed8">Target B (Public)</text>
 
-                    <line x1="70" y1="52" x2="120" y2="80" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="250" y1="52" x2="200" y2="80" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="120" y1="120" x2="80" y2="160" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="200" y1="120" x2="240" y2="160" stroke="#7c3aed" strokeWidth="1"/>
+                    <line x1="70" y1="52" x2="120" y2="80" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="250" y1="52" x2="200" y2="80" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="120" y1="120" x2="80" y2="160" stroke="#7c3aed" strokeWidth="1" />
+                    <line x1="200" y1="120" x2="240" y2="160" stroke="#7c3aed" strokeWidth="1" />
                   </svg>
                 )}
               </div>
@@ -1243,7 +1886,7 @@ export default function Route53Visualizer() {
 
             {/* DYNAMIC POLICY SIMULATORS BLOCK */}
             <div className="r53-sec" style={{ marginTop: '20px' }}>🎯 Interactive {activePolicy.charAt(0).toUpperCase() + activePolicy.slice(1)} Routing Simulator</div>
-            
+
             {activePolicy === 'simple' && (
               <div className="r53-card">
                 <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
@@ -1252,10 +1895,10 @@ export default function Route53Visualizer() {
                 <div className="r53-g2">
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Domain Lookup Target</label>
-                    <input 
-                      type="text" 
-                      value={simpleDomain} 
-                      onChange={(e) => setSimpleDomain(e.target.value)} 
+                    <input
+                      type="text"
+                      value={simpleDomain}
+                      onChange={(e) => setSimpleDomain(e.target.value)}
                       style={{ padding: '6px 10px', fontSize: '12px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', marginBottom: '12px' }}
                     />
                     <button onClick={runSimpleSim} className="r53-btn r53-on" style={{ width: '100%', padding: '8px' }}>
@@ -1266,9 +1909,9 @@ export default function Route53Visualizer() {
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Route 53 DNS Response Payload</div>
                     {simpleResolvedIPs.length > 0 ? (
                       <div className="r53-mono" style={{ fontSize: '11px', lineHeight: '1.5' }}>
-                        Domain: <b>{simpleDomain}</b><br/>
-                        Record Type: <b>A</b> | TTL: <b>300s</b><br/>
-                        IPs Returned: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{simpleResolvedIPs.join(', ')}</span><br/>
+                        Domain: <b>{simpleDomain}</b><br />
+                        Record Type: <b>A</b> | TTL: <b>300s</b><br />
+                        IPs Returned: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{simpleResolvedIPs.join(', ')}</span><br />
                         <div style={{ marginTop: '8px', borderTop: '0.5px dashed var(--color-border-secondary)', paddingTop: '6px', color: 'var(--color-text-secondary)' }}>
                           💡 <b>Browser Behavior:</b> Recursive resolver returns both IPs. Your browser selected <span style={{ color: '#7c3aed', fontWeight: 'bold' }}>{simpleSelectedIP}</span> at random for connection.
                         </div>
@@ -1287,7 +1930,7 @@ export default function Route53Visualizer() {
               <div className="r53-g2">
                 <div className="r53-card">
                   <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Adjust weights (total = 100)</div>
-                  
+
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px', display: 'flex', justifyContent: 'space-between' }}>
                     <span>Region A (us-east-1):</span>
                     <b style={{ color: '#dc2626' }}>{weightA}%</b>
@@ -1355,9 +1998,9 @@ export default function Route53Visualizer() {
                 <div className="r53-g2">
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Select Client Query Location</label>
-                    <select 
-                      value={latencyClientRegion} 
-                      onChange={(e) => setLatencyClientRegion(e.target.value as any)} 
+                    <select
+                      value={latencyClientRegion}
+                      onChange={(e) => setLatencyClientRegion(e.target.value as any)}
                       style={{ padding: '6px 10px', fontSize: '12px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', marginBottom: '12px' }}
                     >
                       <option value="usa">🇺🇸 United States (New York)</option>
@@ -1403,8 +2046,8 @@ export default function Route53Visualizer() {
                     <div style={{ display: 'flex', gap: '10px', flexDirection: 'column', marginBottom: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '12px', fontWeight: '500' }}>Primary Server (us-east-1):</span>
-                        <button 
-                          onClick={() => setRoutingPrimHealthy(!routingPrimHealthy)} 
+                        <button
+                          onClick={() => setRoutingPrimHealthy(!routingPrimHealthy)}
                           style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '4px', background: routingPrimHealthy ? '#dcfce7' : '#fee2e2', border: '0.5px solid', borderColor: routingPrimHealthy ? '#86efac' : '#fca5a5', color: routingPrimHealthy ? '#166534' : '#991b1b', cursor: 'pointer', fontWeight: 600 }}
                         >
                           {routingPrimHealthy ? '✅ Healthy' : '❌ Unhealthy'}
@@ -1412,8 +2055,8 @@ export default function Route53Visualizer() {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '12px', fontWeight: '500' }}>Secondary Server (eu-west-1):</span>
-                        <button 
-                          onClick={() => setRoutingSecHealthy(!routingSecHealthy)} 
+                        <button
+                          onClick={() => setRoutingSecHealthy(!routingSecHealthy)}
                           style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '4px', background: routingSecHealthy ? '#dcfce7' : '#fee2e2', border: '0.5px solid', borderColor: routingSecHealthy ? '#86efac' : '#fca5a5', color: routingSecHealthy ? '#166534' : '#991b1b', cursor: 'pointer', fontWeight: 600 }}
                         >
                           {routingSecHealthy ? '✅ Healthy' : '❌ Unhealthy'}
@@ -1430,9 +2073,9 @@ export default function Route53Visualizer() {
                       <div style={{ fontSize: '12px' }}>
                         <div style={{ fontWeight: 'bold', fontSize: '13px', color: failoverOutcomeColor }}>{failoverOutcomeText}</div>
                         <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.4' }}>
-                          {routingPrimHealthy 
-                            ? 'Primary instance is fully healthy. Queries route here to maintain standard active operations.' 
-                            : routingSecHealthy 
+                          {routingPrimHealthy
+                            ? 'Primary instance is fully healthy. Queries route here to maintain standard active operations.'
+                            : routingSecHealthy
                               ? 'Primary failed health check threshold. Route 53 automatically diverted traffic to the passive secondary backup.'
                               : 'Outage! Both primary and secondary targets failed health checks. Route 53 returns server error.'}
                         </div>
@@ -1455,9 +2098,9 @@ export default function Route53Visualizer() {
                 <div className="r53-g2">
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Select Client Location Continent</label>
-                    <select 
-                      value={geoClientContinent} 
-                      onChange={(e) => setGeoClientContinent(e.target.value as any)} 
+                    <select
+                      value={geoClientContinent}
+                      onChange={(e) => setGeoClientContinent(e.target.value as any)}
                       style={{ padding: '6px 10px', fontSize: '12px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', marginBottom: '12px' }}
                     >
                       <option value="na">🇺🇸 North America (USA)</option>
@@ -1473,7 +2116,7 @@ export default function Route53Visualizer() {
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Geolocation Routing Outcome</div>
                     {geoResolvedTarget ? (
                       <div className="r53-mono" style={{ fontSize: '11px', lineHeight: '1.5' }}>
-                        Target Resolved: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{geoResolvedTarget}</span><br/>
+                        Target Resolved: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{geoResolvedTarget}</span><br />
                         <div style={{ marginTop: '8px', borderTop: '0.5px dashed var(--color-border-secondary)', paddingTop: '6px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans, sans-serif)' }}>
                           ℹ️ <b>Rule trace:</b> {geoExplanation}
                         </div>
@@ -1500,9 +2143,9 @@ export default function Route53Visualizer() {
                         <span>US East (us-east-1) Bias:</span>
                         <b>{geoproxBiasA >= 0 ? `+${geoproxBiasA}` : geoproxBiasA}</b>
                       </div>
-                      <input 
-                        type="range" min="-99" max="99" value={geoproxBiasA} 
-                        onChange={(e) => setGeoproxBiasA(parseInt(e.target.value))} 
+                      <input
+                        type="range" min="-99" max="99" value={geoproxBiasA}
+                        onChange={(e) => setGeoproxBiasA(parseInt(e.target.value))}
                         style={{ width: '100%', accentColor: '#7c3aed' }}
                       />
                     </div>
@@ -1511,18 +2154,18 @@ export default function Route53Visualizer() {
                         <span>EU West (eu-west-1) Bias:</span>
                         <b>{geoproxBiasB >= 0 ? `+${geoproxBiasB}` : geoproxBiasB}</b>
                       </div>
-                      <input 
-                        type="range" min="-99" max="99" value={geoproxBiasB} 
-                        onChange={(e) => setGeoproxBiasB(parseInt(e.target.value))} 
+                      <input
+                        type="range" min="-99" max="99" value={geoproxBiasB}
+                        onChange={(e) => setGeoproxBiasB(parseInt(e.target.value))}
                         style={{ width: '100%', accentColor: '#7c3aed' }}
                       />
                     </div>
-                    
+
                     <div style={{ marginBottom: '12px' }}>
                       <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Simulate Client in Mid-Atlantic</label>
-                      <select 
-                        value={geoproxClientLoc} 
-                        onChange={(e) => setGeoproxClientLoc(e.target.value as any)} 
+                      <select
+                        value={geoproxClientLoc}
+                        onChange={(e) => setGeoproxClientLoc(e.target.value as any)}
                         style={{ padding: '6px 10px', fontSize: '11px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
                       >
                         <option value="us">US Coastline (near USA)</option>
@@ -1539,8 +2182,8 @@ export default function Route53Visualizer() {
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Geoproximity Bias Winner</div>
                     {geoproxResolvedTarget ? (
                       <div className="r53-mono" style={{ fontSize: '11px', lineHeight: '1.5' }}>
-                        Query Resolved to:<br/>
-                        <span style={{ color: '#7c3aed', fontWeight: 'bold', fontSize: '13px' }}>{geoproxResolvedTarget}</span><br/>
+                        Query Resolved to:<br />
+                        <span style={{ color: '#7c3aed', fontWeight: 'bold', fontSize: '13px' }}>{geoproxResolvedTarget}</span><br />
                         <div style={{ marginTop: '8px', borderTop: '0.5px dashed var(--color-border-secondary)', paddingTop: '6px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans, sans-serif)' }}>
                           ℹ️ <b>Explain:</b> Bias alters the default coordinate midpoint. Increasing US East bias to high values pulls the Mid-Atlantic and even European clients into the N. Virginia routing circle.
                         </div>
@@ -1565,8 +2208,8 @@ export default function Route53Visualizer() {
                     <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '6px' }}>Simulate Web Server Health checks</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' }}>
                       {[0, 1, 2, 3].map((idx) => (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           onClick={() => {
                             const next = [...multivalueHealthyStates];
                             next[idx] = !next[idx];
@@ -1575,7 +2218,7 @@ export default function Route53Visualizer() {
                           style={{ padding: '6px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: multivalueHealthyStates[idx] ? '#f0fdf4' : '#fee2e2', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: multivalueHealthyStates[idx] ? '#166534' : '#991b1b' }}
                         >
                           <span>{multivalueHealthyStates[idx] ? '✅' : '❌'}</span>
-                          <span>Server #{idx+1} ({10+idx})</span>
+                          <span>Server #{idx + 1} ({10 + idx})</span>
                         </div>
                       ))}
                     </div>
@@ -1587,8 +2230,8 @@ export default function Route53Visualizer() {
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Route 53 Multi-Value Response Payload</div>
                     {multivalueResolvedIPs.length > 0 ? (
                       <div className="r53-mono" style={{ fontSize: '11px', lineHeight: '1.5' }}>
-                        IPs Returned in response: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{multivalueResolvedIPs.join(', ')}</span><br/>
-                        Total healthy: <b>{multivalueResolvedIPs.length}</b> / 4<br/>
+                        IPs Returned in response: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{multivalueResolvedIPs.join(', ')}</span><br />
+                        Total healthy: <b>{multivalueResolvedIPs.length}</b> / 4<br />
                         <div style={{ marginTop: '8px', borderTop: '0.5px dashed var(--color-border-secondary)', paddingTop: '6px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans, sans-serif)' }}>
                           💡 <b>Note:</b> Unhealthy servers are automatically excluded from the record payload to prevent clients connecting to failed endpoints. The returned IPs are shuffled on each query.
                         </div>
@@ -1611,9 +2254,9 @@ export default function Route53Visualizer() {
                 <div className="r53-g2">
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Select Client Resolver IP Subnet</label>
-                    <select 
-                      value={ipbasedClientIP} 
-                      onChange={(e) => setIpbasedClientIP(e.target.value)} 
+                    <select
+                      value={ipbasedClientIP}
+                      onChange={(e) => setIpbasedClientIP(e.target.value)}
                       style={{ padding: '6px 10px', fontSize: '12px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', marginBottom: '12px' }}
                     >
                       <option value="192.168.1.45">🏢 192.168.1.45 (Corporate Intranet Subnet A)</option>
@@ -1628,7 +2271,7 @@ export default function Route53Visualizer() {
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>IP-Based DNS Resolution Target</div>
                     {ipbasedResolvedTarget ? (
                       <div className="r53-mono" style={{ fontSize: '11px', lineHeight: '1.5' }}>
-                        Outcome: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{ipbasedResolvedTarget}</span><br/>
+                        Outcome: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>{ipbasedResolvedTarget}</span><br />
                         <div style={{ marginTop: '8px', borderTop: '0.5px dashed var(--color-border-secondary)', paddingTop: '6px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans, sans-serif)' }}>
                           ℹ️ <b>Explain:</b> Inbound queries matching the `192.168.1.0/24` CIDR collection route to Target A. Other subnets default to the public load balancer.
                         </div>
@@ -1650,51 +2293,310 @@ export default function Route53Visualizer() {
         {activeSection === 'health' && (
           <div>
             <div className="r53-sec">Route 53 Global Health Checking System</div>
-            <div className="r53-g2" style={{ marginBottom: '10px' }}>
+            <div className="r53-g2" style={{ marginBottom: '10px',display:'flex' }}>
               <div className="r53-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Health Check Probe Flow Architecture</div>
-                <svg width="100%" viewBox="0 0 340 400" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 680 320" style={{ display: 'block', margin: '0 auto', background: '#090d16', borderRadius: '12px', border: '1px solid #1e293b' }}>
                   <defs>
-                    <marker id="hc1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                    <marker id="hc2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#dc2626"/></marker>
+                    {/* Glow Filters */}
+                    <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <filter id="glow-yellow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
                   </defs>
-                  <rect x="80" y="10" width="180" height="52" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                  <text x="170" y="30" text-anchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🚀 Route 53</text>
-                  <text x="170" y="48" text-anchor="middle" fontSize="11" fill="#7c3aed">Health Check Engine</text>
 
-                  <rect x="10" y="90" width="148" height="52" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                  <text x="84" y="110" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">✅ Primary</text>
-                  <text x="84" y="128" text-anchor="middle" fontSize="11" fill="#166534">us-east-1 ALB</text>
-                  
-                  <rect x="182" y="90" width="148" height="52" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x="256" y="110" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">❌ Secondary</text>
-                  <text x="256" y="128" text-anchor="middle" fontSize="11" fill="#dc2626">eu-west-1 ALB</text>
+                  {/* 1. BACKGROUND PATHS & STREAMING DATA */}
+                  {/* Client to Route 53 */}
+                  <line
+                    x1="80" y1="160" x2="150" y2="160"
+                    stroke={(primHealthy || secHealthy) ? "#34d399" : "#64748b"}
+                    strokeWidth="2.5"
+                    strokeDasharray={(primHealthy || secHealthy) ? "5,3" : "none"}
+                    strokeOpacity={(primHealthy || secHealthy) ? 1 : 0.4}
+                  >
+                    {(primHealthy || secHealthy) && (
+                      <animate attributeName="stroke-dashoffset" values="40;0" dur="1s" repeatCount="indefinite" />
+                    )}
+                  </line>
 
-                  <rect x="10" y="168" width="320" height="72" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                  <text x="170" y="188" text-anchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">🌍 Route 53 Health Checkers</text>
-                  <text x="170" y="206" text-anchor="middle" fontSize="11" fill="#c2410c">15+ global locations probe endpoints</text>
-                  <text x="170" y="224" text-anchor="middle" fontSize="11" fill="#c2410c">HTTP · HTTPS · TCP tests every 10s or 30s</text>
+                  {/* Route 53 to Primary Target */}
+                  <path
+                    d="M 230 160 C 280 160, 360 75, 500 75"
+                    fill="none"
+                    stroke={primHealthy ? "#10b981" : "#475569"}
+                    strokeWidth={primHealthy ? "3" : "1.5"}
+                    strokeDasharray={primHealthy ? "6,4" : "4,4"}
+                    strokeOpacity={primHealthy ? 1 : 0.25}
+                  >
+                    {primHealthy && (
+                      <animate attributeName="stroke-dashoffset" values="50;0" dur="1.2s" repeatCount="indefinite" />
+                    )}
+                  </path>
 
-                  <rect x="10" y="264" width="148" height="52" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                  <text x="84" y="284" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">Healthy</text>
-                  <text x="84" y="302" text-anchor="middle" fontSize="11" fill="#166534">Checkers pass threshold</text>
-                  
-                  <rect x="182" y="264" width="148" height="52" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x="256" y="284" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">Unhealthy</text>
-                  <text x="256" y="302" text-anchor="middle" fontSize="11" fill="#dc2626">Checkers fail threshold</text>
+                  {/* Route 53 to Secondary Target */}
+                  <path
+                    d="M 230 160 C 280 160, 360 235, 500 235"
+                    fill="none"
+                    stroke={(!primHealthy && secHealthy) ? "#3b82f6" : "#475569"}
+                    strokeWidth={(!primHealthy && secHealthy) ? "3" : "1.5"}
+                    strokeDasharray={(!primHealthy && secHealthy) ? "6,4" : "4,4"}
+                    strokeOpacity={(!primHealthy && secHealthy) ? 1 : 0.25}
+                  >
+                    {(!primHealthy && secHealthy) && (
+                      <animate attributeName="stroke-dashoffset" values="50;0" dur="1.2s" repeatCount="indefinite" />
+                    )}
+                  </path>
 
-                  <rect x="10" y="340" width="320" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                  <text x="170" y="360" text-anchor="middle" fontSize="12" fill="#854d0e" fontWeight="500">📢 CloudWatch Alarm + SNS Alert</text>
-                  <text x="170" y="378" text-anchor="middle" fontSize="11" fill="#854d0e">Trigger Email/Slack alerts on health change</text>
+                  {/* Outage Warning Lines (if both dead) */}
+                  {(!primHealthy && !secHealthy) && (
+                    <>
+                      <path d="M 230 160 C 280 160, 360 75, 500 75" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" strokeOpacity="0.4" />
+                      <path d="M 230 160 C 280 160, 360 235, 500 235" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" strokeOpacity="0.4" />
+                      <circle cx="365" cy="155" r="8" fill="#ef4444" opacity="0.8">
+                        <animate attributeName="r" values="6;11;6" dur="1s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" />
+                      </circle>
+                      <text x="365" y="158" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">⚠️</text>
+                    </>
+                  )}
 
-                  <line x1="130" y1="62" x2="84" y2="90" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#hc1)"/>
-                  <line x1="210" y1="62" x2="256" y2="90" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#hc2)"/>
-                  <line x1="84" y1="142" x2="84" y2="168" stroke="#15803d" strokeWidth="1" markerEnd="url(#hc1)"/>
-                  <line x1="256" y1="142" x2="256" y2="168" stroke="#dc2626" strokeWidth="1" markerEnd="url(#hc2)"/>
-                  <line x1="84" y1="240" x2="84" y2="264" stroke="#15803d" strokeWidth="1" markerEnd="url(#hc1)"/>
-                  <line x1="256" y1="240" x2="256" y2="264" stroke="#dc2626" strokeWidth="1" markerEnd="url(#hc2)"/>
-                  <line x1="170" y1="316" x2="170" y2="340" stroke="#854d0e" strokeWidth="1" markerEnd="url(#hc1)"/>
+                  {/* 2. USER CLIENT (💻 Browser) */}
+                  <g filter={(primHealthy || secHealthy) ? "url(#glow-green)" : undefined}>
+                    <polygon points="10,185 80,185 90,193 0,193" fill="#475569" stroke="#334155" strokeWidth="1" />
+                    <rect x="35" y="179" width="20" height="7" fill="#64748b" />
+                    <rect x="5" y="145" width="80" height="34" rx="3" fill="#0f172a" stroke={(primHealthy || secHealthy) ? "#34d399" : "#64748b"} strokeWidth="1.5" />
+                    <rect x="8" y="148" width="74" height="27" rx="1.5" fill="#1e1b4b" />
+                    <text x="45" y="160" textAnchor="middle" fontSize="6.5" fill="#34d399" fontWeight="bold" fontFamily="monospace">www.app.com</text>
+                    <text x="45" y="170" textAnchor="middle" fontSize="5.2" fill="#818cf8" fontFamily="monospace">
+                      {primHealthy ? "resolved: us-east-1" : secHealthy ? "resolved: eu-west-1" : "Connection Failed!"}
+                    </text>
+                    <text x="45" y="136" textAnchor="middle" fontSize="9" fill="#e2e8f0" fontWeight="600">💻 Browser</text>
+                  </g>
+
+                  {/* 3. ROUTE 53 FAILOVER GATEWAY */}
+                  <g>
+                    <rect x="150" y="120" width="80" height="80" rx="10" fill="#2e0854" stroke="#c084fc" strokeWidth="1.5" filter="url(#glow-purple)" />
+                    <rect x="153" y="123" width="74" height="74" rx="8" fill="#120024" />
+
+                    {/* Rotating Gate dial */}
+                    <circle cx="190" cy="160" r="18" fill="none" stroke="#a855f7" strokeWidth="2" strokeDasharray="6,4">
+                      <animateTransform attributeName="transform" type="rotate" from="0 190 160" to="360 190 160" dur="5s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="190" cy="160" r="10" fill="#a855f7" opacity="0.3" />
+                    {/* Inner routing arrows */}
+                    <path d="M 185 160 L 195 160 M 190 155 L 190 165" stroke="#c084fc" strokeWidth="2" strokeLinecap="round" />
+
+                    <text x="190" y="112" textAnchor="middle" fontSize="9" fill="#c084fc" fontWeight="bold">🚀 Route 53</text>
+                    <text x="190" y="213" textAnchor="middle" fontSize="8" fill="#94a3b8" fontWeight="500">Failover Engine</text>
+                  </g>
+
+                  {/* 4. HEALTH CHECKERS (Middle Satellite probers) */}
+                  {/* Satellites background glow */}
+                  <circle cx="330" cy="50" r="12" fill="#f57c00" opacity="0.08" />
+                  <circle cx="330" cy="150" r="12" fill="#f57c00" opacity="0.08" />
+                  <circle cx="330" cy="250" r="12" fill="#f57c00" opacity="0.08" />
+
+                  {/* Active heartbeat pings from probers to Primary Endpoint */}
+                  <line x1="345" y1="50" x2="500" y2="75" className={primHealthy ? "ping-line-ok" : "ping-line-fail"} strokeWidth={primHealthy ? 1.5 : 2} />
+                  <line x1="345" y1="150" x2="500" y2="75" className={primHealthy ? "ping-line-ok" : "ping-line-fail"} strokeWidth={primHealthy ? 1.5 : 2} />
+                  <line x1="345" y1="250" x2="500" y2="75" className={primHealthy ? "ping-line-ok" : "ping-line-fail"} strokeWidth={primHealthy ? 1.5 : 2} />
+
+                  {/* Active heartbeat pings from probers to Secondary Endpoint */}
+                  <line x1="345" y1="50" x2="500" y2="235" className={secHealthy ? "ping-line-ok" : "ping-line-fail"} strokeWidth={secHealthy ? 1.5 : 2} />
+                  <line x1="345" y1="150" x2="500" y2="235" className={secHealthy ? "ping-line-ok" : "ping-line-fail"} strokeWidth={secHealthy ? 1.5 : 2} />
+                  <line x1="345" y1="250" x2="500" y2="235" className={secHealthy ? "ping-line-ok" : "ping-line-fail"} strokeWidth={secHealthy ? 1.5 : 2} />
+
+                  {/* Satellites rendering */}
+                  {/* Checker 1: US-East */}
+                  <g>
+                    <rect x="310" y="38" width="40" height="24" rx="4" fill="#1e293b" stroke="#f59e0b" strokeWidth="1" />
+                    <circle cx="330" cy="50" r="4" fill="#f59e0b" />
+                    <text x="330" y="32" textAnchor="middle" fontSize="7.5" fill="#fef08a" fontWeight="bold">🇺🇸 Prober</text>
+                  </g>
+                  {/* Checker 2: EU-West */}
+                  <g>
+                    <rect x="310" y="138" width="40" height="24" rx="4" fill="#1e293b" stroke="#f59e0b" strokeWidth="1" />
+                    <circle cx="330" cy="150" r="4" fill="#f59e0b" />
+                    <text x="330" y="132" textAnchor="middle" fontSize="7.5" fill="#fef08a" fontWeight="bold">🇪🇺 Prober</text>
+                  </g>
+                  {/* Checker 3: AP-South */}
+                  <g>
+                    <rect x="310" y="238" width="40" height="24" rx="4" fill="#1e293b" stroke="#f59e0b" strokeWidth="1" />
+                    <circle cx="330" cy="250" r="4" fill="#f59e0b" />
+                    <text x="330" y="232" textAnchor="middle" fontSize="7.5" fill="#fef08a" fontWeight="bold">🇸🇬 Prober</text>
+                  </g>
+
+                  {/* Global Checkers Hub Title */}
+                  <rect x="285" y="105" width="10" height="110" rx="3" fill="#1e293b" opacity="0.3" />
+                  <text x="285" y="210" transform="rotate(-90, 285, 210)" fontSize="7" fill="#f59e0b" fontWeight="bold" letterSpacing="0.1em">ROUTE 53 GLOBAL PROBERS</text>
+
+                  {/* 5. PRIMARY ENDPOINT us-east-1 */}
+                  <g>
+                    <rect
+                      x="500"
+                      y="30"
+                      width="155"
+                      height="90"
+                      rx="8"
+                      fill="#0f172a"
+                      stroke={primHealthy ? "#10b981" : "#ef4444"}
+                      strokeWidth={primHealthy ? 1.5 : 2.5}
+                      className={primHealthy ? "server-healthy-glow" : "server-unhealthy-glow"}
+                      style={{ transition: 'all 0.4s' }}
+                    />
+
+                    {/* Server Rack ears & chassis */}
+                    <line x1="504" y1="36" x2="504" y2="114" stroke="#475569" strokeWidth="3" />
+                    <line x1="651" y1="36" x2="651" y2="114" stroke="#475569" strokeWidth="3" />
+
+                    {/* Server Chassis details */}
+                    <rect x="510" y="40" width="135" height="24" rx="3" fill="#1e293b" />
+                    <text x="516" y="55" fontSize="8" fill="#e2e8f0" fontWeight="bold" fontFamily="monospace">us-east-1-alb</text>
+
+                    {/* Indicator Panel */}
+                    <rect x="510" y="70" width="135" height="42" rx="3" fill="#020617" />
+
+                    {/* Blinking status LEDs */}
+                    <circle cx="522" cy="80" r="3.5" fill={primHealthy ? "#22c55e" : "#ef4444"} className={primHealthy ? undefined : "alarm-indicator"} />
+                    <circle cx="534" cy="80" r="3" fill={primHealthy ? "#22c55e" : "#7f1d1d"} opacity={primHealthy ? 0.7 : 0.3} />
+                    <circle cx="546" cy="80" r="3" fill={primHealthy ? "#eab308" : "#7f1d1d"} opacity={primHealthy ? 0.8 : 0.3} />
+
+                    {/* Ventilation slot lines */}
+                    <line x1="562" y1="77" x2="602" y2="77" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="562" y1="83" x2="592" y2="83" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+
+                    {/* Dynamic health stats text */}
+                    <text x="518" y="100" fontSize="8" fill={primHealthy ? "#34d399" : "#f87171"} fontWeight="bold">
+                      {primHealthy ? "🟢 ACTIVE · 100% HEALTHY" : "🚨 OFFLINE (503 ERR)"}
+                    </text>
+
+                    <text x="575" y="24" textAnchor="middle" fontSize="9.5" fill={primHealthy ? "#34d399" : "#f87171"} fontWeight="bold">
+                      Primary Target (ALB)
+                    </text>
+                  </g>
+
+                  {/* 6. SECONDARY ENDPOINT eu-west-1 */}
+                  <g>
+                    <rect
+                      x="500"
+                      y="190"
+                      width="155"
+                      height="90"
+                      rx="8"
+                      fill="#0f172a"
+                      stroke={secHealthy ? (primHealthy ? "#3b82f6" : "#10b981") : "#ef4444"}
+                      strokeWidth={secHealthy ? 1.5 : 2.5}
+                      className={secHealthy ? "server-healthy-glow" : "server-unhealthy-glow"}
+                      style={{ transition: 'all 0.4s' }}
+                    />
+
+                    {/* Server Rack ears & chassis */}
+                    <line x1="504" y1="196" x2="504" y2="274" stroke="#475569" strokeWidth="3" />
+                    <line x1="651" y1="196" x2="651" y2="274" stroke="#475569" strokeWidth="3" />
+
+                    {/* Server Chassis details */}
+                    <rect x="510" y="200" width="135" height="24" rx="3" fill="#1e293b" />
+                    <text x="516" y="215" fontSize="8" fill="#e2e8f0" fontWeight="bold" fontFamily="monospace">eu-west-1-alb</text>
+
+                    {/* Indicator Panel */}
+                    <rect x="510" y="230" width="135" height="42" rx="3" fill="#020617" />
+
+                    {/* Blinking status LEDs */}
+                    <circle cx="522" cy="240" r="3.5" fill={secHealthy ? (primHealthy ? "#3b82f6" : "#22c55e") : "#ef4444"} className={secHealthy ? undefined : "alarm-indicator"} />
+                    <circle cx="534" cy="240" r="3" fill={secHealthy ? "#22c55e" : "#7f1d1d"} opacity={secHealthy ? 0.7 : 0.3} />
+                    <circle cx="546" cy="240" r="3" fill={secHealthy ? "#eab308" : "#7f1d1d"} opacity={secHealthy ? 0.8 : 0.3} />
+
+                    {/* Ventilation slot lines */}
+                    <line x1="562" y1="237" x2="602" y2="237" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="562" y1="243" x2="592" y2="243" stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+
+                    {/* Dynamic health stats text */}
+                    <text x="518" y="260" fontSize="8" fill={secHealthy ? (primHealthy ? "#93c5fd" : "#34d399") : "#f87171"} fontWeight="bold">
+                      {secHealthy ? (primHealthy ? "🔵 PASSIVE · STANDBY" : "🟢 PROMOTED · ACTIVE") : "🚨 OFFLINE (CON OUT)"}
+                    </text>
+
+                    <text x="575" y="184" textAnchor="middle" fontSize="9.5" fill={secHealthy ? (primHealthy ? "#93c5fd" : "#34d399") : "#f87171"} fontWeight="bold">
+                      Secondary Target (ALB)
+                    </text>
+                  </g>
                 </svg>
+
+                {/* Disaster Recovery Playground / Failover Routing Simulator */}
+                <div style={{ width: '100%', height: '1.5px', background: 'var(--color-border-secondary)', margin: '16px 0 14px 0' }} />
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                      Failover Routing Simulator (Disaster Recovery Playground)
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Primary (us-east-1):</span>
+                        <button
+                          onClick={() => setPrimHealthy(!primHealthy)}
+                          style={{
+                            fontSize: '10px',
+                            padding: '3px 10px',
+                            background: primHealthy ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            border: primHealthy ? '1px solid #10b981' : '1px solid #ef4444',
+                            color: primHealthy ? '#34d399' : '#f87171',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            boxShadow: primHealthy ? '0 0 8px rgba(16, 185, 129, 0.2)' : '0 0 8px rgba(239, 68, 68, 0.2)',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {primHealthy ? '✅ Healthy' : '❌ Unhealthy'}
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Secondary (eu-west-1):</span>
+                        <button
+                          onClick={() => setSecHealthy(!secHealthy)}
+                          style={{
+                            fontSize: '10px',
+                            padding: '3px 10px',
+                            background: secHealthy ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                            border: secHealthy ? '1px solid #10b981' : '1px solid #ef4444',
+                            color: secHealthy ? '#34d399' : '#f87171',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            boxShadow: secHealthy ? '0 0 8px rgba(16, 185, 129, 0.2)' : '0 0 8px rgba(239, 68, 68, 0.2)',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {secHealthy ? '✅ Healthy' : '❌ Unhealthy'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: 'rgba(9, 13, 22, 0.4)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '3px' }}>
+                      Route 53 Current Routing Outcome:
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: failoverOutcome.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {failoverOutcome.text}
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', marginTop: '3px', lineHeight: '1.4' }}>
+                      {failoverOutcome.desc}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -1724,59 +2626,294 @@ export default function Route53Visualizer() {
               </div>
             </div>
 
-            {/* FAILOVER SIMULATOR BLOCK */}
-            <div className="r53-sec">Failover Routing Simulator (Disaster Recovery Playground)</div>
-            <div className="r53-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
-                Toggle the health states of the primary and secondary endpoints to see how Route 53 failover records automatically adjust DNS responses in real time.
-              </div>
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '0.5px solid var(--color-border-secondary)', paddingBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '500' }}>Primary (us-east-1):</span>
-                  <button
-                    onClick={() => setPrimHealthy(!primHealthy)}
-                    style={{
-                      fontSize: '11px',
-                      padding: '4px 12px',
-                      background: primHealthy ? '#dcfce7' : '#fee2e2',
-                      border: primHealthy ? '0.5px solid #86efac' : '0.5px solid #fca5a5',
-                      color: primHealthy ? '#166534' : '#991b1b',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: 600
-                    }}
-                  >
-                    {primHealthy ? '✅ Healthy' : '❌ Unhealthy'}
-                  </button>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '500' }}>Secondary (eu-west-1):</span>
-                  <button
-                    onClick={() => setSecHealthy(!secHealthy)}
-                    style={{
-                      fontSize: '11px',
-                      padding: '4px 12px',
-                      background: secHealthy ? '#dcfce7' : '#fee2e2',
-                      border: secHealthy ? '0.5px solid #86efac' : '0.5px solid #fca5a5',
-                      color: secHealthy ? '#166534' : '#991b1b',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: 600
-                    }}
-                  >
-                    {secHealthy ? '✅ Healthy' : '❌ Unhealthy'}
-                  </button>
-                </div>
+          </div>
+        )}
+
+        {/* HYBRID DNS PANEL */}
+        {activeSection === 'hybrid' && (
+          <div>
+            <div className="r53-sec">Route 53 Hybrid DNS (Inbound &amp; Outbound Resolver Endpoints)</div>
+            <div className="r53-card" >
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.5' }}>
+                Amazon Route 53 Resolver establishes a secure hybrid DNS bridge between your AWS VPCs and On-Premises corporate networks. By configuring <strong>Inbound Resolver Endpoints</strong> (allowing on-premises queries to reach AWS) and <strong>Outbound Resolver Endpoints</strong> (allowing AWS VPCs to forward queries to on-premises nameservers), split-horizon DNS works privately and securely.
               </div>
 
-              <div style={{ background: 'var(--color-background-secondary)', padding: '12px 14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Route 53 Current Routing Outcome:</div>
-                <div style={{ fontSize: '15px', fontWeight: 'bold', color: failoverOutcome.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {failoverOutcome.text}
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', width: '100%' }}>
+                {/* LEFT COLUMN: Controls + Trigger Button + Terminal Logs (3 Parts) */}
+                <div style={{ flex: '3 1 280px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                  {/* CONTROLS & TRIGGER */}
+                  <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--color-border-tertiary)', borderRadius: '8px', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '6px' }}>Simulation Direction Mode</label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <button
+                          className={`r53-btn ${hybridMode === 'inbound' ? 'r53-on' : ''}`}
+                          onClick={() => {
+                            setHybridMode('inbound');
+                            setHybridSimulatedDomain('db.internal');
+                            setHybridStep(-1);
+                            setHybridLogs([]);
+                          }}
+                          style={{ width: '100%', padding: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          📥 Inbound (On-Prem ➔ AWS)
+                        </button>
+                        <button
+                          className={`r53-btn ${hybridMode === 'outbound' ? 'r53-on' : ''}`}
+                          onClick={() => {
+                            setHybridMode('outbound');
+                            setHybridSimulatedDomain('dc01.onprem.local');
+                            setHybridStep(-1);
+                            setHybridLogs([]);
+                          }}
+                          style={{ width: '100%', padding: '8px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          📤 Outbound (AWS ➔ On-Prem)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '6px' }}>Domain to Resolve</label>
+                      <select
+                        value={hybridSimulatedDomain}
+                        onChange={(e) => {
+                          setHybridSimulatedDomain(e.target.value);
+                          setHybridStep(-1);
+                          setHybridLogs([]);
+                        }}
+                        style={{ padding: '8px 10px', fontSize: '12px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
+                      >
+                        {hybridMode === 'inbound' ? (
+                          <>
+                            <option value="db.internal">db.internal (Target: Private RDS)</option>
+                            <option value="web.internal">web.internal (Target: Private ALB)</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="dc01.onprem.local">dc01.onprem.local (Target: AD Controller)</option>
+                            <option value="nas.onprem.local">nas.onprem.local (Target: Corp NAS)</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+
+                    {/* SIMULATION CONTROLLER TRIGGER */}
+                    <button
+                      onClick={runHybridSim}
+                      disabled={hybridIsRunning}
+                      className="r53-btn r53-on"
+                      style={{ width: '100%', padding: '10px', fontSize: '12.5px', fontWeight: 'bold', marginTop: '6px' }}
+                    >
+                      {hybridIsRunning ? '⚡ Running Hybrid Query...' : '▶ Start Hybrid Simulation'}
+                    </button>
+                  </div>
+
+                  {/* LIVE CONSOLE TERMINAL LOGS */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                      <span>📡 Tracelog (Split-Horizon Console)</span>
+                    </div>
+                    <div ref={hybridLogRef} className="r53-log" style={{ minHeight: '140px', maxHeight: '180px', overflowY: 'auto' }}>
+                      {hybridLogs.length === 0 ? '; Waiting for simulation run...\n; Select direction and click Start above.' : hybridLogs.join('\n')}
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
-                  {failoverOutcome.desc}
+
+                {/* RIGHT COLUMN: Visual SVG Diagram (7 Parts) */}
+                <div style={{ flex: '7 1 400px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '12px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                    <svg width="100%" viewBox="0 0 680 290" style={{ display: 'block', margin: '0 auto' }}>
+                      <defs>
+                        <filter id="glow-hybrid" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                      </defs>
+
+                      {/* Boundaries */}
+                      {/* Left Box: On-Premises */}
+                      <rect x="10" y="10" width="220" height="270" rx="12" fill="#0f172a" stroke="#334155" strokeWidth="1.5" />
+                      <text x="120" y="26" textAnchor="middle" fontSize="10.5" fill="#94a3b8" fontWeight="bold" letterSpacing="0.05em">🏢 ON-PREMISES DATA CENTER</text>
+
+                      {/* Middle Box: Security Tunnel Boundary */}
+                      <rect x="250" y="120" width="180" height="50" rx="8" fill="#1e293b" stroke="#475569" strokeWidth="1" strokeDasharray="4,3" />
+                      <text x="340" y="112" textAnchor="middle" fontSize="9.5" fill="#f59e0b" fontWeight="bold">🔐 Site-to-Site VPN / Direct Connect</text>
+                      <text x="340" y="162" textAnchor="middle" fontSize="8" fill="#94a3b8">IPSec Tunnel Path</text>
+
+                      {/* Right Box: Amazon VPC */}
+                      <rect x="450" y="10" width="220" height="270" rx="12" fill="#020617" stroke="#1e293b" strokeWidth="1.5" />
+                      <text x="560" y="26" textAnchor="middle" fontSize="10.5" fill="#f59e0b" fontWeight="bold" letterSpacing="0.05em">☁️ AMAZON VPC (10.0.0.0/16)</text>
+
+                      {/* ON-PREMISES INFRASTRUCTURE */}
+                      {/* On-Prem Client Laptop */}
+                      <g filter={(hybridMode === 'inbound' && hybridStep === 0) || (hybridMode === 'outbound' && hybridStep === 6) ? "url(#glow-hybrid)" : undefined}>
+                        <rect x="20" y="180" width="40" height="25" rx="3" fill="#1e293b" stroke="#475569" strokeWidth="1" />
+                        <rect x="24" y="183" width="32" height="15" fill="#0f172a" />
+                        <line x1="15" y1="205" x2="65" y2="205" stroke="#475569" strokeWidth="2" />
+                        <text x="40" y="220" textAnchor="middle" fontSize="8" fill="#e2e8f0" fontWeight="bold">Laptop Client</text>
+                      </g>
+
+                      {/* On-Prem DNS Active Directory Server */}
+                      <g filter={(hybridStep === 1 && hybridMode === 'inbound') || (hybridStep === 4 && hybridMode === 'outbound') ? "url(#glow-hybrid)" : undefined}>
+                        <rect x="110" y="80" width="100" height="110" rx="6" fill="#1e293b" stroke="#334155" strokeWidth="1.5" />
+                        <rect x="114" y="84" width="92" height="102" rx="4" fill="#020617" />
+                        {/* Blinking dots */}
+                        <circle cx="125" cy="98" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
+                        <circle cx="135" cy="98" r="2.5" fill="#eab308"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.5s" repeatCount="indefinite" /></circle>
+                        <line x1="145" y1="98" x2="195" y2="98" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
+
+                        <circle cx="125" cy="118" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.2s" repeatCount="indefinite" /></circle>
+                        <circle cx="135" cy="118" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="1;0.1;1" dur="0.7s" repeatCount="indefinite" /></circle>
+                        <line x1="145" y1="118" x2="195" y2="118" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
+
+                        <circle cx="125" cy="138" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="0.3;1;0.3" dur="0.9s" repeatCount="indefinite" /></circle>
+                        <line x1="145" y1="138" x2="195" y2="138" stroke="#334155" strokeWidth="2" strokeLinecap="round" />
+
+                        <text x="160" y="166" textAnchor="middle" fontSize="8.5" fill="#a855f7" fontWeight="bold">On-Prem DNS</text>
+                        <text x="160" y="178" textAnchor="middle" fontSize="7.5" fill="#94a3b8">192.168.1.10</text>
+                      </g>
+
+                      {/* AWS INFRASTRUCTURE */}
+                      {/* Route 53 Resolver Node */}
+                      <g filter={(hybridStep === 4 && hybridMode === 'inbound') || (hybridStep === 1 && hybridMode === 'outbound') ? "url(#glow-hybrid)" : undefined}>
+                        <circle cx="560" cy="80" r="24" fill="#581c87" stroke="#7e22ce" strokeWidth="1.5" />
+                        <circle cx="560" cy="80" r="16" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3,2">
+                          <animateTransform attributeName="transform" type="rotate" from="0 560 80" to="360 560 80" dur="5s" repeatCount="indefinite" />
+                        </circle>
+                        <path d="M 554 80 A 6 6 0 0 1 566 80" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" />
+                        <path d="M 566 80 A 6 6 0 0 1 554 80" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" />
+                        <text x="560" y="116" textAnchor="middle" fontSize="8" fill="#d8b4fe" fontWeight="bold">Route 53 Resolver</text>
+                        <text x="560" y="125" textAnchor="middle" fontSize="7" fill="#a855f7">(10.0.0.2)</text>
+                      </g>
+
+                      {/* Inbound resolver endpoint ENI */}
+                      <g filter={hybridStep === 3 && hybridMode === 'inbound' ? "url(#glow-hybrid)" : undefined}>
+                        <rect x="470" y="140" width="70" height="34" rx="4" fill="#0f172a" stroke={hybridStep === 3 && hybridMode === 'inbound' ? "#22c55e" : "#334155"} strokeWidth="1.5" />
+                        <text x="505" y="152" textAnchor="middle" fontSize="7.5" fill="#4ade80" fontWeight="bold">📥 Inbound ENI</text>
+                        <text x="505" y="164" textAnchor="middle" fontSize="7" fill="#94a3b8">10.0.1.53</text>
+                      </g>
+
+                      {/* Outbound resolver endpoint ENI */}
+                      <g filter={hybridStep === 2 && hybridMode === 'outbound' ? "url(#glow-hybrid)" : undefined}>
+                        <rect x="580" y="140" width="70" height="34" rx="4" fill="#0f172a" stroke={hybridStep === 2 && hybridMode === 'outbound' ? "#3b82f6" : "#334155"} strokeWidth="1.5" />
+                        <text x="615" y="152" textAnchor="middle" fontSize="7.5" fill="#60a5fa" fontWeight="bold">📤 Outbound ENI</text>
+                        <text x="615" y="164" textAnchor="middle" fontSize="7" fill="#94a3b8">10.0.1.250</text>
+                      </g>
+
+                      {/* Target resource / RDS Private DB */}
+                      <g filter={(hybridMode === 'inbound' && hybridStep === 6) ? "url(#glow-hybrid)" : undefined}>
+                        <rect x="470" y="200" width="70" height="42" rx="4" fill="#1e1b4b" stroke="#4338ca" strokeWidth="1.5" />
+                        <ellipse cx="505" cy="210" rx="15" ry="4" fill="#312e81" stroke="#4338ca" />
+                        <text x="505" y="234" textAnchor="middle" fontSize="7.5" fill="#e2e8f0" fontWeight="bold">db.internal</text>
+                        <text x="505" y="242" textAnchor="middle" fontSize="6.5" fill="#a5b4fc">RDS (10.0.2.99)</text>
+                      </g>
+
+                      {/* Target EC2 Instance (outbound initiator) */}
+                      <g filter={(hybridMode === 'outbound' && hybridStep === 0) ? "url(#glow-hybrid)" : undefined}>
+                        <rect x="580" y="200" width="70" height="42" rx="4" fill="#1b2e35" stroke="#0e7490" strokeWidth="1.5" />
+                        <text x="615" y="215" textAnchor="middle" fontSize="8" fill="#38bdf8" fontWeight="bold">💻 EC2 Node</text>
+                        <text x="615" y="234" textAnchor="middle" fontSize="7" fill="#22d3ee">VPC Client</text>
+                        <text x="615" y="242" textAnchor="middle" fontSize="6.5" fill="#67e8f9">10.0.3.14</text>
+                      </g>
+
+                      {/* CONNECTING LINES AND LABELS */}
+                      {/* On-Prem Client to On-Prem Server */}
+                      <path d="M 40 180 L 40 120 L 110 120" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                      {/* On-Prem Server to VPN Tunnel */}
+                      <path d="M 210 135 L 250 135" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3,2" />
+                      {/* VPN Tunnel to Subnet ENIs */}
+                      <path d="M 430 145 L 470 145" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3,2" />
+                      {/* Subnet ENI to Resolver */}
+                      <path d="M 505 140 L 505 80 L 536 80" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <path d="M 615 140 L 615 80 L 584 80" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+
+                      {/* FLOW ANIMATED PACKETS */}
+                      {/* Inbound query flow animation */}
+                      {hybridIsRunning && hybridMode === 'inbound' && (
+                        <>
+                          {hybridStep === 0 && (
+                            <circle cx="40" cy="180" r="4.5" fill="#eab308" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="180;120" dur="0.8s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 1 && (
+                            <circle cx="75" cy="120" r="4.5" fill="#c084fc" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="40;110" dur="0.8s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 2 && (
+                            <circle cx="230" cy="135" r="4.5" fill="#f97316" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="210;450" dur="1s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 3 && (
+                            <circle cx="490" cy="145" r="4.5" fill="#22c55e" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="470;505" dur="0.5s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 4 && (
+                            <circle cx="505" cy="110" r="4.5" fill="#a855f7" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="140;80" dur="0.6s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 5 && (
+                            <circle cx="330" cy="135" r="4.5" fill="#f59e0b" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="450;210" dur="1s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 6 && (
+                            <circle cx="330" cy="220" r="5" fill="#10b981" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="40;505" dur="1.5s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                        </>
+                      )}
+
+                      {/* Outbound query flow animation */}
+                      {hybridIsRunning && hybridMode === 'outbound' && (
+                        <>
+                          {hybridStep === 0 && (
+                            <circle cx="615" cy="200" r="4.5" fill="#06b6d4" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="200;140" dur="0.8s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 1 && (
+                            <circle cx="590" cy="80" r="4.5" fill="#a855f7" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="615;560" dur="0.6s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 2 && (
+                            <circle cx="585" cy="110" r="4.5" fill="#3b82f6" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="80;140" dur="0.6s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 3 && (
+                            <circle cx="330" cy="135" r="4.5" fill="#f97316" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="580;210" dur="1.2s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 4 && (
+                            <circle cx="160" cy="110" r="4.5" fill="#ef4444" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="80;190" dur="0.8s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 5 && (
+                            <circle cx="330" cy="135" r="4.5" fill="#10b981" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="210;580" dur="1.2s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                          {hybridStep === 6 && (
+                            <circle cx="380" cy="170" r="5" fill="#10b981" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="580;40" dur="1.5s" repeatCount="indefinite" />
+                            </circle>
+                          )}
+                        </>
+                      )}
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1784,134 +2921,631 @@ export default function Route53Visualizer() {
         )}
 
         {/* ARCHITECTURE PANEL */}
-        {activeSection === 'arch' && (
-          <div>
-            <div className="r53-sec">Full Global AWS Routing Architecture with Route 53</div>
-            <div className="r53-card">
-              <svg width="100%" viewBox="0 0 680 380" style={{ display: 'block', margin: '0 auto' }}>
-                <defs>
-                  <marker id="ar1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed"/></marker>
-                  <marker id="ar2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                  <marker id="ar3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0369a1"/></marker>
-                </defs>
-                <rect x="10" y="10" width="660" height="360" rx="16" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="0.5"/>
-                <text x="340" y="30" textAnchor="middle" fontSize="12" fill="var(--color-text-primary)" fontWeight="500">AWS Global Infrastructure Routing Map</text>
+        {activeSection === 'arch' && (() => {
+          const isNodeActive = (node: string) => {
+            if (archScenario === 'public_web') {
+              return ['client_public', 'r53_global', 'waf', 'cloudfront', 'alb', 'compute', 'rds', 's3'].includes(node);
+            }
+            if (archScenario === 'private_vpc') {
+              return ['compute', 'r53_private', 'rds', 'elasticache'].includes(node);
+            }
+            if (archScenario === 'hybrid_corp') {
+              return ['client_onprem', 'vpn', 'r53_private', 'compute', 'rds'].includes(node);
+            }
+            return false;
+          };
 
-                <rect x="270" y="44" width="140" height="44" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                <text x="340" y="64" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🚀 Route 53</text>
-                <text x="340" y="80" text-anchor="middle" fontSize="10" fill="#7c3aed">DNS + Probes</text>
+          const activeColor = 
+            archScenario === 'public_web' ? '#10b981' :
+            archScenario === 'private_vpc' ? '#3b82f6' : '#a855f7';
 
-                <rect x="25" y="44" width="120" height="44" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="85" y="64" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">🌐 Users</text>
-                <text x="85" y="80" text-anchor="middle" fontSize="10" fill="#dc2626">Global clients</text>
+          return (
+            <div>
+              <div className="r53-sec">Interactive AWS Global Infrastructure &amp; Routing Explorer</div>
 
-                <rect x="535" y="44" width="120" height="44" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                <text x="595" y="64" text-anchor="middle" fontSize="11" fill="#0f766e" fontWeight="500">🛡️ AWS WAF</text>
-                <text x="595" y="80" text-anchor="middle" fontSize="10" fill="#0f766e">Web Application Firewall</text>
+              {/* Scenario Toggles */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setArchScenario('public_web')}
+                  style={{
+                    flex: '1 1 auto',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: archScenario === 'public_web' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(15, 23, 42, 0.15)',
+                    border: archScenario === 'public_web' ? '1px solid #10b981' : '1px solid var(--color-border-secondary)',
+                    color: archScenario === 'public_web' ? '#34d399' : 'var(--color-text-secondary)',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: archScenario === 'public_web' ? '0 0 10px rgba(16, 185, 129, 0.15)' : 'none'
+                  }}
+                >
+                  🌐 Scenario 1: Public Web App (Edge CDN &amp; ALB)
+                </button>
+                <button
+                  onClick={() => setArchScenario('private_vpc')}
+                  style={{
+                    flex: '1 1 auto',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: archScenario === 'private_vpc' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(15, 23, 42, 0.15)',
+                    border: archScenario === 'private_vpc' ? '1px solid #3b82f6' : '1px solid var(--color-border-secondary)',
+                    color: archScenario === 'private_vpc' ? '#60a5fa' : 'var(--color-text-secondary)',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: archScenario === 'private_vpc' ? '0 0 10px rgba(59, 130, 246, 0.15)' : 'none'
+                  }}
+                >
+                  🔒 Scenario 2: Private VPC Service Discovery (PHZ)
+                </button>
+                <button
+                  onClick={() => setArchScenario('hybrid_corp')}
+                  style={{
+                    flex: '1 1 auto',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: archScenario === 'hybrid_corp' ? 'rgba(168, 85, 247, 0.15)' : 'rgba(15, 23, 42, 0.15)',
+                    border: archScenario === 'hybrid_corp' ? '1px solid #a855f7' : '1px solid var(--color-border-secondary)',
+                    color: archScenario === 'hybrid_corp' ? '#c084fc' : 'var(--color-text-secondary)',
+                    transition: 'all 0.3s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    boxShadow: archScenario === 'hybrid_corp' ? '0 0 10px rgba(168, 85, 247, 0.15)' : 'none'
+                  }}
+                >
+                  🔌 Scenario 3: Hybrid Corporate Network Resolver
+                </button>
+              </div>
 
-                <rect x="200" y="120" width="140" height="44" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                <text x="270" y="140" text-anchor="middle" fontSize="11" fill="#c2410c" fontWeight="500">☁️ CloudFront</text>
-                <text x="270" y="156" text-anchor="middle" fontSize="10" fill="#c2410c">CDN (Static Caching)</text>
+              {/* Main Grid */}
+              <div className="r53-g2" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                
+                {/* COLUMN 1: SVG DIAGRAM (60% width) */}
+                <div className="r53-card" style={{ flex: '7 1 380px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#090d16', padding: '16px' }}>
+                  <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                      AWS Global Cloud Infrastructure Topology
+                    </div>
+                    <span style={{
+                      fontSize: '9.5px',
+                      fontWeight: 'bold',
+                      color: activeColor,
+                      background: `${activeColor}15`,
+                      border: `1px solid ${activeColor}`,
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      {archScenario === 'public_web' ? 'Public Inbound Flow' : archScenario === 'private_vpc' ? 'Private Hosted Zone' : 'Hybrid Resolution'}
+                    </span>
+                  </div>
 
-                <rect x="360" y="120" width="140" height="44" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                <text x="430" y="140" text-anchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="500">⚖️ ALB</text>
-                <text x="430" y="156" text-anchor="middle" fontSize="10" fill="#1d4ed8">Application Load Balancer</text>
+                  <svg width="100%" viewBox="0 0 660 360" style={{ display: 'block', margin: '0 auto', background: '#070a13', borderRadius: '12px', border: '1px solid var(--color-border-secondary)' }}>
+                    <defs>
+                      {/* Glowing line filters */}
+                      <filter id="glow-green-line" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                      <filter id="glow-blue-line" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                      <filter id="glow-purple-line" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
 
-                <rect x="25" y="200" width="120" height="44" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                <text x="85" y="220" text-anchor="middle" fontSize="11" fill="#854d0e" fontWeight="500">🪣 S3 Bucket</text>
-                <text x="85" y="236" text-anchor="middle" fontSize="10" fill="#854d0e">Static Site Host</text>
+                      {/* Marker arrows */}
+                      <marker id="arrow-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L6,3 z" fill="#10b981" />
+                      </marker>
+                      <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" />
+                      </marker>
+                      <marker id="arrow-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L6,3 z" fill="#a855f7" />
+                      </marker>
+                      <marker id="arrow-dim" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M0,0 L0,6 L6,3 z" fill="#334155" />
+                      </marker>
+                    </defs>
 
-                <rect x="200" y="200" width="120" height="44" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                <text x="260" y="220" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">🖥️ EC2 / ECS</text>
-                <text x="260" y="236" text-anchor="middle" fontSize="10" fill="#166534">Compute Servers</text>
+                    {/* VPC Bubble boundary */}
+                    <rect 
+                      x="160" y="125" 
+                      width="485" height="225" 
+                      rx="16" 
+                      fill="#0b0e1a" 
+                      stroke={archScenario === 'private_vpc' ? '#3b82f6' : archScenario === 'hybrid_corp' ? '#a855f7' : '#1e293b'} 
+                      strokeWidth="1.5" 
+                      strokeDasharray="6,4" 
+                      opacity={archScenario === 'public_web' ? 0.35 : 1}
+                      style={{ transition: 'all 0.5s ease' }}
+                    />
+                    <text 
+                      x="175" y="142" 
+                      fontSize="9px" 
+                      fontWeight="bold" 
+                      fill={archScenario === 'private_vpc' ? '#60a5fa' : archScenario === 'hybrid_corp' ? '#c084fc' : '#475569'} 
+                      opacity={archScenario === 'public_web' ? 0.5 : 1}
+                      style={{ transition: 'all 0.5s ease', fontFamily: 'monospace' }}
+                    >
+                      ☁️ Amazon VPC (us-east-1)
+                    </text>
 
-                <rect x="360" y="200" width="120" height="44" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                <text x="420" y="220" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">λ Lambda</text>
-                <text x="420" y="236" text-anchor="middle" fontSize="10" fill="#166534">Serverless Functions</text>
+                    {/* PATHS / CONNECTIONS */}
+                    
+                    {/* Line 1: Public Client to Route 53 (DNS Query) */}
+                    <path 
+                      d="M 140 77 L 185 77" 
+                      fill="none" 
+                      stroke={archScenario === 'public_web' ? '#10b981' : '#334155'} 
+                      strokeWidth={archScenario === 'public_web' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'public_web' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'public_web' ? 'url(#arrow-green)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'public_web' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'public_web' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.2s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                <rect x="535" y="200" width="120" height="44" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                <text x="595" y="220" text-anchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">🌍 Global Accel.</text>
-                <text x="595" y="236" text-anchor="middle" fontSize="10" fill="#7c3aed">Anycast IP Routing</text>
+                    {/* Line 2: Public Client to WAF */}
+                    <path 
+                      d="M 80 99 C 80 135, 290 135, 350 77" 
+                      fill="none" 
+                      stroke={archScenario === 'public_web' ? '#10b981' : '#334155'} 
+                      strokeWidth={archScenario === 'public_web' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'public_web' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'public_web' ? 'url(#arrow-green)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'public_web' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'public_web' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.4s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                <rect x="150" y="290" width="120" height="44" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="210" y="310" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">🗄️ RDS DB</text>
-                <text x="210" y="326" text-anchor="middle" fontSize="10" fill="#dc2626">Private subnet endpoint</text>
+                    {/* Line 3: WAF to CloudFront */}
+                    <path 
+                      d="M 470 77 L 515 77" 
+                      fill="none" 
+                      stroke={archScenario === 'public_web' ? '#10b981' : '#334155'} 
+                      strokeWidth={archScenario === 'public_web' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'public_web' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'public_web' ? 'url(#arrow-green)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'public_web' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'public_web' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.2s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                <rect x="310" y="290" width="120" height="44" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="370" y="310" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">⚡ ElastiCache</text>
-                <text x="370" y="326" text-anchor="middle" fontSize="10" fill="#dc2626">Private cache cluster</text>
+                    {/* Line 4: CloudFront to ALB */}
+                    <path 
+                      d="M 575 99 L 575 145" 
+                      fill="none" 
+                      stroke={archScenario === 'public_web' ? '#10b981' : '#334155'} 
+                      strokeWidth={archScenario === 'public_web' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'public_web' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'public_web' ? 'url(#arrow-green)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'public_web' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'public_web' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.2s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                <rect x="470" y="290" width="120" height="44" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="530" y="310" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">🔒 Internal API</text>
-                <text x="530" y="326" text-anchor="middle" fontSize="10" fill="#dc2626">api.internal</text>
+                    {/* Line 5: ALB to EC2/ECS Compute */}
+                    <path 
+                      d="M 515 167 C 450 167, 340 180, 305 200" 
+                      fill="none" 
+                      stroke={archScenario === 'public_web' ? '#10b981' : '#334155'} 
+                      strokeWidth={archScenario === 'public_web' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'public_web' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'public_web' ? 'url(#arrow-green)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'public_web' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'public_web' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.4s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                <line x1="145" y1="66" x2="268" y2="66" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ar1)"/>
-                <line x1="340" y1="88" x2="270" y2="120" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ar1)"/>
-                <line x1="340" y1="88" x2="430" y2="120" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ar1)"/>
-                <line x1="340" y1="88" x2="85" y2="200" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ar1)"/>
-                <line x1="410" y1="88" x2="595" y2="120" stroke="#7c3aed" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#ar1)"/>
-                <line x1="270" y1="164" x2="260" y2="200" stroke="#15803d" strokeWidth="1" markerEnd="url(#ar2)"/>
-                <line x1="430" y1="164" x2="420" y2="200" stroke="#15803d" strokeWidth="1" markerEnd="url(#ar2)"/>
-                <line x1="260" y1="244" x2="210" y2="290" stroke="#0369a1" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#ar3)"/>
-                <line x1="420" y1="244" x2="370" y2="290" stroke="#0369a1" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#ar3)"/>
-                <line x1="420" y1="244" x2="530" y2="290" stroke="#0369a1" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#ar3)"/>
+                    {/* Line 6: Compute to RDS PostgreSQL Database */}
+                    <path 
+                      d="M 305 212 L 350 212" 
+                      fill="none" 
+                      stroke={(archScenario === 'public_web' || archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? activeColor : '#334155'} 
+                      strokeWidth={(archScenario === 'public_web' || archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? '2.5' : '1.5'} 
+                      strokeDasharray={(archScenario === 'public_web' || archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? '5,3' : 'none'}
+                      markerEnd={(archScenario === 'public_web' || archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? `url(#arrow-${archScenario === 'public_web' ? 'green' : archScenario === 'private_vpc' ? 'blue' : 'purple'})` : 'url(#arrow-dim)'}
+                      opacity={(archScenario === 'public_web' || archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {(archScenario === 'public_web' || archScenario === 'private_vpc' || archScenario === 'hybrid_corp') && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.3s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                <text x="340" y="352" text-anchor="middle" fontSize="10" fill="var(--color-text-secondary)">Solid Lines = Public DNS Targets | Dashed Lines = Private Hosted Zones (VPC Bound)</text>
-              </svg>
-            </div>
+                    {/* Line 7: Compute to Route 53 Private Hosted Zone (Private Resolver DNS query) */}
+                    <path 
+                      d="M 270 234 C 290 270, 310 295, 350 295" 
+                      fill="none" 
+                      stroke={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? activeColor : '#334155'} 
+                      strokeWidth={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? '2.5' : '1.5'} 
+                      strokeDasharray={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? '5,3' : 'none'}
+                      markerEnd={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? `url(#arrow-${archScenario === 'private_vpc' ? 'blue' : 'purple'})` : 'url(#arrow-dim)'}
+                      opacity={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.3s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-            <div className="r53-g2">
-              <div>
-                <div className="r53-sec">Private Hosted Zone — VPC Internal DNS</div>
-                <div className="r53-card" style={{ display: 'flex', justifyContent: 'center' }}>
-                  <svg width="100%" viewBox="0 0 320 280" style={{ display: 'block' }}>
-                    <rect x="10" y="10" width="300" height="260" rx="14" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-                    <text x="160" y="30" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="500">VPC Bubble — Private Hosted Zone</text>
-                    <text x="160" y="46" text-anchor="middle" fontSize="10" fill="#166534">internal.example.com</text>
+                    {/* Line 8: Route 53 Private Hosted Zone back to Compute (DNS response) */}
+                    <path 
+                      d="M 350 312 C 310 312, 290 290, 245 234" 
+                      fill="none" 
+                      stroke={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? activeColor : '#334155'} 
+                      strokeWidth={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? '2' : '1.5'} 
+                      strokeDasharray={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? '4,4' : 'none'}
+                      markerEnd={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? `url(#arrow-${archScenario === 'private_vpc' ? 'blue' : 'purple'})` : 'url(#arrow-dim)'}
+                      opacity={(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') ? 0.8 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {(archScenario === 'private_vpc' || archScenario === 'hybrid_corp') && (
+                        <animate attributeName="stroke-dashoffset" values="0;32" dur="1.3s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                    <rect x="25" y="60" width="120" height="40" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                    <text x="85" y="84" text-anchor="middle" fontSize="11" fill="#1d4ed8">App Server</text>
+                    {/* Line 9: Compute to ElastiCache Redis */}
+                    <path 
+                      d="M 305 212 C 360 250, 460 250, 510 212" 
+                      fill="none" 
+                      stroke={archScenario === 'private_vpc' ? '#3b82f6' : '#334155'} 
+                      strokeWidth={archScenario === 'private_vpc' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'private_vpc' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'private_vpc' ? 'url(#arrow-blue)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'private_vpc' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'private_vpc' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.3s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                    <rect x="175" y="60" width="120" height="40" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                    <text x="235" y="78" text-anchor="middle" fontSize="11" fill="#7c3aed">Route 53</text>
-                    <text x="235" y="94" text-anchor="middle" fontSize="10" fill="#7c3aed">Private Resolver</text>
+                    {/* Line 10: On-Prem Client to VPN Gateway */}
+                    <path 
+                      d="M 140 322 L 185 322" 
+                      fill="none" 
+                      stroke={archScenario === 'hybrid_corp' ? '#a855f7' : '#334155'} 
+                      strokeWidth={archScenario === 'hybrid_corp' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'hybrid_corp' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'hybrid_corp' ? 'url(#arrow-purple)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'hybrid_corp' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'hybrid_corp' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.2s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                    <rect x="25" y="140" width="120" height="40" rx="8" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                    <text x="85" y="158" text-anchor="middle" fontSize="11" fill="#dc2626">db.internal</text>
-                    <text x="85" y="174" text-anchor="middle" fontSize="10" fill="#dc2626">→ RDS endpoint</text>
+                    {/* Line 11: VPN Gateway to Inbound Endpoint / Private Hosted Zone */}
+                    <path 
+                      d="M 305 312 L 350 312" 
+                      fill="none" 
+                      stroke={archScenario === 'hybrid_corp' ? '#a855f7' : '#334155'} 
+                      strokeWidth={archScenario === 'hybrid_corp' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'hybrid_corp' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'hybrid_corp' ? 'url(#arrow-purple)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'hybrid_corp' ? 1 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'hybrid_corp' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.2s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                    <rect x="175" y="140" width="120" height="40" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                    <text x="235" y="158" text-anchor="middle" fontSize="11" fill="#854d0e">cache.internal</text>
-                    <text x="235" y="174" text-anchor="middle" fontSize="10" fill="#854d0e">→ ElastiCache</text>
+                    {/* Line 12: Public Client to S3 Bucket (Static Website Host SPA) */}
+                    <path 
+                      d="M 80 99 L 80 180" 
+                      fill="none" 
+                      stroke={archScenario === 'public_web' ? '#10b981' : '#334155'} 
+                      strokeWidth={archScenario === 'public_web' ? '2.5' : '1.5'} 
+                      strokeDasharray={archScenario === 'public_web' ? '5,3' : 'none'}
+                      markerEnd={archScenario === 'public_web' ? 'url(#arrow-green)' : 'url(#arrow-dim)'}
+                      opacity={archScenario === 'public_web' ? 0.7 : 0.15}
+                      style={{ transition: 'all 0.4s' }}
+                    >
+                      {archScenario === 'public_web' && (
+                        <animate attributeName="stroke-dashoffset" values="32;0" dur="1.3s" repeatCount="indefinite" />
+                      )}
+                    </path>
 
-                    <rect x="100" y="218" width="120" height="40" rx="8" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                    <text x="160" y="236" text-anchor="middle" fontSize="11" fill="#0f766e">api.internal</text>
-                    <text x="160" y="252" text-anchor="middle" fontSize="10" fill="#0f766e">→ Internal ALB</text>
+                    {/* NODES RENDERING */}
+                    
+                    {/* NODE 1: Public Client */}
+                    <g 
+                      opacity={isNodeActive('client_public') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('client_public') ? 'url(#glow-green-line)' : undefined}
+                    >
+                      <rect x="20" y="55" width="120" height="44" rx="8" fill="#0b0f19" stroke={isNodeActive('client_public') ? '#10b981' : '#334155'} strokeWidth="1.5" />
+                      <text x="32" y="82" fontSize="16">💻</text>
+                      <text x="56" y="79" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">Global User</text>
+                      <text x="56" y="90" fontSize="7.5" fill="#94a3b8" fontFamily="system-ui">Public Internet</text>
+                    </g>
 
-                    <line x1="145" y1="80" x2="173" y2="80" stroke="#7c3aed" strokeWidth="1"/>
-                    <line x1="85" y1="100" x2="85" y2="140" stroke="#dc2626" strokeWidth="1" strokeDasharray="3,2"/>
-                    <line x1="235" y1="100" x2="235" y2="140" stroke="#854d0e" strokeWidth="1" strokeDasharray="3,2"/>
-                    <line x1="85" y1="180" x2="160" y2="218" stroke="#0f766e" strokeWidth="1" strokeDasharray="3,2"/>
+                    {/* NODE 2: Route 53 Global Cluster */}
+                    <g 
+                      opacity={isNodeActive('r53_global') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('r53_global') ? 'url(#glow-green-line)' : undefined}
+                    >
+                      <rect x="185" y="55" width="120" height="44" rx="8" fill="#18052b" stroke={isNodeActive('r53_global') ? '#a855f7' : '#334155'} strokeWidth="1.5" />
+                      <text x="197" y="82" fontSize="16">🚀</text>
+                      <text x="221" y="79" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">Route 53 DNS</text>
+                      <text x="221" y="90" fontSize="7.5" fill="#c084fc" fontFamily="system-ui">Authoritative Edge</text>
+                    </g>
+
+                    {/* NODE 3: AWS WAF */}
+                    <g 
+                      opacity={isNodeActive('waf') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('waf') ? 'url(#glow-green-line)' : undefined}
+                    >
+                      <rect x="350" y="55" width="120" height="44" rx="8" fill="#021c1a" stroke={isNodeActive('waf') ? '#0d9488' : '#334155'} strokeWidth="1.5" />
+                      <text x="362" y="82" fontSize="16">🛡️</text>
+                      <text x="386" y="79" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">AWS WAF Gate</text>
+                      <text x="386" y="90" fontSize="7.5" fill="#2dd4bf" fontFamily="system-ui">Exploit Shield</text>
+                    </g>
+
+                    {/* NODE 4: CloudFront CDN */}
+                    <g 
+                      opacity={isNodeActive('cloudfront') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('cloudfront') ? 'url(#glow-green-line)' : undefined}
+                    >
+                      <rect x="515" y="55" width="120" height="44" rx="8" fill="#191613" stroke={isNodeActive('cloudfront') ? '#f59e0b' : '#334155'} strokeWidth="1.5" />
+                      <text x="527" y="82" fontSize="16">☁️</text>
+                      <text x="551" y="79" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">CloudFront</text>
+                      <text x="551" y="90" fontSize="7.5" fill="#fbbf24" fontFamily="system-ui">Edge Cache CDN</text>
+                    </g>
+
+                    {/* NODE 5: Amazon S3 (Static SPA) */}
+                    <g 
+                      opacity={isNodeActive('s3') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('s3') ? 'url(#glow-green-line)' : undefined}
+                    >
+                      <rect x="20" y="180" width="120" height="44" rx="8" fill="#291305" stroke={isNodeActive('s3') ? '#ea580c' : '#334155'} strokeWidth="1.5" />
+                      <text x="32" y="207" fontSize="16">🪣</text>
+                      <text x="56" y="204" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">Amazon S3</text>
+                      <text x="56" y="215" fontSize="7.5" fill="#f97316" fontFamily="system-ui">Static Site SPA</text>
+                    </g>
+
+                    {/* NODE 6: Application Load Balancer */}
+                    <g 
+                      opacity={isNodeActive('alb') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('alb') ? 'url(#glow-green-line)' : undefined}
+                    >
+                      <rect x="515" y="145" width="120" height="44" rx="8" fill="#08153b" stroke={isNodeActive('alb') ? '#2563eb' : '#334155'} strokeWidth="1.5" />
+                      <text x="527" y="172" fontSize="16">⚖️</text>
+                      <text x="551" y="169" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">Public ALB</text>
+                      <text x="551" y="180" fontSize="7.5" fill="#60a5fa" fontFamily="system-ui">Traffic Balancer</text>
+                    </g>
+
+                    {/* NODE 7: Compute ECS Containers */}
+                    <g 
+                      opacity={isNodeActive('compute') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('compute') ? `url(#glow-${archScenario === 'public_web' ? 'green' : archScenario === 'private_vpc' ? 'blue' : 'purple'}-line)` : undefined}
+                    >
+                      <rect x="185" y="190" width="120" height="44" rx="8" fill="#081f18" stroke={isNodeActive('compute') ? activeColor : '#334155'} strokeWidth="1.5" />
+                      <text x="197" y="217" fontSize="16">🖥️</text>
+                      <text x="221" y="214" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">Compute (ECS)</text>
+                      <text x="221" y="225" fontSize="7.5" fill="#34d399" fontFamily="system-ui">App microservice</text>
+                    </g>
+
+                    {/* NODE 8: RDS database */}
+                    <g 
+                      opacity={isNodeActive('rds') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('rds') ? `url(#glow-${archScenario === 'public_web' ? 'green' : archScenario === 'private_vpc' ? 'blue' : 'purple'}-line)` : undefined}
+                    >
+                      <rect x="350" y="190" width="120" height="44" rx="8" fill="#1b1201" stroke={isNodeActive('rds') ? activeColor : '#334155'} strokeWidth="1.5" />
+                      <text x="362" y="217" fontSize="16">🗄️</text>
+                      <text x="386" y="214" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">RDS Postgres</text>
+                      <text x="386" y="225" fontSize="7.5" fill="#fbbf24" fontFamily="system-ui">Isolated Database</text>
+                    </g>
+
+                    {/* NODE 9: ElastiCache Redis */}
+                    <g 
+                      opacity={isNodeActive('elasticache') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('elasticache') ? 'url(#glow-blue-line)' : undefined}
+                    >
+                      <rect x="515" y="190" width="120" height="44" rx="8" fill="#2d0505" stroke={isNodeActive('elasticache') ? '#ef4444' : '#334155'} strokeWidth="1.5" />
+                      <text x="527" y="217" fontSize="16">⚡</text>
+                      <text x="551" y="214" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">ElastiCache</text>
+                      <text x="551" y="225" fontSize="7.5" fill="#f87171" fontFamily="system-ui">In-Memory Redis</text>
+                    </g>
+
+                    {/* NODE 10: VPN Gateway */}
+                    <g 
+                      opacity={isNodeActive('vpn') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('vpn') ? 'url(#glow-purple-line)' : undefined}
+                    >
+                      <rect x="185" y="290" width="120" height="44" rx="8" fill="#1e1b4b" stroke={isNodeActive('vpn') ? '#a855f7' : '#334155'} strokeWidth="1.5" />
+                      <text x="197" y="317" fontSize="16">🔌</text>
+                      <text x="221" y="314" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">VPN Gateway</text>
+                      <text x="221" y="325" fontSize="7.5" fill="#c084fc" fontFamily="system-ui">Direct Connection</text>
+                    </g>
+
+                    {/* NODE 11: Route 53 Private Hosted Zone (PHZ) */}
+                    <g 
+                      opacity={isNodeActive('r53_private') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('r53_private') ? `url(#glow-${archScenario === 'private_vpc' ? 'blue' : 'purple'}-line)` : undefined}
+                    >
+                      <rect x="350" y="290" width="120" height="44" rx="8" fill="#110321" stroke={isNodeActive('r53_private') ? activeColor : '#334155'} strokeWidth="1.5" />
+                      <text x="362" y="317" fontSize="16">🚀</text>
+                      <text x="386" y="314" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">R53 Private Zone</text>
+                      <text x="386" y="325" fontSize="7.5" fill="#a855f7" fontFamily="system-ui">VPC Resolver</text>
+                    </g>
+
+                    {/* NODE 12: Corporate On-Prem HQ */}
+                    <g 
+                      opacity={isNodeActive('client_onprem') ? 1 : 0.7} 
+                      style={{ transition: 'all 0.4s' }}
+                      filter={isNodeActive('client_onprem') ? 'url(#glow-purple-line)' : undefined}
+                    >
+                      <rect x="20" y="300" width="120" height="44" rx="8" fill="#1c1c24" stroke={isNodeActive('client_onprem') ? '#a855f7' : '#334155'} strokeWidth="1.5" />
+                      <text x="32" y="327" fontSize="16">🏢</text>
+                      <text x="56" y="324" fontSize="9.5" fill="#f8fafc" fontWeight="bold" fontFamily="system-ui">Corporate HQ</text>
+                      <text x="56" y="335" fontSize="7.5" fill="#a855f7" fontFamily="system-ui">On-Prem Network</text>
+                    </g>
+
                   </svg>
+                  
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }} /> Public Path
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%' }} /> Private Hosted Zone Path
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#a855f7', borderRadius: '50%' }} /> Hybrid On-Prem VPN Path
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <div className="r53-sec">Private Hosted Zone Benefits</div>
-                <div className="r53-card" style={{ borderLeft: '3px solid #0369a1', minHeight: '235px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#0369a1' }}>Why run Split-Horizon / Private DNS?</div>
-                  <ul className="r53-ck">
-                    <li><b>Internal naming convention consistency:</b> Use short, clean, friendly domain targets (e.g., <code>db.internal</code>) instead of long standard AWS endpoints.</li>
-                    <li><b>Zero Public Exposure:</b> Internal architecture records never bleed onto the public web, preventing host leakage or IP address exposures.</li>
-                    <li><b>Sub-millisecond Discovery:</b> Microservices inside auto-scaling groups discover peered dependencies seamlessly via standard DNS.</li>
-                    <li><b>Cross-VPC Sharing:</b> Private zones can be shared with peered or transit gateway VPCs (including cross-region and cross-account networks).</li>
-                    <li><b>Split-Horizon DNS override:</b> Resolve <code>my-app.com</code> to internal IPs for inside workers, and to public IPs for external clients.</li>
-                  </ul>
+                {/* COLUMN 2: EXPLANATION CONSOLE & MEMORY HOOKS (40% width) */}
+                <div style={{ flex: '3 1 280px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  
+                  {/* Card 1: Scenario Flow Steps */}
+                  <div className="r53-card" style={{ borderLeft: `3px solid ${activeColor}`, display: 'flex', flexDirection: 'column', gap: '10px', minHeight: '190px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: activeColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Routing Trace: Step-by-Step Flow
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '185px', overflowY: 'auto' }}>
+                      {archScenario === 'public_web' && (
+                        <>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>1. DNS Request:</strong> User queries <code>app.com</code>. Route 53 acts as the Authoritative DNS, returning CloudFront IPs with geo-routing optimization.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>2. WAF Inspection:</strong> Request hits the nearest AWS edge point. AWS WAF blocks malicious payloads (SQLi, XSS) instantly.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>3. Edge Cache check:</strong> CloudFront inspects edge memory. If matched, returns static index.html in 2ms. If not, requests ALB.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>4. Regional load balancing:</strong> Inbound request hits the Public ALB, decrypting SSL and routing into private subnet containers.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>5. Data Fetch:</strong> ECS Containers parse logic and request rows from RDS PostgreSQL database in isolated private subnet.
+                          </div>
+                        </>
+                      )}
+
+                      {archScenario === 'private_vpc' && (
+                        <>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>1. Microservice Query:</strong> ECS app container needs to connect to the database. It queries the local VPC DNS for <code>db.internal</code>.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>2. Route 53 VPC Resolver:</strong> Standard AWS VPC DNS server (IP `169.254.169.253`) intercepts query and matches it to a Private Hosted Zone.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>3. Safe Host Resolution:</strong> Resolves host <code>db.internal</code> directly to private RDS IP <code>10.0.3.45</code>.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>4. Zero Internet Leaks:</strong> Resolution occurs completely inside the VPC router. No information ever touches the public Internet.
+                          </div>
+                        </>
+                      )}
+
+                      {archScenario === 'hybrid_corp' && (
+                        <>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>1. On-Premises Request:</strong> A developer at Corporate HQ queries <code>api.internal</code> to test an API endpoint.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>2. Direct Connect / VPN tunnel:</strong> Query travels securely through the IPsec VPN Tunnel into the AWS VPC network gateway.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>3. Inbound Resolver Endpoint:</strong> Hits the Route 53 Inbound Endpoint IP. The endpoint forwards it to the VPC DNS resolver.
+                          </div>
+                          <div style={{ fontSize: '11px', lineHeight: '1.4' }}>
+                            <strong>4. Internal Access Granted:</strong> Resolves to the private API endpoint, returning the target page without exposing the API publicly.
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card 2: Memory Hooks (Mnemonic helpers) */}
+                  <div className="r53-card" style={{ borderLeft: '3px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      🧠 Brain-Friendly Memory Hooks
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ background: 'rgba(245, 158, 11, 0.06)', padding: '6px 8px', borderRadius: '6px', border: '0.5px solid rgba(245, 158, 11, 0.25)' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.03em' }}>The Mnemonic Analogy:</div>
+                        <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '2px', lineHeight: '1.4' }}>
+                          {archScenario === 'public_web' && (
+                            <span>🌐 <strong>Route 53 = The Contacts App</strong>. It maps the friendly name (www.app.com) to the complex phone number (IP: 54.12.8.9) so users don't have to remember numbers.</span>
+                          )}
+                          {archScenario === 'private_vpc' && (
+                            <span>🔒 <strong>Private Zones = The Office Intercom</strong>. You dial extension 305 to talk to DB, but people outside the office building cannot dial extension 305 directly.</span>
+                          )}
+                          {archScenario === 'hybrid_corp' && (
+                            <span>🔌 <strong>Endpoints = The Multi-lingual Translator</strong>. Bridges Corporate HQ On-premises dialect with AWS VPC private language so they can converse securely.</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                        <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>💡 AWS Exam Secret:</span> <em>Private Hosted Zones (PHZs)</em> require that the VPC settings <code>enableDnsHostnames</code> and <code>enableDnsSupport</code> are BOTH set to <code>true</code>!
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
+
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
       </div>
     </div>

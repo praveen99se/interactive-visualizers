@@ -14,8 +14,11 @@ import IntegrationAndMessagingVisualizer from './pages/visualizers/IntegrationAn
 import NotFound from './pages/NotFound';
 
 export default function App() {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const basename = isLocal ? '' : '/interactive-visualizers';
+
   return (
-    <Router basename="/interactive-visualizers">
+    <Router basename={basename}>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">

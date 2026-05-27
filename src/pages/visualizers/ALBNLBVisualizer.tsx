@@ -19,6 +19,60 @@ interface Particle {
 export default function ALBNLBVisualizer() {
   const [activeSection, setActiveSection] = useState<TabType>('concept');
 
+  // Load Balancer Infra Scenario state (Integrations)
+  const [infraScenario, setInfraScenario] = useState<'alb_ingress' | 'nlb_throughput' | 'privatelink'>('alb_ingress');
+  const [infraStep, setInfraStep] = useState<number>(0);
+  const [infraTracing, setInfraTracing] = useState<boolean>(false);
+
+  // Premium Interactive ALB/NLB active states
+  const [activeNlbTarget, setActiveNlbTarget] = useState<'A' | 'B' | 'C' | null>(null);
+  const [currentNlbClient, setCurrentNlbClient] = useState<string>('');
+  const [currentNlbHash, setCurrentNlbHash] = useState<string>('');
+  const [albIsAnimating, setAlbIsAnimating] = useState<boolean>(false);
+
+  // Playback Auto-Advance logic for Integrations tab
+  useEffect(() => {
+    if (!infraTracing) return;
+    const maxSteps = infraScenario === 'alb_ingress' ? 6 : infraScenario === 'nlb_throughput' ? 5 : 6;
+    const interval = setInterval(() => {
+      setInfraStep((prev) => (prev + 1) % maxSteps);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [infraTracing, infraScenario]);
+
+  // Integration Scenario steps mapping
+  const scSteps = {
+    alb_ingress: [
+      { label: '1. Client HTTPS Connection', desc: 'Secure browser connection resolves SSL/TLS cert at ALB boundary.', node: 'client' },
+      { label: '2. Route 53 DNS Lookup', desc: 'Resolves canonical server address to CloudFront or ALB alias record.', node: 'route53' },
+      { label: '3. AWS WAF Packet Inspection', desc: 'Web ACL guards the application gateway by checking query strings & headers.', node: 'waf' },
+      { label: '4. CloudFront Edge Router', desc: 'Queries local edge CDN caches for dynamic/static resource path bypass.', node: 'cloudfront' },
+      { label: '5. ALB L7 Host/Path Rules', desc: 'Terminates SSL, parses HTTP host header & path /api/*, routes to Checkout Target Group.', node: 'alb' },
+      { label: '6. Private Compute AZ Targets', desc: 'Traffic safely reaches isolated servers in private subnet AZ1 and AZ2 with zero public IPs.', node: 'servers' }
+    ],
+    nlb_throughput: [
+      { label: '1. Trusted Client Whitelisting', desc: 'Enterprise clients hit pre-assigned static Elastic IPs directly, bypassing dynamic DNS.', node: 'client' },
+      { label: '2. Raw TCP Pass-Through', desc: 'NLB accepts packet stream at Layer 4 (Transport), skipping heavy HTTP header processing.', node: 'tcp' },
+      { label: '3. 5-Tuple Connection Hashing', desc: 'Computes hash of protocol, source IP/port, & dest IP/port to pin client connection.', node: 'hash' },
+      { label: '4. Microsecond Route Dispatch', desc: 'Fires network packets straight to AZ compute targets with sub-millisecond latency.', node: 'nlb' },
+      { label: '5. Client IP Preservation (DSR)', desc: 'Backend instances receive flow with raw Client Source IP fully preserved, returning data directly.', node: 'servers' }
+    ],
+    privatelink: [
+      { label: '1. Private Hosted Zone Resolution', desc: 'Consumer app queries internal Route 53 PHZ for api.service.internal.', node: 'phz' },
+      { label: '2. Interface Endpoint Gateway (ENI)', desc: 'Resolves host query to local private endpoint IP inside consumer subnet.', node: 'eni' },
+      { label: '3. AWS Private Backbone Tunnel', desc: 'Packets traverse isolated physical fiber infrastructure, bypassing public internet.', node: 'backbone' },
+      { label: '4. Provider VPC NLB Intake', desc: 'Traffic securely hits Endpoint Service gateway backed by high-throughput NLB.', node: 'nlb' },
+      { label: '5. Dedicated Multi-AZ Backends', desc: 'Provider NLB forwards request to isolated containerized ECS backend services.', node: 'servers' },
+      { label: '6. Private Tunnel Secure Return', desc: 'Response travels back to consumer VPC via the secure, private tunnel interface.', node: 'client' }
+    ]
+  };
+
+  const handleScenarioChange = (scenario: 'alb_ingress' | 'nlb_throughput' | 'privatelink') => {
+    setInfraScenario(scenario);
+    setInfraStep(0);
+    setInfraTracing(false);
+  };
+
   // Decision Guide States
   const [decisions, setDecisions] = useState<Record<DecisionKey, string>>({
     layer: 'http',
@@ -36,6 +90,21 @@ export default function ALBNLBVisualizer() {
   // NLB TCP Connection States
   const [nlbConnections, setNlbConnections] = useState<{ client: string; hash: string; server: string }[]>([]);
   const [nlbLogs, setNlbLogs] = useState<string[]>([]);
+
+  // Enhanced ALB simulator states
+  const [albMethod, setAlbMethod] = useState<'GET' | 'POST' | 'PUT' | 'DELETE'>('GET');
+  const [albQuery, setAlbQuery] = useState('tier=premium');
+  const [albHeaderKey, setAlbHeaderKey] = useState('X-Custom-Header');
+  const [albHeaderVal, setAlbHeaderVal] = useState('special');
+  const [albCheckingRuleIndex, setAlbCheckingRuleIndex] = useState<number>(-1);
+
+  // Enhanced NLB simulator states
+  const [nlbSrcIp, setNlbSrcIp] = useState('198.51.100.4');
+  const [nlbSrcPort, setNlbSrcPort] = useState(52184);
+  const nlbDstIp = '203.0.113.12';
+  const [nlbDstPort, setNlbDstPort] = useState(5000);
+  const [nlbProtocol, setNlbProtocol] = useState<'TCP' | 'UDP'>('TCP');
+  const [nlbReturnMode, setNlbReturnMode] = useState<'dsr' | 'proxy'>('dsr');
 
   // Simulation parameters
   const [simMode, setSimMode] = useState<'alb_sticky' | 'alb_no_sticky' | 'nlb_hash'>('alb_sticky');
@@ -86,86 +155,219 @@ export default function ALBNLBVisualizer() {
 
   const recommendation = getRecommendedLB();
 
+  // Simple FNV-1a hash implementation for NLB Flow Hashing
+  const calculateFnv1a = (str: string) => {
+    let hash = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      hash ^= str.charCodeAt(i);
+      // FNV prime multiplication in standard 32-bit math
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(16).toUpperCase();
+  };
+
   // ALB Rule Match simulation
   const simulateALBRouting = () => {
-    const host = albHostInput.trim().toLowerCase() || 'example.com';
-    const path = albPathInput.trim() || '/';
-    setAlbLogs([]);
+    setAlbIsAnimating(true);
     setMatchedRule('');
+    setAlbCheckingRuleIndex(0);
+    setAlbLogs([
+      `🔍 [ALB L7 Intake] Received HTTP ${albMethod} on port 443 (HTTPS)`,
+      `🌐 Client Host Header: "${albHostInput}" | Path: "${albPathInput}"${albQuery ? ' | Query: ?' + albQuery : ''}`,
+      `⚙️ Loaded Headers: ${albHeaderKey}="${albHeaderVal}"`,
+      `🔄 Step 1: Initializing priority-ordered Listener Rules scanning...`
+    ]);
 
-    const steps = [
-      `🔍 Request Received: HTTP GET on port 443`,
-      `🌐 Client Host Header: "${host}" | Request Path: "${path}"`,
-      `🔄 Step 1: Evaluating ALB Listener Host Rules...`
-    ];
+    const host = albHostInput.trim().toLowerCase();
+    const path = albPathInput.trim().toLowerCase();
+    const query = albQuery.trim().toLowerCase();
+    const headerKey = albHeaderKey.trim().toLowerCase();
+    const headerVal = albHeaderVal.trim().toLowerCase();
 
-    let finalRule = 'Default Root Rule';
-    let targetGroup = 'default-s3-website-tg';
+    // Matching conditions
+    const isRule1Matched = host.includes('api.') && path.startsWith('/api/v1/users');
+    const isRule2Matched = host.includes('api.') && path.startsWith('/api/v1/orders');
+    const isRule3Matched = query.includes('tier=premium');
+    const isRule4Matched = headerKey === 'x-custom-header' && headerVal === 'special';
+    const isRule5Matched = host.includes('blog.');
+    const isRule6Matched = path.startsWith('/static/');
 
-    if (host.includes('api.')) {
-      steps.push(`✅ Host rule matched: "api.*"`);
-      steps.push(`🔄 Step 2: Evaluating Path-based routing rules...`);
-      if (path.startsWith('/api/v1/users')) {
-        steps.push(`✅ Path rule matched: "/api/v1/users*"`);
-        finalRule = 'Rule 1: Host api.* + Path /api/v1/users';
-        targetGroup = 'user-service-tg (Port: 8080)';
-      } else if (path.startsWith('/api/v1/orders')) {
-        steps.push(`✅ Path rule matched: "/api/v1/orders*"`);
-        finalRule = 'Rule 2: Host api.* + Path /api/v1/orders';
-        targetGroup = 'order-service-tg (Port: 8081)';
+    const runStep = (idx: number) => {
+      setAlbCheckingRuleIndex(idx);
+      if (idx === 0) {
+        setAlbLogs(l => [...l, `⚡ Evaluating Rule 1 (Priority 10): Host == "api.*" AND Path == "/api/v1/users*"`]);
+        if (isRule1Matched) {
+          setTimeout(() => {
+            setMatchedRule('Rule 1 (Priority 10)');
+            setAlbLogs(l => [
+              ...l,
+              `✅ MATCH FOUND (Rule 1)! Routing request to Target Group [user-service-tg]`,
+              `➡️ Dynamic Target: Port 8080 compute server instance in AZ1`,
+              `🍪 Injecting Session Cookie: [Set-Cookie: AWSALB=Server-AZ1-8080; Max-Age=86400]`
+            ]);
+            setAlbCheckingRuleIndex(-1);
+            setAlbIsAnimating(false);
+          }, 600);
+        } else {
+          setTimeout(() => {
+            setAlbLogs(l => [...l, `❌ Mismatch. Checking Priority 20 rules...`]);
+            runStep(1);
+          }, 500);
+        }
+      } else if (idx === 1) {
+        setAlbLogs(l => [...l, `⚡ Evaluating Rule 2 (Priority 20): Host == "api.*" AND Path == "/api/v1/orders*"`]);
+        if (isRule2Matched) {
+          setTimeout(() => {
+            setMatchedRule('Rule 2 (Priority 20)');
+            setAlbLogs(l => [
+              ...l,
+              `✅ MATCH FOUND (Rule 2)! Routing request to Target Group [order-service-tg]`,
+              `➡️ Dynamic Target: Port 8081 compute server instance in AZ2`,
+              `🍪 Injecting Session Cookie: [Set-Cookie: AWSALB=Server-AZ2-8081; Max-Age=86400]`
+            ]);
+            setAlbCheckingRuleIndex(-1);
+            setAlbIsAnimating(false);
+          }, 600);
+        } else {
+          setTimeout(() => {
+            setAlbLogs(l => [...l, `❌ Mismatch. Checking Priority 30 rules...`]);
+            runStep(2);
+          }, 500);
+        }
+      } else if (idx === 2) {
+        setAlbLogs(l => [...l, `⚡ Evaluating Rule 3 (Priority 30): QueryString includes "tier=premium"`]);
+        if (isRule3Matched) {
+          setTimeout(() => {
+            setMatchedRule('Rule 3 (Priority 30)');
+            setAlbLogs(l => [
+              ...l,
+              `✅ MATCH FOUND (Rule 3)! Routing request to Target Group [premium-only-tg]`,
+              `➡️ Dynamic Target: High-performance checkout server in private subnet`,
+              `🍪 Injecting Session Cookie: [Set-Cookie: AWSALB=Server-Premium-8000]`
+            ]);
+            setAlbCheckingRuleIndex(-1);
+            setAlbIsAnimating(false);
+          }, 600);
+        } else {
+          setTimeout(() => {
+            setAlbLogs(l => [...l, `❌ Mismatch. Checking Priority 40 rules...`]);
+            runStep(3);
+          }, 500);
+        }
+      } else if (idx === 3) {
+        setAlbLogs(l => [...l, `⚡ Evaluating Rule 4 (Priority 40): Custom HTTP Header "${albHeaderKey}" == "special"`]);
+        if (isRule4Matched) {
+          setTimeout(() => {
+            setMatchedRule('Rule 4 (Priority 40)');
+            setAlbLogs(l => [
+              ...l,
+              `✅ MATCH FOUND (Rule 4)! Routing request to Target Group [special-tg]`,
+              `➡️ Dynamic Target: Dedicated canary release deployment pool`,
+              `🍪 Injecting Session Cookie: [Set-Cookie: AWSALB=Server-Special-9000]`
+            ]);
+            setAlbCheckingRuleIndex(-1);
+            setAlbIsAnimating(false);
+          }, 600);
+        } else {
+          setTimeout(() => {
+            setAlbLogs(l => [...l, `❌ Mismatch. Checking Priority 50 rules...`]);
+            runStep(4);
+          }, 500);
+        }
+      } else if (idx === 4) {
+        setAlbLogs(l => [...l, `⚡ Evaluating Rule 5 (Priority 50): Host == "blog.*"`]);
+        if (isRule5Matched) {
+          setTimeout(() => {
+            setMatchedRule('Rule 5 (Priority 50)');
+            setAlbLogs(l => [
+              ...l,
+              `✅ MATCH FOUND (Rule 5)! Routing request to Target Group [blog-wordpress-tg]`,
+              `➡️ Dynamic Target: Port 80 container task instance in AZ1`,
+              `🍪 Injecting Session Cookie: [Set-Cookie: AWSALB=Server-Blog-80]`
+            ]);
+            setAlbCheckingRuleIndex(-1);
+            setAlbIsAnimating(false);
+          }, 600);
+        } else {
+          setTimeout(() => {
+            setAlbLogs(l => [...l, `❌ Mismatch. Checking Priority 60 rules...`]);
+            runStep(5);
+          }, 500);
+        }
+      } else if (idx === 5) {
+        setAlbLogs(l => [...l, `⚡ Evaluating Rule 6 (Priority 60): Path == "/static/*"`]);
+        if (isRule6Matched) {
+          setTimeout(() => {
+            setMatchedRule('Rule 6 (Priority 60)');
+            setAlbLogs(l => [
+              ...l,
+              `✅ MATCH FOUND (Rule 6)! Redirecting to S3 Bucket Target [static-s3-tg]`,
+              `➡️ Dynamic Target: Direct secure connection to AWS S3 storage buckets`,
+              `🎉 Header matches static prefix. SSL session stickiness bypassed.`
+            ]);
+            setAlbCheckingRuleIndex(-1);
+            setAlbIsAnimating(false);
+          }, 600);
+        } else {
+          setTimeout(() => {
+            setAlbLogs(l => [...l, `❌ Mismatch. Cascading to Catch-All default listener...`]);
+            runStep(6);
+          }, 500);
+        }
       } else {
-        steps.push(`❌ Path mismatch. Falling back to default host target...`);
-        finalRule = 'Rule 3: Host api.* (Catch-all)';
-        targetGroup = 'core-api-tg (Port: 8000)';
+        setTimeout(() => {
+          setMatchedRule('Default Ruleset');
+          setAlbLogs(l => [
+            ...l,
+            `✅ NO CUSTOM RULE MATCHED. Forwarding request to Default Target Group [default-s3-website-tg]`,
+            `➡️ Target: Static website hosting servers`,
+            `🎉 Request successfully matched default routing flow.`
+          ]);
+          setAlbCheckingRuleIndex(-1);
+          setAlbIsAnimating(false);
+        }, 600);
       }
-    } else if (host.includes('blog.')) {
-      steps.push(`✅ Host rule matched: "blog.*"`);
-      finalRule = 'Rule 4: Host blog.*';
-      targetGroup = 'blog-wordpress-tg (Port: 80)';
-    } else {
-      steps.push(`❌ No custom Host match. Evaluating Path-based rules...`);
-      if (path.startsWith('/static/')) {
-        steps.push(`✅ Path rule matched: "/static/*"`);
-        finalRule = 'Rule 5: Path /static/*';
-        targetGroup = 's3-assets-tg (S3 Bucket redirection)';
-      } else {
-        steps.push(`❌ No path rule match. Defaulting routing flow...`);
-        finalRule = 'Default Ruleset (Catch-all)';
-        targetGroup = 'default-s3-website-tg';
-      }
-    }
+    };
 
-    steps.push(`➡️ Routing Action: Forwarding request to Target Group [${targetGroup}]`);
-    steps.push(`✅ Connection successful. Routed via ALB [${finalRule}].`);
-
-    setMatchedRule(finalRule);
-    setAlbLogs(steps);
+    setTimeout(() => runStep(0), 400);
   };
 
   // NLB Flow Hashing simulation
   const simulateNLBConnection = () => {
-    const clients = [
-      '198.51.100.4:52184',
-      '203.0.113.88:49210',
-      '198.51.100.4:53120',
-      '10.200.55.12:60431',
-      '192.168.1.105:50442'
-    ];
-    const client = clients[Math.floor(Math.random() * clients.length)];
-    const serverIndex = (client.charCodeAt(client.length - 1) + client.charCodeAt(client.length - 2)) % serverCount;
-    const serverName = `Target Server ${String.fromCharCode(65 + serverIndex)}`;
+    // Generate randomized socket parameters on request
+    const randomIp = `198.51.100.${Math.floor(Math.random() * 254) + 1}`;
+    const randomPort = Math.floor(Math.random() * 16383) + 49152;
+    setNlbSrcIp(randomIp);
+    setNlbSrcPort(randomPort);
 
-    // Simple pseudo-hash
-    const hash = '0x' + Array.from(client).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 65536, 17).toString(16).toUpperCase();
+    const clientSocket = `${randomIp}:${randomPort}`;
 
-    const newConnection = { client, hash, server: serverName };
+    // Construct the 5-Tuple key: protocol, src IP, src Port, dest IP, dest Port
+    const fiveTuple = `${nlbProtocol.toUpperCase()}:${randomIp}:${randomPort}->${nlbDstIp}:${nlbDstPort}`;
+    
+    // Compute deterministic FNV-1a Hash
+    const hexHash = calculateFnv1a(fiveTuple);
+    const hashInt = parseInt(hexHash.substring(0, 8), 16) || 0;
+    const serverIndex = hashInt % serverCount;
+    const serverLetter = String.fromCharCode(65 + serverIndex) as 'A' | 'B' | 'C';
+    const serverName = `Target Server ${serverLetter}`;
+
+    setCurrentNlbClient(clientSocket);
+    setCurrentNlbHash(`0x${hexHash.substring(0, 6)}`);
+    setActiveNlbTarget(serverLetter);
+
+    const newConnection = { client: clientSocket, hash: `0x${hexHash.substring(0, 6)}`, server: serverName };
 
     setNlbConnections((prev) => [newConnection, ...prev.slice(0, 5)]);
     setNlbLogs((prev) => [
-      `⚡ [L4 TCP] Syn received from Client ${client}`,
-      `⚙️ Hashing 5-tuple payload... Flow Hash resolved to [${hash}]`,
-      `➡️ Forwarding connection flow strictly to backend server [${serverName}]`,
-      ...prev.slice(0, 10)
+      `⚡ [L4 Connection Request] Received packet flow: ${fiveTuple}`,
+      `⚙️ Hashing 5-Tuple Key... FNV-1a Resolved Hash: [0x${hexHash}]`,
+      `🧮 Math: 0x${hexHash.substring(0, 8)} (${hashInt}) % ${serverCount} Target Pools = Server Index [${serverIndex}] (${serverLetter})`,
+      `➡️ Dispatching raw packet stream strictly to [${serverName}]`,
+      nlbReturnMode === 'dsr' 
+        ? `↩️ Direct Server Return (DSR): Server will reply to Client ${clientSocket} DIRECTLY, bypassing the NLB to maximize throughput!`
+        : `🔄 Proxy Mode: All outbound response traffic must return through NLB gateway.`,
+      ...prev.slice(0, 8)
     ]);
   };
 
@@ -458,6 +660,54 @@ export default function ALBNLBVisualizer() {
         .anl-btn:hover { background: var(--color-background-secondary); }
         .anl-btn.anl-on { background: #c2410c; color: #fff; border-color: #c2410c; }
         .anl-btn.anl-on-nlb { background: #0369a1; color: #fff; border-color: #0369a1; }
+        
+        /* Interactive animations and flows */
+        @keyframes activeNodePulse {
+          0% { filter: drop-shadow(0 0 1px var(--pulse-color, #c2410c)) brightness(1); }
+          50% { filter: drop-shadow(0 0 8px var(--pulse-color, #c2410c)) brightness(1.2); }
+          100% { filter: drop-shadow(0 0 1px var(--pulse-color, #c2410c)) brightness(1); }
+        }
+        .active-glow-node rect, .active-glow-node circle {
+          animation: activeNodePulse 1.8s infinite ease-in-out;
+          stroke-width: 2.5px !important;
+        }
+        .flow-active-line {
+          stroke-dasharray: 6,4;
+          animation: flowAnim 1.2s linear infinite;
+        }
+        @keyframes flowAnim {
+          from { stroke-dashoffset: 20; }
+          to { stroke-dashoffset: 0; }
+        }
+        
+        /* Rule card states */
+        .rule-item {
+          font-size: 11.5px;
+          padding: 8px 10px;
+          border-radius: 6px;
+          border: 0.5px solid var(--color-border-tertiary);
+          background: var(--color-background-secondary);
+          margin-bottom: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          transition: all 0.25s ease;
+        }
+        .rule-item.checking {
+          border-color: #ea580c;
+          box-shadow: 0 0 8px rgba(234, 88, 12, 0.25);
+          background: rgba(234, 88, 12, 0.05);
+        }
+        .rule-item.matched {
+          border-color: #22c55e;
+          box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+          background: rgba(34, 197, 94, 0.08);
+          font-weight: bold;
+        }
+        .rule-item.mismatched {
+          opacity: 0.55;
+          background: var(--color-background-primary);
+        }
       `}</style>
 
       {/* Header */}
@@ -636,98 +886,306 @@ export default function ALBNLBVisualizer() {
         {activeSection === 'alb' && (
           <div>
             <div className="anl-sec">Application Load Balancer Layer 7 Smart Routing</div>
-            <div className="anl-g2">
-              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>ALB Listener Rules &amp; Target Forwarding</div>
-                <svg width="100%" viewBox="0 0 340 240" style={{ display: 'block' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
+              
+              {/* Left Column: Interactive Rules SVG and Dynamic Pathways */}
+              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)' }}>
+                <div style={{ alignSelf: 'flex-start', fontWeight: 'bold', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                  <span>L7 Host, Path &amp; Header Rule Evaluator</span>
+                  {matchedRule && <span style={{ color: '#22c55e' }}>✅ Matched: {matchedRule}</span>}
+                </div>
+                
+                <svg width="100%" viewBox="0 0 420 280" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="m1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#c2410c"/></marker>
+                    <linearGradient id="g-orange-alb" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ea580c" />
+                      <stop offset="100%" stopColor="#f97316" />
+                    </linearGradient>
+                    <filter id="glow-orange-alb" x="-15%" y="-15%" width="130%" height="130%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#f97316" floodOpacity="0.75" />
+                    </filter>
                   </defs>
+
+                  {/* Browser / Client Node */}
+                  <g opacity={1} className={albIsAnimating ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
+                    <rect x="10" y="115" width="65" height="46" rx="6" fill="#1e293b" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
+                    <text x="42.5" y="133" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">💻 Browser</text>
+                    <text x="42.5" y="146" textAnchor="middle" fontSize="7" fill="#94a3b8" fontFamily="monospace">{albMethod} Request</text>
+                    
+                    {/* Session Cookie Visual Indicator inside client */}
+                    {matchedRule && matchedRule !== 'Rule 6 (Priority 60)' && (
+                      <g transform="translate(48, 8)">
+                        <circle cx="0" cy="0" r="5" fill="#fca5a5"/>
+                        <text x="0" y="2.5" textAnchor="middle" fontSize="7" fill="#7c2d12" fontWeight="bold">🍪</text>
+                      </g>
+                    )}
+                  </g>
+
+                  {/* ALB L7 intake portal */}
+                  <g opacity={1} className={albIsAnimating ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
+                    <rect x="105" y="95" width="90" height="90" rx="8" fill="#1e1b4b" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
+                    <text x="150" y="122" textAnchor="middle" fontSize="11" fill="#ffedd5" fontWeight="bold">ALB L7</text>
+                    <text x="150" y="136" textAnchor="middle" fontSize="8" fill="#fca5a5">Rules Engine</text>
+                    <text x="150" y="150" textAnchor="middle" fontSize="7.5" fill="#94a3b8" fontFamily="monospace">Port 443 SSL</text>
+                    
+                    {/* Visual Check/Cross lights */}
+                    {albCheckingRuleIndex !== -1 && (
+                      <circle cx="150" cy="168" r="5" fill="#eab308" className="active-glow-node" style={{ '--pulse-color': '#eab308' } as React.CSSProperties}/>
+                    )}
+                    {matchedRule && albCheckingRuleIndex === -1 && (
+                      <circle cx="150" cy="168" r="5" fill="#22c55e"/>
+                    )}
+                  </g>
+
+                  {/* Ingress packet flow path */}
+                  <line x1="75" y1="138" x2="105" y2="138" stroke={albIsAnimating ? '#ea580c' : '#475569'} strokeWidth={albIsAnimating ? 2.5 : 1} className={albIsAnimating ? 'flow-active-line' : ''} />
+
+                  {/* 6 Target groups in visual racks */}
                   
-                  {/* Client */}
-                  <circle cx="40" cy="110" r="16" fill="#fef2f2" stroke="#fca5a5"/>
-                  <text x="40" y="114" textAnchor="middle" fontSize="12">💻</text>
-                  <text x="40" y="138" textAnchor="middle" fontSize="9" fill="var(--color-text-secondary)">Client Request</text>
+                  {/* TG1: user-service-tg */}
+                  <g opacity={matchedRule.includes('Rule 1') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="250" y="10" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 1') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 1') ? 2 : 0.5}/>
+                    <text x="258" y="24" fontSize="9" fill={matchedRule.includes('Rule 1') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">user-service-tg</text>
+                    <text x="258" y="38" fontSize="7" fill="#94a3b8">EC2 pool (Port 8080) · us-east-1a</text>
+                  </g>
+                  <path
+                    d="M 195 120 L 225 120 L 225 28 L 250 28"
+                    fill="none"
+                    stroke={matchedRule.includes('Rule 1') ? '#ea580c' : '#475569'}
+                    strokeWidth={matchedRule.includes('Rule 1') ? 2.5 : 1}
+                    className={matchedRule.includes('Rule 1') && albIsAnimating ? 'flow-active-line' : ''}
+                  />
 
-                  {/* ALB Listener */}
-                  <rect x="100" y="70" width="80" height="80" rx="8" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                  <text x="140" y="94" textAnchor="middle" fontSize="11" fill="#c2410c" fontWeight="bold">ALB Listener</text>
-                  <text x="140" y="110" text-anchor="middle" fontSize="9" fill="#c2410c">Host / Path Rules</text>
-                  <text x="140" y="126" text-anchor="middle" fontSize="8" fill="#7c2d12">Port: HTTPS 443</text>
+                  {/* TG2: order-service-tg */}
+                  <g opacity={matchedRule.includes('Rule 2') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="250" y="52" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 2') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 2') ? 2 : 0.5}/>
+                    <text x="258" y="66" fontSize="9" fill={matchedRule.includes('Rule 2') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">order-service-tg</text>
+                    <text x="258" y="80" fontSize="7" fill="#94a3b8">EC2 pool (Port 8081) · us-east-1b</text>
+                  </g>
+                  <path
+                    d="M 195 128 L 230 128 L 230 70 L 250 70"
+                    fill="none"
+                    stroke={matchedRule.includes('Rule 2') ? '#ea580c' : '#475569'}
+                    strokeWidth={matchedRule.includes('Rule 2') ? 2.5 : 1}
+                    className={matchedRule.includes('Rule 2') && albIsAnimating ? 'flow-active-line' : ''}
+                  />
 
-                  {/* Target Groups */}
-                  <rect x="230" y="20" width="90" height="40" rx="6" fill={matchedRule.includes('api') && matchedRule.includes('users') ? '#dcfce7' : '#f8fafc'} stroke={matchedRule.includes('api') && matchedRule.includes('users') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('api') && matchedRule.includes('users') ? '2' : '0.5'}/>
-                  <text x="275" y="44" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">user-service-tg</text>
+                  {/* TG3: premium-only-tg */}
+                  <g opacity={matchedRule.includes('Rule 3') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="250" y="94" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 3') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 3') ? 2 : 0.5}/>
+                    <text x="258" y="108" fontSize="9" fill={matchedRule.includes('Rule 3') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">premium-only-tg 💎</text>
+                    <text x="258" y="122" fontSize="7" fill="#94a3b8">Dedicated VPS (Port 8000) · us-east-1a</text>
+                  </g>
+                  <path
+                    d="M 195 136 L 250 136"
+                    fill="none"
+                    stroke={matchedRule.includes('Rule 3') ? '#ea580c' : '#475569'}
+                    strokeWidth={matchedRule.includes('Rule 3') ? 2.5 : 1}
+                    className={matchedRule.includes('Rule 3') && albIsAnimating ? 'flow-active-line' : ''}
+                  />
 
-                  <rect x="230" y="80" width="90" height="40" rx="6" fill={matchedRule.includes('api') && matchedRule.includes('orders') ? '#dcfce7' : '#f8fafc'} stroke={matchedRule.includes('api') && matchedRule.includes('orders') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('api') && matchedRule.includes('orders') ? '2' : '0.5'}/>
-                  <text x="275" y="104" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">order-service-tg</text>
+                  {/* TG4: special-tg */}
+                  <g opacity={matchedRule.includes('Rule 4') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="250" y="136" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 4') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 4') ? 2 : 0.5}/>
+                    <text x="258" y="150" fontSize="9" fill={matchedRule.includes('Rule 4') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">special-tg 🚨</text>
+                    <text x="258" y="164" fontSize="7" fill="#94a3b8">Canary target pool (Port 9000)</text>
+                  </g>
+                  <path
+                    d="M 195 144 L 230 144 L 230 154 L 250 154"
+                    fill="none"
+                    stroke={matchedRule.includes('Rule 4') ? '#ea580c' : '#475569'}
+                    strokeWidth={matchedRule.includes('Rule 4') ? 2.5 : 1}
+                    className={matchedRule.includes('Rule 4') && albIsAnimating ? 'flow-active-line' : ''}
+                  />
 
-                  <rect x="230" y="140" width="90" height="40" rx="6" fill={matchedRule.includes('blog') ? '#dcfce7' : '#f8fafc'} stroke={matchedRule.includes('blog') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('blog') ? '2' : '0.5'}/>
-                  <text x="275" y="164" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">blog-wordpress-tg</text>
+                  {/* TG5: blog-wordpress-tg */}
+                  <g opacity={matchedRule.includes('Rule 5') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="250" y="178" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 5') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 5') ? 2 : 0.5}/>
+                    <text x="258" y="192" fontSize="9" fill={matchedRule.includes('Rule 5') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">blog-wordpress-tg</text>
+                    <text x="258" y="206" fontSize="7" fill="#94a3b8">Wordpress Server (Port 80) · us-east-1c</text>
+                  </g>
+                  <path
+                    d="M 195 152 L 225 152 L 225 196 L 250 196"
+                    fill="none"
+                    stroke={matchedRule.includes('Rule 5') ? '#ea580c' : '#475569'}
+                    strokeWidth={matchedRule.includes('Rule 5') ? 2.5 : 1}
+                    className={matchedRule.includes('Rule 5') && albIsAnimating ? 'flow-active-line' : ''}
+                  />
 
-                  <rect x="230" y="195" width="90" height="36" rx="6" fill={matchedRule.includes('Default') || matchedRule.includes('static') ? '#dcfce7' : '#f8fafc'} stroke={matchedRule.includes('Default') || matchedRule.includes('static') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Default') || matchedRule.includes('static') ? '2' : '0.5'}/>
-                  <text x="275" y="217" text-anchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">static-s3-tg</text>
+                  {/* TG6: static-s3-tg */}
+                  <g opacity={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="250" y="220" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2 : 0.5}/>
+                    <text x="258" y="234" fontSize="9" fill={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">
+                      {matchedRule === 'Default Ruleset' ? 'default-s3-website-tg' : 'static-s3-tg 🪣'}
+                    </text>
+                    <text x="258" y="248" fontSize="7" fill="#94a3b8">S3 Bucket Web Origin redirect</text>
+                  </g>
+                  <path
+                    d="M 195 160 L 215 160 L 215 238 L 250 238"
+                    fill="none"
+                    stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#ea580c' : '#475569'}
+                    strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2.5 : 1}
+                    className={(matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset') && albIsAnimating ? 'flow-active-line' : ''}
+                  />
 
-                  {/* Connectors */}
-                  <line x1="56" y1="110" x2="96" y2="110" stroke="#c2410c" strokeWidth="1.5" markerEnd="url(#m1)"/>
-                  
-                  <path d="M180 100 L205 100 L205 40 L226 40" fill="none" stroke={matchedRule.includes('api') && matchedRule.includes('users') ? '#22c55e' : '#6b7280'} strokeWidth={matchedRule.includes('api') && matchedRule.includes('users') ? '2' : '1'} markerEnd="url(#m1)"/>
-                  <path d="M180 110 L226 110" fill="none" stroke={matchedRule.includes('api') && matchedRule.includes('orders') ? '#22c55e' : '#6b7280'} strokeWidth={matchedRule.includes('api') && matchedRule.includes('orders') ? '2' : '1'} markerEnd="url(#m1)"/>
-                  <path d="M180 120 L205 120 L205 160 L226 160" fill="none" stroke={matchedRule.includes('blog') ? '#22c55e' : '#6b7280'} strokeWidth={matchedRule.includes('blog') ? '2' : '1'} markerEnd="url(#m1)"/>
-                  <path d="M180 130 L195 130 L195 213 L226 213" fill="none" stroke={matchedRule.includes('Default') || matchedRule.includes('static') ? '#22c55e' : '#6b7280'} strokeWidth={matchedRule.includes('Default') || matchedRule.includes('static') ? '2' : '1'} markerEnd="url(#m1)"/>
+                  {/* Animated motion packets along active path */}
+                  {albIsAnimating && matchedRule.includes('Rule 1') && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 120 L 225 120 L 225 28 L 250 28" /></circle>}
+                  {albIsAnimating && matchedRule.includes('Rule 2') && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 128 L 230 128 L 230 70 L 250 70" /></circle>}
+                  {albIsAnimating && matchedRule.includes('Rule 3') && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 136 L 250 136" /></circle>}
+                  {albIsAnimating && matchedRule.includes('Rule 4') && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 144 L 230 144 L 230 154 L 250 154" /></circle>}
+                  {albIsAnimating && matchedRule.includes('Rule 5') && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 152 L 225 152 L 225 196 L 250 196" /></circle>}
+                  {albIsAnimating && matchedRule.includes('Rule 6') && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 160 L 215 160 L 215 238 L 250 238" /></circle>}
+                  {albIsAnimating && matchedRule === 'Default Ruleset' && <circle r="4.5" fill="#ea580c" filter="url(#glow-orange-alb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 75 138 L 105 138 M 195 160 L 215 160 L 215 238 L 250 238" /></circle>}
                 </svg>
               </div>
 
-              <div>
-                <div className="anl-card" style={{ borderLeft: '3px solid #c2410c', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#c2410c' }}>How Application Routing Works</div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>1. Host-based</span><b>Routes on host (api.example.com vs blog.example.com)</b></div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>2. Path-based</span><b>Routes on path prefix (/api/v1/users* vs /static/*)</b></div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>3. Headers/Queries</span><b>Routes on custom HTTP headers, methods, or query values</b></div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>4. Session Cookie</span><b>Injects "AWSALB" cookie to stick client to same target</b></div>
+              {/* Right Column: Custom HTTP Builder & Checklist */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* 1. Raw HTTP Request code block */}
+                <div className="anl-card" style={{ borderLeft: '3px solid #ea580c', padding: '10px 14px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#ea580c', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>🌐 Constructed HTTP Request</span>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>L7 Envelope</span>
+                  </div>
+                  <pre className="anl-log" style={{ fontSize: '10px', minHeight: '80px', margin: 0, padding: '8px', overflowX: 'auto', background: 'var(--color-background-secondary)' }}>{`\
+${albMethod} ${albPathInput}${albQuery ? '?' + albQuery : ''} HTTP/1.1
+Host: ${albHostInput}
+${albHeaderKey ? albHeaderKey + ': ' + albHeaderVal : ''}
+User-Agent: Mozilla/5.0 (Macintosh; Intel OS X)
+Accept: application/json
+Connection: keep-alive`}</pre>
                 </div>
 
-                <div className="anl-card" style={{ border: '2px solid #c2410c' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>ALB Rules Routing Playground</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                    Type custom domain and path request parameters to test which rule maps to which target group:
+                {/* 2. Rules Evaluation sequential checklists */}
+                <div className="anl-card" style={{ border: '1.5px solid #ea580c' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>L7 Rules Engine Evaluator</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                    ALB scans list rules from top-to-bottom sequentially based on priority ratings:
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', minWidth: '60px', color: 'var(--color-text-secondary)' }}>Host Header:</span>
-                      <input
-                        type="text"
-                        value={albHostInput}
-                        onChange={(e) => setAlbHostInput(e.target.value)}
-                        placeholder="api.example.com"
-                        style={{ flex: 1, fontSize: '11px', padding: '5px 8px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', outline: 'none' }}
-                      />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
+                    <div className={`rule-item ${albCheckingRuleIndex === 0 ? 'checking' : matchedRule.includes('Rule 1') ? 'matched' : albCheckingRuleIndex > 0 || matchedRule ? 'mismatched' : ''}`}>
+                      <span><b>Prio 10:</b> Host == <code>api.*</code> &amp; Path == <code>/users*</code></span>
+                      <span>{matchedRule.includes('Rule 1') ? '✅ MATCH' : albCheckingRuleIndex === 0 ? '⏳ SCAN' : '—'}</span>
+                    </div>
+                    <div className={`rule-item ${albCheckingRuleIndex === 1 ? 'checking' : matchedRule.includes('Rule 2') ? 'matched' : (albCheckingRuleIndex > 1 || matchedRule) ? 'mismatched' : ''}`}>
+                      <span><b>Prio 20:</b> Host == <code>api.*</code> &amp; Path == <code>/orders*</code></span>
+                      <span>{matchedRule.includes('Rule 2') ? '✅ MATCH' : albCheckingRuleIndex === 1 ? '⏳ SCAN' : '—'}</span>
+                    </div>
+                    <div className={`rule-item ${albCheckingRuleIndex === 2 ? 'checking' : matchedRule.includes('Rule 3') ? 'matched' : (albCheckingRuleIndex > 2 || matchedRule) ? 'mismatched' : ''}`}>
+                      <span><b>Prio 30:</b> QueryString has <code>tier=premium</code></span>
+                      <span>{matchedRule.includes('Rule 3') ? '✅ MATCH' : albCheckingRuleIndex === 2 ? '⏳ SCAN' : '—'}</span>
+                    </div>
+                    <div className={`rule-item ${albCheckingRuleIndex === 3 ? 'checking' : matchedRule.includes('Rule 4') ? 'matched' : (albCheckingRuleIndex > 3 || matchedRule) ? 'mismatched' : ''}`}>
+                      <span><b>Prio 40:</b> Header <code>X-Custom-Header</code> == <code>special</code></span>
+                      <span>{matchedRule.includes('Rule 4') ? '✅ MATCH' : albCheckingRuleIndex === 3 ? '⏳ SCAN' : '—'}</span>
+                    </div>
+                    <div className={`rule-item ${albCheckingRuleIndex === 4 ? 'checking' : matchedRule.includes('Rule 5') ? 'matched' : (albCheckingRuleIndex > 4 || matchedRule) ? 'mismatched' : ''}`}>
+                      <span><b>Prio 50:</b> Host == <code>blog.*</code></span>
+                      <span>{matchedRule.includes('Rule 5') ? '✅ MATCH' : albCheckingRuleIndex === 4 ? '⏳ SCAN' : '—'}</span>
+                    </div>
+                    <div className={`rule-item ${albCheckingRuleIndex === 5 ? 'checking' : matchedRule.includes('Rule 6') ? 'matched' : (albCheckingRuleIndex > 5 || matchedRule) ? 'mismatched' : ''}`}>
+                      <span><b>Prio 60:</b> Path == <code>/static/*</code></span>
+                      <span>{matchedRule.includes('Rule 6') ? '✅ MATCH' : albCheckingRuleIndex === 5 ? '⏳ SCAN' : '—'}</span>
+                    </div>
+                    <div className={`rule-item ${albCheckingRuleIndex === 6 ? 'checking' : matchedRule === 'Default Ruleset' ? 'matched' : matchedRule ? 'mismatched' : ''}`}>
+                      <span><b>Default:</b> Forward static fallback redirect</span>
+                      <span>{matchedRule === 'Default Ruleset' ? '✅ MATCH' : '—'}</span>
+                    </div>
+                  </div>
+
+                  {/* HTTP Request Builder form controls */}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', marginBottom: '8px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px', textTransform: 'uppercase' }}>HTTP Packet Constructor</div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '6px' }}>
+                      <div>
+                        <label style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Method</label>
+                        <select value={albMethod} onChange={(e) => setAlbMethod(e.target.value as any)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
+                          <option value="GET">GET</option>
+                          <option value="POST">POST</option>
+                          <option value="PUT">PUT</option>
+                          <option value="DELETE">DELETE</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Host Header</label>
+                        <select value={albHostInput} onChange={(e) => setAlbHostInput(e.target.value)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
+                          <option value="api.example.com">api.example.com</option>
+                          <option value="blog.example.com">blog.example.com</option>
+                          <option value="shop.example.com">shop.example.com</option>
+                          <option value="default.example.com">default.example.com</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', minWidth: '60px', color: 'var(--color-text-secondary)' }}>GET Path:</span>
-                      <input
-                        type="text"
-                        value={albPathInput}
-                        onChange={(e) => setAlbPathInput(e.target.value)}
-                        placeholder="/api/v1/users"
-                        style={{ flex: 1, fontSize: '11px', padding: '5px 8px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)', outline: 'none' }}
-                      />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '6px' }}>
+                      <div>
+                        <label style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>URL Path</label>
+                        <select value={albPathInput} onChange={(e) => setAlbPathInput(e.target.value)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
+                          <option value="/api/v1/users">/api/v1/users</option>
+                          <option value="/api/v1/orders">/api/v1/orders</option>
+                          <option value="/static/logo.png">/static/logo.png</option>
+                          <option value="/index.html">/index.html</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Query String</label>
+                        <select value={albQuery} onChange={(e) => setAlbQuery(e.target.value)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}>
+                          <option value="tier=premium">tier=premium</option>
+                          <option value="tier=standard">tier=standard</option>
+                          <option value="">(None)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                      <div>
+                        <label style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Header Key</label>
+                        <input type="text" value={albHeaderKey} onChange={(e) => setAlbHeaderKey(e.target.value)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}/>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Header Value</label>
+                        <input type="text" value={albHeaderVal} onChange={(e) => setAlbHeaderVal(e.target.value)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}/>
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <button className="anl-btn anl-on" onClick={simulateALBRouting}>Match Rule ▶</button>
-                    {matchedRule && (
-                      <span className="anl-badge" style={{ background: '#dcfce7', color: '#166534', fontWeight: 600 }}>Matched: {matchedRule}</span>
-                    )}
-                  </div>
-
-                  <div className="anl-log" style={{ minHeight: '90px', maxHeight: '130px', overflowY: 'auto' }}>
-                    {albLogs.length === 0 ? '; Waiting for request trigger...\n; Try hosts: "api.example.com" (with path /api/v1/users or /api/v1/orders) or "blog.example.com"' : albLogs.join('\n')}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="anl-btn anl-on" style={{ flex: 1, fontWeight: 'bold' }} onClick={simulateALBRouting} disabled={albIsAnimating}>
+                      {albIsAnimating ? 'Sequencing Rules... ⏳' : 'Dispatch HTTP L7 Request ▶'}
+                    </button>
+                    <button className="anl-btn" onClick={() => { setAlbLogs([]); setMatchedRule(''); setAlbCheckingRuleIndex(-1); }}>Reset Logs</button>
                   </div>
                 </div>
+
+                {/* ALB Premium Mnemonic Card */}
+                <div className="anl-card" style={{
+                  border: '1px solid #fb923c',
+                  background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)',
+                  padding: '12px 14px',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ color: '#fb923c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    🧠 Systems Memory Mnemonic
+                  </div>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#ffedd5', marginBottom: '4px' }}>
+                    ALB = "The Intelligent Postmaster"
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                    Unlike raw routers, the Postmaster opens the HTTP envelope (SSL Decryption), reads the Host and Path letters (Host/Path listener rules), checks the return cookie (stickiness), and handles delivery to the exact AZ microservice targets.
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* LIVE EVENT LOG */}
+            <div className="anl-sec" style={{ marginTop: '16px' }}>ALB Rules Evaluation Stream Logs</div>
+            <div className="anl-card" style={{ marginBottom: '14px' }}>
+              <div className="anl-log" style={{ minHeight: '90px', maxHeight: '130px', overflowY: 'auto' }}>
+                {albLogs.length === 0 ? '; Waiting for HTTP request dispatch above...\n; Construct request parameters and trigger the Dispatch to watch the rules engine scanning cascade live!' : albLogs.join('\n')}
               </div>
             </div>
           </div>
@@ -737,84 +1195,300 @@ export default function ALBNLBVisualizer() {
         {activeSection === 'nlb' && (
           <div>
             <div className="anl-sec">Network Load Balancer Layer 4 Flow Hashing</div>
-            <div className="anl-g2">
-              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>5-Tuple Flow Hashing to Targets</div>
-                <svg width="100%" viewBox="0 0 340 240" style={{ display: 'block' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
+              
+              {/* Left Column: Widescreen Flow Hashing SVG */}
+              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)' }}>
+                <div style={{ alignSelf: 'flex-start', fontWeight: 'bold', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                  <span>L4 5-Tuple Flow Hashing Engine &amp; DSR path</span>
+                  {activeNlbTarget && <span style={{ color: '#38bdf8' }}>🎯 Selected: Target Server {activeNlbTarget}</span>}
+                </div>
+                
+                <svg width="100%" viewBox="0 0 420 280" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="m2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0369a1"/></marker>
+                    <linearGradient id="g-blue-nlb" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#0284c7" />
+                      <stop offset="100%" stopColor="#38bdf8" />
+                    </linearGradient>
+                    <filter id="glow-blue-nlb" x="-15%" y="-15%" width="130%" height="130%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#38bdf8" floodOpacity="0.75" />
+                    </filter>
                   </defs>
 
-                  <rect x="10" y="80" width="70" height="70" rx="8" fill="#f0fdfa" stroke="#5eead4" strokeWidth="0.5"/>
-                  <text x="45" y="104" text-anchor="middle" fontSize="10" fill="#0f766e" fontWeight="bold">TCP Connection</text>
-                  <text x="45" y="118" text-anchor="middle" fontSize="8" fill="#0f766e">IP &amp; Port payload</text>
-                  <text x="45" y="130" text-anchor="middle" fontSize="8" fill="#115e59">5-Tuple values</text>
+                  {/* TCP Client App socket node */}
+                  <g opacity={1} className={activeNlbTarget ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
+                    <rect x="10" y="115" width="75" height="50" rx="6" fill="#1e293b" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
+                    <text x="47.5" y="133" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🏢 Client App</text>
+                    <text x="47.5" y="145" textAnchor="middle" fontSize="7" fill="#60a5fa">IP Preserved</text>
+                    <text x="47.5" y="156" textAnchor="middle" fontSize="6.5" fill="#94a3b8" fontFamily="monospace">{currentNlbClient || `${nlbSrcIp}:${nlbSrcPort}`}</text>
+                  </g>
 
-                  <rect x="105" y="70" width="90" height="90" rx="8" fill="#f0f9ff" stroke="#bae6fd" strokeWidth="0.5"/>
-                  <text x="150" y="96" text-anchor="middle" fontSize="12" fill="#0369a1" fontWeight="bold">NLB Engine</text>
-                  <text x="150" y="116" text-anchor="middle" fontSize="9" fill="#0284c7">Deterministic Hash</text>
-                  <text x="150" y="132" text-anchor="middle" fontSize="8" fill="#0284c7">Flow mapping bypass</text>
-                  <text x="150" y="146" text-anchor="middle" fontSize="7" fill="#0369a1">Sub-ms delay</text>
+                  {/* Connection from Client to NLB */}
+                  <line x1="85" y1="140" x2="115" y2="140" stroke={activeNlbTarget ? '#0284c7' : '#475569'} strokeWidth={activeNlbTarget ? 2.5 : 1} className={activeNlbTarget ? 'flow-active-line' : ''} />
 
-                  <rect x="225" y="25" width="100" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5"/>
-                  <text x="275" y="44" text-anchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">Target Server A</text>
-                  <text x="275" y="56" text-anchor="middle" fontSize="7" fill="#64748b">Subnet: AZ us-east-1a</text>
+                  {/* NLB Hashing Engine Node */}
+                  <g opacity={1} className={activeNlbTarget ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
+                    <rect x="115" y="95" width="95" height="90" rx="8" fill="#0f172a" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
+                    <text x="162.5" y="114" textAnchor="middle" fontSize="10" fill="#bae6fd" fontWeight="bold">NLB Engine</text>
+                    <text x="162.5" y="127" textAnchor="middle" fontSize="8" fill="#94a3b8">Stateless Flow Hash</text>
+                    
+                    {/* Live Digital Hash Display */}
+                    <rect x="125" y="138" width="75" height="20" rx="4" fill="#0284c715" stroke="#38bdf8" strokeWidth="0.5"/>
+                    <text x="162.5" y="151" textAnchor="middle" fontSize="9" fill="#38bdf8" fontWeight="bold" fontFamily="monospace">
+                      {currentNlbHash || '0x0000'}
+                    </text>
+                    <text x="162.5" y="174" textAnchor="middle" fontSize="7.5" fill="#bae6fd" fontWeight="bold" fontFamily="monospace">ASIC-L4 Hashing</text>
+                  </g>
 
-                  <rect x="225" y="100" width="100" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5"/>
-                  <text x="275" y="119" text-anchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">Target Server B</text>
-                  <text x="275" y="131" text-anchor="middle" fontSize="7" fill="#64748b">Subnet: AZ us-east-1b</text>
+                  {/* Target Servers */}
+                  
+                  {/* Target Server A */}
+                  <g opacity={activeNlbTarget === 'A' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="260" y="20" width="150" height="42" rx="6" fill="#0f172a" stroke={activeNlbTarget === 'A' ? '#22c55e' : '#475569'} strokeWidth={activeNlbTarget === 'A' ? 2 : 0.5}/>
+                    <text x="270" y="37" fontSize="10" fill={activeNlbTarget === 'A' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">Target Server A</text>
+                    <text x="270" y="51" fontSize="7.5" fill="#94a3b8">AZ us-east-1a · IP preservation</text>
+                  </g>
+                  <path
+                    d="M 210 130 L 235 130 L 235 41 L 260 41"
+                    fill="none"
+                    stroke={activeNlbTarget === 'A' ? '#0284c7' : '#475569'}
+                    strokeWidth={activeNlbTarget === 'A' ? 2.5 : 1}
+                    className={activeNlbTarget === 'A' ? 'flow-active-line' : ''}
+                  />
 
-                  <rect x="225" y="175" width="100" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5"/>
-                  <text x="275" y="194" text-anchor="middle" fontSize="9" fill="#1e293b" fontWeight="500">Target Server C</text>
-                  <text x="275" y="206" text-anchor="middle" fontSize="7" fill="#64748b">Subnet: AZ us-east-1c</text>
+                  {/* Target Server B */}
+                  <g opacity={activeNlbTarget === 'B' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="260" y="105" width="150" height="42" rx="6" fill="#0f172a" stroke={activeNlbTarget === 'B' ? '#22c55e' : '#475569'} strokeWidth={activeNlbTarget === 'B' ? 2 : 0.5}/>
+                    <text x="270" y="122" fontSize="10" fill={activeNlbTarget === 'B' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">Target Server B</text>
+                    <text x="270" y="136" fontSize="7.5" fill="#94a3b8">AZ us-east-1b · IP preservation</text>
+                  </g>
+                  <path
+                    d="M 210 140 L 260 140"
+                    fill="none"
+                    stroke={activeNlbTarget === 'B' ? '#0284c7' : '#475569'}
+                    strokeWidth={activeNlbTarget === 'B' ? 2.5 : 1}
+                    className={activeNlbTarget === 'B' ? 'flow-active-line' : ''}
+                  />
 
-                  <line x1="80" y1="115" x2="101" y2="115" stroke="#0369a1" strokeWidth="1.5" markerEnd="url(#m2)"/>
-                  <path d="M195 105 L218 105 L218 45 L222 45" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#m2)"/>
-                  <path d="M195 115 L222 115" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#m2)"/>
-                  <path d="M195 125 L218 125 L218 195 L222 195" fill="none" stroke="#6b7280" strokeWidth="1" markerEnd="url(#m2)"/>
+                  {/* Target Server C */}
+                  <g opacity={activeNlbTarget === 'C' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
+                    <rect x="260" y="190" width="150" height="42" rx="6" fill="#0f172a" stroke={activeNlbTarget === 'C' ? '#22c55e' : '#475569'} strokeWidth={activeNlbTarget === 'C' ? 2 : 0.5}/>
+                    <text x="270" y="207" fontSize="10" fill={activeNlbTarget === 'C' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">Target Server C</text>
+                    <text x="270" y="221" fontSize="7.5" fill="#94a3b8">AZ us-east-1c · IP preservation</text>
+                  </g>
+                  <path
+                    d="M 210 150 L 235 150 L 235 211 L 260 211"
+                    fill="none"
+                    stroke={activeNlbTarget === 'C' ? '#0284c7' : '#475569'}
+                    strokeWidth={activeNlbTarget === 'C' ? 2.5 : 1}
+                    className={activeNlbTarget === 'C' ? 'flow-active-line' : ''}
+                  />
+
+                  {/* Direct Server Return (DSR) Path vs Proxy Path */}
+                  {activeNlbTarget === 'A' && nlbReturnMode === 'dsr' && (
+                    <path
+                      d="M 335 62 L 335 80 L 47.5 80 L 47.5 115"
+                      fill="none"
+                      stroke="#22d3ee"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      className="flow-active-line"
+                    />
+                  )}
+                  {activeNlbTarget === 'A' && nlbReturnMode === 'proxy' && (
+                    <path
+                      d="M 335 62 L 335 80 L 162.5 80 L 162.5 95 M 162.5 95 M 115 140 L 85 140"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      className="flow-active-line"
+                    />
+                  )}
+
+                  {activeNlbTarget === 'B' && nlbReturnMode === 'dsr' && (
+                    <path
+                      d="M 335 147 L 335 165 L 335 175 L 47.5 175 L 47.5 165"
+                      fill="none"
+                      stroke="#22d3ee"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      className="flow-active-line"
+                    />
+                  )}
+                  {activeNlbTarget === 'B' && nlbReturnMode === 'proxy' && (
+                    <path
+                      d="M 335 147 L 335 165 L 210 165 L 210 150 M 115 140 L 85 140"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      className="flow-active-line"
+                    />
+                  )}
+
+                  {activeNlbTarget === 'C' && nlbReturnMode === 'dsr' && (
+                    <path
+                      d="M 335 232 L 335 255 L 47.5 255 L 47.5 165"
+                      fill="none"
+                      stroke="#22d3ee"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      className="flow-active-line"
+                    />
+                  )}
+                  {activeNlbTarget === 'C' && nlbReturnMode === 'proxy' && (
+                    <path
+                      d="M 335 232 L 335 255 L 162.5 255 L 162.5 185 M 115 140 L 85 140"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="1.5"
+                      strokeDasharray="4,4"
+                      className="flow-active-line"
+                    />
+                  )}
+
+                  {activeNlbTarget && nlbReturnMode === 'dsr' && (
+                    <text x="180" y="74" textAnchor="middle" fontSize="7.5" fill="#22d3ee" fontWeight="bold">↩️ Direct Server Return (NLB Bypassed outbound)</text>
+                  )}
+                  {activeNlbTarget && nlbReturnMode === 'proxy' && (
+                    <text x="180" y="74" textAnchor="middle" fontSize="7.5" fill="#fca5a5" fontWeight="bold">⚠️ Proxy Loop Bottleneck (Outbound hits LB)</text>
+                  )}
+
+                  {/* Animated motion packets along active paths */}
+                  {activeNlbTarget === 'A' && <circle r="4" fill="#38bdf8" filter="url(#glow-blue-nlb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 85 140 L 115 140 M 210 130 L 235 130 L 235 41 L 260 41" /></circle>}
+                  {activeNlbTarget === 'B' && <circle r="4" fill="#38bdf8" filter="url(#glow-blue-nlb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 85 140 L 115 140 M 210 140 L 260 140" /></circle>}
+                  {activeNlbTarget === 'C' && <circle r="4" fill="#38bdf8" filter="url(#glow-blue-nlb)"><animateMotion dur="1.8s" repeatCount="indefinite" path="M 85 140 L 115 140 M 210 150 L 235 150 L 235 211 L 260 211" /></circle>}
                 </svg>
               </div>
 
-              <div>
-                <div className="anl-card" style={{ borderLeft: '3px solid #0369a1', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#0369a1' }}>Key Features of Layer 4 NLB</div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>1. Flow Hashing</span><b>Determined by Src IP/Port + Dst IP/Port + Protocol</b></div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>2. Static IPs</span><b>Binds a static Elastic IP to each AZ subnet</b></div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>3. Zero HTTP editing</span><b>Bypasses HTTP header parsing, forwarding TCP packets raw</b></div>
-                  <div className="anl-kv"><span className="anl-kk" style={{ minWidth: '100px' }}>4. High Performance</span><b>Handles burst rates of millions of RPS with &lt;1ms latency</b></div>
+              {/* Right Column: 5-Tuple packet constructor and Live Math FNV HUD */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* 1. Return Path Toggle (Interactive DSR) */}
+                <div className="anl-card" style={{ borderLeft: '3px solid #0369a1', padding: '10px 14px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#0284c7' }}>Outbound Response Pathing</div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      className={`anl-btn ${nlbReturnMode === 'dsr' ? 'anl-on-nlb' : ''}`}
+                      onClick={() => setNlbReturnMode('dsr')}
+                      style={{ flex: 1, fontSize: '10.5px', padding: '5px 8px' }}
+                    >
+                      ↩️ DSR (Direct)
+                    </button>
+                    <button
+                      className={`anl-btn ${nlbReturnMode === 'proxy' ? 'anl-on-nlb' : ''}`}
+                      onClick={() => setNlbReturnMode('proxy')}
+                      style={{ flex: 1, fontSize: '10.5px', padding: '5px 8px' }}
+                    >
+                      🔄 Proxy Return
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.3' }}>
+                    {nlbReturnMode === 'dsr'
+                      ? 'Client IP is fully preserved. The backend server responds directly to client browser bypassing the load balancer, saving massive network bandwidth.'
+                      : 'All outbound traffic is proxied through the load balancer, which limits maximum outbound connection throughput and increases latency.'}
+                  </div>
                 </div>
 
-                <div className="anl-card" style={{ border: '2px solid #0369a1' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>NLB Flow Hashing Simulator</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
-                    Click below to generate random TCP requests. NLB hashes the client's socket information and routes connection consistently to target servers:
+                {/* 2. 5-Tuple Constructor Panel */}
+                <div className="anl-card" style={{ border: '1.5px solid #0369a1' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>L4 5-Tuple Socket Constructor</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                    Set custom TCP/UDP headers. NLB does not edit payloads; it hashes socket data to route traffic:
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <button className="anl-btn anl-on-nlb" onClick={simulateNLBConnection}>Send TCP request ▶</button>
-                    <button className="anl-btn" onClick={() => { setNlbConnections([]); setNlbLogs([]); }}>Clear Log</button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
-                    {nlbConnections.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '110px', overflowY: 'auto' }}>
-                        {nlbConnections.map((conn, idx) => (
-                          <div key={idx} style={{ fontSize: '11px', display: 'flex', justifyContent: 'space-between', background: 'var(--color-background-secondary)', padding: '4px 8px', borderRadius: '4px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                            <span>Client: <code>{conn.client}</code></span>
-                            <span style={{ color: '#0369a1', fontWeight: 600 }}>Hash: {conn.hash}</span>
-                            <span style={{ color: '#15803d', fontWeight: 'bold' }}>→ {conn.server}</span>
-                          </div>
-                        ))}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '9px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>1. PROTOCOL</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button className={`anl-btn ${nlbProtocol === 'TCP' ? 'anl-on-nlb' : ''}`} style={{ fontSize: '9px', padding: '2px 6px' }} onClick={() => setNlbProtocol('TCP')}>TCP</button>
+                        <button className={`anl-btn ${nlbProtocol === 'UDP' ? 'anl-on-nlb' : ''}`} style={{ fontSize: '9px', padding: '2px 6px' }} onClick={() => setNlbProtocol('UDP')}>UDP</button>
                       </div>
-                    ) : (
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', padding: '6px', textAlign: 'center' }}>No active connections. Click send request above.</div>
-                    )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <div style={{ flex: 3 }}>
+                        <label style={{ fontSize: '9px', display: 'block', color: 'var(--color-text-secondary)' }}>2. CLIENT IP (Src)</label>
+                        <input type="text" value={nlbSrcIp} onChange={(e) => setNlbSrcIp(e.target.value)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}/>
+                      </div>
+                      <div style={{ flex: 2 }}>
+                        <label style={{ fontSize: '9px', display: 'block', color: 'var(--color-text-secondary)' }}>3. PORT (Src)</label>
+                        <input type="number" min="1024" max="65535" value={nlbSrcPort} onChange={(e) => setNlbSrcPort(parseInt(e.target.value) || 1024)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}/>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <div style={{ flex: 3 }}>
+                        <label style={{ fontSize: '9px', display: 'block', color: 'var(--color-text-secondary)' }}>4. NLB VIP (Dst)</label>
+                        <input type="text" value={nlbDstIp} disabled style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', opacity: 0.7 }}/>
+                      </div>
+                      <div style={{ flex: 2 }}>
+                        <label style={{ fontSize: '9px', display: 'block', color: 'var(--color-text-secondary)' }}>5. PORT (Dst)</label>
+                        <input type="number" value={nlbDstPort} onChange={(e) => setNlbDstPort(parseInt(e.target.value) || 80)} style={{ width: '100%', fontSize: '10.5px', padding: '4px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}/>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="anl-log" style={{ minHeight: '80px', maxHeight: '100px', overflowY: 'auto', fontSize: '10px' }}>
-                    {nlbLogs.length === 0 ? '; Waiting for L4 TCP flows...' : nlbLogs.join('\n')}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <button className="anl-btn anl-on-nlb" style={{ flex: 1, fontWeight: 'bold' }} onClick={simulateNLBConnection}>
+                      Send Packet Flow ▶
+                    </button>
+                    <button className="anl-btn" onClick={() => { setNlbConnections([]); setNlbLogs([]); setActiveNlbTarget(null); setCurrentNlbClient(''); setCurrentNlbHash(''); }}>Clear Logs</button>
+                  </div>
+
+                  {/* Math Equation HUD Block */}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '9.5px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>🧮 Stateless Hashing Equation</div>
+                    <pre className="anl-log" style={{ fontSize: '10px', margin: 0, padding: '6px', background: 'var(--color-background-primary)', color: '#38bdf8', overflowX: 'auto' }}>{`\
+Hash = FNV1a(5-Tuple)
+     = FNV1a("${nlbProtocol.toUpperCase()}:${nlbSrcIp}:${nlbSrcPort}->${nlbDstIp}:${nlbDstPort}")
+     = ${currentNlbHash ? currentNlbHash + '...' : '0x000000'}
+Target Server Index:
+     = Hash % ${serverCount} Pools
+     = ${activeNlbTarget ? 'Server ' + activeNlbTarget : '(Pending packet)'}`}</pre>
                   </div>
                 </div>
+
+                {/* NLB Premium Mnemonic Card */}
+                <div className="anl-card" style={{
+                  border: '1px solid #38bdf8',
+                  background: 'linear-gradient(135deg, #022c22 0%, #0f172a 100%)',
+                  padding: '12px 14px',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    🧠 Systems Memory Mnemonic
+                  </div>
+                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#ffedd5', marginBottom: '4px' }}>
+                    NLB = "The Lightspeed Track Switcher"
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                    The Track Switcher does not open cargo or read envelopes. It simply hashes the standard 5-tuple connection data in hardware ASICs (Protocol, Source IP/Port, Dest IP/Port) and maps the connection deterministic to the track with microsecond latencies.
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* LIVE EVENT LOG */}
+            <div className="anl-sec" style={{ marginTop: '16px' }}>L4 Hash Stream Resolution Connections</div>
+            <div className="anl-card" style={{ marginBottom: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px', maxHeight: '100px', overflowY: 'auto' }}>
+                {nlbConnections.length > 0 ? (
+                  nlbConnections.map((conn, idx) => (
+                    <div key={idx} style={{ fontSize: '11px', display: 'flex', justifyContent: 'space-between', background: 'var(--color-background-secondary)', padding: '5px 10px', borderRadius: '4px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                      <span>Client: <code>{conn.client}</code></span>
+                      <span style={{ color: '#38bdf8', fontWeight: 600 }}>Hash: {conn.hash}</span>
+                      <span style={{ color: '#22c55e', fontWeight: 'bold' }}>→ {conn.server}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', padding: '6px', textAlign: 'center' }}>No active connection streams. Set variables and click dispatch above.</div>
+                )}
+              </div>
+              <div className="anl-log" style={{ minHeight: '80px', maxHeight: '100px', overflowY: 'auto', fontSize: '10px' }}>
+                {nlbLogs.length === 0 ? '; Waiting for L4 connection stream packages...' : nlbLogs.join('\n')}
               </div>
             </div>
           </div>
@@ -942,99 +1616,388 @@ export default function ALBNLBVisualizer() {
         )}
 
         {/* INTEGRATIONS PANEL */}
-        {activeSection === 'integrations' && (
-          <div>
-            <div className="anl-sec">Full Production AWS Infrastructure Integration Map</div>
-            <div className="anl-card">
-              <svg width="100%" viewBox="0 0 680 380" style={{ display: 'block', margin: '0 auto' }}>
-                <defs>
-                  <marker id="ar1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#c2410c"/></marker>
-                  <marker id="ar2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                  <marker id="ar3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0369a1"/></marker>
-                </defs>
-                <rect x="10" y="10" width="660" height="360" rx="16" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="0.5"/>
-                <text x="340" y="30" text-anchor="middle" fontSize="12" fill="var(--color-text-primary)" fontWeight="500">Multi-Tier High Availability Load Balancer Infrastructure</text>
+        {activeSection === 'integrations' && (() => {
+          const isNodeActive = (node: string) => {
+            const steps = scSteps[infraScenario];
+            const currentStep = steps[infraStep];
+            return currentStep && currentStep.node === node;
+          };
 
-                <rect x="25" y="44" width="100" height="44" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="75" y="64" text-anchor="middle" fontSize="11" fill="#dc2626" fontWeight="500">🌐 Users</text>
-                <text x="75" y="80" text-anchor="middle" fontSize="10" fill="#dc2626">Public web clients</text>
+          const activeColor = 
+            infraScenario === 'alb_ingress' ? '#ea580c' :
+            infraScenario === 'nlb_throughput' ? '#0284c7' : '#7c3aed';
 
-                <rect x="180" y="44" width="120" height="44" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                <text x="240" y="64" text-anchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🚀 Route 53</text>
-                <text x="240" y="80" text-anchor="middle" fontSize="10" fill="#7c3aed">Zonal host check DNS</text>
+          const currentScenarioTitle = 
+            infraScenario === 'alb_ingress' ? '🍔 Public ALB Secure Ingress (L7)' :
+            infraScenario === 'nlb_throughput' ? '🔢 NLB Flow Hashing (Static EIPs)' : '🔌 VPC PrivateLink Secure Tunnel (PHZ)';
 
-                <rect x="360" y="44" width="120" height="44" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                <text x="420" y="64" text-anchor="middle" fontSize="11" fill="#0f766e" fontWeight="500">🛡️ AWS WAF</text>
-                <text x="420" y="80" text-anchor="middle" fontSize="10" fill="#0f766e">SQL Injection Block</text>
+          return (
+            <div>
+              <div className="anl-sec">Interactive AWS Infrastructure &amp; Integration Explorer</div>
+              
+              {/* Scenario Toggles */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
+                <button
+                  className="anl-btn"
+                  onClick={() => handleScenarioChange('alb_ingress')}
+                  style={{
+                    fontWeight: 'bold',
+                    backgroundColor: infraScenario === 'alb_ingress' ? 'rgba(234, 88, 12, 0.15)' : 'var(--color-background-secondary)',
+                    color: infraScenario === 'alb_ingress' ? '#ea580c' : 'var(--color-text-primary)',
+                    borderColor: infraScenario === 'alb_ingress' ? '#ea580c' : 'var(--color-border-secondary)'
+                  }}
+                >
+                  🍔 Public ALB Ingress (L7)
+                </button>
+                <button
+                  className="anl-btn"
+                  onClick={() => handleScenarioChange('nlb_throughput')}
+                  style={{
+                    fontWeight: 'bold',
+                    backgroundColor: infraScenario === 'nlb_throughput' ? 'rgba(2, 132, 199, 0.15)' : 'var(--color-background-secondary)',
+                    color: infraScenario === 'nlb_throughput' ? '#0284c7' : 'var(--color-text-primary)',
+                    borderColor: infraScenario === 'nlb_throughput' ? '#0284c7' : 'var(--color-border-secondary)'
+                  }}
+                >
+                  🔢 NLB Throughput (L4)
+                </button>
+                <button
+                  className="anl-btn"
+                  onClick={() => handleScenarioChange('privatelink')}
+                  style={{
+                    fontWeight: 'bold',
+                    backgroundColor: infraScenario === 'privatelink' ? 'rgba(124, 58, 237, 0.15)' : 'var(--color-background-secondary)',
+                    color: infraScenario === 'privatelink' ? '#7c3aed' : 'var(--color-text-primary)',
+                    borderColor: infraScenario === 'privatelink' ? '#7c3aed' : 'var(--color-border-secondary)'
+                  }}
+                >
+                  🔌 VPC PrivateLink (PHZ)
+                </button>
+              </div>
 
-                <rect x="520" y="44" width="120" height="44" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                <text x="580" y="64" text-anchor="middle" fontSize="11" fill="#c2410c" fontWeight="500">☁️ CloudFront</text>
-                <text x="580" y="80" text-anchor="middle" fontSize="10" fill="#c2410c">Static Asset CDN</text>
-
-                {/* ALB Public Zone */}
-                <rect x="180" y="140" width="300" height="60" rx="12" fill="#fff7ed" stroke="#fed7aa" strokeWidth="1"/>
-                <text x="330" y="158" text-anchor="middle" fontSize="11" fill="#c2410c" fontWeight="bold">🌐 Public Tier — Application Load Balancer</text>
-                <text x="330" y="174" text-anchor="middle" fontSize="9" fill="#7c2d12">Port: 443 HTTPS SSL termination · Dynamic DNS</text>
-
-                {/* Private Subnets - Target EC2 Instance pools */}
-                <rect x="40" y="240" width="260" height="70" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                <text x="170" y="258" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="bold">🔒 Private Web subnet AZ1</text>
-                <text x="170" y="278" text-anchor="middle" fontSize="10" fill="#166534">EC2 Node A (Target Group 1)</text>
-                <text x="170" y="294" text-anchor="middle" fontSize="9" fill="#166534">Port: 80 (routed from ALB)</text>
-
-                <rect x="360" y="240" width="260" height="70" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                <text x="490" y="258" text-anchor="middle" fontSize="11" fill="#15803d" fontWeight="bold">🔒 Private Web subnet AZ2</text>
-                <text x="490" y="278" text-anchor="middle" fontSize="10" fill="#166534">EC2 Node B (Target Group 1)</text>
-                <text x="490" y="294" text-anchor="middle" fontSize="9" fill="#166534">Port: 80 (routed from ALB)</text>
-
-                {/* DB backend */}
-                <rect x="270" y="330" width="140" height="34" rx="6" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                <text x="340" y="352" text-anchor="middle" fontSize="10" fill="#dc2626" fontWeight="bold">🗄️ RDS Database Subnet</text>
-
-                {/* Connections */}
-                <line x1="125" y1="66" x2="175" y2="66" stroke="#6b7280" strokeWidth="1" strokeDasharray="3,2"/>
-                <line x1="300" y1="66" x2="355" y2="66" stroke="#6b7280" strokeWidth="1" strokeDasharray="3,2"/>
-                <line x1="480" y1="66" x2="515" y2="66" stroke="#6b7280" strokeWidth="1" strokeDasharray="3,2"/>
+              {/* Layout grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
                 
-                <path d="M580 88 L580 115 L330 115 L330 135" fill="none" stroke="#c2410c" strokeWidth="1.5" markerEnd="url(#ar1)"/>
-                
-                <path d="M280 200 L280 215 L170 215 L170 235" fill="none" stroke="#15803d" strokeWidth="1.5" markerEnd="url(#ar2)"/>
-                <path d="M380 200 L380 215 L490 215 L490 235" fill="none" stroke="#15803d" strokeWidth="1.5" markerEnd="url(#ar2)"/>
-                
-                <line x1="170" y1="310" x2="330" y2="330" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,2"/>
-                <line x1="490" y1="310" x2="350" y2="330" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,2"/>
-              </svg>
-            </div>
+                {/* Left: Dynamic Widescreen SVG Map */}
+                <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)', padding: '16px' }}>
+                  <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                      🔍 {currentScenarioTitle}
+                    </span>
+                    <span style={{ fontSize: '11px', color: activeColor, fontWeight: 'bold' }}>
+                      Step {infraStep + 1} of {scSteps[infraScenario].length}
+                    </span>
+                  </div>
 
-            <div className="anl-g2">
-              <div>
-                <div className="anl-sec">Secure Network Architecture Benefits</div>
-                <div className="anl-card" style={{ borderLeft: '3px solid #15803d', minHeight: '190px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#15803d' }}>Why keep Web Servers in Private Subnets?</div>
-                  <ul className="anl-ck">
-                    <li><b>Zero Direct Exposure:</b> Private servers do not assign public IPs. They cannot be targeted directly by bad actors on the internet.</li>
-                    <li><b>Single Gate Entry:</b> Standard public clients route solely via public ALBs, which filters threats via integrated AWS WAF Web ACL firewalls.</li>
-                    <li><b>Automatic Certificate Management:</b> ALB terminates SSL/TLS certificates at the load-balancer tier, eliminating SSL compute overhead on web instances.</li>
-                    <li><b>Independent Scaling:</b> Auto Scaling Groups scale server counts dynamically based on ALB metric triggers without disrupting DNS names.</li>
-                  </ul>
+                  <svg width="100%" viewBox="0 0 660 320" style={{ display: 'block' }}>
+                    <defs>
+                      <linearGradient id="g-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ea580c" /><stop offset="100%" stopColor="#f97316" />
+                      </linearGradient>
+                      <linearGradient id="g-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#0284c7" /><stop offset="100%" stopColor="#38bdf8" />
+                      </linearGradient>
+                      <linearGradient id="g-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#7c3aed" /><stop offset="100%" stopColor="#a78bfa" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Shared VPC Boundary Box */}
+                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="3,3"/>
+                    <text x="150" y="70" fontSize="8" fill="#64748b" fontWeight="bold">VPC boundary (us-east-1)</text>
+
+                    {/* Subnet Boundaries */}
+                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" stroke="#1e293b" strokeWidth="0.8"/>
+                    <text x="370" y="93" fontSize="7.5" fill="#64748b">🔒 Private Subnet AZ1</text>
+
+                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" stroke="#1e293b" strokeWidth="0.8"/>
+                    <text x="370" y="198" fontSize="7.5" fill="#64748b">🔒 Private Subnet AZ2</text>
+
+                    {/* Nodes Rendering */}
+
+                    {/* Node 1: Client Node */}
+                    <g opacity={isNodeActive('client') || isNodeActive('phz') ? 1.0 : 0.7} className={isNodeActive('client') || isNodeActive('phz') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
+                      <rect x="15" y="125" width="85" height="50" rx="6" fill="#1e293b" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : '#475569'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 0.5}/>
+                      <text x="57.5" y="145" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">💻 Public Client</text>
+                      <text x="57.5" y="160" textAnchor="middle" fontSize="7.5" fill="#bae6fd">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
+                    </g>
+
+                    {/* Node 2: Route 53 (L7 / L4 only) */}
+                    {infraScenario !== 'privatelink' && (
+                      <g opacity={isNodeActive('route53') ? 1.0 : 0.7} className={isNodeActive('route53') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="150" y="85" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('route53') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('route53') ? 2 : 0.5}/>
+                        <text x="190" y="103" textAnchor="middle" fontSize="10" fill="#e9d5ff" fontWeight="bold">🚀 Route 53</text>
+                        <text x="190" y="116" textAnchor="middle" fontSize="7" fill="#c084fc">Global DNS Resolver</text>
+                      </g>
+                    )}
+
+                    {/* Node 3: AWS WAF (ALB only) */}
+                    {infraScenario === 'alb_ingress' && (
+                      <g opacity={isNodeActive('waf') ? 1.0 : 0.7} className={isNodeActive('waf') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
+                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('waf') ? '#ea580c' : '#475569'} strokeWidth={isNodeActive('waf') ? 2 : 0.5}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="10" fill="#ffe4e6" fontWeight="bold">🛡️ AWS WAF</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#fca5a5">Packet Inspection</text>
+                      </g>
+                    )}
+
+                    {/* Node 4: CloudFront Edge (ALB only) */}
+                    {infraScenario === 'alb_ingress' && (
+                      <g opacity={isNodeActive('cloudfront') ? 1.0 : 0.7} className={isNodeActive('cloudfront') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
+                        <rect x="150" y="205" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('cloudfront') ? '#ea580c' : '#475569'} strokeWidth={isNodeActive('cloudfront') ? 2 : 0.5}/>
+                        <text x="190" y="223" textAnchor="middle" fontSize="9.5" fill="#ffe4e6" fontWeight="bold">☁️ CloudFront CDN</text>
+                        <text x="190" y="236" textAnchor="middle" fontSize="7.5" fill="#fca5a5">Edge Location Cache</text>
+                      </g>
+                    )}
+
+                    {/* Node 5: Interface VPC Endpoint ENI (PrivateLink only) */}
+                    {infraScenario === 'privatelink' && (
+                      <g opacity={isNodeActive('eni') ? 1.0 : 0.7} className={isNodeActive('eni') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('eni') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('eni') ? 2 : 0.5}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="9.5" fill="#e9d5ff" fontWeight="bold">🔌 Interface ENI</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#c084fc">Consumer Gateway</text>
+                      </g>
+                    )}
+
+                    {/* Node 6: AWS Private Backbone (PrivateLink only) */}
+                    {infraScenario === 'privatelink' && (
+                      <g opacity={isNodeActive('backbone') ? 1.0 : 0.7} className={isNodeActive('backbone') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="255" y="145" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('backbone') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('backbone') ? 2 : 0.5}/>
+                        <text x="295" y="163" textAnchor="middle" fontSize="9.5" fill="#e9d5ff" fontWeight="bold">🌐 AWS Backbone</text>
+                        <text x="295" y="176" textAnchor="middle" fontSize="7.5" fill="#c084fc">Physical Fiber Tunnel</text>
+                      </g>
+                    )}
+
+                    {/* Node 7: Load Balancer (ALB / NLB Node) */}
+                    {infraScenario !== 'privatelink' && (
+                      <g opacity={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 1.0 : 0.7} className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
+                        <rect x="255" y="125" width="80" height="50" rx="8" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? activeColor : '#1e1b4b'} stroke={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : activeColor} strokeWidth="1"/>
+                        <text x="295" y="146.5" textAnchor="middle" fontSize="10.5" fill="#fff" fontWeight="bold">
+                          {infraScenario === 'alb_ingress' ? '🍔 Public ALB' : '🔢 Public NLB'}
+                        </text>
+                        <text x="295" y="159.5" textAnchor="middle" fontSize="7.5" fill="#f8fafc">
+                          {infraScenario === 'alb_ingress' ? 'Layer 7 Smart' : 'Layer 4 Static'}
+                        </text>
+                      </g>
+                    )}
+
+                    {/* Provider NLB (PrivateLink only) */}
+                    {infraScenario === 'privatelink' && (
+                      <g opacity={isNodeActive('nlb') ? 1.0 : 0.7} className={isNodeActive('nlb') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="360" y="140" width="80" height="42" rx="6" fill="#1e1b4b" stroke={isNodeActive('nlb') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('nlb') ? 2 : 0.5}/>
+                        <text x="400" y="158" textAnchor="middle" fontSize="9.5" fill="#e9d5ff" fontWeight="bold">🔌 Provider NLB</text>
+                        <text x="400" y="171" textAnchor="middle" fontSize="7.5" fill="#c084fc">Endpoint Service</text>
+                      </g>
+                    )}
+
+                    {/* Node 8: Private Compute AZ1 Racks */}
+                    <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
+                      <rect x="460" y="95" width="130" height="36" rx="5" fill="#0f172a" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#475569'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
+                      <text x="468" y="110" fontSize="9.5" fill="#e2e8f0" fontWeight="bold">🖥️ Target Host AZ1</text>
+                      <text x="468" y="123" fontSize="7" fill="#64748b">Port 80 · Healthy Target Pool</text>
+                    </g>
+
+                    {/* Node 9: Private Compute AZ2 Racks */}
+                    <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
+                      <rect x="460" y="200" width="130" height="36" rx="5" fill="#0f172a" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#475569'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
+                      <text x="468" y="215" fontSize="9.5" fill="#e2e8f0" fontWeight="bold">🖥️ Target Host AZ2</text>
+                      <text x="468" y="228" fontSize="7" fill="#64748b">Port 80 · Healthy Target Pool</text>
+                    </g>
+
+                    {/* Node 10: RDS Database Subnet */}
+                    <g opacity={0.7}>
+                      <rect x="460" y="255" width="130" height="30" rx="4" fill="#0f172a" stroke="#475569" strokeWidth="0.5"/>
+                      <text x="525" y="274" textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
+                    </g>
+
+                    {/* Flow Arrow Lines & Dynamic Paths */}
+                    
+                    {/* Scenario 1: ALB Ingress Path */}
+                    {infraScenario === 'alb_ingress' && (
+                      <g>
+                        <path d="M 100 150 L 150 106" fill="none" stroke={infraStep >= 1 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
+                        <path d="M 190 127 L 190 145" fill="none" stroke={infraStep >= 2 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 2 ? 2.5 : 1} className={infraStep === 2 ? 'flow-active-line' : ''} />
+                        <path d="M 190 187 L 190 205" fill="none" stroke={infraStep >= 3 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 230 226 L 295 226 L 295 175" fill="none" stroke={infraStep >= 4 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
+                        <path d="M 335 140 L 460 113" fill="none" stroke={infraStep >= 5 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 5 ? 2.5 : 1} className={infraStep === 5 ? 'flow-active-line' : ''} />
+                        <path d="M 335 160 L 460 218" fill="none" stroke={infraStep >= 5 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 5 ? 2.5 : 1} className={infraStep === 5 ? 'flow-active-line' : ''} />
+                      </g>
+                    )}
+
+                    {/* Scenario 2: NLB Flow Hashing Path */}
+                    {infraScenario === 'nlb_throughput' && (
+                      <g>
+                        <path d="M 100 150 L 255 150" fill="none" stroke={infraStep >= 1 ? '#0284c7' : '#334155'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
+                        <path d="M 335 140 L 460 113" fill="none" stroke={infraStep >= 3 ? '#0284c7' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 335 160 L 460 218" fill="none" stroke={infraStep >= 3 ? '#0284c7' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        
+                        {/* Direct Server Return Path (Dotted Cyan from servers back to client) */}
+                        {infraStep >= 4 && (
+                          <path d="M 460 113 L 100 135" fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeDasharray="3,3" className="flow-active-line" />
+                        )}
+                        {infraStep >= 4 && (
+                          <path d="M 460 218 L 100 165" fill="none" stroke="#22d3ee" strokeWidth="1.5" strokeDasharray="3,3" className="flow-active-line" />
+                        )}
+                      </g>
+                    )}
+
+                    {/* Scenario 3: VPC PrivateLink Path */}
+                    {infraScenario === 'privatelink' && (
+                      <g>
+                        <path d="M 100 150 L 150 166" fill="none" stroke={infraStep >= 1 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
+                        <path d="M 230 166 L 255 166" fill="none" stroke={infraStep >= 2 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 2 ? 2.5 : 1} className={infraStep === 2 ? 'flow-active-line' : ''} />
+                        <path d="M 335 166 L 360 161" fill="none" stroke={infraStep >= 3 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 440 150 L 460 113" fill="none" stroke={infraStep >= 4 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
+                        <path d="M 440 170 L 460 218" fill="none" stroke={infraStep >= 4 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
+                      </g>
+                    )}
+
+                    {/* Flowing animated circles / packet tracers */}
+                    {infraStep === 1 && infraScenario === 'alb_ingress' && <circle r="4.5" fill="#ea580c"><animateMotion dur="2s" repeatCount="indefinite" path="M 100 150 L 150 106" /></circle>}
+                    {infraStep === 2 && infraScenario === 'alb_ingress' && <circle r="4.5" fill="#ea580c"><animateMotion dur="2s" repeatCount="indefinite" path="M 190 127 L 190 145" /></circle>}
+                    {infraStep === 3 && infraScenario === 'alb_ingress' && <circle r="4.5" fill="#ea580c"><animateMotion dur="2s" repeatCount="indefinite" path="M 190 187 L 190 205" /></circle>}
+                    {infraStep === 4 && infraScenario === 'alb_ingress' && <circle r="4.5" fill="#ea580c"><animateMotion dur="2s" repeatCount="indefinite" path="M 230 226 L 295 226 L 295 175" /></circle>}
+                    {infraStep === 5 && infraScenario === 'alb_ingress' && <circle r="4.5" fill="#ea580c"><animateMotion dur="2s" repeatCount="indefinite" path="M 335 140 L 460 113" /></circle>}
+
+                    {infraStep === 1 && infraScenario === 'nlb_throughput' && <circle r="4.5" fill="#0284c7"><animateMotion dur="2s" repeatCount="indefinite" path="M 100 150 L 255 150" /></circle>}
+                    {infraStep === 3 && infraScenario === 'nlb_throughput' && <circle r="4.5" fill="#0284c7"><animateMotion dur="2s" repeatCount="indefinite" path="M 335 140 L 460 113" /></circle>}
+                    {infraStep === 4 && infraScenario === 'nlb_throughput' && <circle r="4.5" fill="#22d3ee"><animateMotion dur="2s" repeatCount="indefinite" path="M 460 113 L 100 135" /></circle>}
+
+                    {infraStep === 1 && infraScenario === 'privatelink' && <circle r="4.5" fill="#7c3aed"><animateMotion dur="2s" repeatCount="indefinite" path="M 100 150 L 150 166" /></circle>}
+                    {infraStep === 2 && infraScenario === 'privatelink' && <circle r="4.5" fill="#7c3aed"><animateMotion dur="2s" repeatCount="indefinite" path="M 230 166 L 255 166" /></circle>}
+                    {infraStep === 3 && infraScenario === 'privatelink' && <circle r="4.5" fill="#7c3aed"><animateMotion dur="2s" repeatCount="indefinite" path="M 335 166 L 360 161" /></circle>}
+                    {infraStep === 4 && infraScenario === 'privatelink' && <circle r="4.5" fill="#7c3aed"><animateMotion dur="2s" repeatCount="indefinite" path="M 440 150 L 460 113" /></circle>}
+                  </svg>
+
+                  {/* Stepper Playback controls block */}
+                  <div style={{ display: 'flex', gap: '6px', width: '100%', marginTop: '12px', justifyContent: 'center', alignItems: 'center' }}>
+                    <button
+                      className="anl-btn"
+                      style={{ padding: '4px 10px', fontSize: '11px' }}
+                      onClick={() => setInfraStep(p => Math.max(0, p - 1))}
+                      disabled={infraStep === 0}
+                    >
+                      ◀ Prev
+                    </button>
+                    <button
+                      className="anl-btn"
+                      style={{
+                        padding: '4px 12px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        backgroundColor: infraTracing ? activeColor : 'var(--color-background-primary)',
+                        color: infraTracing ? '#fff' : 'var(--color-text-primary)',
+                        borderColor: infraTracing ? activeColor : 'var(--color-border-secondary)'
+                      }}
+                      onClick={() => setInfraTracing(!infraTracing)}
+                    >
+                      {infraTracing ? 'Pause ⏸' : 'Play Auto-Advance ⏯'}
+                    </button>
+                    <button
+                      className="anl-btn"
+                      style={{ padding: '4px 10px', fontSize: '11px' }}
+                      onClick={() => setInfraStep(p => (p + 1) % scSteps[infraScenario].length)}
+                      disabled={infraStep === scSteps[infraScenario].length - 1}
+                    >
+                      Next ▶
+                    </button>
+                    <button
+                      className="anl-btn"
+                      style={{ padding: '4px 10px', fontSize: '11px' }}
+                      onClick={() => { setInfraStep(0); setInfraTracing(false); }}
+                    >
+                      Reset 🔄
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right Column: Step explanations & Golden Cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  
+                  {/* Step Description panel */}
+                  <div className="anl-card" style={{ borderLeft: `3px solid ${activeColor}`, padding: '12px 14px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', color: activeColor, marginBottom: '6px' }}>
+                      {scSteps[infraScenario][infraStep]?.label || 'Active Phase Step'}
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-primary)', lineHeight: '1.4' }}>
+                      {scSteps[infraScenario][infraStep]?.desc || 'Active configuration phase.'}
+                    </div>
+                  </div>
+
+                  {/* Golden memory hooks based on active scenario */}
+                  {infraScenario === 'alb_ingress' && (
+                    <div className="anl-card" style={{
+                      border: '1.5px solid #fb923c',
+                      background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)',
+                      padding: '12px 14px',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ color: '#fb923c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        🧠 Systems Memory Mnemonic
+                      </div>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#ffedd5', marginBottom: '4px' }}>
+                        ALB = "The Smart Concierge at L7"
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                        The Concierge is smart. She opens client packages (SSL Decryption), checks their query string badges (WAF inspection), verifies dynamic host paths (Host/Path listener rules), and directs guests to AZ private suites.
+                      </div>
+                    </div>
+                  )}
+
+                  {infraScenario === 'nlb_throughput' && (
+                    <div className="anl-card" style={{
+                      border: '1.5px solid #38bdf8',
+                      background: 'linear-gradient(135deg, #0f172a 0%, #022c22 100%)',
+                      padding: '12px 14px',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ color: '#38bdf8', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        🧠 Systems Memory Mnemonic
+                      </div>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#e0f2fe', marginBottom: '4px' }}>
+                        NLB = "The High-Speed Bullet Train at L4"
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#e0f2fe', opacity: 0.85, lineHeight: '1.4' }}>
+                        The Train does not open bags. It reads raw L4 socket tickets instantly in hardware, hashes them determinants, fires down dedicated AZ subnet tracks, and allows servers to write back directly (DSR) to client IPs.
+                      </div>
+                    </div>
+                  )}
+
+                  {infraScenario === 'privatelink' && (
+                    <div className="anl-card" style={{
+                      border: '1.5px solid #c084fc',
+                      background: 'linear-gradient(135deg, #1e1b4b 0%, #172554 100%)',
+                      padding: '12px 14px',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ color: '#c084fc', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        🧠 Systems Memory Mnemonic
+                      </div>
+                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#faf5ff', marginBottom: '4px' }}>
+                        PrivateLink = "The Secure Underground Highway"
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#faf5ff', opacity: 0.85, lineHeight: '1.4' }}>
+                        Bypasses all public roads (Public internet, internet gateways). Connects consumer vault directly to provider vault through a secure underground highway drilled straight through solid AWS physical fiber backbone bedrock.
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
 
-              <div>
-                <div className="anl-sec">Zonal and Link integrations</div>
-                <div className="anl-card" style={{ borderLeft: '3px solid #0369a1', minHeight: '190px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#0369a1' }}>Container &amp; Interface Privatelink Routing</div>
-                  <ul className="anl-ck">
-                    <li><b>ECS/EKS Dynamic Mapping:</b> ALB integrates natively with AWS ECS container pools, tracking target IP addresses dynamically as docker nodes scale.</li>
-                    <li><b>AWS Lambda Target:</b> ALBs can route incoming HTTP requests directly to trigger serverless AWS Lambda operations.</li>
-                    <li><b>PrivateLink Gateway Endpoint:</b> NLB serves as the core layer of VPC Endpoint Services, securely exposing backend services across VPC interfaces without Internet Gateways.</li>
-                    <li><b>Route 53 Health Integration:</b> Route 53 queries ALB health check status automatically to fail over DNS flows globally.</li>
-                  </ul>
-                </div>
+              {/* Dynamic scroll tracing logging console */}
+              <div className="anl-sec" style={{ marginTop: '16px' }}>Active Infrastructure Telemetry Tracelog</div>
+              <div className="anl-card" style={{ marginBottom: '14px' }}>
+                <pre className="anl-log" style={{ minHeight: '90px', maxHeight: '110px', overflowY: 'auto', fontSize: '10.5px' }}>
+                  {`; [Integration Telemetry] Dynamic Tracer online. Scenario: ${infraScenario.toUpperCase()}\n`}
+                  {scSteps[infraScenario].slice(0, infraStep + 1).map((step, idx) => (
+                    `[Step ${idx + 1}] ${step.label} resolved successfully: ${step.desc}\n`
+                  )).join('')}
+                  {infraTracing && `[Auto-Playback] Sequencing next telemetry packet in 3.5s...\n`}
+                </pre>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* CONFIG PANEL */}
         {activeSection === 'config' && (
