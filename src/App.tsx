@@ -15,6 +15,7 @@ import ElasticContainersVisualizer from './pages/visualizers/ElasticContainersVi
 import ServerlessVisualizer from './pages/visualizers/ServerlessVisualizer';
 import DatabasesAndAnalyticsVisualizer from './pages/visualizers/DatabasesAndAnalyticsVisualizer';
 import NotFound from './pages/NotFound';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   const isGithubPages = window.location.pathname.startsWith('/interactive-visualizers');
@@ -22,6 +23,7 @@ export default function App() {
 
   return (
     <Router basename={basename}>
+      <ScrollToTop />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200">

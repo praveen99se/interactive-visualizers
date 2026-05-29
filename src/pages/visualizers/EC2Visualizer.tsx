@@ -522,10 +522,10 @@ export default function EC2Visualizer() {
   return (
     <div style={{ fontSize: '13.5px' }}>
       <style>{`
-        .ec2-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
-        .ec2-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 13.5px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
-        .ec2-tb:hover { background: var(--color-background-tertiary); }
-        .ec2-tb.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; }
+        .ec2-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .ec2-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
+        .ec2-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .ec2-tb.ec2-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
         .ec2-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
         .ec2-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
         .ec2-sec:first-child { margin-top: 0; }

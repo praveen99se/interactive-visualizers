@@ -434,9 +434,10 @@ export default function ElastiCacheVisualizer() {
         ul.ec-ck li{font-size:12px;margin-bottom:4px;list-style:none;padding-left:16px;position:relative}
         ul.ec-ck li::before{content:"✓";position:absolute;left:0;color:#15803d;font-weight:700}
         .ec-log{border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:8px 10px;background:var(--color-background-secondary);font-size:11px;font-family:var(--font-mono,monospace);min-height:60px;white-space:pre-wrap}
-        .ec-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
-        .ec-tb{padding:5px 13px;border-radius:999px;border:0.5px solid var(--color-border-secondary);font-size:12px;cursor:pointer;background:var(--color-background-secondary);color:var(--color-text-secondary);transition:all .15s}
-        .ec-tb.on{background:#dc2626;color:#fff;border-color:#dc2626}
+        .ec-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .ec-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
+        .ec-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .ec-tb.on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
         button.ec-btn{font-size:12px;padding:6px 14px;border-radius:8px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;transition:all .15s}
         button.ec-btn.primary{background:#dc2626;border-color:#dc2626;color:#fff}
       `}</style>

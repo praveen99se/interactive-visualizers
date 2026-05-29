@@ -851,10 +851,10 @@ export default function Route53Visualizer() {
   return (
     <div>
       <style>{`
-        .r53-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
-        .r53-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
-        .r53-tb:hover { background: var(--color-background-tertiary); }
-        .r53-tb.r53-on { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+        .r53-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .r53-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
+        .r53-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .r53-tb.r53-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
         .r53-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; }
         .r53-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
         .r53-sec:first-child { margin-top: 0; }

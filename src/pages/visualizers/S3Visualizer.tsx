@@ -1465,10 +1465,10 @@ export default function S3Visualizer() {
   return (
     <div style={{ fontSize: '13.5px' }}>
       <style>{`
-        .s3-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
-        .s3-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 13.5px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
-        .s3-tb:hover { background: var(--color-background-tertiary); }
-        .s3-tb.s3-on { background: #0891b2; color: #fff; border-color: #0891b2; }
+        .s3-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .s3-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
+        .s3-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .s3-tb.s3-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
         .s3-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 20px; background: var(--color-background-primary); margin-bottom: 16px; font-size: 13px; line-height: 1.55; }
         .s3-sec { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .06em; margin: 24px 0 10px; }
         .s3-sec:first-child { margin-top: 0; }

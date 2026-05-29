@@ -639,11 +639,10 @@ export default function ALBNLBVisualizer() {
   return (
     <div>
       <style>{`
-        .anl-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
-        .anl-tb { padding: 6px 14px; border-radius: 999px; border: 0.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--color-background-secondary); color: var(--color-text-secondary); transition: all .15s; outline: none; }
-        .anl-tb:hover { background: var(--color-background-tertiary); }
-        .anl-tb.anl-on { background: #c2410c; color: #fff; border-color: #c2410c; }
-        .anl-tb.anl-on-nlb { background: #0369a1; color: #fff; border-color: #0369a1; }
+        .anl-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .anl-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
+        .anl-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .anl-tb.anl-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
         .anl-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; }
         .anl-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
         .anl-sec:first-child { margin-top: 0; }

@@ -355,7 +355,6 @@ export default function ElasticContainersVisualizer() {
     handleKillTask(target.id, target.name);
   };
 
-  // Canvas Particle Loop
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -365,13 +364,13 @@ export default function ElasticContainersVisualizer() {
     const width = canvas.width;
     const height = canvas.height;
 
-    // 1. High-Tech Cyber Blueprint Background
-    ctx.fillStyle = '#0a0f1d';
+    // 1. Premium Clean Light Blueprint Background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     // Draw grid lines
-    ctx.strokeStyle = '#111e36';
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
     const gridSpacing = 20;
     for (let x = 0; x < width; x += gridSpacing) {
       ctx.beginPath();
@@ -403,7 +402,7 @@ export default function ElasticContainersVisualizer() {
     const workerTasksYStart = 205;
 
     // Connect conduit paths with glowing lines
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(clientX + 35, clientY);
@@ -412,11 +411,11 @@ export default function ElasticContainersVisualizer() {
 
     // 2. Render static infrastructure nodes with modern styling
     // HTTP Client Node
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#f0f9ff';
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(59, 130, 246, 0.4)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(59, 130, 246, 0.15)';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.roundRect(clientX - 35, clientY - 30, 70, 60, 8);
     ctx.fill();
@@ -424,33 +423,33 @@ export default function ElasticContainersVisualizer() {
     ctx.shadowBlur = 0; // reset
 
     // Double border inside HTTP Client Node
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)';
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.roundRect(clientX - 31, clientY - 26, 62, 52, 6);
     ctx.stroke();
 
     // Node contents
-    ctx.fillStyle = '#60a5fa';
+    ctx.fillStyle = '#1e3a8a';
     ctx.font = 'bold 9.5px var(--font-sans)';
     ctx.textAlign = 'center';
     ctx.fillText('🌍 CLIENTS', clientX, clientY - 12);
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#475569';
     ctx.font = '8px var(--font-mono)';
     let rateStr = 'Rate: 15/s';
     if (simTrafficLevel === 'low') rateStr = 'Rate: 3/s';
     if (simTrafficLevel === 'surge') rateStr = 'Rate: 240/s';
     ctx.fillText(rateStr, clientX, clientY + 5);
-    ctx.fillStyle = simTrafficLevel === 'surge' ? '#ef4444' : '#10b981';
+    ctx.fillStyle = simTrafficLevel === 'surge' ? '#b91c1c' : '#16803d';
     ctx.font = 'bold 7px var(--font-sans)';
     ctx.fillText(simTrafficLevel === 'surge' ? '⚠️ SURGE LOAD' : '🟢 HEALTHY', clientX, clientY + 16);
 
     // ALB Load Balancer Node
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#f0f9ff';
     ctx.strokeStyle = '#0284c7';
     ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(2, 132, 199, 0.4)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(2, 132, 199, 0.15)';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.roundRect(albX - 35, albY - 25, 70, 50, 8);
     ctx.fill();
@@ -458,38 +457,38 @@ export default function ElasticContainersVisualizer() {
     ctx.shadowBlur = 0; // reset
 
     // Inner panel inside ALB Node
-    ctx.strokeStyle = 'rgba(2, 132, 199, 0.2)';
+    ctx.strokeStyle = 'rgba(2, 132, 199, 0.15)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.roundRect(albX - 31, albY - 21, 62, 42, 6);
     ctx.stroke();
 
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0369a1';
     ctx.font = 'bold 10px var(--font-sans)';
     ctx.fillText('⚖️ ALB', albX, albY - 6);
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#475569';
     ctx.font = '8px var(--font-mono)';
     ctx.fillText('Port: 443', albX, albY + 6);
     ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 7.5px var(--font-mono)';
-    ctx.fillText('HTTP \u2192 HTTP', albX, albY + 16);
+    ctx.fillText('HTTP → HTTP', albX, albY + 16);
 
     // SQS Message Queue Node
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#fffbeb';
     ctx.strokeStyle = '#d97706';
     ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(217, 119, 6, 0.4)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(217, 119, 6, 0.15)';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.roundRect(sqsX - 45, sqsY - 25, 90, 50, 8);
     ctx.fill();
     ctx.stroke();
     ctx.shadowBlur = 0; // reset
 
-    ctx.fillStyle = '#fbbf24';
+    ctx.fillStyle = '#b45309';
     ctx.font = 'bold 9px var(--font-sans)';
     ctx.fillText('✉️ SQS QUEUE', sqsX, sqsY - 10);
-    ctx.fillStyle = '#fef08a';
+    ctx.fillStyle = '#b45309';
     ctx.font = 'bold 8px var(--font-mono)';
     ctx.fillText(`Depth: ${sqsQueueDepth} jobs`, sqsX, sqsY + 1);
 
@@ -502,8 +501,8 @@ export default function ElasticContainersVisualizer() {
     const slotY = sqsY + 8;
 
     for (let slotIdx = 0; slotIdx < maxSlots; slotIdx++) {
-      ctx.strokeStyle = '#451a03';
-      ctx.fillStyle = '#1e1b4b';
+      ctx.strokeStyle = '#fdba74';
+      ctx.fillStyle = '#fffbeb';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.roundRect(startSlotX + (slotIdx * 13), slotY, slotWidth, slotHeight, 2);
@@ -513,7 +512,7 @@ export default function ElasticContainersVisualizer() {
       if (slotIdx < sqsQueueDepth) {
         ctx.fillStyle = '#f59e0b';
         ctx.shadowColor = '#d97706';
-        ctx.shadowBlur = 4;
+        ctx.shadowBlur = 2;
         ctx.beginPath();
         ctx.roundRect(startSlotX + (slotIdx * 13) + 1, slotY + 1, slotWidth - 2, slotHeight - 2, 1);
         ctx.fill();
@@ -522,11 +521,11 @@ export default function ElasticContainersVisualizer() {
     }
 
     // EventBridge Cron Node
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = '#faf5ff';
     ctx.strokeStyle = '#a855f7';
     ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(168, 85, 247, 0.4)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(168, 85, 247, 0.15)';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     ctx.arc(ebX, ebY, 20, 0, Math.PI * 2);
     ctx.fill();
@@ -534,14 +533,14 @@ export default function ElasticContainersVisualizer() {
     ctx.shadowBlur = 0; // reset
 
     // Pulsing outer clock timer ring
-    ctx.strokeStyle = 'rgba(168, 85, 247, 0.35)';
+    ctx.strokeStyle = 'rgba(168, 85, 247, 0.2)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     const ringRadius = 20 + Math.abs(Math.sin(Date.now() / 300)) * 6;
     ctx.arc(ebX, ebY, ringRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.fillStyle = '#d8b4fe';
+    ctx.fillStyle = '#6b21a8';
     ctx.font = 'bold 8px var(--font-sans)';
     ctx.textAlign = 'center';
     ctx.fillText('⏰ CRON', ebX, ebY - 3);
@@ -550,11 +549,13 @@ export default function ElasticContainersVisualizer() {
     ctx.fillText('EB RULE', ebX, ebY + 7);
 
     // 3. ECS Container subnet boundary box (VPC subnet - wider X: 430 to 860)
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.015)';
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([8, 4]);
     ctx.beginPath();
     ctx.roundRect(430, 15, 430, height - 30, 12);
+    ctx.fill();
     ctx.stroke();
 
     // Draw two inner subnets: Public Web Subnet and Private App Subnet
@@ -563,25 +564,29 @@ export default function ElasticContainersVisualizer() {
     ctx.setLineDash([4, 4]);
 
     // Public Web Subnet Box (width 170)
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.roundRect(450, 42, 170, height - 72, 8);
+    ctx.fill();
     ctx.stroke();
 
     // Private App Subnet Box (width 170)
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
     ctx.roundRect(670, 42, 170, height - 72, 8);
+    ctx.fill();
     ctx.stroke();
 
     ctx.setLineDash([]);
 
     // Subnet Labels
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.55)';
+    ctx.fillStyle = '#047857';
     ctx.font = 'bold 7.5px var(--font-mono)';
     ctx.textAlign = 'center';
     ctx.fillText('PUBLIC WEB SUBNET', 535, 52);
     ctx.fillText('PRIVATE APP SUBNET', 755, 52);
 
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = '#047857';
     ctx.font = 'bold 8px var(--font-mono)';
     ctx.textAlign = 'right';
     ctx.fillText('VPC SUBNET - ECS CLUSTER', width - 20, 28);
@@ -592,8 +597,8 @@ export default function ElasticContainersVisualizer() {
       const tx = webTasksX;
       const ty = webTasksYStart + (i * 52);
 
-      // Card Base background
-      ctx.fillStyle = '#0f172a';
+      // Card Base background (Pure White Card)
+      ctx.fillStyle = '#ffffff';
       ctx.strokeStyle = t.status === 'PROVISIONING' ? '#fbbf24' : '#10b981';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -609,13 +614,13 @@ export default function ElasticContainersVisualizer() {
       ctx.fill();
 
       // Text name
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 8.5px var(--font-mono)';
       ctx.textAlign = 'left';
       ctx.fillText(t.name, tx - 38, ty - 3);
 
-      // CPU mini resource bar
-      ctx.fillStyle = '#1e293b';
+      // CPU mini resource bar background
+      ctx.fillStyle = '#f1f5f9';
       ctx.beginPath();
       ctx.roundRect(tx - 38, ty + 5, 65, 4, 2);
       ctx.fill();
@@ -623,22 +628,22 @@ export default function ElasticContainersVisualizer() {
       // Fill resource bar
       if (t.status === 'RUNNING') {
         const fillWidth = (t.cpu / 100) * 65;
-        ctx.fillStyle = t.cpu > 80 ? '#ef4444' : t.cpu > 50 ? '#f59e0b' : '#10b981';
+        ctx.fillStyle = t.cpu > 80 ? '#b91c1c' : t.cpu > 50 ? '#d97706' : '#10b981';
         ctx.beginPath();
         ctx.roundRect(tx - 38, ty + 5, fillWidth, 4, 2);
         ctx.fill();
 
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#64748b';
         ctx.font = '7px var(--font-mono)';
         ctx.fillText(`${t.cpu}%`, tx + 32, ty + 9);
       } else {
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = '#b45309';
         ctx.font = 'italic 7px var(--font-sans)';
         ctx.fillText('STARTING...', tx - 38, ty + 9);
       }
 
       // Connect ALB line
-      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#334155' : '#0284c735';
+      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#e2e8f0' : '#0284c735';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(albX + 35, albY);
@@ -651,8 +656,8 @@ export default function ElasticContainersVisualizer() {
       const tx = workerTasksX;
       const ty = workerTasksYStart + (i * 45);
 
-      // Card Base
-      ctx.fillStyle = '#0f172a';
+      // Card Base (Pure White Card)
+      ctx.fillStyle = '#ffffff';
       ctx.strokeStyle = t.status === 'PROVISIONING' ? '#fbbf24' : '#3b82f6';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -668,24 +673,24 @@ export default function ElasticContainersVisualizer() {
       ctx.fill();
 
       // Name
-      ctx.fillStyle = '#e2e8f0';
+      ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 8px var(--font-mono)';
       ctx.textAlign = 'left';
       ctx.fillText(t.name, tx - 38, ty - 3);
 
       // Status text
       if (t.status === 'RUNNING') {
-        ctx.fillStyle = '#60a5fa';
+        ctx.fillStyle = '#2563eb';
         ctx.font = '7px var(--font-sans)';
         ctx.fillText(`⚙️ RUNNING | Load: ${t.cpu}%`, tx - 38, ty + 7);
       } else {
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = '#b45309';
         ctx.font = 'italic 7px var(--font-sans)';
         ctx.fillText('PROVISIONING...', tx - 38, ty + 7);
       }
 
       // Connect SQS line
-      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#334155' : '#b4530955';
+      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#e2e8f0' : '#d9770635';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(sqsX + 45, sqsY);
@@ -698,8 +703,8 @@ export default function ElasticContainersVisualizer() {
       const tx = 680;
       const ty = 90;
 
-      // Base
-      ctx.fillStyle = '#0f172a';
+      // Base (Pure White Card)
+      ctx.fillStyle = '#ffffff';
       ctx.strokeStyle = '#a855f7';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -708,21 +713,21 @@ export default function ElasticContainersVisualizer() {
       ctx.stroke();
 
       // Led
-      ctx.fillStyle = '#c084fc';
+      ctx.fillStyle = '#a855f7';
       ctx.beginPath();
       ctx.arc(tx - 48, ty - 2, 3, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#e9d5ff';
+      ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 8px var(--font-mono)';
       ctx.textAlign = 'left';
       ctx.fillText(t.name, tx - 38, ty - 3);
-      ctx.fillStyle = '#c084fc';
+      ctx.fillStyle = '#a855f7';
       ctx.font = '7px var(--font-sans)';
       ctx.fillText(t.status === 'PROVISIONING' ? '⏳ MOUNTING...' : '🏃 BATCH RUNNING', tx - 38, ty + 7);
 
       // Connect EventBridge line
-      ctx.strokeStyle = '#a855f745';
+      ctx.strokeStyle = '#a855f725';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(ebX + 20, ebY); // EventBridge rule node right boundary
@@ -730,29 +735,29 @@ export default function ElasticContainersVisualizer() {
       ctx.stroke();
     });
 
-    // 4. Telemetry overlay box directly in canvas (translucent glassy overlay)
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = '#0284c7';
+    // 4. Telemetry overlay box directly in canvas (translucent clean glassy overlay)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.strokeStyle = '#e2e8f0';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.roundRect(20, height - 85, 125, 65, 8);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#60a5fa';
+    ctx.fillStyle = '#1e3a8a';
     ctx.font = 'bold 8px var(--font-sans)';
     ctx.textAlign = 'left';
     ctx.fillText('📊 ECS CLUSTER METRICS', 28, height - 71);
 
     ctx.font = '7.5px var(--font-mono)';
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#0284c7';
     let latency = 'Latency: 12ms';
     if (simTrafficLevel === 'low') latency = 'Latency: 4ms';
     if (simTrafficLevel === 'surge') latency = 'Latency: 94ms ⚠️';
     ctx.fillText(latency, 28, height - 58);
-    ctx.fillStyle = '#cbd5e1';
+    ctx.fillStyle = '#475569';
     ctx.fillText(`Socket Conns: ${webTasks.filter(t => t.status === 'RUNNING').length + workerTasks.filter(t => t.status === 'RUNNING').length}`, 28, height - 47);
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = '#16803d';
     ctx.fillText('API Healthcheck: 200 OK', 28, height - 36);
 
     // 5. Spawn dynamic HTTP request particles
@@ -768,7 +773,7 @@ export default function ElasticContainersVisualizer() {
         targetX: albX - 35,
         targetY: albY,
         speed: 3.5 + Math.random() * 2.5,
-        color: '#60a5fa',
+        color: '#3b82f6',
         type: 'web',
         state: 'to_lb'
       });
@@ -784,7 +789,7 @@ export default function ElasticContainersVisualizer() {
         targetX: 760 - 60, // Cron Task App Subnet Left boundary (tx - 60 = 700)
         targetY: 90, // Cron Task Card Y (ty = 90)
         speed: 3,
-        color: '#c084fc',
+        color: '#a855f7',
         type: 'cron',
         state: 'to_worker_task'
       });
@@ -828,7 +833,7 @@ export default function ElasticContainersVisualizer() {
       // Draw particle as a glowing neon dot
       ctx.fillStyle = p.color;
       ctx.shadowColor = p.color;
-      ctx.shadowBlur = 4;
+      ctx.shadowBlur = 3;
       ctx.beginPath();
       ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -910,37 +915,36 @@ export default function ElasticContainersVisualizer() {
         }
         .ecs-tabs {
           display: flex;
-          gap: 8px;
+          gap: 5px;
           flex-wrap: wrap;
-          margin-bottom: 24px;
-          border-bottom: 2px solid #e2e8f0;
-          padding-bottom: 12px;
+          margin-bottom: 16px;
+          border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0);
+          padding-bottom: 10px;
         }
         .ecs-tb {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 16px;
-          border-radius: 10px;
-          border: 1px solid transparent;
-          font-size: 13.5px;
-          font-weight: 600;
-          color: #64748b;
-          background: transparent;
+          padding: 6px 14px;
+          border-radius: var(--border-radius-lg, 12px);
+          border: 0.5px solid var(--color-border-secondary, #cbd5e1);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--color-text-secondary, #475569);
+          background: var(--color-background-secondary, #f8fafc);
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.2s ease;
+          transition: all 0.15s;
           outline: none;
         }
         .ecs-tb:hover {
-          background: #e2e8f0;
-          color: #0f172a;
+          background: var(--color-background-tertiary, #f1f5f9);
         }
         .ecs-tb.ecs-on {
-          background: #fef9c3;
-          color: #a16207;
-          border-color: #fef08a;
-          box-shadow: 0 4px 6px -1px rgba(234, 179, 8, 0.05);
+          background: #16a34a;
+          color: #ffffff;
+          border-color: #16a34a;
+          font-weight: 500;
         }
         .ecs-input, .ecs-select {
           width: 100%;

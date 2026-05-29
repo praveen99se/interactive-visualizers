@@ -1107,40 +1107,10 @@ export default function ServerlessVisualizer() {
           color: #475569;
           line-height: 1.65;
         }
-        .sv-tabs {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          margin-bottom: 24px;
-          border-bottom: 2px solid #e2e8f0;
-          padding-bottom: 12px;
-        }
-        .sv-tb {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          border-radius: 10px;
-          border: 1px solid transparent;
-          font-size: 13.5px;
-          font-weight: 600;
-          color: #64748b;
-          background: transparent;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: all 0.2s ease;
-          outline: none;
-        }
-        .sv-tb:hover {
-          background: #e2e8f0;
-          color: #0f172a;
-        }
-        .sv-tb.sv-on {
-          background: #f3e8ff;
-          color: #7e22ce;
-          border-color: #e9d5ff;
-          box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
-        }
+        .sv-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .sv-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+        .sv-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
+        .sv-tb.sv-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
         .sv-input, .sv-select {
           width: 100%;
           padding: 10px 14px;

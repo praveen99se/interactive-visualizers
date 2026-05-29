@@ -630,38 +630,38 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .im-tab-nav {
           display: flex;
-          gap: 8px;
-          border-bottom: 2px solid #e2e8f0;
+          gap: 5px;
+          border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0);
           padding-bottom: 10px;
-          margin-bottom: 24px;
+          margin-bottom: 16px;
           overflow-x: auto;
         }
 
         .im-tab-btn {
-          padding: 10px 18px;
-          border-radius: 10px;
-          border: 1px solid transparent;
-          font-size: 13px;
-          font-weight: 600;
-          color: #64748b;
-          background: transparent;
+          padding: 6px 14px;
+          border-radius: var(--border-radius-lg, 12px);
+          border: 0.5px solid var(--color-border-secondary, #cbd5e1);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--color-text-secondary, #475569);
+          background: var(--color-background-secondary, #f8fafc);
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.2s ease;
+          transition: all 0.15s;
           display: inline-flex;
           align-items: center;
           gap: 6px;
         }
 
         .im-tab-btn:hover {
-          background: #e2e8f0;
-          color: #0f172a;
+          background: var(--color-background-tertiary, #f1f5f9);
         }
 
         .im-tab-btn.im-active {
-          background: #eff6ff;
-          color: #1d4ed8;
-          border-color: #bfdbfe;
+          background: #16a34a;
+          color: #ffffff;
+          border-color: #16a34a;
+          font-weight: 500;
         }
 
         .im-grid {
