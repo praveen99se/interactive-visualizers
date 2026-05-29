@@ -8,7 +8,6 @@ import {
   Globe, 
   Cpu, 
   Folder, 
-  HelpCircle,
   BookOpen,
   Layers,
   ChevronRight,
@@ -1600,40 +1599,67 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left: Interactive Scenarios Selectors (col-span-5) */}
           <div className="lg:col-span-5 flex flex-col gap-2.5 w-full">
-            {scenarios.map((scenario) => (
-              <button
-                key={scenario.id}
-                onClick={() => {
-                  const nextId = selectedScenarioId === scenario.id ? null : scenario.id;
-                  setSelectedScenarioId(nextId);
-                  setSimSpikeActive(false);
-                  setSimFailoverActive(false);
-                  setSimSecAttackActive(false);
-                }}
-                className={`text-left p-4 rounded-2xl border transition-all duration-200 flex items-start gap-3 w-full group ${
-                  selectedScenarioId === scenario.id 
-                    ? 'bg-slate-900 border-slate-900 text-white shadow-lg' 
-                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-800'
-                }`}
-              >
-                <div className={`p-2 rounded-xl text-lg transition-colors ${
-                  selectedScenarioId === scenario.id ? 'bg-emerald-950/80 text-emerald-400' : 'bg-white border border-slate-200 text-slate-700'
-                }`}>
-                  {scenario.icon}
-                </div>
-                <div className="flex-grow flex flex-col gap-1 pr-1">
-                  <span className="text-xs font-bold tracking-tight leading-snug">
-                    {scenario.title}
-                  </span>
-                  <span className={`text-[10px] leading-normal font-medium flex items-center gap-1 ${
-                    selectedScenarioId === scenario.id ? 'text-slate-400' : 'text-slate-500'
+            {scenarios.map((scenario) => {
+              const isSelected = selectedScenarioId === scenario.id;
+              const isNoneSelected = selectedScenarioId === null;
+              
+              // Call to Action / Invitation border styles when no scenario is selected
+              let cardBgBorderClass = '';
+              if (isSelected) {
+                cardBgBorderClass = 'bg-slate-900 border-slate-900 text-white shadow-lg';
+              } else if (isNoneSelected) {
+                // Pulse invitation highlight class
+                cardBgBorderClass = 'bg-white border-emerald-300 hover:bg-slate-50 hover:border-emerald-500 text-slate-800 shadow-[0_4px_12px_rgba(16,185,129,0.04)] hover:shadow-[0_6px_16px_rgba(16,185,129,0.12)] hover:-translate-y-0.5';
+              } else {
+                cardBgBorderClass = 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-800';
+              }
+
+              return (
+                <button
+                  key={scenario.id}
+                  onClick={() => {
+                    const nextId = isSelected ? null : scenario.id;
+                    setSelectedScenarioId(nextId);
+                    setSimSpikeActive(false);
+                    setSimFailoverActive(false);
+                    setSimSecAttackActive(false);
+                  }}
+                  className={`text-left p-4 rounded-2xl border transition-all duration-300 flex items-start gap-3.5 w-full group ${cardBgBorderClass}`}
+                >
+                  <div className={`p-2.5 rounded-xl text-lg transition-all duration-300 ${
+                    isSelected 
+                      ? 'bg-emerald-950/80 text-emerald-400' 
+                      : isNoneSelected 
+                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-600'
+                        : 'bg-white border border-slate-200 text-slate-700'
                   }`}>
-                    {selectedScenarioId === scenario.id ? 'Active Blueprint' : 'Click to inspect blueprint'} 
-                    <ChevronRight className={`w-3 h-3 transition-transform ${selectedScenarioId === scenario.id ? 'rotate-90 text-emerald-400' : 'group-hover:translate-x-0.5'}`} />
-                  </span>
-                </div>
-              </button>
-            ))}
+                    {scenario.icon}
+                  </div>
+                  <div className="flex-grow flex flex-col gap-1 pr-1">
+                    <span className="text-xs font-bold tracking-tight leading-snug">
+                      {scenario.title}
+                    </span>
+                    
+                    {isNoneSelected ? (
+                      <span className="text-[9.5px] bg-emerald-50/80 text-emerald-700 font-extrabold px-2.5 py-0.5 rounded-md border border-emerald-300/30 animate-pulse flex items-center gap-1.5 w-fit mt-1 shadow-sm">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                        </span>
+                        Analyze Blueprint
+                      </span>
+                    ) : (
+                      <span className={`text-[10px] leading-normal font-medium flex items-center gap-1 ${
+                        isSelected ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
+                        {isSelected ? 'Active Blueprint' : 'Click to inspect blueprint'} 
+                        <ChevronRight className={`w-3 h-3 transition-transform ${isSelected ? 'rotate-90 text-emerald-400' : 'group-hover:translate-x-0.5'}`} />
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Right: Rich Scenario Detail Display Pane (col-span-7) */}
@@ -1696,14 +1722,105 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-3 min-h-[350px] bg-slate-50/50">
-                <div className="bg-slate-100 p-3 rounded-full text-slate-400 border border-slate-200">
-                  <HelpCircle className="w-6 h-6" />
+              <div className="bg-white border border-slate-200 shadow-md rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-6 min-h-[460px] relative overflow-hidden">
+                {/* Floating ambient subtle backdrop glows */}
+                <div className="absolute top-[-10%] left-[-10%] w-48 h-48 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-48 h-48 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none"></div>
+
+                <div className="relative w-full flex items-center justify-center">
+                  <svg width="240" height="240" viewBox="0 0 240 240" className="overflow-visible max-w-full">
+                    <defs>
+                      <radialGradient id="hub-grad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#34d399" />
+                        <stop offset="100%" stopColor="#047857" />
+                      </radialGradient>
+                      <radialGradient id="glow-grad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                      </radialGradient>
+                    </defs>
+
+                    <style>{`
+                      @keyframes rotClock {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                      }
+                      @keyframes rotCounter {
+                        0% { transform: rotate(360deg); }
+                        100% { transform: rotate(0deg); }
+                      }
+                      .spin-clock {
+                        animation: rotClock 28s linear infinite;
+                        transform-origin: 120px 120px;
+                      }
+                      .spin-counter {
+                        animation: rotCounter 32s linear infinite;
+                        transform-origin: 120px 120px;
+                      }
+                      .ping-node {
+                        animation: pulseGlow 2.5s ease-in-out infinite alternate;
+                        transform-origin: 120px 120px;
+                      }
+                      @keyframes pulseGlow {
+                        0% { filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.3)); opacity: 0.8; }
+                        100% { filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.7)); opacity: 1; }
+                      }
+                    `}</style>
+
+                    {/* Orbit lines */}
+                    <circle cx="120" cy="120" r="95" fill="none" stroke="#f1f5f9" strokeWidth="2.5" />
+                    <circle cx="120" cy="120" r="70" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeDasharray="6,4" />
+                    <circle cx="120" cy="120" r="45" fill="none" stroke="#cbd5e1" strokeWidth="1" opacity="0.6" />
+
+                    {/* Core Hub with active glow */}
+                    <circle cx="120" cy="120" r="30" fill="url(#glow-grad)" className="ping-node" />
+                    <circle cx="120" cy="120" r="16" fill="url(#hub-grad)" stroke="#ffffff" strokeWidth="2" className="ping-node" />
+                    
+                    {/* Tiny nodes rotating clockwise (Middle orbit: radius 70) */}
+                    <g className="spin-clock">
+                      {/* Database icon node (emerald) */}
+                      <g transform="translate(120, 10)">
+                        <circle cx="0" cy="0" r="9" fill="#10b981" stroke="#ffffff" strokeWidth="1.5" />
+                        <text x="0" y="3" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">DB</text>
+                      </g>
+                      {/* Compute node (blue) */}
+                      <g transform="translate(120, 230)">
+                        <circle cx="0" cy="0" r="9" fill="#3b82f6" stroke="#ffffff" strokeWidth="1.5" />
+                        <text x="0" y="3" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">VM</text>
+                      </g>
+                    </g>
+
+                    {/* Tiny nodes rotating counter-clockwise (Outer orbit: radius 95) */}
+                    <g className="spin-counter">
+                      {/* Network DNS node (violet) */}
+                      <g transform="translate(25, 120)">
+                        <circle cx="0" cy="0" r="9" fill="#8b5cf6" stroke="#ffffff" strokeWidth="1.5" />
+                        <text x="0" y="2.5" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">DNS</text>
+                      </g>
+                      {/* Security Shield node (rose) */}
+                      <g transform="translate(215, 120)">
+                        <circle cx="0" cy="0" r="9" fill="#f43f5e" stroke="#ffffff" strokeWidth="1.5" />
+                        <text x="0" y="3.5" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">🛡️</text>
+                      </g>
+                    </g>
+
+                    {/* connection crosshair overlays */}
+                    <line x1="120" y1="104" x2="120" y2="70" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="2,2" />
+                    <line x1="120" y1="136" x2="120" y2="170" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="2,2" />
+                  </svg>
                 </div>
-                <h3 className="text-sm font-bold text-slate-700">No Blueprint Selected</h3>
-                <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
-                  Select a common bottleneck architecture on the left to see dynamic solution blueprints, descriptions, and sandbox links.
-                </p>
+
+                <div className="flex flex-col gap-2.5 max-w-sm relative z-10">
+                  <span className="px-3 py-1 rounded-full text-[9px] font-mono font-bold tracking-widest bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase animate-pulse w-fit mx-auto shadow-sm">
+                    ⚡ advisor engine: ready
+                  </span>
+                  <h3 className="text-base font-extrabold text-slate-800">
+                    No Bottleneck Profile Selected
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                    Select one of the architectural challenges on the left. The advisor engine will construct the corresponding solution blueprint, live simulations, and interactive conduits.
+                  </p>
+                </div>
               </div>
             )}
           </div>
