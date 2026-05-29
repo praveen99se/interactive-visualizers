@@ -11,11 +11,14 @@ import S3Visualizer from './pages/visualizers/S3Visualizer';
 import CloudfrontVisualizer from './pages/visualizers/CloudfrontVisualizer';
 import FilesAndStorageVisualizer from './pages/visualizers/FilesAndStorageVisualizer';
 import IntegrationAndMessagingVisualizer from './pages/visualizers/IntegrationAndMessagingVisualizer';
+import ElasticContainersVisualizer from './pages/visualizers/ElasticContainersVisualizer';
+import ServerlessVisualizer from './pages/visualizers/ServerlessVisualizer';
+import DatabasesAndAnalyticsVisualizer from './pages/visualizers/DatabasesAndAnalyticsVisualizer';
 import NotFound from './pages/NotFound';
 
 export default function App() {
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const basename = isLocal ? '' : '/interactive-visualizers';
+  const isGithubPages = window.location.pathname.startsWith('/interactive-visualizers');
+  const basename = isGithubPages ? '/interactive-visualizers' : '';
 
   return (
     <Router basename={basename}>
@@ -47,6 +50,9 @@ export default function App() {
             <Route path="/visualizers/cloudfront" element={<CloudfrontVisualizer />} />
             <Route path="/visualizers/storage-fs" element={<FilesAndStorageVisualizer />} />
             <Route path="/visualizers/integration-messaging" element={<IntegrationAndMessagingVisualizer />} />
+            <Route path="/visualizers/elastic-containers" element={<ElasticContainersVisualizer />} />
+            <Route path="/visualizers/serverless" element={<ServerlessVisualizer />} />
+            <Route path="/visualizers/databases-analytics" element={<DatabasesAndAnalyticsVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

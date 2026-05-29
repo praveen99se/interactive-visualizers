@@ -1,0 +1,3747 @@
+import { useEffect, useRef, useState } from 'react';
+import {
+  Zap,
+  Server,
+  Database,
+  Cpu,
+  Globe,
+  Shield,
+  Sliders,
+  Clock,
+  Layers,
+  Settings,
+  Play,
+  Square,
+  RefreshCw,
+  Terminal,
+  Activity,
+  CheckCircle,
+  TrendingUp,
+  HardDrive,
+  Info,
+  Lock,
+  UserCheck,
+  Network
+} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+type TabType = 
+  | 'intro' 
+  | 'lambda-core' 
+  | 'concurrency-limits' 
+  | 'edge-compute' 
+  | 'dynamodb' 
+  | 'api-gateway' 
+  | 'cognito' 
+  | 'serverless-architectures' 
+  | 'db-integration' 
+  | 'simulation';
+
+interface LambdaContainer {
+  id: string;
+  status: 'PROVISIONING' | 'WARM' | 'ACTIVE' | 'IDLE' | 'THROTTLED';
+  createdTime: number;
+  lastUsedTime: number;
+  requestCount: number;
+  isProvisioned: boolean;
+}
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  targetX: number;
+  targetY: number;
+  speed: number;
+  color: string;
+  type: 'http' | 'sqs' | 'db' | 'cold-start' | 'throttled';
+  state: 'to_api' | 'to_lambda' | 'to_db' | 'to_sqs' | 'done';
+  containerId?: string;
+}
+
+export default function ServerlessVisualizer() {
+  const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  // ==========================================
+  // TAB 1 STATE: AWS Serverless Catalog
+  // ==========================================
+  const [selectedService, setSelectedService] = useState<string>('lambda');
+
+  const serverlessServices = [
+    {
+      id: 'lambda',
+      name: 'AWS Lambda',
+      category: 'Compute',
+      icon: <Zap className="w-5 h-5 text-purple-500" />,
+      desc: 'Run code in response to events without provisioning or managing servers. Scales automatically from zero to thousands of requests.',
+      whyIntegrates: 'Serves as the central glue / compute block. Triggered asynchronously (S3, EventBridge, SQS), synchronously (API Gateway, ALB), or via polling (DynamoDB Streams, Kinesis).',
+      limits: 'Timeout: 15 mins. Temp space (/tmp): 512MB to 10GB. Memory: 128MB to 10GB (CPU scales proportionally). Max payload: 6MB (sync), 256KB (async).',
+      pricing: 'Pay only for what you use: based on the number of requests (per 1M) and execution duration (GB-seconds, billed in 1ms increments).'
+    },
+    {
+      id: 'fargate',
+      name: 'AWS Fargate',
+      category: 'Compute',
+      icon: <Server className="w-5 h-5 text-orange-500" />,
+      desc: 'Serverless compute engine for containers. Works with ECS (Elastic Container Service) and EKS (Elastic Kubernetes Service).',
+      whyIntegrates: 'Allows running long-lived containerized workloads or heavy data processing tasks that exceed Lambda\'s 15-minute execution limit.',
+      limits: 'No hard timeout. Up to 4 vCPUs and 30 GB memory per task (Fargate standard limits can be increased). Custom ephemeral storage up to 200 GB.',
+      pricing: 'Billed per vCPU and GB of memory configured per second, starting from the time image download begins until the task terminates.'
+    },
+    {
+      id: 'apigateway',
+      name: 'Amazon API Gateway',
+      category: 'Integration & API',
+      icon: <Globe className="w-5 h-5 text-pink-500" />,
+      desc: 'Fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure HTTP, REST, and WebSocket APIs at scale.',
+      whyIntegrates: 'Acts as the front door for Lambda compute, translating public HTTP requests into JSON event payloads and routing them securely.',
+      limits: 'Payload size: 10MB. Integration timeout: 29s. Default request rate: 10,000 requests per second (RPS) per account per region.',
+      pricing: 'Billed per million API calls received, plus data transfer out (in GB).'
+    },
+    {
+      id: 'dynamodb',
+      name: 'Amazon DynamoDB',
+      category: 'Database',
+      icon: <Database className="w-5 h-5 text-blue-500" />,
+      desc: 'Fully managed, serverless NoSQL database designed to run high-performance applications at any scale with single-digit millisecond latency.',
+      whyIntegrates: 'Offers rapid state persistence with zero-connection overhead (via HTTP-based HTTPS endpoints) perfect for fast scaling Lambda functions.',
+      limits: 'Item size limit: 400KB. Infinite storage. Partition throughput bounds managed dynamically.',
+      pricing: 'On-Demand capacity mode (billed per read/write requests) or Provisioned capacity mode (with auto-scaling).'
+    },
+    {
+      id: 'eventbridge',
+      name: 'Amazon EventBridge',
+      category: 'Integration & API',
+      icon: <RefreshCw className="w-5 h-5 text-indigo-500" />,
+      desc: 'Serverless event bus that lets you receive, filter, transform, route, and deliver events to trigger targets like Lambda, Step Functions, or HTTP endpoints.',
+      whyIntegrates: 'Decouples microservices using event-driven architectures. Integrates natively with SaaS applications and standard AWS resources.',
+      limits: 'Event payload limit: 256KB. Standard event buses route thousands of events per second dynamically.',
+      pricing: 'Billed per million events published to your custom/SaaS event buses. AWS service-to-service events are free.'
+    },
+    {
+      id: 'sqs',
+      name: 'Amazon SQS',
+      category: 'Messaging',
+      icon: <Sliders className="w-5 h-5 text-yellow-500" />,
+      desc: 'Fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.',
+      whyIntegrates: 'Acts as an asynchronous buffer. Lambda polls the queue automatically, scaling up concurrent invocations depending on message depth.',
+      limits: 'Message size: 256KB. Infinite throughput for Standard queues; FIFO queues support up to 3,000 messages/sec with batching.',
+      pricing: 'Billed per million SQS requests (sends, receives, deletes).'
+    },
+    {
+      id: 'sns',
+      name: 'Amazon SNS',
+      category: 'Messaging',
+      icon: <Activity className="w-5 h-5 text-red-500" />,
+      desc: 'Fully managed Pub/Sub messaging service for both mass-delivery messages to people and serverless high-throughput machine-to-machine integration.',
+      whyIntegrates: 'Enables rapid event fan-out. A single event published to an SNS topic can trigger multiple concurrent Lambdas and SQS queues.',
+      limits: 'Message size: 256KB. High throughput publisher pipelines supporting millions of topics dynamically.',
+      pricing: 'Billed per million notifications published, with varying charges based on delivery type (Lambda, SQS, SMS, Email).'
+    },
+    {
+      id: 'stepfunctions',
+      name: 'AWS Step Functions',
+      category: 'Compute & Orchestration',
+      icon: <Layers className="w-5 h-5 text-teal-500" />,
+      desc: 'Visual workflow orchestrator to sequence multiple Lambda functions, AWS services, and external APIs into robust serverless state machines.',
+      whyIntegrates: 'Solves the "Lambda chaining" anti-pattern. Manages retries, error handling, visual checkpoints, and complex parallel forks.',
+      limits: 'Execution history size limit: 25,000 events. Max execution time: 1 year.',
+      pricing: 'Standard workflows: billed per state transition. Express workflows: billed per request and execution duration.'
+    },
+    {
+      id: 'appsync',
+      name: 'AWS AppSync',
+      category: 'Integration & API',
+      icon: <Network className="w-5 h-5 text-cyan-500" />,
+      desc: 'Serverless GraphQL and Pub/Sub API service that simplifies building applications by letting you connect securely to data sources like DynamoDB or Lambda.',
+      whyIntegrates: 'Resolves complex GraphQL schema queries in parallel using Lambda resolvers, while managing real-time WebSocket subscriptions natively.',
+      limits: 'GraphQL query complexity limits and custom depth limits configurable per API.',
+      pricing: 'Billed per million query/mutation operations, and per billion real-time update minutes.'
+    },
+    {
+      id: 's3',
+      name: 'Amazon S3',
+      category: 'Storage',
+      icon: <HardDrive className="w-5 h-5 text-emerald-500" />,
+      desc: 'Object storage built to store and retrieve any amount of data from anywhere. The foundation of serverless static sites and file storage pipelines.',
+      whyIntegrates: 'Generates ObjectCreated/ObjectRemoved events that directly invoke Lambda, enabling automated processing pipelines.',
+      limits: 'Individual object size limit: 5TB. Unlimited total storage capacity.',
+      pricing: 'Billed per GB of data stored per month, plus API request charges (PUT, GET, LIST) and data transfer fees.'
+    }
+  ];
+
+  // ==========================================
+  // TAB 2 STATE: S3 Thumbnail Pipeline
+  // ==========================================
+  const [pipelineState, setPipelineState] = useState<'idle' | 'uploading' | 's3-event' | 'lambda-init' | 'lambda-processing' | 's3-upload-thumb' | 'db-metadata' | 'completed'>('idle');
+  const [pipelineLogs, setPipelineLogs] = useState<string[]>([]);
+  const [coldStartActive, setColdStartActive] = useState<boolean>(true);
+
+  const addPipelineLog = (msg: string) => {
+    const time = new Date().toLocaleTimeString();
+    setPipelineLogs((prev) => [`[${time}] ${msg}`, ...prev]);
+  };
+
+  const runThumbnailPipeline = async () => {
+    if (pipelineState !== 'idle') return;
+
+    setPipelineLogs([]);
+    setPipelineState('uploading');
+    addPipelineLog('🚀 Triggered: User uploads picture "vacation_raw.jpg" to raw S3 Bucket (uploads-bucket).');
+
+    // Step 1: Uploading to S3
+    await new Promise((r) => setTimeout(r, 1200));
+    setPipelineState('s3-event');
+    addPipelineLog('📂 S3 Event: File successfully saved. S3 triggers an asynchronous ObjectCreated event mapping.');
+
+    // Step 2: S3 Event triggers Lambda
+    await new Promise((r) => setTimeout(r, 1200));
+    setPipelineState('lambda-init');
+    addPipelineLog(
+      coldStartActive
+        ? '⚡ Lambda Compute: Cold Start! Spawning microVM execution environment, downloading code zip, and initializing runtime (~1.2s delay).'
+        : '⚡ Lambda Compute: Warm Container Reuse! Execution container is already warm. Bypassing microVM initialization phase (0ms delay).'
+    );
+
+    // Delay based on Cold Start
+    await new Promise((r) => setTimeout(r, coldStartActive ? 1800 : 400));
+    setPipelineState('lambda-processing');
+    addPipelineLog('⚙️ Lambda Execution: Invoking handler function. Downloading "vacation_raw.jpg" from S3 into /tmp and resizing via Sharp JS library.');
+
+    // Step 3: Resizing completed, save optimized version back to S3
+    await new Promise((r) => setTimeout(r, 1200));
+    setPipelineState('s3-upload-thumb');
+    addPipelineLog('📤 Output S3: Lambda writes resized file "vacation_thumbnail.jpg" to target S3 bucket (optimized-bucket).');
+
+    // Step 4: Save metadata to DynamoDB
+    await new Promise((r) => setTimeout(r, 1200));
+    setPipelineState('db-metadata');
+    addPipelineLog('💾 State Persist: Lambda calls DynamoDB PutItem to register dimensions (150x150), size (4KB), and optimization timestamp.');
+
+    // Step 5: Completed
+    await new Promise((r) => setTimeout(r, 1200));
+    setPipelineState('completed');
+    addPipelineLog('✅ Success: Serverless Thumbnail processing successfully completed. Lambda execution container is kept alive as warm for subsequent requests.');
+  };
+
+  const resetPipeline = () => {
+    setPipelineState('idle');
+    setPipelineLogs([]);
+  };
+
+  // ==========================================
+  // TAB 3 STATE: Concurrency & SnapStart
+  // ==========================================
+  const [concurrencyTraffic, setConcurrencyTraffic] = useState<number>(350); // RPS
+  const [reservedLimit, setReservedLimit] = useState<number>(500);
+  const [provisionedWarmed, setProvisionedWarmed] = useState<boolean>(false);
+  const [snapStartEnabled, setSnapStartEnabled] = useState<boolean>(false);
+
+  // Computations
+  const totalInvocations = concurrencyTraffic;
+  const activeConcurrencyNeeded = Math.round(concurrencyTraffic * 1.2); // assumed avg duration of 1.2 seconds
+  const isThrottled = activeConcurrencyNeeded > reservedLimit;
+  const throttlingCount = isThrottled ? Math.max(0, activeConcurrencyNeeded - reservedLimit) : 0;
+  const successfulCount = isThrottled ? reservedLimit : activeConcurrencyNeeded;
+
+  // Let's compute average latency based on configurations
+  // Standard cold start probability = 15% under load
+  let avgLatencyMs = 200; // Base handler execution
+  if (!provisionedWarmed) {
+    if (snapStartEnabled) {
+      avgLatencyMs += 150; // SnapStart reduces restore down to 150ms
+    } else {
+      avgLatencyMs += 1200 * 0.15; // 15% probability of 1.2s cold start latency overhead
+    }
+  }
+
+  // ==========================================
+  // TAB 4 STATE: Edge Compute Comparison
+  // ==========================================
+  const [selectedEdgeHook, setSelectedEdgeHook] = useState<'viewer-request' | 'origin-request' | 'origin-response' | 'viewer-response'>('viewer-request');
+  const [edgeTechView, setEdgeTechView] = useState<'cf-functions' | 'lambda-edge'>('cf-functions');
+
+  const edgeHookDetails = {
+    'viewer-request': {
+      title: 'Viewer Request Hook',
+      trigger: 'Executes immediately when CloudFront receives a request from a client, before checking the cache.',
+      cff: '⚡ Best fit! Extremely low latency (~1ms overhead). Great for URL rewrites, HTTP redirects (e.g., HTTP to HTTPS), header modifications, or simple authorization checks.',
+      le: '⚠️ Supported, but carries larger latency overhead. Use ONLY if you need to query an external REST API, pull heavy configuration from DynamoDB, or parse cookie authorization using rich NPM packages.'
+    },
+    'origin-request': {
+      title: 'Origin Request Hook',
+      trigger: 'Executes ONLY on cache misses, right before CloudFront forwards the request to your backend Origin (S3/ALB).',
+      cff: '❌ Not Supported. CloudFront Functions cannot execute at the origin request hook because they are fully isolated to client edge caching operations.',
+      le: '⚡ Best fit! Executes infrequently (only on cache miss). Perfect for content customization, A/B testing variations, directory path rewrites (S3 folder mappings), or dynamic image optimization on-the-fly.'
+    },
+    'origin-response': {
+      title: 'Origin Response Hook',
+      trigger: 'Executes ONLY on cache misses, immediately after CloudFront receives a response from the backend Origin, before storing it in cache.',
+      cff: '❌ Not Supported. Only Lambda@Edge can run on the Origin Response path.',
+      le: '⚡ Best fit! Allows modifying headers returned from the origin (e.g., inserting security headers like CSP, X-Frame-Options), adjusting Cache-Control parameters dynamically, or rewriting response body contents.'
+    },
+    'viewer-response': {
+      title: 'Viewer Response Hook',
+      trigger: 'Executes right before CloudFront returns the response back to the client, whether it was served from cache or fetched from origin.',
+      cff: '⚡ Best fit! High performance, low-cost header addition (adding CORS headers, security flags) or inserting basic analytics scripts in flight.',
+      le: '⚠️ Supported, but not recommended for lightweight edits due to the added cold start and execution latency that affects every single cached file returned.'
+    }
+  };
+
+  // ==========================================
+  // TAB 5 STATE: Amazon DynamoDB Deep Dive [NEW]
+  // ==========================================
+  const [ddbCapacityMode, setDdbCapacityMode] = useState<'provisioned' | 'on-demand'>('provisioned');
+  const [ddbRCU, setDdbRCU] = useState<number>(300);
+  const [ddbWCU, setDdbWCU] = useState<number>(150);
+  const [daxSimState, setDaxSimState] = useState<'idle' | 'hit' | 'miss'>('idle');
+  const [daxLogs, setDaxLogs] = useState<string[]>([]);
+  const [ddbStreamSource, setDdbStreamSource] = useState<'ddb-streams' | 'kinesis-streams'>('ddb-streams');
+  const [ddbActiveRegion, setDdbActiveRegion] = useState<'us-east-1' | 'eu-west-1'>('us-east-1');
+  const [globalTableSyncState, setGlobalTableSyncState] = useState<'idle' | 'syncing' | 'completed'>('idle');
+  const [globalTableLogs, setGlobalTableLogs] = useState<string[]>([]);
+
+  const addDaxLog = (msg: string) => {
+    setDaxLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 7)]);
+  };
+
+  const addGlobalTableLog = (msg: string) => {
+    setGlobalTableLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 7)]);
+  };
+
+  const triggerDaxSim = async (type: 'hit' | 'miss') => {
+    if (daxSimState !== 'idle') return;
+    setDaxSimState(type);
+    setDaxLogs([]);
+
+    if (type === 'hit') {
+      addDaxLog('🔍 Fetching User Profile (UserID: usr_4981) from Application...');
+      await new Promise(r => setTimeout(r, 600));
+      addDaxLog('⚡ Query intercepted by DAX cache cluster.');
+      await new Promise(r => setTimeout(r, 600));
+      addDaxLog('🟢 DAX Cache Hit! Returning item instantly from memory (Latency: 0.18 ms).');
+      await new Promise(r => setTimeout(r, 400));
+      setDaxSimState('idle');
+    } else {
+      addDaxLog('🔍 Fetching User Profile (UserID: usr_4981) from Application...');
+      await new Promise(r => setTimeout(r, 600));
+      addDaxLog('⚡ Query checks DAX cache cluster.');
+      await new Promise(r => setTimeout(r, 600));
+      addDaxLog('🔴 DAX Cache Miss! Fetching profile from primary DynamoDB table SSD.');
+      await new Promise(r => setTimeout(r, 600));
+      addDaxLog('🗄️ DynamoDB returns item (Latency: 4.8 ms). Application updates DAX memory cache.');
+      await new Promise(r => setTimeout(r, 400));
+      setDaxSimState('idle');
+    }
+  };
+
+  const runGlobalTableWrite = async () => {
+    if (globalTableSyncState !== 'idle') return;
+    setGlobalTableSyncState('syncing');
+    setGlobalTableLogs([]);
+
+    addGlobalTableLog(`✍️ Client initiates write operation in region: ${ddbActiveRegion.toUpperCase()}.`);
+    await new Promise(r => setTimeout(r, 1000));
+    
+    const targetRegion = ddbActiveRegion === 'us-east-1' ? 'eu-west-1' : 'us-east-1';
+    addGlobalTableLog(`💾 Local write completed in ${ddbActiveRegion.toUpperCase()}. DynamoDB Stream captures data mutation.`);
+    await new Promise(r => setTimeout(r, 1200));
+
+    addGlobalTableLog(`🌐 Active-Active Replication: Multi-region connector synchronizing payload securely to ${targetRegion.toUpperCase()}.`);
+    await new Promise(r => setTimeout(r, 1200));
+
+    addGlobalTableLog(`✅ Synced: Region ${targetRegion.toUpperCase()} successfully written. Data is identical globally (Conflict resolution: Last Writer Wins).`);
+    setGlobalTableSyncState('completed');
+    
+    setTimeout(() => {
+      setGlobalTableSyncState('idle');
+    }, 2000);
+  };
+
+  // ==========================================
+  // TAB 6 STATE: Amazon API Gateway & Step Functions [NEW]
+  // ==========================================
+  const [apigwEndpointType, setApigwEndpointType] = useState<'edge' | 'regional' | 'private'>('edge');
+  const [apigwAuthType, setApigwAuthType] = useState<'cognito' | 'lambda-auth' | 'iam'>('cognito');
+  const [apigwIntegrationType, setApigwIntegrationType] = useState<'lambda-proxy' | 'direct-kinesis'>('lambda-proxy');
+  const [stepFunctionState, setStepFunctionState] = useState<'idle' | 'validate' | 'charge' | 'ship' | 'completed' | 'failed'>('idle');
+  const [stepFunctionLogs, setStepFunctionLogs] = useState<string[]>([]);
+
+  const addSfLog = (msg: string) => {
+    setStepFunctionLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
+  };
+
+  const runStepFunction = async (shouldFail = false) => {
+    if (stepFunctionState !== 'idle') return;
+    setStepFunctionLogs([]);
+    setStepFunctionState('validate');
+    addSfLog('🚀 Step Functions State Machine Triggered: Execution ID: order-processing-6a9b.');
+
+    await new Promise(r => setTimeout(r, 1000));
+    addSfLog('📥 Step 1: ValidateOrder - Checking stock levels for Item ID: 9481. Status: Validated.');
+    setStepFunctionState('charge');
+
+    await new Promise(r => setTimeout(r, 1200));
+    if (shouldFail) {
+      addSfLog('❌ Step 2 Error: ChargeAccount - Customer Visa card was declined (Insufficient funds).');
+      addSfLog('↩️ State Machine compensating actions triggered: Rollback order status to CANCELLED.');
+      setStepFunctionState('failed');
+      await new Promise(r => setTimeout(r, 1000));
+      addSfLog('🛑 Execution Completed: Failed (Graceful transaction compensation).');
+    } else {
+      addSfLog('💳 Step 2 Success: ChargeAccount - Processed payment of $49.00 via Stripe API.');
+      setStepFunctionState('ship');
+      
+      await new Promise(r => setTimeout(r, 1200));
+      addSfLog('📦 Step 3: ShipItem - Generating postage label and dispatching event to Amazon SNS notification.');
+      setStepFunctionState('completed');
+      
+      await new Promise(r => setTimeout(r, 1000));
+      addSfLog('✅ Execution Completed: Succeeded.');
+    }
+  };
+
+  // ==========================================
+  // TAB 7 STATE: Amazon Cognito Security [NEW]
+  // ==========================================
+  const [cognitoFlowStep, setCognitoFlowStep] = useState<number>(0);
+  const [cognitoLogs, setCognitoLogs] = useState<string[]>([]);
+  const [cognitoTriggerHover, setCognitoTriggerHover] = useState<string | null>(null);
+
+  const addCognitoLog = (msg: string) => {
+    setCognitoLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
+  };
+
+  const advanceCognitoFlow = async () => {
+    if (cognitoFlowStep === 0) {
+      setCognitoFlowStep(1);
+      addCognitoLog('🔑 User inputs credentials. Authenticating with Cognito User Pool (CUP) via Hosted UI.');
+      await new Promise(r => setTimeout(r, 800));
+      addCognitoLog('✅ CUP Success: User credentials verified. User Pool returns cryptographic JWT tokens (ID Token, Access Token, Refresh Token).');
+    } else if (cognitoFlowStep === 1) {
+      setCognitoFlowStep(2);
+      addCognitoLog('🌐 Exchanging CUP ID Token with Cognito Identity Pool (CIP) for Federated Credentials.');
+      await new Promise(r => setTimeout(r, 800));
+      addCognitoLog('🔄 Identity Pool parses JWT, validates signatures, maps user attributes to the configured IAM Role, and calls AWS STS (Security Token Service).');
+    } else if (cognitoFlowStep === 2) {
+      setCognitoFlowStep(3);
+      addCognitoLog('🔑 AWS STS returns temporary AWS credentials (Access Key, Secret Key, Session Token) valid for 1 hour.');
+      await new Promise(r => setTimeout(r, 600));
+      addCognitoLog('🪣 Client makes direct, signed SDK call (SigV4) to fetch user\'s private object from secure Amazon S3 Bucket.');
+    }
+  };
+
+  const resetCognitoFlow = () => {
+    setCognitoFlowStep(0);
+    setCognitoLogs([]);
+  };
+
+  // ==========================================
+  // TAB 10 STATE: Serverless Architectures (Blog Web, IoT, and SAGA) [NEW]
+  // ==========================================
+  const [activeArchTab, setActiveArchTab] = useState<'blog-web' | 'iot-pipeline' | 'order-saga'>('blog-web');
+  const [archFlowState, setArchFlowState] = useState<'idle' | 'static-fetch' | 'dynamic-crud' | 'media-upload' | 'iot-stream' | 'saga-run' | 'saga-fail'>('idle');
+  const [archLogs, setArchLogs] = useState<string[]>([]);
+
+  const addArchLog = (msg: string) => {
+    setArchLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 9)]);
+  };
+
+  const runStaticFetchSim = async () => {
+    if (archFlowState !== 'idle') return;
+    setArchFlowState('static-fetch');
+    setArchLogs([]);
+    addArchLog('🚀 Static Request: Client requests dynamic blog post page structure (index.html & scripts.js).');
+    await new Promise(r => setTimeout(r, 1000));
+    addArchLog('🌐 Edge CDN routing: Request hits Amazon CloudFront Global CDN Edge Location.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('🔒 OAC Authorization check: CloudFront signs the request securely using Origin Access Control (OAC).');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('🪣 S3 Read: Amazon S3 static bucket verifies CloudFront Signature against Bucket Policy. Authorization Successful.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('🟢 Delivery: S3 returns files. CloudFront caches assets globally and delivers them to the user (Latency: ~12ms).');
+    setArchFlowState('idle');
+  };
+
+  const runDynamicCrudSim = async () => {
+    if (archFlowState !== 'idle') return;
+    setArchFlowState('dynamic-crud');
+    setArchLogs([]);
+    addArchLog('🚀 Dynamic CRUD Action: Client submits a new blog post comment (REST HTTP POST).');
+    await new Promise(r => setTimeout(r, 1000));
+    addArchLog('📡 API Gateway: Resolves HTTP request, validates CORS headers, and synchronously invokes Lambda compute.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('⚡ Lambda Handler: Bootstraps. Invokes write operations. First queries DAX in-memory cache to verify locks.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('💾 Database Write: Lambda saves comment record to global DynamoDB Table SSD (Latency: ~5ms).');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('⚡ Event Stream Processing: DynamoDB Streams captures record mutation. Triggers asynchronous background notification Lambda.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('📨 Mail Dispatch: Background Lambda parses stream record and calls Amazon SES to email the blog owner.');
+    setArchFlowState('idle');
+  };
+
+  const runMediaUploadSim = async () => {
+    if (archFlowState !== 'idle') return;
+    setArchFlowState('media-upload');
+    setArchLogs([]);
+    addArchLog('🚀 Media Upload: Client uploads "photo_highres.jpg" (S3 Transfer Acceleration endpoint).');
+    await new Promise(r => setTimeout(r, 1000));
+    addArchLog('🌐 Network Acceleration: Upload travels over optimized edge POP fibers directly into S3 Raw Bucket.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('📂 S3 Event Trigger: raw-bucket uploads complete. Emits asynchronous ObjectCreated event mapping.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('⚙️ Resizer Lambda: Invoked. Downloads raw-bucket JPEG into /tmp, resizes to thumbnail, and saves to optimized-bucket.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('✉️ Event Fan-out: Resizer Lambda publishes status metadata payload concurrently to SQS Queue and SNS Topic.');
+    setArchFlowState('idle');
+  };
+
+  const runIotPipelineSim = async () => {
+    if (archFlowState !== 'idle') return;
+    setArchFlowState('iot-stream');
+    setArchLogs([]);
+    addArchLog('🚀 IoT Telemetry: Smart thermostat registers telemetry payload: {temp: 72.4F, power: 120W}.');
+    await new Promise(r => setTimeout(r, 1000));
+    addArchLog('📡 AWS IoT Core: Receives MQTT message on topic: device/telemetry. Matches Rules Engine mapping.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('🔥 Kinesis Buffer: Rules Engine pipes payload into high-throughput Kinesis Data Stream (Sharded).');
+    await new Promise(r => setTimeout(r, 1250));
+    addArchLog('⚡ Real-time Lambda consumer: Polls shards concurrently, runs anomaly filters, and writes telemetry logs to DynamoDB.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('💾 Firehose Analytics: Kinesis Firehose reads stream, buffers payload, compresses it to Parquet, and saves to S3 Data Lake.');
+    setArchFlowState('idle');
+  };
+
+  const runSagaOrderSim = async (failSaga = false) => {
+    if (archFlowState !== 'idle') return;
+    setArchFlowState(failSaga ? 'saga-fail' : 'saga-run');
+    setArchLogs([]);
+    addArchLog('🚀 Saga Orchestration: Client requests checkout (HTTP Order API).');
+    await new Promise(r => setTimeout(r, 1000));
+    addArchLog('🔄 Step Functions state machine: Starts order execution sequence order-saga-1044.');
+    await new Promise(r => setTimeout(r, 1200));
+    addArchLog('📥 Step 1: ValidateOrder: Reserves stock (SKU: laptop-x1) in DynamoDB. Success.');
+    await new Promise(r => setTimeout(r, 1200));
+    if (failSaga) {
+      addArchLog('❌ Step 2: ChargePayment: Card authorization failed. Triggering failed compensation pipeline.');
+      await new Promise(r => setTimeout(r, 1200));
+      addArchLog('↩️ Compensation: Rollback stock holds for SKU: laptop-x1 in DynamoDB. Status reset to Available.');
+      await new Promise(r => setTimeout(r, 1000));
+      addArchLog('🛑 Saga Finalized: Order cancelled gracefully with zero data inconsistency.');
+    } else {
+      addArchLog('💳 Step 2: ChargePayment: Processed stripe charge. Success.');
+      await new Promise(r => setTimeout(r, 1200));
+      addArchLog('📦 Step 3: DispatchDelivery: Queues order for warehouse dispatch via SQS. State Machine Complete.');
+    }
+    setArchFlowState('idle');
+  };
+
+  // ==========================================
+  // TAB 8 STATE: Secure Database Networking (prev Tab 5)
+  // ==========================================
+  const [dbScenario, setDbScenario] = useState<'vpc-basic' | 'rds-proxy' | 'aurora-trigger'>('vpc-basic');
+
+  // ==========================================
+  // TAB 9 STATE: Interactive Simulation (prev Tab 6)
+  // ==========================================
+  const [simTrafficLevel, setSimTrafficLevel] = useState<'low' | 'normal' | 'surge'>('normal');
+  const [simRdsProxyEnabled, setSimRdsProxyEnabled] = useState<boolean>(true);
+  const [simProvConcurrency, setSimProvConcurrency] = useState<number>(0);
+  const [simLogs, setSimLogs] = useState<string[]>([
+    '🟢 Serverless Environment simulated successfully.',
+    '🟢 API Gateway endpoint listening at https://api.serverless-app.internal/prod',
+    '🟢 RDS Database pool initialized (Max capacity: 120 client connections).',
+  ]);
+  const [simIsRunning, setSimIsRunning] = useState<boolean>(true);
+  const [simStats, setSimStats] = useState({
+    invocations: 0,
+    coldStarts: 0,
+    throttles: 0,
+    dbConnections: 0,
+  });
+  const [simHistoryData, setSimHistoryData] = useState<{ time: string; Invocations: number; ColdStarts: number; Throttles: number; DbConnections: number }[]>([]);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const particleIdRef = useRef(0);
+  const containersRef = useRef<LambdaContainer[]>([]);
+  const statsHistoryRef = useRef<typeof simHistoryData>([]);
+  const logCounterRef = useRef(0);
+
+  const addSimLog = (msg: string) => {
+    setSimLogs((prev) => {
+      const time = new Date().toLocaleTimeString();
+      return [`[${time}] ${msg}`, ...prev.slice(0, 14)];
+    });
+  };
+
+  // Synchronize state for simulation controls
+  const simTrafficLevelRef = useRef(simTrafficLevel);
+  const simRdsProxyEnabledRef = useRef(simRdsProxyEnabled);
+  const simProvConcurrencyRef = useRef(simProvConcurrency);
+  const simIsRunningRef = useRef(simIsRunning);
+
+  useEffect(() => {
+    simTrafficLevelRef.current = simTrafficLevel;
+  }, [simTrafficLevel]);
+
+  useEffect(() => {
+    simRdsProxyEnabledRef.current = simRdsProxyEnabled;
+  }, [simRdsProxyEnabled]);
+
+  useEffect(() => {
+    simProvConcurrencyRef.current = simProvConcurrency;
+  }, [simProvConcurrency]);
+
+  useEffect(() => {
+    simIsRunningRef.current = simIsRunning;
+  }, [simIsRunning]);
+
+  // Handle task/container spawning and canvas tick
+  useEffect(() => {
+    // Populate provisioned containers initially or when changed
+    const provCount = simProvConcurrencyRef.current;
+    const initialContainers: LambdaContainer[] = [];
+    for (let i = 0; i < provCount; i++) {
+      initialContainers.push({
+        id: `c-prov-${i}-${Math.random().toString(36).substr(2, 4)}`,
+        status: 'WARM',
+        createdTime: Date.now(),
+        lastUsedTime: Date.now(),
+        requestCount: 0,
+        isProvisioned: true,
+      });
+    }
+    containersRef.current = initialContainers;
+    particlesRef.current = [];
+
+    if (provCount > 0) {
+      addSimLog(`⚙️ Provisioned Concurrency: Initialized ${provCount} warm Lambda execution containers.`);
+    }
+  }, [simProvConcurrency]);
+
+  // Simulation logic loops
+  useEffect(() => {
+    if (!simIsRunning) return;
+
+    let totalInvsAccumulator = 0;
+    let coldStartsAccumulator = 0;
+    let throttlesAccumulator = 0;
+
+    const statsInterval = setInterval(() => {
+      if (!simIsRunningRef.current) return;
+
+      const currentDbConnections = simRdsProxyEnabledRef.current 
+        ? Math.min(45, Math.round(containersRef.current.filter(c => c.status === 'ACTIVE').length * 2.5 + Math.random() * 5))
+        : Math.round(containersRef.current.filter(c => c.status === 'ACTIVE').length * 9.5 + Math.random() * 10);
+
+      // Append chart history
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const newStat = {
+        time: timeStr,
+        Invocations: totalInvsAccumulator,
+        ColdStarts: coldStartsAccumulator,
+        Throttles: throttlesAccumulator,
+        DbConnections: currentDbConnections,
+      };
+
+      setSimStats({
+        invocations: totalInvsAccumulator,
+        coldStarts: coldStartsAccumulator,
+        throttles: throttlesAccumulator,
+        dbConnections: currentDbConnections
+      });
+
+      statsHistoryRef.current = [...statsHistoryRef.current.slice(-14), newStat];
+      setSimHistoryData([...statsHistoryRef.current]);
+    }, 2000);
+
+    // Particle generator loop
+    const generatorInterval = setInterval(() => {
+      if (!simIsRunningRef.current) return;
+
+      let batchSize = 1;
+      const traffic = simTrafficLevelRef.current;
+      if (traffic === 'low') batchSize = Math.random() > 0.6 ? 1 : 0;
+      if (traffic === 'normal') batchSize = Math.random() > 0.4 ? 2 : 1;
+      if (traffic === 'surge') batchSize = 5 + Math.floor(Math.random() * 4);
+
+      for (let k = 0; k < batchSize; k++) {
+        // Spawn HTTP request particle
+        const id = particleIdRef.current++;
+        particlesRef.current.push({
+          id,
+          x: 20,
+          y: 70 + Math.random() * 280,
+          targetX: 180,
+          targetY: 210,
+          speed: 2.5 + Math.random() * 2.5,
+          color: '#c084fc', // light purple
+          type: 'http',
+          state: 'to_api'
+        });
+
+        totalInvsAccumulator++;
+      }
+
+      // Periodically clean up idle containers
+      const now = Date.now();
+      containersRef.current = containersRef.current.filter(c => {
+        if (c.isProvisioned) return true; // Never clean up provisioned containers
+        const isIdleTooLong = c.status === 'IDLE' && now - c.lastUsedTime > 12000;
+        if (isIdleTooLong) {
+          logCounterRef.current++;
+          if (logCounterRef.current % 5 === 0) {
+            addSimLog('♻️ Execution Environment: Pruned 1 idle warm container due to inactivity.');
+          }
+        }
+        return !isIdleTooLong;
+      });
+
+    }, 300);
+
+    return () => {
+      clearInterval(statsInterval);
+      clearInterval(generatorInterval);
+    };
+  }, [simIsRunning]);
+
+  // Main drawing engine for the Tab 9 simulation Canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+
+    const draw = () => {
+      if (!ctx || !canvas) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Network Infrastructure Boxes & Subnets
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Grid background effect
+      ctx.strokeStyle = 'rgba(203, 213, 225, 0.3)';
+      ctx.lineWidth = 1;
+      const gridSize = 30;
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // Draw API Gateway box
+      ctx.strokeStyle = '#c084fc';
+      ctx.fillStyle = '#fdf4ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(10, 60, 150, 300, 12);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.fillStyle = '#7e22ce';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('API GATEWAY', 30, 90);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('Sync HTTP Endpoint', 25, 110);
+      ctx.fillText('https://api.serverless...', 20, 130);
+
+      // Draw API Gateway Mock Interfaces (port holes)
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.arc(160, 210, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw Lambda Service boundary Subnet
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+      ctx.fillStyle = 'rgba(250, 245, 255, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(220, 40, 430, 340, 16);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.fillStyle = '#7e22ce';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('AWS LAMBDA SERVICE POOL', 240, 70);
+
+      // Draw RDS Proxy / DB Side
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+      ctx.fillStyle = 'rgba(239, 246, 255, 0.75)';
+      ctx.beginPath();
+      ctx.roundRect(680, 40, 200, 340, 16);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.fillStyle = '#1d4ed8';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('SECURE DATABASE ZONE', 700, 65);
+
+      // RDS Proxy box
+      const isProxy = simRdsProxyEnabledRef.current;
+      ctx.strokeStyle = isProxy ? '#0d9488' : '#cbd5e1';
+      ctx.fillStyle = isProxy ? '#f0fdfa' : '#f1f5f9';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(700, 85, 160, 70, 8);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.fillStyle = isProxy ? '#0d9488' : '#475569';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(isProxy ? '🔌 RDS PROXY (ACTIVE)' : '🔌 RDS PROXY (DISABLED)', 710, 105);
+      ctx.font = '9px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText(isProxy ? 'Pooling & Connection Queue' : 'Bypassed, Direct DB Hits', 710, 125);
+      if (isProxy) {
+        ctx.fillStyle = '#0d9488';
+        ctx.fillText('Max Pool Size: 100%', 710, 142);
+      }
+
+      // Aurora DB box
+      ctx.strokeStyle = '#2563eb';
+      ctx.fillStyle = '#eff6ff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(700, 185, 160, 170, 10);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('🛢️ RDS POSTGRES', 720, 215);
+
+      // Draw connection count indicator
+      const activeWebCount = containersRef.current.filter(c => c.status === 'ACTIVE').length;
+      const isExhausted = !isProxy && activeWebCount > 6;
+      ctx.fillStyle = isExhausted ? '#dc2626' : '#059669';
+      ctx.beginPath();
+      ctx.arc(725, 245, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '10px sans-serif';
+      ctx.fillText(`Conn Status: ${isExhausted ? 'OVERLOADED' : 'HEALTHY'}`, 738, 248);
+
+      ctx.fillStyle = '#475569';
+      ctx.fillText(isProxy ? 'Pooled Conns: 12/120' : `Active DB Conns: ${activeWebCount * 12}/120`, 720, 280);
+      ctx.fillText('Instance: db.m6g.large', 720, 305);
+
+      if (isExhausted) {
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.1)';
+        ctx.fillRect(710, 320, 140, 25);
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(710, 320, 140, 25);
+        ctx.fillStyle = '#dc2626';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText('⚠️ CONNECTION STORM!', 725, 335);
+      }
+
+      // Draw Static labels for paths
+      ctx.fillStyle = '#475569';
+      ctx.font = '9px monospace';
+      ctx.fillText('HTTP Req', 160, 195);
+      ctx.fillText('DB Pool', 645, 195);
+
+      // Render Lambda Container Slots inside Subnet
+      const maxRows = 2;
+      const maxCols = 4;
+      const colWidth = 90;
+      const rowHeight = 90;
+      const startX = 245;
+      const startY = 110;
+
+      // Draw grid outline slots
+      for (let r = 0; r < maxRows; r++) {
+        for (let c = 0; c < maxCols; c++) {
+          ctx.strokeStyle = 'rgba(100, 116, 139, 0.2)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.strokeRect(startX + c * colWidth, startY + r * rowHeight, 75, 65);
+          ctx.setLineDash([]);
+        }
+      }
+
+      // Match running containers to visual slots
+      const visibleContainers = containersRef.current.slice(0, 8);
+      visibleContainers.forEach((container, idx) => {
+        const row = Math.floor(idx / maxCols);
+        const col = idx % maxCols;
+        const xPos = startX + col * colWidth;
+        const yPos = startY + row * rowHeight;
+
+        // Container card border based on state
+        let strokeColor = '#64748b'; // Idle
+        let fillColor = '#f8fafc';
+        let badgeColor = '#64748b';
+
+        if (container.status === 'PROVISIONING') {
+          strokeColor = '#d97706'; // Provisioning yellow
+          fillColor = '#fef3c7';
+          badgeColor = '#d97706';
+        } else if (container.status === 'ACTIVE') {
+          strokeColor = '#7e22ce'; // Purple dynamic active
+          fillColor = '#f3e8ff';
+          badgeColor = '#7e22ce';
+        } else if (container.status === 'WARM') {
+          strokeColor = '#15803d'; // Green warm
+          fillColor = '#dcfce7';
+          badgeColor = '#15803d';
+        }
+
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = fillColor;
+        ctx.beginPath();
+        ctx.roundRect(xPos, yPos, 75, 65, 8);
+        ctx.stroke();
+        ctx.fill();
+
+        // Draw microVM shell container detail
+        ctx.fillStyle = strokeColor;
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText(`Container`, xPos + 10, yPos + 18);
+        ctx.fillText(container.id.split('-')[1] || 'init', xPos + 10, yPos + 30);
+
+        // Status badge
+        ctx.fillStyle = badgeColor;
+        ctx.fillRect(xPos + 8, yPos + 40, 59, 14);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.fillText(container.status, xPos + 14, yPos + 50);
+
+        // Provisioned indicator light
+        if (container.isProvisioned) {
+          ctx.fillStyle = '#2563eb';
+          ctx.beginPath();
+          ctx.arc(xPos + 68, yPos + 8, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Move and Render Traffic Particles
+      const activeParticles: Particle[] = [];
+
+      particlesRef.current.forEach((p) => {
+        let reachedTarget = false;
+
+        const dx = p.targetX - p.x;
+        const dy = p.targetY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 4) {
+          reachedTarget = true;
+        } else {
+          p.x += (dx / dist) * p.speed;
+          p.y += (dy / dist) * p.speed;
+        }
+
+        // Draw particle
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.type === 'http' ? 4 : 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset shadow
+
+        if (reachedTarget) {
+          if (p.state === 'to_api') {
+            const availableContainer = containersRef.current.find(c => c.status === 'WARM' || c.status === 'IDLE');
+
+            if (availableContainer) {
+              availableContainer.status = 'ACTIVE';
+              availableContainer.lastUsedTime = Date.now();
+              availableContainer.requestCount++;
+
+              p.targetX = startX + (containersRef.current.indexOf(availableContainer) % 4) * colWidth + 37;
+              p.targetY = startY + Math.floor(containersRef.current.indexOf(availableContainer) / 4) * rowHeight + 32;
+              p.state = 'to_lambda';
+              p.color = '#10b981'; // Green warm invoke
+              p.containerId = availableContainer.id;
+              activeParticles.push(p);
+            } else if (containersRef.current.length < 8) {
+              const containerId = `c-dyn-${containersRef.current.length}-${Math.random().toString(36).substr(2, 4)}`;
+              const newContainer: LambdaContainer = {
+                id: containerId,
+                status: 'PROVISIONING',
+                createdTime: Date.now(),
+                lastUsedTime: Date.now(),
+                requestCount: 1,
+                isProvisioned: false
+              };
+              containersRef.current.push(newContainer);
+              setSimStats(prev => ({ ...prev, coldStarts: prev.coldStarts + 1 }));
+              addSimLog(`⚠️ Cold Start! API Gateway triggers brand new Lambda microVM execution container: ${containerId.split('-')[1]}.`);
+
+              p.targetX = startX + ((containersRef.current.length - 1) % 4) * colWidth + 37;
+              p.targetY = startY + Math.floor((containersRef.current.length - 1) / 4) * rowHeight + 32;
+              p.state = 'to_lambda';
+              p.color = '#f59e0b'; // Amber cold start particle
+              p.containerId = containerId;
+
+              // Transition to ACTIVE after provisioning delay
+              setTimeout(() => {
+                const search = containersRef.current.find(c => c.id === containerId);
+                if (search && search.status === 'PROVISIONING') {
+                  search.status = 'ACTIVE';
+                  addSimLog(`⚙️ MicroVM Ready: Container ${containerId.split('-')[1]} initialized runtime, execution starting.`);
+                }
+              }, 1200);
+
+              activeParticles.push(p);
+            } else {
+              setSimStats(prev => ({ ...prev, throttles: prev.throttles + 1 }));
+              addSimLog('❌ Throttled! Active containers exhausted (Max concurrency: 8 visual simulation cap). HTTP 429 returned.');
+
+              p.targetX = p.x - 120;
+              p.targetY = p.y + (Math.random() * 80 - 40);
+              p.speed = 4;
+              p.color = '#ef4444'; // Red throttled
+              p.state = 'done';
+              activeParticles.push(p);
+            }
+          } else if (p.state === 'to_lambda') {
+            setTimeout(() => {
+              const match = containersRef.current.find(c => c.id === p.containerId);
+              if (match && match.status === 'ACTIVE') {
+                match.status = 'WARM';
+                match.lastUsedTime = Date.now();
+              }
+            }, 800);
+
+            p.targetX = 700;
+            p.targetY = isProxy ? 120 : 270;
+            p.color = '#3b82f6'; // Blue DB request
+            p.state = 'to_db';
+            activeParticles.push(p);
+          } else if (p.state === 'to_db') {
+            if (!isProxy && activeWebCount > 6) {
+              p.color = '#ef4444';
+              p.targetX = p.x - 50;
+              p.targetY = p.y + Math.random() * 100 - 50;
+              p.state = 'done';
+            } else {
+              p.targetX = 20;
+              p.targetY = 210;
+              p.color = '#10b981'; // Success Green
+              p.state = 'done';
+            }
+            activeParticles.push(p);
+          }
+        } else {
+          activeParticles.push(p);
+        }
+      });
+
+      particlesRef.current = activeParticles;
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+    };
+  }, [simIsRunning]);
+
+  return (
+    <div className="sv-container">
+      {/* Styles for isolated layout aesthetics */}
+      <style>{`
+        .sv-container {
+          font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+          color: #1e293b;
+          background-color: #f8fafc;
+          padding: 24px;
+          border-radius: 16px;
+        }
+        .sv-grid {
+          display: grid;
+          grid-template-columns: 1.15fr 1fr;
+          gap: 28px;
+          align-items: start;
+        }
+        @media (max-width: 1024px) {
+          .sv-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .sv-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+          margin-bottom: 24px;
+          transition: all 0.2s ease;
+        }
+        .sv-card:hover {
+          border-color: #a855f7;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        }
+        .sv-card-title {
+          font-size: 16px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .sv-card-desc {
+          font-size: 12.5px;
+          color: #475569;
+          line-height: 1.65;
+        }
+        .sv-tabs {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 24px;
+          border-bottom: 2px solid #e2e8f0;
+          padding-bottom: 12px;
+        }
+        .sv-tb {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 10px;
+          border: 1px solid transparent;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #64748b;
+          background: transparent;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .sv-tb:hover {
+          background: #e2e8f0;
+          color: #0f172a;
+        }
+        .sv-tb.sv-on {
+          background: #f3e8ff;
+          color: #7e22ce;
+          border-color: #e9d5ff;
+          box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.05);
+        }
+        .sv-input, .sv-select {
+          width: 100%;
+          padding: 10px 14px;
+          border-radius: 10px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          font-size: 13.5px;
+          color: #0f172a;
+          outline: none;
+          transition: all 0.15s ease;
+        }
+        .sv-input:focus, .sv-select:focus {
+          border-color: #a855f7;
+          box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+        }
+        .sv-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: #475569;
+          margin-bottom: 6px;
+          display: block;
+        }
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 3px 8px;
+          border-radius: 9999px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+        .badge-purple { background: #f3e8ff; color: #7e22ce; }
+        .badge-orange { background: #ffedd5; color: #c2410c; }
+        .badge-blue { background: #dbeafe; color: #1d4ed8; }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        
+        @keyframes sv-pulse {
+          0%, 100% {
+            stroke-width: 3px;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.6));
+          }
+          50% {
+            stroke-width: 5px;
+            opacity: 1;
+            filter: drop-shadow(0 0 6px rgba(168, 85, 247, 1)) drop-shadow(0 0 12px rgba(168, 85, 247, 0.5));
+          }
+        }
+        @keyframes sv-pulse-green {
+          0%, 100% {
+            stroke-width: 3px;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.6));
+          }
+          50% {
+            stroke-width: 5px;
+            opacity: 1;
+            filter: drop-shadow(0 0 6px rgba(16, 185, 129, 1)) drop-shadow(0 0 12px rgba(16, 185, 129, 0.5));
+          }
+        }
+        @keyframes sv-pulse-blue {
+          0%, 100% {
+            stroke-width: 3px;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.6));
+          }
+          50% {
+            stroke-width: 5px;
+            opacity: 1;
+            filter: drop-shadow(0 0 6px rgba(37, 99, 235, 1)) drop-shadow(0 0 12px rgba(37, 99, 235, 0.5));
+          }
+        }
+        .active-flow-line {
+          stroke: #c084fc;
+          animation: sv-pulse 1.5s infinite;
+        }
+        .active-flow-line-green {
+          stroke: #10b981;
+          animation: sv-pulse-green 1.5s infinite;
+        }
+        .active-flow-line-blue {
+          stroke: #2563eb;
+          animation: sv-pulse-blue 1.5s infinite;
+        }
+        
+        .pulse-circle {
+          animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+      `}</style>
+
+      {/* Header bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="p-2 bg-purple-500 rounded-lg text-white">
+              <Zap className="w-6 h-6" />
+            </span>
+            <h1 className="text-2xl font-bold text-gray-900">AWS Serverless, DynamoDB &amp; Security Visualizer</h1>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">
+            Master full-stack serverless architectures. Experiment with Lambda environments, DynamoDB capacity &amp; streams, API Gateway, Cognito IAM token federation, and autoscaling.
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex gap-2">
+          <span className="badge badge-purple">AWS Certified Developer</span>
+          <span className="badge badge-blue">Advanced Architecture</span>
+        </div>
+      </div>
+
+      {/* Navigation tabs */}
+      <div className="sv-tabs">
+        <button className={`sv-tb ${activeTab === 'intro' ? 'sv-on' : ''}`} onClick={() => setActiveTab('intro')}>
+          <Layers className="w-4 h-4" /> Serverless Ecosystem
+        </button>
+        <button className={`sv-tb ${activeTab === 'lambda-core' ? 'sv-on' : ''}`} onClick={() => setActiveTab('lambda-core')}>
+          <Cpu className="w-4 h-4" /> Thumbnail Pipeline
+        </button>
+        <button className={`sv-tb ${activeTab === 'concurrency-limits' ? 'sv-on' : ''}`} onClick={() => setActiveTab('concurrency-limits')}>
+          <Sliders className="w-4 h-4" /> Concurrency &amp; SnapStart
+        </button>
+        <button className={`sv-tb ${activeTab === 'edge-compute' ? 'sv-on' : ''}`} onClick={() => setActiveTab('edge-compute')}>
+          <Globe className="w-4 h-4" /> Edge Compute
+        </button>
+        <button className={`sv-tb ${activeTab === 'dynamodb' ? 'sv-on' : ''}`} onClick={() => setActiveTab('dynamodb')}>
+          <Database className="w-4 h-4" /> DynamoDB Deep Dive
+        </button>
+        <button className={`sv-tb ${activeTab === 'api-gateway' ? 'sv-on' : ''}`} onClick={() => setActiveTab('api-gateway')}>
+          <Network className="w-4 h-4" /> API Gateway &amp; Orchestration
+        </button>
+        <button className={`sv-tb ${activeTab === 'cognito' ? 'sv-on' : ''}`} onClick={() => setActiveTab('cognito')}>
+          <Lock className="w-4 h-4" /> Cognito Security
+        </button>
+        <button className={`sv-tb ${activeTab === 'serverless-architectures' ? 'sv-on' : ''}`} onClick={() => setActiveTab('serverless-architectures')}>
+          <Layers className="w-4 h-4" /> Serverless Architectures
+        </button>
+        <button className={`sv-tb ${activeTab === 'db-integration' ? 'sv-on' : ''}`} onClick={() => setActiveTab('db-integration')}>
+          <Shield className="w-4 h-4" /> VPC &amp; DB Integrations
+        </button>
+        <button className={`sv-tb ${activeTab === 'simulation' ? 'sv-on' : ''}`} onClick={() => setActiveTab('simulation')}>
+          <Play className="w-4 h-4" /> Auto-Scaling Playground
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 1: INTRO & AWS SERVERLESS CATALOG                                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'intro' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-5">
+              <h3 className="font-bold text-purple-950 flex items-center gap-2 mb-2">
+                <Zap className="w-5 h-5 text-purple-600 animate-pulse" /> 100% No Server Management
+              </h3>
+              <p className="text-xs text-purple-900 leading-relaxed">
+                You never provision, patch, monitor, or secure underlying operating systems, OS packages, virtual machines, or EC2 instances. Code execution is fully managed by AWS.
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-5">
+              <h3 className="font-bold text-orange-950 flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-orange-600" /> Continuous Auto-Scaling
+              </h3>
+              <p className="text-xs text-orange-900 leading-relaxed">
+                Serverless services scale automatically and immediately from absolute zero requests to thousands of concurrent transactions, mapping resources directly to instant request patterns.
+              </p>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-5">
+              <h3 className="font-bold text-emerald-950 flex items-center gap-2 mb-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600" /> Pay-For-Value Billing
+              </h3>
+              <p className="text-xs text-emerald-900 leading-relaxed">
+                Never pay for idle resources. If zero requests hit your AWS Lambda, API Gateway, or DynamoDB tables, your operational cost is $0. Billed purely on transactions and raw execution times.
+              </p>
+            </div>
+          </div>
+
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Layers className="w-5 h-5" /> The Evolution of Compute: Virtualization Comparison
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs text-left">
+                <thead className="bg-slate-100 text-slate-700 uppercase font-semibold">
+                  <tr>
+                    <th className="p-3">Attribute</th>
+                    <th className="p-3">Physical Servers</th>
+                    <th className="p-3">Virtual Machines (EC2)</th>
+                    <th className="p-3">Containers (ECS/EKS)</th>
+                    <th className="p-3">Serverless (Lambda)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 text-slate-600">
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-900">Isolation Layer</td>
+                    <td className="p-3">Physical hardware cabinets</td>
+                    <td className="p-3">Hypervisor virtualization</td>
+                    <td className="p-3">Kernel namespaces / OS virtualization</td>
+                    <td className="p-3">MicroVM isolation (Firecracker)</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-900">Provisioning Overhead</td>
+                    <td className="p-3">Weeks (buying physical hardware)</td>
+                    <td className="p-3">Minutes (launching EC2 instances)</td>
+                    <td className="p-3">Seconds (starting docker containers)</td>
+                    <td className="p-3">Milliseconds (triggering cold/warm starts)</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-900">Scale Mechanism</td>
+                    <td className="p-3">Manual procurement</td>
+                    <td className="p-3">Auto-scaling groups (metric polling)</td>
+                    <td className="p-3">Fast task/pod replication</td>
+                    <td className="p-3">Immediate per-request spawning</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-900">Maintenance Burden</td>
+                    <td className="p-3">Cabling, cooling, disk swaps, hardware updates</td>
+                    <td className="p-3">OS patching, security updates, kernel upgrades</td>
+                    <td className="p-3">Docker daemon config, container registry updates</td>
+                    <td className="p-3">Zero OS overhead. Focus strictly on code functions</td>
+                  </tr>
+                  <tr>
+                    <td className="p-3 font-semibold text-slate-900">Idle Costs</td>
+                    <td className="p-3">100% full cost even at 0% usage</td>
+                    <td className="p-3">100% full cost per uptime hour</td>
+                    <td className="p-3">High idle cost (paying for cluster capacity)</td>
+                    <td className="p-3">Absolutely $0.00 during idle times</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-purple-500" /> Interactive Catalog: AWS Serverless Suite
+            </h3>
+            <p className="text-xs text-slate-600 mb-4">
+              Select any core serverless service below to see its exact description, architectural role, operational limits, integration context, and billing models.
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-6">
+              {serverlessServices.map((service) => (
+                <button
+                  key={service.id}
+                  onClick={() => setSelectedService(service.id)}
+                  className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all duration-200 hover:-translate-y-0.5 text-center ${
+                    selectedService === service.id
+                      ? 'border-purple-500 bg-purple-50 text-purple-950 font-bold shadow-md shadow-purple-500/10'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="mb-2 p-2 bg-slate-100 rounded-lg">{service.icon}</div>
+                  <span className="text-xs truncate w-full">{service.name}</span>
+                  <span className="text-[10px] text-slate-400 font-normal mt-1">{service.category}</span>
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const details = serverlessServices.find((s) => s.id === selectedService);
+              if (!details) return null;
+              return (
+                <div className="bg-white border border-purple-200 rounded-2xl p-6 shadow-sm animate-fadeIn">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-3 bg-purple-50 rounded-xl">{details.icon}</div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-purple-600 tracking-wider">{details.category}</span>
+                      <h4 className="text-lg font-bold text-slate-900">{details.name}</h4>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs leading-relaxed">
+                    <div className="space-y-4">
+                      <div>
+                        <h5 className="font-bold text-slate-900 uppercase tracking-wide text-[10px] text-purple-700 mb-1">What it is</h5>
+                        <p className="text-slate-600">{details.desc}</p>
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-slate-900 uppercase tracking-wide text-[10px] text-purple-700 mb-1">Core Operational Limits</h5>
+                        <p className="text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 font-mono text-[11px]">{details.limits}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <h5 className="font-bold text-slate-900 uppercase tracking-wide text-[10px] text-purple-700 mb-1">Why &amp; How it Integrates</h5>
+                        <p className="text-slate-600">{details.whyIntegrates}</p>
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-slate-900 uppercase tracking-wide text-[10px] text-purple-700 mb-1">Pricing Model</h5>
+                        <p className="text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 font-mono text-[11px]">{details.pricing}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 2: LAMBDA CORE & THUMBNAIL PIPELINE                                  */}
+      {/* ========================================================================= */}
+      {activeTab === 'lambda-core' && (
+        <div className="space-y-6">
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Cpu className="w-5 h-5" /> Concept: How AWS Lambda Works Under the Hood
+            </h2>
+            <p className="sv-card-desc mb-3">
+              AWS Lambda is an event-driven compute engine. When a trigger executes, Lambda fetches your compiled code zip or container image and runs it inside a fully isolated **Firecracker MicroVM** container.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs mt-4">
+              <div className="border border-slate-150 p-3.5 rounded-xl bg-slate-50">
+                <span className="font-bold text-purple-700 block mb-1">1. Event Trigger</span>
+                An upstream event (e.g. S3 upload, API Request, SQS message) sends a payload describing what happened.
+              </div>
+              <div className="border border-slate-150 p-3.5 rounded-xl bg-slate-50">
+                <span className="font-bold text-purple-700 block mb-1">2. Environment Provision</span>
+                If no idle pre-warmed container is available, Lambda spins up a MicroVM, downloads the code, and initializes runtime (Cold Start).
+              </div>
+              <div className="border border-slate-150 p-3.5 rounded-xl bg-slate-50">
+                <span className="font-bold text-purple-700 block mb-1">3. Handler Execution</span>
+                The handler function receives the `event` JSON payload and execution `context` objects, performing stateless logic.
+              </div>
+              <div className="border border-slate-150 p-3.5 rounded-xl bg-slate-50">
+                <span className="font-bold text-purple-700 block mb-1">4. Container Freezing</span>
+                After completion, the MicroVM is frozen for up to several minutes, ready to instantly process subsequent events with zero delay.
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col items-center justify-between min-h-[460px]">
+              <div className="w-full flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-800">Serverless Thumbnail Creation Architecture</h3>
+                  <p className="text-[11px] text-slate-500">Watch microservice actions flow across S3, Lambda, and DynamoDB in real-time</p>
+                </div>
+                <div className="flex gap-3">
+                  <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={coldStartActive}
+                      onChange={(e) => setColdStartActive(e.target.checked)}
+                      className="rounded border-slate-300 text-purple-500 bg-white accent-purple-500"
+                    />
+                    Simulate Cold Start
+                  </label>
+                  <button
+                    disabled={pipelineState !== 'idle'}
+                    onClick={runThumbnailPipeline}
+                    className="px-4 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-500 disabled:bg-slate-200 disabled:text-slate-450 transition-colors flex items-center gap-2"
+                  >
+                    <Play className="w-3.5 h-3.5" /> Run Pipeline
+                  </button>
+                  <button
+                    onClick={resetPipeline}
+                    className="p-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg text-xs font-semibold hover:bg-slate-200 transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic SVG Visuals */}
+              <div className="w-full h-[280px] relative bg-slate-50 rounded-xl border border-slate-150 p-2 overflow-hidden">
+                <svg className="w-full h-full" viewBox="0 0 700 280">
+                  <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                    <marker id="arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7e22ce" />
+                    </marker>
+                    <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669" />
+                    </marker>
+                    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+                    </marker>
+                  </defs>
+
+                  {/* Flow Connection Lines */}
+                  <path d="M 50 140 H 130" fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+                  {pipelineState === 'uploading' && (
+                    <line x1="50" y1="140" x2="130" y2="140" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                  )}
+
+                  <path d="M 210 140 H 310" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                  {pipelineState === 's3-event' && (
+                    <line x1="210" y1="140" x2="310" y2="140" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                  )}
+
+                  <path d="M 390 110 Q 420 50, 520 50" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                  {(pipelineState === 's3-upload-thumb' || pipelineState === 'lambda-processing') && (
+                    <path d="M 390 110 Q 420 50, 520 50" fill="none" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
+                  )}
+
+                  <path d="M 390 170 Q 420 230, 520 230" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                  {pipelineState === 'db-metadata' && (
+                    <path d="M 390 170 Q 420 230, 520 230" fill="none" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                  )}
+
+                  {/* Node 1: Client Upload Trigger */}
+                  <g transform="translate(10, 105)">
+                    <rect width="80" height="70" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
+                    <text x="40" y="32" fill="#475569" fontSize="10" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                    <text x="40" y="48" fill="#1e293b" fontSize="9" textAnchor="middle">Upload API</text>
+                  </g>
+
+                  {/* Node 2: Raw uploads S3 Bucket */}
+                  <g transform="translate(130, 95)">
+                    <rect width="80" height="90" rx="10" fill="#fff7ed" stroke="#ea580c" strokeWidth="2" />
+                    <text x="40" y="24" fill="#ea580c" fontSize="10" fontWeight="bold" textAnchor="middle">🪣 S3 BUCKET</text>
+                    <text x="40" y="42" fill="#7c2d12" fontSize="8" textAnchor="middle">uploads-bucket</text>
+                    <rect x="10" y="55" width="60" height="25" rx="4" fill="#ffedd5" stroke="#ea580c" strokeWidth="1" />
+                    <text x="40" y="70" fill="#c2410c" fontSize="8" textAnchor="middle" fontWeight="semibold">vacation_raw.jpg</text>
+                  </g>
+
+                  {/* Node 3: AWS Lambda function */}
+                  <g transform="translate(310, 90)">
+                    <rect width="80" height="100" rx="12" fill="#faf5ff" stroke="#9333ea" strokeWidth="2" />
+                    <text x="40" y="22" fill="#7e22ce" fontSize="10" fontWeight="bold" textAnchor="middle">⚡ LAMBDA</text>
+                    <text x="40" y="38" fill="#581c87" fontSize="8" textAnchor="middle">createThumbnail</text>
+                    <circle cx="40" cy="65" r="14" fill="#f3e8ff" stroke={
+                      pipelineState === 'lambda-init' ? '#d97706' :
+                      pipelineState === 'lambda-processing' ? '#059669' : '#cbd5e1'
+                    } strokeWidth="2" />
+                    <text x="40" y="68" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="bold">
+                      {pipelineState === 'lambda-init' ? 'INIT' :
+                       pipelineState === 'lambda-processing' ? 'RUN' : 'IDLE'}
+                    </text>
+                  </g>
+
+                  {/* Node 4: Optimized/Target S3 Bucket */}
+                  <g transform="translate(520, 10)">
+                    <rect width="140" height="80" rx="10" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2" />
+                    <text x="70" y="24" fill="#15803d" fontSize="10" fontWeight="bold" textAnchor="middle">🪣 S3 OPTIMIZED</text>
+                    <text x="70" y="42" fill="#166534" fontSize="8" textAnchor="middle">optimized-bucket</text>
+                    {pipelineState === 's3-upload-thumb' || pipelineState === 'db-metadata' || pipelineState === 'completed' ? (
+                      <g transform="translate(15, 52)">
+                        <rect width="110" height="20" rx="4" fill="#dcfce7" stroke="#22c55e" strokeWidth="1" />
+                        <text x="55" y="13" fill="#15803d" fontSize="8" textAnchor="middle" fontWeight="bold">vacation_thumbnail.jpg</text>
+                      </g>
+                    ) : (
+                      <text x="70" y="62" fill="#64748b" fontSize="8" textAnchor="middle">Waiting for save...</text>
+                    )}
+                  </g>
+
+                  {/* Node 5: DynamoDB Metadata Store */}
+                  <g transform="translate(520, 190)">
+                    <rect width="140" height="80" rx="10" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                    <text x="70" y="24" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                    <text x="70" y="42" fill="#1e40af" fontSize="8" textAnchor="middle">ImagesMetadata</text>
+                    {pipelineState === 'db-metadata' || pipelineState === 'completed' ? (
+                      <g transform="translate(15, 50)">
+                        <rect width="110" height="22" rx="4" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                        <text x="55" y="14" fill="#1e40af" fontSize="8" textAnchor="middle" fontWeight="semibold">Item Added (id: 104a)</text>
+                      </g>
+                    ) : (
+                      <text x="70" y="62" fill="#64748b" fontSize="8" textAnchor="middle">Waiting for write...</text>
+                    )}
+                  </g>
+                </svg>
+
+                {pipelineState === 'lambda-init' && (
+                  <div className="absolute top-[138px] left-[334px] w-6 h-6 bg-amber-500/20 border border-amber-500 rounded-full pulse-circle" />
+                )}
+                {pipelineState === 'lambda-processing' && (
+                  <div className="absolute top-[138px] left-[334px] w-6 h-6 bg-emerald-500/20 border border-emerald-500 rounded-full pulse-circle" />
+                )}
+              </div>
+            </div>
+
+            {/* Live Pipeline Logs console */}
+            <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col h-[460px] shadow-inner">
+              <div className="flex items-center gap-2 text-slate-700 font-mono text-xs border-b border-slate-200 pb-2 mb-3">
+                <Terminal className="w-4 h-4 text-purple-600" />
+                <span>Thumbnail Pipeline Event Logs</span>
+              </div>
+              <div className="flex-1 overflow-y-auto space-y-2.5 font-mono text-[10.5px] leading-relaxed text-slate-700 pr-1">
+                {pipelineLogs.length === 0 ? (
+                  <span className="text-slate-500 block text-center mt-32 italic">Click "Run Pipeline" to trigger S3 bucket events and trace the Lambda workflow execution lifecycle.</span>
+                ) : (
+                  pipelineLogs.map((log, idx) => {
+                    let color = 'text-slate-650';
+                    if (log.includes('🚀')) color = 'text-purple-700 font-semibold bg-purple-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('⚡')) color = 'text-amber-700 font-semibold bg-amber-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('⚙️')) color = 'text-cyan-700 font-semibold bg-cyan-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('✅')) color = 'text-emerald-700 font-semibold bg-emerald-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('💾')) color = 'text-blue-700 font-semibold bg-blue-50/50 px-1.5 py-0.5 rounded';
+                    return (
+                      <div key={idx} className={`${color} border-b border-slate-100 pb-1.5`}>
+                        {log}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 3: CONCURRENCY, LIMITS, & SNAPSTART                                   */}
+      {/* ========================================================================= */}
+      {activeTab === 'concurrency-limits' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Hand interactive controls */}
+            <div className="lg:col-span-6 sv-card flex flex-col justify-between">
+              <div>
+                <h3 className="sv-card-title text-purple-700">
+                  <Sliders className="w-5 h-5" /> Lambda Concurrency &amp; Throttling Limits Simulator
+                </h3>
+                <p className="sv-card-desc mb-5">
+                  AWS Lambda concurrency measures the number of active, concurrent requests processed at any single instant. If execution limits are breached, Lambda rejects new requests, returning an HTTP `429 Too Many Requests` (Throttled) status.
+                </p>
+
+                {/* Control sliders */}
+                <div className="space-y-5">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="sv-label">Simulated Client Traffic load:</span>
+                      <span className="text-xs font-bold text-slate-900">{concurrencyTraffic} requests/sec</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="50"
+                      max="1200"
+                      step="50"
+                      value={concurrencyTraffic}
+                      onChange={(e) => setConcurrencyTraffic(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="sv-label">Lambda Reserved Concurrency Limit:</span>
+                      <span className="text-xs font-bold text-purple-700">{reservedLimit} concurrent containers</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="100"
+                      max="1000"
+                      step="50"
+                      value={reservedLimit}
+                      onChange={(e) => setReservedLimit(Number(e.target.value))}
+                      className="w-full accent-purple-600"
+                    />
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-4 mt-2">
+                    <span className="sv-label mb-2">Advanced Latency Optimization Controls:</span>
+                    <div className="flex flex-col gap-2.5 mt-2">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={provisionedWarmed}
+                          onChange={(e) => setProvisionedWarmed(e.target.checked)}
+                          className="rounded border-slate-300 text-purple-500 bg-white accent-purple-600 w-4 h-4"
+                        />
+                        Pre-warm Containers (Provisioned Concurrency)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={snapStartEnabled}
+                          onChange={(e) => setSnapStartEnabled(e.target.checked)}
+                          className="rounded border-slate-300 text-purple-500 bg-white accent-purple-600 w-4 h-4"
+                        />
+                        Enable Lambda SnapStart (Bypasses Cold Starts)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Telemetry panel */}
+                <div className="grid grid-cols-3 gap-3 mt-6 text-center">
+                  <div className="bg-purple-50 border border-purple-100 rounded-xl p-3">
+                    <span className="text-[10px] text-purple-600 font-bold block">TOTAL REQS</span>
+                    <span className="text-xl font-bold text-purple-950">{totalInvocations} RPS</span>
+                  </div>
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
+                    <span className="text-[10px] text-emerald-600 font-bold block">SUCCESSFUL</span>
+                    <span className="text-xl font-bold text-emerald-950">{successfulCount} RPS</span>
+                  </div>
+                  <div className={`rounded-xl p-3 border ${
+                    throttlingCount > 0 ? 'bg-red-50 border-red-150 text-red-700 animate-pulse' : 'bg-slate-50 border-slate-100 text-slate-500'
+                  }`}>
+                    <span className="text-[10px] font-bold block">THROTTLED</span>
+                    <span className="text-xl font-bold">{throttlingCount} RPS</span>
+                  </div>
+                </div>
+              </div>
+
+              {isThrottled && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mt-4 text-xs text-red-800 leading-relaxed">
+                  <span className="font-bold block uppercase tracking-wider text-[10px] text-red-600 mb-1">⚠️ SYSTEM IS THROTTLED (HTTP 429)</span>
+                  Incoming client traffic demands **{activeConcurrencyNeeded} concurrent execution containers**, exceeding your function\'s **Reserved Concurrency cap of {reservedLimit}**. Lambda is shedding traffic. Solutions: request a regional limit increase or configure upstream buffers (e.g. SQS).
+                </div>
+              )}
+            </div>
+
+            {/* Right hand operational timelines explanation */}
+            <div className="lg:col-span-6 sv-card flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+                  <h3 className="font-bold text-sm text-purple-700 flex items-center gap-1.5">
+                    <Clock className="w-5 h-5" /> Latency Lifecycle
+                  </h3>
+                  <div className="flex items-center gap-1.5 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-100">
+                    <span className="text-[10px] font-semibold text-purple-600">Calculated Average Latency:</span>
+                    <span className="text-[11px] font-bold font-mono text-purple-950">{avgLatencyMs}ms</span>
+                  </div>
+                </div>
+                <p className="sv-card-desc mb-5">
+                  Cold starts affect execution latency by forcing environment setup times (MicroVM initialization, container boot, language runtime load) into active request paths. Compare execution lifecycles below:
+                </p>
+
+                {/* Timelines diagram */}
+                <div className="space-y-4 text-xs">
+                  {/* Timeline 1: Standard Cold Start */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-700">
+                      <span>1. Standard Cold Start (e.g., Java Springboot)</span>
+                      <span className="text-red-600 font-bold">~2,200 ms latency</span>
+                    </div>
+                    <div className="w-full h-8 bg-slate-100 rounded-md overflow-hidden flex border border-slate-200">
+                      <div className="bg-amber-400 text-slate-900 flex items-center justify-center font-semibold text-[9px] w-[55%] truncate">
+                        MicroVM Init (~1200ms)
+                      </div>
+                      <div className="bg-amber-300 text-slate-900 flex items-center justify-center font-semibold text-[9px] w-[35%] border-l border-slate-300/40 truncate">
+                        App Load &amp; Init (~800ms)
+                      </div>
+                      <div className="bg-emerald-500 text-white flex items-center justify-center font-semibold text-[9px] w-[10%] border-l border-slate-400/40 truncate">
+                        Code (~200ms)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Timeline 2: Provisioned Concurrency */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-700">
+                      <span>2. Provisioned Concurrency (Pre-warmed Container)</span>
+                      <span className="text-emerald-600 font-bold">~200 ms latency (0ms Init)</span>
+                    </div>
+                    <div className="w-full h-8 bg-slate-100 rounded-md overflow-hidden flex border border-slate-200">
+                      <div className="bg-slate-200 text-slate-400 flex items-center justify-center text-[9px] w-[90%] italic">
+                        Init bypassed (Warmed beforehand)
+                      </div>
+                      <div className="bg-emerald-500 text-white flex items-center justify-center font-semibold text-[9px] w-[10%] border-l border-slate-400/40">
+                        Code (~200ms)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Timeline 3: SnapStart enabled */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[11px] font-semibold text-slate-700">
+                      <span>3. Lambda SnapStart (MicroVM Restore Snapshot)</span>
+                      <span className="text-purple-600 font-bold">~350 ms latency</span>
+                    </div>
+                    <div className="w-full h-8 bg-slate-100 rounded-md overflow-hidden flex border border-slate-200">
+                      <div className="bg-purple-600 text-white flex items-center justify-center font-semibold text-[9px] w-[8%] italic">
+                        Deploy-time Init
+                      </div>
+                      <div className="bg-purple-300 text-slate-900 flex items-center justify-center font-semibold text-[9px] w-[12%] border-l border-purple-400/40 truncate">
+                        Restore (~150ms)
+                      </div>
+                      <div className="bg-emerald-500 text-white flex items-center justify-center font-semibold text-[9px] w-[80%] border-l border-slate-400/40">
+                        Code (~200ms)
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 mt-6 text-xs text-purple-900 leading-relaxed">
+                <span className="font-bold block uppercase tracking-wider text-[10px] text-purple-700 mb-1 flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5" /> What is Lambda SnapStart?
+                </span>
+                Instead of executing full class-loading and JVM initialization at startup (often adding several seconds of cold start latency to Java applications), **SnapStart takes a compressed state snapshot of the active running MicroVM** at deployment time. On subsequent cold starts, Lambda simply restores this snapshot from SSD caches, bypassing JVM initialization completely and decreasing startup latency by up to **90%**.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: EDGE COMPUTE: CLOUDFRONT FUNCTIONS VS LAMBDA@EDGE                 */}
+      {/* ========================================================================= */}
+      {activeTab === 'edge-compute' && (
+        <div className="space-y-6">
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Globe className="w-5 h-5" /> Edge Customization: Extending Logic to CloudFront locations
+            </h2>
+            <p className="sv-card-desc">
+              Extending backend logic closer to global audiences dramatically reduces latency. AWS provides two serverless tools at global edge locations: **CloudFront Functions** and **Lambda@Edge**. Selecting the right tool depends heavily on use cases and computation requirements.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between shadow-sm">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-150 pb-3 mb-4">
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-800">Edge Lifecycle Request-Response triggers</h3>
+                    <p className="text-[11px] text-slate-550">Select lifecycle hooks below to map where CloudFront Functions vs Lambda@Edge run</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEdgeTechView('cf-functions')}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                        edgeTechView === 'cf-functions' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      CloudFront Functions
+                    </button>
+                    <button
+                      onClick={() => setEdgeTechView('lambda-edge')}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                        edgeTechView === 'lambda-edge' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      Lambda@Edge
+                    </button>
+                  </div>
+                </div>
+
+                {/* HTTP Flow Graph */}
+                <div className="w-full h-[220px] bg-slate-50 border border-slate-150 rounded-xl p-2 relative overflow-hidden">
+                  <svg className="w-full h-full" viewBox="0 0 700 220">
+                    <defs>
+                      <marker id="edge-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                    </defs>
+
+                    <path d="M 60 80 H 260" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
+                    <path d="M 340 80 H 540" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
+                    <path d="M 540 140 H 340" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
+                    <path d="M 260 140 H 60" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
+
+                    <g transform="translate(10, 70)">
+                      <circle cx="25" cy="40" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
+                      <text x="25" y="44" fill="#475569" fontSize="10" textAnchor="middle" fontWeight="bold">USER</text>
+                    </g>
+
+                    <g transform="translate(260, 60)">
+                      <rect width="80" height="100" rx="10" fill="#fdf2f8" stroke="#db2777" strokeWidth="2" />
+                      <text x="40" y="24" fill="#db2777" fontSize="10" textAnchor="middle" fontWeight="bold">CF EDGE</text>
+                      <text x="40" y="42" fill="#701a75" fontSize="8" textAnchor="middle">Cache / POP</text>
+                      <rect x="10" y="55" width="60" height="30" rx="4" fill="#fce7f3" stroke="#ec4899" strokeWidth="1" />
+                      <text x="40" y="73" fill="#831843" fontSize="8" textAnchor="middle" fontWeight="semibold">Viewer Zone</text>
+                    </g>
+
+                    <g transform="translate(540, 70)">
+                      <rect width="80" height="80" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                      <text x="40" y="32" fill="#1d4ed8" fontSize="10" textAnchor="middle" fontWeight="bold">ORIGIN</text>
+                      <text x="40" y="50" fill="#1e40af" fontSize="8" textAnchor="middle">S3 / ALB Server</text>
+                    </g>
+
+                    {edgeTechView === 'cf-functions' && (
+                      <>
+                        {/* Hook 1: Viewer Request */}
+                        <circle cx="160" cy="80" r="6" fill={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="2" />
+                        <line x1="160" y1="80" x2="160" y2="58" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <g transform="translate(115, 36)" onClick={() => setSelectedEdgeHook('viewer-request')} className="cursor-pointer select-none">
+                          <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
+                          <text x="45" y="14" fill={selectedEdgeHook === 'viewer-request' ? '#ffffff' : '#6b21a8'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Req</text>
+                        </g>
+
+                        {/* Hook 2: Viewer Response */}
+                        <circle cx="160" cy="140" r="6" fill={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="2" />
+                        <line x1="160" y1="140" x2="160" y2="162" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <g transform="translate(115, 162)" onClick={() => setSelectedEdgeHook('viewer-response')} className="cursor-pointer select-none">
+                          <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
+                          <text x="45" y="14" fill={selectedEdgeHook === 'viewer-response' ? '#ffffff' : '#6b21a8'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Res</text>
+                        </g>
+
+                        {/* Disabled Hooks */}
+                        <circle cx="440" cy="80" r="5" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
+                        <text x="440" y="49" fill="#dc2626" fontSize="7.5" textAnchor="middle" fontWeight="bold">Origin Req (Blocked)</text>
+
+                        <circle cx="440" cy="140" r="5" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
+                        <text x="440" y="169" fill="#dc2626" fontSize="7.5" textAnchor="middle" fontWeight="bold">Origin Res (Blocked)</text>
+                      </>
+                    )}
+
+                    {edgeTechView === 'lambda-edge' && (
+                      <>
+                        {/* Hook 1: Viewer Request */}
+                        <circle cx="160" cy="80" r="6" fill={selectedEdgeHook === 'viewer-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="160" y1="80" x2="160" y2="58" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <g transform="translate(115, 36)" onClick={() => setSelectedEdgeHook('viewer-request')} className="cursor-pointer select-none">
+                          <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
+                          <text x="45" y="14" fill={selectedEdgeHook === 'viewer-request' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Req</text>
+                        </g>
+
+                        {/* Hook 2: Origin Request */}
+                        <circle cx="440" cy="80" r="6" fill={selectedEdgeHook === 'origin-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="440" y1="80" x2="440" y2="58" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <g transform="translate(395, 36)" onClick={() => setSelectedEdgeHook('origin-request')} className="cursor-pointer select-none">
+                          <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'origin-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
+                          <text x="45" y="14" fill={selectedEdgeHook === 'origin-request' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Origin Req</text>
+                        </g>
+
+                        {/* Hook 3: Origin Response */}
+                        <circle cx="440" cy="140" r="6" fill={selectedEdgeHook === 'origin-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="440" y1="140" x2="440" y2="162" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <g transform="translate(395, 162)" onClick={() => setSelectedEdgeHook('origin-response')} className="cursor-pointer select-none">
+                          <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'origin-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
+                          <text x="45" y="14" fill={selectedEdgeHook === 'origin-response' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Origin Res</text>
+                        </g>
+
+                        {/* Hook 4: Viewer Response */}
+                        <circle cx="160" cy="140" r="6" fill={selectedEdgeHook === 'viewer-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="160" y1="140" x2="160" y2="162" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <g transform="translate(115, 162)" onClick={() => setSelectedEdgeHook('viewer-response')} className="cursor-pointer select-none">
+                          <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
+                          <text x="45" y="14" fill={selectedEdgeHook === 'viewer-response' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Res</text>
+                        </g>
+                      </>
+                    )}
+                  </svg>
+                </div>
+              </div>
+
+              {/* Dynamic Hook Explanation Box */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-4 text-xs">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-2">
+                  <span className="font-bold text-slate-700 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-purple-600" /> Active Hook: {edgeHookDetails[selectedEdgeHook].title}
+                  </span>
+                  <span className="badge badge-purple">Lifecycle Trigger</span>
+                </div>
+                <p className="text-slate-600 leading-relaxed mb-3">{edgeHookDetails[selectedEdgeHook].trigger}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg">
+                    <span className="font-bold text-indigo-700 block mb-1 text-[10px]">CLOUDFRONT FUNCTIONS</span>
+                    <p className="text-[10.5px] text-slate-650 leading-relaxed">{edgeHookDetails[selectedEdgeHook].cff}</p>
+                  </div>
+                  <div className="bg-rose-50 border border-rose-200 p-2.5 rounded-lg">
+                    <span className="font-bold text-rose-700 block mb-1 text-[10px]">LAMBDA@EDGE</span>
+                    <p className="text-[10.5px] text-slate-650 leading-relaxed">{edgeHookDetails[selectedEdgeHook].le}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Structured Table Summary */}
+            <div className="lg:col-span-4 sv-card">
+              <h3 className="sv-card-title text-purple-700">
+                <Layers className="w-5 h-5" /> Capability Specs Comparison
+              </h3>
+              <div className="space-y-4 text-xs leading-relaxed mt-2">
+                <div className="border-b border-slate-100 pb-2">
+                  <span className="font-bold text-slate-900 block text-[11px]">Runtime Languages</span>
+                  <p className="text-slate-500 font-mono text-[10px]">
+                    CF Functions: JavaScript (ES6 syntax isolated subset)<br />
+                    Lambda@Edge: Node.js, Python (Full libraries supported)
+                  </p>
+                </div>
+                <div className="border-b border-slate-100 pb-2">
+                  <span className="font-bold text-slate-900 block text-[11px]">Max Memory Capacity</span>
+                  <p className="text-slate-500 font-mono text-[10px]">
+                    CF Functions: 2 MB<br />
+                    Lambda@Edge: Up to 128 MB (Viewer), 3 GB (Origin)
+                  </p>
+                </div>
+                <div className="border-b border-slate-100 pb-2">
+                  <span className="font-bold text-slate-900 block text-[11px]">Max Execution Time Limit</span>
+                  <p className="text-slate-500 font-mono text-[10px]">
+                    CF Functions: Under 1 millisecond<br />
+                    Lambda@Edge: 5 seconds (Viewer), 30 seconds (Origin)
+                  </p>
+                </div>
+                <div className="border-b border-slate-100 pb-2">
+                  <span className="font-bold text-slate-900 block text-[11px]">Scale Capacity</span>
+                  <p className="text-slate-500 font-mono text-[10px]">
+                    CF Functions: Millions of RPS, zero cold starts<br />
+                    Lambda@Edge: Tens of thousands RPS, minor cold starts
+                  </p>
+                </div>
+                <div>
+                  <span className="font-bold text-slate-900 block text-[11px]">Network Access &amp; Filesystem</span>
+                  <p className="text-slate-500 font-mono text-[10px]">
+                    CF Functions: No network access, no /tmp space<br />
+                    Lambda@Edge: Full HTTP client access, read/write /tmp files
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 5: AMAZON DYNAMODB DEEP DIVE [NEW]                                    */}
+      {/* ========================================================================= */}
+      {activeTab === 'dynamodb' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Card: Key Concepts & Capacity Slider */}
+            <div className="lg:col-span-6 sv-card flex flex-col justify-between">
+              <div>
+                <h3 className="sv-card-title text-blue-600">
+                  <Database className="w-5 h-5" /> DynamoDB Core Architecture &amp; Capacity
+                </h3>
+                <p className="sv-card-desc mb-4">
+                  DynamoDB stores data on SSD partitions. Hash/Partition Keys determine physical partition placement via hashing, while Sort Keys group items physically to enable fast range queries.
+                </p>
+
+                {/* Capacity Selector */}
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setDdbCapacityMode('provisioned')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        ddbCapacityMode === 'provisioned' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      Provisioned Capacity (RCUs/WCUs)
+                    </button>
+                    <button
+                      onClick={() => setDdbCapacityMode('on-demand')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        ddbCapacityMode === 'on-demand' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      On-Demand Mode (Pay-per-Request)
+                    </button>
+                  </div>
+
+                  {ddbCapacityMode === 'provisioned' ? (
+                    <div className="space-y-3.5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                      <div>
+                        <div className="flex justify-between items-center mb-1 text-[11px]">
+                          <span className="font-semibold text-slate-700">Read Capacity Units (RCUs):</span>
+                          <span className="font-bold text-blue-600">{ddbRCU} Units (~{ddbRCU} KB/sec)</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="50"
+                          max="1000"
+                          step="50"
+                          value={ddbRCU}
+                          onChange={(e) => setDdbRCU(Number(e.target.value))}
+                          className="w-full accent-blue-600"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1 text-[11px]">
+                          <span className="font-semibold text-slate-700">Write Capacity Units (WCUs):</span>
+                          <span className="font-bold text-blue-600">{ddbWCU} Units (~{ddbWCU} KB/sec)</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="50"
+                          max="500"
+                          step="25"
+                          value={ddbWCU}
+                          onChange={(e) => setDdbWCU(Number(e.target.value))}
+                          className="w-full accent-blue-600"
+                        />
+                      </div>
+                      <div className="text-[10px] text-slate-500 pt-1.5 border-t border-slate-250 leading-relaxed font-mono">
+                        * Provisioned capacity charges apply per hour regardless of active utilization. Best for stable, predictable workloads.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-emerald-50 border border-emerald-150 rounded-xl p-4 text-xs text-emerald-800 leading-relaxed">
+                      <span className="font-bold block uppercase tracking-wider text-[10px] text-emerald-600 mb-1">🟢 ON-DEMAND AUTO-SCALING CAPACITY ACTIVE</span>
+                      DynamoDB scales instantly to handle thousands of requests per second with zero RCU/WCU limits. Charges are billed strictly per million read/write requests. Best for unpredictable, spikey serverless application workloads.
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary vs GSI/LSI Index visuals */}
+                <div className="mt-5 space-y-2.5">
+                  <span className="sv-label">Index Structure Explanation:</span>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="border border-slate-200 p-3 rounded-lg bg-white">
+                      <span className="font-bold text-slate-900 block mb-1">🔑 Primary Key Structure</span>
+                      Includes partition key (e.g. `UserID`) and optional sort key (`OrderTimestamp`) for sorting unique records.
+                    </div>
+                    <div className="border border-slate-200 p-3 rounded-lg bg-white">
+                      <span className="font-bold text-slate-900 block mb-1">⚡ GSIs &amp; LSIs</span>
+                      **Global Secondary Indexes (GSI)** copy primary data attributes into secondary tables using new custom keys, supporting queries on any attribute.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* S3 export integrations */}
+              <div className="border-t border-slate-100 pt-4 mt-4 bg-slate-50 p-4 rounded-xl text-xs">
+                <span className="font-bold block text-slate-800 text-[11px] mb-1 flex items-center gap-1.5">
+                  <HardDrive className="w-4 h-4 text-emerald-600" /> S3 Imports, Exports, and PITR Backups
+                </span>
+                <p className="text-slate-650 leading-relaxed text-[11.5px]">
+                  **Point-in-Time Recovery (PITR)** provides continuous backups protecting your databases against accidental writes or deletions, with zero overhead. DynamoDB also integrates directly with S3, exporting tables to S3 JSON/Parquet formats for EMR analytics or importing massive S3 datasets directly without consuming RCU/WCU capacity.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Card: DAX Caching & Global Tables replication */}
+            <div className="lg:col-span-6 space-y-6">
+              {/* DAX inline vs ElastiCache Cache-aside */}
+              <div className="sv-card">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                    <Cpu className="w-5 h-5 text-blue-500" /> DynamoDB Accelerator (DAX) Cache
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      disabled={daxSimState !== 'idle'}
+                      onClick={() => triggerDaxSim('hit')}
+                      className="px-2.5 py-1 bg-blue-600 text-white rounded text-[10px] font-semibold hover:bg-blue-500"
+                    >
+                      Simulate Hit
+                    </button>
+                    <button
+                      disabled={daxSimState !== 'idle'}
+                      onClick={() => triggerDaxSim('miss')}
+                      className="px-2.5 py-1 bg-slate-700 text-white rounded text-[10px] font-semibold hover:bg-slate-600"
+                    >
+                      Simulate Miss
+                    </button>
+                  </div>
+                </div>
+
+                <p className="sv-card-desc mb-3">
+                  **DAX** is a fully managed, in-memory **inline write-through cache** sitting directly in front of DynamoDB. In contrast, **ElastiCache (Redis/Memcached)** is a **cache-aside** design requiring your application to manually query and write back state attributes.
+                </p>
+
+                {/* Animated Console */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 h-[160px] flex flex-col font-mono text-[10.5px] text-slate-700 shadow-inner">
+                  <div className="border-b border-slate-200 pb-1.5 mb-2 text-slate-500 flex justify-between">
+                    <span>DAX In-Memory Pipeline Tracker</span>
+                    <span className={`badge ${daxSimState === 'hit' ? 'badge-green' : daxSimState === 'miss' ? 'badge-orange' : 'badge-purple'}`}>
+                      {daxSimState.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto space-y-1.5">
+                    {daxLogs.length === 0 ? (
+                      <span className="text-slate-500 italic block text-center mt-8">Trigger DAX Hit or Miss simulation to observe query latencies.</span>
+                    ) : (
+                      daxLogs.map((log, idx) => (
+                        <div key={idx} className={log.includes('Hit') ? 'text-emerald-700 font-semibold bg-emerald-50/50 px-1.5 rounded' : log.includes('Miss') ? 'text-amber-700 font-bold bg-amber-50/50 px-1.5 rounded' : 'text-slate-650'}>
+                          {log}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Active-Active Global Tables Replication */}
+              <div className="sv-card">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                    <Globe className="w-5 h-5 text-blue-500" /> Active-Active Global Tables Replication
+                  </h3>
+                  <button
+                    disabled={globalTableSyncState !== 'idle'}
+                    onClick={runGlobalTableWrite}
+                    className="px-3 py-1 bg-blue-600 text-white rounded text-[10px] font-bold hover:bg-blue-500 flex items-center gap-1"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${globalTableSyncState === 'syncing' ? 'animate-spin' : ''}`} /> Write Global Table
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Regions display */}
+                  <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-center text-slate-700">
+                    <div className={`border p-3 rounded-xl transition-all ${
+                      ddbActiveRegion === 'us-east-1' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'
+                    } cursor-pointer`} onClick={() => setDdbActiveRegion('us-east-1')}>
+                      🇺🇸 US-EAST-1 (N. Virginia)<br />
+                      <span className="text-[10px] font-normal text-slate-400">Active Node 1</span>
+                    </div>
+                    <div className={`border p-3 rounded-xl transition-all ${
+                      ddbActiveRegion === 'eu-west-1' ? 'border-blue-500 bg-blue-50' : 'border-slate-200'
+                    } cursor-pointer`} onClick={() => setDdbActiveRegion('eu-west-1')}>
+                      🇪🇺 EU-WEST-1 (Ireland)<br />
+                      <span className="text-[10px] font-normal text-slate-400">Active Node 2</span>
+                    </div>
+                  </div>
+
+                  {/* Real-time Global Logs */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-[120px] font-mono text-[10px] text-slate-700 overflow-y-auto space-y-1 pr-1 shadow-inner">
+                    {globalTableLogs.length === 0 ? (
+                      <span className="text-slate-500 italic block text-center mt-6">Click "Write Global Table" to view the active-active multi-region synchronization logs.</span>
+                    ) : (
+                      globalTableLogs.map((log, idx) => (
+                        <div key={idx} className={log.includes('Success') || log.includes('Synced') ? 'text-emerald-700 font-semibold bg-emerald-50/50 px-1 rounded' : 'text-slate-600'}>
+                          {log}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* DynamoDB Streams vs Kinesis Data Streams Processing */}
+          <div className="sv-card">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="sv-card-title text-blue-600 mb-0">
+                <Sliders className="w-5 h-5" /> Stream Processing: DynamoDB Streams vs. Amazon Kinesis
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDdbStreamSource('ddb-streams')}
+                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                    ddbStreamSource === 'ddb-streams' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  DynamoDB Streams
+                </button>
+                <button
+                  onClick={() => setDdbStreamSource('kinesis-streams')}
+                  className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                    ddbStreamSource === 'kinesis-streams' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  Kinesis Data Streams
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-center justify-center min-h-[220px]">
+                {ddbStreamSource === 'ddb-streams' ? (
+                  <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
+                    <g transform="translate(10, 30)">
+                      <rect width="110" height="90" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                      <text x="55" y="35" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                      <text x="55" y="55" fill="#1e40af" fontSize="9" textAnchor="middle">Table Mutations</text>
+                      <text x="55" y="72" fill="#475569" fontSize="8" textAnchor="middle">INSERT/MODIFY</text>
+                    </g>
+                    
+                    <path d="M 120 75 H 220" fill="none" stroke="#2563eb" strokeWidth="3" markerEnd="url(#arrow-blue)" className="active-flow-line-blue" />
+                    
+                    <g transform="translate(220, 30)">
+                      <rect width="140" height="90" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+                      <text x="70" y="32" fill="#1e40af" fontSize="10" fontWeight="bold" textAnchor="middle">⚡ DDB STREAM</text>
+                      <text x="70" y="52" fill="#1d4ed8" fontSize="9" textAnchor="middle">1 Year Retention</text>
+                      <text x="70" y="70" fill="#475569" fontSize="8" textAnchor="middle">Ordered log per key</text>
+                    </g>
+
+                    <path d="M 360 75 H 460" fill="none" stroke="#059669" strokeWidth="2.5" markerEnd="url(#arrow-green)" className="active-flow-line-green" />
+
+                    <g transform="translate(460, 40)">
+                      <rect width="110" height="70" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="2" />
+                      <text x="55" y="32" fill="#7e22ce" fontSize="10" fontWeight="bold" textAnchor="middle">⚡ LAMBDA</text>
+                      <text x="55" y="48" fill="#581c87" fontSize="9" textAnchor="middle">Triggers handler</text>
+                    </g>
+                  </svg>
+                ) : (
+                  <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
+                    <g transform="translate(10, 30)">
+                      <rect width="110" height="90" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                      <text x="55" y="35" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                      <text x="55" y="55" fill="#1e40af" fontSize="9" textAnchor="middle">Table mutations</text>
+                    </g>
+                    
+                    <path d="M 120 75 H 200" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+                    
+                    <g transform="translate(200, 20)">
+                      <rect width="180" height="110" rx="10" fill="#fef3c7" stroke="#d97706" strokeWidth="2.5" />
+                      <text x="90" y="28" fill="#b45309" fontSize="11" fontWeight="bold" textAnchor="middle">🔥 KINESIS DATA STREAM</text>
+                      <text x="90" y="48" fill="#78350f" fontSize="9" textAnchor="middle">1 Year Retention</text>
+                      <text x="90" y="65" fill="#d97706" fontSize="8" textAnchor="middle">Split into shards (buffer)</text>
+                      <text x="90" y="82" fill="#475569" fontSize="8" textAnchor="middle">Multiple concurrent readers</text>
+                    </g>
+
+                    <path d="M 380 75 H 460" fill="none" stroke="#d97706" strokeWidth="2.5" markerEnd="url(#arrow)" />
+
+                    <g transform="translate(460, 30)">
+                      <rect width="110" height="90" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                      <text x="55" y="28" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">DOWNSTREAMS</text>
+                      <text x="55" y="48" fill="#1e293b" fontSize="8" textAnchor="middle">Lambda, Firehose</text>
+                      <text x="55" y="65" fill="#1e293b" fontSize="8" textAnchor="middle">EMR analytics</text>
+                    </g>
+                  </svg>
+                )}
+              </div>
+
+              <div className="lg:col-span-4 text-xs leading-relaxed space-y-3">
+                {ddbStreamSource === 'ddb-streams' ? (
+                  <>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">What is DynamoDB Streams?</span>
+                    <p className="text-slate-600">
+                      DynamoDB Streams capture a time-ordered sequence of item-level mutations (inserts, updates, deletes) in your table, storing these records for exactly **24 hours**.
+                    </p>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Key Strengths</span>
+                    <p className="text-slate-600">
+                      Guarantees deduplicated item sequencing and ordered delivery per partition key. Best for immediate transactional reactions, search indexing updates (syncing with Elasticsearch/OpenSearch), or triggering confirmation emails.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">What is Amazon Kinesis Streams Integration?</span>
+                    <p className="text-slate-600">
+                      Integrates your table directly with a Kinesis Data Stream. Table mutations are exported instantly, allowing data retention periods of up to **1 year (365 days)**.
+                    </p>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Key Strengths</span>
+                    <p className="text-slate-600">
+                      Supports multiple consumer pipelines simultaneously (Fan-out). Best for massive real-time big data analytics, auditing databases across months, or piping mutations into Firehose/S3 data lakes.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 6: AMAZON API GATEWAY & STEP FUNCTIONS [NEW]                         */}
+      {/* ========================================================================= */}
+      {activeTab === 'api-gateway' && (
+        <div className="space-y-6">
+          
+          {/* Edge, Regional vs Private APIs */}
+          <div className="sv-card">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+              <h3 className="sv-card-title text-purple-700 mb-0">
+                <Globe className="w-5 h-5" /> 1. API Gateway Endpoint Types
+              </h3>
+              <div className="flex gap-2">
+                {(['edge', 'regional', 'private'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setApigwEndpointType(type)}
+                    className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                      apigwEndpointType === type ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {type === 'edge' ? 'Edge-Optimized' : type === 'regional' ? 'Regional' : 'Private (VPC)'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-center min-h-[220px]">
+                {apigwEndpointType === 'edge' && (
+                  <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
+                    <text x="20" y="24" fill="#475569" fontSize="9" fontWeight="bold">EDGE-OPTIMIZED ENDPOINT PIPELINE</text>
+                    <g transform="translate(10, 50)">
+                      <circle cx="30" cy="40" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
+                      <text x="30" y="44" fill="#475569" fontSize="9" textAnchor="middle" fontWeight="bold">USER</text>
+                    </g>
+                    <path d="M 65 90 H 150" fill="none" stroke="#7e22ce" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <g transform="translate(150, 40)">
+                      <rect width="110" height="80" rx="8" fill="#fdf2f8" stroke="#db2777" strokeWidth="2" />
+                      <text x="55" y="32" fill="#db2777" fontSize="10" fontWeight="bold" textAnchor="middle">CLOUDFRONT</text>
+                      <text x="55" y="48" fill="#701a75" fontSize="8" textAnchor="middle">Global POP Edge</text>
+                      <text x="55" y="62" fill="#831843" fontSize="8" textAnchor="middle">TLS Handshake close</text>
+                    </g>
+                    <path d="M 260 90 H 360" fill="none" stroke="#2563eb" strokeWidth="2.5" markerEnd="url(#arrow-blue)" className="active-flow-line-blue" />
+                    <g transform="translate(360, 40)">
+                      <rect width="130" height="80" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="2" />
+                      <text x="65" y="32" fill="#7e22ce" fontSize="10" fontWeight="bold" textAnchor="middle">API GATEWAY</text>
+                      <text x="65" y="48" fill="#581c87" fontSize="8" textAnchor="middle">AWS Region Node</text>
+                      <text x="65" y="62" fill="#64748b" fontSize="8" textAnchor="middle">Routes requests</text>
+                    </g>
+                  </svg>
+                )}
+
+                {apigwEndpointType === 'regional' && (
+                  <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
+                    <text x="20" y="24" fill="#475569" fontSize="9" fontWeight="bold">REGIONAL ENDPOINT PIPELINE</text>
+                    <g transform="translate(10, 50)">
+                      <circle cx="30" cy="40" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
+                      <text x="30" y="44" fill="#475569" fontSize="9" textAnchor="middle" fontWeight="bold">USER</text>
+                    </g>
+                    <path d="M 65 90 H 220" fill="none" stroke="#7e22ce" strokeWidth="2.5" markerEnd="url(#arrow)" className="active-flow-line" />
+                    <g transform="translate(220, 40)">
+                      <rect width="160" height="80" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="2.5" />
+                      <text x="80" y="32" fill="#7e22ce" fontSize="11" fontWeight="bold" textAnchor="middle">REGIONAL API GATEWAY</text>
+                      <text x="80" y="50" fill="#581c87" fontSize="8" textAnchor="middle">Same region as client app</text>
+                      <text x="80" y="65" fill="#64748b" fontSize="8" textAnchor="middle">Bypasses CloudFront POPs</text>
+                    </g>
+                  </svg>
+                )}
+
+                {apigwEndpointType === 'private' && (
+                  <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
+                    <text x="20" y="24" fill="#475569" fontSize="9" fontWeight="bold">PRIVATE VPC ENDPOINT PIPELINE</text>
+                    <g transform="translate(10, 40)">
+                      <rect width="110" height="80" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                      <text x="55" y="32" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">VPC CLIENT</text>
+                      <text x="55" y="50" fill="#1e293b" fontSize="8" textAnchor="middle">EC2 inside Private</text>
+                      <text x="55" y="62" fill="#1e293b" fontSize="8" textAnchor="middle">VPC Subnet</text>
+                    </g>
+                    <path d="M 120 80 H 220" fill="none" stroke="#2563eb" strokeWidth="2.5" markerEnd="url(#arrow-blue)" className="active-flow-line-blue" />
+                    <g transform="translate(220, 40)">
+                      <rect width="130" height="80" rx="8" fill="#dbeafe" stroke="#3b82f6" strokeWidth="2" />
+                      <text x="65" y="32" fill="#1e40af" fontSize="9" fontWeight="bold" textAnchor="middle">🔌 VPC INTERFACE ENI</text>
+                      <text x="65" y="50" fill="#1d4ed8" fontSize="8" textAnchor="middle">Powered by PrivateLink</text>
+                      <text x="65" y="62" fill="#64748b" fontSize="8" textAnchor="middle">Bypasses Internet</text>
+                    </g>
+                    <path d="M 350 80 H 430" fill="none" stroke="#64748b" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <g transform="translate(430, 40)">
+                      <rect width="120" height="80" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                      <text x="60" y="32" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">PRIVATE APIGW</text>
+                      <text x="60" y="50" fill="#581c87" fontSize="8" textAnchor="middle">Only resolvable within</text>
+                      <text x="60" y="62" fill="#581c87" fontSize="8" textAnchor="middle">corporate subnets</text>
+                    </g>
+                  </svg>
+                )}
+              </div>
+
+              <div className="lg:col-span-4 text-xs leading-relaxed space-y-3">
+                {apigwEndpointType === 'edge' && (
+                  <>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Edge-Optimized APIs</span>
+                    <p className="text-slate-650">
+                      Routes client requests globally through the closest **Amazon CloudFront Edge Location**. 
+                    </p>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Use Case</span>
+                    <p className="text-slate-650">
+                      Best for mobile or web clients scattered globally. Decreases SSL handshake times by terminating TLS closer to the user location.
+                    </p>
+                  </>
+                )}
+
+                {apigwEndpointType === 'regional' && (
+                  <>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Regional APIs</span>
+                    <p className="text-slate-655">
+                      Bypasses CloudFront POP edge caches entirely, serving HTTP requests directly from the specific AWS region node hosting the API.
+                    </p>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Use Case</span>
+                    <p className="text-slate-655">
+                      Best when combined with custom global CDN pipelines or for high-throughput server-to-server calls occurring inside the same geographic area.
+                    </p>
+                  </>
+                )}
+
+                {apigwEndpointType === 'private' && (
+                  <>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Private APIs</span>
+                    <p className="text-slate-650">
+                      Exposes API Gateway endpoints exclusively inside your secure virtual network via **VPC Interface Endpoints (PrivateLink ENIs)**.
+                    </p>
+                    <span className="font-bold text-slate-800 uppercase block tracking-wider text-[10px]">Use Case</span>
+                    <p className="text-slate-650">
+                      Best for highly confidential corporate applications, securing microservice communications, and meeting compliance guidelines by bypassing public internet routing.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Direct AWS service integrations vs Lambda proxies */}
+            <div className="lg:col-span-6 sv-card flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                  <h3 className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                    <Sliders className="w-5 h-5 text-purple-600" /> Direct AWS Service Integrations
+                  </h3>
+                  <select
+                    value={apigwIntegrationType}
+                    onChange={(e) => setApigwIntegrationType(e.target.value as 'lambda-proxy' | 'direct-kinesis')}
+                    className="text-[10px] border border-slate-350 p-1 rounded font-bold"
+                  >
+                    <option value="lambda-proxy">APIGW → Lambda Proxy (Standard)</option>
+                    <option value="direct-kinesis">APIGW → Kinesis (Direct Service)</option>
+                  </select>
+                </div>
+
+                <p className="text-xs text-slate-650 leading-relaxed mb-4">
+                  Most serverless apps route requests through Lambda compute. However, for high-throughput buffering pipelines (e.g. streaming telemetry), API Gateway can **integrate directly with AWS Services**, executing VTL Mapping templates to format requests without running Lambda.
+                </p>
+
+                {/* Diagrams */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 min-h-[160px] flex items-center justify-center">
+                  {apigwIntegrationType === 'lambda-proxy' ? (
+                    <svg className="w-full max-w-[420px] h-[100px]" viewBox="0 0 420 100">
+                      <g transform="translate(10, 25)">
+                        <rect width="80" height="50" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
+                        <text x="40" y="28" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">API GATEWAY</text>
+                      </g>
+                      <path d="M 90 50 H 170" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
+                      <g transform="translate(170, 25)">
+                        <rect width="80" height="50" rx="4" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                        <text x="40" y="28" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ LAMBDA</text>
+                      </g>
+                      <path d="M 250 50 H 330" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
+                      <g transform="translate(330, 25)">
+                        <rect width="80" height="50" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                        <text x="40" y="28" fill="#1d4ed8" fontSize="8" fontWeight="bold" textAnchor="middle">🔥 KINESIS</text>
+                      </g>
+                    </svg>
+                  ) : (
+                    <svg className="w-full max-w-[420px] h-[100px]" viewBox="0 0 420 100">
+                      <g transform="translate(10, 25)">
+                        <rect width="90" height="50" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="2" />
+                        <text x="45" y="24" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">API GATEWAY</text>
+                        <text x="45" y="38" fill="#701a75" fontSize="7" textAnchor="middle">VTL Template mapping</text>
+                      </g>
+                      
+                      {/* Flow Path */}
+                      <path d="M 100 50 H 290" fill="none" stroke="#0d9488" strokeWidth="3" markerEnd="url(#arrow)" className="active-flow-line" />
+                      <text x="195" y="38" fill="#0d9488" fontSize="8" textAnchor="middle" fontWeight="bold">Direct Action (Bypass Lambda)</text>
+
+                      <g transform="translate(290, 25)">
+                        <rect width="90" height="50" rx="4" fill="#fef3c7" stroke="#d97706" strokeWidth="2" />
+                        <text x="45" y="28" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">🔥 KINESIS STREAM</text>
+                      </g>
+                    </svg>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-purple-50 p-3.5 rounded-xl border border-purple-100 text-xs mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-bold text-purple-955 block">🔐 Endpoint Security &amp; Authorizers</span>
+                  <select
+                    value={apigwAuthType}
+                    onChange={(e) => setApigwAuthType(e.target.value as 'cognito' | 'lambda-auth' | 'iam')}
+                    className="text-[10px] border border-purple-250 p-1 rounded font-bold bg-white text-purple-955 outline-none"
+                  >
+                    <option value="cognito">Cognito Pools (JWT)</option>
+                    <option value="lambda-auth">Lambda Custom Token Auth</option>
+                    <option value="iam">IAM Signature v4 Keys</option>
+                  </select>
+                </div>
+                <p className="text-[11px] text-purple-900 leading-relaxed font-mono mt-1">
+                  {apigwAuthType === 'cognito' ? '🛡️ Cognito Pool: API Gateway verifies incoming client JWT tokens against the User Pool public keys instantly with zero execution cold starts.' :
+                   apigwAuthType === 'lambda-auth' ? '⚙️ Lambda Authorizer: Custom token verification runs your code to return an IAM policy document and cache validation mappings.' :
+                   '🔑 IAM SigV4: Restricts endpoint access strictly to clients with AWS credentials, validating HTTP signatures against secret keys.'}
+                </p>
+              </div>
+            </div>
+
+            {/* AWS Step Functions orchestration State Machine */}
+            <div className="lg:col-span-6 sv-card flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                  <h3 className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                    <Layers className="w-5 h-5 text-teal-600" /> AWS Step Functions State Machine
+                  </h3>
+                  <div className="flex gap-1.5">
+                    <button
+                      disabled={stepFunctionState !== 'idle'}
+                      onClick={() => runStepFunction(false)}
+                      className="px-2.5 py-1 bg-teal-600 text-white rounded text-[10px] font-bold hover:bg-teal-500"
+                    >
+                      Process Success Order
+                    </button>
+                    <button
+                      disabled={stepFunctionState !== 'idle'}
+                      onClick={() => runStepFunction(true)}
+                      className="px-2.5 py-1 bg-rose-600 text-white rounded text-[10px] font-bold hover:bg-rose-500"
+                    >
+                      Process Failed Order
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-650 leading-relaxed mb-4">
+                  Step Functions sequences multiple AWS services into robust state machines. Under failure states, it handles retries, catch blocks, and compensation workflows to keep data synchronized.
+                </p>
+
+                {/* Vertical Order Processing visual */}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-2 font-sans text-xs shadow-inner">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold font-mono text-[10px] ${
+                      stepFunctionState === 'validate' ? 'bg-amber-400 text-slate-900 animate-pulse' :
+                      stepFunctionState === 'charge' || stepFunctionState === 'ship' || stepFunctionState === 'completed' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
+                    }`}>1</div>
+                    <span className="font-semibold text-slate-700">Step 1: ValidateOrder</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold font-mono text-[10px] ${
+                      stepFunctionState === 'charge' ? 'bg-amber-400 text-slate-900 animate-pulse' :
+                      stepFunctionState === 'failed' ? 'bg-rose-600 text-white' :
+                      stepFunctionState === 'ship' || stepFunctionState === 'completed' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
+                    }`}>2</div>
+                    <span className="font-semibold text-slate-700">Step 2: ChargeAccount (Visa Credit Card payment)</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold font-mono text-[10px] ${
+                      stepFunctionState === 'ship' ? 'bg-amber-400 text-slate-900 animate-pulse' :
+                      stepFunctionState === 'completed' ? 'bg-emerald-600 text-white' :
+                      stepFunctionState === 'failed' ? 'bg-rose-300 text-rose-900' : 'bg-slate-200 text-slate-500'
+                    }`}>3</div>
+                    <span className="font-semibold text-slate-700">
+                      {stepFunctionState === 'failed' ? 'Step 3: Compensation (Declined payment rollback)' : 'Step 3: ShipItem (sns notifications)'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Console log output */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-[90px] font-mono text-[9.5px] text-slate-700 overflow-y-auto space-y-1.5 mt-4 shadow-inner">
+                {stepFunctionLogs.length === 0 ? (
+                  <span className="text-slate-550 italic block text-center pt-5">Click a scenario button to trigger the order process state machine.</span>
+                ) : (
+                  stepFunctionLogs.map((log, idx) => (
+                    <div key={idx} className={log.includes('Completed') || log.includes('Success') ? 'text-emerald-700 font-semibold bg-emerald-50/50 px-1 rounded' : log.includes('Error') || log.includes('compensating') ? 'text-rose-700 font-semibold bg-rose-50/50 px-1 rounded' : 'text-slate-600'}>
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 7: AMAZON COGNITO AUTHENTICATION & SECURITY [NEW]                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'cognito' && (
+        <div className="space-y-6">
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Lock className="w-5 h-5 text-red-500 animate-pulse" /> Security Architecture: Amazon Cognito Identity &amp; Directory Pools
+            </h2>
+            <p className="sv-card-desc">
+              Amazon Cognito secures client applications using a two-stage approach: **User Pools** act as user directories (identity management), and **Identity Pools** handle authorization by exchanging those directories for temporary AWS credentials mapping standard IAM roles.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Cognito Federated JWT Auth flow */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-5 min-h-[460px] flex flex-col justify-between shadow-sm">
+              <div className="flex justify-between items-center border-b border-slate-150 pb-3 mb-4">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-800">Cognito Federated Identity credentials exchange pipeline</h3>
+                  <p className="text-[11px] text-slate-500">Step-by-step credentials trade-in lifecycle from login to STS credential maps</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    disabled={cognitoFlowStep === 3}
+                    onClick={advanceCognitoFlow}
+                    className="px-3 py-1 bg-purple-600 text-white rounded text-xs font-semibold hover:bg-purple-500 disabled:bg-slate-200 disabled:text-slate-450"
+                  >
+                    {cognitoFlowStep === 0 ? 'Step 1: User Directory Authenticate' : cognitoFlowStep === 1 ? 'Step 2: Federated Token Exchange' : cognitoFlowStep === 2 ? 'Step 3: STS Credential Fetch' : 'Completed'}
+                  </button>
+                  <button
+                    onClick={resetCognitoFlow}
+                    className="p-1 bg-slate-100 text-slate-600 border border-slate-200 rounded hover:bg-slate-200"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic Authentication flow graphics */}
+              <div className="w-full h-[220px] bg-slate-50 border border-slate-150 rounded-xl relative overflow-hidden">
+                <svg className="w-full h-full" viewBox="0 0 700 220">
+                  <defs>
+                    <marker id="cog-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                    <marker id="cog-arrow-active" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7e22ce" />
+                    </marker>
+                  </defs>
+
+                  {/* Flow Paths */}
+                  <path d="M 50 110 H 130" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#cog-arrow)" />
+                  {cognitoFlowStep >= 1 && (
+                    <line x1="50" y1="110" x2="130" y2="110" stroke="#7e22ce" strokeWidth="3.5" className="active-flow-line" />
+                  )}
+
+                  <path d="M 210 110 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#cog-arrow)" />
+                  {cognitoFlowStep >= 2 && (
+                    <line x1="210" y1="110" x2="290" y2="110" stroke="#2563eb" strokeWidth="3.5" className="active-flow-line-blue" strokeDasharray="3 3" />
+                  )}
+
+                  <path d="M 370 110 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#cog-arrow)" />
+                  {cognitoFlowStep >= 3 && (
+                    <line x1="370" y1="110" x2="450" y2="110" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
+                  )}
+
+                  {/* Node 1: Mobile Client */}
+                  <g transform="translate(10, 80)">
+                    <rect width="60" height="60" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                    <text x="30" y="28" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                    <text x="30" y="44" fill="#1e293b" fontSize="7" textAnchor="middle">Mobile Web</text>
+                  </g>
+
+                  {/* Node 2: Cognito User Pool */}
+                  <g transform="translate(130, 70)">
+                    <rect width="80" height="80" rx="10" fill={cognitoFlowStep === 1 ? 'rgba(168, 85, 247, 0.08)' : '#faf5ff'} stroke="#9333ea" strokeWidth="2.5" />
+                    <text x="40" y="24" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">COGNITO POOL</text>
+                    <text x="40" y="40" fill="#581c87" fontSize="7" textAnchor="middle">User Pool (CUP)</text>
+                    <rect x="8" y="52" width="64" height="18" rx="3" fill="#f3e8ff" stroke="#a855f7" strokeWidth="1" />
+                    <text x="40" y="64" fill="#7e22ce" fontSize="7" textAnchor="middle" fontWeight="bold">JWT Issued</text>
+                  </g>
+
+                  {/* Node 3: Cognito Identity Pool */}
+                  <g transform="translate(290, 70)">
+                    <rect width="80" height="80" rx="10" fill={cognitoFlowStep === 2 ? 'rgba(59, 130, 246, 0.08)' : '#eff6ff'} stroke="#2563eb" strokeWidth="2.5" />
+                    <text x="40" y="24" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">IDENTITY POOL</text>
+                    <text x="40" y="40" fill="#1e40af" fontSize="7" textAnchor="middle">Identity Pool (CIP)</text>
+                    <rect x="8" y="52" width="64" height="18" rx="3" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                    <text x="40" y="64" fill="#1e40af" fontSize="7" textAnchor="middle" fontWeight="bold">IAM Role Maps</text>
+                  </g>
+
+                  {/* Node 4: Private Target Secure AWS S3 Object */}
+                  <g transform="translate(450, 70)">
+                    <rect width="130" height="80" rx="10" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2.5" />
+                    <text x="65" y="28" fill="#15803d" fontSize="10" fontWeight="bold" textAnchor="middle">🪣 SECURE AMAZON S3</text>
+                    <text x="65" y="46" fill="#166534" fontSize="8" textAnchor="middle">Direct Upload endpoint</text>
+                    {cognitoFlowStep === 3 ? (
+                      <g transform="translate(10, 56)">
+                        <rect width="110" height="16" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1" />
+                        <text x="55" y="11" fill="#15803d" fontSize="7" textAnchor="middle" fontWeight="bold">🔓 Access Granted (STS)</text>
+                      </g>
+                    ) : (
+                      <g transform="translate(10, 56)">
+                        <rect width="110" height="16" rx="3" fill="#fde8eb" stroke="#f43f5e" strokeWidth="1" />
+                        <text x="55" y="11" fill="#dc2626" fontSize="7" textAnchor="middle" fontWeight="bold">🔒 Restricted Access</text>
+                      </g>
+                    )}
+                  </g>
+                </svg>
+              </div>
+
+              {/* Console log traces */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-[90px] font-mono text-[9px] text-slate-700 overflow-y-auto space-y-1 shadow-inner">
+                {cognitoLogs.length === 0 ? (
+                  <span className="text-slate-500 italic block text-center pt-5">Click "Step 1: User Directory Authenticate" to trace the security handshake.</span>
+                ) : (
+                  cognitoLogs.map((log, idx) => (
+                    <div key={idx} className={log.includes('Success') || log.includes('Granted') ? 'text-emerald-700 font-semibold bg-emerald-50/50 px-1 rounded' : log.includes('STS') ? 'text-blue-700 font-semibold bg-blue-50/50 px-1 rounded' : 'text-slate-600'}>
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Structured Cognito vs IAM comparisons & hooks */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Cognito vs IAM */}
+              <div className="sv-card">
+                <h3 className="sv-card-title text-purple-700">
+                  <UserCheck className="w-5 h-5" /> Cognito vs. IAM
+                </h3>
+                <div className="space-y-4 text-xs leading-relaxed mt-2">
+                  <div className="border-b border-slate-100 pb-2">
+                    <span className="font-bold text-slate-900 block text-[11px]">Cognito Pools (External Directories)</span>
+                    <p className="text-slate-500 font-mono text-[10px]">
+                      Authenticates public-facing web or mobile application users. Integrates directories with Google, Apple, or SAML SSO identity attributes.
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[11px]">AWS IAM Roles (Internal Security)</span>
+                    <p className="text-slate-500 font-mono text-[10px]">
+                      Secures infrastructure services, pipeline codes (Lambda functions), or corporate employees accessing AWS Management Consoles directly.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Lambda Hooks triggers */}
+              <div className="sv-card">
+                <h3 className="sv-card-title text-purple-700">
+                  <Sliders className="w-5 h-5 text-purple-500 animate-pulse" /> Custom Trigger Lambda Hooks
+                </h3>
+                <p className="text-[11.5px] text-slate-600 leading-relaxed mb-3">
+                  Cognito supports triggering serverless Lambda functions during user sign-up/in events to validate variables or sync directories:
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                  <div className="bg-slate-50 border border-slate-200 p-2 rounded-lg" onMouseEnter={() => setCognitoTriggerHover('pre')} onMouseLeave={() => setCognitoTriggerHover(null)}>
+                    <span className="font-bold text-slate-900 block">Pre-Sign Up Hook</span>
+                    {cognitoTriggerHover === 'pre' ? 'Fires before registering. Custom spam checks or block domains.' : 'Hover for trigger context...'}
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 p-2 rounded-lg" onMouseEnter={() => setCognitoTriggerHover('post')} onMouseLeave={() => setCognitoTriggerHover(null)}>
+                    <span className="font-bold text-slate-900 block">Post-Confirm Hook</span>
+                    {cognitoTriggerHover === 'post' ? 'Fires on code verify. Auto-creates target DynamoDB records.' : 'Hover for trigger context...'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 10: SERVERLESS ARCHITECTURES (Blog Web, IoT, and SAGA) [NEW]          */}
+      {/* ========================================================================= */}
+      {activeTab === 'serverless-architectures' && (
+        <div className="space-y-6 animate-fadeIn">
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Layers className="w-5 h-5" /> 🏗️ Real-World Production Serverless Architectures
+            </h2>
+            <p className="sv-card-desc">
+              Serverless patterns leverage decoupled managed services to build extremely secure, automatically scaling, high-performance backends. Switch between three production-grade architecture blueprints below:
+            </p>
+
+            <div className="flex gap-2 mt-4 flex-wrap">
+              <button
+                onClick={() => {
+                  setActiveArchTab('blog-web');
+                  setArchLogs([]);
+                  setArchFlowState('idle');
+                }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  activeArchTab === 'blog-web' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                Pattern A: Full-Stack Blog Web Architecture (Hand-Drawn Replication)
+              </button>
+              <button
+                onClick={() => {
+                  setActiveArchTab('iot-pipeline');
+                  setArchLogs([]);
+                  setArchFlowState('idle');
+                }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  activeArchTab === 'iot-pipeline' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                Pattern B: IoT Event-Driven Ingestion &amp; Analytics
+              </button>
+              <button
+                onClick={() => {
+                  setActiveArchTab('order-saga');
+                  setArchLogs([]);
+                  setArchFlowState('idle');
+                }}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  activeArchTab === 'order-saga' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                Pattern C: Microservices Checkout SAGA Orchestration
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* SVG Visualizer Canvas */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between shadow-sm">
+              
+              {/* Header inside Diagram */}
+              <div className="flex items-center justify-between border-b border-slate-150 pb-3 mb-4">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-800">
+                    {activeArchTab === 'blog-web' ? 'Full-Stack Serverless Blog Web Application' :
+                     activeArchTab === 'iot-pipeline' ? 'IoT Streaming Ingestion & Real-time Analytics' :
+                     'E-Commerce Checkout SAGA State Machine Orchestration'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    {activeArchTab === 'blog-web' ? 'Detailed SVG mapping of client edge distributions, CRUD compute, DAX caching, and media upload paths.' :
+                     activeArchTab === 'iot-pipeline' ? 'Real-time telemetry buffering using Kinesis streams and automated Firehose data lakes.' :
+                     'Multi-microservice transactions with automated failed checkout stock holds compensations.'}
+                  </p>
+                </div>
+                
+                {/* Trigger controls based on Active Arch Tab */}
+                <div className="flex gap-2">
+                  {activeArchTab === 'blog-web' && (
+                    <>
+                      <button
+                        disabled={archFlowState !== 'idle'}
+                        onClick={runStaticFetchSim}
+                        className="px-2.5 py-1 bg-purple-600 text-white rounded text-[10px] font-bold hover:bg-purple-500 disabled:bg-slate-200 disabled:text-slate-450"
+                      >
+                        Static CDN Fetch
+                      </button>
+                      <button
+                        disabled={archFlowState !== 'idle'}
+                        onClick={runDynamicCrudSim}
+                        className="px-2.5 py-1 bg-blue-600 text-white rounded text-[10px] font-bold hover:bg-blue-500 disabled:bg-slate-200 disabled:text-slate-455"
+                      >
+                        Dynamic CRUD POST
+                      </button>
+                      <button
+                        disabled={archFlowState !== 'idle'}
+                        onClick={runMediaUploadSim}
+                        className="px-2.5 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold hover:bg-emerald-500 disabled:bg-slate-200 disabled:text-slate-455"
+                      >
+                        Media Transfer Upload
+                      </button>
+                    </>
+                  )}
+
+                  {activeArchTab === 'iot-pipeline' && (
+                    <button
+                      disabled={archFlowState !== 'idle'}
+                      onClick={runIotPipelineSim}
+                      className="px-3 py-1 bg-amber-600 text-white rounded text-[10px] font-bold hover:bg-amber-500 disabled:bg-slate-200 disabled:text-slate-455"
+                    >
+                      Trigger Device Telemetry Stream
+                    </button>
+                  )}
+
+                  {activeArchTab === 'order-saga' && (
+                    <>
+                      <button
+                        disabled={archFlowState !== 'idle'}
+                        onClick={() => runSagaOrderSim(false)}
+                        className="px-2.5 py-1 bg-teal-600 text-white rounded text-[10px] font-bold hover:bg-teal-500 disabled:bg-slate-200"
+                      >
+                        Trigger Success Order
+                      </button>
+                      <button
+                        disabled={archFlowState !== 'idle'}
+                        onClick={() => runSagaOrderSim(true)}
+                        className="px-2.5 py-1 bg-rose-600 text-white rounded text-[10px] font-bold hover:bg-rose-500 disabled:bg-slate-200"
+                      >
+                        Trigger Declined payment Rollback
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Dynamic SVG diagrams rendering */}
+              <div className="w-full h-[320px] relative bg-slate-50 border border-slate-150 rounded-xl overflow-x-auto overflow-y-hidden flex items-center justify-center p-2">
+                
+                {/* 1. Blog Web SVG Replica */}
+                {activeArchTab === 'blog-web' && (
+                  <svg className="w-full min-w-[760px] h-[300px]" viewBox="0 0 760 300">
+                    <defs>
+                      <marker id="arch-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                    </defs>
+
+                    {/* PATHS */}
+                    {/* Path 1: Static CDN Delivery */}
+                    <path d="M 50 140 L 140 50 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 340 50 H 460" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    {archFlowState === 'static-fetch' && (
+                      <>
+                        <path d="M 50 140 L 140 50 H 260" fill="none" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                        <line x1="340" y1="50" x2="460" y2="50" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                      </>
+                    )}
+
+                    {/* Path 2: Dynamic CRUD */}
+                    <path d="M 50 150 L 140 140 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 340 140 H 420" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 460 140 H 520" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 580 140 H 640" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    {/* Streams to background Lambda to SES */}
+                    <path d="M 600 160 V 210 H 500" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 440 230 H 380" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    {archFlowState === 'dynamic-crud' && (
+                      <>
+                        <path d="M 50 150 L 140 140 H 260" fill="none" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="340" y1="140" x2="420" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="460" y1="140" x2="520" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="580" y1="140" x2="640" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <path d="M 600 160 V 210 H 500" fill="none" stroke="#2563eb" strokeWidth="2.5" className="active-flow-line-blue" />
+                        <line x1="440" y1="230" x2="380" y2="230" stroke="#2563eb" strokeWidth="2.5" className="active-flow-line-blue" />
+                      </>
+                    )}
+
+                    {/* Path 3: Media Upload */}
+                    <path d="M 50 160 L 140 230 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 340 230 H 420" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    {/* Resizer Lambda splits optimized saved and fan-out */}
+                    <path d="M 460 215 Q 490 170, 620 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 460 245 Q 490 270, 620 270" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    {archFlowState === 'media-upload' && (
+                      <>
+                        <path d="M 50 160 L 140 230 H 260" fill="none" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
+                        <line x1="340" y1="230" x2="420" y2="230" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
+                        <path d="M 460 215 Q 490 170, 620 170" fill="none" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
+                        <path d="M 460 245 Q 490 270, 620 270" fill="none" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
+                      </>
+                    )}
+
+                    {/* NODES REPRESENTATION */}
+                    {/* Node 1: Client */}
+                    <g transform="translate(10, 120)">
+                      <rect width="40" height="50" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                      <text x="20" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                      <text x="20" y="38" fill="#1e293b" fontSize="6" textAnchor="middle">Web App</text>
+                    </g>
+
+                    {/* Static content distribution */}
+                    <g transform="translate(140, 20)">
+                      <rect width="120" height="55" rx="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
+                      <text x="60" y="20" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">☁️ CLOUDFRONT CDN</text>
+                      <text x="60" y="34" fill="#701a75" fontSize="7" textAnchor="middle">Static distribution</text>
+                      <text x="60" y="44" fill="#701a75" fontSize="6.5" textAnchor="middle">Terminates TLS Handshakes</text>
+                    </g>
+                    <g transform="translate(460, 20)">
+                      <rect width="110" height="55" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
+                      <text x="55" y="18" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 STATIC S3</text>
+                      <text x="55" y="32" fill="#7c2d12" fontSize="7" textAnchor="middle">static-bucket</text>
+                      <text x="55" y="44" fill="#0d9488" fontSize="7.5" textAnchor="middle" fontWeight="bold">🔑 OAC Protected</text>
+                    </g>
+
+                    {/* CRUD dynamic API pathway */}
+                    <g transform="translate(140, 110)">
+                      <rect width="120" height="55" rx="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
+                      <text x="60" y="22" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">📡 API GATEWAY</text>
+                      <text x="60" y="38" fill="#701a75" fontSize="7.5" textAnchor="middle">REST HTTP API</text>
+                    </g>
+                    <g transform="translate(420, 115)">
+                      <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                      <text x="20" y="23" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ λ</text>
+                      <text x="20" y="48" fill="#581c87" fontSize="7" textAnchor="middle">CRUD</text>
+                    </g>
+                    <g transform="translate(520, 120)">
+                      <rect width="60" height="35" rx="4" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" />
+                      <text x="30" y="16" fill="#0d9488" fontSize="8" fontWeight="bold" textAnchor="middle">🔌 DAX</text>
+                      <text x="30" y="26" fill="#115e59" fontSize="6.5" textAnchor="middle">Cache Layer</text>
+                    </g>
+                    <g transform="translate(640, 110)">
+                      <rect width="110" height="55" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                      <text x="55" y="20" fill="#1d4ed8" fontSize="8" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                      <text x="55" y="34" fill="#1e40af" fontSize="7.5" textAnchor="middle">Global SSD Tables</text>
+                      <text x="55" y="44" fill="#7e22ce" fontSize="7" textAnchor="middle">Streams Active</text>
+                    </g>
+
+                    {/* Stream triggers Background Lambda to SES */}
+                    <g transform="translate(440, 205)">
+                      <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                      <text x="20" y="23" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ λ</text>
+                      <text x="20" y="48" fill="#581c87" fontSize="6.5" textAnchor="middle">Notification</text>
+                    </g>
+                    <g transform="translate(300, 210)">
+                      <rect width="80" height="35" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                      <text x="40" y="16" fill="#dc2626" fontSize="8" fontWeight="bold" textAnchor="middle">📨 SES EMAIL</text>
+                      <text x="40" y="26" fill="#991b1b" fontSize="6.5" textAnchor="middle">Send Notification</text>
+                    </g>
+
+                    {/* Media Upload pathway */}
+                    <g transform="translate(140, 200)">
+                      <rect width="120" height="55" rx="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
+                      <text x="60" y="20" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">☁️ CLOUDFRONT CDN</text>
+                      <text x="60" y="34" fill="#0d9488" fontSize="7" textAnchor="middle" fontWeight="bold">🚀 Transfer Accel</text>
+                      <text x="60" y="44" fill="#701a75" fontSize="6.5" textAnchor="middle">Terminates SSL early</text>
+                    </g>
+                    <g transform="translate(420, 205)">
+                      <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                      <text x="20" y="23" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ λ</text>
+                      <text x="20" y="48" fill="#581c87" fontSize="6.5" textAnchor="middle">Resizer</text>
+                    </g>
+                    <g transform="translate(620, 160)">
+                      <rect width="130" height="40" rx="5" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.2" />
+                      <text x="65" y="16" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 TARGET S3 BUCKET</text>
+                      <text x="65" y="28" fill="#7c2d12" fontSize="7" textAnchor="middle">optimized-bucket</text>
+                    </g>
+                    <g transform="translate(620, 250)">
+                      <rect width="130" height="40" rx="5" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" />
+                      <text x="65" y="16" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">✉️ SQS QUEUE &amp; SNS</text>
+                      <text x="65" y="28" fill="#78350f" fontSize="7" textAnchor="middle">Decoupled events fanout</text>
+                    </g>
+                  </svg>
+                )}
+
+                {/* 2. IoT Data Streaming SVG */}
+                {activeArchTab === 'iot-pipeline' && (
+                  <svg className="w-full min-w-[760px] h-[300px]" viewBox="0 0 760 300">
+                    <path d="M 60 145 H 140" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 230 145 H 320" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 400 130 Q 430 80, 520 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 400 160 Q 430 210, 520 210" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 610 210 H 660" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    
+                    {archFlowState === 'iot-stream' && (
+                      <>
+                        <line x1="60" y1="145" x2="140" y2="145" stroke="#d97706" strokeWidth="3" className="active-flow-line" />
+                        <line x1="230" y1="145" x2="320" y2="145" stroke="#d97706" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 400 130 Q 430 80, 520 80" fill="none" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 400 160 Q 430 210, 520 210" fill="none" stroke="#2563eb" strokeWidth="3.5" className="active-flow-line-blue" />
+                        <line x1="610" y1="210" x2="660" y2="210" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                      </>
+                    )}
+
+                    <g transform="translate(10, 110)">
+                      <rect width="50" height="70" rx="5" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                      <text x="25" y="30" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">📟 IoT</text>
+                      <text x="25" y="44" fill="#1e293b" fontSize="6.5" textAnchor="middle">Devices</text>
+                      <text x="25" y="54" fill="#64748b" fontSize="6.5" textAnchor="middle">MQTT</text>
+                    </g>
+                    <g transform="translate(140, 110)">
+                      <rect width="90" height="70" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="2" />
+                      <text x="45" y="30" fill="#b45309" fontSize="9" fontWeight="bold" textAnchor="middle">AWS IoT CORE</text>
+                      <text x="45" y="48" fill="#78350f" fontSize="7" textAnchor="middle">Rules engine</text>
+                    </g>
+                    <g transform="translate(320, 110)">
+                      <rect width="80" height="70" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="2" />
+                      <text x="40" y="26" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">🔥 KINESIS</text>
+                      <text x="40" y="40" fill="#581c87" fontSize="7.5" textAnchor="middle">Data Stream</text>
+                      <text x="40" y="52" fill="#581c87" fontSize="7" textAnchor="middle">Sharded Buffer</text>
+                    </g>
+                    
+                    <g transform="translate(520, 50)">
+                      <rect width="110" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                      <text x="55" y="24" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                      <text x="55" y="38" fill="#1e40af" fontSize="7" textAnchor="middle">State Telemetry</text>
+                      <text x="55" y="48" fill="#059669" fontSize="7" textAnchor="middle" fontWeight="bold">Latency: 1-5ms</text>
+                    </g>
+
+                    <g transform="translate(520, 180)">
+                      <rect width="90" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                      <text x="45" y="24" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">🔥 FIREHOSE</text>
+                      <text x="45" y="38" fill="#1e40af" fontSize="7" textAnchor="middle">Buffer/Deliver</text>
+                    </g>
+                    <g transform="translate(660, 180)">
+                      <rect width="90" height="60" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+                      <text x="45" y="22" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3 LAKE</text>
+                      <text x="45" y="36" fill="#166534" fontSize="7.5" textAnchor="middle">raw-datalake</text>
+                      <text x="45" y="46" fill="#0d9488" fontSize="7" textAnchor="middle">Athena SQL ready</text>
+                    </g>
+                  </svg>
+                )}
+
+                {/* 3. Checkout SAGA step functions SVG */}
+                {activeArchTab === 'order-saga' && (
+                  <svg className="w-full min-w-[760px] h-[300px]" viewBox="0 0 760 300">
+                    <defs>
+                      <marker id="saga-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                    </defs>
+
+                    <path d="M 70 145 H 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+                    <path d="M 290 145 H 390" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+                    <path d="M 510 145 H 610" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+
+                    <path d="M 450 170 V 220 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#saga-arrow)" />
+
+                    {archFlowState === 'saga-run' && (
+                      <>
+                        <line x1="70" y1="145" x2="170" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="290" y1="145" x2="390" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="510" y1="145" x2="610" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                      </>
+                    )}
+
+                    {archFlowState === 'saga-fail' && (
+                      <>
+                        <line x1="70" y1="145" x2="170" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="290" y1="145" x2="390" y2="145" stroke="#dc2626" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 450 170 V 220 H 260" fill="none" stroke="#dc2626" strokeWidth="3" className="active-flow-line" strokeDasharray="3 3" />
+                      </>
+                    )}
+
+                    <g transform="translate(10, 110)">
+                      <circle cx="30" cy="35" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                      <text x="30" y="38" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                    </g>
+                    
+                    <g transform="translate(170, 110)">
+                      <rect width="120" height="70" rx="8" fill="#faf5ff" stroke={
+                        archFlowState === 'saga-run' || archFlowState === 'saga-fail' ? '#059669' : '#cbd5e1'
+                      } strokeWidth="2" />
+                      <text x="60" y="26" fill="#1e293b" fontSize="9" fontWeight="bold" textAnchor="middle">1. VALIDATE STOCK</text>
+                      <text x="60" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Reserve laptop SKU</text>
+                      <text x="60" y="56" fill="#059669" fontSize="7" textAnchor="middle" fontWeight="bold">
+                        {archFlowState === 'saga-run' || archFlowState === 'saga-fail' ? 'Inventory Locked' : 'Status: Idle'}
+                      </text>
+                    </g>
+
+                    <g transform="translate(390, 110)">
+                      <rect width="120" height="70" rx="8" fill="#eff6ff" stroke={
+                        archFlowState === 'saga-run' ? '#059669' :
+                        archFlowState === 'saga-fail' ? '#dc2626' : '#cbd5e1'
+                      } strokeWidth="2" />
+                      <text x="60" y="26" fill="#1e293b" fontSize="9" fontWeight="bold" textAnchor="middle">2. CHARGE Stripe</text>
+                      <text x="60" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Authorize Visa Card</text>
+                      <text x="60" y="56" fill={
+                        archFlowState === 'saga-run' ? '#059669' :
+                        archFlowState === 'saga-fail' ? '#dc2626' : '#64748b'
+                      } fontSize="7" textAnchor="middle" fontWeight="bold">
+                        {archFlowState === 'saga-run' ? 'Charged Successfully' :
+                         archFlowState === 'saga-fail' ? 'Visa Declined 402' : 'Status: Idle'}
+                      </text>
+                    </g>
+
+                    <g transform="translate(610, 110)">
+                      <rect width="120" height="70" rx="8" fill="#f0fdf4" stroke={
+                        archFlowState === 'saga-run' ? '#059669' : '#cbd5e1'
+                      } strokeWidth="2" />
+                      <text x="60" y="26" fill="#1e293b" fontSize="9" fontWeight="bold" textAnchor="middle">3. POST DELIVERY</text>
+                      <text x="60" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Queue SQS dispatch</text>
+                      <text x="60" y="56" fill="#059669" fontSize="7" textAnchor="middle" fontWeight="bold">
+                        {archFlowState === 'saga-run' ? 'Dispatched' : 'Status: Idle'}
+                      </text>
+                    </g>
+
+                    <g transform="translate(140, 205)">
+                      <rect width="120" height="40" rx="5" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.5" />
+                      <text x="60" y="16" fill="#dc2626" fontSize="8" fontWeight="bold" textAnchor="middle">↩️ COMPENSATE STOCK</text>
+                      <text x="60" y="28" fill="#991b1b" fontSize="7" textAnchor="middle">Release reserved SKU hold</text>
+                    </g>
+                  </svg>
+                )}
+
+              </div>
+            </div>
+
+            {/* Right Column: Architectural logs & Core concepts */}
+            <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between h-[460px] shadow-inner">
+              <div>
+                <div className="flex items-center gap-2 text-slate-700 font-mono text-xs border-b border-slate-200 pb-2 mb-3">
+                  <Terminal className="w-4 h-4 text-purple-600" />
+                  <span>Architecture Trace Logger</span>
+                </div>
+                <div className="h-[210px] overflow-y-auto space-y-2 font-mono text-[10px] leading-relaxed text-slate-650 pr-1">
+                  {archLogs.length === 0 ? (
+                    <span className="text-slate-500 italic block text-center mt-20">Click any trigger buttons on the top right to start a transaction workflow simulation.</span>
+                  ) : (
+                    archLogs.map((log, idx) => {
+                      let color = 'text-slate-600';
+                      if (log.includes('🚀')) color = 'text-purple-700 font-semibold bg-purple-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('🌐') || log.includes('📡')) color = 'text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('🔒') || log.includes('🛡️')) color = 'text-indigo-700 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('🟢') || log.includes('Success') || log.includes('✅')) color = 'text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('❌') || log.includes('Compensation') || log.includes('Rollback') || log.includes('cancelled')) color = 'text-rose-700 font-semibold bg-rose-50 px-1.5 py-0.5 rounded';
+                      return (
+                        <div key={idx} className={`${color} border-b border-slate-100 pb-1.5`}>
+                          {log}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Explanations summary block */}
+              <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 text-[11px] text-slate-750 leading-relaxed font-sans mt-4">
+                <span className="font-bold text-slate-900 block mb-1">💡 Architecture Learning Takeaway:</span>
+                {activeArchTab === 'blog-web' ? (
+                  'Securing S3 access with CloudFront Origin Access Control (OAC) and Bucket Policies is an absolute security standard. It ensures that no users can bypass your global caching or Web Application Firewall (WAF) layer to directly download bucket resources.'
+                ) : activeArchTab === 'iot-pipeline' ? (
+                  'Using Kinesis Data Streams allows ingestion buffering at huge volumes. A streaming database pipeline scales independently of target database engines, protecting backend storage writes.'
+                ) : (
+                  'In distributed serverless systems, transactions spanning multiple databases/APIs cannot use standard ACID database locks. The SAGA pattern resolves this by executing corresponding compensatory rollbacks immediately on transaction faults.'
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 8: VPC DATABASE NETWORKING & RDS PROXY (prev Tab 5)                   */}
+      {/* ========================================================================= */}
+      {activeTab === 'db-integration' && (
+        <div className="space-y-6">
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Shield className="w-5 h-5" /> Networking &amp; Integrations: VPCs, RDS Proxies, and Aurora direct calls
+            </h2>
+            <p className="sv-card-desc">
+              Connecting stateless, rapidly scaling Lambda functions to traditional relational databases introduces core network security and database socket connection limits. Explore standard architectures below:
+            </p>
+            
+            <div className="flex gap-2 mt-4 flex-wrap">
+              <button
+                onClick={() => setDbScenario('vpc-basic')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  dbScenario === 'vpc-basic' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                1. Lambda inside a VPC
+              </button>
+              <button
+                onClick={() => setDbScenario('rds-proxy')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  dbScenario === 'rds-proxy' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                2. Connection Pooling with RDS Proxy
+              </button>
+              <button
+                onClick={() => setDbScenario('aurora-trigger')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  dbScenario === 'aurora-trigger' ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                3. Aurora Invoking Lambda &amp; Notifications
+              </button>
+            </div>
+          </div>
+
+          {/* Scenario Display Cards */}
+          {dbScenario === 'vpc-basic' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
+              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm">
+                <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
+                  <rect width="590" height="290" rx="12" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="5 5" />
+                  <text x="30" y="30" fill="#475569" fontSize="10" fontWeight="bold">AWS VIRTUAL PRIVATE CLOUD (VPC)</text>
+
+                  {/* Public Subnet */}
+                  <rect x="30" y="55" width="200" height="200" rx="8" fill="rgba(16, 185, 129, 0.04)" stroke="#10b981" strokeWidth="2" strokeDasharray="4" />
+                  <text x="45" y="75" fill="#047857" fontSize="9" fontWeight="bold">Public Subnet (DMZ)</text>
+
+                  {/* NAT Gateway Node */}
+                  <g transform="translate(60, 110)">
+                    <rect width="140" height="50" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="70" y="24" fill="#047857" fontSize="10" fontWeight="bold" textAnchor="middle">🌐 NAT GATEWAY</text>
+                    <text x="70" y="38" fill="#475569" fontSize="8" textAnchor="middle">Outbound Internet route</text>
+                  </g>
+
+                  {/* Private Subnet */}
+                  <rect x="290" y="55" width="270" height="200" rx="8" fill="rgba(59, 130, 246, 0.04)" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4" />
+                  <text x="305" y="75" fill="#1d4ed8" fontSize="9" fontWeight="bold">Private VPC Subnet</text>
+
+                  {/* Lambda ENI Node */}
+                  <g transform="translate(310, 100)">
+                    <rect width="100" height="60" rx="6" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.5" />
+                    <text x="50" y="22" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">⚡ LAMBDA ENI</text>
+                    <text x="50" y="38" fill="#475569" fontSize="8" textAnchor="middle">Elastic Network</text>
+                    <text x="50" y="50" fill="#64748b" fontSize="8" textAnchor="middle">Interface</text>
+                  </g>
+
+                  {/* RDS Postgres Node */}
+                  <g transform="translate(440, 100)">
+                    <rect width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="50" y="25" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🛢️ RDS POSTGRES</text>
+                    <text x="50" y="42" fill="#475569" fontSize="8" textAnchor="middle">Private IP only</text>
+                  </g>
+
+                  {/* Connection paths */}
+                  <path d="M 410 130 H 440" fill="none" stroke="#10b981" strokeWidth="2.5" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+                  <path d="M 360 160 Q 200 230, 130 160" fill="none" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arrow)" />
+                  
+                  <text x="425" y="115" fill="#059669" fontSize="8" textAnchor="middle" fontWeight="bold">SQL IP route</text>
+                  <text x="210" y="235" fill="#d97706" fontSize="8" textAnchor="middle" fontWeight="bold">NAT Gateway routing for external APIs</text>
+                </svg>
+              </div>
+              <div className="lg:col-span-4 sv-card">
+                <h3 className="sv-card-title text-purple-700">Concepts: Lambda in a VPC</h3>
+                <p className="text-xs text-slate-605 leading-relaxed space-y-3">
+                  <span>
+                    By default, Lambda runs inside an isolated AWS-managed network. To access resources inside your private subnets (like database servers, cache instances, or internal microservices), you must configure Lambda to run in your private subnets.
+                  </span>
+                  <br /><br />
+                  <span>
+                    When enabled, Lambda mounts a secure **Elastic Network Interface (ENI)** inside your subnet, assigning it a private IP. 
+                  </span>
+                  <br /><br />
+                  <span className="font-bold block text-slate-800">⚠️ Internet egress constraint:</span>
+                  <span>
+                    A Lambda function inside a private subnet loses default internet access. To fetch external webhooks or talk to public SaaS platforms, you must route subnet egress traffic through a **NAT Gateway** configured inside a public subnet.
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {dbScenario === 'rds-proxy' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
+              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm">
+                <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
+                  <rect x="20" y="45" width="100" height="210" rx="8" fill="rgba(241, 245, 249, 0.6)" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="70" y="32" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">SCALING LAMBDAS</text>
+
+                  <g transform="translate(30, 60)">
+                    <rect width="80" height="35" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="40" y="22" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda 1</text>
+                  </g>
+                  <g transform="translate(30, 110)">
+                    <rect width="80" height="35" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="40" y="22" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda 2</text>
+                  </g>
+                  <g transform="translate(30, 160)">
+                    <rect width="80" height="35" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="40" y="22" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda 3</text>
+                  </g>
+                  <g transform="translate(30, 210)">
+                    <rect width="80" height="30" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="40" y="18" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda N...</text>
+                  </g>
+
+                  <path d="M 120 80 Q 200 110, 240 120" fill="none" stroke="#a855f7" strokeWidth="2" />
+                  <path d="M 120 130 H 240" fill="none" stroke="#a855f7" strokeWidth="2" />
+                  <path d="M 120 180 Q 200 150, 240 140" fill="none" stroke="#a855f7" strokeWidth="2" />
+
+                  <g transform="translate(240, 95)">
+                    <rect width="130" height="90" rx="8" fill="#f0fdf4" stroke="#0d9488" strokeWidth="2.5" />
+                    <text x="65" y="28" fill="#0f766e" fontSize="11" fontWeight="bold" textAnchor="middle">🔌 RDS PROXY</text>
+                    <text x="65" y="48" fill="#475569" fontSize="8" textAnchor="middle">Multiplexed Connection</text>
+                    <text x="65" y="65" fill="#0d9488" fontSize="9" textAnchor="middle" fontWeight="bold">Pool Size: 10 conns</text>
+                  </g>
+
+                  <g transform="translate(450, 90)">
+                    <rect width="120" height="100" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
+                    <text x="60" y="30" fill="#1d4ed8" fontSize="12" fontWeight="bold" textAnchor="middle">🛢️ RDS DB</text>
+                    <text x="60" y="52" fill="#475569" fontSize="8" textAnchor="middle">Sockets protected</text>
+                    <rect x="15" y="68" width="90" height="20" rx="4" fill="#dbeafe" stroke="#3b82f6" />
+                    <text x="60" y="80" fill="#1e40af" fontSize="8" textAnchor="middle" fontWeight="bold">Max Sockets: 100</text>
+                  </g>
+
+                  <path d="M 370 140 H 450" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arrow)" />
+                  <text x="410" y="125" fill="#0f766e" fontSize="8" textAnchor="middle" fontWeight="bold">Pooled Socket</text>
+                </svg>
+              </div>
+              <div className="lg:col-span-4 sv-card">
+                <h3 className="sv-card-title text-purple-700">Concepts: RDS Proxy</h3>
+                <p className="text-xs text-slate-605 leading-relaxed space-y-3">
+                  <span>
+                    Traditional relational databases (PostgreSQL, MySQL) assign a dedicated operating system process thread (socket connection) to every single connected client. Under massive spikes, 1,000 scaling serverless Lambda instances will try to spin up 1,000 separate DB socket connections, instantly exhausting database resources and locking up tables.
+                  </span>
+                  <br /><br />
+                  <span>
+                    **RDS Proxy** acts as a secure buffer pooler. It handles high client scaling connections from Lambda, multiplexing them, sharing database resources, and keeping socket allocations within acceptable database bounds to ensure zero crash limits.
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {dbScenario === 'aurora-trigger' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
+              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm">
+                <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
+                  <g transform="translate(30, 80)">
+                    <rect width="160" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
+                    <text x="80" y="28" fill="#1d4ed8" fontSize="12" fontWeight="bold" textAnchor="middle">🛢️ AURORA DB</text>
+                    <text x="80" y="48" fill="#475569" fontSize="8" textAnchor="middle">Stored SQL Procedure</text>
+
+                    <rect x="15" y="65" width="130" height="50" rx="4" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="25" y="80" fill="#1e293b" fontSize="7" fontFamily="monospace">CALL mysql.lambda_async</text>
+                    <text x="25" y="92" fill="#1e293b" fontSize="7" fontFamily="monospace">(\'arn:aws:lambda:...\',</text>
+                    <text x="25" y="104" fill="#1e293b" fontSize="7" fontFamily="monospace">  \'"payload": 1022\');</text>
+                  </g>
+
+                  <path d="M 190 145 H 390" fill="none" stroke="#10b981" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arrow)" />
+                  <text x="290" y="128" fill="#059669" fontSize="8" textAnchor="middle" fontWeight="bold">Direct SQL Invocation (IAM Authorized)</text>
+
+                  <g transform="translate(390, 95)">
+                    <rect width="160" height="100" rx="10" fill="#fbf7ff" stroke="#a855f7" strokeWidth="2.5" />
+                    <text x="80" y="28" fill="#7e22ce" fontSize="12" fontWeight="bold" textAnchor="middle">⚡ TARGET LAMBDA</text>
+                    <text x="80" y="48" fill="#475569" fontSize="8" textAnchor="middle">Sync/Async handler</text>
+
+                    <rect x="15" y="65" width="130" height="22" rx="4" fill="#fdf4ff" stroke="#e9d5ff" />
+                    <text x="80" y="78" fill="#a21caf" fontSize="8" textAnchor="middle" fontWeight="semibold">Send external webhook</text>
+                  </g>
+                </svg>
+              </div>
+              <div className="lg:col-span-4 sv-card">
+                <h3 className="sv-card-title text-purple-700">Concepts: Direct Aurora Invocations</h3>
+                <p className="text-xs text-slate-605 leading-relaxed space-y-3">
+                  <span>
+                    AWS Aurora allows your relational databases to trigger downstream workflows directly from SQL stored procedures. 
+                  </span>
+                  <br /><br />
+                  <span>
+                    By using standard calls like `mysql.lambda_async` or `postgres.aws_lambda.invoke` with AWS IAM policies attached, developers can invoke target microservice pipelines immediately when critical data events occur (e.g. data audit, instant notification dispatch, real-time analytics aggregation).
+                  </span>
+                  <br /><br />
+                  <span className="font-bold block text-slate-800">Alternative: RDS Event Notifications</span>
+                  <span>
+                    For database operational health alerts (e.g. storage full, manual master failover, database backup complete), RDS supports event subscription models that send details directly to Amazon SNS or EventBridge, allowing automated operational remediation.
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 9: SERVERLESS SCALING & PERFORMANCE SIMULATOR PLAYGROUND              */}
+      {/* ========================================================================= */}
+      {activeTab === 'simulation' && (
+        <div className="space-y-6">
+          <div className="sv-card">
+            <h2 className="sv-card-title text-purple-700">
+              <Play className="w-5 h-5" /> 🎮 Serverless MicroVM Autoscaling &amp; Connection Storm Simulator
+            </h2>
+            <p className="sv-card-desc">
+              Interact with a high-fidelity serverless pipeline. Watch API Gateway handle incoming traffic by scaling Lambda microVM execution containers (provisioning warm, active, or idle states) and observe connection loads hitting the relational RDS database.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column: Interactive Canvas & Terminal & Chart */}
+            <div className="lg:col-span-9 space-y-6">
+              {/* Canvas Boundary */}
+              <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-md flex flex-col items-center">
+                <div className="w-full flex items-center justify-between pb-3 border-b border-slate-100 mb-3 text-slate-700 text-xs">
+                  <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px] text-purple-700">
+                    <Activity className="w-4 h-4 text-purple-500" /> Serverless Live Pipeline Telemetry
+                  </span>
+                  <div className="flex gap-2">
+                    <span className="badge badge-purple">Concurrency Cap: 8 Slots</span>
+                    <span className={`badge ${simRdsProxyEnabled ? 'badge-green' : 'badge-orange'}`}>
+                      {simRdsProxyEnabled ? 'RDS Proxy ON' : 'RDS Proxy OFF'}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Horizontal scrolling protection */}
+                <div className="w-full overflow-x-auto flex justify-center items-center py-1">
+                  <canvas
+                    ref={canvasRef}
+                    width={900}
+                    height={420}
+                    className="rounded-lg border border-slate-200 bg-white"
+                    style={{ minWidth: '900px', width: '900px', height: '420px' }}
+                  />
+                </div>
+              </div>
+
+              {/* Real-time Graph Visualizer */}
+              <div className="sv-card">
+                <h3 className="sv-card-title text-purple-700">
+                  <TrendingUp className="w-5 h-5" /> Real-time Performance &amp; Connection Chart
+                </h3>
+                <div className="h-48 w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={simHistoryData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="time" stroke="#64748b" fontSize={9} />
+                      <YAxis stroke="#64748b" fontSize={9} />
+                      <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
+                      <Line type="monotone" dataKey="Invocations" stroke="#a855f7" strokeWidth={2.5} name="Total Invocations" dot={false} />
+                      <Line type="monotone" dataKey="ColdStarts" stroke="#f59e0b" strokeWidth={2} name="Cold Starts" dot={false} />
+                      <Line type="monotone" dataKey="Throttles" stroke="#ef4444" strokeWidth={2} name="Throttled Requests" dot={false} />
+                      <Line type="monotone" dataKey="DbConnections" stroke="#3b82f6" strokeWidth={2} name="Active DB Conns" dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Terminal Logs console */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col shadow-inner">
+                <div className="flex items-center gap-2 text-slate-700 font-mono text-xs border-b border-slate-200 pb-2 mb-3">
+                  <Terminal className="w-4 h-4 text-purple-600" />
+                  <span>Real-time Serverless Playground Output</span>
+                </div>
+                <div className="h-[180px] overflow-y-auto space-y-1.5 font-mono text-[10.5px] leading-relaxed text-slate-650 pr-1">
+                  {simLogs.map((log, idx) => {
+                    let color = 'text-slate-600';
+                    if (log.includes('🟢')) color = 'text-purple-700 font-semibold bg-purple-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('⚠️')) color = 'text-amber-700 font-semibold bg-amber-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('❌')) color = 'text-rose-700 font-semibold bg-rose-50/50 px-1.5 py-0.5 rounded';
+                    if (log.includes('♻️')) color = 'text-slate-500 italic px-1.5 py-0.5';
+                    return (
+                      <div key={idx} className={color}>
+                        {log}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Interactive Operators Control Panel */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="sv-card">
+                <h3 className="sv-card-title text-purple-700">
+                  <Settings className="w-5 h-5" /> Operators Panel
+                </h3>
+                
+                <div className="space-y-6 mt-4">
+                  {/* Traffic Modifier */}
+                  <div>
+                    <span className="sv-label">1. Modulate Client Traffic:</span>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {(['low', 'normal', 'surge'] as const).map((level) => (
+                        <button
+                           key={level}
+                          onClick={() => {
+                            setSimTrafficLevel(level);
+                            addSimLog(`📢 Client Traffic modulated to: ${level.toUpperCase()} intensity.`);
+                          }}
+                          className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            simTrafficLevel === level
+                              ? 'bg-purple-600 text-white shadow-md'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          {level.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Provisioned Concurrency pre-warmer */}
+                  <div>
+                    <span className="sv-label">2. Provisioned Concurrency:</span>
+                    <p className="text-[10px] text-slate-500 mb-2">Pre-warm MicroVMs to eliminate runtime Cold Starts completely.</p>
+                    <div className="flex justify-between gap-2">
+                      {[0, 2, 4].map((count) => (
+                        <button
+                          key={count}
+                          onClick={() => {
+                            setSimProvConcurrency(count);
+                            addSimLog(`⚙️ Config: Set Provisioned Concurrency target to ${count} containers.`);
+                          }}
+                          className={`flex-1 py-1 px-2 rounded-lg text-xs font-bold border transition-colors ${
+                            simProvConcurrency === count
+                              ? 'border-purple-500 bg-purple-50 text-purple-700'
+                              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          {count === 0 ? 'None (0)' : `${count} Warmed`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* RDS Proxy Toggle */}
+                  <div className="border-t border-slate-100 pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="sv-label">3. RDS Proxy Pooler:</span>
+                      <button
+                        onClick={() => {
+                          setSimRdsProxyEnabled(!simRdsProxyEnabled);
+                          addSimLog(
+                            !simRdsProxyEnabled
+                              ? '🔌 RDS Proxy ENABLED: SQL connection pooling is protecting database socket boundaries.'
+                              : '🔌 RDS Proxy DISABLED: Database socket connections now exposed directly to serverless scale spikes.'
+                          );
+                        }}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                          simRdsProxyEnabled ? 'bg-emerald-600 text-white' : 'bg-slate-600 text-slate-300'
+                        }`}
+                      >
+                        {simRdsProxyEnabled ? 'ACTIVE (ON)' : 'BYPASS (OFF)'}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-2">
+                      When OFF, rapid Lambda scaling triggers a **Connection Storm**, saturating RDS PostgreSQL limits. When ON, RDS Proxy pools socket connections safely.
+                    </p>
+                  </div>
+
+                  {/* Simulation State control buttons */}
+                  <div className="border-t border-slate-100 pt-4 flex gap-2">
+                    <button
+                      onClick={() => setSimIsRunning(!simIsRunning)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                        simIsRunning ? 'bg-slate-800 text-slate-100 hover:bg-slate-700' : 'bg-purple-600 text-white hover:bg-purple-500'
+                      }`}
+                    >
+                      {simIsRunning ? (
+                        <>
+                          <Square className="w-3.5 h-3.5 fill-current" /> Pause Simulation
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3.5 h-3.5 fill-current" /> Start Simulation
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Metrics summary card */}
+              <div className="sv-card bg-slate-50 border-slate-200 text-slate-700 shadow-sm">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Live Active Metrics</h3>
+                <div className="space-y-3 font-mono text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Invocations:</span>
+                    <span className="text-purple-700 font-bold">{simStats.invocations}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Cold Starts:</span>
+                    <span className="text-amber-700 font-bold">{simStats.coldStarts}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Throttles:</span>
+                    <span className={simStats.throttles > 0 ? 'text-red-600 font-bold animate-pulse' : 'text-slate-500'}>
+                      {simStats.throttles}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">RDS Sockets:</span>
+                    <span className={!simRdsProxyEnabled && simStats.dbConnections > 80 ? 'text-red-600 font-bold animate-pulse' : 'text-emerald-600 font-bold'}>
+                      {simStats.dbConnections} / 120
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

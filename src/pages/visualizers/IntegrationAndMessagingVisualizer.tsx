@@ -505,6 +505,7 @@ export default function IntegrationAndMessagingVisualizer() {
       addKinesisLog('Simulation limit: Maximum of 3 shards reached.', 'warning');
       return;
     }
+    setKinesisRecentPackets([]); // Reset packets during resharding partition shift!
     setKinesisShards(prev => prev + 1);
     addKinesisLog(`Resharding: Split operation triggered. Hash ranges split. Active shards: ${kinesisShards + 1} (${(kinesisShards + 1) * 1.0} MB/s total bandwidth)`, 'success');
   };
@@ -514,6 +515,7 @@ export default function IntegrationAndMessagingVisualizer() {
       addKinesisLog('Simulation limit: Minimum of 1 active shard required.', 'warning');
       return;
     }
+    setKinesisRecentPackets([]); // Reset packets during resharding partition shift!
     setKinesisShards(prev => prev - 1);
     addKinesisLog(`Resharding: Shards merged. Active Shards: ${kinesisShards - 1} (${(kinesisShards - 1) * 1.0} MB/s capacity)`, 'warning');
   };
@@ -1624,36 +1626,78 @@ export default function IntegrationAndMessagingVisualizer() {
 
               {/* Shard visual lanes */}
               <div style={{ border: '1px solid #cbd5e1', borderRadius: '12px', background: '#f8fafc', padding: '14px', marginBottom: '16px' }}>
-                {[...Array(kinesisShards)].map((_, i) => (
-                  <div key={i} style={{ marginBottom: '12px', borderBottom: i < kinesisShards - 1 ? '1px dashed #cbd5e1' : 'none', paddingBottom: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', fontWeight: 'bold' }}>
-                      <span>🌊 Shard Lane {i + 1} (Hash segment {Math.floor((i * 65536) / kinesisShards).toString(16).toUpperCase()}-{(Math.floor(((i + 1) * 65536) / kinesisShards) - 1).toString(16).toUpperCase()})</span>
-                      <span style={{ color: '#0f766e' }}>Max limit: 1.0 MB/s</span>
-                    </div>
+                {[...Array(kinesisShards)].map((_, i) => {
+                  const maxSlots = 8;
+                  const shardPackets = kinesisRecentPackets.filter(p => p.shard === i + 1).slice(0, maxSlots);
+                  const slots: any[] = [...shardPackets];
+                  while (slots.length < maxSlots) {
+                    slots.push({ id: `empty-${i}-${slots.length}`, pk: '', shard: i + 1, status: 'empty' });
+                  }
 
-                    {/* Packet visual items in shard */}
-                    <div style={{ display: 'flex', gap: '8px', minHeight: '34px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '6px', marginTop: '6px', overflowX: 'auto', alignItems: 'center' }}>
-                      {kinesisRecentPackets.filter(p => p.shard === i + 1).length === 0 ? (
-                        <span style={{ color: '#94a3b8', fontSize: '10px' }}>Idle</span>
-                      ) : (
-                        kinesisRecentPackets.filter(p => p.shard === i + 1).map((p, idx) => (
-                          <span key={idx} style={{
-                            padding: '2px 8px',
-                            background: p.status === 'throttled' ? '#fee2e2' : '#e0f2fe',
-                            border: `1.5px solid ${p.status === 'throttled' ? '#ef4444' : '#0ea5e9'}`,
-                            borderRadius: '4px',
-                            fontSize: '9.5px',
-                            fontWeight: 'bold',
-                            color: p.status === 'throttled' ? '#b91c1c' : '#0369a1',
-                            flexShrink: 0
-                          }} className="im-pulse">
-                            {p.pk}
-                          </span>
-                        ))
-                      )}
+                  return (
+                    <div key={i} style={{ marginBottom: '12px', borderBottom: i < kinesisShards - 1 ? '1px dashed #cbd5e1' : 'none', paddingBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', fontWeight: 'bold' }}>
+                        <span>🌊 Shard Lane {i + 1} (Hash segment {Math.floor((i * 65536) / kinesisShards).toString(16).toUpperCase()}-{(Math.floor(((i + 1) * 65536) / kinesisShards) - 1).toString(16).toUpperCase()})</span>
+                        <span style={{ color: '#0f766e' }}>Max limit: 1.0 MB/s</span>
+                      </div>
+
+                      {/* Packet visual heatmap cells grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '6px', marginTop: '6px' }}>
+                        {slots.map((p) => {
+                          if (p.status === 'empty') {
+                            return (
+                              <div key={p.id} style={{
+                                height: '36px',
+                                border: '1px dashed #cbd5e1',
+                                borderRadius: '6px',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '8px',
+                                color: '#94a3b8'
+                              }}>
+                                <span>-</span>
+                                <span style={{ fontSize: '6px', opacity: 0.5 }}>IDLE</span>
+                              </div>
+                            );
+                          }
+
+                          const isThrottled = p.status === 'throttled';
+                          return (
+                            <div key={p.id} style={{
+                              height: '36px',
+                              border: `1.5px solid ${isThrottled ? '#ef4444' : '#0ea5e9'}`,
+                              borderRadius: '6px',
+                              background: isThrottled ? '#fee2e2' : '#e0f2fe',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '9px',
+                              fontWeight: 'bold',
+                              color: isThrottled ? '#b91c1c' : '#0369a1',
+                              transition: 'all 0.2s ease',
+                              cursor: 'default',
+                              textOverflow: 'ellipsis',
+                              overflow: 'hidden',
+                              whiteSpace: 'nowrap',
+                              padding: '0 2px'
+                            }} className="im-pulse" title={`PK: ${p.pk} | Status: ${p.status.toUpperCase()}`}>
+                              <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', width: '100%', textAlign: 'center' }}>
+                                {p.pk}
+                              </span>
+                              <span style={{ fontSize: '7px', opacity: 0.8, color: isThrottled ? '#b91c1c' : '#0284c7' }}>
+                                {isThrottled ? '⚠️ DROP' : '⚡ OK'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="im-terminal">

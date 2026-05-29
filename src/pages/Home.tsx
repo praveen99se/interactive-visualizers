@@ -89,6 +89,30 @@ const visualizers = [
     path: '/visualizers/integration-messaging',
     icon: '✉️',
   },
+  {
+    id: 'elastic-containers',
+    title: '📦 AWS Containers & Kubernetes',
+    description: 'Deep-dive into Docker vs VMs, Amazon ECS (EC2 vs Fargate), ECR registries, EKS Kubernetes, App Runner, and App2Container architectures with interactive models.',
+    tags: ['Cloud', 'AWS', 'Containers'],
+    path: '/visualizers/elastic-containers',
+    icon: '📦',
+  },
+  {
+    id: 'serverless',
+    title: '⚡ AWS Serverless & Lambda',
+    description: 'Master serverless architectures. Explore Lambda core triggers, concurrency limit throttling, SnapStart timelines, Edge compute (CloudFront Functions vs Lambda@Edge), secure VPC RDS Proxy pooling, and a dynamic scaling simulator.',
+    tags: ['Cloud', 'AWS', 'Serverless', 'Compute'],
+    path: '/visualizers/serverless',
+    icon: '⚡',
+  },
+  {
+    id: 'databases-analytics',
+    title: '🗄️ AWS Databases & Analytics',
+    description: 'Master AWS database & analytics paradigms. Compare RDBMS, NoSQL, DocumentDB, ElastiCache systems, S3 Analytics pipelines (Glue Crawlers, Athena Serverless, Redshift Data Warehouses, EMR Spark compute), and specialized Graph (Neptune) or Ledger indexes.',
+    tags: ['Cloud', 'AWS', 'Databases', 'Analytics'],
+    path: '/visualizers/databases-analytics',
+    icon: '🗄️',
+  },
   // Add more visualizers here as you create them
   {
     id: 'sorting-algorithms',

@@ -122,6 +122,16 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '✉️',
     lastUpdated: '2026-05-26',
   },
+  {
+    id: 'elastic-containers',
+    title: 'AWS Containers & Kubernetes',
+    description: 'Deep dive into Docker vs VMs, Amazon ECS (EC2 vs Fargate), ECR registries, EKS Kubernetes, App Runner, and App2Container architectures with interactive models.',
+    category: 'cloud',
+    tags: ['AWS', 'Containers', 'ECS', 'EKS', 'ECR', 'Docker', 'Fargate'],
+    path: '/visualizers/elastic-containers',
+    icon: '📦',
+    lastUpdated: '2026-05-28',
+  },
   // Add more visualizers here as you create them
 ];
 
