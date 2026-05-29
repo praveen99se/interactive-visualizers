@@ -1,20 +1,7 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'config';
 type DecisionKey = 'layer' | 'throughput' | 'staticIp' | 'inspection';
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  targetX: number;
-  targetY: number;
-  speed: number;
-  color: string;
-  clientId: number;
-  targetId: number;
-  state: 'to_lb' | 'to_server' | 'returning';
-}
 
 export default function ALBNLBVisualizer() {
   const [activeSection, setActiveSection] = useState<TabType>('concept');
@@ -112,17 +99,74 @@ export default function ALBNLBVisualizer() {
   const [serverHealth, setServerHealth] = useState<boolean[]>([true, true, true]);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [activeTrafficLogs, setActiveTrafficLogs] = useState<string[]>([]);
+  const [stickyMap, setStickyMap] = useState<Record<number, string>>({});
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const particleIdRef = useRef(0);
-  const animationFrameIdRef = useRef<number | null>(null);
-  const isRunningRef = useRef(isRunning);
-
-  // Synchronize running state ref
+  // Periodic Simulation telemetry updates for Tab 4
   useEffect(() => {
-    isRunningRef.current = isRunning;
-  }, [isRunning]);
+    if (!isRunning || activeSection !== 'simulation') return;
+
+    const interval = setInterval(() => {
+      // Pick a random client index: 0, 1, or 2 (Client 1, Client 2, Client 3)
+      const clientIdx = Math.floor(Math.random() * 3);
+      const clientName = `Client ${clientIdx + 1}`;
+
+      // Find healthy servers
+      const healthyServers: string[] = [];
+      for (let i = 0; i < serverCount; i++) {
+        if (serverHealth[i]) {
+          healthyServers.push(String.fromCharCode(65 + i));
+        }
+      }
+
+      if (healthyServers.length === 0) {
+        setActiveTrafficLogs((prev) => [
+          `🚨 [CRITICAL] ${clientName} request dropped! All backend targets are UNHEALTHY ❌`,
+          ...prev.slice(0, 49)
+        ]);
+        return;
+      }
+
+      let targetServer = '';
+      let logPrefix = '';
+
+      if (simMode === 'alb_sticky') {
+        const existingSticky = stickyMap[clientIdx];
+        if (existingSticky && healthyServers.includes(existingSticky)) {
+          targetServer = existingSticky;
+          logPrefix = `🍪 [ALB Sticky Session] Pinned cookie match (AWSALB=Server-${targetServer})`;
+        } else {
+          // Choose a server dynamically among healthy servers
+          targetServer = healthyServers[Math.floor(Math.random() * healthyServers.length)];
+          setStickyMap((prev) => ({ ...prev, [clientIdx]: targetServer }));
+          logPrefix = existingSticky 
+            ? `⚠️ [ALB Sticky Failover] Sticky Server ${existingSticky} is UNHEALTHY! Dynamic rerouting to Server ${targetServer} & cookie updated 🍪`
+            : `🍪 [ALB Sticky Session] New request client session -> Routed to Server ${targetServer} & cookie injected`;
+        }
+      } else if (simMode === 'alb_no_sticky') {
+        targetServer = healthyServers[Math.floor(Math.random() * healthyServers.length)];
+        logPrefix = `🍔 [ALB L7 Routing] Round-robin dynamic forward`;
+      } else {
+        const defaultIndex = clientIdx % serverCount;
+        const defaultLetter = String.fromCharCode(65 + defaultIndex);
+        if (healthyServers.includes(defaultLetter)) {
+          targetServer = defaultLetter;
+          logPrefix = `⚡ [NLB L4 Hash] Deterministic 5-tuple socket hash matched Server ${targetServer}`;
+        } else {
+          targetServer = healthyServers[0];
+          logPrefix = `⚠️ [NLB L4 Failover] Mapped Server ${defaultLetter} is UNHEALTHY! Instantly re-routed to healthy Server ${targetServer} via active failover`;
+        }
+      }
+
+      setActiveTrafficLogs((prev) => [
+        `${logPrefix} -> Forwarded to Server ${targetServer} ✅`,
+        ...prev.slice(0, 49)
+      ]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isRunning, simMode, serverCount, serverHealth, activeSection, stickyMap]);
+
+
 
   // Compute recommended LB
   const getRecommendedLB = () => {
@@ -371,265 +415,19 @@ export default function ALBNLBVisualizer() {
     ]);
   };
 
-  // Canvas-based particles traffic loop
-  const drawCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // Draw LB node
-    const lbX = width / 2;
-    const lbY = height / 2;
-
-    ctx.fillStyle = simMode.startsWith('alb') ? '#c2410c' : '#0369a1';
-    ctx.beginPath();
-    ctx.arc(lbX, lbY, 22, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 11px var(--font-sans, sans-serif)';
-    ctx.textAlign = 'center';
-    ctx.fillText(simMode.startsWith('alb') ? 'ALB' : 'NLB', lbX, lbY + 4);
-
-    // Draw Client entry nodes
-    const clientX = 40;
-    const clientYSpacing = height / 4;
-    const clientColors = ['#ec4899', '#3b82f6', '#10b981'];
-
-    for (let i = 0; i < 3; i++) {
-      const cy = clientYSpacing * (i + 1);
-      ctx.fillStyle = clientColors[i];
-      ctx.beginPath();
-      ctx.arc(clientX, cy, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '10px var(--font-sans, sans-serif)';
-      ctx.fillText(`C${i + 1}`, clientX, cy + 3);
-
-      // Connection line to LB
-      ctx.strokeStyle = 'var(--color-border-secondary)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(clientX + 14, cy);
-      ctx.lineTo(lbX - 22, lbY);
-      ctx.stroke();
-    }
-
-    // Draw Target Server nodes
-    const serverX = width - 60;
-    const serverYSpacing = height / (serverCount + 1);
-    const serverTargets: { id: number; x: number; y: number; healthy: boolean }[] = [];
-
-    for (let i = 0; i < serverCount; i++) {
-      const sy = serverYSpacing * (i + 1);
-      const isHealthy = serverHealth[i];
-      serverTargets.push({ id: i, x: serverX, y: sy, healthy: isHealthy });
-
-      ctx.fillStyle = isHealthy ? '#22c55e' : '#ef4444';
-      ctx.beginPath();
-      ctx.arc(serverX, sy, 16, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Border highlight
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10px var(--font-sans, sans-serif)';
-      ctx.fillText(String.fromCharCode(65 + i), serverX, sy + 3);
-
-      // Health text
-      ctx.fillStyle = isHealthy ? '#16a34a' : '#dc2626';
-      ctx.font = '9px var(--font-sans, sans-serif)';
-      ctx.fillText(isHealthy ? 'OK' : 'FAIL', serverX + 30, sy + 3);
-
-      // Connection line from LB to Server
-      ctx.strokeStyle = isHealthy ? 'var(--color-border-secondary)' : '#fca5a5';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(lbX + 22, lbY);
-      ctx.lineTo(serverX - 16, sy);
-      ctx.stroke();
-    }
-
-    // Spawn new particles periodically
-    if (isRunningRef.current && Math.random() < 0.04) {
-      const clientId = Math.floor(Math.random() * 3);
-      const clientY = clientYSpacing * (clientId + 1);
-      const clientColor = clientColors[clientId];
-
-      // Determine routing decision
-      let targetId = -1;
-
-      // Filter healthy targets
-      const healthyTargetIds = serverTargets.filter((t) => t.healthy).map((t) => t.id);
-
-      if (healthyTargetIds.length > 0) {
-        if (simMode === 'alb_sticky') {
-          // Check if client has a persistent target already pinned
-          const cookieKey = `client_sticky_${clientId}`;
-          const existingSessionTarget = sessionStorage.getItem(cookieKey);
-
-          if (existingSessionTarget && healthyTargetIds.includes(parseInt(existingSessionTarget))) {
-            targetId = parseInt(existingSessionTarget);
-          } else {
-            // First time or failed target, pick a random healthy target and pin session cookie
-            targetId = healthyTargetIds[Math.floor(Math.random() * healthyTargetIds.length)];
-            sessionStorage.setItem(cookieKey, targetId.toString());
-            setActiveTrafficLogs((prev) => [
-              `🍪 Client C${clientId + 1} request - No session cookie found. Load balanced to Server ${String.fromCharCode(65 + targetId)}. Returning response with [Set-Cookie: AWSALB=Server${String.fromCharCode(65 + targetId)}]`,
-              ...prev.slice(0, 8)
-            ]);
-          }
-        } else if (simMode === 'alb_no_sticky') {
-          // Standard round robin / random balancing
-          targetId = healthyTargetIds[Math.floor(Math.random() * healthyTargetIds.length)];
-          setActiveTrafficLogs((prev) => [
-            `🔄 Client C${clientId + 1} request - Round-Robin dynamic balancing routed to Server ${String.fromCharCode(65 + targetId)}`,
-            ...prev.slice(0, 8)
-          ]);
-        } else {
-          // NLB Mode - Flow Hashing
-          // Deterministic hash maps Client ID directly to a specific target
-          const hashValue = (clientId + 7) % serverCount;
-          if (healthyTargetIds.includes(hashValue)) {
-            targetId = hashValue;
-            setActiveTrafficLogs((prev) => [
-              `⚡ Client C${clientId + 1} flow hash mapped to Server ${String.fromCharCode(65 + targetId)}. Persistent L4 session active.`,
-              ...prev.slice(0, 8)
-            ]);
-          } else {
-            // Failover to next healthy target
-            targetId = healthyTargetIds[0];
-            setActiveTrafficLogs((prev) => [
-              `⚠️ Flow Target Server ${String.fromCharCode(65 + hashValue)} is offline. NLB flow failover redirected connection to Server ${String.fromCharCode(65 + targetId)}.`,
-              ...prev.slice(0, 8)
-            ]);
-          }
-        }
-      }
-
-      if (targetId !== -1) {
-        const targetServer = serverTargets.find((t) => t.id === targetId);
-        if (targetServer) {
-          particlesRef.current.push({
-            id: particleIdRef.current++,
-            x: clientX,
-            y: clientY,
-            targetX: lbX,
-            targetY: lbY,
-            speed: 3,
-            color: clientColor,
-            clientId,
-            targetId,
-            state: 'to_lb'
-          });
-        }
-      }
-    }
-
-    // Move and draw particles
-    const particles = particlesRef.current;
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-
-      // Move particle toward target
-      const dx = p.targetX - p.x;
-      const dy = p.targetY - p.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance < p.speed) {
-        p.x = p.targetX;
-        p.y = p.targetY;
-
-        // Transition states
-        if (p.state === 'to_lb') {
-          p.state = 'to_server';
-          const targetNode = serverTargets.find((t) => t.id === p.targetId);
-          if (targetNode) {
-            p.targetX = targetNode.x;
-            p.targetY = targetNode.y;
-          } else {
-            particles.splice(i, 1);
-            continue;
-          }
-        } else if (p.state === 'to_server') {
-          p.state = 'returning';
-          p.targetX = lbX;
-          p.targetY = lbY;
-        } else if (p.state === 'returning') {
-          p.state = 'returning'; // keep tag but trace back to client
-          p.targetX = clientX;
-          p.targetY = clientYSpacing * (p.clientId + 1);
-
-          if (Math.abs(p.x - p.targetX) < 5 && Math.abs(p.y - p.targetY) < 5) {
-            // Reached client, delete particle
-            particles.splice(i, 1);
-            continue;
-          }
-        }
-      } else {
-        p.x += (dx / distance) * p.speed;
-        p.y += (dy / distance) * p.speed;
-      }
-
-      // Draw particle
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Add a slight core pulse glow
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    // Loop animation
-    if (isRunningRef.current) {
-      animationFrameIdRef.current = requestAnimationFrame(drawCanvas);
-    }
-  }, [simMode, serverCount, serverHealth]);
-
   // Handle simulation toggle
   const toggleSimulation = () => {
     if (isRunning) {
       setIsRunning(false);
-      if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
-      }
     } else {
       setIsRunning(true);
-      setActiveTrafficLogs(['🏁 Simulation engine initialized. Click "Send Traffic" and fail servers to watch routing paths...']);
+      setActiveTrafficLogs(['🏁 Simulation engine initialized. Dynamic traffic active.']);
     }
   };
 
-  // Run draw loop on start
-  useEffect(() => {
-    if (activeSection === 'simulation') {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        // Run first clear and draw frame
-        isRunningRef.current = isRunning;
-        drawCanvas();
-      }
-    }
-
-    return () => {
-      if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
-      }
-    };
-  }, [activeSection, isRunning, drawCanvas]);
-
   // Clean session cookies helper
   const cleanSimulatorCookies = () => {
+    setStickyMap({});
     sessionStorage.removeItem('client_sticky_0');
     sessionStorage.removeItem('client_sticky_1');
     sessionStorage.removeItem('client_sticky_2');
@@ -639,73 +437,247 @@ export default function ALBNLBVisualizer() {
   return (
     <div>
       <style>{`
-        .anl-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .anl-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .anl-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .anl-tb.anl-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .anl-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; }
-        .anl-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
-        .anl-sec:first-child { margin-top: 0; }
-        .anl-kv { display: flex; gap: 8px; font-size: 12px; margin: 6px 0; align-items: baseline; }
-        .anl-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; }
-        .anl-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .anl-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .anl-met { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; text-align: center; }
-        ul.anl-ck li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; }
-        ul.anl-ck li::before { content: "✓"; position: absolute; left: 0; color: #c2410c; font-weight: 700; }
-        .anl-log { border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; padding: 10px 12px; background: var(--color-background-secondary); font-size: 11px; font-family: var(--font-mono, monospace); white-space: pre-wrap; line-height: 1.4; color: var(--color-text-primary); }
-        .anl-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
-        .anl-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.15s; outline: none; }
-        .anl-btn:hover { background: var(--color-background-secondary); }
-        .anl-btn.anl-on { background: #c2410c; color: #fff; border-color: #c2410c; }
-        .anl-btn.anl-on-nlb { background: #0369a1; color: #fff; border-color: #0369a1; }
+        /* Premium Glassmorphic Developer Workspace Theme */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        .anl-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 16px;
+          border-bottom: 1px dashed #cbd5e1;
+          padding-bottom: 10px;
+        }
+
+        .anl-tb {
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid #cbd5e1;
+          font-size: 11.5px;
+          font-family: 'Outfit', sans-serif;
+          cursor: pointer;
+          background: #ffffff;
+          color: #475569;
+          transition: all 0.15s ease;
+          outline: none;
+          font-weight: 500;
+        }
+
+        .anl-tb:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+        }
+
+        .anl-tb.anl-on {
+          background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+          color: #ffffff;
+          border-color: #059669;
+          box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+        }
+
+        .anl-card {
+          border: 1.5px solid #cbd5e1;
+          border-radius: 12px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(12px);
+          margin-bottom: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02);
+        }
+
+        .anl-sec {
+          font-size: 11px;
+          font-weight: 600;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+          margin: 16px 0 8px;
+          font-family: 'Outfit', sans-serif;
+        }
+
+        .anl-sec:first-child {
+          margin-top: 0;
+        }
+
+        .anl-kv {
+          display: flex;
+          gap: 8px;
+          font-size: 12px;
+          margin: 6px 0;
+          align-items: baseline;
+        }
+
+        .anl-kk {
+          min-width: 160px;
+          color: #475569;
+          flex-shrink: 0;
+          font-weight: 500;
+        }
+
+        .anl-g2 {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .anl-g3 {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .anl-met {
+          background: #f8fafc;
+          border-radius: 8px;
+          padding: 12px;
+          text-align: center;
+          border: 1px solid #cbd5e1;
+        }
+
+        ul.anl-ck li {
+          font-size: 12px;
+          margin-bottom: 6px;
+          list-style: none;
+          padding-left: 18px;
+          position: relative;
+          color: #334155;
+        }
+
+        ul.anl-ck li::before {
+          content: "✓";
+          position: absolute;
+          left: 0;
+          color: #059669;
+          font-weight: 700;
+        }
+
+        .anl-log {
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          padding: 10px 12px;
+          background: #f8fafc;
+          font-size: 11px;
+          font-family: 'JetBrains Mono', monospace;
+          white-space: pre-wrap;
+          line-height: 1.5;
+          color: #334155;
+        }
+
+        .anl-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 500;
+        }
+
+        .anl-btn {
+          font-size: 12px;
+          padding: 6px 14px;
+          border-radius: 8px;
+          border: 1.5px solid #cbd5e1;
+          background: #ffffff;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.15s;
+          outline: none;
+          font-family: 'Outfit', sans-serif;
+          font-weight: 500;
+        }
+
+        .anl-btn:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+        }
+
+        .anl-btn.anl-on {
+          background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+          color: #fff;
+          border-color: #ea580c;
+          box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
+        }
+
+        .anl-btn.anl-on-nlb {
+          background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+          color: #fff;
+          border-color: #0284c7;
+          box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+        }
         
+        /* Blueprint dot-grid backdrop style */
+        .anl-svg-bg {
+          background-color: #ffffff;
+          background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+          background-size: 16px 16px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          display: block;
+        }
+
         /* Interactive animations and flows */
         @keyframes activeNodePulse {
-          0% { filter: drop-shadow(0 0 1px var(--pulse-color, #c2410c)) brightness(1); }
-          50% { filter: drop-shadow(0 0 8px var(--pulse-color, #c2410c)) brightness(1.2); }
-          100% { filter: drop-shadow(0 0 1px var(--pulse-color, #c2410c)) brightness(1); }
+          0%, 100% { filter: drop-shadow(0 0 2px var(--pulse-color, #10b981)) brightness(1); opacity: 0.95; }
+          50% { filter: drop-shadow(0 0 10px var(--pulse-color, #10b981)) brightness(1.15); opacity: 1; }
         }
-        .active-glow-node rect, .active-glow-node circle {
+
+        .active-glow-node rect, .active-glow-node circle, .active-glow-node path {
           animation: activeNodePulse 1.8s infinite ease-in-out;
-          stroke-width: 2.5px !important;
         }
+
         .flow-active-line {
-          stroke-dasharray: 6,4;
+          stroke-dasharray: 8,4;
           animation: flowAnim 1.2s linear infinite;
         }
+
         @keyframes flowAnim {
-          from { stroke-dashoffset: 20; }
+          from { stroke-dashoffset: 24; }
           to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes pulse-led {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 1; }
+        }
+
+        .led-blink {
+          animation: pulse-led 1s infinite ease-in-out;
         }
         
         /* Rule card states */
         .rule-item {
           font-size: 11.5px;
           padding: 8px 10px;
-          border-radius: 6px;
-          border: 0.5px solid var(--color-border-tertiary);
-          background: var(--color-background-secondary);
+          border-radius: 8px;
+          border: 1.5px solid #cbd5e1;
+          background: #f8fafc;
           margin-bottom: 5px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           transition: all 0.25s ease;
+          color: #334155;
         }
+
         .rule-item.checking {
           border-color: #ea580c;
-          box-shadow: 0 0 8px rgba(234, 88, 12, 0.25);
-          background: rgba(234, 88, 12, 0.05);
+          box-shadow: 0 0 8px rgba(234, 88, 12, 0.2);
+          background: rgba(234, 88, 12, 0.03);
+          font-weight: 500;
         }
+
         .rule-item.matched {
-          border-color: #22c55e;
-          box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-          background: rgba(34, 197, 94, 0.08);
+          border-color: #10b981;
+          box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+          background: #ecfdf5;
           font-weight: bold;
+          color: #064e3b;
         }
+
         .rule-item.mismatched {
-          opacity: 0.55;
-          background: var(--color-background-primary);
+          opacity: 0.45;
+          background: #ffffff;
         }
       `}</style>
 
@@ -888,13 +860,13 @@ export default function ALBNLBVisualizer() {
             <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
               
               {/* Left Column: Interactive Rules SVG and Dynamic Pathways */}
-              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)' }}>
+              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ alignSelf: 'flex-start', fontWeight: 'bold', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                   <span>L7 Host, Path &amp; Header Rule Evaluator</span>
                   {matchedRule && <span style={{ color: '#22c55e' }}>✅ Matched: {matchedRule}</span>}
                 </div>
                 
-                <svg width="100%" viewBox="0 0 420 280" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 420 280" className="anl-svg-bg">
                   <defs>
                     <linearGradient id="g-orange-alb" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ea580c" />
@@ -907,25 +879,25 @@ export default function ALBNLBVisualizer() {
 
                   {/* Browser / Client Node */}
                   <g opacity={1} className={albIsAnimating ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                    <rect x="10" y="115" width="65" height="46" rx="6" fill="#1e293b" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
-                    <text x="42.5" y="133" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">💻 Browser</text>
-                    <text x="42.5" y="146" textAnchor="middle" fontSize="7" fill="#94a3b8" fontFamily="monospace">{albMethod} Request</text>
+                    <rect x="10" y="115" width="65" height="46" rx="6" fill="#f8fafc" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
+                    <text x="42.5" y="133" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">💻 Browser</text>
+                    <text x="42.5" y="146" textAnchor="middle" fontSize="7" fill="#64748b" fontFamily="monospace">{albMethod} Request</text>
                     
                     {/* Session Cookie Visual Indicator inside client */}
                     {matchedRule && matchedRule !== 'Rule 6 (Priority 60)' && (
                       <g transform="translate(48, 8)">
-                        <circle cx="0" cy="0" r="5" fill="#fca5a5"/>
-                        <text x="0" y="2.5" textAnchor="middle" fontSize="7" fill="#7c2d12" fontWeight="bold">🍪</text>
+                        <circle cx="0" cy="0" r="5" fill="#fef3c7" stroke="#d97706" strokeWidth="0.5"/>
+                        <text x="0" y="2.5" textAnchor="middle" fontSize="7" fill="#78350f" fontWeight="bold">🍪</text>
                       </g>
                     )}
                   </g>
 
                   {/* ALB L7 intake portal */}
                   <g opacity={1} className={albIsAnimating ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                    <rect x="105" y="95" width="90" height="90" rx="8" fill="#1e1b4b" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
-                    <text x="150" y="122" textAnchor="middle" fontSize="11" fill="#ffedd5" fontWeight="bold">ALB L7</text>
-                    <text x="150" y="136" textAnchor="middle" fontSize="8" fill="#fca5a5">Rules Engine</text>
-                    <text x="150" y="150" textAnchor="middle" fontSize="7.5" fill="#94a3b8" fontFamily="monospace">Port 443 SSL</text>
+                    <rect x="105" y="95" width="90" height="90" rx="8" fill="#fff7ed" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
+                    <text x="150" y="122" textAnchor="middle" fontSize="11" fill="#7c2d12" fontWeight="bold">ALB L7</text>
+                    <text x="150" y="136" textAnchor="middle" fontSize="8" fill="#c2410c">Rules Engine</text>
+                    <text x="150" y="150" textAnchor="middle" fontSize="7.5" fill="#7c2d12" fontFamily="monospace">Port 443 SSL</text>
                     
                     {/* Visual Check/Cross lights */}
                     {albCheckingRuleIndex !== -1 && (
@@ -937,92 +909,92 @@ export default function ALBNLBVisualizer() {
                   </g>
 
                   {/* Ingress packet flow path */}
-                  <line x1="75" y1="138" x2="105" y2="138" stroke={albIsAnimating ? '#ea580c' : '#475569'} strokeWidth={albIsAnimating ? 2.5 : 1} className={albIsAnimating ? 'flow-active-line' : ''} />
+                  <line x1="75" y1="138" x2="105" y2="138" stroke={albIsAnimating ? '#ea580c' : '#cbd5e1'} strokeWidth={albIsAnimating ? 2.5 : 1} className={albIsAnimating ? 'flow-active-line' : ''} />
 
                   {/* 6 Target groups in visual racks */}
                   
                   {/* TG1: user-service-tg */}
                   <g opacity={matchedRule.includes('Rule 1') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="10" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 1') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 1') ? 2 : 0.5}/>
-                    <text x="258" y="24" fontSize="9" fill={matchedRule.includes('Rule 1') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">user-service-tg</text>
-                    <text x="258" y="38" fontSize="7" fill="#94a3b8">EC2 pool (Port 8080) · us-east-1a</text>
+                    <rect x="250" y="10" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 1') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 1') ? 2 : 0.5}/>
+                    <text x="258" y="24" fontSize="9" fill={matchedRule.includes('Rule 1') ? '#15803d' : '#1e293b'} fontWeight="bold">user-service-tg</text>
+                    <text x="258" y="38" fontSize="7" fill="#64748b">EC2 pool (Port 8080) · us-east-1a</text>
                   </g>
                   <path
                     d="M 195 120 L 225 120 L 225 28 L 250 28"
                     fill="none"
-                    stroke={matchedRule.includes('Rule 1') ? '#ea580c' : '#475569'}
+                    stroke={matchedRule.includes('Rule 1') ? '#ea580c' : '#cbd5e1'}
                     strokeWidth={matchedRule.includes('Rule 1') ? 2.5 : 1}
                     className={matchedRule.includes('Rule 1') && albIsAnimating ? 'flow-active-line' : ''}
                   />
 
                   {/* TG2: order-service-tg */}
                   <g opacity={matchedRule.includes('Rule 2') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="52" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 2') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 2') ? 2 : 0.5}/>
-                    <text x="258" y="66" fontSize="9" fill={matchedRule.includes('Rule 2') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">order-service-tg</text>
-                    <text x="258" y="80" fontSize="7" fill="#94a3b8">EC2 pool (Port 8081) · us-east-1b</text>
+                    <rect x="250" y="52" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 2') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 2') ? 2 : 0.5}/>
+                    <text x="258" y="66" fontSize="9" fill={matchedRule.includes('Rule 2') ? '#15803d' : '#1e293b'} fontWeight="bold">order-service-tg</text>
+                    <text x="258" y="80" fontSize="7" fill="#64748b">EC2 pool (Port 8081) · us-east-1b</text>
                   </g>
                   <path
                     d="M 195 128 L 230 128 L 230 70 L 250 70"
                     fill="none"
-                    stroke={matchedRule.includes('Rule 2') ? '#ea580c' : '#475569'}
+                    stroke={matchedRule.includes('Rule 2') ? '#ea580c' : '#cbd5e1'}
                     strokeWidth={matchedRule.includes('Rule 2') ? 2.5 : 1}
                     className={matchedRule.includes('Rule 2') && albIsAnimating ? 'flow-active-line' : ''}
                   />
 
                   {/* TG3: premium-only-tg */}
                   <g opacity={matchedRule.includes('Rule 3') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="94" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 3') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 3') ? 2 : 0.5}/>
-                    <text x="258" y="108" fontSize="9" fill={matchedRule.includes('Rule 3') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">premium-only-tg 💎</text>
-                    <text x="258" y="122" fontSize="7" fill="#94a3b8">Dedicated VPS (Port 8000) · us-east-1a</text>
+                    <rect x="250" y="94" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 3') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 3') ? 2 : 0.5}/>
+                    <text x="258" y="108" fontSize="9" fill={matchedRule.includes('Rule 3') ? '#15803d' : '#1e293b'} fontWeight="bold">premium-only-tg 💎</text>
+                    <text x="258" y="122" fontSize="7" fill="#64748b">Dedicated VPS (Port 8000) · us-east-1a</text>
                   </g>
                   <path
                     d="M 195 136 L 250 136"
                     fill="none"
-                    stroke={matchedRule.includes('Rule 3') ? '#ea580c' : '#475569'}
+                    stroke={matchedRule.includes('Rule 3') ? '#ea580c' : '#cbd5e1'}
                     strokeWidth={matchedRule.includes('Rule 3') ? 2.5 : 1}
                     className={matchedRule.includes('Rule 3') && albIsAnimating ? 'flow-active-line' : ''}
                   />
 
                   {/* TG4: special-tg */}
                   <g opacity={matchedRule.includes('Rule 4') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="136" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 4') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 4') ? 2 : 0.5}/>
-                    <text x="258" y="150" fontSize="9" fill={matchedRule.includes('Rule 4') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">special-tg 🚨</text>
-                    <text x="258" y="164" fontSize="7" fill="#94a3b8">Canary target pool (Port 9000)</text>
+                    <rect x="250" y="136" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 4') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 4') ? 2 : 0.5}/>
+                    <text x="258" y="150" fontSize="9" fill={matchedRule.includes('Rule 4') ? '#15803d' : '#1e293b'} fontWeight="bold">special-tg 🚨</text>
+                    <text x="258" y="164" fontSize="7" fill="#64748b">Canary target pool (Port 9000)</text>
                   </g>
                   <path
                     d="M 195 144 L 230 144 L 230 154 L 250 154"
                     fill="none"
-                    stroke={matchedRule.includes('Rule 4') ? '#ea580c' : '#475569'}
+                    stroke={matchedRule.includes('Rule 4') ? '#ea580c' : '#cbd5e1'}
                     strokeWidth={matchedRule.includes('Rule 4') ? 2.5 : 1}
                     className={matchedRule.includes('Rule 4') && albIsAnimating ? 'flow-active-line' : ''}
                   />
 
                   {/* TG5: blog-wordpress-tg */}
                   <g opacity={matchedRule.includes('Rule 5') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="178" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 5') ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 5') ? 2 : 0.5}/>
-                    <text x="258" y="192" fontSize="9" fill={matchedRule.includes('Rule 5') ? '#4ade80' : '#e2e8f0'} fontWeight="bold">blog-wordpress-tg</text>
-                    <text x="258" y="206" fontSize="7" fill="#94a3b8">Wordpress Server (Port 80) · us-east-1c</text>
+                    <rect x="250" y="178" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 5') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 5') ? 2 : 0.5}/>
+                    <text x="258" y="192" fontSize="9" fill={matchedRule.includes('Rule 5') ? '#15803d' : '#1e293b'} fontWeight="bold">blog-wordpress-tg</text>
+                    <text x="258" y="206" fontSize="7" fill="#64748b">Wordpress Server (Port 80) · us-east-1c</text>
                   </g>
                   <path
                     d="M 195 152 L 225 152 L 225 196 L 250 196"
                     fill="none"
-                    stroke={matchedRule.includes('Rule 5') ? '#ea580c' : '#475569'}
+                    stroke={matchedRule.includes('Rule 5') ? '#ea580c' : '#cbd5e1'}
                     strokeWidth={matchedRule.includes('Rule 5') ? 2.5 : 1}
                     className={matchedRule.includes('Rule 5') && albIsAnimating ? 'flow-active-line' : ''}
                   />
 
                   {/* TG6: static-s3-tg */}
                   <g opacity={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="220" width="160" height="36" rx="5" fill="#0f172a" stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#22c55e' : '#475569'} strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2 : 0.5}/>
-                    <text x="258" y="234" fontSize="9" fill={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">
+                    <rect x="250" y="220" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2 : 0.5}/>
+                    <text x="258" y="234" fontSize="9" fill={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#15803d' : '#1e293b'} fontWeight="bold">
                       {matchedRule === 'Default Ruleset' ? 'default-s3-website-tg' : 'static-s3-tg 🪣'}
                     </text>
-                    <text x="258" y="248" fontSize="7" fill="#94a3b8">S3 Bucket Web Origin redirect</text>
+                    <text x="258" y="248" fontSize="7" fill="#64748b">S3 Bucket Web Origin redirect</text>
                   </g>
                   <path
                     d="M 195 160 L 215 160 L 215 238 L 250 238"
                     fill="none"
-                    stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#ea580c' : '#475569'}
+                    stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#ea580c' : '#cbd5e1'}
                     strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2.5 : 1}
                     className={(matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset') && albIsAnimating ? 'flow-active-line' : ''}
                   />
@@ -1197,13 +1169,13 @@ Connection: keep-alive`}</pre>
             <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
               
               {/* Left Column: Widescreen Flow Hashing SVG */}
-              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)' }}>
+              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ alignSelf: 'flex-start', fontWeight: 'bold', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                   <span>L4 5-Tuple Flow Hashing Engine &amp; DSR path</span>
-                  {activeNlbTarget && <span style={{ color: '#38bdf8' }}>🎯 Selected: Target Server {activeNlbTarget}</span>}
+                  {activeNlbTarget && <span style={{ color: '#0284c7' }}>🎯 Selected: Target Server {activeNlbTarget}</span>}
                 </div>
                 
-                <svg width="100%" viewBox="0 0 420 280" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 420 280" className="anl-svg-bg">
                   <defs>
                     <linearGradient id="g-blue-nlb" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#0284c7" />
@@ -1216,69 +1188,69 @@ Connection: keep-alive`}</pre>
 
                   {/* TCP Client App socket node */}
                   <g opacity={1} className={activeNlbTarget ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
-                    <rect x="10" y="115" width="75" height="50" rx="6" fill="#1e293b" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
-                    <text x="47.5" y="133" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🏢 Client App</text>
-                    <text x="47.5" y="145" textAnchor="middle" fontSize="7" fill="#60a5fa">IP Preserved</text>
-                    <text x="47.5" y="156" textAnchor="middle" fontSize="6.5" fill="#94a3b8" fontFamily="monospace">{currentNlbClient || `${nlbSrcIp}:${nlbSrcPort}`}</text>
+                    <rect x="10" y="115" width="75" height="50" rx="6" fill="#f0f9ff" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
+                    <text x="47.5" y="133" textAnchor="middle" fontSize="10" fill="#0c4a6e" fontWeight="bold">🏢 Client App</text>
+                    <text x="47.5" y="145" textAnchor="middle" fontSize="7" fill="#0284c7">IP Preserved</text>
+                    <text x="47.5" y="156" textAnchor="middle" fontSize="6.5" fill="#475569" fontFamily="monospace">{currentNlbClient || `${nlbSrcIp}:${nlbSrcPort}`}</text>
                   </g>
 
                   {/* Connection from Client to NLB */}
-                  <line x1="85" y1="140" x2="115" y2="140" stroke={activeNlbTarget ? '#0284c7' : '#475569'} strokeWidth={activeNlbTarget ? 2.5 : 1} className={activeNlbTarget ? 'flow-active-line' : ''} />
+                  <line x1="85" y1="140" x2="115" y2="140" stroke={activeNlbTarget ? '#0284c7' : '#cbd5e1'} strokeWidth={activeNlbTarget ? 2.5 : 1} className={activeNlbTarget ? 'flow-active-line' : ''} />
 
                   {/* NLB Hashing Engine Node */}
                   <g opacity={1} className={activeNlbTarget ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
-                    <rect x="115" y="95" width="95" height="90" rx="8" fill="#0f172a" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
-                    <text x="162.5" y="114" textAnchor="middle" fontSize="10" fill="#bae6fd" fontWeight="bold">NLB Engine</text>
-                    <text x="162.5" y="127" textAnchor="middle" fontSize="8" fill="#94a3b8">Stateless Flow Hash</text>
+                    <rect x="115" y="95" width="95" height="90" rx="8" fill="#f0f9ff" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
+                    <text x="162.5" y="114" textAnchor="middle" fontSize="10" fill="#0369a1" fontWeight="bold">NLB Engine</text>
+                    <text x="162.5" y="127" textAnchor="middle" fontSize="8" fill="#475569">Stateless Flow Hash</text>
                     
                     {/* Live Digital Hash Display */}
-                    <rect x="125" y="138" width="75" height="20" rx="4" fill="#0284c715" stroke="#38bdf8" strokeWidth="0.5"/>
-                    <text x="162.5" y="151" textAnchor="middle" fontSize="9" fill="#38bdf8" fontWeight="bold" fontFamily="monospace">
+                    <rect x="125" y="138" width="75" height="20" rx="4" fill="#0284c70c" stroke="#38bdf8" strokeWidth="0.5"/>
+                    <text x="162.5" y="151" textAnchor="middle" fontSize="9" fill="#0284c7" fontWeight="bold" fontFamily="monospace">
                       {currentNlbHash || '0x0000'}
                     </text>
-                    <text x="162.5" y="174" textAnchor="middle" fontSize="7.5" fill="#bae6fd" fontWeight="bold" fontFamily="monospace">ASIC-L4 Hashing</text>
+                    <text x="162.5" y="174" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold" fontFamily="monospace">ASIC-L4 Hashing</text>
                   </g>
 
                   {/* Target Servers */}
                   
                   {/* Target Server A */}
                   <g opacity={activeNlbTarget === 'A' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="260" y="20" width="150" height="42" rx="6" fill="#0f172a" stroke={activeNlbTarget === 'A' ? '#22c55e' : '#475569'} strokeWidth={activeNlbTarget === 'A' ? 2 : 0.5}/>
-                    <text x="270" y="37" fontSize="10" fill={activeNlbTarget === 'A' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">Target Server A</text>
-                    <text x="270" y="51" fontSize="7.5" fill="#94a3b8">AZ us-east-1a · IP preservation</text>
+                    <rect x="260" y="20" width="150" height="42" rx="6" fill="#f8fafc" stroke={activeNlbTarget === 'A' ? '#22c55e' : '#cbd5e1'} strokeWidth={activeNlbTarget === 'A' ? 2 : 0.5}/>
+                    <text x="270" y="37" fontSize="10" fill={activeNlbTarget === 'A' ? '#166534' : '#1e293b'} fontWeight="bold">Target Server A</text>
+                    <text x="270" y="51" fontSize="7.5" fill="#475569">AZ us-east-1a · IP preservation</text>
                   </g>
                   <path
                     d="M 210 130 L 235 130 L 235 41 L 260 41"
                     fill="none"
-                    stroke={activeNlbTarget === 'A' ? '#0284c7' : '#475569'}
+                    stroke={activeNlbTarget === 'A' ? '#0284c7' : '#cbd5e1'}
                     strokeWidth={activeNlbTarget === 'A' ? 2.5 : 1}
                     className={activeNlbTarget === 'A' ? 'flow-active-line' : ''}
                   />
 
                   {/* Target Server B */}
                   <g opacity={activeNlbTarget === 'B' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="260" y="105" width="150" height="42" rx="6" fill="#0f172a" stroke={activeNlbTarget === 'B' ? '#22c55e' : '#475569'} strokeWidth={activeNlbTarget === 'B' ? 2 : 0.5}/>
-                    <text x="270" y="122" fontSize="10" fill={activeNlbTarget === 'B' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">Target Server B</text>
-                    <text x="270" y="136" fontSize="7.5" fill="#94a3b8">AZ us-east-1b · IP preservation</text>
+                    <rect x="260" y="105" width="150" height="42" rx="6" fill="#f8fafc" stroke={activeNlbTarget === 'B' ? '#22c55e' : '#cbd5e1'} strokeWidth={activeNlbTarget === 'B' ? 2 : 0.5}/>
+                    <text x="270" y="122" fontSize="10" fill={activeNlbTarget === 'B' ? '#166534' : '#1e293b'} fontWeight="bold">Target Server B</text>
+                    <text x="270" y="136" fontSize="7.5" fill="#475569">AZ us-east-1b · IP preservation</text>
                   </g>
                   <path
                     d="M 210 140 L 260 140"
                     fill="none"
-                    stroke={activeNlbTarget === 'B' ? '#0284c7' : '#475569'}
+                    stroke={activeNlbTarget === 'B' ? '#0284c7' : '#cbd5e1'}
                     strokeWidth={activeNlbTarget === 'B' ? 2.5 : 1}
                     className={activeNlbTarget === 'B' ? 'flow-active-line' : ''}
                   />
 
                   {/* Target Server C */}
                   <g opacity={activeNlbTarget === 'C' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="260" y="190" width="150" height="42" rx="6" fill="#0f172a" stroke={activeNlbTarget === 'C' ? '#22c55e' : '#475569'} strokeWidth={activeNlbTarget === 'C' ? 2 : 0.5}/>
-                    <text x="270" y="207" fontSize="10" fill={activeNlbTarget === 'C' ? '#4ade80' : '#e2e8f0'} fontWeight="bold">Target Server C</text>
-                    <text x="270" y="221" fontSize="7.5" fill="#94a3b8">AZ us-east-1c · IP preservation</text>
+                    <rect x="260" y="190" width="150" height="42" rx="6" fill="#f8fafc" stroke={activeNlbTarget === 'C' ? '#22c55e' : '#cbd5e1'} strokeWidth={activeNlbTarget === 'C' ? 2 : 0.5}/>
+                    <text x="270" y="207" fontSize="10" fill={activeNlbTarget === 'C' ? '#166534' : '#1e293b'} fontWeight="bold">Target Server C</text>
+                    <text x="270" y="221" fontSize="7.5" fill="#475569">AZ us-east-1c · IP preservation</text>
                   </g>
                   <path
                     d="M 210 150 L 235 150 L 235 211 L 260 211"
                     fill="none"
-                    stroke={activeNlbTarget === 'C' ? '#0284c7' : '#475569'}
+                    stroke={activeNlbTarget === 'C' ? '#0284c7' : '#cbd5e1'}
                     strokeWidth={activeNlbTarget === 'C' ? 2.5 : 1}
                     className={activeNlbTarget === 'C' ? 'flow-active-line' : ''}
                   />
@@ -1348,10 +1320,10 @@ Connection: keep-alive`}</pre>
                   )}
 
                   {activeNlbTarget && nlbReturnMode === 'dsr' && (
-                    <text x="180" y="74" textAnchor="middle" fontSize="7.5" fill="#22d3ee" fontWeight="bold">↩️ Direct Server Return (NLB Bypassed outbound)</text>
+                    <text x="180" y="74" textAnchor="middle" fontSize="7.5" fill="#0891b2" fontWeight="bold">↩️ Direct Server Return (NLB Bypassed outbound)</text>
                   )}
                   {activeNlbTarget && nlbReturnMode === 'proxy' && (
-                    <text x="180" y="74" textAnchor="middle" fontSize="7.5" fill="#fca5a5" fontWeight="bold">⚠️ Proxy Loop Bottleneck (Outbound hits LB)</text>
+                    <text x="180" y="74" textAnchor="middle" fontSize="7.5" fill="#b91c1c" fontWeight="bold">⚠️ Proxy Loop Bottleneck (Outbound hits LB)</text>
                   )}
 
                   {/* Animated motion packets along active paths */}
@@ -1494,125 +1466,336 @@ Target Server Index:
         )}
 
         {/* SIMULATION PANEL */}
-        {activeSection === 'simulation' && (
-          <div>
-            <div className="anl-sec">Live Animated Traffic Simulator</div>
-            <div className="anl-g2">
-              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                  Interactive Load Balancer Canvas
-                </div>
-                <canvas
-                  ref={canvasRef}
-                  width="360"
-                  height="260"
-                  style={{
-                    width: '100%',
-                    borderRadius: '8px',
-                    background: 'var(--color-background-secondary)',
-                    border: '0.5px solid var(--color-border-secondary)'
-                  }}
-                ></canvas>
-              </div>
+        {activeSection === 'simulation' && (() => {
+          const getServerY = (idx: number, count: number) => {
+            if (count === 2) {
+              return idx === 0 ? 85 : 175;
+            }
+            return idx === 0 ? 55 : idx === 1 ? 130 : 205;
+          };
 
-              <div>
-                <div className="anl-card">
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>Simulation Controls</div>
+          const getResolvedServerIndex = (clientIdx: number): number => {
+            const healthyIndices: number[] = [];
+            for (let i = 0; i < serverCount; i++) {
+              if (serverHealth[i]) healthyIndices.push(i);
+            }
+            if (healthyIndices.length === 0) return -1;
+
+            if (simMode === 'alb_sticky') {
+              const stickyLetter = stickyMap[clientIdx];
+              if (stickyLetter) {
+                const stickyIdx = stickyLetter.charCodeAt(0) - 65;
+                if (healthyIndices.includes(stickyIdx)) return stickyIdx;
+              }
+              return healthyIndices[clientIdx % healthyIndices.length];
+            } else if (simMode === 'alb_no_sticky') {
+              return healthyIndices[clientIdx % healthyIndices.length];
+            } else {
+              const defaultIndex = clientIdx % serverCount;
+              if (healthyIndices.includes(defaultIndex)) return defaultIndex;
+              return healthyIndices[0];
+            }
+          };
+
+          return (
+            <div>
+              <div className="anl-sec">Live Animated Traffic Simulator</div>
+              <div className="anl-g2">
+                <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                    Interactive Load Balancer Diagram
+                  </div>
                   
-                  {/* Select Mode */}
-                  <div style={{ marginBottom: '10px' }}>
-                    <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Load Balancer Routing Mode:</span>
-                    <select
-                      value={simMode}
-                      onChange={(e) => {
-                        setSimMode(e.target.value as any);
-                        cleanSimulatorCookies();
-                      }}
-                      style={{ width: '100%', fontSize: '12px', padding: '5px 8px', border: '2px solid #f59e0b', boxShadow: '0 0 0 3px rgba(245,158,11,0.2)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', outline: 'none' }}
-                    >
-                      <option value="alb_sticky">ALB Cookie Session Stickiness (Enabled)</option>
-                      <option value="alb_no_sticky">ALB Dynamic Balancing (No Cookie)</option>
-                      <option value="nlb_hash">NLB 5-Tuple Connection Flow Hashing</option>
-                    </select>
-                  </div>
+                  <svg width="100%" viewBox="0 0 360 260" className="anl-svg-bg">
+                    {/* Definitions */}
+                    <defs>
+                      <linearGradient id="g-orange-alb-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ea580c" />
+                        <stop offset="100%" stopColor="#f97316" />
+                      </linearGradient>
+                      <linearGradient id="g-blue-nlb-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#0284c7" />
+                        <stop offset="100%" stopColor="#38bdf8" />
+                      </linearGradient>
+                      <filter id="glow-orange-alb-sim" x="-15%" y="-15%" width="130%" height="130%">
+                        <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#ea580c" floodOpacity="0.6" />
+                      </filter>
+                      <filter id="glow-blue-nlb-sim" x="-15%" y="-15%" width="130%" height="130%">
+                        <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#0284c7" floodOpacity="0.6" />
+                      </filter>
+                    </defs>
 
-                  {/* Server Count Slider */}
-                  <div style={{ marginBottom: '12px' }}>
-                    <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Backend Server Pool: <b>{serverCount} Targets</b></span>
-                    <input
-                      type="range"
-                      min="2"
-                      max="3"
-                      value={serverCount}
-                      onChange={(e) => {
-                        setServerCount(parseInt(e.target.value));
-                        cleanSimulatorCookies();
-                      }}
-                      style={{ width: '100%', accentColor: simMode.startsWith('alb') ? '#c2410c' : '#0369a1', cursor: 'ew-resize' }}
+                    {/* SVG Conduit Paths (Ingress + Egress) */}
+                    
+                    {/* Ingress: Client 1 to LB */}
+                    <path
+                      d="M 90 55 L 115 55 L 115 130 L 140 130"
+                      fill="none"
+                      stroke={isRunning ? (simMode.startsWith('alb') ? '#ea580c' : '#0284c7') : '#cbd5e1'}
+                      strokeWidth={isRunning ? 2.5 : 1}
+                      className={isRunning ? 'flow-active-line' : ''}
+                      opacity={isRunning ? 1 : 0.4}
                     />
-                  </div>
+                    
+                    {/* Ingress: Client 2 to LB */}
+                    <path
+                      d="M 90 130 L 140 130"
+                      fill="none"
+                      stroke={isRunning ? (simMode.startsWith('alb') ? '#ea580c' : '#0284c7') : '#cbd5e1'}
+                      strokeWidth={isRunning ? 2.5 : 1}
+                      className={isRunning ? 'flow-active-line' : ''}
+                      opacity={isRunning ? 1 : 0.4}
+                    />
+                    
+                    {/* Ingress: Client 3 to LB */}
+                    <path
+                      d="M 90 205 L 115 205 L 115 130 L 140 130"
+                      fill="none"
+                      stroke={isRunning ? (simMode.startsWith('alb') ? '#ea580c' : '#0284c7') : '#cbd5e1'}
+                      strokeWidth={isRunning ? 2.5 : 1}
+                      className={isRunning ? 'flow-active-line' : ''}
+                      opacity={isRunning ? 1 : 0.4}
+                    />
 
-                  {/* Target Health Toggles */}
-                  <div style={{ marginBottom: '12px' }}>
-                    <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Simulate Server Failures:</span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      {Array.from({ length: serverCount }).map((_, idx) => (
-                        <button
+                    {/* Egress Paths dynamically rendered based on serverCount and health */}
+                    {Array.from({ length: serverCount }).map((_, idx) => {
+                      const serverY = getServerY(idx, serverCount);
+                      const isHealthy = serverHealth[idx];
+                      const isPathActive = isRunning && isHealthy;
+                      return (
+                        <path
                           key={idx}
-                          onClick={() => {
-                            const newHealth = [...serverHealth];
-                            newHealth[idx] = !newHealth[idx];
-                            setServerHealth(newHealth);
-                            setActiveTrafficLogs((prev) => [
-                              `⚠️ Server ${String.fromCharCode(65 + idx)} health status toggled to: ${newHealth[idx] ? 'HEALTHY ✅' : 'FAILED ❌'}`,
-                              ...prev
-                            ]);
-                          }}
-                          style={{
-                            flex: 1,
-                            fontSize: '11px',
-                            padding: '4px 6px',
-                            background: serverHealth[idx] ? '#dcfce7' : '#fee2e2',
-                            border: serverHealth[idx] ? '0.5px solid #86efac' : '0.5px solid #fca5a5',
-                            color: serverHealth[idx] ? '#166534' : '#991b1b',
-                            borderRadius: '6px',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          Server {String.fromCharCode(65 + idx)} {serverHealth[idx] ? '✅' : '❌'}
-                        </button>
-                      ))}
+                          d={`M 220 130 L 245 130 L 245 ${serverY} L 270 ${serverY}`}
+                          fill="none"
+                          stroke={isPathActive ? (simMode.startsWith('alb') ? '#ea580c' : '#0284c7') : (isHealthy ? '#cbd5e1' : '#fca5a5')}
+                          strokeWidth={isPathActive ? 2.5 : 1}
+                          strokeDasharray={!isHealthy ? '4,4' : undefined}
+                          className={isPathActive ? 'flow-active-line' : ''}
+                          opacity={isPathActive ? 1 : 0.5}
+                        />
+                      );
+                    })}
+
+                    {/* Client Panels (C1, C2, C3) */}
+                    {[0, 1, 2].map((idx) => {
+                      const y = 35 + idx * 75;
+                      const hasCookie = simMode === 'alb_sticky' && stickyMap[idx];
+                      return (
+                        <g key={idx}>
+                          <rect x="20" y={y} width="70" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <text x="55" y={y + 18} fontSize="9" fontWeight="bold" textAnchor="middle" fill="#1e293b">Client {idx + 1}</text>
+                          <text x="55" y={y + 30} fontSize="7.5" fill="#64748b" textAnchor="middle" fontFamily="monospace">
+                            {idx === 0 ? '198.51.10.4' : idx === 1 ? '198.51.10.8' : '198.51.10.9'}
+                          </text>
+                          {hasCookie && (
+                            <g transform={`translate(74, ${y + 6})`}>
+                              <circle cx="0" cy="0" r="6" fill="#fff" stroke="#f59e0b" strokeWidth="0.5"/>
+                              <text x="0" y="2.5" fontSize="7.5" textAnchor="middle">🍪</text>
+                            </g>
+                          )}
+                        </g>
+                      );
+                    })}
+
+                    {/* Center Load Balancer Hub */}
+                    <g transform="translate(140, 95)">
+                      <rect
+                        width="80"
+                        height="70"
+                        rx="12"
+                        fill={simMode.startsWith('alb') ? 'url(#g-orange-alb-sim)' : 'url(#g-blue-nlb-sim)'}
+                        filter={simMode.startsWith('alb') ? 'url(#glow-orange-alb-sim)' : 'url(#glow-blue-nlb-sim)'}
+                        stroke="#fff"
+                        strokeWidth="1.5"
+                      />
+                      <text x="40" y="32" fontSize="12" fontWeight="bold" fill="#fff" textAnchor="middle">
+                        {simMode.startsWith('alb') ? 'ALB L7' : 'NLB L4'}
+                      </text>
+                      <text x="40" y="46" fontSize="7.5" fill="#fff" opacity="0.9" textAnchor="middle">
+                        {simMode === 'alb_sticky' ? 'Sticky Hub' : simMode === 'alb_no_sticky' ? 'Round Robin' : '5-Tuple Hash'}
+                      </text>
+                    </g>
+
+                    {/* Servers (A, B, C) */}
+                    {Array.from({ length: serverCount }).map((_, idx) => {
+                      const serverY = getServerY(idx, serverCount);
+                      const isHealthy = serverHealth[idx];
+                      const letter = String.fromCharCode(65 + idx);
+                      return (
+                        <g key={idx} transform={`translate(270, ${serverY - 20})`} opacity={isHealthy ? 1 : 0.6}>
+                          {/* Flat-3D Server Chassis rect */}
+                          <rect
+                            width="70"
+                            height="40"
+                            rx="5"
+                            fill="#f8fafc"
+                            stroke={isHealthy ? '#10b981' : '#ef4444'}
+                            strokeWidth="1.5"
+                          />
+                          {/* Inner details */}
+                          <rect x="5" y="5" width="60" height="8" rx="2" fill={isHealthy ? '#e6f4ea' : '#fce8e6'} />
+                          <text x="35" y="11" fontSize="7.5" fontWeight="bold" textAnchor="middle" fill={isHealthy ? '#137333' : '#c5221f'}>
+                            Target {letter}
+                          </text>
+
+                          {/* IP Details */}
+                          <text x="35" y="24" fontSize="7.5" fill="#475569" textAnchor="middle" fontFamily="monospace">
+                            10.0.1.{idx + 10}
+                          </text>
+
+                          {/* Led and warning graphics */}
+                          {isHealthy ? (
+                            <>
+                              <circle cx="10" cy="32" r="3" fill="#10b981" className="led-blink" />
+                              <circle cx="17" cy="32" r="1.5" fill="#10b981" opacity="0.7" />
+                              <circle cx="22" cy="32" r="1.5" fill="#10b981" opacity="0.7" />
+                              <text x="60" y="34" fontSize="7.5" textAnchor="end" fill="#10b981" fontWeight="bold">ONLINE</text>
+                            </>
+                          ) : (
+                            <>
+                              <circle cx="10" cy="32" r="3" fill="#ef4444" className="led-blink" />
+                              <text x="60" y="34" fontSize="7.5" textAnchor="end" fill="#ef4444" fontWeight="bold">CRASHED ×</text>
+                            </>
+                          )}
+                        </g>
+                      );
+                    })}
+
+                    {/* Declarative Animated Request Packets */}
+                    {isRunning && [0, 1, 2].map((idx) => {
+                      const destIdx = getResolvedServerIndex(idx);
+                      if (destIdx === -1) return null; // Drop all packets if no healthy server
+
+                      const clientY = 55 + idx * 75;
+                      const serverY = getServerY(destIdx, serverCount);
+
+                      // Complete path string from Client idx to LB, and from LB to server destIdx
+                      const pathString = `M 90 ${clientY} L 115 ${clientY} L 115 130 L 180 130 L 245 130 L 245 ${serverY} L 270 ${serverY}`;
+
+                      const hasCookie = simMode === 'alb_sticky';
+
+                      return (
+                        <g key={idx}>
+                          {hasCookie ? (
+                            <g>
+                              <circle r="4" fill="#ea580c" filter="url(#glow-orange-alb-sim)" />
+                              <text x="0" y="-8" fontSize="10" textAnchor="middle">🍪</text>
+                              <animateMotion dur="2.5s" repeatCount="indefinite" path={pathString} />
+                            </g>
+                          ) : (
+                            <circle
+                              r={simMode === 'nlb_hash' ? 4.5 : 4}
+                              fill={simMode === 'nlb_hash' ? '#38bdf8' : '#f97316'}
+                              filter={simMode === 'nlb_hash' ? 'url(#glow-blue-nlb-sim)' : 'url(#glow-orange-alb-sim)'}
+                            >
+                              <animateMotion dur={simMode === 'nlb_hash' ? '1.6s' : '2.4s'} repeatCount="indefinite" path={pathString} />
+                            </circle>
+                          )}
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+
+                <div>
+                  <div className="anl-card">
+                    <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>Simulation Controls</div>
+                    
+                    {/* Select Mode */}
+                    <div style={{ marginBottom: '10px' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Load Balancer Routing Mode:</span>
+                      <select
+                        value={simMode}
+                        onChange={(e) => {
+                          setSimMode(e.target.value as any);
+                          cleanSimulatorCookies();
+                        }}
+                        style={{ width: '100%', fontSize: '12px', padding: '5px 8px', border: '2px solid #f59e0b', boxShadow: '0 0 0 3px rgba(245,158,11,0.2)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', outline: 'none' }}
+                      >
+                        <option value="alb_sticky">ALB Cookie Session Stickiness (Enabled)</option>
+                        <option value="alb_no_sticky">ALB Dynamic Balancing (No Cookie)</option>
+                        <option value="nlb_hash">NLB 5-Tuple Connection Flow Hashing</option>
+                      </select>
                     </div>
-                  </div>
 
-                  {/* Play & Reset Buttons */}
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      className={`anl-btn ${simMode.startsWith('alb') ? 'anl-on' : 'anl-on-nlb'}`}
-                      onClick={toggleSimulation}
-                      style={{ flex: 1, fontWeight: 'bold' }}
-                    >
-                      {isRunning ? 'Stop Traffic ⏹' : 'Send Traffic ▶'}
-                    </button>
-                    {simMode === 'alb_sticky' && (
-                      <button className="anl-btn" onClick={cleanSimulatorCookies}>Clear Cookies 🧹</button>
-                    )}
-                  </div>
+                    {/* Server Count Slider */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Backend Server Pool: <b>{serverCount} Targets</b></span>
+                      <input
+                        type="range"
+                        min="2"
+                        max="3"
+                        value={serverCount}
+                        onChange={(e) => {
+                          setServerCount(parseInt(e.target.value));
+                          cleanSimulatorCookies();
+                        }}
+                        style={{ width: '100%', accentColor: simMode.startsWith('alb') ? '#c2410c' : '#0369a1', cursor: 'ew-resize' }}
+                      />
+                    </div>
 
+                    {/* Target Health Toggles */}
+                    <div style={{ marginBottom: '12px' }}>
+                      <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Simulate Server Failures:</span>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {Array.from({ length: serverCount }).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              const newHealth = [...serverHealth];
+                              newHealth[idx] = !newHealth[idx];
+                              setServerHealth(newHealth);
+                              setActiveTrafficLogs((prev) => [
+                                `⚠️ Server ${String.fromCharCode(65 + idx)} health status toggled to: ${newHealth[idx] ? 'HEALTHY ✅' : 'FAILED ❌'}`,
+                                ...prev
+                              ]);
+                            }}
+                            style={{
+                              flex: 1,
+                              fontSize: '11px',
+                              padding: '4px 6px',
+                              background: serverHealth[idx] ? '#dcfce7' : '#fee2e2',
+                              border: serverHealth[idx] ? '0.5px solid #86efac' : '0.5px solid #fca5a5',
+                              color: serverHealth[idx] ? '#166534' : '#991b1b',
+                              borderRadius: '6px',
+                              fontWeight: 600,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Server {String.fromCharCode(65 + idx)} {serverHealth[idx] ? '✅' : '❌'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Play & Reset Buttons */}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        className={`anl-btn ${simMode.startsWith('alb') ? 'anl-on' : 'anl-on-nlb'}`}
+                        onClick={toggleSimulation}
+                        style={{ flex: 1, fontWeight: 'bold' }}
+                      >
+                        {isRunning ? 'Stop Traffic ⏹' : 'Send Traffic ▶'}
+                      </button>
+                      {simMode === 'alb_sticky' && (
+                        <button className="anl-btn" onClick={cleanSimulatorCookies}>Clear Cookies 🧹</button>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE EVENT LOG */}
+              <div className="anl-sec">Live Traffic Resolution Log</div>
+              <div className="anl-card" style={{ marginBottom: '14px' }}>
+                <div className="anl-log" style={{ minHeight: '120px', maxHeight: '160px', overflowY: 'auto' }}>
+                  {activeTrafficLogs.length === 0 ? 'Simulation idle. Click Send Traffic above to start interactive package dispatch stream.' : activeTrafficLogs.join('\n')}
                 </div>
               </div>
             </div>
-
-            {/* LIVE EVENT LOG */}
-            <div className="anl-sec">Live Traffic Resolution Log</div>
-            <div className="anl-card" style={{ marginBottom: '14px' }}>
-              <div className="anl-log" style={{ minHeight: '120px', maxHeight: '160px', overflowY: 'auto' }}>
-                {activeTrafficLogs.join('\n')}
-              </div>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* INTEGRATIONS PANEL */}
         {activeSection === 'integrations' && (() => {
@@ -1678,7 +1861,7 @@ Target Server Index:
               <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '20px', alignItems: 'start' }}>
                 
                 {/* Left: Dynamic Widescreen SVG Map */}
-                <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f7fcf6ff', border: '0.5px solid var(--color-border-secondary)', padding: '16px' }}>
+                <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
                   <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
                       🔍 {currentScenarioTitle}
@@ -1688,7 +1871,7 @@ Target Server Index:
                     </span>
                   </div>
 
-                  <svg width="100%" viewBox="0 0 660 320" style={{ display: 'block' }}>
+                  <svg width="100%" viewBox="0 0 660 320" className="anl-svg-bg">
                     <defs>
                       <linearGradient id="g-orange" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#ea580c" /><stop offset="100%" stopColor="#f97316" />
@@ -1702,78 +1885,78 @@ Target Server Index:
                     </defs>
 
                     {/* Shared VPC Boundary Box */}
-                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="3,3"/>
-                    <text x="150" y="70" fontSize="8" fill="#64748b" fontWeight="bold">VPC boundary (us-east-1)</text>
+                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3,3"/>
+                    <text x="150" y="70" fontSize="8" fill="#475569" fontWeight="bold">VPC boundary (us-east-1)</text>
 
                     {/* Subnet Boundaries */}
-                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" stroke="#1e293b" strokeWidth="0.8"/>
-                    <text x="370" y="93" fontSize="7.5" fill="#64748b">🔒 Private Subnet AZ1</text>
+                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="0.8"/>
+                    <text x="370" y="93" fontSize="7.5" fill="#475569">🔒 Private Subnet AZ1</text>
 
-                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" stroke="#1e293b" strokeWidth="0.8"/>
-                    <text x="370" y="198" fontSize="7.5" fill="#64748b">🔒 Private Subnet AZ2</text>
+                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="0.8"/>
+                    <text x="370" y="198" fontSize="7.5" fill="#475569">🔒 Private Subnet AZ2</text>
 
                     {/* Nodes Rendering */}
 
                     {/* Node 1: Client Node */}
                     <g opacity={isNodeActive('client') || isNodeActive('phz') ? 1.0 : 0.7} className={isNodeActive('client') || isNodeActive('phz') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
-                      <rect x="15" y="125" width="85" height="50" rx="6" fill="#1e293b" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : '#475569'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 0.5}/>
-                      <text x="57.5" y="145" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">💻 Public Client</text>
-                      <text x="57.5" y="160" textAnchor="middle" fontSize="7.5" fill="#bae6fd">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
+                      <rect x="15" y="125" width="85" height="50" rx="6" fill="#f8fafc" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : '#cbd5e1'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 0.5}/>
+                      <text x="57.5" y="145" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">💻 Public Client</text>
+                      <text x="57.5" y="160" textAnchor="middle" fontSize="7.5" fill="#0284c7">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
                     </g>
 
                     {/* Node 2: Route 53 (L7 / L4 only) */}
                     {infraScenario !== 'privatelink' && (
                       <g opacity={isNodeActive('route53') ? 1.0 : 0.7} className={isNodeActive('route53') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="150" y="85" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('route53') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('route53') ? 2 : 0.5}/>
-                        <text x="190" y="103" textAnchor="middle" fontSize="10" fill="#e9d5ff" fontWeight="bold">🚀 Route 53</text>
-                        <text x="190" y="116" textAnchor="middle" fontSize="7" fill="#c084fc">Global DNS Resolver</text>
+                        <rect x="150" y="85" width="80" height="42" rx="6" fill="#faf5ff" stroke={isNodeActive('route53') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('route53') ? 2 : 0.5}/>
+                        <text x="190" y="103" textAnchor="middle" fontSize="10" fill="#581c87" fontWeight="bold">🚀 Route 53</text>
+                        <text x="190" y="116" textAnchor="middle" fontSize="7.5" fill="#7e22ce">Global DNS Resolver</text>
                       </g>
                     )}
 
                     {/* Node 3: AWS WAF (ALB only) */}
                     {infraScenario === 'alb_ingress' && (
                       <g opacity={isNodeActive('waf') ? 1.0 : 0.7} className={isNodeActive('waf') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('waf') ? '#ea580c' : '#475569'} strokeWidth={isNodeActive('waf') ? 2 : 0.5}/>
-                        <text x="190" y="163" textAnchor="middle" fontSize="10" fill="#ffe4e6" fontWeight="bold">🛡️ AWS WAF</text>
-                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#fca5a5">Packet Inspection</text>
+                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#fff5f5" stroke={isNodeActive('waf') ? '#ea580c' : '#cbd5e1'} strokeWidth={isNodeActive('waf') ? 2 : 0.5}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="10" fill="#991b1b" fontWeight="bold">🛡️ AWS WAF</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#b91c1c">Packet Inspection</text>
                       </g>
                     )}
 
                     {/* Node 4: CloudFront Edge (ALB only) */}
                     {infraScenario === 'alb_ingress' && (
                       <g opacity={isNodeActive('cloudfront') ? 1.0 : 0.7} className={isNodeActive('cloudfront') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                        <rect x="150" y="205" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('cloudfront') ? '#ea580c' : '#475569'} strokeWidth={isNodeActive('cloudfront') ? 2 : 0.5}/>
-                        <text x="190" y="223" textAnchor="middle" fontSize="9.5" fill="#ffe4e6" fontWeight="bold">☁️ CloudFront CDN</text>
-                        <text x="190" y="236" textAnchor="middle" fontSize="7.5" fill="#fca5a5">Edge Location Cache</text>
+                        <rect x="150" y="205" width="80" height="42" rx="6" fill="#fff7ed" stroke={isNodeActive('cloudfront') ? '#ea580c' : '#cbd5e1'} strokeWidth={isNodeActive('cloudfront') ? 2 : 0.5}/>
+                        <text x="190" y="223" textAnchor="middle" fontSize="9.5" fill="#c2410c" fontWeight="bold">☁️ CloudFront CDN</text>
+                        <text x="190" y="236" textAnchor="middle" fontSize="7.5" fill="#ea580c">Edge Location Cache</text>
                       </g>
                     )}
 
                     {/* Node 5: Interface VPC Endpoint ENI (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
                       <g opacity={isNodeActive('eni') ? 1.0 : 0.7} className={isNodeActive('eni') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('eni') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('eni') ? 2 : 0.5}/>
-                        <text x="190" y="163" textAnchor="middle" fontSize="9.5" fill="#e9d5ff" fontWeight="bold">🔌 Interface ENI</text>
-                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#c084fc">Consumer Gateway</text>
+                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#faf5ff" stroke={isNodeActive('eni') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('eni') ? 2 : 0.5}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="9.5" fill="#581c87" fontWeight="bold">🔌 Interface ENI</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#7e22ce">Consumer Gateway</text>
                       </g>
                     )}
 
                     {/* Node 6: AWS Private Backbone (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
                       <g opacity={isNodeActive('backbone') ? 1.0 : 0.7} className={isNodeActive('backbone') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="255" y="145" width="80" height="42" rx="6" fill="#1e293b" stroke={isNodeActive('backbone') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('backbone') ? 2 : 0.5}/>
-                        <text x="295" y="163" textAnchor="middle" fontSize="9.5" fill="#e9d5ff" fontWeight="bold">🌐 AWS Backbone</text>
-                        <text x="295" y="176" textAnchor="middle" fontSize="7.5" fill="#c084fc">Physical Fiber Tunnel</text>
+                        <rect x="255" y="145" width="80" height="42" rx="6" fill="#faf5ff" stroke={isNodeActive('backbone') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('backbone') ? 2 : 0.5}/>
+                        <text x="295" y="163" textAnchor="middle" fontSize="9.5" fill="#581c87" fontWeight="bold">🌐 AWS Backbone</text>
+                        <text x="295" y="176" textAnchor="middle" fontSize="7.5" fill="#7e22ce">Physical Fiber Tunnel</text>
                       </g>
                     )}
 
                     {/* Node 7: Load Balancer (ALB / NLB Node) */}
                     {infraScenario !== 'privatelink' && (
                       <g opacity={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 1.0 : 0.7} className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
-                        <rect x="255" y="125" width="80" height="50" rx="8" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? activeColor : '#1e1b4b'} stroke={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : activeColor} strokeWidth="1"/>
-                        <text x="295" y="146.5" textAnchor="middle" fontSize="10.5" fill="#fff" fontWeight="bold">
+                        <rect x="255" y="125" width="80" height="50" rx="8" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? activeColor : '#fff7ed'} stroke={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : activeColor} strokeWidth="1.5"/>
+                        <text x="295" y="146.5" textAnchor="middle" fontSize="10.5" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : '#1e293b'} fontWeight="bold">
                           {infraScenario === 'alb_ingress' ? '🍔 Public ALB' : '🔢 Public NLB'}
                         </text>
-                        <text x="295" y="159.5" textAnchor="middle" fontSize="7.5" fill="#f8fafc">
+                        <text x="295" y="159.5" textAnchor="middle" fontSize="7.5" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : '#64748b'}>
                           {infraScenario === 'alb_ingress' ? 'Layer 7 Smart' : 'Layer 4 Static'}
                         </text>
                       </g>
@@ -1782,30 +1965,30 @@ Target Server Index:
                     {/* Provider NLB (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
                       <g opacity={isNodeActive('nlb') ? 1.0 : 0.7} className={isNodeActive('nlb') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="360" y="140" width="80" height="42" rx="6" fill="#1e1b4b" stroke={isNodeActive('nlb') ? '#7c3aed' : '#475569'} strokeWidth={isNodeActive('nlb') ? 2 : 0.5}/>
-                        <text x="400" y="158" textAnchor="middle" fontSize="9.5" fill="#e9d5ff" fontWeight="bold">🔌 Provider NLB</text>
-                        <text x="400" y="171" textAnchor="middle" fontSize="7.5" fill="#c084fc">Endpoint Service</text>
+                        <rect x="360" y="140" width="80" height="42" rx="6" fill="#f0f9ff" stroke={isNodeActive('nlb') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('nlb') ? 2 : 0.5}/>
+                        <text x="400" y="158" textAnchor="middle" fontSize="9.5" fill="#0369a1" fontWeight="bold">🔌 Provider NLB</text>
+                        <text x="400" y="171" textAnchor="middle" fontSize="7.5" fill="#0284c7">Endpoint Service</text>
                       </g>
                     )}
 
                     {/* Node 8: Private Compute AZ1 Racks */}
                     <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
-                      <rect x="460" y="95" width="130" height="36" rx="5" fill="#0f172a" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#475569'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
-                      <text x="468" y="110" fontSize="9.5" fill="#e2e8f0" fontWeight="bold">🖥️ Target Host AZ1</text>
+                      <rect x="460" y="95" width="130" height="36" rx="5" fill="#f8fafc" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#cbd5e1'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
+                      <text x="468" y="110" fontSize="9.5" fill="#1e293b" fontWeight="bold">🖥️ Target Host AZ1</text>
                       <text x="468" y="123" fontSize="7" fill="#64748b">Port 80 · Healthy Target Pool</text>
                     </g>
 
                     {/* Node 9: Private Compute AZ2 Racks */}
                     <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
-                      <rect x="460" y="200" width="130" height="36" rx="5" fill="#0f172a" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#475569'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
-                      <text x="468" y="215" fontSize="9.5" fill="#e2e8f0" fontWeight="bold">🖥️ Target Host AZ2</text>
+                      <rect x="460" y="200" width="130" height="36" rx="5" fill="#f8fafc" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#cbd5e1'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
+                      <text x="468" y="215" fontSize="9.5" fill="#1e293b" fontWeight="bold">🖥️ Target Host AZ2</text>
                       <text x="468" y="228" fontSize="7" fill="#64748b">Port 80 · Healthy Target Pool</text>
                     </g>
 
                     {/* Node 10: RDS Database Subnet */}
                     <g opacity={0.7}>
-                      <rect x="460" y="255" width="130" height="30" rx="4" fill="#0f172a" stroke="#475569" strokeWidth="0.5"/>
-                      <text x="525" y="274" textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
+                      <rect x="460" y="255" width="130" height="30" rx="4" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="0.5"/>
+                      <text x="525" y="274" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
                     </g>
 
                     {/* Flow Arrow Lines & Dynamic Paths */}

@@ -230,7 +230,6 @@ export default function RDSVisualizer() {
     stale: 'Low'
   });
 
-  const svgRef = useRef<SVGSVGElement | null>(null);
   const lastWriteAtRef = useRef<number>(0);
 
   const splitTraffic = (t: number) => {
@@ -261,296 +260,6 @@ export default function RDSVisualizer() {
     setLogHtml((prev) => `<b>${new Date().toLocaleTimeString()}</b> — ${msg}<br><span style="color:var(--color-text-tertiary)">${prev}</span>`);
   };
 
-  const renderSvg = (m: Metrics) => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    const NS = 'http://www.w3.org/2000/svg';
-    while (svg.firstChild) svg.removeChild(svg.firstChild);
-
-    // Dynamic linear gradients for cards (Soft Pastels)
-    const defs = document.createElementNS(NS, 'defs');
-    
-    const addGradient = (id: string, color1: string, color2: string) => {
-      const grad = document.createElementNS(NS, 'linearGradient');
-      grad.setAttribute('id', id);
-      grad.setAttribute('x1', '0%');
-      grad.setAttribute('y1', '0%');
-      grad.setAttribute('x2', '100%');
-      grad.setAttribute('y2', '100%');
-      const stop1 = document.createElementNS(NS, 'stop');
-      stop1.setAttribute('offset', '0%');
-      stop1.setAttribute('stop-color', color1);
-      const stop2 = document.createElementNS(NS, 'stop');
-      stop2.setAttribute('offset', '100%');
-      stop2.setAttribute('stop-color', color2);
-      grad.appendChild(stop1);
-      grad.appendChild(stop2);
-      defs.appendChild(grad);
-    };
-
-    // Add glowing marker arrows
-    const addMarker = (id: string, color: string) => {
-      const marker = document.createElementNS(NS, 'marker');
-      marker.setAttribute('id', id);
-      marker.setAttribute('viewBox', '0 0 10 10');
-      marker.setAttribute('refX', '8');
-      marker.setAttribute('refY', '5');
-      marker.setAttribute('markerWidth', '6');
-      marker.setAttribute('markerHeight', '6');
-      marker.setAttribute('orient', 'auto-start-reverse');
-      const ap = document.createElementNS(NS, 'path');
-      ap.setAttribute('d', 'M 0 1 L 9 5 L 0 9 z');
-      ap.setAttribute('fill', color);
-      marker.appendChild(ap);
-      defs.appendChild(marker);
-    };
-
-    addGradient('grad-light-bg', '#ffffff', '#f8fafc');
-    addGradient('grad-app', '#f0f2fe', '#e0e7ff');
-    addGradient('grad-writer-ok', '#ecfdf5', '#d1fae5');
-    addGradient('grad-writer-fail', '#fff1f2', '#ffe4e6');
-    addGradient('grad-standby-ok', '#fffbeb', '#fef3c7');
-    addGradient('grad-replica', '#f5f3ff', '#ede9fe');
-
-    addMarker('arr-write', '#0284c7');
-    addMarker('arr-read', '#7c3aed');
-    addMarker('arr-sync', '#10b981');
-    addMarker('arr-async', '#8b5cf6');
-    addMarker('arr-fail', '#ef4444');
-
-    svg.appendChild(defs);
-
-    const helpers = {
-      // Draw background panel
-      bg: () => {
-        const bgRect = document.createElementNS(NS, 'rect');
-        bgRect.setAttribute('x', '0');
-        bgRect.setAttribute('y', '0');
-        bgRect.setAttribute('width', '680');
-        bgRect.setAttribute('height', '260');
-        bgRect.setAttribute('fill', 'url(#grad-light-bg)');
-        bgRect.setAttribute('rx', '6');
-        svg.appendChild(bgRect);
-
-        // Subtly render grid lines for high-tech aesthetic
-        for (let i = 40; i < 680; i += 40) {
-          const l = document.createElementNS(NS, 'line');
-          l.setAttribute('x1', String(i));
-          l.setAttribute('y1', '0');
-          l.setAttribute('x2', String(i));
-          l.setAttribute('y2', '260');
-          l.setAttribute('stroke', '#cbd5e1');
-          l.setAttribute('stroke-width', '0.5');
-          l.setAttribute('opacity', '0.4');
-          svg.appendChild(l);
-        }
-        for (let j = 40; j < 260; j += 40) {
-          const l = document.createElementNS(NS, 'line');
-          l.setAttribute('x1', '0');
-          l.setAttribute('y1', String(j));
-          l.setAttribute('x2', '680');
-          l.setAttribute('y2', String(j));
-          l.setAttribute('stroke', '#cbd5e1');
-          l.setAttribute('stroke-width', '0.5');
-          l.setAttribute('opacity', '0.4');
-          svg.appendChild(l);
-        }
-      },
-      rect: (x: number, y: number, w: number, h: number, fill: string, stroke: string, dash = '', cls = '', style = '') => {
-        const r = document.createElementNS(NS, 'rect');
-        r.setAttribute('x', String(x));
-        r.setAttribute('y', String(y));
-        r.setAttribute('width', String(w));
-        r.setAttribute('height', String(h));
-        r.setAttribute('rx', '8');
-        r.setAttribute('fill', fill);
-        r.setAttribute('stroke', stroke);
-        r.setAttribute('stroke-width', '1.5');
-        if (dash) r.setAttribute('stroke-dasharray', dash);
-        if (cls) r.setAttribute('class', cls);
-        if (style) r.setAttribute('style', style);
-        svg.appendChild(r);
-      },
-      text: (x: number, y: number, str: string, sz = 11, weight = 500, fill = '#475569', anchor = 'middle') => {
-        const t = document.createElementNS(NS, 'text');
-        t.setAttribute('x', String(x));
-        t.setAttribute('y', String(y));
-        t.setAttribute('text-anchor', anchor);
-        t.setAttribute('dominant-baseline', 'central');
-        t.setAttribute('font-size', String(sz));
-        t.setAttribute('font-weight', String(weight));
-        t.setAttribute('fill', fill);
-        t.setAttribute('font-family', "'Outfit', 'Inter', system-ui, sans-serif");
-        t.textContent = str;
-        svg.appendChild(t);
-      },
-      path: (d: string, dash = '', color = '#64748b', cls = '', marker = 'arr-write') => {
-        const p = document.createElementNS(NS, 'path');
-        p.setAttribute('d', d);
-        p.setAttribute('fill', 'none');
-        p.setAttribute('stroke', color);
-        p.setAttribute('stroke-width', '2');
-        if (dash) p.setAttribute('stroke-dasharray', dash);
-        if (cls) p.setAttribute('class', cls);
-        if (marker) p.setAttribute('marker-end', `url(#${marker})`);
-        svg.appendChild(p);
-      }
-    };
-
-    // Render beautiful base background grid
-    helpers.bg();
-
-    // Availability Zone Boundaries
-    // AZ-a
-    helpers.rect(215, 30, 220, 205, '#f8fafc', '#cbd5e1', '4,3');
-    helpers.text(325, 42, 'Availability Zone: us-east-1a (Primary Zone)', 9, 600, '#64748b');
-
-    // AZ-b / AZ-c zone label indicator
-    helpers.rect(445, 30, 215, 205, '#f8fafc', '#cbd5e1', '4,3');
-    helpers.text(552, 42, mode === 'multi_rr' ? 'AZ-b & AZ-c (Secondary Zones)' : 'Availability Zone: us-east-1b (HA Standby)', 9, 600, '#64748b');
-
-    // App Tier Server Card (Glowing Neon Blue/Indigo)
-    helpers.rect(20, 75, 160, 110, 'url(#grad-app)', '#3b82f6', '', 'active-glow-node', '--pulse-color: rgba(59, 130, 246, 0.2)');
-    helpers.text(100, 95, '💻 sg-app Client Tier', 11, 700, '#1e3a8a');
-    helpers.text(100, 115, 'Compute Drivers EC2/Lambda', 9.5, 500, '#1d4ed8');
-    helpers.text(100, 135, `Incoming Load: ${tps} TPS`, 10, 600, '#2563eb');
-    helpers.text(100, 155, `Writes: ${m.writes} | Reads: ${m.reads}`, 9, 500, '#475569');
-
-    // Writer Node Configuration
-    const writerIsActive = !azFailed;
-    const writerIsSingleDown = azFailed && mode === 'single';
-    const writerIsMultiFailed = azFailed && mode !== 'single';
-
-    let wFill = 'url(#grad-writer-ok)';
-    let wStroke = '#10b981';
-    let wText = '#064e3b';
-    let wSubText = 'Writing Transaction Log (WAL)';
-    let wPulse = '--pulse-color: rgba(16, 185, 129, 0.3)';
-    let wCls = 'active-glow-node';
-
-    if (writerIsSingleDown) {
-      wFill = 'url(#grad-writer-fail)';
-      wStroke = '#ef4444';
-      wText = '#9f1239';
-      wSubText = '❌ DATABASE INSTANCE DOWN';
-      wPulse = '--pulse-color: rgba(239, 68, 68, 0.3)';
-      wCls = '';
-    } else if (writerIsMultiFailed) {
-      wFill = 'url(#grad-writer-fail)';
-      wStroke = '#ef4444';
-      wText = '#9f1239';
-      wSubText = '❌ Evicted Writer (Failed Over)';
-      wPulse = '--pulse-color: rgba(239, 68, 68, 0.15)';
-      wCls = '';
-    }
-
-    // Draw Primary Writer Card in AZ-a
-    helpers.rect(230, 60, 190, 75, wFill, wStroke, '', wCls, wPulse);
-    helpers.text(325, 78, writerIsActive ? '🐘 Primary DB Writer' : '🐘 DB Writer (AZ-a)', 11, 700, wText);
-    helpers.text(325, 96, wSubText, 9, 500, wText === '#9f1239' ? '#9f1239' : '#047857');
-    helpers.text(325, 114, writerIsActive ? `Active load: ${m.writerTps} TPS` : '0 TPS — Offline', 9.5, 600, wText);
-
-    // Multi-AZ Standby Instance Card
-    if (mode !== 'single') {
-      const standbyIsActive = azFailed; // Standby is promoted to writer
-      
-      let sFill = 'url(#grad-standby-ok)';
-      let sStroke = '#fbbf24';
-      let sText = '#78350f';
-      let sSubText = '🛡️ Hot Standby (Passive Replica)';
-      let sPulse = '--pulse-color: rgba(251, 191, 36, 0.2)';
-      let sCls = '';
-
-      if (standbyIsActive) {
-        sFill = 'url(#grad-writer-ok)';
-        sStroke = '#10b981';
-        sText = '#064e3b';
-        sSubText = '⚡ PROMOTED WRITER (Active)';
-        sPulse = '--pulse-color: rgba(16, 185, 129, 0.3)';
-        sCls = 'active-glow-node';
-      }
-
-      helpers.rect(230, 150, 190, 70, sFill, sStroke, '', sCls, sPulse);
-      helpers.text(325, 168, standbyIsActive ? '🛡️ Standby promoted to Writer' : '🛡️ HA Standby DB (AZ-b)', 11, 700, sText);
-      helpers.text(325, 186, sSubText, 9, 500, standbyIsActive ? '#047857' : '#b45309');
-      helpers.text(325, 202, standbyIsActive ? `Active load: ${m.writerTps} TPS` : 'Mirroring Block storage commits', 9, 500, sText);
-
-      // Draw sync replication line between Writer and Standby
-      if (writerIsActive) {
-        // Normal state
-        helpers.path('M 325 135 L 325 150', '', '#10b981', 'flow-active-line', 'arr-sync');
-        helpers.text(355, 142.5, 'SYNC 🔄', 8, 700, '#047857');
-      } else {
-        // AZ crashed, replication path is broken
-        helpers.path('M 325 135 L 325 150', '3,3', '#ef4444', '', 'arr-fail');
-        helpers.text(355, 142.5, 'BROKEN ❌', 8, 700, '#9f1239');
-      }
-    }
-
-    // Read Replica Cards in AZ-b / AZ-c
-    if (mode === 'multi_rr') {
-      // Replica #1
-      helpers.rect(480, 55, 160, 72, 'url(#grad-replica)', '#8b5cf6', '', 'active-glow-node', '--pulse-color: rgba(139, 92, 246, 0.25)');
-      helpers.text(560, 73, '📖 Read Replica #1', 11, 700, '#4c1d95');
-      helpers.text(560, 91, `Replica lag: ~${lag}s`, 9, 500, lag >= 12 ? '#ef4444' : lag >= 5 ? '#d97706' : '#5b21b6');
-      helpers.text(560, 107, m.readTarget === 'replicas' ? `Reads: ${m.replicaEach} TPS` : '0 TPS (Routing bypass)', 9.5, 600, '#6d28d9');
-
-      // Replica #2
-      helpers.rect(480, 145, 160, 72, 'url(#grad-replica)', '#8b5cf6', '', 'active-glow-node', '--pulse-color: rgba(139, 92, 246, 0.25)');
-      helpers.text(560, 163, '📖 Read Replica #2', 11, 700, '#4c1d95');
-      helpers.text(560, 181, `Replica lag: ~${lag}s`, 9, 500, lag >= 12 ? '#ef4444' : lag >= 5 ? '#d97706' : '#5b21b6');
-      helpers.text(560, 197, m.readTarget === 'replicas' ? `Reads: ${m.replicaEach} TPS` : '0 TPS (Routing bypass)', 9.5, 600, '#6d28d9');
-
-      // Async replication streaming connectors from writer source to replicas
-      if (writerIsActive) {
-        helpers.path('M 420 90 L 480 80', '4,2', '#8b5cf6', 'flow-active-line', 'arr-async');
-        helpers.path('M 420 110 L 480 160', '4,2', '#8b5cf6', 'flow-active-line', 'arr-async');
-        helpers.text(450, 72, 'Async 🟢', 7.5, 600, '#6d28d9');
-      } else {
-        // Redirection of replica pipelines from Standby in AZ-b
-        helpers.path('M 420 175 L 480 100', '4,2', '#8b5cf6', 'flow-active-line', 'arr-async');
-        helpers.path('M 420 195 L 480 180', '4,2', '#8b5cf6', 'flow-active-line', 'arr-async');
-        helpers.text(450, 205, 'Async 🟢', 7.5, 600, '#6d28d9');
-      }
-    }
-
-    // Traffic Ingress Routes from Client App Card
-    if (writerIsSingleDown) {
-      // Direct Single AZ Outage: Ingress blocked
-      helpers.path('M 180 120 L 230 105', '4,4', '#ef4444', '', 'arr-fail');
-      helpers.text(205, 98, '❌ BLOCKED', 8.5, 700, '#ef4444');
-      
-      // Stop sign indicator
-      const g = document.createElementNS(NS, 'g');
-      const stopCircle = document.createElementNS(NS, 'circle');
-      stopCircle.setAttribute('cx', '205');
-      stopCircle.setAttribute('cy', '112');
-      stopCircle.setAttribute('r', '8');
-      stopCircle.setAttribute('fill', '#ef4444');
-      g.appendChild(stopCircle);
-      helpers.text(205, 112, 'X', 8, 800, '#fff');
-      svg.appendChild(g);
-    } else {
-      // Ingress pathing active
-      const activeWriterY = (azFailed && mode !== 'single') ? 175 : 97; // Routes to AZ-b promoted writer on failover!
-      
-      // 1. Write Endpoint Pathway (Cyan/Blue)
-      helpers.path(`M 180 110 C 200 110, 210 ${activeWriterY - 10}, 230 ${activeWriterY - 10}`, '', '#0284c7', 'flow-active-line', 'arr-write');
-      helpers.text(205, activeWriterY - 18, `Writes: ${m.writes} TPS`, 8, 700, '#0369a1');
-
-      // 2. Read Endpoint Pathway (Strong consistency = Writer; Eventual = Replicas)
-      if (m.readTarget === 'writer') {
-        helpers.path(`M 180 140 C 200 140, 210 ${activeWriterY + 10}, 230 ${activeWriterY + 10}`, '', '#0284c7', 'flow-active-line', 'arr-write');
-        helpers.text(205, activeWriterY + 20, `Reads: ${m.reads} TPS`, 8, 700, '#0369a1');
-      } else if (mode === 'multi_rr') {
-        // Eventual Consistency: Reads funneled to replicas (Purple)
-        helpers.path('M 180 140 C 200 140, 380 90, 480 90', '', '#8b5cf6', 'flow-active-line', 'arr-read');
-        helpers.path('M 180 145 C 200 145, 380 180, 480 180', '', '#8b5cf6', 'flow-active-line', 'arr-read');
-        helpers.text(205, 155, `Reads: ${m.reads} TPS (Split)`, 8, 700, '#6d28d9');
-      }
-    }
-  };
-
   useEffect(() => {
     const { writes, reads } = splitTraffic(tps);
     const readTarget = effectiveReadTarget(mode, readRoute);
@@ -573,7 +282,6 @@ export default function RDSVisualizer() {
       stale: staleRisk(mode, readRoute, lag)
     };
     setMetrics(m);
-    renderSvg(m);
   }, [mode, readRoute, tps, lag, azFailed]);
 
   const sendWrite = () => {
@@ -616,161 +324,578 @@ export default function RDSVisualizer() {
   const resetSim = () => {
     setAzFailed(false);
     lastWriteAtRef.current = 0;
-    setLogHtml('Click "Simulate WRITE/READ" to see which endpoint is used, then toggle AZ failure to see failover behavior.');
+    setLogHtml('Click "Simulate WRITE/READ" to see which endpoint is used, then toggle AZ failover.');
   };
 
   return (
-    <div>
+    <div className="rds-container">
       <style>{`
-        /* Encapsulated styling under .rds- */
-        .rds-container { font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-text-primary, #0f172a); }
-        .rds-h { font-size: 22px; font-weight: 700; display: flex; alignItems: center; gap: 8px; margin-bottom: 4px; }
-        .rds-sub { font-size: 13px; color: var(--color-text-secondary, #475569); line-height: 1.5; margin-bottom: 14px; }
-        .rds-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .rds-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; }
-        .rds-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .rds-tb.rds-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .rds-card { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-lg, 12px); padding: 14px 16px; background: var(--color-background-primary, #ffffff); margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .rds-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #475569); text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; }
-        .rds-sec:first-child { margin-top: 0; }
-        .rds-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .rds-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .rds-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); background: var(--color-background-secondary, #f8fafc); margin-bottom: 6px; font-size: 12px; line-height: 1.45; }
-        .rds-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: #fff; font-weight: 600; background: #16a34a; }
-        .rds-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
-        .rds-binfo { background: #dbeafe; color: #1d4ed8; }
-        .rds-bok { background: #dcfce7; color: #15803d; }
-        .rds-bwarn { background: #fef3c7; color: #b45309; }
-        .rds-bbad { background: #fee2e2; color: #b91c1c; }
-        .rds-bpurple { background: #ede9fe; color: #7c3aed; }
-        .rds-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
-        .rds-k { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 10px; text-align: center; }
-        .rds-k .t { font-size: 10px; color: var(--color-text-tertiary, #64748b); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .rds-k .v { font-size: 16px; font-weight: 700; color: var(--color-text-primary, #0f172a); }
-        .rds-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .rds-ctrl { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; }
-        .rds-ctrl label { display: block; font-size: 12px; font-weight: 600; color: var(--color-text-secondary, #475569); margin-bottom: 6px; }
-        .rds-ctrl select { width: 100%; padding: 6px; font-size: 12px; border: 2px solid #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); border-radius: 4px; background: var(--color-background-primary, #ffffff); outline: none; }
-        .rds-ctrl input[type="range"] { width: 100%; padding: 6px; font-size: 12px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: 4px; background: var(--color-background-primary, #ffffff); }
-        .rds-ctrl .out { font-size: 11px; color: var(--color-text-secondary, #475569); margin-top: 6px; font-family: var(--font-mono, monospace); }
-        .rds-mono { font-family: var(--font-mono, monospace); font-size: 11px; }
-        .rds-btnbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .rds-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); background: var(--color-background-primary, #ffffff); color: var(--color-text-primary, #0f172a); cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; }
-        .rds-btn:hover { background: var(--color-background-secondary, #f8fafc); }
-        .rds-btn.rds-primary { background: #16a34a; border-color: #16a34a; color: #fff; }
-        .rds-btn.rds-primary:hover { background: #15803d; }
-        .rds-log { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; font-size: 11px; color: var(--color-text-secondary, #475569); line-height: 1.6; min-height: 90px; max-height: 180px; overflow-y: auto; margin-top: 12px; }
-        ul.rds-ck, ul.rds-wn { padding-left: 0; margin-bottom: 0; }
-        ul.rds-ck li, ul.rds-wn li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; line-height: 1.4; }
-        ul.rds-ck li::before { content: "✓"; position: absolute; left: 0; color: #15803d; font-weight: 700; }
-        ul.rds-wn li::before { content: "⚠️"; position: absolute; left: 0; font-size: 10px; }
-        .rds-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.4; }
-        .rds-table th { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; text-align: left; font-weight: 600; }
-        .rds-table td { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; }
-        .rds-table tr:nth-child(even) { background: var(--color-background-secondary, #f8fafc); }
-        .rds-code-container { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: 8px; background: var(--color-background-secondary, #f8fafc); padding: 12px; margin-top: 10px; }
-        .rds-code { font-family: var(--font-mono, monospace); font-size: 11px; white-space: pre-wrap; line-height: 1.45; color: var(--color-text-primary, #0f172a); }
-        
-        /* Subtabs styling */
-        .rds-subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px dashed var(--color-border-tertiary, #e2e8f0); padding-bottom: 8px; }
-        .rds-subtb { padding: 4px 10px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 11px; cursor: pointer; background: var(--color-background-primary, #ffffff); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; }
-        .rds-subtb:hover { background: var(--color-background-secondary, #f8fafc); }
-        .rds-subtb.rds-on { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 500; }
-        .rds-subtb.rds-on-purple { background: #7c3aed; color: #fff; border-color: #7c3aed; font-weight: 500; }
+        /* Premium Encapsulated Developer Workspace Theme */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-        @keyframes activeNodePulse {
-          0% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
-          50% { filter: drop-shadow(0 0 10px var(--pulse-color)); }
-          100% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
+        .rds-container {
+          font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+          color: #1e293b;
+          background: radial-gradient(circle at 10% 20%, rgba(240, 253, 244, 0.15) 0%, rgba(255, 255, 255, 1) 90%);
         }
-        .active-glow-node {
-          animation: activeNodePulse 2s infinite;
-        }
-        @keyframes flowAnim {
-          to { stroke-dashoffset: -20; }
-        }
-        .flow-active-line {
-          stroke-dasharray: 6, 4;
-          animation: flowAnim 1s linear infinite;
-        }
-        .arch-scenario-btn {
-          font-size: 12px;
-          padding: 6px 12px;
-          border-radius: 6px;
-          border: 1px solid var(--color-border-tertiary, #cbd5e1);
-          background: var(--color-background-primary, #ffffff);
-          color: var(--color-text-secondary, #475569);
-          cursor: pointer;
-          font-weight: 500;
-          transition: all 0.2s;
-        }
-        .arch-scenario-btn:hover {
-          background: var(--color-background-secondary, #f8fafc);
-          color: var(--color-text-primary, #0f172a);
-        }
-        .arch-scenario-btn.active {
-          background: #eff6ff;
-          color: #2563eb;
-          border-color: #2563eb;
-        }
-        .asg-btn {
-          font-size: 12px;
-          padding: 5px 12px;
-          border-radius: 6px;
-          border: 0.5px solid var(--color-border-tertiary, #cbd5e1);
-          background: var(--color-background-primary, #ffffff);
-          color: var(--color-text-primary, #0f172a);
-          cursor: pointer;
-          transition: all 0.15s;
-          outline: none;
-        }
-        .asg-btn:hover {
-          background: var(--color-background-secondary, #f8fafc);
-        }
-        .asg-btn.asg-on {
-          background: #16a34a;
-          color: #fff;
-          border-color: #16a34a;
-        }
-        .asg-log {
-          border: 0.5px solid var(--color-border-tertiary, #cbd5e1);
-          border-radius: 8px;
-          padding: 10px 12px;
-          background: var(--color-background-secondary, #f8fafc);
-          font-size: 11px;
-          font-family: var(--font-mono, monospace);
-          white-space: pre-wrap;
-          line-height: 1.5;
-          color: var(--color-text-primary, #0f172a);
-        }
-        .asg-card {
-          border: 0.5px solid var(--color-border-tertiary, #cbd5e1);
-          border-radius: var(--border-radius-lg, 12px);
-          padding: 14px 16px;
-          background: var(--color-background-primary, #ffffff);
-          margin-bottom: 12px;
-        }
-        .rds-gcard {
-          border-radius: var(--border-radius-lg, 12px);
-          padding: 14px 16px;
-          background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-          border: 1.5px solid #fdba74;
-          box-shadow: 0 4px 20px rgba(253, 186, 116, 0.1);
-        }
-        .rds-gcard-title {
-          font-weight: bold;
-          font-size: 13px;
-          color: #c2410c;
+        
+        .rds-h {
+          font-size: 24px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 10px;
           margin-bottom: 6px;
+          background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #1d4ed8 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          letter-spacing: -0.02em;
+        }
+
+        .rds-sub {
+          font-size: 13.5px;
+          color: #475569;
+          line-height: 1.6;
+          margin-bottom: 20px;
+          max-width: 90%;
+        }
+
+        .rds-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          border-bottom: 2px solid #e2e8f0;
+          padding-bottom: 10px;
+        }
+
+        .rds-tb {
+          padding: 8px 16px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          font-size: 12.5px;
+          font-weight: 500;
+          cursor: pointer;
+          background: #ffffff;
+          color: #475569;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .rds-tb:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+          transform: translateY(-1px);
+        }
+
+        .rds-tb.rds-on {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: #ffffff;
+          border-color: #059669;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .rds-card {
+          border: 1px solid rgba(16, 185, 129, 0.12);
+          border-radius: 20px;
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          margin-bottom: 20px;
+          box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(16, 185, 129, 0.02);
+          transition: all 0.25s ease;
+        }
+        
+        .rds-card:hover {
+          box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(16, 185, 129, 0.03);
+          border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .rds-sec {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #047857;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin: 20px 0 10px;
           display: flex;
           align-items: center;
           gap: 6px;
         }
+
+        .rds-sec:first-child {
+          margin-top: 0;
+        }
+
+        .rds-grid2 {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .rds-grid3 {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .rds-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          padding: 10px 14px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #f8fafc;
+          margin-bottom: 8px;
+          font-size: 12.5px;
+          line-height: 1.5;
+          transition: all 0.15s ease;
+        }
+
+        .rds-row:hover {
+          background: #ffffff;
+          border-color: #cbd5e1;
+          transform: translateX(2px);
+        }
+
+        .rds-dot {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-size: 11px;
+          color: #fff;
+          font-weight: 700;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
+
+        .rds-badge {
+          display: inline-block;
+          padding: 3px 10px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .rds-binfo { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+        .rds-bok { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+        .rds-bwarn { background: #fffbeb; color: #9a3412; border: 1px solid #fef3c7; }
+        .rds-bbad { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+        .rds-bpurple { background: #faf5ff; color: #6b21a8; border: 1px solid #f3e8ff; }
+
+        .rds-kpi {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .rds-k {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 12px;
+          text-align: center;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+        
+        .rds-k:hover {
+          border-color: #cbd5e1;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .rds-k .t {
+          font-size: 10.5px;
+          color: #64748b;
+          margin-bottom: 6px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          font-weight: 600;
+        }
+
+        .rds-k .v {
+          font-size: 18px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
+        .rds-controls {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .rds-ctrl {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 14px;
+        }
+
+        .rds-ctrl label {
+          display: block;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #334155;
+          margin-bottom: 8px;
+        }
+
+        .rds-ctrl select {
+          width: 100%;
+          padding: 8px 12px;
+          font-size: 12px;
+          font-family: inherit;
+          font-weight: 500;
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          background: #ffffff;
+          outline: none;
+          color: #1e293b;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+          transition: all 0.15s ease;
+        }
+
+        .rds-ctrl select:focus {
+          border-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .rds-ctrl input[type="range"] {
+          width: 100%;
+          height: 6px;
+          border-radius: 999px;
+          background: #e2e8f0;
+          outline: none;
+          cursor: pointer;
+          accent-color: #10b981;
+        }
+
+        .rds-ctrl .out {
+          font-size: 11px;
+          color: #475569;
+          margin-top: 8px;
+          font-family: 'JetBrains Mono', monospace;
+          background: #f1f5f9;
+          padding: 2px 6px;
+          border-radius: 6px;
+          display: inline-block;
+        }
+
+        .rds-mono {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11px;
+        }
+
+        .rds-btnbar {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-top: 14px;
+        }
+
+        .rds-btn {
+          font-size: 12px;
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 10px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          outline: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .rds-btn:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+          transform: translateY(-1px);
+        }
+
+        .rds-btn.rds-primary {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border-color: #059669;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .rds-btn.rds-primary:hover {
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+        }
+
+        .rds-log {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 16px;
+          padding: 16px;
+          font-size: 11.5px;
+          color: #e2e8f0;
+          font-family: 'JetBrains Mono', monospace;
+          line-height: 1.7;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        ul.rds-ck, ul.rds-wn {
+          padding-left: 0;
+          margin-bottom: 0;
+        }
+
+        ul.rds-ck li, ul.rds-wn li {
+          font-size: 12.5px;
+          margin-bottom: 8px;
+          list-style: none;
+          padding-left: 22px;
+          position: relative;
+          line-height: 1.5;
+          color: #334155;
+        }
+
+        ul.rds-ck li::before {
+          content: "✓";
+          position: absolute;
+          left: 0;
+          color: #10b981;
+          font-weight: 800;
+          font-size: 14px;
+        }
+
+        ul.rds-wn li::before {
+          content: "⚠️";
+          position: absolute;
+          left: 0;
+          font-size: 11px;
+          top: 1px;
+        }
+
+        .rds-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        .rds-table th {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          padding: 10px 12px;
+          text-align: left;
+          font-weight: 700;
+          color: #475569;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .rds-table td {
+          border: 1px solid #e2e8f0;
+          padding: 10px 12px;
+          color: #334155;
+        }
+
+        .rds-table tr:nth-child(even) {
+          background: rgba(248, 250, 252, 0.5);
+        }
+
+        .rds-code-container {
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          background: #f8fafc;
+          padding: 16px;
+          margin-top: 12px;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.01);
+        }
+
+        .rds-code {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11.5px;
+          white-space: pre-wrap;
+          line-height: 1.6;
+          color: #334155;
+        }
+        
+        /* Subtabs styling */
+        .rds-subtabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 16px;
+          border-bottom: 1px dashed #e2e8f0;
+          padding-bottom: 10px;
+        }
+
+        .rds-subtb {
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          font-size: 11.5px;
+          font-weight: 500;
+          cursor: pointer;
+          background: #ffffff;
+          color: #475569;
+          transition: all 0.15s ease;
+          outline: none;
+        }
+
+        .rds-subtb:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #0f172a;
+        }
+
+        .rds-subtb.rds-on {
+          background: #2563eb;
+          color: #ffffff;
+          border-color: #2563eb;
+          font-weight: 600;
+          box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+        }
+
+        .rds-subtb.rds-on-purple {
+          background: #7c3aed;
+          color: #ffffff;
+          border-color: #7c3aed;
+          font-weight: 600;
+          box-shadow: 0 2px 6px rgba(124, 58, 237, 0.15);
+        }
+
+        @keyframes activeNodePulse {
+          0%, 100% { filter: drop-shadow(0 0 3px var(--pulse-color)); opacity: 0.95; }
+          50% { filter: drop-shadow(0 0 12px var(--pulse-color)); opacity: 1; }
+        }
+        
+        .active-glow-node {
+          animation: activeNodePulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes flowAnim {
+          to { stroke-dashoffset: -20; }
+        }
+
+        .flow-active-line {
+          stroke-dasharray: 6, 4;
+          animation: flowAnim 0.8s linear infinite;
+        }
+
+        .arch-scenario-btn {
+          font-size: 12px;
+          padding: 8px 14px;
+          border-radius: 10px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: #475569;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s ease;
+        }
+
+        .arch-scenario-btn:hover {
+          background: #f8fafc;
+          color: #0f172a;
+          transform: translateY(-1px);
+        }
+
+        .arch-scenario-btn.active {
+          background: #f0fdf4;
+          color: #047857;
+          border-color: #059669;
+          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
+        }
+
+        .asg-btn {
+          font-size: 12px;
+          font-weight: 600;
+          padding: 8px 14px;
+          border-radius: 10px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          outline: none;
+        }
+
+        .asg-btn:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+        }
+
+        .asg-btn.asg-on {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: #ffffff;
+          border-color: #059669;
+          box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .asg-log {
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 12px 14px;
+          background: #0f172a;
+          font-size: 11px;
+          font-family: 'JetBrains Mono', monospace;
+          white-space: pre-wrap;
+          line-height: 1.6;
+          color: #e2e8f0;
+          box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .asg-card {
+          border: 1px solid #cbd5e1;
+          border-radius: 16px;
+          padding: 16px;
+          background: #ffffff;
+          margin-bottom: 12px;
+        }
+
+        .rds-gcard {
+          border-radius: 16px;
+          padding: 16px;
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border: 1px solid #86efac;
+          box-shadow: 0 4px 20px rgba(22, 163, 74, 0.05);
+        }
+
+        .rds-gcard-title {
+          font-weight: 700;
+          font-size: 13.5px;
+          color: #166534;
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        /* 3D database cylinder styles */
+        .cylinder-lid {
+          stroke-width: 1px;
+        }
+        .cylinder-body {
+          stroke-width: 1px;
+        }
       `}</style>
 
-      <div className="rds-container">
-        {/* Flagship Header */}
-        <div style={{ padding: '14px 16px 4px' }}>
+      {/* Flagship Header */}
+      <div style={{ padding: '14px 16px 4px' }}>
           <div className="rds-h">🛢️ Amazon RDS — Relational Database Service Visualizer</div>
           <div className="rds-sub">
             Managed database server engine inside your VPC boundaries. Easily scale compute, handle synchronous Multi-AZ failovers, configure read replicas, pool database connections with RDS Proxy, and leverage built-in machine learning models.
@@ -818,131 +943,170 @@ export default function RDSVisualizer() {
                   📐 Engine-Aware VPC Subnet Group Zonal Topology
                 </div>
 
-                <svg width="100%" viewBox="0 0 680 160" style={{ background: '#ffffff', borderRadius: '6px', border: '0.5px solid #cbd5e1' }}>
+                <svg width="100%" viewBox="0 0 680 160" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
                   <defs>
+                    {/* Metallic side-reflections */}
+                    <linearGradient id="m-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#a7f3d0" />
+                      <stop offset="35%" stopColor="#6ee7b7" />
+                      <stop offset="70%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                    <linearGradient id="m-warn" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#fde047" />
+                      <stop offset="35%" stopColor="#facc15" />
+                      <stop offset="70%" stopColor="#eab308" />
+                      <stop offset="100%" stopColor="#ca8a04" />
+                    </linearGradient>
+                    <linearGradient id="m-rep" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ddd6fe" />
+                      <stop offset="35%" stopColor="#c084fc" />
+                      <stop offset="70%" stopColor="#a78bfa" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+
+                    {/* Lids */}
+                    <linearGradient id="l-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#d1fae5" />
+                      <stop offset="100%" stopColor="#6ee7b7" />
+                    </linearGradient>
+                    <linearGradient id="l-warn" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fef9c3" />
+                      <stop offset="100%" stopColor="#facc15" />
+                    </linearGradient>
+                    <linearGradient id="l-rep" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f3e8ff" />
+                      <stop offset="100%" stopColor="#a78bfa" />
+                    </linearGradient>
+
                     <marker id="arr-sync" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                     <marker id="arr-async" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
-                    <marker id="arr-aurora" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#38bdf8" /></marker>
+                    <marker id="arr-aurora" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
                   </defs>
 
                   {/* AZ boundaries */}
-                  
                   {/* us-east-1a */}
-                  <rect x="15" y="15" width="200" height="130" rx="8" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="115" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#475569" fontFamily="monospace">us-east-1a Subnet</text>
+                  <rect x="15" y="15" width="200" height="130" rx="10" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="115" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#64748b" fontFamily="monospace">us-east-1a Subnet</text>
                   
                   {/* us-east-1b */}
-                  <rect x="240" y="15" width="200" height="130" rx="8" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="340" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#475569" fontFamily="monospace">us-east-1b Subnet</text>
+                  <rect x="240" y="15" width="200" height="130" rx="10" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="340" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#64748b" fontFamily="monospace">us-east-1b Subnet</text>
 
                   {/* us-east-1c */}
-                  <rect x="465" y="15" width="200" height="130" rx="8" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="565" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#475569" fontFamily="monospace">us-east-1c Subnet</text>
+                  <rect x="465" y="15" width="200" height="130" rx="10" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="565" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#64748b" fontFamily="monospace">us-east-1c Subnet</text>
 
                   {/* Dynamic Nodes Renders */}
                   {selectedEngine === 'aurora' ? (
                     <>
                       {/* Aurora: Cloud-Native Shared Storage 6-way replicated */}
-                      
                       {/* Primary Writer in AZ-a */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="30" y="38" width="170" height="42" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                        <text x="115" y="58" textAnchor="middle" fontSize="10.5" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
-                        <text x="115" y="72" textAnchor="middle" fontSize="8" fill="#16a34a" fontFamily="monospace">Active Instance (AZ-a)</text>
+                        {/* Cylinder */}
+                        <path d="M 70 48 L 70 76 A 45 7 0 0 0 160 76 L 160 48 A 45 7 0 0 1 70 48 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1" />
+                        <ellipse cx="115" cy="48" rx="45" ry="7" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1" />
+                        <text x="115" y="66" textAnchor="middle" fontSize="9.5" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
+                        <text x="115" y="86" textAnchor="middle" fontSize="7" fill="#047857" fontFamily="monospace">Active (AZ-a)</text>
                       </g>
 
                       {/* Aurora Reader in AZ-b */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
-                        <rect x="255" y="38" width="170" height="42" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1" />
-                        <text x="340" y="58" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold">📖 Aurora Reader</text>
-                        <text x="340" y="72" textAnchor="middle" fontSize="8" fill="#7c3aed" fontFamily="monospace">Near-Zero Lag (AZ-b)</text>
+                        {/* Cylinder */}
+                        <path d="M 295 48 L 295 76 A 45 7 0 0 0 385 76 L 385 48 A 45 7 0 0 1 295 48 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                        <ellipse cx="340" cy="48" rx="45" ry="7" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="340" y="66" textAnchor="middle" fontSize="9.5" fill="#4c1d95" fontWeight="bold">📖 Aurora Reader</text>
+                        <text x="340" y="86" textAnchor="middle" fontSize="7" fill="#6d28d9" fontFamily="monospace">Lag &lt; 20ms (AZ-b)</text>
                       </g>
 
                       {/* Shared Storage Pooling representing Aurora Storage Pool across all AZs */}
-                      <rect x="30" y="92" width="620" height="45" rx="8" fill="#ecfbfb" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,2" />
-                      <text x="340" y="105" textAnchor="middle" fontSize="9.5" fill="#0284c7" fontWeight="bold">🌌 Cloud-Native Shared Storage Pool (Replicated 6-Ways)</text>
+                      <rect x="30" y="96" width="620" height="42" rx="8" fill="#ecfbfb" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <text x="340" y="107" textAnchor="middle" fontSize="9" fill="#0284c7" fontWeight="bold">🌌 Cloud-Native Shared Storage Pool (Replicated 6-Ways)</text>
                       
                       {/* Storage Nodes in each AZ */}
-                      <rect x="50" y="112" width="60" height="18" rx="3" fill="#ffffff" stroke="#0284c7" strokeWidth="0.5"/>
-                      <text x="80" y="122" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk A1 / A2</text>
+                      <rect x="50" y="114" width="60" height="18" rx="3" fill="#ffffff" stroke="#0284c7" strokeWidth="0.5"/>
+                      <text x="80" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk A1 / A2</text>
 
-                      <rect x="275" y="112" width="60" height="18" rx="3" fill="#ffffff" stroke="#0284c7" strokeWidth="0.5"/>
-                      <text x="305" y="122" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk B1 / B2</text>
+                      <rect x="275" y="114" width="60" height="18" rx="3" fill="#ffffff" stroke="#0284c7" strokeWidth="0.5"/>
+                      <text x="305" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk B1 / B2</text>
 
-                      <rect x="500" y="112" width="60" height="18" rx="3" fill="#ffffff" stroke="#0284c7" strokeWidth="0.5"/>
-                      <text x="530" y="122" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk C1 / C2</text>
+                      <rect x="500" y="114" width="60" height="18" rx="3" fill="#ffffff" stroke="#0284c7" strokeWidth="0.5"/>
+                      <text x="530" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk C1 / C2</text>
 
                       {/* Continuous replication trace paths */}
-                      <path d="M 115 80 L 115 92" stroke="#0284c7" strokeWidth="1.5" className="flow-active-line" markerEnd="url(#arr-aurora)"/>
-                      <path d="M 340 80 L 340 92" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,2"/>
+                      <path d="M 115 84 L 115 96" stroke="#0284c7" strokeWidth="1.5" className="flow-active-line" markerEnd="url(#arr-aurora)"/>
+                      <path d="M 340 84 L 340 96" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,2"/>
                     </>
                   ) : (selectedEngine === 'oracle' || selectedEngine === 'mssql') ? (
                     <>
                       {/* Proprietary Engines: Multi-AZ standby copy, no replicas supported */}
-                      
                       {/* Primary Writer in AZ-a */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="25" y="42" width="180" height="65" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                        <text x="115" y="65" textAnchor="middle" fontSize="10.5" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
-                        <text x="115" y="80" textAnchor="middle" fontSize="8" fill="#16a34a">In-Service (Active)</text>
-                        <text x="115" y="93" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">Endpoint A: active.writer</text>
+                        {/* Cylinder */}
+                        <path d="M 65 52 L 65 92 A 50 10 0 0 0 165 92 L 165 52 A 50 10 0 0 1 65 52 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1.5" />
+                        <ellipse cx="115" cy="52" rx="50" ry="10" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1.5" />
+                        <text x="115" y="72" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
+                        <text x="115" y="86" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">In-Service (Active)</text>
                       </g>
 
                       {/* Standby Copy in AZ-b */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties}>
-                        <rect x="250" y="42" width="180" height="65" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
-                        <text x="340" y="65" textAnchor="middle" fontSize="10.5" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
-                        <text x="340" y="80" textAnchor="middle" fontSize="8" fill="#b45309">Synchronous Hot Standby</text>
-                        <text x="340" y="93" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">No Active Reads Allowed</text>
+                        {/* Cylinder */}
+                        <path d="M 290 52 L 290 92 A 50 10 0 0 0 390 92 L 390 52 A 50 10 0 0 1 290 52 Z" fill="url(#m-warn)" stroke="#d97706" strokeWidth="1" />
+                        <ellipse cx="340" cy="52" rx="50" ry="10" fill="url(#l-warn)" stroke="#d97706" strokeWidth="1" />
+                        <text x="340" y="72" textAnchor="middle" fontSize="10" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
+                        <text x="340" y="86" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">Passive (No Reads)</text>
                       </g>
 
                       {/* Standby Replication line */}
-                      <line x1="205" y1="74" x2="250" y2="74" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
-                      <text x="227.5" y="64" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
+                      <line x1="165" y1="72" x2="290" y2="72" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
+                      <text x="227.5" y="62" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
 
                       {/* Replicas Blocked / Not Supported in AZ-c */}
-                      <g opacity="0.6">
+                      <g opacity="0.65">
                         <rect x="475" y="42" width="180" height="65" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" />
                         <text x="565" y="65" textAnchor="middle" fontSize="10.5" fill="#ef4444" fontWeight="bold" style={{ textDecoration: 'line-through' }}>📖 Read Replica</text>
                         <text x="565" y="80" textAnchor="middle" fontSize="8.5" fill="#ef4444" fontWeight="bold">❌ NOT SUPPORTED</text>
-                        <text x="565" y="93" textAnchor="middle" fontSize="7" fill="#b91c1c" fontFamily="monospace">Standard RDS engine restriction</text>
-                        <path d="M 470 37 L 660 112 M 660 37 L 470 112" stroke="#ef4444" strokeWidth="1.5" opacity="0.5" />
+                        <text x="565" y="93" textAnchor="middle" fontSize="7" fill="#b91c1c" fontFamily="monospace">Engine Restriction</text>
+                        <path d="M 470 37 L 660 112 M 660 37 L 470 112" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
                       </g>
                     </>
                   ) : (
                     <>
                       {/* Standard Engines: Postgres / MySQL / MariaDB standard multi-az and replicas */}
-                      
                       {/* Primary Writer in AZ-a */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="25" y="42" width="180" height="65" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                        <text x="115" y="65" textAnchor="middle" fontSize="10.5" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
-                        <text x="115" y="80" textAnchor="middle" fontSize="8" fill="#16a34a">In-Service (Active)</text>
-                        <text x="115" y="93" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">Endpoint A: active.writer</text>
+                        {/* Cylinder */}
+                        <path d="M 65 52 L 65 92 A 50 10 0 0 0 165 92 L 165 52 A 50 10 0 0 1 65 52 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1.5" />
+                        <ellipse cx="115" cy="52" rx="50" ry="10" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1.5" />
+                        <text x="115" y="72" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
+                        <text x="115" y="86" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">In-Service (Active)</text>
                       </g>
 
                       {/* Standby Copy in AZ-b */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties}>
-                        <rect x="250" y="42" width="180" height="65" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
-                        <text x="340" y="65" textAnchor="middle" fontSize="10.5" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
-                        <text x="340" y="80" textAnchor="middle" fontSize="8" fill="#b45309">Synchronous Hot Standby</text>
-                        <text x="340" y="93" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">Passive (No Client Access)</text>
+                        {/* Cylinder */}
+                        <path d="M 290 52 L 290 92 A 50 10 0 0 0 390 92 L 390 52 A 50 10 0 0 1 290 52 Z" fill="url(#m-warn)" stroke="#d97706" strokeWidth="1" />
+                        <ellipse cx="340" cy="52" rx="50" ry="10" fill="url(#l-warn)" stroke="#d97706" strokeWidth="1" />
+                        <text x="340" y="72" textAnchor="middle" fontSize="10" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
+                        <text x="340" y="86" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">Passive (Standby)</text>
                       </g>
 
                       {/* Read Replica in AZ-c */}
                       <g className="active-glow-node" style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
-                        <rect x="475" y="42" width="180" height="65" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1" />
-                        <text x="565" y="65" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold">📖 Read Replica</text>
-                        <text x="565" y="80" textAnchor="middle" fontSize="8.5" fill="#7c3aed">Asynchronous WAL Streaming</text>
-                        <text x="565" y="93" textAnchor="middle" fontSize="7" fill="#475569" fontFamily="monospace">Endpoint C: read.replica</text>
+                        {/* Cylinder */}
+                        <path d="M 515 52 L 515 92 A 50 10 0 0 0 615 92 L 615 52 A 50 10 0 0 1 515 52 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                        <ellipse cx="565" cy="52" rx="50" ry="10" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                        <text x="565" y="72" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold">📖 Read Replica</text>
+                        <text x="565" y="86" textAnchor="middle" fontSize="7" fill="#6d28d9" fontFamily="monospace">Asynchronous WAL</text>
                       </g>
 
                       {/* Standby Replication line */}
-                      <line x1="205" y1="74" x2="250" y2="74" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
-                      <text x="227.5" y="64" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
+                      <line x1="165" y1="72" x2="290" y2="72" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
+                      <text x="227.5" y="62" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
 
                       {/* Replica replication line */}
-                      <path d="M 205 74 Q 330 135 475 74" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-async)" />
+                      <path d="M 165 72 Q 340 135 515 72" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-async)" />
                       <text x="340" y="132" textAnchor="middle" fontSize="8.5" fill="#7c3aed" fontWeight="bold" fontFamily="monospace">Async WAL ➡️</text>
                     </>
                   )}
@@ -1037,8 +1201,34 @@ export default function RDSVisualizer() {
                   </span>
                 </div>
 
-                <svg width="100%" viewBox="0 0 680 240" style={{ background: '#ffffff', borderRadius: '6px', border: '0.5px solid #cbd5e1' }}>
+                <svg width="100%" viewBox="0 0 680 240" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
                   <defs>
+                    <linearGradient id="c-app" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#eff6ff" />
+                      <stop offset="100%" stopColor="#dbeafe" />
+                    </linearGradient>
+                    <linearGradient id="c-db-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ddd6fe" />
+                      <stop offset="35%" stopColor="#c084fc" />
+                      <stop offset="70%" stopColor="#a78bfa" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+                    <linearGradient id="c-db-fail" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#fecaca" />
+                      <stop offset="35%" stopColor="#f87171" />
+                      <stop offset="70%" stopColor="#ef4444" />
+                      <stop offset="100%" stopColor="#b91c1c" />
+                    </linearGradient>
+
+                    <linearGradient id="l-db-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f3e8ff" />
+                      <stop offset="100%" stopColor="#a78bfa" />
+                    </linearGradient>
+                    <linearGradient id="l-db-fail" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fee2e2" />
+                      <stop offset="100%" stopColor="#f87171" />
+                    </linearGradient>
+
                     <marker id="acn-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
                     <marker id="acn-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                     <marker id="acn-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
@@ -1047,15 +1237,15 @@ export default function RDSVisualizer() {
 
                   {/* Public Internet Border Left */}
                   <line x1="10" y1="5" x2="10" y2="235" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3"/>
-                  <text x="18" y="16" fontSize="8" fill="#475569" fontFamily="monospace">PUBLIC INTERNET BOUNDARY</text>
+                  <text x="18" y="16" fontSize="8" fill="#64748b" fontFamily="monospace">PUBLIC INTERNET BOUNDARY</text>
 
                   {/* VPC boundary */}
                   <rect x="55" y="15" width="615" height="210" rx="12" fill="none" stroke="#94a3b8" strokeWidth="1.2" />
                   <text x="362.5" y="27" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#475569" fontFamily="monospace">VPC (10.0.0.0/16)</text>
 
                   {/* Public Subnets Area */}
-                  <rect x="65" y="42" width="165" height="172" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="147.5" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#475569" fontFamily="monospace">Public Subnets (0.0.0.0/0)</text>
+                  <rect x="65" y="42" width="165" height="172" rx="8" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="147.5" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#64748b" fontFamily="monospace">Public Subnets (0.0.0.0/0)</text>
                   
                   {/* ALB Block */}
                   <g opacity={ingressSource === 'app' ? 1 : 0.65}>
@@ -1072,8 +1262,8 @@ export default function RDSVisualizer() {
                   </g>
 
                   {/* Private App Subnets Area */}
-                  <rect x="250" y="42" width="170" height="172" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="335" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#475569" fontFamily="monospace">Private App Subnets</text>
+                  <rect x="250" y="42" width="170" height="172" rx="8" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="335" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#64748b" fontFamily="monospace">Private App Subnets</text>
                   
                   {/* EC2 Instance Block */}
                   <g opacity={ingressSource === 'app' ? 1 : 0.65}>
@@ -1083,20 +1273,21 @@ export default function RDSVisualizer() {
                   </g>
 
                   {/* Private DB Subnets Area */}
-                  <rect x="440" y="42" width="220" height="172" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="550" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#475569" fontFamily="monospace">Private DB Subnets (Isolated)</text>
+                  <rect x="440" y="42" width="220" height="172" rx="8" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="550" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#64748b" fontFamily="monospace">Private DB Subnets</text>
                   
-                  {/* RDS Writer Block */}
-                  <g opacity={ingressSource !== 'internet' ? 1 : 0.4} className={ingressSource !== 'internet' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
-                    <rect x="460" y="90" width="180" height="60" rx="6" fill={ingressSource === 'internet' ? '#fef2f2' : '#f5f3ff'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth={1.5} />
-                    <text x="550" y="115" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#0f172a">🗄️ sg-db (Amazon RDS)</text>
-                    <text x="550" y="132" textAnchor="middle" fontSize="8" fill="#7c3aed" fontFamily="monospace">
-                      {ingressSource === 'app' ? 'Inbound allowed from sg-app' : ingressSource === 'bastion' ? 'Inbound allowed from sg-bastion' : '❌ Public Ingress BLOCKED'}
+                  {/* RDS 3D Cylinder Block */}
+                  <g opacity={ingressSource !== 'internet' ? 1 : 0.4} className={ingressSource !== 'internet' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                    <path d="M 475 110 L 475 140 A 55 12 0 0 0 585 140 L 585 110 A 55 12 0 0 1 475 110 Z" fill={ingressSource === 'internet' ? 'url(#c-db-fail)' : 'url(#c-db-ok)'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth="1.5" />
+                    <ellipse cx="530" cy="110" rx="55" ry="12" fill={ingressSource === 'internet' ? 'url(#l-db-fail)' : 'url(#l-db-ok)'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth="1.5" />
+                    
+                    <text x="530" y="90" textAnchor="middle" fontSize="11.5" fontWeight="bold" fill="#0f172a">🗄️ sg-db (Amazon RDS)</text>
+                    <text x="530" y="128" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill={ingressSource === 'internet' ? '#991b1b' : '#5b21b6'}>
+                      {ingressSource === 'app' ? 'allowed from sg-app' : ingressSource === 'bastion' ? 'allowed from sg-bastion' : '❌ Public Ingress BLOCKED'}
                     </text>
                   </g>
 
                   {/* Connection tracer paths */}
-
                   {/* App route: ALB -> App -> DB */}
                   {ingressSource === 'app' && (
                     <>
@@ -1105,11 +1296,11 @@ export default function RDSVisualizer() {
                       
                       {/* ALB to App */}
                       <path d="M 215 90 L 265 110" fill="none" stroke="#3b82f6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-blue)"/>
-                      <text x="240" y="93" fontSize="7.5" fill="#60a5fa" fontWeight="bold">HTTP 8080</text>
+                      <text x="240" y="93" fontSize="7.5" fill="#2563eb" fontWeight="bold">HTTP 8080</text>
 
                       {/* App to DB */}
-                      <path d="M 405 120 L 460 120" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#acn-green)" />
-                      <text x="432.5" y="112" fontSize="7.5" fill="#34d399" fontWeight="bold">SQL Port 5432</text>
+                      <path d="M 405 120 L 470 120" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#acn-green)" />
+                      <text x="435" y="112" fontSize="7.5" fill="#16a34a" fontWeight="bold">SQL Port 5432</text>
                     </>
                   )}
 
@@ -1118,11 +1309,11 @@ export default function RDSVisualizer() {
                     <>
                       {/* Public to Bastion */}
                       <line x1="5" y1="154" x2="80" y2="154" stroke="#f59e0b" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)"/>
-                      <text x="42.5" y="145" fontSize="7.5" fill="#f59e0b" fontWeight="bold">SSH Tunneled</text>
+                      <text x="42.5" y="145" fontSize="7.5" fill="#b45309" fontWeight="bold">SSH Tunneled</text>
 
                       {/* Bastion to DB */}
-                      <path d="M 215 154 L 460 120" fill="none" stroke="#8b5cf6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)" />
-                      <text x="330" y="148" fontSize="8" fill="#a78bfa" fontWeight="bold">SQL Localhost Forwarding</text>
+                      <path d="M 215 154 L 470 125" fill="none" stroke="#8b5cf6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)" />
+                      <text x="330" y="148" fontSize="8" fill="#7c3aed" fontWeight="bold">SQL Forwarding</text>
                     </>
                   )}
 
@@ -1135,8 +1326,8 @@ export default function RDSVisualizer() {
 
                       {/* Blocked Stop Sign at Private DB subnet border */}
                       <g transform="translate(440, 120)">
-                        <circle cx="0" cy="0" r="14" fill="#ef4444" style={{ filter: 'url(#glow-red)' } as React.CSSProperties}/>
-                        <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="7.5" fill="#fff" fontWeight="bold">STOP</text>
+                        <circle cx="0" cy="0" r="14" fill="#ef4444" />
+                        <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#fff" fontWeight="bold">STOP</text>
                       </g>
                     </>
                   )}
@@ -1147,35 +1338,35 @@ export default function RDSVisualizer() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 
                 {/* Telemetry/Rules Details */}
-                <div className="asg-card" style={{ borderLeft: '3px solid #3b82f6', padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                <div className="asg-card" style={{ borderLeft: '3px solid #2563eb', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: '#64748b', marginBottom: '4px' }}>
                     🔒 Ingress Policy Status
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
                     {ingressSource === 'app' && '🟢 Compliant Access Path'}
-                    {ingressSource === 'bastion' && '🟣 Secure Administrative Tunnel'}
-                    {ingressSource === 'internet' && '🔴 Boundary Threat Thwarted'}
+                    {ingressSource === 'bastion' && '🟣 Secure Admin Tunnel'}
+                    {ingressSource === 'internet' && '🔴 Boundary Threat Blocked'}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>Internet Gateway Route:</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                      <span style={{ color: '#475569' }}>Internet IGW Route:</span>
                       <span style={{ fontWeight: 'bold', color: '#ef4444' }}>BLOCKED</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>Security Group Chain:</span>
-                      <span style={{ fontWeight: 'bold', color: '#34d399' }}>ENFORCED</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                      <span style={{ color: '#475569' }}>Security Group Chain:</span>
+                      <span style={{ fontWeight: 'bold', color: '#16a34a' }}>ENFORCED</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>Public IP Address:</span>
-                      <span style={{ fontWeight: 'bold', color: '#ef4444' }}>NONE (Internal Only)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                      <span style={{ color: '#475569' }}>Public IP Address:</span>
+                      <span style={{ fontWeight: 'bold', color: '#ef4444' }}>NONE</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Path explanation card */}
                 <div className="asg-card" style={{ padding: '12px 14px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#0f172a', marginBottom: '6px' }}>
                     ⚙️ Network Engineering Explanation
                   </div>
                   <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
@@ -1268,8 +1459,8 @@ export default function RDSVisualizer() {
                 🔄 Reset
               </button>
 
-              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginLeft: '10px' }}>
-                Active Phase: <b style={{ color: '#fff' }}>{failoverStep} of 5</b> — {
+              <span style={{ fontSize: '12px', color: '#475569', marginLeft: '10px' }}>
+                Active Phase: <b style={{ color: '#0f172a' }}>{failoverStep} of 5</b> — {
                   failoverStep === 0 ? 'Normal Active Cluster' :
                   failoverStep === 1 ? 'Primary Node Crash' :
                   failoverStep === 2 ? 'Active Writer Eviction' :
@@ -1286,67 +1477,100 @@ export default function RDSVisualizer() {
                 
                 {/* SVG Map */}
                 <div className="rds-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f8fafc', border: '1.5px solid #cbd5e1', padding: '16px' }}>
-                  <svg width="100%" viewBox="0 0 680 180" style={{ background: '#ffffff', borderRadius: '6px', border: '0.5px solid #cbd5e1' }}>
+                  <svg width="100%" viewBox="0 0 680 180" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
                     <defs>
+                      {/* Gradients */}
+                      <linearGradient id="ha-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#a7f3d0" />
+                        <stop offset="35%" stopColor="#6ee7b7" />
+                        <stop offset="70%" stopColor="#34d399" />
+                        <stop offset="100%" stopColor="#059669" />
+                      </linearGradient>
+                      <linearGradient id="ha-fail" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#fecaca" />
+                        <stop offset="35%" stopColor="#f87171" />
+                        <stop offset="70%" stopColor="#ef4444" />
+                        <stop offset="100%" stopColor="#b91c1c" />
+                      </linearGradient>
+                      <linearGradient id="ha-warn" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#fde047" />
+                        <stop offset="35%" stopColor="#facc15" />
+                        <stop offset="70%" stopColor="#eab308" />
+                        <stop offset="100%" stopColor="#ca8a04" />
+                      </linearGradient>
+
+                      <linearGradient id="hl-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#d1fae5" />
+                        <stop offset="100%" stopColor="#6ee7b7" />
+                      </linearGradient>
+                      <linearGradient id="hl-fail" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fee2e2" />
+                        <stop offset="100%" stopColor="#f87171" />
+                      </linearGradient>
+                      <linearGradient id="hl-warn" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fef9c3" />
+                        <stop offset="100%" stopColor="#facc15" />
+                      </linearGradient>
+
                       <marker id="arr-ha-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                       <marker id="arr-ha-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
                       <marker id="arr-ha-b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
                     </defs>
 
                     {/* us-east-1a Subnet Zone */}
-                    <rect x="15" y="15" width="290" height="150" rx="8" fill="#f1f5f9" stroke={failoverStep >= 1 && failoverStep <= 3 ? '#ef4444' : '#cbd5e1'} strokeWidth="1" />
-                    <text x="160" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#475569" fontFamily="monospace">us-east-1a (Primary Zone)</text>
+                    <rect x="15" y="15" width="290" height="150" rx="10" fill="rgba(255,255,255,0.7)" stroke={failoverStep >= 1 && failoverStep <= 3 ? '#ef4444' : '#cbd5e1'} strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="160" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#64748b" fontFamily="monospace">us-east-1a (Primary Zone)</text>
 
                     {/* Primary DB Node in AZ-a */}
                     {failoverStep === 0 ? (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                         <rect x="35" y="45" width="250" height="100" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                         <text x="160" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#064e3b">✍️ Primary Writer DB</text>
-                         <text x="160" y="92" textAnchor="middle" fontSize="8.5" fill="#16a34a" fontFamily="monospace">FQDN IP: 10.0.1.18</text>
-                         <text x="160" y="112" textAnchor="middle" fontSize="8" fill="#475569">Status: Serving client connections</text>
+                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(45, 45)">
+                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-ok)" stroke="#10b981" strokeWidth="1.5" />
+                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-ok)" stroke="#10b981" strokeWidth="1.5" />
+                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#064e3b">✍️ Writer DB</text>
+                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace">10.0.1.18 (Healthy)</text>
                        </g>
                     ) : failoverStep === 1 ? (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#ef4444' } as React.CSSProperties}>
-                         <rect x="35" y="45" width="250" height="100" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="2" />
-                         <text x="160" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#ef4444">💥 Crashed Writer DB</text>
-                         <text x="160" y="92" textAnchor="middle" fontSize="8.5" fill="#b91c1c" fontWeight="bold" fontFamily="monospace">Hypervisor Hardware Failure</text>
-                         <text x="160" y="112" textAnchor="middle" fontSize="8" fill="#ef4444">Status: UNREACHABLE (0s)</text>
+                       <g className="active-glow-node" style={{ '--pulse-color': '#ef4444' } as React.CSSProperties} transform="translate(45, 45)">
+                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-fail)" stroke="#ef4444" strokeWidth="2" />
+                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-fail)" stroke="#ef4444" strokeWidth="2" />
+                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#9f1239">💥 Crashed DB</text>
+                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontFamily="monospace">Hardware Fault</text>
                        </g>
                     ) : (
-                       <g opacity="0.4">
-                         <rect x="35" y="45" width="250" height="100" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" />
-                         <text x="160" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#ef4444" style={{ textDecoration: 'line-through' }}>✍️ Primary Writer DB</text>
-                         <text x="160" y="92" textAnchor="middle" fontSize="8.5" fill="#ef4444" fontFamily="monospace">Evicted &amp; Isolated</text>
-                         <text x="160" y="112" textAnchor="middle" fontSize="8" fill="#ef4444">Status: Offlined by cluster API</text>
-                        <path d="M 30 40 L 290 150 M 290 40 L 30 150" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
-                      </g>
+                       <g opacity="0.4" transform="translate(45, 45)">
+                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-fail)" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-fail)" stroke="#ef4444" strokeWidth="1.5" />
+                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#ef4444" style={{ textDecoration: 'line-through' }}>✍️ Writer DB</text>
+                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontFamily="monospace">Evicted Cluster</text>
+                        <path d="M 10 15 L 110 80 M 110 15 L 10 80" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
+                       </g>
                     )}
 
                     {/* us-east-1b Subnet Zone */}
-                    <rect x="375" y="15" width="290" height="150" rx="8" fill="#f1f5f9" stroke={failoverStep === 5 ? '#10b981' : '#cbd5e1'} strokeWidth="1" />
-                    <text x="520" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#475569" fontFamily="monospace">us-east-1b (Standby Zone)</text>
+                    <rect x="375" y="15" width="290" height="150" rx="10" fill="rgba(255,255,255,0.7)" stroke={failoverStep === 5 ? '#10b981' : '#cbd5e1'} strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="520" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#64748b" fontFamily="monospace">us-east-1b (Standby Zone)</text>
 
                     {/* Standby DB Node in AZ-b */}
                     {failoverStep <= 3 ? (
-                       <g>
-                         <rect x="395" y="45" width="250" height="100" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                         <text x="520" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#475569">🛡️ Standby DB Copy</text>
-                         <text x="520" y="92" textAnchor="middle" fontSize="8.5" fill="#64748b" fontFamily="monospace">FQDN IP: 10.0.2.99</text>
-                         <text x="520" y="112" textAnchor="middle" fontSize="8" fill="#64748b">Passive Hot Standby (No traffic allowed)</text>
+                       <g transform="translate(405, 45)">
+                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#475569">🛡️ Standby DB</text>
+                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">10.0.2.99 (Passive)</text>
                        </g>
                     ) : failoverStep === 4 ? (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties}>
-                         <rect x="395" y="45" width="250" height="100" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                         <text x="520" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#78350f">⚡ Standby Promotion</text>
-                         <text x="520" y="92" textAnchor="middle" fontSize="8.5" fill="#b45309" fontFamily="monospace">Replaying Write Logs Journals...</text>
-                         <text x="520" y="112" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold">Status: Crash Recovery process active</text>
+                       <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties} transform="translate(405, 45)">
+                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-warn)" stroke="#d97706" strokeWidth="1.5" />
+                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-warn)" stroke="#d97706" strokeWidth="1.5" />
+                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#78350f">⚡ Recovering DB</text>
+                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#b45309" fontFamily="monospace">Replaying Journals</text>
                        </g>
                     ) : (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                         <rect x="395" y="45" width="250" height="100" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
-                         <text x="520" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#064e3b">✍️ Promoted Primary Writer</text>
-                         <text x="520" y="92" textAnchor="middle" fontSize="8.5" fill="#16a34a" fontFamily="monospace">FQDN IP: 10.0.2.99</text>
-                         <text x="520" y="112" textAnchor="middle" fontSize="8.5" fill="#10b981" fontWeight="bold">Status: ACTIVE WRITER (Failover Done)</text>
+                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(405, 45)">
+                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-ok)" stroke="#10b981" strokeWidth="2" />
+                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-ok)" stroke="#10b981" strokeWidth="2" />
+                         <text x="60" y="20" textAnchor="middle" fontSize="11.5" fontWeight="bold" fill="#064e3b">✍️ Promoted DB</text>
+                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#16a34a" fontFamily="monospace">10.0.2.99 (Writer)</text>
                        </g>
                     )}
 
@@ -1518,40 +1742,64 @@ export default function RDSVisualizer() {
                   </span>
                 </div>
 
-                <svg width="100%" viewBox="0 0 680 180" style={{ background: '#ffffff', borderRadius: '6px', border: '0.5px solid #cbd5e1' }}>
+                <svg width="100%" viewBox="0 0 680 180" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
                   <defs>
+                    <linearGradient id="r-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#a7f3d0" />
+                      <stop offset="35%" stopColor="#6ee7b7" />
+                      <stop offset="70%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                    <linearGradient id="r-rep" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ddd6fe" />
+                      <stop offset="35%" stopColor="#c084fc" />
+                      <stop offset="70%" stopColor="#a78bfa" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+
+                    <linearGradient id="rl-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#d1fae5" />
+                      <stop offset="100%" stopColor="#6ee7b7" />
+                    </linearGradient>
+                    <linearGradient id="rl-rep" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f3e8ff" />
+                      <stop offset="100%" stopColor="#a78bfa" />
+                    </linearGradient>
+
                     <marker id="arr-rep-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                     <marker id="arr-rep-y" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f59e0b" /></marker>
                     <marker id="arr-rep-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
                   </defs>
 
                   {/* Primary DB in AZ-a */}
-                  <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                    <rect x="25" y="45" width="200" height="90" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="125" y="70" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#064e3b">✍️ Primary Writer DB</text>
-                    <text x="125" y="90" textAnchor="middle" fontSize="8.5" fill="#475569" fontFamily="monospace">Endpoint: db.writer.cluster</text>
-                    <text x="125" y="110" textAnchor="middle" fontSize="8" fill="#16a34a">Handles 100% of Write Queries</text>
+                  <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(45, 45)">
+                    {/* Cylinder */}
+                    <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#r-ok)" stroke="#10b981" strokeWidth="1.5" />
+                    <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#rl-ok)" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#064e3b">✍️ Primary Writer</text>
+                    <text x="60" y="55" textAnchor="middle" fontSize="8.5" fill="#475569" fontFamily="monospace">db.writer.cluster</text>
                   </g>
 
                   {/* Read Replica 1 in AZ-c */}
-                  <g className="active-glow-node" style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                    <rect x="440" y="20" width="215" height="60" rx="6" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
-                    <text x="547.5" y="42" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#4c1d95">📖 Read Replica 1</text>
-                    <text x="547.5" y="60" textAnchor="middle" fontSize="7.5" fill="#7c3aed" fontFamily="monospace">replica-1.domain.amazonaws.com</text>
+                  <g className="active-glow-node" style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties} transform="translate(470, 20)">
+                    <path d="M 12 24 L 12 52 A 36 8 0 0 0 84 52 L 84 24 A 36 8 0 0 1 12 24 Z" fill="url(#r-rep)" stroke="#7c3aed" strokeWidth="1" />
+                    <ellipse cx="48" cy="24" rx="36" ry="8" fill="url(#rl-rep)" stroke="#7c3aed" strokeWidth="1" />
+                    <text x="48" y="12" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#4c1d95">📖 Replica 1</text>
+                    <text x="48" y="42" textAnchor="middle" fontSize="7.5" fill="#7c3aed" fontFamily="monospace">replica-1.domain</text>
                   </g>
 
                   {/* Read Replica 2 in AZ-b */}
-                  <g className="active-glow-node" style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                    <rect x="440" y="100" width="215" height="60" rx="6" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
-                    <text x="547.5" y="122" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#4c1d95">📖 Read Replica 2</text>
-                    <text x="547.5" y="140" textAnchor="middle" fontSize="7.5" fill="#7c3aed" fontFamily="monospace">replica-2.domain.amazonaws.com</text>
+                  <g className="active-glow-node" style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties} transform="translate(470, 100)">
+                    <path d="M 12 24 L 12 52 A 36 8 0 0 0 84 52 L 84 24 A 36 8 0 0 1 12 24 Z" fill="url(#r-rep)" stroke="#7c3aed" strokeWidth="1" />
+                    <ellipse cx="48" cy="24" rx="36" ry="8" fill="url(#rl-rep)" stroke="#7c3aed" strokeWidth="1" />
+                    <text x="48" y="12" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#4c1d95">📖 Replica 2</text>
+                    <text x="48" y="42" textAnchor="middle" fontSize="7.5" fill="#7c3aed" fontFamily="monospace">replica-2.domain</text>
                   </g>
 
                   {/* Replication stream connector paths */}
-                  
                   {/* Primary -> Replica 1 */}
                   <path 
-                    d="M 225 75 Q 330 35 440 45" 
+                    d="M 210 75 Q 330 35 470 45" 
                     fill="none" 
                     stroke={replicaWalLag >= 15 ? '#ef4444' : replicaWalLag >= 5 ? '#f59e0b' : '#10b981'} 
                     strokeWidth="1.5" 
@@ -1561,7 +1809,7 @@ export default function RDSVisualizer() {
 
                   {/* Primary -> Replica 2 */}
                   <path 
-                    d="M 225 105 Q 330 145 440 135" 
+                    d="M 210 105 Q 330 145 470 125" 
                     fill="none" 
                     stroke={replicaWalLag >= 15 ? '#ef4444' : replicaWalLag >= 5 ? '#f59e0b' : '#10b981'} 
                     strokeWidth="1.5" 
@@ -1707,28 +1955,351 @@ export default function RDSVisualizer() {
 
               {/* KPI metrics block */}
               <div className="rds-kpi">
-                <div className="rds-k"><div className="rds-k-t">Writer TPS Load</div><div className="rds-v">{metrics.writerTps}</div></div>
-                <div className="rds-k"><div className="rds-k-t">Replica TPS (each)</div><div className="rds-v">{metrics.replicaEach !== null ? metrics.replicaEach : '—'}</div></div>
-                <div className="rds-k"><div className="rds-k-t">Failover Cluster State</div><div className="rds-v" style={{ color: azFailed ? (mode === 'single' ? '#dc2626' : '#ea580c') : '#16a34a' }}>{metrics.failState}</div></div>
-                <div className="rds-k"><div className="rds-k-t">Stale Read Risk</div><div className="rds-v" style={{ color: metrics.stale === 'High' ? '#dc2626' : metrics.stale === 'Med' ? '#d97706' : '#16a34a' }}>{metrics.stale}</div></div>
+                <div className="rds-k">
+                  <div className="t">Writer TPS Load</div>
+                  <div className="rds-v">{metrics.writerTps} TPS</div>
+                </div>
+                <div className="rds-k">
+                  <div className="t">Replica TPS (each)</div>
+                  <div className="rds-v">{metrics.replicaEach !== null ? `${metrics.replicaEach} TPS` : '—'}</div>
+                </div>
+                <div className="rds-k">
+                  <div className="t">Failover Cluster State</div>
+                  <div className="rds-v" style={{ color: azFailed ? (mode === 'single' ? '#dc2626' : '#ea580c') : '#16a34a' }}>{metrics.failState}</div>
+                </div>
+                <div className="rds-k">
+                  <div className="t">Stale Read Risk</div>
+                  <div className="rds-v" style={{ color: metrics.stale === 'High' ? '#dc2626' : metrics.stale === 'Med' ? '#d97706' : '#16a34a' }}>{metrics.stale}</div>
+                </div>
               </div>
 
               {/* Action button bar */}
               <div className="rds-btnbar">
                 <button className="rds-btn rds-primary" onClick={sendWrite}>✍️ Simulate WRITE</button>
                 <button className="rds-btn" onClick={sendRead}>📖 Simulate READ</button>
-                <button className="rds-btn" onClick={toggleAzFail} style={{ border: '0.5px solid #ef4444', color: '#dc2626' }}>⚡ Toggle AZ Failure</button>
+                <button className="rds-btn" onClick={toggleAzFail} style={{ border: '1px solid #fca5a5', color: '#dc2626', background: '#fef2f2' }}>⚡ Toggle AZ Failure</button>
                 <button className="rds-btn" onClick={resetSim}>🔄 Reset Sim</button>
               </div>
+
               {/* Live diagram & Active Log side-by-side */}
-              <div style={{ display: 'flex', gap: '14px', alignItems: 'stretch', marginTop: '14px' }}>
-                <div style={{ flex: 7, border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch', marginTop: '16px' }}>
+                <div style={{ flex: 7, border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '20px', padding: '16px', background: '#ffffff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.02)' }}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-secondary)' }}>Live Active Traffic Ingress Diagram</div>
-                    <svg ref={svgRef} width="100%" viewBox="0 0 680 260" style={{ background: 'var(--color-background-primary, #ffffff)', border: '0.5px solid #e2e8f0', borderRadius: '6px' }} />
+                    <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '10px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'activeNodePulse 1.5s infinite', '--pulse-color': 'rgba(16, 185, 129, 0.5)' } as React.CSSProperties}></span>
+                      Live Active Traffic Ingress Diagram
+                    </div>
+                    
+                    <svg width="100%" viewBox="0 0 680 260" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
+                      <defs>
+                        {/* 3D Cylinder Metallic Body Gradients */}
+                        <linearGradient id="metal-writer-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#a7f3d0" />
+                          <stop offset="35%" stopColor="#6ee7b7" />
+                          <stop offset="70%" stopColor="#34d399" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                        <linearGradient id="metal-writer-fail" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#fecaca" />
+                          <stop offset="35%" stopColor="#f87171" />
+                          <stop offset="70%" stopColor="#ef4444" />
+                          <stop offset="100%" stopColor="#b91c1c" />
+                        </linearGradient>
+                        <linearGradient id="metal-standby-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#fde047" />
+                          <stop offset="35%" stopColor="#facc15" />
+                          <stop offset="70%" stopColor="#eab308" />
+                          <stop offset="100%" stopColor="#ca8a04" />
+                        </linearGradient>
+                        <linearGradient id="metal-replica" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#ddd6fe" />
+                          <stop offset="35%" stopColor="#c084fc" />
+                          <stop offset="70%" stopColor="#a78bfa" />
+                          <stop offset="100%" stopColor="#7c3aed" />
+                        </linearGradient>
+                        <linearGradient id="metal-app" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#dbeafe" />
+                          <stop offset="35%" stopColor="#93c5fd" />
+                          <stop offset="70%" stopColor="#60a5fa" />
+                          <stop offset="100%" stopColor="#2563eb" />
+                        </linearGradient>
+
+                        {/* Top Lids Gradient fills */}
+                        <linearGradient id="lid-writer-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#d1fae5" />
+                          <stop offset="100%" stopColor="#6ee7b7" />
+                        </linearGradient>
+                        <linearGradient id="lid-writer-fail" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#fee2e2" />
+                          <stop offset="100%" stopColor="#f87171" />
+                        </linearGradient>
+                        <linearGradient id="lid-standby-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#fef9c3" />
+                          <stop offset="100%" stopColor="#facc15" />
+                        </linearGradient>
+                        <linearGradient id="lid-replica" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#f3e8ff" />
+                          <stop offset="100%" stopColor="#a78bfa" />
+                        </linearGradient>
+                        <linearGradient id="lid-app" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#eff6ff" />
+                          <stop offset="100%" stopColor="#60a5fa" />
+                        </linearGradient>
+
+                        {/* Route connection arrows */}
+                        <marker id="arr-write" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#0284c7" />
+                        </marker>
+                        <marker id="arr-read" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#7c3aed" />
+                        </marker>
+                        <marker id="arr-sync" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#10b981" />
+                        </marker>
+                        <marker id="arr-async" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#8b5cf6" />
+                        </marker>
+                        <marker id="arr-fail" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 1 L 9 5 L 0 9 z" fill="#ef4444" />
+                        </marker>
+                      </defs>
+
+                      {/* Blueprint Grid Lines Backdrop */}
+                      <rect x="0" y="0" width="680" height="260" fill="#f8fafc" rx="6" />
+                      <g stroke="#e2e8f0" strokeWidth="0.5" opacity="0.6">
+                        {Array.from({ length: 17 }).map((_, i) => (
+                          <line key={`x-${i}`} x1={i * 40} y1="0" x2={i * 40} y2="260" />
+                        ))}
+                        {Array.from({ length: 7 }).map((_, i) => (
+                          <line key={`y-${i}`} x1="0" y1={i * 40} x2="680" y2={i * 40} />
+                        ))}
+                      </g>
+
+                      {/* Availability Zones Boundaries */}
+                      {/* AZ-A (Primary Subnet) */}
+                      <rect x="215" y="30" width="220" height="205" rx="12" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" />
+                      <text x="325" y="44" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#64748b" letterSpacing="0.02em" fontFamily="inherit">us-east-1a Subnet (Primary Zone)</text>
+
+                      {/* AZ-B/C (Secondary Subnets) */}
+                      <rect x="445" y="30" width="220" height="205" rx="12" fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,4" />
+                      <text x="555" y="44" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#64748b" letterSpacing="0.02em" fontFamily="inherit">
+                        {mode === 'multi_rr' ? 'us-east-1b & us-east-1c Zones' : 'us-east-1b Subnet (Standby Zone)'}
+                      </text>
+
+                      {/* APP TIER: Detailed high-fidelity Server Stack */}
+                      <g transform="translate(20, 75)">
+                        {/* Server container frame */}
+                        <rect x="0" y="0" width="165" height="110" rx="16" fill="url(#metal-app)" stroke="#2563eb" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.25)' } as React.CSSProperties} />
+                        <rect x="5" y="5" width="155" height="100" rx="11" fill="#1e293b" />
+                        
+                        {/* Server Blades/Drawers */}
+                        {/* Drawer 1 */}
+                        <rect x="12" y="16" width="141" height="20" rx="4" fill="#0f172a" stroke="#334155" />
+                        <circle cx="22" cy="26" r="3" fill="#10b981" />
+                        <circle cx="30" cy="26" r="1.5" fill="#3b82f6" style={{ animation: 'activeNodePulse 1s infinite', '--pulse-color': '#3b82f6' } as React.CSSProperties} />
+                        <rect x="45" y="24" width="70" height="4" rx="2" fill="#1e293b" />
+                        <rect x="45" y="24" width="45" height="4" rx="2" fill="#10b981" />
+                        
+                        {/* Drawer 2 */}
+                        <rect x="12" y="42" width="141" height="20" rx="4" fill="#0f172a" stroke="#334155" />
+                        <circle cx="22" cy="52" r="3" fill="#10b981" />
+                        <circle cx="30" cy="52" r="1.5" fill="#3b82f6" style={{ animation: 'activeNodePulse 1.2s infinite', '--pulse-color': '#3b82f6' } as React.CSSProperties} />
+                        <rect x="45" y="50" width="70" height="4" rx="2" fill="#1e293b" />
+                        <rect x="45" y="50" width="60" height="4" rx="2" fill="#0284c7" />
+
+                        {/* Server Rack Labels */}
+                        <text x="82.5" y="78" textAnchor="middle" fontSize="10" fill="#e2e8f0" fontWeight="bold" fontFamily="inherit">💻 sg-app compute-tier</text>
+                        <text x="82.5" y="92" textAnchor="middle" fontSize="8" fill="#94a3b8" fontFamily="monospace">Load: {tps} TPS (25% W | 75% R)</text>
+                      </g>
+
+                      {/* State computation variables */}
+                      {(() => {
+                        const writerIsActive = !azFailed;
+                        const writerIsSingleDown = azFailed && mode === 'single';
+                        const writerIsMultiFailed = azFailed && mode !== 'single';
+
+                        // 1. Primary DB Instance (AZ-a)
+                        let wBodyFill = 'url(#metal-writer-ok)';
+                        let wLidFill = 'url(#lid-writer-ok)';
+                        let wStroke = '#10b981';
+                        let wText = '#064e3b';
+                        let wStatus = 'WRITER: WAL committing';
+                        let wGlow = 'active-glow-node';
+                        let wPulse = 'rgba(16, 185, 129, 0.35)';
+
+                        if (writerIsSingleDown) {
+                          wBodyFill = 'url(#metal-writer-fail)';
+                          wLidFill = 'url(#lid-writer-fail)';
+                          wStroke = '#ef4444';
+                          wText = '#9f1239';
+                          wStatus = '🚨 OFFLINE (NO HA)';
+                          wGlow = '';
+                          wPulse = '';
+                        } else if (writerIsMultiFailed) {
+                          wBodyFill = 'url(#metal-writer-fail)';
+                          wLidFill = 'url(#lid-writer-fail)';
+                          wStroke = '#ef4444';
+                          wText = '#9f1239';
+                          wStatus = '❌ EVICTED (Zone Crash)';
+                          wGlow = '';
+                          wPulse = '';
+                        }
+
+                        // 2. Standby HA Instance (AZ-b) Promotion
+                        const standbyActive = mode !== 'single';
+                        const standbyIsPromoted = azFailed && standbyActive;
+
+                        let sBodyFill = 'url(#metal-standby-ok)';
+                        let sLidFill = 'url(#lid-standby-ok)';
+                        let sStroke = '#fbbf24';
+                        let sText = '#78350f';
+                        let sStatus = '🛡️ PASSIVE HOT STANDBY';
+                        let sGlow = '';
+                        let sPulse = 'rgba(251, 191, 36, 0.15)';
+
+                        if (standbyIsPromoted) {
+                          sBodyFill = 'url(#metal-writer-ok)';
+                          sLidFill = 'url(#lid-writer-ok)';
+                          sStroke = '#10b981';
+                          sText = '#064e3b';
+                          sStatus = '✍️ PROMOTED ACTIVE WRITER';
+                          sGlow = 'active-glow-node';
+                          sPulse = 'rgba(16, 185, 129, 0.4)';
+                        }
+
+                        // Active writer y coordinate for dynamic routing
+                        const activeWriterY = standbyIsPromoted ? 180 : 90;
+
+                        return (
+                          <>
+                            {/* CONNECTIONS PIPELINES (STATE RESPONSIVE ROUTES) */}
+                            {writerIsSingleDown ? (
+                              <>
+                                {/* Blocked line */}
+                                <path d="M 185 130 C 210 130, 220 95, 235 90" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="4,4" />
+                                <text x="215" y="112" fontSize="8" fontWeight="bold" fill="#ef4444" textAnchor="middle">❌ OFFLINE</text>
+                                <circle cx="205" cy="130" r="10" fill="#ef4444" />
+                                <text x="205" y="130" dominantBaseline="central" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#ffffff">X</text>
+                              </>
+                            ) : (
+                              <>
+                                {/* 1. Active WRITE Endpoint Route (Blue conduit) */}
+                                <path d={`M 185 120 C 210 120, 220 ${activeWriterY - 10}, 245 ${activeWriterY - 10}`} fill="none" stroke="#0284c7" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-write)" />
+                                <text x="215" y={activeWriterY - 15} fontSize="8.5" fontWeight="bold" fill="#0369a1" textAnchor="middle">Writes: {metrics.writes} TPS</text>
+
+                                {/* 2. Active READ Endpoint Route */}
+                                {metrics.readTarget === 'writer' ? (
+                                  <>
+                                    <path d={`M 185 140 C 210 140, 220 ${activeWriterY + 10}, 245 ${activeWriterY + 10}`} fill="none" stroke="#0284c7" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-write)" />
+                                    <text x="215" y={activeWriterY + 22} fontSize="8.5" fontWeight="bold" fill="#0369a1" textAnchor="middle">Reads: {metrics.reads} TPS</text>
+                                  </>
+                                ) : (
+                                  mode === 'multi_rr' && (
+                                    <>
+                                      {/* Eventual Consistency reads route to replicas (Purple) */}
+                                      <path d="M 185 140 C 220 140, 360 85, 480 85" fill="none" stroke="#8b5cf6" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-read)" />
+                                      <path d="M 185 145 C 220 145, 360 165, 480 165" fill="none" stroke="#8b5cf6" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-read)" />
+                                      <text x="235" y="160" fontSize="8.5" fontWeight="bold" fill="#6d28d9" textAnchor="middle">Reads (Split): {metrics.reads} TPS</text>
+                                    </>
+                                  )
+                                )}
+                              </>
+                            )}
+
+                            {/* ----------------- PRIMARY WRITER DATABASE (AZ-A) ----------------- */}
+                            <g transform="translate(250, 52)" className={wGlow} style={{ '--pulse-color': wGlow ? wPulse : '' } as React.CSSProperties}>
+                              {/* 3D Cylinder Shape */}
+                              {/* Metallic Body */}
+                              <path d="M 15 40 L 15 80 A 45 12 0 0 0 105 80 L 105 40 A 45 12 0 0 1 15 40 Z" fill={wBodyFill} stroke={wStroke} strokeWidth="1.5" />
+                              {/* Glowing Top Lid Ellipse */}
+                              <ellipse cx="60" cy="40" rx="45" ry="12" fill={wLidFill} stroke={wStroke} strokeWidth="1.5" />
+                              {/* Server Rack Lining cues inside database */}
+                              <line x1="28" y1="56" x2="92" y2="56" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+                              <line x1="28" y1="68" x2="92" y2="68" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+                              
+                              {/* Text descriptions inside/above cylinder */}
+                              <text x="60" y="24" textAnchor="middle" fontSize="10.5" fontWeight="800" fill={wText}>🐘 Primary DB Writer</text>
+                              <text x="60" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill={wText === '#064e3b' ? '#047857' : '#9f1239'} opacity="0.95">{wStatus}</text>
+                              <text x="60" y="98" textAnchor="middle" fontSize="9" fontWeight="800" fill={wText}>{writerIsActive ? `Load: ${metrics.writerTps} TPS` : '0 TPS — Unreachable'}</text>
+                            </g>
+
+                            {/* ----------------- HIGH AVAILABILITY STANDBY (AZ-B) ----------------- */}
+                            {standbyActive && (
+                              <g transform="translate(250, 142)" className={sGlow} style={{ '--pulse-color': sGlow ? sPulse : '' } as React.CSSProperties}>
+                                {/* 3D Cylinder Shape */}
+                                <path d="M 15 40 L 15 80 A 45 12 0 0 0 105 80 L 105 40 A 45 12 0 0 1 15 40 Z" fill={sBodyFill} stroke={sStroke} strokeWidth="1.5" />
+                                <ellipse cx="60" cy="40" rx="45" ry="12" fill={sLidFill} stroke={sStroke} strokeWidth="1.5" />
+                                <line x1="28" y1="56" x2="92" y2="56" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+                                <line x1="28" y1="68" x2="92" y2="68" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+
+                                <text x="60" y="24" textAnchor="middle" fontSize="10.5" fontWeight="800" fill={sText}>{standbyIsPromoted ? '🛡️ Promoted DB Writer' : '🛡️ HA Standby DB'}</text>
+                                <text x="60" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill={standbyIsPromoted ? '#047857' : '#b45309'} opacity="0.95">{sStatus}</text>
+                                <text x="60" y="98" textAnchor="middle" fontSize="9" fontWeight="800" fill={sText}>{standbyIsPromoted ? `Load: ${metrics.writerTps} TPS` : 'State: Mirrored Commit (0 lag)'}</text>
+                              </g>
+                            )}
+
+                            {/* 1. Synchronous Replication link (Green Sync conduit) */}
+                            {standbyActive && (
+                              writerIsActive ? (
+                                <>
+                                  <path d="M 310 135 L 310 180" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-sync)" />
+                                  <text x="345" y="158" fontSize="8" fontWeight="bold" fill="#047857" textAnchor="middle">SYNC COMMITS 🔄</text>
+                                </>
+                              ) : (
+                                <>
+                                  <path d="M 310 135 L 310 180" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                                  <text x="345" y="158" fontSize="8" fontWeight="bold" fill="#b91c1c" textAnchor="middle">LINK BROKEN ❌</text>
+                                </>
+                              )
+                            )}
+
+                            {/* ----------------- READ REPLICAS (AZ-B / AZ-C) ----------------- */}
+                            {mode === 'multi_rr' && (
+                              <>
+                                {/* Replica #1 */}
+                                <g transform="translate(485, 48)" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.25)' } as React.CSSProperties}>
+                                  <path d="M 12 32 L 12 64 A 36 10 0 0 0 84 64 L 84 32 A 36 10 0 0 1 12 32 Z" fill="url(#metal-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                                  <ellipse cx="48" cy="32" rx="36" ry="10" fill="url(#lid-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                                  <line x1="22" y1="45" x2="74" y2="45" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                                  
+                                  <text x="48" y="18" textAnchor="middle" fontSize="10" fontWeight="800" fill="#4c1d95">📖 Read Replica 1</text>
+                                  <text x="48" y="52" textAnchor="middle" fontSize="7.5" fill="#5b21b6" fontFamily="monospace">Lag: {lag}s | {metrics.replicaEach} TPS</text>
+                                </g>
+
+                                {/* Replica #2 */}
+                                <g transform="translate(485, 138)" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.25)' } as React.CSSProperties}>
+                                  <path d="M 12 32 L 12 64 A 36 10 0 0 0 84 64 L 84 32 A 36 10 0 0 1 12 32 Z" fill="url(#metal-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                                  <ellipse cx="48" cy="32" rx="36" ry="10" fill="url(#lid-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                                  <line x1="22" y1="45" x2="74" y2="45" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+
+                                  <text x="48" y="18" textAnchor="middle" fontSize="10" fontWeight="800" fill="#4c1d95">📖 Read Replica 2</text>
+                                  <text x="48" y="52" textAnchor="middle" fontSize="7.5" fill="#5b21b6" fontFamily="monospace">Lag: {lag}s | {metrics.replicaEach} TPS</text>
+                                </g>
+
+                                {/* Async streaming lines from writer to replicas */}
+                                {writerIsActive ? (
+                                  <>
+                                    <path d="M 370 90 C 400 90, 420 70, 480 70" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
+                                    <path d="M 370 100 C 400 100, 420 150, 480 150" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
+                                    <text x="420" y="62" fontSize="7.5" fontWeight="bold" fill="#6d28d9" textAnchor="middle">Async WAL ➡️</text>
+                                  </>
+                                ) : (
+                                  <>
+                                    {/* Standby Promoted DB routes WAL replication stream to replicas */}
+                                    <path d="M 370 180 C 400 180, 420 100, 480 80" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
+                                    <path d="M 370 190 C 400 190, 420 170, 480 160" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
+                                    <text x="415" y="195" fontSize="7.5" fontWeight="bold" fill="#6d28d9" textAnchor="middle">Async WAL ➡️</text>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </svg>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '8px', lineHeight: '1.45' }}>
-                    💡 <b>Tip:</b> Toggling AZ failure with Multi-AZ enabled demonstrates automatic node shift: traffic is seamlessly routed to AZ-b, and replica connections are maintained without downtime. In Single-AZ, writes fail immediately.
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '8px', lineHeight: '1.5' }}>
+                    💡 <b>Tip:</b> Toggling AZ failure with Multi-AZ enabled demonstrates automatic node shift: traffic is seamlessly routed to the us-east-1b promoted standby writer, and replica connections are maintained without downtime. In Single-AZ, writes fail immediately.
                   </div>
                 </div>
 
@@ -1882,12 +2453,14 @@ export default function RDSVisualizer() {
                         
                         <svg width="100%" height="150" viewBox="0 0 310 150" style={{ background: '#ffffff', borderRadius: '6px', border: '0.5px solid #cbd5e1' }}>
                           {/* Production Node */}
-                          <rect x="15" y="15" width="100" height="36" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                          <text x="65" y="33" textAnchor="middle" fontSize="9" fill="#064e3b" fontWeight="bold">Production DB</text>
+                          <path d="M 25 12 L 25 32 A 40 8 0 0 0 105 32 L 105 12 A 40 8 0 0 1 25 12 Z" fill="#ecfdf5" stroke="#059669" strokeWidth="1" />
+                          <ellipse cx="65" cy="12" rx="40" ry="8" fill="#a7f3d0" stroke="#059669" strokeWidth="1" />
+                          <text x="65" y="26" textAnchor="middle" fontSize="8" fill="#064e3b" fontWeight="bold">Production DB</text>
 
                           {/* Cloned Node */}
-                          <rect x="195" y="15" width="100" height="36" rx="4" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
-                          <text x="245" y="33" textAnchor="middle" fontSize="9" fill="#4c1d95" fontWeight="bold">Staging Clone DB</text>
+                          <path d="M 205 12 L 205 32 A 40 8 0 0 0 285 32 L 285 12 A 40 8 0 0 1 205 12 Z" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
+                          <ellipse cx="245" cy="12" rx="40" ry="8" fill="#ddd6fe" stroke="#7c3aed" strokeWidth="1" />
+                          <text x="245" y="26" textAnchor="middle" fontSize="8" fill="#4c1d95" fontWeight="bold">Staging Clone DB</text>
 
                           {/* Base Storage Pool */}
                           <rect x="15" y="90" width="280" height="45" rx="5" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
@@ -1904,15 +2477,15 @@ export default function RDSVisualizer() {
                           <text x="120" y="120" textAnchor="middle" fontSize="8" fill="#047857">Blk C</text>
 
                           {/* Pointers lines */}
-                          <path d="M 65 52 L 65 90" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
-                          <path d="M 245 52 L 245 90" fill="none" stroke="#7c3aed" strokeWidth="1" strokeDasharray="3,3" />
+                          <path d="M 65 32 L 65 90" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
+                          <path d="M 245 32 L 245 90" fill="none" stroke="#7c3aed" strokeWidth="1" strokeDasharray="3,3" />
 
                           {/* Diverged Blocks inside the storage or above */}
                           {cloneDivergedBlocks > 0 ? (
                             <>
                               <rect x="200" y="112" width="80" height="16" rx="2" fill="#fee2e2" stroke="#ef4444" strokeWidth="0.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(239, 68, 68, 0.4)' } as React.CSSProperties} />
                               <text x="240" y="120" textAnchor="middle" fontSize="7.5" fill="#991b1b" fontWeight="bold">Diverged ({cloneDivergedBlocks} Blk)</text>
-                              <path d="M 245 52 L 240 110" fill="none" stroke="#ef4444" strokeWidth="1.5" />
+                              <path d="M 245 32 L 240 110" fill="none" stroke="#ef4444" strokeWidth="1.5" />
                             </>
                           ) : (
                             <text x="210" y="122" textAnchor="middle" fontSize="8" fill="#64748b">Zero Diverge</text>
@@ -2006,8 +2579,8 @@ export default function RDSVisualizer() {
 
                       {/* Score metrics */}
                       <div>
-                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>Compliance Grade: <span style={{ color: gColor }}>{grade} — {gDesc}</span></div>
-                        <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '4px', lineHeight: '1.4' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b' }}>Compliance Grade: <span style={{ color: gColor }}>{grade} — {gDesc}</span></div>
+                        <div style={{ fontSize: '11.5px', color: '#475569', marginTop: '4px', lineHeight: '1.4' }}>
                           Your database currently satisfies <b>{passed} out of {total}</b> verified hardening guidelines. AWS Well-Architected Framework requires an A/A+ grade configuration before exposing active tables to any external compute sources.
                         </div>
                       </div>
@@ -2024,15 +2597,15 @@ export default function RDSVisualizer() {
                             alignItems: 'center',
                             gap: '10px',
                             padding: '10px',
-                            border: '1px solid #1e293b',
+                            border: item.done ? '1.5px solid #10b981' : '1.5px solid #cbd5e1',
                             borderRadius: '8px',
-                            background: item.done ? '#064e3b' : '#1e1b4b',
+                            background: item.done ? '#ecfdf5' : '#f8fafc',
                             cursor: 'pointer',
                             transition: 'all 0.15s'
                           }}
                         >
                           <div style={{ fontSize: '14px' }}>{item.done ? '✅' : '⬜'}</div>
-                          <div style={{ fontSize: '11.5px', fontWeight: 600, color: item.done ? '#34d399' : '#c084fc' }}>
+                          <div style={{ fontSize: '11.5px', fontWeight: 600, color: item.done ? '#064e3b' : '#334155' }}>
                             {item.label}
                           </div>
                         </div>
@@ -2214,22 +2787,31 @@ export default function RDSVisualizer() {
                     
                     <svg width="100%" height="100" viewBox="0 0 640 100" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px' }}>
                       {/* Client Side Nodes */}
-                      <rect x="20" y="10" width="100" height="80" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.5" />
-                      <text x="70" y="32" textAnchor="middle" fontSize="9" fill="#1d4ed8" fontWeight="bold">Lambda Surge</text>
-                      <text x="70" y="52" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">{proxyConcurrency}</text>
-                      <text x="70" y="70" textAnchor="middle" fontSize="8" fill="#64748b">TCP Sockets</text>
+                      <rect x="20" y="15" width="100" height="70" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" />
+                      <line x1="20" y1="36" x2="120" y2="36" stroke="rgba(59,130,246,0.1)" strokeWidth="1" />
+                      <line x1="20" y1="56" x2="120" y2="56" stroke="rgba(59,130,246,0.1)" strokeWidth="1" />
+                      <text x="70" y="32" textAnchor="middle" fontSize="9" fill="#1d4ed8" fontWeight="bold">⚡ Lambda Surge</text>
+                      <text x="70" y="50" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">{proxyConcurrency}</text>
+                      <text x="70" y="66" textAnchor="middle" fontSize="8" fill="#3b82f6" fontWeight="600">TCP Sockets</text>
 
                       {/* Proxy Node */}
-                      <rect x="250" y="15" width="140" height="70" rx="6" fill="#ecfdfb" stroke="#0284c7" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(2, 132, 199, 0.4)' } as React.CSSProperties} />
+                      <rect x="250" y="15" width="140" height="70" rx="6" fill="#f0fdfa" stroke="#0284c7" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(2, 132, 199, 0.4)' } as React.CSSProperties} />
+                      <circle cx="265" cy="28" r="2.5" fill="#10b981" />
+                      <circle cx="273" cy="28" r="2.5" fill="#10b981" />
+                      <circle cx="281" cy="28" r="2.5" fill="#3b82f6" />
+                      <circle cx="289" cy="28" r="2.5" fill="#e2e8f0" />
                       <text x="320" y="38" textAnchor="middle" fontSize="10.5" fill="#0f172a" fontWeight="bold">🔄 RDS Proxy Pool</text>
                       <text x="320" y="58" textAnchor="middle" fontSize="8.5" fill="#0369a1" fontWeight="bold">Multiplexing Active</text>
                       <text x="320" y="72" textAnchor="middle" fontSize="8" fill="#475569" fontFamily="monospace">Queue Draining</text>
 
                       {/* Database Node */}
-                      <rect x="520" y="10" width="100" height="80" rx="4" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
-                      <text x="570" y="32" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold">PostgreSQL DB</text>
-                      <text x="570" y="52" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="bold">{Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))}</text>
-                      <text x="570" y="70" textAnchor="middle" fontSize="8" fill="#64748b">Stable Sockets</text>
+                      <path d="M 532 25 L 532 65 A 38 7 0 0 0 608 65 L 608 25 A 38 7 0 0 1 532 25 Z" fill="#ecfdf5" stroke="#059669" strokeWidth="1" />
+                      <ellipse cx="570" cy="25" rx="38" ry="7" fill="#a7f3d0" stroke="#059669" strokeWidth="1" />
+                      <line x1="542" y1="38" x2="598" y2="38" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                      <line x1="542" y1="48" x2="598" y2="48" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                      <text x="570" y="16" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold">🐘 PostgreSQL DB</text>
+                      <text x="570" y="58" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="bold">{Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))}</text>
+                      <text x="570" y="74" textAnchor="middle" fontSize="7.5" fill="#047857">Stable Sockets</text>
 
                       {/* Streaming Connection paths */}
                       {/* Flow Surge -> Proxy */}
@@ -2238,7 +2820,7 @@ export default function RDSVisualizer() {
                       <path d="M 120 70 L 250 55" fill="none" stroke="#ef4444" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2', animationDuration: proxyConcurrency > 600 ? '0.2s' : '0.5s' } as React.CSSProperties} />
 
                       {/* Flow Proxy -> DB (Slow, stable green flow) */}
-                      <path d="M 390 50 L 520 50" fill="none" stroke="#10b981" strokeWidth="3" className="flow-active-line" style={{ strokeDasharray: '8, 4', animationDuration: '2s' } as React.CSSProperties} />
+                      <path d="M 390 50 L 532 50" fill="none" stroke="#10b981" strokeWidth="3" className="flow-active-line" style={{ strokeDasharray: '8, 4', animationDuration: '2s' } as React.CSSProperties} />
                     </svg>
                   </div>
 
@@ -2343,47 +2925,68 @@ export default function RDSVisualizer() {
                     <rect x="35" y="225" width="180" height="220" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5"/>
                     <text x="125" y="240" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#b45309" fontFamily="monospace">Subnet AZ-a</text>
                     
-                    <rect x="45" y="250" width="160" height="50" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(16, 185, 129, 0.4)' } as React.CSSProperties} />
-                    <text x="125" y="272" textAnchor="middle" fontSize="10.5" fill="#065f46" fontWeight="bold" fontFamily="sans-serif">✍️ Primary Writer</text>
-                    <text x="125" y="288" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace">sg-db | Active Primary</text>
+                    {/* 3D Cylinder Shape - Primary Writer */}
+                    <g className="active-glow-node" style={{ '--pulse-color': 'rgba(16, 185, 129, 0.4)' } as React.CSSProperties}>
+                      <path d="M 87 262 L 87 287 A 38 7 0 0 0 163 287 L 163 262 A 38 7 0 0 1 87 262 Z" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                      <ellipse cx="125" cy="262" rx="38" ry="7" fill="#a7f3d0" stroke="#10b981" strokeWidth="1.5" />
+                      <line x1="97" y1="274" x2="153" y2="274" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+                      <text x="125" y="248" textAnchor="middle" fontSize="9.5" fill="#065f46" fontWeight="bold" fontFamily="sans-serif">✍️ Primary Writer</text>
+                      <text x="125" y="280" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold" fontFamily="monospace">sg-db | Active</text>
+                    </g>
 
-                    <rect x="45" y="315" width="160" height="50" rx="4" fill="url(#g-replica)" stroke="#8b5cf6" strokeWidth="1" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.3)' } as React.CSSProperties} />
-                    <text x="125" y="337" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 1</text>
-                    <text x="125" y="352" textAnchor="middle" fontSize="8" fill="#6d28d9" fontFamily="monospace">Asynchronous Copy</text>
+                    {/* 3D Cylinder Shape - Read Replica 1 */}
+                    <g className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.3)' } as React.CSSProperties}>
+                      <path d="M 87 337 L 87 362 A 38 7 0 0 0 163 362 L 163 337 A 38 7 0 0 1 87 337 Z" fill="url(#g-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                      <ellipse cx="125" cy="337" rx="38" ry="7" fill="#ddd6fe" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="125" y="325" textAnchor="middle" fontSize="9.5" fill="#4c1d95" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 1</text>
+                      <text x="125" y="352" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="bold" fontFamily="monospace">Asynchronous Copy</text>
+                    </g>
 
                     {/* AZ-b */}
                     <rect x="240" y="225" width="180" height="220" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5"/>
                     <text x="330" y="240" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#b45309" fontFamily="monospace">Subnet AZ-b</text>
                     
-                    <rect x="250" y="250" width="160" height="50" rx="4" fill="#fffbeb" stroke="#fbbf24" strokeWidth="1" />
-                    <text x="330" y="272" textAnchor="middle" fontSize="10.5" fill="#92400e" fontWeight="bold" fontFamily="sans-serif">🛡️ Standby Replica</text>
-                    <text x="330" y="288" textAnchor="middle" fontSize="8" fill="#b45309" fontFamily="monospace">Synchronous HA Standby</text>
+                    {/* 3D Cylinder Shape - Standby Replica */}
+                    <g>
+                      <path d="M 292 262 L 292 287 A 38 7 0 0 0 368 287 L 368 262 A 38 7 0 0 1 292 262 Z" fill="#fffbeb" stroke="#fbbf24" strokeWidth="1" />
+                      <ellipse cx="330" cy="262" rx="38" ry="7" fill="#fef3c7" stroke="#fbbf24" strokeWidth="1" />
+                      <text x="330" y="248" textAnchor="middle" fontSize="9.5" fill="#92400e" fontWeight="bold" fontFamily="sans-serif">🛡️ Standby Replica</text>
+                      <text x="330" y="280" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold" fontFamily="monospace">Sync HA Mirror</text>
+                    </g>
 
-                    <rect x="250" y="315" width="160" height="50" rx="4" fill="url(#g-replica)" stroke="#8b5cf6" strokeWidth="1" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.3)' } as React.CSSProperties} />
-                    <text x="330" y="337" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 2</text>
-                    <text x="330" y="352" textAnchor="middle" fontSize="8" fill="#6d28d9" fontFamily="monospace">Asynchronous Copy</text>
+                    {/* 3D Cylinder Shape - Read Replica 2 */}
+                    <g className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.3)' } as React.CSSProperties}>
+                      <path d="M 292 337 L 292 362 A 38 7 0 0 0 368 362 L 368 337 A 38 7 0 0 1 292 337 Z" fill="url(#g-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                      <ellipse cx="330" cy="337" rx="38" ry="7" fill="#ddd6fe" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="330" y="325" textAnchor="middle" fontSize="9.5" fill="#4c1d95" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 2</text>
+                      <text x="330" y="352" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="bold" fontFamily="monospace">Asynchronous Copy</text>
+                    </g>
 
                     {/* AZ-c */}
                     <rect x="445" y="225" width="180" height="220" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5"/>
                     <text x="535" y="240" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#b45309" fontFamily="monospace">Subnet AZ-c</text>
                     
-                    <rect x="455" y="250" width="160" height="50" rx="4" fill="url(#g-replica)" stroke="#8b5cf6" strokeWidth="1" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.3)' } as React.CSSProperties} />
-                    <text x="535" y="272" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 3</text>
-                    <text x="535" y="288" textAnchor="middle" fontSize="8" fill="#6d28d9" fontFamily="monospace">Asynchronous Copy</text>
+                    {/* 3D Cylinder Shape - Read Replica 3 */}
+                    <g className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.3)' } as React.CSSProperties}>
+                      <path d="M 497 262 L 497 287 A 38 7 0 0 0 573 287 L 573 262 A 38 7 0 0 1 497 262 Z" fill="url(#g-replica)" stroke="#8b5cf6" strokeWidth="1" />
+                      <ellipse cx="535" cy="262" rx="38" ry="7" fill="#ddd6fe" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="535" y="248" textAnchor="middle" fontSize="9.5" fill="#4c1d95" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 3</text>
+                      <text x="535" y="280" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="bold" fontFamily="monospace">Asynchronous Copy</text>
+                    </g>
 
                     {/* Replication paths connectors */}
                     {/* Primary -> Standby Sync */}
-                    <line x1="205" y1="275" x2="250" y2="275" stroke="#10b981" strokeWidth="2" strokeDasharray="3,1" className="flow-active-line" markerEnd="url(#arr-g)" />
-                    <text x="227" y="268" textAnchor="middle" fontSize="7" fill="#059669" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
+                    <line x1="163" y1="274" x2="292" y2="274" stroke="#10b981" strokeWidth="2" strokeDasharray="3,1" className="flow-active-line" markerEnd="url(#arr-g)" />
+                    <text x="227.5" y="268" textAnchor="middle" fontSize="7" fill="#059669" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
 
                     {/* Primary -> RR1 Async */}
-                    <line x1="125" y1="300" x2="125" y2="315" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                    <line x1="125" y1="287" x2="125" y2="337" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
                     
                     {/* Primary -> RR2 Async */}
-                    <path d="M 205 290 Q 235 305 250 325" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                    <path d="M 163 280 Q 220 295 292 330" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
                     
                     {/* Primary -> RR3 Async */}
-                    <path d="M 205 295 Q 330 330 455 290" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                    <path d="M 163 275 Q 330 310 497 262" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
                   </svg>
                 </div>
               )}
@@ -2646,6 +3249,5 @@ export default function RDSVisualizer() {
         )}
 
       </div>
-    </div>
   );
 }
