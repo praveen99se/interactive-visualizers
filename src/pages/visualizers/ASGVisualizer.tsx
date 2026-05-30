@@ -285,37 +285,47 @@ export default function ASGVisualizer() {
         .asg-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
         .asg-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
         .asg-tb.asg-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .asg-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; }
-        .asg-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
+        .asg-card { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02); }
+        .asg-sec { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
         .asg-sec:first-child { margin-top: 0; }
         .asg-kv { display: flex; gap: 8px; font-size: 12px; margin: 6px 0; align-items: baseline; }
-        .asg-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; }
+        .asg-kk { min-width: 160px; color: #475569; flex-shrink: 0; }
         .asg-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .asg-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .asg-met { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; text-align: center; }
-        ul.asg-ck li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; }
+        .asg-met { background: #f8fafc; border-radius: 8px; padding: 12px; text-align: center; border: 1px solid #cbd5e1; }
+        ul.asg-ck li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; color: #334155; }
         ul.asg-ck li::before { content: "✓"; position: absolute; left: 0; color: #16a34a; font-weight: 700; }
-        .asg-log { border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; padding: 10px 12px; background: var(--color-background-secondary); font-size: 11px; font-family: var(--font-mono, monospace); white-space: pre-wrap; line-height: 1.5; color: var(--color-text-primary); }
+        .asg-log { border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; background: #f8fafc; font-size: 11px; font-family: var(--font-mono, monospace); white-space: pre-wrap; line-height: 1.5; color: #1e293b; }
         .asg-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
         .asg-binfo { background: #dbeafe; color: #1d4ed8; }
         .asg-bok { background: #dcfce7; color: #15803d; }
         .asg-bwarn { background: #fef3c7; color: #b45309; }
         .asg-bbad { background: #fee2e2; color: #b91c1c; }
-        .asg-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.15s; outline: none; }
-        .asg-btn:hover { background: var(--color-background-secondary); }
+        .asg-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; cursor: pointer; transition: all 0.15s; outline: none; }
+        .asg-btn:hover { background: #f8fafc; }
         .asg-btn.asg-on { background: #16a34a; color: #fff; border-color: #16a34a; }
         .asg-instances { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-        .asg-inst { border-radius: 10px; border: 1.5px solid var(--color-border-tertiary); padding: 8px 8px; text-align: center; background: var(--color-background-secondary); transition: all 0.15s; }
+        .asg-inst { border-radius: 10px; border: 1.5px solid #cbd5e1; padding: 8px 8px; text-align: center; background: #f8fafc; transition: all 0.15s; }
         .asg-inst .name { font-size: 11px; font-weight: bold; margin-bottom: 4px; }
-        .asg-inst .meta { font-size: 10px; color: var(--color-text-tertiary); line-height: 1.4; }
-        .asg-inst.asg-ok { border-color: #16a34a; background: #dcfce7; color: #15803d; }
-        .asg-inst.asg-warm { border-color: #b45309; background: #fef3c7; color: #b45309; }
-        .asg-inst.asg-drain { border-color: #1d4ed8; background: #dbeafe; color: #1d4ed8; }
-        .asg-inst.asg-down { border-color: #dc2626; background: #fee2e2; color: #b91c1c; opacity: 0.85; }
+        .asg-inst .meta { font-size: 10px; color: #64748b; line-height: 1.4; }
+        .asg-inst.asg-ok { border-color: #10b981; background: #ecfdf5; color: #047857; }
+        .asg-inst.asg-warm { border-color: #d97706; background: #fffbeb; color: #b45309; }
+        .asg-inst.asg-drain { border-color: #1d4ed8; background: #eff6ff; color: #1d4ed8; }
+        .asg-inst.asg-down { border-color: #dc2626; background: #fff5f5; color: #b91c1c; opacity: 0.85; }
+        
+        /* Blueprint dot-grid backdrop style */
+        .asg-svg-bg {
+          background-color: #ffffff;
+          background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+          background-size: 14px 14px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          display: block;
+        }
 
         @keyframes activeNodePulse {
           0% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
-          50% { filter: drop-shadow(0 0 10px var(--pulse-color)); }
+          50% { filter: drop-shadow(0 0 8px var(--pulse-color)); }
           100% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
         }
         .active-glow-node {
@@ -332,37 +342,45 @@ export default function ASGVisualizer() {
           font-size: 12px;
           padding: 6px 12px;
           border-radius: 6px;
-          border: 1px solid var(--color-border-secondary);
-          background: var(--color-background-secondary);
-          color: var(--color-text-secondary);
+          border: 1.5px solid #cbd5e1;
+          background: #ffffff;
+          color: #475569;
           cursor: pointer;
           font-weight: 500;
           transition: all 0.2s;
         }
         .arch-scenario-btn:hover {
-          background: var(--color-background-tertiary);
-          color: var(--color-text-primary);
+          background: #f8fafc;
+          color: #0f172a;
         }
         .arch-scenario-btn.active {
-          background: rgba(22, 163, 74, 0.15);
+          background: rgba(22, 163, 74, 0.1);
           color: #16a34a;
           border-color: #16a34a;
         }
         .mnemonic-gcard {
-          border-radius: var(--border-radius-lg);
+          border-radius: 12px;
           padding: 14px 16px;
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-          border: 1.5px solid #d97706;
-          box-shadow: 0 4px 20px rgba(217, 119, 6, 0.1);
+          background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+          border: 1.5px solid #f59e0b;
+          box-shadow: 0 4px 20px rgba(245, 158, 11, 0.05);
+          color: #78350f;
         }
         .mnemonic-gcard-title {
           font-weight: bold;
           font-size: 13px;
-          color: #fbbf24;
+          color: #b45309;
           margin-bottom: 6px;
           display: flex;
           align-items: center;
           gap: 6px;
+        }
+        @keyframes pulse-led {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 1; }
+        }
+        .led-blink {
+          animation: pulse-led 1s infinite ease-in-out;
         }
       `}</style>
 
@@ -468,7 +486,7 @@ export default function ASGVisualizer() {
             <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
               
               {/* Left: Dynamic Widescreen SVG Map */}
-              <div className="asg-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)', padding: '16px' }}>
+              <div className="asg-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
                 <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
                     🔍 {archScenario === 'normal' ? 'Normal Fleet Mode' : archScenario === 'outage' ? 'AZ Disaster Recovery Mode' : 'High Performance Scale-Out Mode'}
@@ -478,7 +496,7 @@ export default function ASGVisualizer() {
                   </span>
                 </div>
 
-                <svg width="100%" viewBox="0 0 680 340" style={{ display: 'block', margin: '0 auto' }}>
+                <svg width="100%" viewBox="0 0 680 340" className="asg-svg-bg" style={{ display: 'block', margin: '0 auto' }}>
                   <defs>
                     <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
                       <path d="M0,0 L0,6 L7,3 z" fill={archScenario === 'surge' ? '#f97316' : '#10b981'}/>
@@ -504,23 +522,23 @@ export default function ASGVisualizer() {
                   </defs>
                   
                   {/* Outer VPC Boundary */}
-                  <rect x="5" y="5" width="670" height="330" rx="16" fill="#0b0f19" stroke="#1e293b" strokeWidth="1"/>
-                  <text x="25" y="24" fontSize="10" fill="#64748b" fontWeight="bold" fontFamily="monospace">VPC (10.0.0.0/16)</text>
+                  <rect x="5" y="5" width="670" height="330" rx="16" fill="rgba(255, 255, 255, 0.5)" stroke="#cbd5e1" strokeWidth="1.5"/>
+                  <text x="25" y="24" fontSize="10" fill="#475569" fontWeight="bold" fontFamily="monospace">VPC (10.0.0.0/16)</text>
 
                   {/* Users Node */}
                   <g className="active-glow-node" style={{ '--pulse-color': '#3b82f6' } as React.CSSProperties}>
-                    <rect x="20" y="110" width="85" height="50" rx="8" fill="#0f172a" stroke="#3b82f6" strokeWidth="1.5"/>
-                    <text x="62.5" y="132" textAnchor="middle" fontSize="11" fill="#fff" fontWeight="bold">🌐 Public Users</text>
-                    <text x="62.5" y="146" textAnchor="middle" fontSize="8.5" fill="#60a5fa" fontFamily="monospace">
+                    <rect x="20" y="110" width="85" height="50" rx="8" fill="#f0f9ff" stroke="#3b82f6" strokeWidth={1.5}/>
+                    <text x="62.5" y="132" textAnchor="middle" fontSize="11" fill="#0c4a6e" fontWeight="bold">🌐 Public Users</text>
+                    <text x="62.5" y="146" textAnchor="middle" fontSize="8.5" fill="#0284c7" fontFamily="monospace">
                       {archScenario === 'surge' ? '1800 RPS (Peak)' : '400 RPS (Normal)'}
                     </text>
                   </g>
 
                   {/* ALB Node */}
                   <g opacity={1} className={archScenario !== 'outage' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                    <rect x="145" y="95" width="110" height="70" rx="10" fill="#0f172a" stroke="#10b981" strokeWidth={1.5} />
-                    <text x="200" y="120" textAnchor="middle" fontSize="12" fill="#34d399" fontWeight="bold">ALB Load Balancer</text>
-                    <text x="200" y="136" textAnchor="middle" fontSize="8" fill="#94a3b8">L7 Rules Router</text>
+                    <rect x="145" y="95" width="110" height="70" rx="10" fill="#ecfdf5" stroke="#10b981" strokeWidth={1.5} />
+                    <text x="200" y="120" textAnchor="middle" fontSize="12" fill="#047857" fontWeight="bold">ALB Load Balancer</text>
+                    <text x="200" y="136" textAnchor="middle" fontSize="8" fill="#475569">L7 Rules Router</text>
                     <text x="200" y="152" textAnchor="middle" fontSize="7.5" fill="#10b981" fontWeight="bold" fontFamily="monospace">
                       {archScenario === 'outage' ? 'Zonal Failover ON' : 'Subnet Load Balanced'}
                     </text>
@@ -528,9 +546,9 @@ export default function ASGVisualizer() {
 
                   {/* CloudWatch CPU Alarm Node */}
                   <g opacity={1} className={archScenario === 'surge' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ef4444' } as React.CSSProperties}>
-                    <rect x="145" y="210" width="110" height="60" rx="10" fill="#0f172a" stroke={archScenario === 'surge' ? '#ef4444' : '#475569'} strokeWidth={1.5}/>
-                    <text x="200" y="232" textAnchor="middle" fontSize="11" fill={archScenario === 'surge' ? '#fca5a5' : '#94a3b8'} fontWeight="bold">CloudWatch Alarm</text>
-                    <text x="200" y="247" textAnchor="middle" fontSize="8.5" fill={archScenario === 'surge' ? '#ef4444' : '#64748b'} fontWeight="bold" fontFamily="monospace">
+                    <rect x="145" y="210" width="110" height="60" rx="10" fill="#fff5f5" stroke={archScenario === 'surge' ? '#ef4444' : '#64748b'} strokeWidth={1.5}/>
+                    <text x="200" y="232" textAnchor="middle" fontSize="11" fill={archScenario === 'surge' ? '#991b1b' : '#334155'} fontWeight="bold">CloudWatch Alarm</text>
+                    <text x="200" y="247" textAnchor="middle" fontSize="8.5" fill={archScenario === 'surge' ? '#ef4444' : '#475569'} fontWeight="bold" fontFamily="monospace">
                       {archScenario === 'surge' ? '⚠️ CPU ALARM (>75%)' : '🟢 CPU OK (<50%)'}
                     </text>
                   </g>
@@ -538,34 +556,34 @@ export default function ASGVisualizer() {
                   {/* ASG Boundary */}
                   <rect 
                     x="295" y="30" width="365" height="290" rx="12" 
-                    fill="#090d16" stroke="#10b981" strokeWidth="1.5" 
+                    fill="rgba(255, 255, 255, 0.4)" stroke="#10b981" strokeWidth="1.5" 
                     strokeDasharray="6,4" 
                     style={archScenario === 'surge' ? { filter: 'url(#glow-green)' } : {}}
                   />
-                  <text x="477.5" y="46" textAnchor="middle" fontSize="11" fill="#34d399" fontWeight="bold">Auto Scaling Group (ASG Private Subnets)</text>
+                  <text x="477.5" y="46" textAnchor="middle" fontSize="11" fill="#047857" fontWeight="bold">Auto Scaling Group (ASG Private Subnets)</text>
 
                   {/* Subnets Racks */}
 
                   {/* us-east-1a subnet */}
                   <g opacity={1}>
-                    <rect x="310" y="55" width="335" height="75" rx="6" fill="#0f172a" stroke="#1e293b" strokeWidth="1" />
-                    <text x="320" y="70" fontSize="8" fill="#64748b" fontWeight="bold" fontFamily="monospace">Subnet A: us-east-1a</text>
+                    <rect x="310" y="55" width="335" height="75" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="320" y="70" fontSize="8" fill="#475569" fontWeight="bold" fontFamily="monospace">Subnet A: us-east-1a</text>
                     
                     {/* Instance i-101 */}
                     <g>
-                      <rect x="350" y="76" width="90" height="42" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
-                      <text x="395" y="93" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🖥️ i-101</text>
-                      <text x="395" y="107" textAnchor="middle" fontSize="8.5" fill="#34d399" fontFamily="monospace">In-Service (OK)</text>
+                      <rect x="350" y="76" width="90" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                      <text x="395" y="93" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-101</text>
+                      <text x="395" y="107" textAnchor="middle" fontSize="8.5" fill="#137333" fontFamily="monospace">In-Service (OK)</text>
                     </g>
                     
                     {/* Instance i-104 (Outage Replacement) or i-105 (Surge Instance) */}
                     {(archScenario === 'outage' || archScenario === 'surge') && (
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="460" y="76" width="105" height="42" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
-                        <text x="512.5" y="93" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">
+                        <rect x="460" y="76" width="105" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                        <text x="512.5" y="93" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">
                           {archScenario === 'outage' ? '🖥️ i-104 (New)' : '🖥️ i-105'}
                         </text>
-                        <text x="512.5" y="107" textAnchor="middle" fontSize="8.5" fill="#f59e0b" fontWeight="bold" fontFamily="monospace">
+                        <text x="512.5" y="107" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" fontFamily="monospace">
                           {archScenario === 'outage' ? '🛡️ Zonal Rebalance' : '📈 Scale Out'}
                         </text>
                       </g>
@@ -574,22 +592,22 @@ export default function ASGVisualizer() {
 
                   {/* us-east-1b subnet */}
                   <g opacity={1}>
-                    <rect x="310" y="135" width="335" height="75" rx="6" fill="#0f172a" stroke="#1e293b" strokeWidth="1" />
-                    <text x="320" y="150" fontSize="8" fill="#64748b" fontWeight="bold" fontFamily="monospace">Subnet B: us-east-1b</text>
+                    <rect x="310" y="135" width="335" height="75" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="320" y="150" fontSize="8" fill="#475569" fontWeight="bold" fontFamily="monospace">Subnet B: us-east-1b</text>
                     
                     {/* Instance i-102 */}
                     <g>
-                      <rect x="350" y="156" width="90" height="42" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
-                      <text x="395" y="173" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🖥️ i-102</text>
-                      <text x="395" y="187" textAnchor="middle" fontSize="8.5" fill="#34d399" fontFamily="monospace">In-Service (OK)</text>
+                      <rect x="350" y="156" width="90" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                      <text x="395" y="173" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-102</text>
+                      <text x="395" y="187" textAnchor="middle" fontSize="8.5" fill="#137333" fontFamily="monospace">In-Service (OK)</text>
                     </g>
 
                     {/* Instance i-106 (Surge Only) */}
                     {archScenario === 'surge' && (
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="460" y="156" width="105" height="42" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
-                        <text x="512.5" y="173" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🖥️ i-106</text>
-                        <text x="512.5" y="187" textAnchor="middle" fontSize="8.5" fill="#f59e0b" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
+                        <rect x="460" y="156" width="105" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                        <text x="512.5" y="173" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-106</text>
+                        <text x="512.5" y="187" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
                       </g>
                     )}
                   </g>
@@ -598,38 +616,38 @@ export default function ASGVisualizer() {
                   <g opacity={archScenario === 'outage' ? 0.7 : 1}>
                     <rect 
                       x="310" y="215" width="335" height="75" rx="6" 
-                      fill={archScenario === 'outage' ? 'rgba(239, 68, 68, 0.05)' : '#0f172a'} 
-                      stroke={archScenario === 'outage' ? '#ef4444' : '#1e293b'} 
+                      fill={archScenario === 'outage' ? 'rgba(239, 68, 68, 0.03)' : '#f8fafc'} 
+                      stroke={archScenario === 'outage' ? '#ef4444' : '#cbd5e1'} 
                       strokeWidth={1} 
                       strokeDasharray={archScenario === 'outage' ? '4,4' : 'none'}
                     />
-                    <text x="320" y="230" fontSize="8" fill={archScenario === 'outage' ? '#ef4444' : '#64748b'} fontWeight="bold" fontFamily="monospace">
+                    <text x="320" y="230" fontSize="8" fill={archScenario === 'outage' ? '#ef4444' : '#475569'} fontWeight="bold" fontFamily="monospace">
                       {archScenario === 'outage' ? 'Subnet C: us-east-1c [🔥 OUTAGE]' : 'Subnet C: us-east-1c'}
                     </text>
                     
                     {/* Instance i-103 */}
                     {archScenario !== 'outage' ? (
                       <g>
-                        <rect x="350" y="236" width="90" height="42" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
-                        <text x="395" y="253" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🖥️ i-103</text>
-                        <text x="395" y="267" textAnchor="middle" fontSize="8.5" fill="#34d399" fontFamily="monospace">In-Service (OK)</text>
+                        <rect x="350" y="236" width="90" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                        <text x="395" y="253" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-103</text>
+                        <text x="395" y="267" textAnchor="middle" fontSize="8.5" fill="#137333" fontFamily="monospace">In-Service (OK)</text>
                       </g>
                     ) : (
                       <g>
                         {/* Outage representation */}
-                        <rect x="350" y="236" width="90" height="42" rx="4" fill="#1a1118" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,2" />
-                        <text x="395" y="253" textAnchor="middle" fontSize="10" fill="#ef4444" fontWeight="bold" style={{ textDecoration: 'line-through' }}>🖥️ i-103</text>
-                        <text x="395" y="267" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold" fontFamily="monospace">⚠️ UNREACHABLE</text>
-                        <path d="M345 231 L445 283 M445 231 L345 283" stroke="#ef4444" strokeWidth="1.5" opacity="0.6"/>
+                        <rect x="350" y="236" width="90" height="42" rx="4" fill="#fff5f5" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,2" />
+                        <text x="395" y="253" textAnchor="middle" fontSize="10" fill="#b91c1c" fontWeight="bold" style={{ textDecoration: 'line-through' }}>🖥️ i-103</text>
+                        <text x="395" y="267" textAnchor="middle" fontSize="8" fill="#b91c1c" fontWeight="bold" fontFamily="monospace">⚠️ UNREACHABLE</text>
+                        <path d="M345 231 L445 283 M445 231 L345 283" stroke="#ef4444" strokeWidth="1.5" opacity="0.4"/>
                       </g>
                     )}
 
                     {/* Instance i-107 (Surge Only) */}
                     {archScenario === 'surge' && (
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="460" y="236" width="105" height="42" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
-                        <text x="512.5" y="253" textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">🖥️ i-107</text>
-                        <text x="512.5" y="282" textAnchor="middle" fontSize="8.5" fill="#f59e0b" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
+                        <rect x="460" y="236" width="105" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                        <text x="512.5" y="253" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-107</text>
+                        <text x="512.5" y="282" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
                       </g>
                     )}
                   </g>
@@ -677,7 +695,7 @@ export default function ASGVisualizer() {
                   <path 
                     d="M 525 120 L 525 310 L 200 310 L 200 270" 
                     fill="none" 
-                    stroke="#475569" 
+                    stroke="#cbd5e1" 
                     strokeWidth="1" 
                     strokeDasharray="4,3" 
                     markerEnd="url(#arrow)"
@@ -685,7 +703,7 @@ export default function ASGVisualizer() {
                   <path 
                     d="M 200 210 L 200 165" 
                     fill="none" 
-                    stroke={archScenario === 'surge' ? '#ef4444' : '#475569'} 
+                    stroke={archScenario === 'surge' ? '#ef4444' : '#cbd5e1'} 
                     strokeWidth="1" 
                     strokeDasharray="4,3" 
                     markerEnd="url(#arrow)"
@@ -701,28 +719,28 @@ export default function ASGVisualizer() {
                   <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
                     📊 Simulation Telemetry
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>
                     {archScenario === 'normal' && '🟢 Balanced Fleet Operation'}
                     {archScenario === 'outage' && '⚠️ Zonal Outage & Self-Healing'}
                     {archScenario === 'surge' && '⚡ High-Load Horizontal Scaling'}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Active Subnets:</span>
-                      <span style={{ fontWeight: 'bold', color: archScenario === 'outage' ? '#f87171' : '#34d399' }}>
+                      <span style={{ fontWeight: 'bold', color: archScenario === 'outage' ? '#ef4444' : '#16a34a' }}>
                         {archScenario === 'outage' ? '2 / 3 Zones' : '3 / 3 Zones'}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Total Instances:</span>
-                      <span style={{ fontWeight: 'bold', color: '#fff' }}>
+                      <span style={{ fontWeight: 'bold', color: '#1e293b' }}>
                         {archScenario === 'surge' ? '6 EC2 instances' : '3 EC2 instances'}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Average CPU Load:</span>
-                      <span style={{ fontWeight: 'bold', color: archScenario === 'surge' ? '#ef4444' : '#34d399' }}>
+                      <span style={{ fontWeight: 'bold', color: archScenario === 'surge' ? '#ef4444' : '#16a34a' }}>
                         {archScenario === 'normal' && '38% (Healthy)'}
                         {archScenario === 'outage' && '57% (Healthy)'}
                         {archScenario === 'surge' && '88% (ALARM TRIGGERS)'}
@@ -730,7 +748,7 @@ export default function ASGVisualizer() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>ALB Target Group:</span>
-                      <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>
+                      <span style={{ fontWeight: 'bold', color: '#0284c7' }}>
                         {archScenario === 'outage' ? 'us-east-1c evicted' : 'Active (All zones)'}
                       </span>
                     </div>
@@ -739,7 +757,7 @@ export default function ASGVisualizer() {
 
                 {/* Scenario Description Card */}
                 <div className="asg-card" style={{ padding: '12px 14px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b', marginBottom: '6px' }}>
                     ⚙️ Architectural Explanation
                   </div>
                   <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
@@ -841,7 +859,7 @@ export default function ASGVisualizer() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 {/* Widescreen Interactive Lifecycle SVG */}
-                <div className="asg-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#070a13', border: '0.5px solid var(--color-border-secondary)', padding: '16px' }}>
+                <div className="asg-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
                   <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
                       📍 State-Responsive Lifecycle Transitions Map
@@ -851,10 +869,10 @@ export default function ASGVisualizer() {
                     </span>
                   </div>
 
-                  <svg width="100%" viewBox="0 0 680 160" style={{ display: 'block', margin: '0 auto' }}>
+                  <svg width="100%" viewBox="0 0 680 160" className="asg-svg-bg" style={{ display: 'block', margin: '0 auto' }}>
                     <defs>
                       <marker id="m-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                        <path d="M0,0 L0,6 L6,3 z" fill="#475569"/>
+                        <path d="M0,0 L0,6 L6,3 z" fill="#cbd5e1"/>
                       </marker>
                       <marker id="m-arrow-active" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
                         <path d="M0,0 L0,6 L6,3 z" fill="#10b981"/>
@@ -863,15 +881,15 @@ export default function ASGVisualizer() {
 
                     {/* Step 1: Pending:Launch */}
                     <g opacity={lifecycleStage === 'pending_launch' ? 1 : 0.65} className={lifecycleStage === 'pending_launch' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#f97316' } as React.CSSProperties}>
-                      <rect x="15" y="45" width="105" height="52" rx="8" fill="#0f172a" stroke={lifecycleStage === 'pending_launch' ? '#f97316' : '#334155'} strokeWidth={lifecycleStage === 'pending_launch' ? 2 : 1}/>
-                      <text x="67.5" y="69" textAnchor="middle" fontSize="10.5" fill="#fff" fontWeight="bold">Pending:Launch</text>
-                      <text x="67.5" y="83" textAnchor="middle" fontSize="8" fill="#94a3b8">EC2 Provisioning...</text>
+                      <rect x="15" y="45" width="105" height="52" rx="8" fill="#fff7ed" stroke={lifecycleStage === 'pending_launch' ? '#f97316' : '#cbd5e1'} strokeWidth={lifecycleStage === 'pending_launch' ? 2 : 1}/>
+                      <text x="67.5" y="69" textAnchor="middle" fontSize="10.5" fill="#c2410c" fontWeight="bold">Pending:Launch</text>
+                      <text x="67.5" y="83" textAnchor="middle" fontSize="8" fill="#7c2d12">EC2 Provisioning...</text>
                     </g>
 
                     {/* Connecting 1 -> 2 */}
                     <line 
                       x1="120" y1="71" x2="147" y2="71" 
-                      stroke={lifecycleStage === 'pending_wait' ? '#10b981' : '#334155'} 
+                      stroke={lifecycleStage === 'pending_wait' ? '#10b981' : '#cbd5e1'} 
                       strokeWidth={lifecycleStage === 'pending_wait' ? 2 : 1} 
                       className={lifecycleStage === 'pending_wait' ? 'flow-active-line' : ''}
                       markerEnd={lifecycleStage === 'pending_wait' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
@@ -879,9 +897,9 @@ export default function ASGVisualizer() {
 
                     {/* Step 2: Pending:Wait (Hook) */}
                     <g opacity={lifecycleStage === 'pending_wait' ? 1 : 0.65} className={lifecycleStage === 'pending_wait' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                      <rect x="150" y="45" width="115" height="52" rx="8" fill="#0f172a" stroke={lifecycleStage === 'pending_wait' ? '#7c3aed' : '#334155'} strokeWidth={lifecycleStage === 'pending_wait' ? 2 : 1}/>
-                      <text x="207.5" y="69" textAnchor="middle" fontSize="10.5" fill="#c4b5fd" fontWeight="bold">Pending:Wait</text>
-                      <text x="207.5" y="83" textAnchor="middle" fontSize="8.5" fill={launchHookApproved ? '#34d399' : '#a78bfa'} fontWeight="bold">
+                      <rect x="150" y="45" width="115" height="52" rx="8" fill="#faf5ff" stroke={lifecycleStage === 'pending_wait' ? '#7c3aed' : '#cbd5e1'} strokeWidth={lifecycleStage === 'pending_wait' ? 2 : 1}/>
+                      <text x="207.5" y="69" textAnchor="middle" fontSize="10.5" fill="#581c87" fontWeight="bold">Pending:Wait</text>
+                      <text x="207.5" y="83" textAnchor="middle" fontSize="8.5" fill={launchHookApproved ? '#166534' : '#7e22ce'} fontWeight="bold">
                         {launchHookApproved ? '✓ Hook Approved' : '⏳ Launch Hook Active'}
                       </text>
                     </g>
@@ -889,7 +907,7 @@ export default function ASGVisualizer() {
                     {/* Connecting 2 -> 3 */}
                     <line 
                       x1="265" y1="71" x2="292" y2="71" 
-                      stroke={lifecycleStage === 'inservice' ? '#10b981' : '#334155'} 
+                      stroke={lifecycleStage === 'inservice' ? '#10b981' : '#cbd5e1'} 
                       strokeWidth={lifecycleStage === 'inservice' ? 2 : 1} 
                       className={lifecycleStage === 'inservice' ? 'flow-active-line' : ''}
                       markerEnd={lifecycleStage === 'inservice' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
@@ -903,12 +921,12 @@ export default function ASGVisualizer() {
                     >
                       <rect 
                         x="295" y="45" width="110" height="52" rx="8" 
-                        fill="#0f172a" 
-                        stroke={lifecycleStage === 'inservice' ? (sandboxFailed ? '#ef4444' : '#10b981') : '#334155'} 
+                        fill={sandboxFailed ? '#fff5f5' : '#ecfdf5'} 
+                        stroke={lifecycleStage === 'inservice' ? (sandboxFailed ? '#ef4444' : '#10b981') : '#cbd5e1'} 
                         strokeWidth={lifecycleStage === 'inservice' ? 2 : 1}
                       />
-                      <text x="350" y="69" textAnchor="middle" fontSize="11" fill="#fff" fontWeight="bold">🖥️ InService</text>
-                      <text x="350" y="83" textAnchor="middle" fontSize="8.5" fill={sandboxFailed ? '#f87171' : '#34d399'} fontWeight="bold">
+                      <text x="350" y="69" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="bold">🖥️ InService</text>
+                      <text x="350" y="83" textAnchor="middle" fontSize="8.5" fill={sandboxFailed ? '#c53030' : '#15803d'} fontWeight="bold">
                         {sandboxFailed ? '💥 App Crashed!' : '🟢 Serving Traffic'}
                       </text>
                     </g>
@@ -916,7 +934,7 @@ export default function ASGVisualizer() {
                     {/* Connecting 3 -> 4 */}
                     <line 
                       x1="405" y1="71" x2="432" y2="71" 
-                      stroke={lifecycleStage === 'terminating_wait' ? '#ef4444' : '#334155'} 
+                      stroke={lifecycleStage === 'terminating_wait' ? '#ef4444' : '#cbd5e1'} 
                       strokeWidth={lifecycleStage === 'terminating_wait' ? 2 : 1} 
                       className={lifecycleStage === 'terminating_wait' ? 'flow-active-line' : ''}
                       markerEnd={lifecycleStage === 'terminating_wait' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
@@ -924,9 +942,9 @@ export default function ASGVisualizer() {
 
                     {/* Step 4: Terminating:Wait (Hook) */}
                     <g opacity={lifecycleStage === 'terminating_wait' ? 1 : 0.65} className={lifecycleStage === 'terminating_wait' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
-                      <rect x="435" y="45" width="125" height="52" rx="8" fill="#0f172a" stroke={lifecycleStage === 'terminating_wait' ? '#0284c7' : '#334155'} strokeWidth={lifecycleStage === 'terminating_wait' ? 2 : 1}/>
-                      <text x="497.5" y="69" textAnchor="middle" fontSize="10.5" fill="#bae6fd" fontWeight="bold">Terminating:Wait</text>
-                      <text x="497.5" y="83" textAnchor="middle" fontSize="8.5" fill={terminateHookApproved ? '#34d399' : '#38bdf8'} fontWeight="bold">
+                      <rect x="435" y="45" width="125" height="52" rx="8" fill="#f0f9ff" stroke={lifecycleStage === 'terminating_wait' ? '#0284c7' : '#cbd5e1'} strokeWidth={lifecycleStage === 'terminating_wait' ? 2 : 1}/>
+                      <text x="497.5" y="69" textAnchor="middle" fontSize="10.5" fill="#0c4a6e" fontWeight="bold">Terminating:Wait</text>
+                      <text x="497.5" y="83" textAnchor="middle" fontSize="8.5" fill={terminateHookApproved ? '#166534' : '#0284c7'} fontWeight="bold">
                         {terminateHookApproved ? '✓ Drained (Ready)' : '⏳ Draining active'}
                       </text>
                     </g>
@@ -934,7 +952,7 @@ export default function ASGVisualizer() {
                     {/* Connecting 4 -> 5 */}
                     <line 
                       x1="560" y1="71" x2="587" y2="71" 
-                      stroke={lifecycleStage === 'terminated' ? '#ef4444' : '#334155'} 
+                      stroke={lifecycleStage === 'terminated' ? '#ef4444' : '#cbd5e1'} 
                       strokeWidth={lifecycleStage === 'terminated' ? 2 : 1} 
                       className={lifecycleStage === 'terminated' ? 'flow-active-line' : ''}
                       markerEnd={lifecycleStage === 'terminated' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
@@ -942,9 +960,9 @@ export default function ASGVisualizer() {
 
                     {/* Step 5: Terminated */}
                     <g opacity={lifecycleStage === 'terminated' ? 1 : 0.65} className={lifecycleStage === 'terminated' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ef4444' } as React.CSSProperties}>
-                      <rect x="590" y="45" width="80" height="52" rx="8" fill="#0f172a" stroke={lifecycleStage === 'terminated' ? '#ef4444' : '#334155'} strokeWidth={lifecycleStage === 'terminated' ? 2 : 1}/>
-                      <text x="630" y="70" textAnchor="middle" fontSize="11" fill="#fff" fontWeight="bold">Terminated</text>
-                      <text x="630" y="83" textAnchor="middle" fontSize="8" fill="#f87171">Offlined</text>
+                      <rect x="590" y="45" width="80" height="52" rx="8" fill="#fff5f5" stroke={lifecycleStage === 'terminated' ? '#ef4444' : '#cbd5e1'} strokeWidth={lifecycleStage === 'terminated' ? 2 : 1}/>
+                      <text x="630" y="70" textAnchor="middle" fontSize="11" fill="#991b1b" fontWeight="bold">Terminated</text>
+                      <text x="630" y="83" textAnchor="middle" fontSize="8" fill="#ef4444">Offlined</text>
                     </g>
 
                     {/* Back loop arrow from 3 to 4 */}
@@ -988,16 +1006,16 @@ export default function ASGVisualizer() {
                   </div>
                   
                   {/* Current State Details Badge */}
-                  <div style={{ padding: '8px 10px', borderRadius: '6px', background: '#0f172a', border: '1px solid #1e293b', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Current Stage:</span>
+                  <div style={{ padding: '8px 10px', borderRadius: '6px', background: '#f8fafc', border: '1px solid #cbd5e1', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '10px', color: '#475569', display: 'block' }}>Current Stage:</span>
                     <span style={{ 
                       fontWeight: 'bold', 
                       fontSize: '12px',
                       color: 
                         lifecycleStage === 'pending_launch' ? '#f97316' : 
-                        lifecycleStage === 'pending_wait' ? '#c4b5fd' : 
-                        lifecycleStage === 'inservice' ? (sandboxFailed ? '#ef4444' : '#34d399') : 
-                        lifecycleStage === 'terminating_wait' ? '#bae6fd' : '#fca5a5'
+                        lifecycleStage === 'pending_wait' ? '#7c3aed' : 
+                        lifecycleStage === 'inservice' ? (sandboxFailed ? '#ef4444' : '#16a34a') : 
+                        lifecycleStage === 'terminating_wait' ? '#0284c7' : '#ef4444'
                     }}>
                       {lifecycleStage === 'pending_launch' && '🟠 Pending:Launch'}
                       {lifecycleStage === 'pending_wait' && '🟣 Pending:Wait (Hook)'}
@@ -1055,7 +1073,7 @@ export default function ASGVisualizer() {
                           setLaunchHookApproved(true);
                           logLifecycle('✅ [Lambda callback] Launch Lifecycle Hook APPROVED! Signal sent: CONTINUE. Fleet manager registering target with ALB.');
                         }}
-                        style={{ borderColor: '#22c55e', color: '#22c55e', fontSize: '11.5px', padding: '7px' }}
+                        style={{ borderColor: '#16a34a', color: '#16a34a', fontSize: '11.5px', padding: '7px' }}
                         disabled={launchHookApproved}
                       >
                         {launchHookApproved ? '✓ Launch Hook Approved' : '🟢 Approve Launch Hook'}
@@ -1070,7 +1088,7 @@ export default function ASGVisualizer() {
                           setTerminateHookApproved(true);
                           logLifecycle('✅ [Lambda callback] Connection Draining COMPLETE! Log backups sent. Signal sent: CONTINUE.');
                         }}
-                        style={{ borderColor: '#38bdf8', color: '#38bdf8', fontSize: '11.5px', padding: '7px' }}
+                        style={{ borderColor: '#0284c7', color: '#0284c7', fontSize: '11.5px', padding: '7px' }}
                         disabled={terminateHookApproved}
                       >
                         {terminateHookApproved ? '✓ Draining Hook Approved' : '🔵 Complete Connection Drain'}
@@ -1099,8 +1117,8 @@ export default function ASGVisualizer() {
                 </div>
 
                 {/* Explanation Card */}
-                <div className="asg-card" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4', color: 'var(--color-text-secondary)' }}>
-                  <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '4px' }}>🛡️ Stage Description</div>
+                <div className="asg-card" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4', color: '#334155' }}>
+                  <div style={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}>🛡️ Stage Description</div>
                   {lifecycleStage === 'pending_launch' && 'Instance provisioning starts. AWS reads the Launch Template DNA and starts allocating hardware resources.'}
                   {lifecycleStage === 'pending_wait' && 'The boot process is paused. Custom EventBridge configurations/Lambda functions run heavy boots, caching data before letting client traffic hit the server.'}
                   {lifecycleStage === 'inservice' && 'Target registered and healthy behind the ALB. Production HTTP requests flow happily. Click the app crash button to watch the ASG self-heal!'}
@@ -1142,153 +1160,330 @@ export default function ASGVisualizer() {
         )}
 
         {/* LIVE SIMULATION PLAYGROUND */}
-        {activeSection === 'sim' && (
-          <div>
-            <div className="asg-sec">Live Simulation (ASG + Load Balancer Auto Scaling)</div>
-            <div className="asg-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
-                This simulator demonstrates target tracking scaling in real-time. Drag traffic (RPS) up to overload servers and trigger scale-outs, or fail nodes to watch ASG self-heal!
-              </div>
+        {activeSection === 'sim' && (() => {
+          // Find healthy and total active instances
+          const activeInsts = instances.filter((i) => i.status !== 'terminated');
+          const healthyInsts = activeInsts.filter((i) => i.status === 'ok' && !i.failed);
+          const isScaleOutActive = isRunning && activeInsts.length < desCap;
+          const isAlarmTriggered = isRunning && metrics.avgCpu > targetCpu + 8;
 
-              {/* Range inputs */}
-              <div className="asg-g2" style={{ marginBottom: '12px' }}>
-                <div style={{ background: 'var(--color-background-secondary)', padding: '10px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Incoming Traffic: <b>{rps} RPS</b></label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1800"
-                    value={rps}
-                    onChange={(e) => setRps(parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
-                  />
+          return (
+            <div>
+              <div className="asg-sec">Live Simulation (ASG + Load Balancer Auto Scaling)</div>
+              
+              {/* Main Widescreen Dynamic scaling SVG panel */}
+              <div className="asg-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                    Interactive Elastic Compute Scaling Topology Diagram
+                  </span>
+                  <span style={{ fontSize: '11px', color: isScaleOutActive ? '#ea580c' : '#16a34a', fontWeight: 'bold' }}>
+                    {isScaleOutActive ? '⚡ HORIZONTAL SCALING FLEET...' : '🟢 FLEET SIZE STABILIZED'}
+                  </span>
                 </div>
 
-                <div style={{ background: 'var(--color-background-secondary)', padding: '10px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Target CPU Limit: <b>{targetCpu}%</b></label>
-                  <input
-                    type="range"
-                    min="20"
-                    max="80"
-                    value={targetCpu}
-                    onChange={(e) => setTargetCpu(parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                <svg width="100%" viewBox="0 0 420 220" className="asg-svg-bg">
+                  <defs>
+                    <linearGradient id="g-orange-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ea580c" />
+                      <stop offset="100%" stopColor="#f97316" />
+                    </linearGradient>
+                    <linearGradient id="g-green-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                    <filter id="glow-orange-sim" x="-15%" y="-15%" width="130%" height="130%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#f97316" floodOpacity="0.5" />
+                    </filter>
+                    <filter id="glow-green-sim" x="-15%" y="-15%" width="130%" height="130%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10b981" floodOpacity="0.5" />
+                    </filter>
+                    <filter id="glow-red-sim" x="-15%" y="-15%" width="130%" height="130%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#ef4444" floodOpacity="0.5" />
+                    </filter>
+                  </defs>
+
+                  {/* Public Client */}
+                  <g>
+                    <rect x="15" y="15" width="60" height="40" rx="6" fill="#f0f9ff" stroke="#3b82f6" strokeWidth="1.5"/>
+                    <text x="45" y="34" fontSize="9" fontWeight="bold" fill="#0c4a6e" textAnchor="middle">🌐 Client</text>
+                    <text x="45" y="46" fontSize="7.5" fill="#0284c7" textAnchor="middle" fontFamily="monospace">{rps} RPS</text>
+                  </g>
+
+                  {/* ALB Router */}
+                  <g transform="translate(100, 15)">
+                    <rect width="60" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="30" y="24" fontSize="9" fontWeight="bold" fill="#047857" textAnchor="middle">ALB L7</text>
+                    <text x="30" y="35" fontSize="7" fill="#64748b" textAnchor="middle">Listener 80</text>
+                  </g>
+
+                  {/* CloudWatch CPU Monitor Box */}
+                  <g transform="translate(315, 12)" filter={isAlarmTriggered ? 'url(#glow-red-sim)' : undefined}>
+                    <rect width="90" height="45" rx="8" fill={isAlarmTriggered ? '#fff5f5' : '#f8fafc'} stroke={isAlarmTriggered ? '#ef4444' : '#cbd5e1'} strokeWidth={isAlarmTriggered ? 2 : 1.2} />
+                    <text x="45" y="23" fontSize="8" fontWeight="bold" fill={isAlarmTriggered ? '#991b1b' : '#475569'} textAnchor="middle">CloudWatch CPU</text>
+                    <text x="45" y="35" fontSize="9" fontWeight="bold" fill={isAlarmTriggered ? '#ef4444' : '#15803d'} textAnchor="middle" fontFamily="monospace">
+                      {Math.round(metrics.avgCpu)}% {isAlarmTriggered ? '⚠️' : '🟢'}
+                    </text>
+                    {isAlarmTriggered && (
+                      <circle cx="80" cy="12" r="3" fill="#ef4444" className="led-blink" />
+                    )}
+                  </g>
+
+                  {/* Ingress traffic path from client to LB */}
+                  <path
+                    d="M 75 35 L 100 35"
+                    fill="none"
+                    stroke={isRunning && rps > 0 ? '#10b981' : '#cbd5e1'}
+                    strokeWidth={isRunning && rps > 0 ? 2.5 : 1}
+                    className={isRunning && rps > 0 ? 'flow-active-line' : ''}
                   />
-                </div>
+
+                  {/* Main horizontal bus from LB into ASG boundary */}
+                  <path
+                    d="M 160 35 L 180 35 L 180 90 L 195 90"
+                    fill="none"
+                    stroke={isRunning && healthyInsts.length > 0 && rps > 0 ? '#10b981' : '#cbd5e1'}
+                    strokeWidth={isRunning && healthyInsts.length > 0 && rps > 0 ? 2.5 : 1}
+                    className={isRunning && healthyInsts.length > 0 && rps > 0 ? 'flow-active-line' : ''}
+                  />
+
+                  {/* Auto Scaling Group dashed boundary box */}
+                  <rect
+                    x="195" y="65" width="215" height="145" rx="8"
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="1.5"
+                    strokeDasharray="4,3"
+                    opacity={0.8}
+                  />
+                  <text x="302.5" y="78" fontSize="8" fill="#137333" fontWeight="bold" textAnchor="middle">ASG Group Pool (Min: {minCap} · Max: {maxCap})</text>
+
+                  {/* Target servers rendering */}
+                  {activeInsts.slice(0, 12).map((inst, idx) => {
+                    const col = idx % 4;
+                    const row = Math.floor(idx / 4);
+                    const x = 205 + col * 50;
+                    const y = 88 + row * 38;
+                    const isHealthy = inst.status === 'ok' && !inst.failed;
+
+                    let fill = '#f8fafc';
+                    let stroke = '#cbd5e1';
+                    let label = 'WARM';
+                    let textFill = '#b45309';
+
+                    if (inst.status === 'ok') {
+                      if (inst.failed) {
+                        fill = '#fff5f5';
+                        stroke = '#ef4444';
+                        label = 'FAIL ×';
+                        textFill = '#b91c1c';
+                      } else {
+                        fill = '#ecfdf5';
+                        stroke = '#10b981';
+                        label = 'ONLINE';
+                        textFill = '#047857';
+                      }
+                    } else if (inst.status === 'drain') {
+                      fill = '#eff6ff';
+                      stroke = '#1d4ed8';
+                      label = 'DRAIN';
+                      textFill = '#1d4ed8';
+                    } else if (inst.status === 'warm') {
+                      fill = '#fffbeb';
+                      stroke = '#d97706';
+                      label = `WARM (${inst.warmTicks})`;
+                      textFill = '#b45309';
+                    }
+
+                    // Local line connection from bus trunk
+                    const isConduitActive = isRunning && isHealthy && rps > 0;
+                    
+                    return (
+                      <g key={inst.id}>
+                        {/* Dynamic branching conduits to active server nodes */}
+                        <path
+                          d={`M 180 90 L 180 ${y + 16} L ${x} ${y + 16}`}
+                          fill="none"
+                          stroke={isConduitActive ? '#10b981' : (inst.failed ? '#ef4444' : '#cbd5e1')}
+                          strokeWidth={isConduitActive ? 2 : 1}
+                          strokeDasharray={inst.failed ? '2,2' : undefined}
+                          className={isConduitActive ? 'flow-active-line' : ''}
+                          opacity={isConduitActive ? 1 : 0.4}
+                        />
+
+                        {/* Server Cylinder Tower */}
+                        <g transform={`translate(${x}, ${y})`}>
+                          <rect width="42" height="32" rx="4" fill={fill} stroke={stroke} strokeWidth="1.5" />
+                          <text x="21" y="11" fontSize="8" fontWeight="bold" fill="#1e293b" textAnchor="middle">i-{inst.id}</text>
+                          <text x="21" y="21" fontSize="6.5" fontWeight="bold" fill={textFill} textAnchor="middle">{label}</text>
+                          
+                          {/* Active glowing LED check lights */}
+                          {isHealthy ? (
+                            <circle cx="5" cy="27" r="1.5" fill="#10b981" className="led-blink" />
+                          ) : inst.failed ? (
+                            <circle cx="5" cy="27" r="1.5" fill="#ef4444" className="led-blink" />
+                          ) : inst.status === 'drain' ? (
+                            <circle cx="5" cy="27" r="1.5" fill="#1d4ed8" className="led-blink" />
+                          ) : (
+                            <circle cx="5" cy="27" r="1.5" fill="#d97706" />
+                          )}
+                        </g>
+                      </g>
+                    );
+                  })}
+
+                  {/* Empty Slot templates */}
+                  {Array.from({ length: Math.max(0, 12 - activeInsts.length) }).map((_, idx) => {
+                    const totalIdx = activeInsts.length + idx;
+                    if (totalIdx >= 12) return null;
+                    const col = totalIdx % 4;
+                    const row = Math.floor(totalIdx / 4);
+                    const x = 205 + col * 50;
+                    const y = 88 + row * 38;
+                    return (
+                      <g key={`empty-slot-${idx}`} opacity={0.15}>
+                        <rect x={x} y={y} width="42" height="32" rx="4" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3,2" />
+                        <text x={x + 21} y={y + 18} fontSize="7" fill="#64748b" textAnchor="middle">—</text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Packet flow particles flowing from client to ALB and servers */}
+                  {isRunning && rps > 0 && healthyInsts.length > 0 && (
+                    <circle r="3.5" fill="#10b981" filter="url(#glow-green-sim)">
+                      <animateMotion
+                        dur={rps > 1200 ? '0.7s' : rps > 600 ? '1.2s' : '1.8s'}
+                        repeatCount="indefinite"
+                        path={`M 15 35 L 100 35 M 100 35 L 180 35 L 180 90 L 180 ${88 + Math.floor((healthyInsts[0].id - 1) / 4) * 38 + 16} L ${205 + ((healthyInsts[0].id - 1) % 4) * 50} ${88 + Math.floor((healthyInsts[0].id - 1) / 4) * 38 + 16}`}
+                      />
+                    </circle>
+                  )}
+                  {isRunning && rps > 1000 && healthyInsts.length > 1 && (
+                    <circle r="3.5" fill="#10b981" filter="url(#glow-green-sim)">
+                      <animateMotion
+                        dur="1.0s"
+                        repeatCount="indefinite"
+                        path={`M 100 35 L 180 35 L 180 90 L 180 ${88 + Math.floor((healthyInsts[1].id - 1) / 4) * 38 + 16} L ${205 + ((healthyInsts[1].id - 1) % 4) * 50} ${88 + Math.floor((healthyInsts[1].id - 1) / 4) * 38 + 16}`}
+                      />
+                    </circle>
+                  )}
+                </svg>
               </div>
 
-              <div className="asg-g2" style={{ marginBottom: '14px' }}>
-                <div style={{ background: 'var(--color-background-secondary)', padding: '10px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Boundaries (Min / Desired / Max Capacity):</label>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)' }}>Min:</span>
+              <div className="asg-card">
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>Simulation Controls</div>
+                
+                {/* Range inputs */}
+                <div className="asg-g2" style={{ marginBottom: '12px' }}>
+                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Incoming Traffic: <b>{rps} RPS</b></label>
                     <input
-                      type="number"
-                      value={minCap}
+                      type="range"
                       min="0"
-                      max="30"
-                      onChange={(e) => setMinCap(parseInt(e.target.value))}
-                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
+                      max="1800"
+                      value={rps}
+                      onChange={(e) => setRps(parseInt(e.target.value))}
+                      style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
                     />
-                    <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)' }}>Desired:</span>
+                  </div>
+
+                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Target CPU Limit: <b>{targetCpu}%</b></label>
                     <input
-                      type="number"
-                      value={desCap}
-                      min="0"
-                      max="30"
-                      onChange={(e) => setDesCap(parseInt(e.target.value))}
-                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
-                    />
-                    <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)' }}>Max:</span>
-                    <input
-                      type="number"
-                      value={maxCap}
-                      min="0"
-                      max="50"
-                      onChange={(e) => setMaxCap(parseInt(e.target.value))}
-                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }}
+                      type="range"
+                      min="20"
+                      max="80"
+                      value={targetCpu}
+                      onChange={(e) => setTargetCpu(parseInt(e.target.value))}
+                      style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
                     />
                   </div>
                 </div>
 
-                <div style={{ background: 'var(--color-background-secondary)', padding: '10px 12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Instance Max Capacity: <b>{capPer} RPS</b></label>
-                  <input
-                    type="range"
-                    min="50"
-                    max="400"
-                    value={capPer}
-                    onChange={(e) => setCapPer(parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
-                  />
-                </div>
-              </div>
-
-              {/* KPIs */}
-              <div className="asg-g3" style={{ marginBottom: '14px' }}>
-                <div className="asg-met">
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Healthy instances</div>
-                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#16a34a' }}>{metrics.n}</div>
-                </div>
-                <div className="asg-met">
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg CPU Utilization</div>
-                  <div style={{ fontSize: '18px', fontWeight: 600, color: metrics.avgCpu > targetCpu + 8 ? '#c2410c' : '#15803d' }}>{Math.round(metrics.avgCpu)}%</div>
-                </div>
-                <div className="asg-met">
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>RPS per target</div>
-                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#0369a1' }}>{metrics.n ? Math.round(metrics.rpt) : '∞'}</div>
-                </div>
-              </div>
-
-              {/* Play buttons */}
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '0.5px solid var(--color-border-secondary)', paddingBottom: '12px' }}>
-                <button className="asg-btn asg-on" onClick={isRunning ? pause : start}>{isRunning ? 'Pause ⏸' : 'Start ▶'}</button>
-                <button className="asg-btn" onClick={stepOnce}>Step ⏭</button>
-                <button className="asg-btn" onClick={resetSim}>Reset 🔄</button>
-                <button className="asg-btn" onClick={injectFailure}>Fail one node 💥</button>
-                <button className="asg-btn" onClick={toggleDrain}>Draining: {drainingEnabled ? 'ON 🧯' : 'OFF 🚫'}</button>
-              </div>
-
-              {/* Instances display */}
-              <div style={{ margin: '12px 0 6px', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Active Compute Fleet instances behind Load Balancer:</div>
-              <div className="asg-instances" style={{ marginBottom: '14px' }}>
-                {instances.filter((i) => i.status !== 'terminated').slice(0, 12).map((inst) => {
-                  const klass = inst.failed ? 'asg-inst asg-down' : inst.status === 'ok' ? 'asg-inst asg-ok' : inst.status === 'warm' ? 'asg-inst asg-warm' : inst.status === 'drain' ? 'asg-inst asg-drain' : 'asg-inst';
-                  const meta = inst.status === 'warm'
-                    ? `booting (${inst.warmTicks}t)`
-                    : inst.status === 'drain'
-                      ? `draining (${inst.drainTicks}t)`
-                      : inst.failed
-                        ? 'failed'
-                        : inst.healthy
-                          ? 'healthy'
-                          : 'not-ready';
-                  return (
-                    <div key={inst.id} className={klass}>
-                      <div className="name">i-{inst.id}</div>
-                      <div className="meta">{inst.status}<br />{meta}</div>
+                <div className="asg-g2" style={{ marginBottom: '14px' }}>
+                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Boundaries (Min / Desired / Max Capacity):</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Min:</span>
+                      <input
+                        type="number"
+                        value={minCap}
+                        min="0"
+                        max="30"
+                        onChange={(e) => setMinCap(parseInt(e.target.value))}
+                        style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
+                      />
+                      <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Desired:</span>
+                      <input
+                        type="number"
+                        value={desCap}
+                        min="0"
+                        max="30"
+                        onChange={(e) => setDesCap(parseInt(e.target.value))}
+                        style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
+                      />
+                      <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Max:</span>
+                      <input
+                        type="number"
+                        value={maxCap}
+                        min="0"
+                        max="50"
+                        onChange={(e) => setMaxCap(parseInt(e.target.value))}
+                        style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
+                      />
                     </div>
-                  );
-                })}
-                {Array.from({ length: Math.max(0, 12 - instances.filter((i) => i.status !== 'terminated').length) }).map((_, idx) => (
-                  <div key={`empty-${idx}`} className="asg-inst" style={{ opacity: 0.35 }}>
-                    <div className="name">—</div>
-                    <div className="meta">empty</div>
                   </div>
-                ))}
-              </div>
 
-              {/* Logs */}
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Activity Event log:</div>
-              <div className="asg-log" style={{ minHeight: '120px', maxHeight: '180px', overflowY: 'auto' }}>
-                {logs.map((entry, idx) => (
-                  <div key={idx} style={{ marginBottom: idx === logs.length - 1 ? 0 : 5 }} dangerouslySetInnerHTML={{ __html: entry }} />
-                ))}
-              </div>
+                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Instance Max Capacity: <b>{capPer} RPS</b></label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="400"
+                      value={capPer}
+                      onChange={(e) => setCapPer(parseInt(e.target.value))}
+                      style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                    />
+                  </div>
+                </div>
 
+                {/* KPIs */}
+                <div className="asg-g3" style={{ marginBottom: '14px' }}>
+                  <div className="asg-met">
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Healthy instances</div>
+                    <div style={{ fontSize: '18px', fontWeight: 600, color: '#16a34a' }}>{metrics.n}</div>
+                  </div>
+                  <div className="asg-met">
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg CPU Utilization</div>
+                    <div style={{ fontSize: '18px', fontWeight: 600, color: metrics.avgCpu > targetCpu + 8 ? '#c2410c' : '#15803d' }}>{Math.round(metrics.avgCpu)}%</div>
+                  </div>
+                  <div className="asg-met">
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>RPS per target</div>
+                    <div style={{ fontSize: '18px', fontWeight: 600, color: '#0369a1' }}>{metrics.n ? Math.round(metrics.rpt) : '∞'}</div>
+                  </div>
+                </div>
+
+                {/* Play buttons */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '1.5px solid #cbd5e1', paddingBottom: '12px' }}>
+                  <button className="asg-btn asg-on" onClick={isRunning ? pause : start}>{isRunning ? 'Pause ⏸' : 'Start ▶'}</button>
+                  <button className="asg-btn" onClick={stepOnce}>Step ⏭</button>
+                  <button className="asg-btn" onClick={resetSim}>Reset 🔄</button>
+                  <button className="asg-btn" onClick={injectFailure}>Fail one node 💥</button>
+                  <button className="asg-btn" onClick={toggleDrain}>Draining: {drainingEnabled ? 'ON 🧯' : 'OFF 🚫'}</button>
+                </div>
+
+                {/* Logs */}
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Activity Event log:</div>
+                <div className="asg-log" style={{ minHeight: '120px', maxHeight: '180px', overflowY: 'auto' }}>
+                  {logs.map((entry, idx) => (
+                    <div key={idx} style={{ marginBottom: idx === logs.length - 1 ? 0 : 5 }} dangerouslySetInnerHTML={{ __html: entry }} />
+                  ))}
+                </div>
+
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
       </div>
     </div>
