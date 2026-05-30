@@ -465,20 +465,104 @@ export default function AuroraVisualizer() {
     <div className="aurora-container">
       <style>{`
         /* Encapsulated styling under .aurora- */
-        .aurora-container { font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-text-primary, #0f172a); }
-        .aurora-h { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; color: var(--color-text-primary, #0f172a); }
-        .aurora-sub { font-size: 13px; color: var(--color-text-secondary, #475569); line-height: 1.5; margin-bottom: 16px; }
-        .aurora-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .aurora-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .aurora-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .aurora-tb.aurora-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .aurora-card { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-lg, 12px); padding: 14px 16px; background: var(--color-background-primary, #ffffff); margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .aurora-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #475569); text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; }
+        .aurora-container {
+          font-family: var(--font-sans, system-ui, sans-serif);
+          color: #1e293b;
+        }
+        .aurora-h {
+          font-size: 26px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 6px;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+        }
+        .aurora-sub {
+          font-size: 13.5px;
+          color: #475569;
+          line-height: 1.6;
+          margin-bottom: 20px;
+        }
+        .aurora-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+          border-bottom: 1.5px solid #e2e8f0;
+          padding-bottom: 12px;
+        }
+        .aurora-tb {
+          padding: 6px 14px;
+          border-radius: 10px;
+          border: 1px solid #cbd5e1;
+          font-size: 12px;
+          cursor: pointer;
+          background: rgba(255, 255, 255, 0.8);
+          color: #475569;
+          transition: all 0.15s ease-in-out;
+          outline: none;
+          font-weight: 500;
+        }
+        .aurora-tb:hover {
+          background: #f1f5f9;
+          border-color: #94a3b8;
+          color: #0f172a;
+        }
+        .aurora-tb.aurora-on {
+          background: #16a34a;
+          color: #fff;
+          border-color: #16a34a;
+          box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+        }
+        .aurora-card {
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          border-radius: 16px;
+          padding: 14px 16px;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(10px);
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02);
+          margin-bottom: 14px;
+        }
+        .aurora-sec {
+          font-size: 11px;
+          font-weight: 700;
+          color: #1e293b;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin: 16px 0 8px;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 4px;
+        }
         .aurora-sec:first-child { margin-top: 0; }
         .aurora-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .aurora-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .aurora-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); background: var(--color-background-secondary, #f8fafc); margin-bottom: 6px; font-size: 12px; line-height: 1.45; }
-        .aurora-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: #fff; font-weight: 600; background: #2563eb; }
+        .aurora-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          padding: 8px 10px;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          background: rgba(248, 250, 252, 0.8);
+          margin-bottom: 6px;
+          font-size: 12px;
+          line-height: 1.45;
+        }
+        .aurora-dot {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-size: 10px;
+          color: #fff;
+          font-weight: 600;
+          background: #2563eb;
+        }
         .aurora-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
         .aurora-binfo { background: #dbeafe; color: #1d4ed8; }
         .aurora-bok { background: #dcfce7; color: #15803d; }
@@ -486,38 +570,124 @@ export default function AuroraVisualizer() {
         .aurora-bbad { background: #fee2e2; color: #b91c1c; }
         .aurora-bpurple { background: #ede9fe; color: #7c3aed; }
         .aurora-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
-        .aurora-k { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 10px; text-align: center; }
-        .aurora-k .t { font-size: 10px; color: var(--color-text-tertiary, #64748b); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .aurora-k .v { font-size: 16px; font-weight: 700; color: var(--color-text-primary, #0f172a); }
+        .aurora-k {
+          background: rgba(248, 250, 252, 0.85);
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          padding: 10px;
+          text-align: center;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+        }
+        .aurora-k .t { font-size: 10px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+        .aurora-k .v { font-size: 16px; font-weight: 700; color: #0f172a; }
         .aurora-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .aurora-ctrl { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; }
-        .aurora-ctrl label { display: block; font-size: 12px; font-weight: 600; color: var(--color-text-secondary, #475569); margin-bottom: 6px; }
-        .aurora-ctrl select { width: 100%; padding: 6px; font-size: 12px; border: 2px solid #2563eb; border-radius: 4px; background: var(--color-background-primary, #ffffff); outline: none; }
-        .aurora-ctrl input[type="range"] { width: 100%; padding: 6px; font-size: 12px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: 4px; background: var(--color-background-primary, #ffffff); }
-        .aurora-ctrl .out { font-size: 11px; color: var(--color-text-secondary, #475569); margin-top: 6px; font-family: var(--font-mono, monospace); }
+        .aurora-ctrl {
+          background: rgba(248, 250, 252, 0.85);
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          padding: 12px;
+        }
+        .aurora-ctrl label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+        .aurora-ctrl select {
+          width: 100%;
+          padding: 6px;
+          font-size: 12px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          background: #ffffff;
+          outline: none;
+          transition: all 0.15s;
+        }
+        .aurora-ctrl select:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+        .aurora-ctrl input[type="range"] {
+          width: 100%;
+          padding: 6px;
+          font-size: 12px;
+          border: 0.5px solid #cbd5e1;
+          border-radius: 4px;
+          background: #ffffff;
+        }
+        .aurora-ctrl .out { font-size: 11px; color: #475569; margin-top: 6px; font-family: var(--font-mono, monospace); }
         .aurora-mono { font-family: var(--font-mono, monospace); font-size: 11px; }
         .aurora-btnbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .aurora-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); background: var(--color-background-primary, #ffffff); color: var(--color-text-primary, #0f172a); cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; }
-        .aurora-btn:hover { background: var(--color-background-secondary, #f8fafc); }
-        .aurora-btn.aurora-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
-        .aurora-btn.aurora-primary:hover { background: #1d4ed8; }
-        .aurora-log { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; font-size: 11px; color: var(--color-text-secondary, #475569); line-height: 1.6; min-height: 90px; max-height: 180px; overflow-y: auto; margin-top: 12px; }
+        .aurora-btn {
+          font-size: 12px;
+          padding: 6px 14px;
+          border-radius: 8px;
+          border: 1px solid #cbd5e1;
+          background: #ffffff;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.15s;
+          outline: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-weight: 500;
+        }
+        .aurora-btn:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
+        .aurora-btn.aurora-primary {
+          background: #16a34a;
+          border-color: #16a34a;
+          color: #fff;
+          box-shadow: 0 2px 4px rgba(22, 163, 74, 0.15);
+        }
+        .aurora-btn.aurora-primary:hover { background: #15803d; border-color: #15803d; }
+        .aurora-btn.aurora-primary:disabled { background: #93c5fd; border-color: #93c5fd; color: #fff; cursor: not-allowed; }
+        .aurora-log {
+          border: 1px solid #cbd5e1;
+          border-radius: 10px;
+          padding: 12px;
+          background: #f8fafc;
+          color: #1e293b;
+          font-size: 11px;
+          font-family: var(--font-mono, monospace);
+          line-height: 1.6;
+          min-height: 90px;
+          max-height: 180px;
+          overflow-y: auto;
+          margin-top: 12px;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+        }
         ul.aurora-ck, ul.aurora-wn { padding-left: 0; margin-bottom: 0; }
-        ul.aurora-ck li, ul.aurora-wn li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; line-height: 1.4; color: var(--color-text-secondary, #475569); }
+        ul.aurora-ck li, ul.aurora-wn li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; line-height: 1.4; color: #475569; }
         ul.aurora-ck li::before { content: "✓"; position: absolute; left: 0; color: #15803d; font-weight: 700; }
         ul.aurora-wn li::before { content: "⚠️"; position: absolute; left: 0; font-size: 10px; }
         .aurora-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.4; }
-        .aurora-table th { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; text-align: left; font-weight: 600; color: var(--color-text-secondary, #475569); }
-        .aurora-table td { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; color: var(--color-text-primary, #0f172a); }
-        .aurora-table tr:nth-child(even) { background: var(--color-background-secondary, #f8fafc); }
-        .aurora-code-container { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: 8px; background: var(--color-background-secondary, #f8fafc); padding: 12px; margin-top: 10px; }
-        .aurora-code { font-family: var(--font-mono, monospace); font-size: 11px; white-space: pre-wrap; line-height: 1.45; color: var(--color-text-primary, #0f172a); }
+        .aurora-table th { background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; text-align: left; font-weight: 600; color: #475569; }
+        .aurora-table td { border: 1px solid #cbd5e1; padding: 8px; color: #1e293b; }
+        .aurora-table tr:nth-child(even) { background: rgba(248, 250, 252, 0.5); }
+        .aurora-code-container { border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; padding: 12px; margin-top: 10px; }
+        .aurora-code { font-family: var(--font-mono, monospace); font-size: 11px; white-space: pre-wrap; line-height: 1.45; color: #1e293b; }
         
-        .aurora-subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px dashed var(--color-border-tertiary, #e2e8f0); padding-bottom: 8px; }
-        .aurora-subtb { padding: 4px 10px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 11px; cursor: pointer; background: var(--color-background-primary, #ffffff); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; }
-        .aurora-subtb:hover { background: var(--color-background-secondary, #f8fafc); }
-        .aurora-subtb.aurora-on { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 500; }
-        .aurora-subtb.aurora-on-purple { background: #7c3aed; color: #fff; border-color: #7c3aed; font-weight: 500; }
+        .aurora-subtabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px; }
+        .aurora-subtb {
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid #cbd5e1;
+          font-size: 11px;
+          cursor: pointer;
+          background: #ffffff;
+          color: #475569;
+          transition: all 0.15s;
+          outline: none;
+          font-weight: 500;
+        }
+        .aurora-subtb:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
+        .aurora-subtb.aurora-on { background: #16a34a; color: #fff; border-color: #16a34a; }
+        .aurora-subtb.aurora-on-purple { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+        
+        .aurora-svg-bg {
+          background-color: #f8fafc;
+          background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+          background-size: 14px 14px;
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
         
         @keyframes activeNodePulse {
           0% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
@@ -533,6 +703,13 @@ export default function AuroraVisualizer() {
         .flow-active-line {
           stroke-dasharray: 6, 4;
           animation: flowAnim 1s linear infinite;
+        }
+        @keyframes ledBlink {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+        .led-blink {
+          animation: ledBlink 1s infinite;
         }
       `}</style>
 
@@ -572,74 +749,159 @@ export default function AuroraVisualizer() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
               <div>
-                <svg width="100%" viewBox="0 0 680 400" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+                <svg width="100%" viewBox="0 0 680 400" className="aurora-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <linearGradient id="g-light-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f8fafc" />
-                      <stop offset="100%" stopColor="#f1f5f9" />
-                    </linearGradient>
                     <marker id="arr-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                    <marker id="arr-p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                    <marker id="arr-p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                    <filter id="glow-p" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
                   </defs>
 
-                  {/* Grid Background */}
-                  <rect width="680" height="400" fill="url(#g-light-bg)" />
-                  <text x="340" y="24" textAnchor="middle" fontSize="10.5" fill="#64748b" fontWeight="600" fontFamily="sans-serif">AWS Private Subnets (3 Availability Zones)</text>
+                  {/* Grid / Region text label */}
+                  <text x="340" y="24" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="700" letterSpacing="0.05em">VPC — us-east-1 (3 Availability Zones)</text>
 
-                  {/* Compute Layer */}
-                  <rect x="20" y="38" width="640" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="340" y="52" textAnchor="middle" fontSize="9.5" fill="#7c3aed" fontWeight="bold" fontFamily="monospace">AURORA COMPUTE INSTANCES</text>
+                  {/* Compute Layer Frame */}
+                  <rect x="20" y="38" width="640" height="72" rx="12" fill="rgba(255, 255, 255, 0.75)" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="340" y="52" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="700" letterSpacing="0.05em">AURORA ELAPSED COMPUTE FLEET</text>
 
-                  <rect x="40" y="62" width="170" height="34" rx="4" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
-                  <text x="125" y="79" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">✍️ Writer (us-east-1a)</text>
+                  {/* AZ-1 Writer Instance */}
+                  <g transform="translate(40, 60)">
+                    <rect width="170" height="38" rx="8" fill="#f5f3ff" stroke="#a78bfa" strokeWidth="1.5" />
+                    <circle cx="16" cy="19" r="4.5" fill="#7c3aed" className="led-blink" />
+                    <text x="30" y="23" fontSize="11.5" fill="#4c1d95" fontWeight="bold">✍️ Primary Writer (AZ-1)</text>
+                    {/* Pulsing state bar */}
+                    <rect x="145" y="14" width="16" height="10" rx="3" fill="#10b981" />
+                  </g>
 
-                  <rect x="250" y="62" width="170" height="34" rx="4" fill="#f3e8ff" stroke="#c084fc" strokeWidth="0.5" />
-                  <text x="335" y="79" textAnchor="middle" fontSize="11" fill="#6b21a8" fontWeight="bold">📖 Reader 1 (us-east-1b)</text>
+                  {/* AZ-2 Reader 1 */}
+                  <g transform="translate(250, 60)">
+                    <rect width="170" height="38" rx="8" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1" />
+                    <circle cx="16" cy="19" r="4.5" fill="#3b82f6" className="led-blink" />
+                    <text x="30" y="23" fontSize="11.5" fill="#1e40af" fontWeight="bold">📖 Reader Replica 1</text>
+                    <rect x="145" y="14" width="16" height="10" rx="3" fill="#3b82f6" />
+                  </g>
 
-                  <rect x="460" y="62" width="170" height="34" rx="4" fill="#f3e8ff" stroke="#c084fc" strokeWidth="0.5" />
-                  <text x="545" y="79" textAnchor="middle" fontSize="11" fill="#6b21a8" fontWeight="bold">📖 Reader 2 (us-east-1c)</text>
+                  {/* AZ-3 Reader 2 */}
+                  <g transform="translate(460, 60)">
+                    <rect width="170" height="38" rx="8" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1" />
+                    <circle cx="16" cy="19" r="4.5" fill="#3b82f6" className="led-blink" />
+                    <text x="30" y="23" fontSize="11.5" fill="#1e40af" fontWeight="bold">📖 Reader Replica 2</text>
+                    <rect x="145" y="14" width="16" height="10" rx="3" fill="#3b82f6" />
+                  </g>
 
-                  {/* Shared Storage Area */}
-                  <rect x="20" y="150" width="640" height="230" rx="10" fill="#ecfdf5" stroke="#a7f3d0" strokeWidth="1" />
-                  <text x="340" y="168" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold" fontFamily="monospace">SHARED VIRTUALIZED DISTRIBUTED STORAGE LAYER</text>
+                  {/* Shared Storage Frame */}
+                  <rect x="20" y="150" width="640" height="230" rx="14" fill="rgba(239, 246, 255, 0.4)" stroke="#93c5fd" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="340" y="168" textAnchor="middle" fontSize="9.5" fill="#1e40af" fontWeight="700" letterSpacing="0.05em">SHARED 6-WAY VIRTUALIZED DISTRIBUTED STORAGE LAYER</text>
 
-                  {/* AZ-1 Nodes */}
-                  <rect x="35" y="185" width="180" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="125" y="200" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">AZ-1 (Subnet 1a)</text>
-                  
-                  <rect x="50" y="215" width="150" height="32" rx="4" fill={copies[0] ? '#ecfdf5' : '#fef2f2'} stroke={copies[0] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
-                  <text x="125" y="235" textAnchor="middle" fontSize="10.5" fill={copies[0] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[0] ? 'Storage Copy 1 ✅' : 'Copy 1 Outage ❌'}</text>
-                  
-                  <rect x="50" y="258" width="150" height="32" rx="4" fill={copies[1] ? '#ecfdf5' : '#fef2f2'} stroke={copies[1] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
-                  <text x="125" y="278" textAnchor="middle" fontSize="10.5" fill={copies[1] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[1] ? 'Storage Copy 2 ✅' : 'Copy 2 Outage ❌'}</text>
+                  {/* Active flow pipelines */}
+                  {copies[0] && (
+                    <circle r="3" fill="#10b981">
+                      <animateMotion dur="1.5s" repeatCount="indefinite" path="M 125 98 L 125 215" />
+                    </circle>
+                  )}
+                  {copies[1] && (
+                    <circle r="3" fill="#10b981">
+                      <animateMotion dur="1.8s" repeatCount="indefinite" path="M 125 98 L 125 258" />
+                    </circle>
+                  )}
+                  {copies[2] && (
+                    <circle r="3" fill="#10b981">
+                      <animateMotion dur="1.6s" repeatCount="indefinite" path="M 335 98 L 340 215" />
+                    </circle>
+                  )}
+                  {copies[3] && (
+                    <circle r="3" fill="#10b981">
+                      <animateMotion dur="1.9s" repeatCount="indefinite" path="M 335 98 L 340 258" />
+                    </circle>
+                  )}
+                  {copies[4] && (
+                    <circle r="3" fill="#10b981">
+                      <animateMotion dur="1.7s" repeatCount="indefinite" path="M 545 98 L 555 215" />
+                    </circle>
+                  )}
+                  {copies[5] && (
+                    <circle r="3" fill="#10b981">
+                      <animateMotion dur="2.0s" repeatCount="indefinite" path="M 545 98 L 555 258" />
+                    </circle>
+                  )}
 
-                  {/* AZ-2 Nodes */}
-                  <rect x="250" y="185" width="180" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="340" y="200" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">AZ-2 (Subnet 1b)</text>
-                  
-                  <rect x="265" y="215" width="150" height="32" rx="4" fill={copies[2] ? '#ecfdf5' : '#fef2f2'} stroke={copies[2] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
-                  <text x="340" y="235" textAnchor="middle" fontSize="10.5" fill={copies[2] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[2] ? 'Storage Copy 3 ✅' : 'Copy 3 Outage ❌'}</text>
-                  
-                  <rect x="265" y="258" width="150" height="32" rx="4" fill={copies[3] ? '#ecfdf5' : '#fef2f2'} stroke={copies[3] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
-                  <text x="340" y="278" textAnchor="middle" fontSize="10.5" fill={copies[3] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[3] ? 'Storage Copy 4 ✅' : 'Copy 4 Outage ❌'}</text>
+                  {/* Redo stream paths (static pipelines behind particles) */}
+                  <path d="M 125 98 L 125 215" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 125 98 L 125 258" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 335 98 L 340 215" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 335 98 L 340 258" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 545 98 L 555 215" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 545 98 L 555 258" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
 
-                  {/* AZ-3 Nodes */}
-                  <rect x="465" y="185" width="180" height="150" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="555" y="200" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">AZ-3 (Subnet 1c)</text>
-                  
-                  <rect x="480" y="215" width="150" height="32" rx="4" fill={copies[4] ? '#ecfdf5' : '#fef2f2'} stroke={copies[4] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
-                  <text x="555" y="235" textAnchor="middle" fontSize="10.5" fill={copies[4] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[4] ? 'Storage Copy 5 ✅' : 'Copy 5 Outage ❌'}</text>
-                  
-                  <rect x="480" y="258" width="150" height="32" rx="4" fill={copies[5] ? '#ecfdf5' : '#fef2f2'} stroke={copies[5] ? '#10b981' : '#fca5a5'} strokeWidth="1" />
-                  <text x="555" y="278" textAnchor="middle" fontSize="10.5" fill={copies[5] ? '#065f46' : '#991b1b'} fontWeight="500">{copies[5] ? 'Storage Copy 6 ✅' : 'Copy 6 Outage ❌'}</text>
+                  {/* AZ-1 Subnet Zone */}
+                  <g transform="translate(35, 185)">
+                    <rect width="180" height="150" rx="8" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">AZ-1 (us-east-1a)</text>
+                    
+                    {/* Copy 1 */}
+                    <g transform="translate(15, 30)">
+                      <rect width="150" height="40" rx="6" fill={copies[0] ? '#f0fdf4' : '#fff1f2'} stroke={copies[0] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <circle cx="15" cy="20" r="3.5" fill={copies[0] ? '#10b981' : '#ef4444'} className={!copies[0] ? 'led-blink' : undefined} />
+                      <text x="30" y="24" fontSize="10" fill={copies[0] ? '#166534' : '#991b1b'} fontWeight="600">{copies[0] ? 'Storage Drive Copy 1' : 'Copy 1 Outage ❌'}</text>
+                      {copies[0] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                    </g>
+                    
+                    {/* Copy 2 */}
+                    <g transform="translate(15, 85)">
+                      <rect width="150" height="40" rx="6" fill={copies[1] ? '#f0fdf4' : '#fff1f2'} stroke={copies[1] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <circle cx="15" cy="20" r="3.5" fill={copies[1] ? '#10b981' : '#ef4444'} className={!copies[1] ? 'led-blink' : undefined} />
+                      <text x="30" y="24" fontSize="10" fill={copies[1] ? '#166534' : '#991b1b'} fontWeight="600">{copies[1] ? 'Storage Drive Copy 2' : 'Copy 2 Outage ❌'}</text>
+                      {copies[1] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                    </g>
+                  </g>
 
-                  {/* Redo stream paths */}
-                  <line x1="125" y1="96" x2="125" y2="150" stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="3,2" className="flow-active-line" markerEnd="url(#arr-p)" />
-                  <line x1="335" y1="96" x2="335" y2="150" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,2" className="flow-active-line" markerEnd="url(#arr-p)" />
-                  <line x1="545" y1="96" x2="545" y2="150" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,2" className="flow-active-line" markerEnd="url(#arr-p)" />
-                  <text x="155" y="130" fontSize="9.5" fill="#7c3aed" fontWeight="bold">Redo Record Stream</text>
+                  {/* AZ-2 Subnet Zone */}
+                  <g transform="translate(250, 185)">
+                    <rect width="180" height="150" rx="8" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">AZ-2 (us-east-1b)</text>
+                    
+                    {/* Copy 3 */}
+                    <g transform="translate(15, 30)">
+                      <rect width="150" height="40" rx="6" fill={copies[2] ? '#f0fdf4' : '#fff1f2'} stroke={copies[2] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <circle cx="15" cy="20" r="3.5" fill={copies[2] ? '#10b981' : '#ef4444'} className={!copies[2] ? 'led-blink' : undefined} />
+                      <text x="30" y="24" fontSize="10" fill={copies[2] ? '#166534' : '#991b1b'} fontWeight="600">{copies[2] ? 'Storage Drive Copy 3' : 'Copy 3 Outage ❌'}</text>
+                      {copies[2] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                    </g>
+                    
+                    {/* Copy 4 */}
+                    <g transform="translate(15, 85)">
+                      <rect width="150" height="40" rx="6" fill={copies[3] ? '#f0fdf4' : '#fff1f2'} stroke={copies[3] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <circle cx="15" cy="20" r="3.5" fill={copies[3] ? '#10b981' : '#ef4444'} className={!copies[3] ? 'led-blink' : undefined} />
+                      <text x="30" y="24" fontSize="10" fill={copies[3] ? '#166534' : '#991b1b'} fontWeight="600">{copies[3] ? 'Storage Drive Copy 4' : 'Copy 4 Outage ❌'}</text>
+                      {copies[3] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                    </g>
+                  </g>
 
-                  <text x="340" y="365" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold">Self-Healing Storage rebuilds segments instantly on healthy nodes if sectors fail.</text>
+                  {/* AZ-3 Subnet Zone */}
+                  <g transform="translate(465, 185)">
+                    <rect width="180" height="150" rx="8" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">AZ-3 (us-east-1c)</text>
+                    
+                    {/* Copy 5 */}
+                    <g transform="translate(15, 30)">
+                      <rect width="150" height="40" rx="6" fill={copies[4] ? '#f0fdf4' : '#fff1f2'} stroke={copies[4] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <circle cx="15" cy="20" r="3.5" fill={copies[4] ? '#10b981' : '#ef4444'} className={!copies[4] ? 'led-blink' : undefined} />
+                      <text x="30" y="24" fontSize="10" fill={copies[4] ? '#166534' : '#991b1b'} fontWeight="600">{copies[4] ? 'Storage Drive Copy 5' : 'Copy 5 Outage ❌'}</text>
+                      {copies[4] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                    </g>
+                    
+                    {/* Copy 6 */}
+                    <g transform="translate(15, 85)">
+                      <rect width="150" height="40" rx="6" fill={copies[5] ? '#f0fdf4' : '#fff1f2'} stroke={copies[5] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <circle cx="15" cy="20" r="3.5" fill={copies[5] ? '#10b981' : '#ef4444'} className={!copies[5] ? 'led-blink' : undefined} />
+                      <text x="30" y="24" fontSize="10" fill={copies[5] ? '#166534' : '#991b1b'} fontWeight="600">{copies[5] ? 'Storage Drive Copy 6' : 'Copy 6 Outage ❌'}</text>
+                      {copies[5] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                    </g>
+                  </g>
+
+                  <text x="340" y="365" textAnchor="middle" fontSize="11" fill="#047857" fontWeight="bold">Self-Healing Storage rebuilds segments instantly on healthy nodes if sectors fail.</text>
                 </svg>
               </div>
 
@@ -718,73 +980,119 @@ export default function AuroraVisualizer() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
               <div>
-                <svg width="100%" viewBox="0 0 680 340" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
-                  <rect width="680" height="340" fill="url(#g-light-bg)" />
+                <svg width="100%" viewBox="0 0 680 340" className="aurora-svg-bg" style={{ display: 'block' }}>
+                  <defs>
+                    <marker id="arr-b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
+                    <marker id="arr-v" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                    <marker id="arr-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                  </defs>
 
-                  {/* Sources */}
-                  <g className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.2)' } as React.CSSProperties}>
-                    <rect x="30" y="30" width="160" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth={activeSource === 'client' ? 2 : 0.5} style={{ cursor: 'pointer' }} onClick={() => setActiveSource('client')} />
-                    <text x="110" y="58" textAnchor="middle" fontSize="12" fill="#1d4ed8" fontWeight="bold">💻 Standard OLTP App</text>
-                    <text x="110" y="74" textAnchor="middle" fontSize="8.5" fill="#60a5fa">Web App / ECS Driver</text>
+                  {/* Client App Sources */}
+                  <g style={{ cursor: 'pointer' }} onClick={() => setActiveSource('client')}>
+                    <rect x="30" y="30" width="160" height="60" rx="10" fill={activeSource === 'client' ? '#eff6ff' : 'rgba(255,255,255,0.7)'} stroke={activeSource === 'client' ? '#2563eb' : '#cbd5e1'} strokeWidth={activeSource === 'client' ? 2 : 1} className={activeSource === 'client' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(37, 99, 235, 0.25)' } as React.CSSProperties} />
+                    <text x="110" y="58" textAnchor="middle" fontSize="12" fill={activeSource === 'client' ? '#1e40af' : '#475569'} fontWeight="bold">💻 Standard OLTP App</text>
+                    <text x="110" y="74" textAnchor="middle" fontSize="8.5" fill="#64748b">Web App / ECS Cluster</text>
                   </g>
 
-                  <g className="active-glow-node" style={{ '--pulse-color': 'rgba(124, 58, 237, 0.2)' } as React.CSSProperties}>
-                    <rect x="30" y="130" width="160" height="60" rx="6" fill="#f5f3ff" stroke="#7c3aed" strokeWidth={activeSource === 'proxy' ? 2 : 0.5} style={{ cursor: 'pointer' }} onClick={() => setActiveSource('proxy')} />
-                    <text x="110" y="158" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="bold">⚡ Serverless Lambda</text>
-                    <text x="110" y="174" textAnchor="middle" fontSize="8.5" fill="#a78bfa">VPC Data API / Proxy Pool</text>
+                  <g style={{ cursor: 'pointer' }} onClick={() => setActiveSource('proxy')}>
+                    <rect x="30" y="130" width="160" height="60" rx="10" fill={activeSource === 'proxy' ? '#f5f3ff' : 'rgba(255,255,255,0.7)'} stroke={activeSource === 'proxy' ? '#7c3aed' : '#cbd5e1'} strokeWidth={activeSource === 'proxy' ? 2 : 1} className={activeSource === 'proxy' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(124, 58, 237, 0.25)' } as React.CSSProperties} />
+                    <text x="110" y="158" textAnchor="middle" fontSize="12" fill={activeSource === 'proxy' ? '#5b21b6' : '#475569'} fontWeight="bold">⚡ Serverless Lambda</text>
+                    <text x="110" y="174" textAnchor="middle" fontSize="8.5" fill="#64748b">RDS Proxy / TCP Pool</text>
                   </g>
 
-                  <g className="active-glow-node" style={{ '--pulse-color': 'rgba(16, 185, 129, 0.2)' } as React.CSSProperties}>
-                    <rect x="30" y="230" width="160" height="60" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth={activeSource === 'analytics' ? 2 : 0.5} style={{ cursor: 'pointer' }} onClick={() => setActiveSource('analytics')} />
-                    <text x="110" y="258" textAnchor="middle" fontSize="12" fill="#047857" fontWeight="bold">📊 Analytics Worker</text>
-                    <text x="110" y="274" textAnchor="middle" fontSize="8.5" fill="#34d399">PowerBI / Heavy Reports</text>
+                  <g style={{ cursor: 'pointer' }} onClick={() => setActiveSource('analytics')}>
+                    <rect x="30" y="230" width="160" height="60" rx="10" fill={activeSource === 'analytics' ? '#f0fdf4' : 'rgba(255,255,255,0.7)'} stroke={activeSource === 'analytics' ? '#10b981' : '#cbd5e1'} strokeWidth={activeSource === 'analytics' ? 2 : 1} className={activeSource === 'analytics' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(16, 185, 129, 0.25)' } as React.CSSProperties} />
+                    <text x="110" y="258" textAnchor="middle" fontSize="12" fill={activeSource === 'analytics' ? '#166534' : '#475569'} fontWeight="bold">📊 Analytics Worker</text>
+                    <text x="110" y="274" textAnchor="middle" fontSize="8.5" fill="#64748b">Heavy OLAP Queries</text>
                   </g>
+
+                  {/* Static routes under particles */}
+                  <path d="M 190 60 L 270 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 80 L 520 70" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  <path d="M 190 160 L 270 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 260 L 520 70" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 260 L 520 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  <path d="M 190 260 L 270 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 170 L 520 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 170 L 520 270" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
 
                   {/* Endpoints */}
-                  <rect x="270" y="60" width="180" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="360" y="80" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">✍️ Writer Endpoint</text>
-                  <text x="360" y="93" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.writer.rds.com</text>
+                  <g transform="translate(270, 60)">
+                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'client' ? '#2563eb' : '#cbd5e1'} strokeWidth={activeSource === 'client' ? 2 : 1} />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">✍️ Writer Endpoint</text>
+                    <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.writer.rds.com</text>
+                  </g>
 
-                  <rect x="270" y="150" width="180" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="360" y="170" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">📖 Reader Endpoint</text>
-                  <text x="360" y="183" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.reader-ro.rds.com</text>
+                  <g transform="translate(270, 150)">
+                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'analytics' ? '#10b981' : '#cbd5e1'} strokeWidth={activeSource === 'analytics' ? 2 : 1} />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">📖 Reader Endpoint</text>
+                    <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.reader-ro.rds.com</text>
+                  </g>
 
-                  <rect x="270" y="240" width="180" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="360" y="260" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">🔌 Data API Endpoint</text>
-                  <text x="360" y="273" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">data-api.ap-region.rds.com</text>
+                  <g transform="translate(270, 240)">
+                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'proxy' ? '#7c3aed' : '#cbd5e1'} strokeWidth={activeSource === 'proxy' ? 2 : 1} />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">🔌 Data API Endpoint</text>
+                    <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">data-api.ap-region.rds.com</text>
+                  </g>
 
                   {/* Database Compute instances */}
-                  <rect x="520" y="45" width="130" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="585" y="68" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Writer Instance</text>
-                  <text x="585" y="82" textAnchor="middle" fontSize="8.5" fill="#16a34a" fontWeight="bold">Primary</text>
+                  <g transform="translate(520, 45)">
+                    <rect width="130" height="48" rx="8" fill="#fffbeb" stroke="#fcd34d" strokeWidth="1.5" />
+                    <text x="65" y="22" textAnchor="middle" fontSize="11" fill="#78350f" fontWeight="bold">Writer Instance</text>
+                    <text x="65" y="36" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">🟢 Primary</text>
+                  </g>
 
-                  <rect x="520" y="145" width="130" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="585" y="168" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Replica A</text>
-                  <text x="585" y="182" textAnchor="middle" fontSize="8.5" fill="#2563eb">Reader Node</text>
+                  <g transform="translate(520, 145)">
+                    <rect width="130" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="65" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Reader Replica A</text>
+                    <text x="65" y="36" textAnchor="middle" fontSize="9" fill="#2563eb" fontWeight="bold">🔵 Online Reader</text>
+                  </g>
 
-                  <rect x="520" y="245" width="130" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="585" y="268" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Replica B</text>
-                  <text x="585" y="282" textAnchor="middle" fontSize="8.5" fill="#2563eb">Reader Node</text>
+                  <g transform="translate(520, 245)">
+                    <rect width="130" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="65" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Reader Replica B</text>
+                    <text x="65" y="36" textAnchor="middle" fontSize="9" fill="#2563eb" fontWeight="bold">🔵 Online Reader</text>
+                  </g>
 
-                  {/* Ingress Paths dynamic tracing */}
+                  {/* Active `<animateMotion>` pipelines */}
                   {activeSource === 'client' && (
                     <>
-                      <path d="M 190 60 L 270 80" fill="none" stroke="#2563eb" strokeWidth="2.5" className="flow-active-line" />
-                      <path d="M 450 80 L 520 70" fill="none" stroke="#2563eb" strokeWidth="2.5" className="flow-active-line" />
+                      <circle r="4.5" fill="#2563eb" className="active-glow-node" style={{ '--pulse-color': 'rgba(37,99,235,0.4)' } as React.CSSProperties}>
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 190 60 L 270 80" />
+                      </circle>
+                      <circle r="4.5" fill="#2563eb" className="active-glow-node" style={{ '--pulse-color': 'rgba(37,99,235,0.4)' } as React.CSSProperties}>
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 450 80 L 520 70" />
+                      </circle>
                     </>
                   )}
+
                   {activeSource === 'proxy' && (
                     <>
-                      <path d="M 190 160 L 270 260" fill="none" stroke="#7c3aed" strokeWidth="2.5" className="flow-active-line" />
-                      <path d="M 450 260 L 520 70" fill="none" stroke="#7c3aed" strokeWidth="2" className="flow-active-line" />
-                      <path d="M 450 260 L 520 170" fill="none" stroke="#7c3aed" strokeWidth="2" className="flow-active-line" />
+                      <circle r="4" fill="#7c3aed" className="active-glow-node" style={{ '--pulse-color': 'rgba(124,58,237,0.4)' } as React.CSSProperties}>
+                        <animateMotion dur="1.4s" repeatCount="indefinite" path="M 190 160 L 270 260" />
+                      </circle>
+                      <circle r="3.5" fill="#7c3aed">
+                        <animateMotion dur="1.4s" repeatCount="indefinite" path="M 450 260 L 520 70" />
+                      </circle>
+                      <circle r="3.5" fill="#7c3aed">
+                        <animateMotion dur="1.6s" repeatCount="indefinite" path="M 450 260 L 520 170" />
+                      </circle>
                     </>
                   )}
+
                   {activeSource === 'analytics' && (
                     <>
-                      <path d="M 190 260 L 270 170" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" />
-                      <path d="M 450 170 L 520 170" fill="none" stroke="#10b981" strokeWidth="2" className="flow-active-line" />
-                      <path d="M 450 170 L 520 270" fill="none" stroke="#10b981" strokeWidth="2" className="flow-active-line" />
+                      <circle r="4" fill="#10b981" className="active-glow-node" style={{ '--pulse-color': 'rgba(16,185,129,0.4)' } as React.CSSProperties}>
+                        <animateMotion dur="1.4s" repeatCount="indefinite" path="M 190 260 L 270 170" />
+                      </circle>
+                      <circle r="3.5" fill="#10b981">
+                        <animateMotion dur="1.4s" repeatCount="indefinite" path="M 450 170 L 520 170" />
+                      </circle>
+                      <circle r="3.5" fill="#10b981">
+                        <animateMotion dur="1.6s" repeatCount="indefinite" path="M 450 170 L 520 270" />
+                      </circle>
                     </>
                   )}
                 </svg>
@@ -826,58 +1134,98 @@ export default function AuroraVisualizer() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: '14px', alignItems: 'start' }}>
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
-                  {/* AZ-1 Writer Node */}
-                  <div style={{
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    textAlign: 'center',
-                    background: writerState === 'healthy' ? '#ecfdf5' : '#fef2f2',
-                    borderColor: writerState === 'healthy' ? '#10b981' : '#ef4444'
-                  }}>
-                    <div style={{ fontSize: '18px' }}>{writerState === 'healthy' ? '✍️' : '💥'}</div>
-                    <div style={{ fontWeight: 700, fontSize: '11.5px', color: '#1e293b', marginTop: '4px' }}>AZ-1 N. Virginia</div>
-                    <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: writerState === 'healthy' ? '#15803d' : '#b91c1c' }}>
-                      {writerState === 'healthy' ? 'Writer (Healthy)' : 'AZ FAILED (Unreachable)'}
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Instance Priority: 0</div>
-                  </div>
+                {/* Interactive State-Reactive Vector Map */}
+                <svg width="100%" viewBox="0 0 680 230" className="aurora-svg-bg" style={{ display: 'block', marginBottom: '12px' }}>
+                  <defs>
+                    <marker id="arr-failover" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
+                  </defs>
 
-                  {/* AZ-2 Reader Node */}
-                  <div style={{
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    textAlign: 'center',
-                    background: replicaState === 'promoted' ? '#f5f3ff' : '#eff6ff',
-                    borderColor: replicaState === 'promoted' ? '#7c3aed' : '#3b82f6'
-                  }}>
-                    <div style={{ fontSize: '18px' }}>👑</div>
-                    <div style={{ fontWeight: 700, fontSize: '11.5px', color: '#1e293b', marginTop: '4px' }}>AZ-2 us-east-1b</div>
-                    <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: replicaState === 'promoted' ? '#6d28d9' : '#1d4ed8' }}>
-                      {replicaState === 'promoted' ? 'PROMOTED WRITER' : 'Replica 1 (Ready)'}
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Instance Priority: 0 (Backup Primary)</div>
-                  </div>
+                  {/* CNAME virtual endpoint router */}
+                  <g transform="translate(250, 15)">
+                    <rect width="180" height="42" rx="8" fill="rgba(255,255,255,0.9)" stroke="#2563eb" strokeWidth="1.5" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">🔌 Writer CNAME Endpoint</text>
+                    <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.writer.rds.com</text>
+                  </g>
 
-                  {/* AZ-3 Reader Node */}
-                  <div style={{
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    textAlign: 'center',
-                    background: '#eff6ff',
-                    borderColor: '#3b82f6'
-                  }}>
-                    <div style={{ fontSize: '18px' }}>📖</div>
-                    <div style={{ fontWeight: 700, fontSize: '11.5px', color: '#1e293b', marginTop: '4px' }}>AZ-3 us-east-1c</div>
-                    <div style={{ fontSize: '10.5px', fontWeight: 'bold', color: '#1d4ed8' }}>
-                      Replica 2 (Serving Reads)
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>Instance Priority: 1</div>
-                  </div>
-                </div>
+                  {/* Static routes */}
+                  <path d="M 340 57 L 125 105" fill="none" stroke={writerState === 'dead' ? '#ef4444' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 340 57 L 335 105" fill="none" stroke={replicaState === 'promoted' ? '#16a34a' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 340 57 L 545 105" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  {/* Animated motion route signals */}
+                  {writerState === 'healthy' && (
+                    <circle r="3" fill="#2563eb">
+                      <animateMotion dur="1.2s" repeatCount="indefinite" path="M 340 57 L 125 105" />
+                    </circle>
+                  )}
+                  {replicaState === 'promoted' && (
+                    <circle r="3" fill="#16a34a">
+                      <animateMotion dur="1s" repeatCount="indefinite" path="M 340 57 L 335 105" />
+                    </circle>
+                  )}
+
+                  {/* Outage cross red fence indicator (Step 2) */}
+                  {writerState === 'dead' && failoverStep === 2 && (
+                    <g transform="translate(210, 68)">
+                      <circle cx="10" cy="10" r="9" fill="#fee2e2" stroke="#ef4444" strokeWidth="1" />
+                      <text x="10" y="14" textAnchor="middle" fontSize="11" fill="#b91c1c" fontWeight="bold">🛡️ Fence</text>
+                    </g>
+                  )}
+
+                  {/* Promoted golden replication sync path (Step 3) */}
+                  {failoverStep === 3 && (
+                    <path d="M 210 120 L 250 120" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-failover)" />
+                  )}
+
+                  {/* AZ-1 Instance */}
+                  <g transform="translate(40, 105)">
+                    <rect width="170" height="72" rx="10" fill={writerState === 'healthy' ? '#f0fdf4' : '#fff1f2'} stroke={writerState === 'healthy' ? '#86efac' : '#ef4444'} strokeWidth={writerState === 'healthy' ? 1.5 : 2} />
+                    <text x="85" y="22" textAnchor="middle" fontSize="11" fill={writerState === 'healthy' ? '#14532d' : '#991b1b'} fontWeight="bold">AZ-1 N. Virginia (1a)</text>
+                    
+                    {writerState === 'healthy' ? (
+                      <>
+                        <text x="85" y="42" textAnchor="middle" fontSize="10" fill="#15803d" fontWeight="600">✍️ Writer Node (Active)</text>
+                        <circle cx="15" cy="52" r="3.5" fill="#10b981" className="led-blink" />
+                        <text x="30" y="55" fontSize="8" fill="#475569">R/W nominal</text>
+                      </>
+                    ) : (
+                      <>
+                        <text x="85" y="42" textAnchor="middle" fontSize="10" fill="#b91c1c" fontWeight="bold">💥 Outage / Unreachable</text>
+                        <circle cx="15" cy="52" r="3.5" fill="#ef4444" className="led-blink" />
+                        <text x="30" y="55" fontSize="8" fill="#b91c1c" fontWeight="bold">Connection lost</text>
+                      </>
+                    )}
+                  </g>
+
+                  {/* AZ-2 Instance */}
+                  <g transform="translate(250, 105)">
+                    <rect width="170" height="72" rx="10" fill={replicaState === 'promoted' ? '#f5f3ff' : 'rgba(255,255,255,0.8)'} stroke={replicaState === 'promoted' ? '#7c3aed' : '#cbd5e1'} strokeWidth={replicaState === 'promoted' ? 2 : 1.5} />
+                    <text x="85" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">AZ-2 us-east-1b</text>
+                    
+                    {replicaState === 'promoted' ? (
+                      <>
+                        <text x="85" y="42" textAnchor="middle" fontSize="10" fill="#5b21b6" fontWeight="bold">👑 PROMOTED WRITER</text>
+                        <circle cx="15" cy="52" r="3.5" fill="#10b981" className="led-blink" />
+                        <text x="30" y="55" fontSize="8" fill="#7c3aed" fontWeight="bold">Serving reads/writes</text>
+                      </>
+                    ) : (
+                      <>
+                        <text x="85" y="42" textAnchor="middle" fontSize="10" fill="#2563eb" fontWeight="600">📖 Reader Replica 1</text>
+                        <circle cx="15" cy="52" r="3.5" fill="#3b82f6" className="led-blink" />
+                        <text x="30" y="55" fontSize="8" fill="#475569">Standby (Priority 0)</text>
+                      </>
+                    )}
+                  </g>
+
+                  {/* AZ-3 Instance */}
+                  <g transform="translate(460, 105)">
+                    <rect width="170" height="72" rx="10" fill="rgba(255,255,255,0.8)" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="85" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">AZ-3 us-east-1c</text>
+                    <text x="85" y="42" textAnchor="middle" fontSize="10" fill="#2563eb" fontWeight="600">📖 Reader Replica 2</text>
+                    <circle cx="15" cy="52" r="3.5" fill="#3b82f6" className="led-blink" />
+                    <text x="30" y="55" fontSize="8" fill="#475569">Standby (Priority 1)</text>
+                  </g>
+                </svg>
 
                 {/* Steps Timeline bar */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px', marginBottom: '14px', position: 'relative' }}>
@@ -941,40 +1289,67 @@ export default function AuroraVisualizer() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
               <div>
-                <svg width="100%" viewBox="0 0 680 240" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
-                  <rect width="680" height="240" fill="url(#g-light-bg)" />
+                <svg width="100%" viewBox="0 0 680 240" className="aurora-svg-bg" style={{ display: 'block' }}>
+                  <defs>
+                    <marker id="arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                  </defs>
 
                   {/* Primary Region us-east-1 */}
-                  <rect x="20" y="30" width="260" height="180" rx="8" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="1" />
+                  <rect x="20" y="30" width="260" height="180" rx="12" fill="rgba(255, 255, 255, 0.75)" stroke={secRegionState === 'promoted' ? '#fca5a5' : '#c4b5fd'} strokeWidth={secRegionState === 'promoted' ? 1.5 : 2} className={secRegionState === 'replica' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(124, 58, 237, 0.15)' } as React.CSSProperties} />
                   <text x="150" y="52" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="bold">🌎 PRIMARY N. VIRGINIA (us-east-1)</text>
 
-                  <rect x="40" y="70" width="220" height="34" rx="4" fill="#ede9fe" stroke="#a78bfa" strokeWidth="0.5" />
-                  <text x="150" y="91" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">Writer Node (Active Primary)</text>
+                  {secRegionState === 'replica' ? (
+                    <g transform="translate(40, 70)">
+                      <rect width="220" height="34" rx="6" fill="#f5f3ff" stroke="#a78bfa" strokeWidth="1" />
+                      <circle cx="15" cy="17" r="3.5" fill="#10b981" className="led-blink" />
+                      <text x="30" y="21" fontSize="10" fill="#4c1d95" fontWeight="bold">Active Primary Writer DB</text>
+                    </g>
+                  ) : (
+                    <g transform="translate(40, 70)">
+                      <rect width="220" height="34" rx="6" fill="#fff1f2" stroke="#fca5a5" strokeWidth="1" />
+                      <circle cx="15" cy="17" r="3.5" fill="#ef4444" className="led-blink" />
+                      <text x="30" y="21" fontSize="10" fill="#be123c" fontWeight="bold">Catastrophic Outage 💥</text>
+                    </g>
+                  )}
 
-                  <rect x="40" y="115" width="220" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="150" y="136" textAnchor="middle" fontSize="11" fill="#64748b">Shared Storage Volume (6 copies)</text>
+                  <rect x="40" y="115" width="220" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="150" y="136" textAnchor="middle" fontSize="10.5" fill="#475569">Shared Storage (6 copies replicated)</text>
 
-                  <rect x="40" y="160" width="220" height="34" rx="4" fill="#fffbeb" stroke="#fcd34d" strokeWidth="0.5" />
-                  <text x="150" y="181" textAnchor="middle" fontSize="11" fill="#92400e" fontWeight="bold">Global replication engine channel</text>
+                  <rect x="40" y="160" width="220" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="150" y="181" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">Global storage replication channel</text>
 
                   {/* Secondary Region ap-southeast-1 */}
-                  <rect x="400" y="30" width="260" height="180" rx="8" fill={secRegionState === 'promoted' ? '#faf5ff' : '#ecfdf5'} stroke={secRegionState === 'promoted' ? '#c4b5fd' : '#a7f3d0'} strokeWidth="1" />
-                  <text x="530" y="52" textAnchor="middle" fontSize="11" fill={secRegionState === 'promoted' ? '#7c3aed' : '#047857'} fontWeight="bold">🌏 SINGAPORE (ap-southeast-1)</text>
+                  <rect x="400" y="30" width="260" height="180" rx="12" fill="rgba(255, 255, 255, 0.75)" stroke={secRegionState === 'promoted' ? '#16a34a' : '#cbd5e1'} strokeWidth={secRegionState === 'promoted' ? 2 : 1.5} className={secRegionState === 'promoted' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(22, 163, 74, 0.15)' } as React.CSSProperties} />
+                  <text x="530" y="52" textAnchor="middle" fontSize="11" fill={secRegionState === 'promoted' ? '#15803d' : '#475569'} fontWeight="bold">🌏 SINGAPORE (ap-southeast-1)</text>
 
-                  <rect x="420" y="70" width="220" height="34" rx="4" fill={secRegionState === 'promoted' ? '#ede9fe' : '#ccfbf1'} stroke={secRegionState === 'promoted' ? '#a78bfa' : '#5eead4'} strokeWidth="0.5" />
-                  <text x="530" y="91" textAnchor="middle" fontSize="11" fill={secRegionState === 'promoted' ? '#4c1d95' : '#0f766e'} fontWeight="bold">
-                    {secRegionState === 'promoted' ? '✍️ promoted WRITER DB' : '📖 warm standby replica pool'}
-                  </text>
+                  <g transform="translate(420, 70)">
+                    <rect width="220" height="34" rx="6" fill={secRegionState === 'promoted' ? '#f0fdf4' : '#f0fdfa'} stroke={secRegionState === 'promoted' ? '#86efac' : '#5eead4'} strokeWidth="1" />
+                    <circle cx="15" cy="17" r="3.5" fill="#10b981" className="led-blink" />
+                    <text x="30" y="21" fontSize="10" fill={secRegionState === 'promoted' ? '#15803d' : '#0f766e'} fontWeight="bold">
+                      {secRegionState === 'promoted' ? '👑 Promoted Primary Writer' : '📖 Standby Reader Pool'}
+                    </text>
+                  </g>
 
-                  <rect x="420" y="115" width="220" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="530" y="136" textAnchor="middle" fontSize="11" fill="#64748b">Shared Storage Volume (6 copies)</text>
+                  <rect x="420" y="115" width="220" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="530" y="136" textAnchor="middle" fontSize="10.5" fill="#475569">Shared Storage (6 copies replicated)</text>
 
-                  <rect x="420" y="160" width="220" height="34" rx="4" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
-                  <text x="530" y="181" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Active local reads served locally</text>
+                  <rect x="420" y="160" width="220" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="530" y="181" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">Active local reads served locally</text>
 
-                  {/* Global replicator channel arrow */}
-                  <line x1="280" y1="180" x2="400" y2="180" stroke="#7c3aed" strokeWidth="3" strokeDasharray="6,4" className="flow-active-line" markerEnd="url(#arr-p)" />
-                  <text x="340" y="165" textAnchor="middle" fontSize="10.5" fill="#7c3aed" fontWeight="bold">lag: &lt; 1s</text>
+                  {/* Replication line (WAN) */}
+                  <path d="M 280 177 L 400 177" fill="none" stroke={secRegionState === 'replica' ? '#7c3aed' : '#ef4444'} strokeWidth="2.5" strokeDasharray={secRegionState === 'replica' ? '4,4' : '1,5'} className={secRegionState === 'replica' ? 'flow-active-line' : undefined} />
+                  
+                  {secRegionState === 'replica' && (
+                    <>
+                      <circle r="3.5" fill="#7c3aed">
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 280 177 L 400 177" />
+                      </circle>
+                      <text x="340" y="165" textAnchor="middle" fontSize="10.5" fill="#7c3aed" fontWeight="bold">Storage sync (lag: &lt;1s)</text>
+                    </>
+                  )}
+                  {secRegionState === 'promoted' && (
+                    <text x="340" y="165" textAnchor="middle" fontSize="10.5" fill="#ef4444" fontWeight="bold">❌ DR Sync severed</text>
+                  )}
                 </svg>
               </div>
 
@@ -1057,20 +1432,34 @@ export default function AuroraVisualizer() {
               </div>
 
               <div>
-                <svg width="100%" height="210" viewBox="0 0 240 210" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
-                  <rect width="240" height="210" fill="url(#g-light-bg)" />
-                  <text x="120" y="24" textAnchor="middle" fontSize="10.5" fill="#64748b" fontWeight="600">ACU CAPACITY SCALING HUD</text>
+                <svg width="100%" height="210" viewBox="0 0 240 210" className="aurora-svg-bg" style={{ display: 'block' }}>
+                  <text x="120" y="24" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="700" letterSpacing="0.05em">ACU CAPACITY SCALING HUD</text>
 
                   {/* Circular Dial HUD representing ACU capacity size */}
-                  <circle cx="120" cy="115" r="56" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
+                  <circle cx="120" cy="115" r="56" fill="none" stroke="#cbd5e1" strokeWidth="6" />
                   
-                  {/* Scaled circle representing active capacity */}
-                  <circle cx="120" cy="115" r={Math.min(56, 12 + acu * 1.6)} fill="#eff6ff" stroke="#2563eb" strokeWidth="2.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.4)' } as React.CSSProperties} />
+                  {/* Scaled progress ring representing active capacity */}
+                  <circle
+                    cx="120"
+                    cy="115"
+                    r="56"
+                    fill="none"
+                    stroke={scaleColor}
+                    strokeWidth="6"
+                    strokeDasharray="351.85"
+                    strokeDashoffset={351.85 - (351.85 * Math.min(connections, 500) / 500)}
+                    strokeLinecap="round"
+                    transform="rotate(-90 120 115)"
+                    style={{ transition: 'stroke-dashoffset 0.5s ease-in-out, stroke 0.5s' }}
+                  />
                   
-                  <text x="120" y="115" textAnchor="middle" dominantBaseline="central" fontSize="16" fill="#1e3a8a" fontWeight="bold">{acu} ACU</text>
-                  <text x="120" y="132" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#64748b">Allocated</text>
+                  {/* Glowing center indicator */}
+                  <circle cx="120" cy="115" r={Math.min(48, 16 + acu * 1.4)} fill="rgba(37, 99, 235, 0.05)" stroke={scaleColor} strokeWidth="2.5" className="active-glow-node" style={{ '--pulse-color': scaleColor } as React.CSSProperties} />
+                  
+                  <text x="120" y="112" textAnchor="middle" dominantBaseline="central" fontSize="16" fill="#0f172a" fontWeight="800">{acu} ACU</text>
+                  <text x="120" y="128" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#64748b" fontWeight="600" letterSpacing="0.05em">ALLOCATED CAPACITY</text>
 
-                  <text x="120" y="192" textAnchor="middle" fontSize="9.5" fill="#64748b" fontFamily="monospace">1 ACU = 2 GB RAM</text>
+                  <text x="120" y="192" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="600" fontFamily="monospace">1 ACU = 2 GB RAM</text>
                 </svg>
               </div>
             </div>
@@ -1089,44 +1478,70 @@ export default function AuroraVisualizer() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
               <div>
-                <svg width="100%" viewBox="0 0 680 260" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
-                  <rect width="680" height="260" fill="url(#g-light-bg)" />
+                <svg width="100%" viewBox="0 0 680 260" className="aurora-svg-bg" style={{ display: 'block' }}>
+                  <defs>
+                    <marker id="arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                    <marker id="arr-emerald" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#16a34a" /></marker>
+                  </defs>
 
                   {/* Production DB */}
-                  <rect x="30" y="30" width="180" height="50" rx="6" fill="#ede9fe" stroke="#a78bfa" strokeWidth="1" />
-                  <text x="120" y="52" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">🏭 Production Writer DB</text>
-                  <text x="120" y="68" textAnchor="middle" fontSize="8" fill="#7c3aed" fontFamily="monospace">Volume size: 100 TB</text>
+                  <g transform="translate(30, 20)">
+                    <rect width="180" height="52" rx="10" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="90" y="24" textAnchor="middle" fontSize="11" fill="#047857" fontWeight="bold">🏭 Production Writer DB</text>
+                    <text x="90" y="38" textAnchor="middle" fontSize="8.5" fill="#065f46" fontFamily="monospace">Active Volume size: 100 TB</text>
+                  </g>
 
                   {/* Staging DB Clone */}
-                  <rect x="470" y="30" width="180" height="50" rx="6" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
-                  <text x="560" y="52" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">🧬 Dev / Staging Clone DB</text>
-                  <text x="560" y="68" textAnchor="middle" fontSize="8" fill="#7c3aed" fontFamily="monospace">Volume size: 100 TB</text>
+                  <g transform="translate(470, 20)">
+                    <rect width="180" height="52" rx="10" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1.5" />
+                    <text x="90" y="24" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">🧬 Dev/Staging Clone DB</text>
+                    <text x="90" y="38" textAnchor="middle" fontSize="8.5" fill="#5b21b6" fontFamily="monospace">Virtual Volume size: 100 TB</text>
+                  </g>
 
                   {/* Shared storage space */}
-                  <rect x="30" y="115" width="620" height="120" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                  <text x="340" y="132" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold" fontFamily="monospace">SHARED DISK STORAGE BLOCKS (COPY-ON-WRITE)</text>
+                  <rect x="30" y="105" width="620" height="135" rx="14" fill="rgba(240, 253, 250, 0.4)" stroke="#10b981" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="340" y="122" textAnchor="middle" fontSize="9.5" fill="#166534" fontWeight="700" letterSpacing="0.05em">SHARED VIRTUAL STORAGE VOLUMES (COPY-ON-WRITE BLOCKS)</text>
 
                   {/* Shared Blocks */}
-                  <rect x="50" y="150" width="150" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="125" y="172" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="bold">Physical Block A (Shared)</text>
+                  <g transform="translate(50, 140)">
+                    <rect width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" fill="#334155" fontWeight="bold">Block A (Shared)</text>
+                    <rect x="105" y="6" width="16" height="8" rx="2" fill="#10b981" />
+                  </g>
 
-                  <rect x="220" y="150" width="150" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="295" y="172" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="bold">Physical Block B (Shared)</text>
+                  <g transform="translate(195, 140)">
+                    <rect width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" fill="#334155" fontWeight="bold">Block B (Shared)</text>
+                    <rect x="105" y="6" width="16" height="8" rx="2" fill="#10b981" />
+                  </g>
 
-                  <rect x="390" y="150" width="100" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="440" y="172" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="bold">Block C (Shared)</text>
+                  <g transform="translate(340, 140)">
+                    <rect width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" fill="#334155" fontWeight="bold">Block C (Shared)</text>
+                    <rect x="105" y="6" width="16" height="8" rx="2" fill="#10b981" />
+                  </g>
 
                   {/* Diverged Blocks */}
-                  <rect x="510" y="150" width="120" height="34" rx="4" fill={cloneWrites > 0 ? '#fffbeb' : '#f8fafc'} stroke={cloneWrites > 0 ? '#f59e0b' : '#cbd5e1'} strokeWidth="1" className={cloneWrites > 0 ? 'active-glow-node' : ''} style={{ '--pulse-color': 'rgba(245, 158, 11, 0.4)' } as React.CSSProperties} />
-                  <text x="570" y="172" textAnchor="middle" fontSize="10" fill={cloneWrites > 0 ? '#b45309' : '#64748b'} fontWeight="bold">
-                    {cloneWrites > 0 ? `Diverged Block D 🧬` : 'Shared Block D'}
-                  </text>
+                  <g transform="translate(485, 140)">
+                    <rect width="150" height="38" rx="6" fill={cloneWrites > 0 ? '#fffbeb' : '#ffffff'} stroke={cloneWrites > 0 ? '#f59e0b' : '#cbd5e1'} strokeWidth={cloneWrites > 0 ? 2 : 1.5} className={cloneWrites > 0 ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(245, 158, 11, 0.3)' } as React.CSSProperties} />
+                    <text x="75" y="23" textAnchor="middle" fontSize="9.5" fill={cloneWrites > 0 ? '#b45309' : '#334155'} fontWeight="bold">
+                      {cloneWrites > 0 ? `Diverged Block D 🧬` : 'Block D (Shared)'}
+                    </text>
+                    <rect x="125" y="6" width="16" height="8" rx="2" fill={cloneWrites > 0 ? '#f59e0b' : '#10b981'} />
+                  </g>
 
-                  <text x="340" y="215" textAnchor="middle" fontSize="10" fill="#047857" fontWeight="bold">At clone creation: 0 pages copied. Disk storage increases only as clone pages diverge.</text>
+                  <text x="340" y="222" textAnchor="middle" fontSize="10" fill="#0f766e" fontWeight="bold">At clone creation: 0 pages copied. Physical storage allocation increases only on active writes.</text>
 
-                  {/* Connecting vectors */}
-                  <line x1="120" y1="80" x2="125" y2="115" stroke="#4c1d95" strokeWidth="1.5" markerEnd="url(#arr-p)" />
-                  <line x1="560" y1="80" x2="550" y2="115" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arr-p)" />
+                  {/* Paths */}
+                  <path d="M 120 72 L 125 105" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 560 72 L 550 105" fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  {/* Animate write-flow packet on Staging Write */}
+                  {cloneWrites > 0 && (
+                    <circle r="4" fill="#7c3aed" className="active-glow-node" style={{ '--pulse-color': 'rgba(124, 58, 237, 0.4)' } as React.CSSProperties}>
+                      <animateMotion dur="1s" repeatCount="indefinite" path="M 560 72 L 560 140" />
+                    </circle>
+                  )}
                 </svg>
               </div>
 
@@ -1268,25 +1683,33 @@ export default function AuroraVisualizer() {
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>Zero-ETL Analytical Data Warehouse Pipeline</div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>Stream transactions continuously to Amazon Redshift without setting up glue code or ETL scripts.</div>
                     
-                    <svg width="100%" viewBox="0 0 680 180" style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
-                      <rect width="680" height="180" fill="url(#g-light-bg)" />
-
+                    <svg width="100%" viewBox="0 0 680 180" className="aurora-svg-bg" style={{ display: 'block' }}>
                       {/* Aurora cluster storage */}
-                      <rect x="20" y="45" width="200" height="90" rx="6" fill="#f0fdf4" stroke="#86efac" strokeWidth="1" />
-                      <text x="125" y="72" textAnchor="middle" fontSize="12" fill="#166534" fontWeight="bold">🐘 Aurora Cluster Volume</text>
-                      <text x="125" y="90" textAnchor="middle" fontSize="8.5" fill="#15803d" fontFamily="monospace">Redo block segments</text>
-                      <text x="125" y="108" textAnchor="middle" fontSize="8.5" fill="#64748b">writes transaction changes</text>
+                      <g transform="translate(20, 35)">
+                        <rect width="200" height="90" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="1.5" />
+                        <text x="100" y="26" textAnchor="middle" fontSize="12" fill="#166534" fontWeight="bold">🐘 Aurora Cluster Volume</text>
+                        <text x="100" y="46" textAnchor="middle" fontSize="9" fill="#15803d" fontFamily="monospace">Redo Log WAL segments</text>
+                        <circle cx="100" cy="66" r="4.5" fill="#10b981" className="led-blink" />
+                      </g>
 
                       {/* Redshift storage */}
-                      <rect x="460" y="45" width="200" height="90" rx="6" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1" />
-                      <text x="560" y="72" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">📊 Amazon Redshift DW</text>
-                      <text x="560" y="90" textAnchor="middle" fontSize="8.5" fill="#2563eb" fontFamily="monospace">Replicated schemas</text>
-                      <text x="560" y="108" textAnchor="middle" fontSize="8.5" fill="#64748b">Analytical views updated</text>
+                      <g transform="translate(460, 35)">
+                        <rect width="200" height="90" rx="8" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1.5" />
+                        <text x="100" y="26" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">📊 Amazon Redshift DW</text>
+                        <text x="100" y="46" textAnchor="middle" fontSize="9" fill="#2563eb" fontFamily="monospace">Materialized DW Schemas</text>
+                        <circle cx="100" cy="66" r="4.5" fill="#3b82f6" className="led-blink" />
+                      </g>
 
                       {/* Zero-ETL sync stream */}
-                      <line x1="220" y1="90" x2="460" y2="90" stroke="#10b981" strokeWidth="4" strokeDasharray="8,4" className="flow-active-line" markerEnd="url(#arr-g)" />
-                      <text x="340" y="75" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold">Continuous Zero-ETL Sync</text>
-                      <text x="340" y="112" textAnchor="middle" fontSize="8" fill="#64748b">latency &lt; 1s · serverless</text>
+                      <path d="M 220 80 L 460 80" fill="none" stroke={zeroEtlStatus === 'syncing' ? '#10b981' : '#cbd5e1'} strokeWidth="3.5" strokeDasharray={zeroEtlStatus === 'syncing' ? '6,4' : '2,6'} className={zeroEtlStatus === 'syncing' ? 'flow-active-line' : undefined} />
+                      <text x="340" y="65" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold">Continuous Zero-ETL Sync Pipeline</text>
+                      <text x="340" y="105" textAnchor="middle" fontSize="8" fill="#64748b">latency &lt; 1s · serverless WAL streaming</text>
+
+                      {zeroEtlStatus === 'syncing' && (
+                        <circle r="4" fill="#10b981" className="active-glow-node" style={{ '--pulse-color': 'rgba(16,185,129,0.4)' } as React.CSSProperties}>
+                          <animateMotion dur="1s" repeatCount="indefinite" path="M 220 80 L 460 80" />
+                        </circle>
+                      )}
                     </svg>
                   </div>
 
@@ -1326,8 +1749,8 @@ export default function AuroraVisualizer() {
                       <button className={`aurora-subtb ${activeMlQuery === 'churn' ? 'aurora-on-purple' : ''}`} onClick={() => { setActiveMlQuery('churn'); setMlOutput([]); setMlLogs([]); }}>📈 Customer Churn Classifier</button>
                     </div>
 
-                    <div className="aurora-code-container" style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: '12px' }}>
-                      <div className="aurora-code" style={{ color: '#4c1d95', fontSize: '10.5px' }}>
+                    <div className="aurora-code-container" style={{ background: '#0f172a', border: '1px solid #1e293b', padding: '12px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)' }}>
+                      <div className="aurora-code" style={{ color: '#38bdf8', fontSize: '10.5px', textShadow: '0 0 2px rgba(56,189,248,0.2)' }}>
                         {mlQueries[activeMlQuery].sql}
                       </div>
                     </div>
