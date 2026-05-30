@@ -718,135 +718,289 @@ export default function ServerlessVisualizer() {
 
     const draw = () => {
       if (!ctx || !canvas) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const dpr = window.devicePixelRatio || 1;
+      const logicalWidth = 900;
+      const logicalHeight = 420;
+
+      // Update physical canvas dimension dynamically for high-resolution displays
+      if (canvas.width !== logicalWidth * dpr || canvas.height !== logicalHeight * dpr) {
+        canvas.width = logicalWidth * dpr;
+        canvas.height = logicalHeight * dpr;
+      }
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      ctx.clearRect(0, 0, logicalWidth, logicalHeight);
 
       // Draw Network Infrastructure Boxes & Subnets
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, logicalWidth, logicalHeight);
 
       // Grid background effect
       ctx.strokeStyle = 'rgba(203, 213, 225, 0.3)';
       ctx.lineWidth = 1;
       const gridSize = 30;
-      for (let x = 0; x < canvas.width; x += gridSize) {
+      for (let x = 0; x < logicalWidth; x += gridSize) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
+        ctx.lineTo(x, logicalHeight);
         ctx.stroke();
       }
-      for (let y = 0; y < canvas.height; y += gridSize) {
+      for (let y = 0; y < logicalHeight; y += gridSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
+        ctx.lineTo(logicalWidth, y);
         ctx.stroke();
       }
 
-      // Draw API Gateway box
-      ctx.strokeStyle = '#c084fc';
-      ctx.fillStyle = '#fdf4ff';
+      // ==========================================
+      // DRAW COMPONENT 1: API Gateway Glass Card
+      // ==========================================
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+      ctx.fillStyle = 'rgba(253, 244, 255, 0.85)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(10, 60, 150, 300, 12);
+      ctx.roundRect(10, 60, 150, 300, 16);
       ctx.stroke();
       ctx.fill();
 
-      ctx.fillStyle = '#7e22ce';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('API GATEWAY', 30, 90);
-      ctx.fillStyle = '#64748b';
-      ctx.font = '10px sans-serif';
-      ctx.fillText('Sync HTTP Endpoint', 25, 110);
-      ctx.fillText('https://api.serverless...', 20, 130);
-
-      // Draw API Gateway Mock Interfaces (port holes)
-      ctx.fillStyle = '#a855f7';
+      // Top Header Gradient
+      const apigwGrad = ctx.createLinearGradient(10, 60, 160, 60);
+      apigwGrad.addColorStop(0, '#7e22ce');
+      apigwGrad.addColorStop(1, '#a855f7');
+      ctx.fillStyle = apigwGrad;
       ctx.beginPath();
-      ctx.arc(160, 210, 6, 0, Math.PI * 2);
+      ctx.roundRect(10, 60, 150, 32, [16, 16, 0, 0]);
       ctx.fill();
 
-      // Draw Lambda Service boundary Subnet
-      ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
-      ctx.fillStyle = 'rgba(250, 245, 255, 0.75)';
+      // Text Header
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('⚡ API GATEWAY', 22, 80);
+
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillText('PROD ENDPOINT', 25, 115);
+      ctx.fillStyle = '#7e22ce';
+      ctx.font = '9px monospace';
+      ctx.fillText('https://api.app/prod', 20, 132);
+
+      // Draw API Gateway Circular Routing Dial
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.2)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(85, 220, 38, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Outer active ring
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(85, 220, 38, Date.now() / 200, Date.now() / 200 + Math.PI * 0.7);
+      ctx.stroke();
+
+      // Inner hub
+      ctx.fillStyle = '#7e22ce';
+      ctx.beginPath();
+      ctx.arc(85, 220, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillText('ROUTER', 68, 223);
+
+      // Port hole interface
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.arc(160, 210, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(160, 210, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ==========================================
+      // DRAW COMPONENT 2: AWS Lambda Service Pool Subnet
+      // ==========================================
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.35)';
+      ctx.fillStyle = 'rgba(250, 245, 255, 0.65)';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.roundRect(220, 40, 430, 340, 16);
       ctx.stroke();
       ctx.fill();
 
-      ctx.fillStyle = '#7e22ce';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('AWS LAMBDA SERVICE POOL', 240, 70);
+      // Dotted Subnet internal border
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.roundRect(228, 48, 414, 324, 12);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Draw RDS Proxy / DB Side
-      ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
-      ctx.fillStyle = 'rgba(239, 246, 255, 0.75)';
+      ctx.fillStyle = '#7e22ce';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('⚙️ AWS LAMBDA COMPUTE ENVIRONMENT', 242, 72);
+
+      // ==========================================
+      // DRAW COMPONENT 3: Secure Database Zone Subnet
+      // ==========================================
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.35)';
+      ctx.fillStyle = 'rgba(239, 246, 255, 0.65)';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.roundRect(680, 40, 200, 340, 16);
       ctx.stroke();
       ctx.fill();
 
-      ctx.fillStyle = '#1d4ed8';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('SECURE DATABASE ZONE', 700, 65);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('🔒 SECURE DATABASE SUBNET', 696, 68);
 
-      // RDS Proxy box
+      // ==========================================
+      // DRAW COMPONENT 4: RDS Proxy Box
+      // ==========================================
       const isProxy = simRdsProxyEnabledRef.current;
       ctx.strokeStyle = isProxy ? '#0d9488' : '#cbd5e1';
-      ctx.fillStyle = isProxy ? '#f0fdfa' : '#f1f5f9';
-      ctx.lineWidth = 1.5;
+      ctx.fillStyle = isProxy ? 'rgba(240, 253, 250, 0.95)' : 'rgba(241, 245, 249, 0.95)';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(700, 85, 160, 70, 8);
+      ctx.roundRect(700, 85, 160, 70, 10);
       ctx.stroke();
       ctx.fill();
 
-      ctx.fillStyle = isProxy ? '#0d9488' : '#475569';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(isProxy ? '🔌 RDS PROXY (ACTIVE)' : '🔌 RDS PROXY (DISABLED)', 710, 105);
-      ctx.font = '9px sans-serif';
-      ctx.fillStyle = '#64748b';
-      ctx.fillText(isProxy ? 'Pooling & Connection Queue' : 'Bypassed, Direct DB Hits', 710, 125);
+      // Proxy header banner
+      ctx.fillStyle = isProxy ? '#0d9488' : '#64748b';
+      ctx.beginPath();
+      ctx.roundRect(700, 85, 160, 24, [10, 10, 0, 0]);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillText(isProxy ? '🔌 RDS PROXY (ACTIVE)' : '🔌 RDS PROXY (DISABLED)', 712, 101);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 8.5px sans-serif';
+      ctx.fillText(isProxy ? 'Pooler Connection Queue' : 'Bypassed - Direct DB Hits', 712, 128);
+
       if (isProxy) {
         ctx.fillStyle = '#0d9488';
-        ctx.fillText('Max Pool Size: 100%', 710, 142);
+        ctx.font = 'bold 8px monospace';
+        ctx.fillText('Multiplexing: Active (100%)', 712, 144);
+      } else {
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 8px monospace';
+        ctx.fillText('Direct Sockets Exhaustive', 712, 144);
       }
 
-      // Aurora DB box
-      ctx.strokeStyle = '#2563eb';
-      ctx.fillStyle = '#eff6ff';
-      ctx.lineWidth = 2.5;
+      // ==========================================
+      // DRAW COMPONENT 5: High-Fidelity 3D Aurora Postgres Cylinder
+      // ==========================================
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.3)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.roundRect(700, 185, 160, 170, 10);
+      ctx.roundRect(700, 185, 160, 170, 12);
       ctx.stroke();
       ctx.fill();
 
-      ctx.fillStyle = '#1e3a8a';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('🛢️ RDS POSTGRES', 720, 215);
+      // Render 3D Cylinder Shape for PostgreSQL Database
+      const cx = 780;
+      const cyTop = 230;
+      const cyBottom = 310;
+      const rx = 45;
+      const ry = 12;
 
-      // Draw connection count indicator
+      // Bottom backing shadow
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+
+      // Draw bottom cylinder base
+      const dbBaseGrad = ctx.createLinearGradient(cx - rx, 0, cx + rx, 0);
+      dbBaseGrad.addColorStop(0, '#1d4ed8');
+      dbBaseGrad.addColorStop(0.5, '#3b82f6');
+      dbBaseGrad.addColorStop(1, '#1e3a8a');
+
+      ctx.fillStyle = dbBaseGrad;
+      ctx.beginPath();
+      ctx.ellipse(cx, cyBottom, rx, ry, 0, 0, Math.PI);
+      ctx.fill();
+      ctx.shadowBlur = 0; // Reset shadow
+
+      // Draw cylinder body wall
+      ctx.fillStyle = dbBaseGrad;
+      ctx.beginPath();
+      ctx.rect(cx - rx, cyTop, rx * 2, cyBottom - cyTop);
+      ctx.fill();
+
+      // Database platter horizontal disk segments (3D racks look)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(cx, cyTop + (cyBottom - cyTop) * 0.33, rx, ry, 0, 0, Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(cx, cyTop + (cyBottom - cyTop) * 0.66, rx, ry, 0, 0, Math.PI);
+      ctx.stroke();
+
+      // Draw glowing blue cylinder lid on top
+      const dbTopGrad = ctx.createRadialGradient(cx, cyTop, 2, cx, cyTop, rx);
+      dbTopGrad.addColorStop(0, '#bfdbfe');
+      dbTopGrad.addColorStop(1, '#3b82f6');
+      ctx.fillStyle = dbTopGrad;
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(cx, cyTop, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Database Cylinder Labels
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 9.5px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🛢️ POSTGRESQL', cx, cyTop + 35);
+      ctx.fillStyle = '#bfdbfe';
+      ctx.font = '8px monospace';
+      ctx.fillText('db.m6g.large', cx, cyTop + 50);
+      ctx.textAlign = 'left'; // Reset alignment
+
+      // Connection Indicators & Overload status
       const activeWebCount = containersRef.current.filter(c => c.status === 'ACTIVE').length;
       const isExhausted = !isProxy && activeWebCount > 6;
-      ctx.fillStyle = isExhausted ? '#dc2626' : '#059669';
+
+      ctx.fillStyle = isExhausted ? '#ef4444' : '#10b981';
       ctx.beginPath();
-      ctx.arc(725, 245, 5, 0, Math.PI * 2);
+      ctx.arc(718, 308, 4.5, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = '#1e293b';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(`Conn Status: ${isExhausted ? 'OVERLOADED' : 'HEALTHY'}`, 738, 248);
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillText(isExhausted ? 'STATUS: OVERLOADED' : 'STATUS: HEALTHY', 728, 311);
 
       ctx.fillStyle = '#475569';
-      ctx.fillText(isProxy ? 'Pooled Conns: 12/120' : `Active DB Conns: ${activeWebCount * 12}/120`, 720, 280);
-      ctx.fillText('Instance: db.m6g.large', 720, 305);
+      ctx.font = '8.5px sans-serif';
+      ctx.fillText(isProxy ? 'Pooled Conns: 12/120' : `Active Conns: ${activeWebCount * 12}/120`, 712, 332);
 
+      // Warning connection storm banner
       if (isExhausted) {
-        ctx.fillStyle = 'rgba(220, 38, 38, 0.1)';
-        ctx.fillRect(710, 320, 140, 25);
-        ctx.strokeStyle = '#dc2626';
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
+        ctx.beginPath();
+        ctx.roundRect(710, 192, 140, 22, 4);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ef4444';
         ctx.lineWidth = 1;
-        ctx.strokeRect(710, 320, 140, 25);
-        ctx.fillStyle = '#dc2626';
-        ctx.font = 'bold 9px sans-serif';
-        ctx.fillText('⚠️ CONNECTION STORM!', 725, 335);
+        ctx.beginPath();
+        ctx.roundRect(710, 192, 140, 22, 4);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 8.5px sans-serif';
+        ctx.fillText('💥 SOCKET OVERFLOW!', 722, 206);
       }
 
       // Draw Static labels for paths
@@ -863,14 +1017,34 @@ export default function ServerlessVisualizer() {
       const startX = 245;
       const startY = 110;
 
-      // Draw grid outline slots
+      // Draw grid outline slots as 3D isometric trays
       for (let r = 0; r < maxRows; r++) {
         for (let c = 0; c < maxCols; c++) {
-          ctx.strokeStyle = 'rgba(100, 116, 139, 0.2)';
+          const x = startX + c * colWidth;
+          const y = startY + r * rowHeight;
+          
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
           ctx.lineWidth = 1;
-          ctx.setLineDash([4, 4]);
-          ctx.strokeRect(startX + c * colWidth, startY + r * rowHeight, 75, 65);
+          ctx.setLineDash([3, 3]);
+          
+          // Slanted top lid outline
+          ctx.beginPath();
+          ctx.moveTo(x + 6, y);
+          ctx.lineTo(x + 75, y);
+          ctx.lineTo(x + 69, y + 8);
+          ctx.lineTo(x, y + 8);
+          ctx.closePath();
+          ctx.stroke();
+          
+          // Front chassis outline
+          ctx.beginPath();
+          ctx.roundRect(x, y + 8, 69, 52, 4);
+          ctx.stroke();
+          
           ctx.setLineDash([]);
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
+          ctx.font = 'bold 8px monospace';
+          ctx.fillText('SLOT FREE', x + 10, y + 36);
         }
       }
 
@@ -879,54 +1053,101 @@ export default function ServerlessVisualizer() {
       visibleContainers.forEach((container, idx) => {
         const row = Math.floor(idx / maxCols);
         const col = idx % maxCols;
-        const xPos = startX + col * colWidth;
-        const yPos = startY + row * rowHeight;
+        const x = startX + col * colWidth;
+        const y = startY + row * rowHeight;
 
-        // Container card border based on state
-        let strokeColor = '#64748b'; // Idle
-        let fillColor = '#f8fafc';
-        let badgeColor = '#64748b';
+        // Determine theme colors based on container state
+        let primaryColor = '#64748b'; // Idle
+        let bgGradientStart = '#f8fafc';
+        let bgGradientEnd = '#cbd5e1';
+        let ledColor = '#94a3b8';
 
         if (container.status === 'PROVISIONING') {
-          strokeColor = '#d97706'; // Provisioning yellow
-          fillColor = '#fef3c7';
-          badgeColor = '#d97706';
+          primaryColor = '#d97706'; // Provisioning yellow
+          bgGradientStart = '#fef3c7';
+          bgGradientEnd = '#fcd34d';
+          ledColor = '#d97706';
         } else if (container.status === 'ACTIVE') {
-          strokeColor = '#7e22ce'; // Purple dynamic active
-          fillColor = '#f3e8ff';
-          badgeColor = '#7e22ce';
+          primaryColor = '#7e22ce'; // Purple dynamic active
+          bgGradientStart = '#f3e8ff';
+          bgGradientEnd = '#d8b4fe';
+          ledColor = '#a855f7';
         } else if (container.status === 'WARM') {
-          strokeColor = '#15803d'; // Green warm
-          fillColor = '#dcfce7';
-          badgeColor = '#15803d';
+          primaryColor = '#15803d'; // Green warm
+          bgGradientStart = '#dcfce7';
+          bgGradientEnd = '#86efac';
+          ledColor = '#10b981';
         }
 
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = 2;
-        ctx.fillStyle = fillColor;
+        // 1. Draw slanted 3D top cover plate
+        const topGrad = ctx.createLinearGradient(x, y, x + 75, y + 8);
+        topGrad.addColorStop(0, bgGradientStart);
+        topGrad.addColorStop(1, bgGradientEnd);
+        ctx.fillStyle = topGrad;
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.roundRect(xPos, yPos, 75, 65, 8);
+        ctx.moveTo(x + 6, y);
+        ctx.lineTo(x + 75, y);
+        ctx.lineTo(x + 69, y + 8);
+        ctx.lineTo(x, y + 8);
+        ctx.closePath();
+        ctx.fill();
         ctx.stroke();
+
+        // 2. Draw front vertical chassis face
+        const frontGrad = ctx.createLinearGradient(0, y + 8, 0, y + 60);
+        frontGrad.addColorStop(0, bgGradientEnd);
+        frontGrad.addColorStop(1, '#ffffff');
+        ctx.fillStyle = frontGrad;
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(x, y + 8, 69, 52, [0, 0, 6, 6]);
+        ctx.fill();
+        ctx.stroke();
+
+        // Draw microVM physical card slots (chassis grille)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(x + 6, y + 14, 57, 10);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x + 6, y + 14, 57, 10);
+
+        ctx.fillStyle = primaryColor;
+        ctx.font = 'bold 8px monospace';
+        ctx.fillText(`VM-${container.id.split('-')[1] || 'init'}`, x + 10, y + 22);
+
+        // Status Badge inside panel
+        ctx.fillStyle = primaryColor;
+        ctx.beginPath();
+        ctx.roundRect(x + 6, y + 28, 57, 12, 2);
         ctx.fill();
 
-        // Draw microVM shell container detail
-        ctx.fillStyle = strokeColor;
-        ctx.font = 'bold 9px sans-serif';
-        ctx.fillText(`Container`, xPos + 10, yPos + 18);
-        ctx.fillText(container.id.split('-')[1] || 'init', xPos + 10, yPos + 30);
-
-        // Status badge
-        ctx.fillStyle = badgeColor;
-        ctx.fillRect(xPos + 8, yPos + 40, 59, 14);
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.fillText(container.status, xPos + 14, yPos + 50);
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(container.status, x + 34, y + 36);
+        ctx.textAlign = 'left'; // Reset
 
-        // Provisioned indicator light
+        // Dynamic Glowing LED Light
+        ctx.fillStyle = ledColor;
+        if (container.status === 'ACTIVE' && Date.now() % 1000 < 500) {
+          ctx.fillStyle = '#ffffff';
+        }
+        ctx.beginPath();
+        ctx.arc(x + 12, y + 49, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '7px sans-serif';
+        ctx.fillText(`REQ: ${container.requestCount}`, x + 20, y + 51);
+
+        // Provisioned Concurrency Blue Jewel indicator
         if (container.isProvisioned) {
           ctx.fillStyle = '#2563eb';
           ctx.beginPath();
-          ctx.arc(xPos + 68, yPos + 8, 3, 0, Math.PI * 2);
+          ctx.arc(x + 60, y + 49, 3, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -948,14 +1169,23 @@ export default function ServerlessVisualizer() {
           p.y += (dy / dist) * p.speed;
         }
 
-        // Draw particle
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
+        // Draw high-fidelity glowing radial gradient particle
+        const rSize = p.type === 'http' ? 6 : 4;
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rSize);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.3, p.color);
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.type === 'http' ? 4 : 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, rSize, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0; // Reset shadow
+        
+        // Solid core
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.type === 'http' ? 2.5 : 1.8, 0, Math.PI * 2);
+        ctx.fill();
 
         if (reachedTarget) {
           if (p.state === 'to_api') {
@@ -1048,6 +1278,8 @@ export default function ServerlessVisualizer() {
 
       particlesRef.current = activeParticles;
 
+      ctx.restore();
+
       animId = requestAnimationFrame(draw);
     };
 
@@ -1060,7 +1292,7 @@ export default function ServerlessVisualizer() {
 
   return (
     <div className="sv-container">
-      {/* Styles for isolated layout aesthetics */}
+      {/* Styles for premium animations & visual tokens */}
       <style>{`
         .sv-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
@@ -1081,50 +1313,85 @@ export default function ServerlessVisualizer() {
           }
         }
         .sv-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: rgba(255, 255, 255, 0.75);
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
           border-radius: 16px;
           padding: 24px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+          backdrop-filter: blur(16px);
           margin-bottom: 24px;
-          transition: all 0.2s ease;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sv-card:hover {
           border-color: #a855f7;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 12px 24px -4px rgba(168, 85, 247, 0.08), 0 4px 12px -2px rgba(168, 85, 247, 0.03);
+          transform: translateY(-1px);
         }
         .sv-card-title {
-          font-size: 16px;
-          font-weight: 700;
+          font-size: 16.5px;
+          font-weight: 800;
           color: #0f172a;
           margin-bottom: 12px;
           display: flex;
           align-items: center;
           gap: 8px;
+          letter-spacing: -0.02em;
         }
         .sv-card-desc {
           font-size: 12.5px;
           color: #475569;
           line-height: 1.65;
         }
-        .sv-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .sv-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
-        .sv-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .sv-tb.sv-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
+        .sv-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          padding-bottom: 10px;
+        }
+        .sv-tb {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 12px;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          font-size: 12px;
+          font-weight: 600;
+          color: #475569;
+          background: rgba(255, 255, 255, 0.85);
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease-in-out;
+          outline: none;
+        }
+        .sv-tb:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #1e293b;
+        }
+        .sv-tb.sv-on {
+          background: #7e22ce;
+          color: #ffffff;
+          border-color: #7e22ce;
+          box-shadow: 0 4px 12px rgba(126, 34, 206, 0.12);
+        }
         .sv-input, .sv-select {
           width: 100%;
           padding: 10px 14px;
           border-radius: 10px;
-          border: 1px solid #cbd5e1;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
           background: #ffffff;
-          font-size: 13.5px;
           color: #0f172a;
+          font-size: 13.5px;
+          font-weight: 505;
           outline: none;
           transition: all 0.15s ease;
         }
         .sv-input:focus, .sv-select:focus {
           border-color: #a855f7;
-          box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+          box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.12);
         }
         .sv-label {
           font-size: 12px;
@@ -1146,53 +1413,40 @@ export default function ServerlessVisualizer() {
         .badge-blue { background: #dbeafe; color: #1d4ed8; }
         .badge-green { background: #dcfce7; color: #15803d; }
         
-        @keyframes sv-pulse {
-          0%, 100% {
-            stroke-width: 3px;
-            opacity: 0.8;
-            filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.6));
-          }
-          50% {
-            stroke-width: 5px;
-            opacity: 1;
-            filter: drop-shadow(0 0 6px rgba(168, 85, 247, 1)) drop-shadow(0 0 12px rgba(168, 85, 247, 0.5));
-          }
+        /* Custom dynamic visualizer backdrops */
+        .sv-svg-bg {
+          background-color: #f8fafc;
+          background-image: radial-gradient(rgba(168, 85, 247, 0.08) 1.5px, transparent 1.5px);
+          background-size: 16px 16px;
         }
-        @keyframes sv-pulse-green {
-          0%, 100% {
-            stroke-width: 3px;
-            opacity: 0.8;
-            filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.6));
-          }
-          50% {
-            stroke-width: 5px;
-            opacity: 1;
-            filter: drop-shadow(0 0 6px rgba(16, 185, 129, 1)) drop-shadow(0 0 12px rgba(16, 185, 129, 0.5));
-          }
+        
+        .active-svg-glow {
+          animation: activeGlow 2s infinite alternate;
         }
-        @keyframes sv-pulse-blue {
-          0%, 100% {
-            stroke-width: 3px;
-            opacity: 0.8;
-            filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.6));
-          }
-          50% {
-            stroke-width: 5px;
-            opacity: 1;
-            filter: drop-shadow(0 0 6px rgba(37, 99, 235, 1)) drop-shadow(0 0 12px rgba(37, 99, 235, 0.5));
-          }
+        @keyframes activeGlow {
+          0% { filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.15)); }
+          100% { filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.45)); }
         }
-        .active-flow-line {
-          stroke: #c084fc;
-          animation: sv-pulse 1.5s infinite;
+        
+        .flow-line-active, .active-flow-line {
+          stroke: #a855f7;
+          stroke-dasharray: 6,4;
+          animation: flowDash 1s linear infinite;
         }
-        .active-flow-line-green {
+        .flow-line-active-green, .active-flow-line-green {
           stroke: #10b981;
-          animation: sv-pulse-green 1.5s infinite;
+          stroke-dasharray: 6,4;
+          animation: flowDash 0.8s linear infinite;
         }
-        .active-flow-line-blue {
+        .flow-line-active-blue, .active-flow-line-blue {
           stroke: #2563eb;
-          animation: sv-pulse-blue 1.5s infinite;
+          stroke-dasharray: 6,4;
+          animation: flowDash 1.2s linear infinite;
+        }
+        @keyframes flowDash {
+          to {
+            stroke-dashoffset: -20;
+          }
         }
         
         .pulse-circle {
@@ -1200,7 +1454,7 @@ export default function ServerlessVisualizer() {
         }
         @keyframes ping {
           75%, 100% {
-            transform: scale(2);
+            transform: scale(2.2);
             opacity: 0;
           }
         }
@@ -1480,9 +1734,8 @@ export default function ServerlessVisualizer() {
                 </div>
               </div>
 
-              {/* Dynamic SVG Visuals */}
-              <div className="w-full h-[280px] relative bg-slate-50 rounded-xl border border-slate-150 p-2 overflow-hidden">
-                <svg className="w-full h-full" viewBox="0 0 700 280">
+              <div className="w-full h-[280px] relative rounded-xl border border-slate-200 p-2 overflow-hidden shadow-inner bg-slate-50">
+                <svg className="w-full h-full sv-svg-bg" viewBox="0 0 700 280">
                   <defs>
                     <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                       <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
@@ -1850,18 +2103,18 @@ export default function ServerlessVisualizer() {
                 </div>
 
                 {/* HTTP Flow Graph */}
-                <div className="w-full h-[220px] bg-slate-50 border border-slate-150 rounded-xl p-2 relative overflow-hidden">
-                  <svg className="w-full h-full" viewBox="0 0 700 220">
+                <div className="w-full h-[220px] border border-slate-200 rounded-xl p-2 relative overflow-hidden shadow-inner bg-slate-50">
+                  <svg className="w-full h-full sv-svg-bg" viewBox="0 0 700 220">
                     <defs>
                       <marker id="edge-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                         <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
                       </marker>
                     </defs>
 
-                    <path d="M 60 80 H 260" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
-                    <path d="M 340 80 H 540" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
-                    <path d="M 540 140 H 340" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
-                    <path d="M 260 140 H 60" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#edge-arrow)" />
+                    <path d="M 60 80 H 260" fill="none" stroke={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={selectedEdgeHook === 'viewer-request' ? 'flow-line-active' : ''} />
+                    <path d="M 340 80 H 540" fill="none" stroke={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-request' ? '#db2777' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-request' ? 'flow-line-active-blue' : ''} />
+                    <path d="M 540 140 H 340" fill="none" stroke={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-response' ? '#db2777' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-response' ? 'flow-line-active-blue' : ''} />
+                    <path d="M 260 140 H 60" fill="none" stroke={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={selectedEdgeHook === 'viewer-response' ? 'flow-line-active' : ''} />
 
                     <g transform="translate(10, 70)">
                       <circle cx="25" cy="40" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
@@ -2254,7 +2507,7 @@ export default function ServerlessVisualizer() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-center justify-center min-h-[220px]">
+              <div className="lg:col-span-8 border border-slate-200 rounded-xl p-5 flex items-center justify-center min-h-[220px] shadow-inner bg-slate-50 sv-svg-bg">
                 {ddbStreamSource === 'ddb-streams' ? (
                   <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
                     <g transform="translate(10, 30)">
@@ -2369,7 +2622,7 @@ export default function ServerlessVisualizer() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-center min-h-[220px]">
+              <div className="lg:col-span-8 border border-slate-200 rounded-xl p-4 flex items-center justify-center min-h-[220px] shadow-inner bg-slate-50 sv-svg-bg">
                 {apigwEndpointType === 'edge' && (
                   <svg className="w-full max-w-[580px] h-[160px]" viewBox="0 0 580 160">
                     <text x="20" y="24" fill="#475569" fontSize="9" fontWeight="bold">EDGE-OPTIMIZED ENDPOINT PIPELINE</text>
@@ -2683,9 +2936,8 @@ export default function ServerlessVisualizer() {
                 </div>
               </div>
 
-              {/* Dynamic Authentication flow graphics */}
-              <div className="w-full h-[220px] bg-slate-50 border border-slate-150 rounded-xl relative overflow-hidden">
-                <svg className="w-full h-full" viewBox="0 0 700 220">
+              <div className="w-full h-[220px] rounded-xl relative overflow-hidden shadow-inner border border-slate-200 bg-slate-50">
+                <svg className="w-full h-full sv-svg-bg" viewBox="0 0 700 220">
                   <defs>
                     <marker id="cog-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                       <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
@@ -2948,8 +3200,7 @@ export default function ServerlessVisualizer() {
                 </div>
               </div>
 
-              {/* Dynamic SVG diagrams rendering */}
-              <div className="w-full h-[320px] relative bg-slate-50 border border-slate-150 rounded-xl overflow-x-auto overflow-y-hidden flex items-center justify-center p-2">
+              <div className="w-full h-[320px] relative rounded-xl border border-slate-200 overflow-x-auto overflow-y-hidden flex items-center justify-center p-2 shadow-inner bg-slate-50 sv-svg-bg">
                 
                 {/* 1. Blog Web SVG Replica */}
                 {activeArchTab === 'blog-web' && (
@@ -3318,7 +3569,7 @@ export default function ServerlessVisualizer() {
           {/* Scenario Display Cards */}
           {dbScenario === 'vpc-basic' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
-              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm">
+              <div className="lg:col-span-8 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm bg-slate-50 sv-svg-bg shadow-inner">
                 <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
                   <rect width="590" height="290" rx="12" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="5 5" />
                   <text x="30" y="30" fill="#475569" fontSize="10" fontWeight="bold">AWS VIRTUAL PRIVATE CLOUD (VPC)</text>
@@ -3383,7 +3634,7 @@ export default function ServerlessVisualizer() {
 
           {dbScenario === 'rds-proxy' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
-              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm">
+              <div className="lg:col-span-8 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm bg-slate-50 sv-svg-bg shadow-inner">
                 <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
                   <rect x="20" y="45" width="100" height="210" rx="8" fill="rgba(241, 245, 249, 0.6)" stroke="#cbd5e1" strokeWidth="1" />
                   <text x="70" y="32" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">SCALING LAMBDAS</text>
@@ -3445,7 +3696,7 @@ export default function ServerlessVisualizer() {
 
           {dbScenario === 'aurora-trigger' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
-              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm">
+              <div className="lg:col-span-8 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm bg-slate-50 sv-svg-bg shadow-inner">
                 <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
                   <g transform="translate(30, 80)">
                     <rect width="160" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />

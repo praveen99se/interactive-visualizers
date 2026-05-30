@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Cpu,
   Layers,
@@ -25,19 +25,6 @@ interface SimTask {
   cpu: number;
   memory: number;
   uptime: number; // in seconds
-}
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  targetX: number;
-  targetY: number;
-  speed: number;
-  color: string;
-  type: 'web' | 'sqs' | 'cron';
-  state: 'to_lb' | 'to_web_task' | 'to_sqs' | 'to_worker_task' | 'done';
-  taskId?: string;
 }
 
 export default function ElasticContainersVisualizer() {
@@ -151,16 +138,6 @@ export default function ElasticContainersVisualizer() {
   const [simStatsHistory, setSimStatsHistory] = useState<{ time: string; cpu: number; tasks: number; queue: number }[]>([]);
   const [activeAlert, setActiveAlert] = useState<{ title: string; desc: string; type: 'info' | 'error' | 'success' } | null>(null);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const particleIdRef = useRef(0);
-  const animationFrameIdRef = useRef<number | null>(null);
-  const simIsRunningRef = useRef(simIsRunning);
-
-  useEffect(() => {
-    simIsRunningRef.current = simIsRunning;
-  }, [simIsRunning]);
-
   // Log Event helper
   const logEvent = (msg: string) => {
     setSimLogs((prev) => {
@@ -230,23 +207,7 @@ export default function ElasticContainersVisualizer() {
         setSqsQueueDepth(prev => Math.max(0, prev - itemsToProcess));
         for (let i = 0; i < itemsToProcess; i++) {
           const worker = runningWorkers[i];
-          const workerIndexInGroup = simTasks.filter(t => t.type === 'worker').findIndex(t => t.id === worker.id);
           logEvent(`📦 Task ${worker.name} popped 1 job from SQS Queue. Processing...`);
-          // Spawn particle towards worker
-          if (canvasRef.current) {
-            particlesRef.current.push({
-              id: particleIdRef.current++,
-              x: 260, // Widescreen SQS X
-              y: 310, // Widescreen SQS Y
-              targetX: 760 - 60, // Worker Tasks Private Subnet Left boundary (tx - 60 = 700)
-              targetY: 205 + (workerIndexInGroup !== -1 ? workerIndexInGroup * 45 : i * 45),
-              speed: 4,
-              color: '#d97706',
-              type: 'sqs',
-              state: 'to_worker_task',
-              taskId: worker.id
-            });
-          }
         }
       }
 
@@ -355,513 +316,6 @@ export default function ElasticContainersVisualizer() {
     handleKillTask(target.id, target.name);
   };
 
-  const drawCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // 1. Premium Clean Light Blueprint Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-
-    // Draw grid lines
-    ctx.strokeStyle = '#f1f5f9';
-    ctx.lineWidth = 1;
-    const gridSpacing = 20;
-    for (let x = 0; x < width; x += gridSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += gridSpacing) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-
-    // Widescreen Spacious Coordinates (Optimized for 880x400 resolution)
-    const clientX = 80;
-    const clientY = 90;
-    const albX = 260;
-    const albY = 90;
-    const sqsX = 260;
-    const sqsY = 310;
-    const ebX = 80;
-    const ebY = 210;
-
-    const webTasksX = 540;
-    const webTasksYStart = 85;
-
-    const workerTasksX = 760;
-    const workerTasksYStart = 205;
-
-    // Connect conduit paths with glowing lines
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(clientX + 35, clientY);
-    ctx.lineTo(albX - 35, albY);
-    ctx.stroke();
-
-    // 2. Render static infrastructure nodes with modern styling
-    // HTTP Client Node
-    ctx.fillStyle = '#f0f9ff';
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(59, 130, 246, 0.15)';
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.roundRect(clientX - 35, clientY - 30, 70, 60, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0; // reset
-
-    // Double border inside HTTP Client Node
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(clientX - 31, clientY - 26, 62, 52, 6);
-    ctx.stroke();
-
-    // Node contents
-    ctx.fillStyle = '#1e3a8a';
-    ctx.font = 'bold 9.5px var(--font-sans)';
-    ctx.textAlign = 'center';
-    ctx.fillText('🌍 CLIENTS', clientX, clientY - 12);
-    ctx.fillStyle = '#475569';
-    ctx.font = '8px var(--font-mono)';
-    let rateStr = 'Rate: 15/s';
-    if (simTrafficLevel === 'low') rateStr = 'Rate: 3/s';
-    if (simTrafficLevel === 'surge') rateStr = 'Rate: 240/s';
-    ctx.fillText(rateStr, clientX, clientY + 5);
-    ctx.fillStyle = simTrafficLevel === 'surge' ? '#b91c1c' : '#16803d';
-    ctx.font = 'bold 7px var(--font-sans)';
-    ctx.fillText(simTrafficLevel === 'surge' ? '⚠️ SURGE LOAD' : '🟢 HEALTHY', clientX, clientY + 16);
-
-    // ALB Load Balancer Node
-    ctx.fillStyle = '#f0f9ff';
-    ctx.strokeStyle = '#0284c7';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(2, 132, 199, 0.15)';
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.roundRect(albX - 35, albY - 25, 70, 50, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0; // reset
-
-    // Inner panel inside ALB Node
-    ctx.strokeStyle = 'rgba(2, 132, 199, 0.15)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(albX - 31, albY - 21, 62, 42, 6);
-    ctx.stroke();
-
-    ctx.fillStyle = '#0369a1';
-    ctx.font = 'bold 10px var(--font-sans)';
-    ctx.fillText('⚖️ ALB', albX, albY - 6);
-    ctx.fillStyle = '#475569';
-    ctx.font = '8px var(--font-mono)';
-    ctx.fillText('Port: 443', albX, albY + 6);
-    ctx.fillStyle = '#0284c7';
-    ctx.font = 'bold 7.5px var(--font-mono)';
-    ctx.fillText('HTTP → HTTP', albX, albY + 16);
-
-    // SQS Message Queue Node
-    ctx.fillStyle = '#fffbeb';
-    ctx.strokeStyle = '#d97706';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(217, 119, 6, 0.15)';
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.roundRect(sqsX - 45, sqsY - 25, 90, 50, 8);
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0; // reset
-
-    ctx.fillStyle = '#b45309';
-    ctx.font = 'bold 9px var(--font-sans)';
-    ctx.fillText('✉️ SQS QUEUE', sqsX, sqsY - 10);
-    ctx.fillStyle = '#b45309';
-    ctx.font = 'bold 8px var(--font-mono)';
-    ctx.fillText(`Depth: ${sqsQueueDepth} jobs`, sqsX, sqsY + 1);
-
-    // Draw SQS queue message slots inside the card to visually represent depth
-    const maxSlots = 5;
-    const slotWidth = 10;
-    const slotHeight = 10;
-    const totalSlotWidth = maxSlots * slotWidth + (maxSlots - 1) * 3;
-    const startSlotX = sqsX - totalSlotWidth / 2;
-    const slotY = sqsY + 8;
-
-    for (let slotIdx = 0; slotIdx < maxSlots; slotIdx++) {
-      ctx.strokeStyle = '#fdba74';
-      ctx.fillStyle = '#fffbeb';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(startSlotX + (slotIdx * 13), slotY, slotWidth, slotHeight, 2);
-      ctx.fill();
-      ctx.stroke();
-
-      if (slotIdx < sqsQueueDepth) {
-        ctx.fillStyle = '#f59e0b';
-        ctx.shadowColor = '#d97706';
-        ctx.shadowBlur = 2;
-        ctx.beginPath();
-        ctx.roundRect(startSlotX + (slotIdx * 13) + 1, slotY + 1, slotWidth - 2, slotHeight - 2, 1);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      }
-    }
-
-    // EventBridge Cron Node
-    ctx.fillStyle = '#faf5ff';
-    ctx.strokeStyle = '#a855f7';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(168, 85, 247, 0.15)';
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.arc(ebX, ebY, 20, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0; // reset
-
-    // Pulsing outer clock timer ring
-    ctx.strokeStyle = 'rgba(168, 85, 247, 0.2)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    const ringRadius = 20 + Math.abs(Math.sin(Date.now() / 300)) * 6;
-    ctx.arc(ebX, ebY, ringRadius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.fillStyle = '#6b21a8';
-    ctx.font = 'bold 8px var(--font-sans)';
-    ctx.textAlign = 'center';
-    ctx.fillText('⏰ CRON', ebX, ebY - 3);
-    ctx.fillStyle = '#a855f7';
-    ctx.font = 'bold 6.5px var(--font-mono)';
-    ctx.fillText('EB RULE', ebX, ebY + 7);
-
-    // 3. ECS Container subnet boundary box (VPC subnet - wider X: 430 to 860)
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.015)';
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([8, 4]);
-    ctx.beginPath();
-    ctx.roundRect(430, 15, 430, height - 30, 12);
-    ctx.fill();
-    ctx.stroke();
-
-    // Draw two inner subnets: Public Web Subnet and Private App Subnet
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-
-    // Public Web Subnet Box (width 170)
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.roundRect(450, 42, 170, height - 72, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    // Private App Subnet Box (width 170)
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.roundRect(670, 42, 170, height - 72, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-
-    // Subnet Labels
-    ctx.fillStyle = '#047857';
-    ctx.font = 'bold 7.5px var(--font-mono)';
-    ctx.textAlign = 'center';
-    ctx.fillText('PUBLIC WEB SUBNET', 535, 52);
-    ctx.fillText('PRIVATE APP SUBNET', 755, 52);
-
-    ctx.fillStyle = '#047857';
-    ctx.font = 'bold 8px var(--font-mono)';
-    ctx.textAlign = 'right';
-    ctx.fillText('VPC SUBNET - ECS CLUSTER', width - 20, 28);
-
-    // Draw active dynamic container cards in canvas as server blades
-    const webTasks = simTasks.filter(t => t.type === 'web');
-    webTasks.forEach((t, i) => {
-      const tx = webTasksX;
-      const ty = webTasksYStart + (i * 52);
-
-      // Card Base background (Pure White Card)
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#fbbf24' : '#10b981';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(tx - 60, ty - 16, 120, 32, 8);
-      ctx.fill();
-      ctx.stroke();
-
-      // Glowing heartbeats LED
-      ctx.fillStyle = t.status === 'PROVISIONING' ? '#fbbf24' : '#10b981';
-      ctx.beginPath();
-      const pulseRadius = 3 + Math.abs(Math.sin(Date.now() / 200)) * 1.5;
-      ctx.arc(tx - 48, ty, t.status === 'PROVISIONING' ? 3 : pulseRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Text name
-      ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 8.5px var(--font-mono)';
-      ctx.textAlign = 'left';
-      ctx.fillText(t.name, tx - 38, ty - 3);
-
-      // CPU mini resource bar background
-      ctx.fillStyle = '#f1f5f9';
-      ctx.beginPath();
-      ctx.roundRect(tx - 38, ty + 5, 65, 4, 2);
-      ctx.fill();
-
-      // Fill resource bar
-      if (t.status === 'RUNNING') {
-        const fillWidth = (t.cpu / 100) * 65;
-        ctx.fillStyle = t.cpu > 80 ? '#b91c1c' : t.cpu > 50 ? '#d97706' : '#10b981';
-        ctx.beginPath();
-        ctx.roundRect(tx - 38, ty + 5, fillWidth, 4, 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '7px var(--font-mono)';
-        ctx.fillText(`${t.cpu}%`, tx + 32, ty + 9);
-      } else {
-        ctx.fillStyle = '#b45309';
-        ctx.font = 'italic 7px var(--font-sans)';
-        ctx.fillText('STARTING...', tx - 38, ty + 9);
-      }
-
-      // Connect ALB line
-      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#e2e8f0' : '#0284c735';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(albX + 35, albY);
-      ctx.lineTo(tx - 60, ty);
-      ctx.stroke();
-    });
-
-    const workerTasks = simTasks.filter(t => t.type === 'worker');
-    workerTasks.forEach((t, i) => {
-      const tx = workerTasksX;
-      const ty = workerTasksYStart + (i * 45);
-
-      // Card Base (Pure White Card)
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#fbbf24' : '#3b82f6';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(tx - 60, ty - 15, 120, 30, 8);
-      ctx.fill();
-      ctx.stroke();
-
-      // Led
-      ctx.fillStyle = t.status === 'PROVISIONING' ? '#fbbf24' : '#3b82f6';
-      ctx.beginPath();
-      const pulseRadius = 3 + Math.abs(Math.sin(Date.now() / 250)) * 1.2;
-      ctx.arc(tx - 48, ty - 2, t.status === 'PROVISIONING' ? 3 : pulseRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Name
-      ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 8px var(--font-mono)';
-      ctx.textAlign = 'left';
-      ctx.fillText(t.name, tx - 38, ty - 3);
-
-      // Status text
-      if (t.status === 'RUNNING') {
-        ctx.fillStyle = '#2563eb';
-        ctx.font = '7px var(--font-sans)';
-        ctx.fillText(`⚙️ RUNNING | Load: ${t.cpu}%`, tx - 38, ty + 7);
-      } else {
-        ctx.fillStyle = '#b45309';
-        ctx.font = 'italic 7px var(--font-sans)';
-        ctx.fillText('PROVISIONING...', tx - 38, ty + 7);
-      }
-
-      // Connect SQS line
-      ctx.strokeStyle = t.status === 'PROVISIONING' ? '#e2e8f0' : '#d9770635';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(sqsX + 45, sqsY);
-      ctx.lineTo(tx - 60, ty);
-      ctx.stroke();
-    });
-
-    const cronTasks = simTasks.filter(t => t.type === 'cron');
-    cronTasks.forEach((t) => {
-      const tx = 680;
-      const ty = 90;
-
-      // Base (Pure White Card)
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#a855f7';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(tx - 60, ty - 15, 120, 30, 8);
-      ctx.fill();
-      ctx.stroke();
-
-      // Led
-      ctx.fillStyle = '#a855f7';
-      ctx.beginPath();
-      ctx.arc(tx - 48, ty - 2, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 8px var(--font-mono)';
-      ctx.textAlign = 'left';
-      ctx.fillText(t.name, tx - 38, ty - 3);
-      ctx.fillStyle = '#a855f7';
-      ctx.font = '7px var(--font-sans)';
-      ctx.fillText(t.status === 'PROVISIONING' ? '⏳ MOUNTING...' : '🏃 BATCH RUNNING', tx - 38, ty + 7);
-
-      // Connect EventBridge line
-      ctx.strokeStyle = '#a855f725';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(ebX + 20, ebY); // EventBridge rule node right boundary
-      ctx.lineTo(tx - 60, ty); // Cron task left boundary
-      ctx.stroke();
-    });
-
-    // 4. Telemetry overlay box directly in canvas (translucent clean glassy overlay)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(20, height - 85, 125, 65, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = '#1e3a8a';
-    ctx.font = 'bold 8px var(--font-sans)';
-    ctx.textAlign = 'left';
-    ctx.fillText('📊 ECS CLUSTER METRICS', 28, height - 71);
-
-    ctx.font = '7.5px var(--font-mono)';
-    ctx.fillStyle = '#0284c7';
-    let latency = 'Latency: 12ms';
-    if (simTrafficLevel === 'low') latency = 'Latency: 4ms';
-    if (simTrafficLevel === 'surge') latency = 'Latency: 94ms ⚠️';
-    ctx.fillText(latency, 28, height - 58);
-    ctx.fillStyle = '#475569';
-    ctx.fillText(`Socket Conns: ${webTasks.filter(t => t.status === 'RUNNING').length + workerTasks.filter(t => t.status === 'RUNNING').length}`, 28, height - 47);
-    ctx.fillStyle = '#16803d';
-    ctx.fillText('API Healthcheck: 200 OK', 28, height - 36);
-
-    // 5. Spawn dynamic HTTP request particles
-    let spawnRate = 0.18;
-    if (simTrafficLevel === 'low') spawnRate = 0.04;
-    if (simTrafficLevel === 'surge') spawnRate = 0.65;
-
-    if (simIsRunningRef.current && Math.random() < spawnRate && webTasks.filter(t => t.status === 'RUNNING').length > 0) {
-      particlesRef.current.push({
-        id: particleIdRef.current++,
-        x: clientX + 35,
-        y: clientY,
-        targetX: albX - 35,
-        targetY: albY,
-        speed: 3.5 + Math.random() * 2.5,
-        color: '#3b82f6',
-        type: 'web',
-        state: 'to_lb'
-      });
-    }
-
-    // Spawn dynamic Cron rule request particles if Cron task is active
-    const activeCron = simTasks.filter(t => t.type === 'cron' && t.status !== 'STOPPED');
-    if (simIsRunningRef.current && activeCron.length > 0 && Math.random() < 0.15) {
-      particlesRef.current.push({
-        id: particleIdRef.current++,
-        x: ebX + 20, // Widescreen EB Cron Node right edge
-        y: ebY, // Widescreen EB Cron Node Y
-        targetX: 760 - 60, // Cron Task App Subnet Left boundary (tx - 60 = 700)
-        targetY: 90, // Cron Task Card Y (ty = 90)
-        speed: 3,
-        color: '#a855f7',
-        type: 'cron',
-        state: 'to_worker_task'
-      });
-    }
-
-    // Process and draw particles
-    const particles = particlesRef.current;
-    particlesRef.current = particles.filter((p) => {
-      const dx = p.targetX - p.x;
-      const dy = p.targetY - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < 4) {
-        if (p.state === 'to_lb') {
-          // Route from ALB to a running web task
-          const runningWeb = webTasks.filter(t => t.status === 'RUNNING');
-          if (runningWeb.length > 0) {
-            const index = Math.floor(Math.random() * runningWeb.length);
-            const targetTask = runningWeb[index];
-            const webIndexInGroup = simTasks.filter(t => t.type === 'web').findIndex(t => t.id === targetTask.id);
-
-            p.targetX = webTasksX - 60;
-            p.targetY = webTasksYStart + (webIndexInGroup * 52);
-            p.state = 'to_web_task';
-            p.taskId = targetTask.id;
-          } else {
-            return false;
-          }
-        } else if (p.state === 'to_web_task') {
-          return false; // Reached container web task
-        } else if (p.state === 'to_worker_task') {
-          return false; // Reached container worker task
-        } else {
-          return false;
-        }
-      } else {
-        p.x += (dx / dist) * p.speed;
-        p.y += (dy / dist) * p.speed;
-      }
-
-      // Draw particle as a glowing neon dot
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 3;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0; // reset shadow
-
-      return true;
-    });
-
-    if (simIsRunningRef.current) {
-      animationFrameIdRef.current = requestAnimationFrame(drawCanvas);
-    }
-  }, [simTasks, sqsQueueDepth, simTrafficLevel]);
-
-  useEffect(() => {
-    if (activeTab === 'simulation') {
-      if (simIsRunning) {
-        drawCanvas();
-      } else {
-        setTimeout(drawCanvas, 100);
-      }
-    }
-    return () => {
-      if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
-      }
-    };
-  }, [activeTab, simIsRunning, drawCanvas]);
-
 
 
   return (
@@ -886,27 +340,33 @@ export default function ElasticContainersVisualizer() {
             grid-template-columns: 1fr;
           }
         }
+        
+        /* Glassmorphic card & solver elements */
         .ecs-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: rgba(255, 255, 255, 0.75);
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
           border-radius: 16px;
           padding: 24px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+          backdrop-filter: blur(16px);
           margin-bottom: 24px;
-          transition: all 0.2s ease;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .ecs-card:hover {
           border-color: #eab308;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 12px 24px -4px rgba(234, 179, 8, 0.08), 0 4px 12px -2px rgba(234, 179, 8, 0.03);
+          transform: translateY(-1px);
         }
+        
         .ecs-card-title {
-          font-size: 16px;
-          font-weight: 700;
+          font-size: 16.5px;
+          font-weight: 800;
           color: #0f172a;
           margin-bottom: 12px;
           display: flex;
           align-items: center;
           gap: 8px;
+          letter-spacing: -0.02em;
         }
         .ecs-card-desc {
           font-size: 12.5px;
@@ -915,73 +375,82 @@ export default function ElasticContainersVisualizer() {
         }
         .ecs-tabs {
           display: flex;
-          gap: 5px;
+          gap: 6px;
           flex-wrap: wrap;
-          margin-bottom: 16px;
-          border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0);
+          margin-bottom: 20px;
+          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
           padding-bottom: 10px;
         }
         .ecs-tb {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 14px;
-          border-radius: var(--border-radius-lg, 12px);
-          border: 0.5px solid var(--color-border-secondary, #cbd5e1);
+          padding: 8px 16px;
+          border-radius: 12px;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
           font-size: 12px;
-          font-weight: 500;
-          color: var(--color-text-secondary, #475569);
-          background: var(--color-background-secondary, #f8fafc);
+          font-weight: 600;
+          color: #475569;
+          background: rgba(255, 255, 255, 0.85);
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.15s;
+          transition: all 0.15s ease-in-out;
           outline: none;
         }
         .ecs-tb:hover {
-          background: var(--color-background-tertiary, #f1f5f9);
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #1e293b;
         }
         .ecs-tb.ecs-on {
           background: #16a34a;
           color: #ffffff;
           border-color: #16a34a;
-          font-weight: 500;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
         }
+        
+        /* Form inputs & controls */
         .ecs-input, .ecs-select {
           width: 100%;
           padding: 10px 14px;
           border-radius: 10px;
-          border: 1px solid #cbd5e1;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
           background: #ffffff;
           color: #0f172a;
           font-size: 13px;
+          font-weight: 500;
           outline: none;
           transition: all 0.15s ease;
         }
         .ecs-input:focus, .ecs-select:focus {
           border-color: #eab308;
-          box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+          box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.12);
         }
+        
         .ecs-btn {
           padding: 10px 18px;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           border-radius: 10px;
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all 0.15s ease-in-out;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-          border: 1px solid transparent;
+          border: 1.5px solid transparent;
           user-select: none;
           outline: none;
         }
         .ecs-btn-primary {
           background: #eab308;
           color: #ffffff;
+          border-color: #eab308;
         }
         .ecs-btn-primary:hover {
           background: #ca8a04;
+          border-color: #ca8a04;
+          box-shadow: 0 4px 12px rgba(234, 179, 8, 0.15);
         }
         .ecs-btn-secondary {
           background: #ffffff;
@@ -991,14 +460,15 @@ export default function ElasticContainersVisualizer() {
         .ecs-btn-secondary:hover {
           background: #f1f5f9;
         }
+        
         .anl-btn {
           padding: 8px 16px;
           border-radius: 999px;
-          border: 1px solid #e2e8f0;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
           background: #ffffff;
           color: #475569;
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 12.5px;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.2s ease;
           outline: none;
@@ -1007,26 +477,44 @@ export default function ElasticContainersVisualizer() {
           gap: 6px;
         }
         .anl-btn:hover {
-          background: #f1f5f9;
+          background: #f8fafc;
+          border-color: #cbd5e1;
         }
         .anl-btn.anl-on-nlb {
           background: #fef9c3;
           color: #a16207;
-          border-color: #fef08a;
-          box-shadow: 0 4px 6px -1px rgba(234, 179, 8, 0.08);
+          border-color: #fde047;
+          box-shadow: 0 3px 10px rgba(234, 179, 8, 0.1);
         }
         .anl-btn.anl-on {
           background: #eff6ff;
           color: #1d4ed8;
           border-color: #bfdbfe;
         }
-        .pulsing-border {
-          animation: pulseGlow 2s infinite alternate;
+        
+        /* Custom dynamic visualizer backdrops */
+        .ecs-svg-bg {
+          background-color: #f8fafc;
+          background-image: radial-gradient(rgba(203, 213, 225, 0.45) 1.5px, transparent 1.5px);
+          background-size: 16px 16px;
         }
-        @keyframes pulseGlow {
-          0% { border-color: #cbd5e1; box-shadow: 0 0 2px rgba(0,0,0,0.05); }
-          100% { border-color: #eab308; box-shadow: 0 0 12px rgba(234, 179, 8, 0.25); }
+        
+        .im-pulse {
+          animation: nodePulse 2s infinite alternate;
         }
+        @keyframes nodePulse {
+          0% { box-shadow: 0 0 2px rgba(16, 185, 129, 0.3); r: 2.5; opacity: 0.85; }
+          100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.8); r: 4; opacity: 1; }
+        }
+        
+        .active-svg-glow {
+          animation: activeGlow 2.5s infinite alternate;
+        }
+        @keyframes activeGlow {
+          0% { filter: drop-shadow(0 0 2px rgba(234, 179, 8, 0.1)); }
+          100% { filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.35)); }
+        }
+        
         .flow-line-active {
           stroke-dasharray: 6,4;
           animation: flowDash 1s linear infinite;
@@ -1034,63 +522,18 @@ export default function ElasticContainersVisualizer() {
         @keyframes flowDash {
           to { stroke-dashoffset: -20; }
         }
-        .grid-layers {
-          display: grid;
-          grid-template-rows: repeat(5, minmax(0, 1fr));
-          gap: 6px;
-        }
-        .layer-box {
-          border: 1px solid #e2e8f0;
-          border-radius: 6px;
-          padding: 10px;
-          font-size: 11px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          background: #ffffff;
-        }
-        .layer-box.active {
-          background: #fef9c3;
-          border-color: #eab308;
-          font-weight: 600;
-        }
-        .console-line {
-          font-family: var(--font-mono, monospace);
-          font-size: 11px;
-          line-height: 1.4;
-          padding: 2px 0;
-          color: #cbd5e1;
-        }
-        .console-log-highlight {
-          color: #38bdf8;
-        }
-        .console-log-warn {
-          color: #fbbf24;
-        }
-        .console-log-error {
-          color: #f87171;
-        }
-        .console-log-success {
-          color: #4ade80;
-        }
-        @keyframes activeSvgGlow {
-          0% { filter: drop-shadow(0 0 1px rgba(234, 179, 8, 0.2)); }
-          50% { filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.5)); }
-          100% { filter: drop-shadow(0 0 1px rgba(234, 179, 8, 0.2)); }
-        }
-        .active-svg-glow {
-          animation: activeSvgGlow 2s infinite ease-in-out;
-        }
-        /* Dockerfile code editor terminal block */
+        
+        /* Realistic Code Editor Terminals */
         .ecs-code-terminal {
-          background: #0f172a;
-          border: 1px solid #1e293b;
+          background: #090d16;
+          border: 1.5px solid #1e293b;
           border-radius: 12px;
           padding: 16px;
           color: #94a3b8;
           font-family: var(--font-mono, monospace);
           font-size: 11.5px;
           line-height: 1.6;
-          box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.1);
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
         }
         .ecs-code-line {
           display: block;
@@ -1100,12 +543,12 @@ export default function ElasticContainersVisualizer() {
           transition: all 0.2s ease;
         }
         .ecs-code-line-highlight {
-          background: rgba(234, 179, 8, 0.1);
+          background: rgba(234, 179, 8, 0.08);
           border-left-color: #eab308;
-          color: #fef08a;
+          color: #f1f5f9;
         }
         .ecs-code-comment {
-          color: #64748b;
+          color: #475569;
           font-style: italic;
         }
         .ecs-code-keyword {
@@ -1115,55 +558,46 @@ export default function ElasticContainersVisualizer() {
         .ecs-code-value {
           color: #38bdf8;
         }
-        /* Heartbeats */
-        @keyframes heartbeat {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.6; }
-        }
-        .cyber-heartbeat {
-          animation: heartbeat 1.5s infinite ease-in-out;
-        }
-        /* Premium Table Design */
+        
+        /* Comprehensive Table Styles */
         .ecs-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 12px;
-          margin-top: 12px;
-          background: #ffffff;
-          border-radius: 8px;
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
+          font-size: 11.5px;
+          margin-top: 10px;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
         }
         .ecs-table th {
           background: #f8fafc;
-          padding: 10px 12px;
-          font-weight: 700;
-          color: #334155;
           text-align: left;
-          border-bottom: 1px solid #e2e8f0;
+          padding: 8px 12px;
+          font-weight: 700;
+          color: #475569;
+          border-bottom: 1.5px solid rgba(226, 232, 240, 0.85);
         }
         .ecs-table td {
-          padding: 10px 12px;
-          color: #475569;
-          border-bottom: 1px solid #f1f5f9;
-        }
-        .ecs-table tr:last-child td {
-          border-bottom: none;
+          padding: 8px 12px;
+          border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+          color: #334155;
         }
         .ecs-table tr:hover td {
           background: #f8fafc;
         }
-        /* Circular loading indicators for SVG */
-        @keyframes rotateRadial {
-          to { stroke-dashoffset: 0; }
+        
+        .badge {
+          display: inline-block;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
         }
-        .radial-progress-ring {
-          stroke-dasharray: 251.2;
-          stroke-dashoffset: 251.2;
-          transform: rotate(-90deg);
-          transform-origin: 50% 50%;
-          animation: rotateRadial 8s linear infinite;
-        }
+        .badge-teal { background: #f0fdfa; color: #0f766e; border: 1.5px solid #99f6e4; }
+        .badge-blue { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; }
+        .badge-amber { background: #fffbeb; color: #b45309; border: 1.5px solid #fde047; }
+        .badge-purple { background: #faf5ff; color: #6b21a8; border: 1.5px solid #e9d5ff; }
+        .badge-coral { background: #fff5f5; color: #c53030; border: 1.5px solid #feb2b2; }
       `}</style>
 
       {/* Header section */}
@@ -1304,53 +738,210 @@ export default function ElasticContainersVisualizer() {
                 </div>
 
                 {/* Animated stacked box visualization */}
-                <div className="border border-gray-200 rounded-xl p-4 bg-slate-50 shadow-inner flex flex-col items-center">
-                  <div className="w-full max-w-[280px] flex flex-col gap-2">
-                    {/* App layer */}
-                    <div className="flex gap-1.5">
-                      <div className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-center py-2.5 rounded-lg text-[10px] font-bold shadow-sm hover:scale-105 transition-transform animate-pulse">App A</div>
-                      <div className="flex-1 bg-gradient-to-r from-sky-500 to-indigo-500 text-white text-center py-2.5 rounded-lg text-[10px] font-bold shadow-sm hover:scale-105 transition-transform animate-pulse">App B</div>
-                      <div className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-center py-2.5 rounded-lg text-[10px] font-bold shadow-sm hover:scale-105 transition-transform animate-pulse">App C</div>
-                    </div>
+                <div className="border border-gray-200 rounded-xl p-4 bg-slate-50 shadow-inner flex flex-col items-center w-full">
+                  <svg width="100%" height="280" viewBox="0 0 320 280" className="ecs-svg-bg rounded-lg border border-slate-200 bg-white">
+                    {/* Definitions for 3D Gradients */}
+                    <defs>
+                      <linearGradient id="infraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#334155" />
+                        <stop offset="100%" stopColor="#0f172a" />
+                      </linearGradient>
+                      <linearGradient id="kernelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#475569" />
+                        <stop offset="100%" stopColor="#1e293b" />
+                      </linearGradient>
+                      <linearGradient id="dockerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#0ea5e9" />
+                        <stop offset="100%" stopColor="#0284c7" />
+                      </linearGradient>
+                      <linearGradient id="hyperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f97316" />
+                        <stop offset="100%" stopColor="#c2410c" />
+                      </linearGradient>
+                      
+                      <linearGradient id="appAGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#06b6d4" />
+                        <stop offset="100%" stopColor="#0891b2" />
+                      </linearGradient>
+                      <linearGradient id="appBGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#059669" />
+                      </linearGradient>
+                      <linearGradient id="appCGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#6366f1" />
+                        <stop offset="100%" stopColor="#4f46e5" />
+                      </linearGradient>
 
-                    {/* Bins / Libs layer */}
-                    <div className="flex gap-1.5">
-                      <div className="flex-1 bg-cyan-50 border border-cyan-200 text-cyan-800 text-center py-1.5 rounded-md text-[9px] font-medium font-mono">libs / bins</div>
-                      <div className="flex-1 bg-sky-50 border border-sky-200 text-sky-800 text-center py-1.5 rounded-md text-[9px] font-medium font-mono">libs / bins</div>
-                      <div className="flex-1 bg-indigo-50 border border-indigo-200 text-indigo-800 text-center py-1.5 rounded-md text-[9px] font-medium font-mono">libs / bins</div>
-                    </div>
+                      <linearGradient id="libGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#cbd5e1" />
+                        <stop offset="100%" stopColor="#94a3b8" />
+                      </linearGradient>
+                      <linearGradient id="guestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fde047" />
+                        <stop offset="100%" stopColor="#ca8a04" />
+                      </linearGradient>
+                    </defs>
 
-                    {/* Virtualization layer */}
                     {dockerVmView === 'container' ? (
-                      <div className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-lg text-xs font-bold pulsing-border border border-sky-400">
-                        🐳 Container Engine (Docker / containerd)
-                        <div className="text-[8px] font-normal text-sky-200 mt-0.5">Shares Kernel · Manages Isolated Namespace Bounds</div>
-                      </div>
+                      <g>
+                        {/* 1. Infrastructure Layer */}
+                        <polygon points="30,240 250,240 280,225 60,225" fill="url(#infraGrad)" stroke="#0f172a" strokeWidth="0.5" />
+                        <polygon points="30,240 250,240 250,252 30,252" fill="#0f172a" />
+                        <polygon points="250,240 280,225 280,237 250,252" fill="#020617" />
+                        <text x="145" y="247" textAnchor="middle" fontSize="7" fill="#94a3b8" fontWeight="bold" fontFamily="monospace">💻 BARE METAL / AWS EC2 INFRASTRUCTURE</text>
+
+                        {/* 2. Shared Host OS Kernel */}
+                        <polygon points="40,210 240,210 268,198 68,198" fill="url(#kernelGrad)" stroke="#1e293b" strokeWidth="0.5" />
+                        <polygon points="40,210 240,210 240,222 40,222" fill="#1e293b" />
+                        <polygon points="240,210 268,198 268,210 240,222" fill="#0f172a" />
+                        <text x="145" y="217" textAnchor="middle" fontSize="7" fill="#e2e8f0" fontWeight="bold">🐧 SHARED HOST OS KERNEL (LINUX)</text>
+
+                        {/* 3. Container Engine Layer */}
+                        <polygon points="50,180 230,180 256,168 76,168" fill="url(#dockerGrad)" stroke="#0369a1" strokeWidth="0.5" className="active-svg-glow" />
+                        <polygon points="50,180 230,180 230,192 50,192" fill="#0284c7" />
+                        <polygon points="230,180 256,168 256,180 230,192" fill="#0369a1" />
+                        <text x="145" y="187" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">🐳 CONTAINER ENGINE (CONTAINERD / DOCKER)</text>
+
+                        {/* Three container stacks side-by-side! */}
+                        {/* Container A */}
+                        <g>
+                          {/* Libs/Bins Layer */}
+                          <polygon points="60,145 105,145 120,137 75,137" fill="url(#libGrad)" stroke="#64748b" strokeWidth="0.5" />
+                          <polygon points="60,145 105,145 105,155 60,155" fill="#94a3b8" />
+                          <polygon points="105,145 120,137 120,147 105,155" fill="#64748b" />
+                          <text x="86" y="152" textAnchor="middle" fontSize="6" fill="#1e293b" fontWeight="bold" fontFamily="monospace">libs / bins</text>
+
+                          {/* App A Layer */}
+                          <polygon points="60,110 105,110 120,102 75,102" fill="url(#appAGrad)" stroke="#0891b2" strokeWidth="0.5" />
+                          <polygon points="60,110 105,110 105,125 60,125" fill="#0891b2" />
+                          <polygon points="105,110 120,102 120,117 105,125" fill="#0369a1" />
+                          <text x="86" y="121" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold" className="animate-pulse">App A</text>
+                        </g>
+
+                        {/* Container B */}
+                        <g>
+                          {/* Libs/Bins Layer */}
+                          <polygon points="115,145 160,145 175,137 130,137" fill="url(#libGrad)" stroke="#64748b" strokeWidth="0.5" />
+                          <polygon points="115,145 160,145 160,155 115,155" fill="#94a3b8" />
+                          <polygon points="160,145 175,137 175,147 160,155" fill="#64748b" />
+                          <text x="141" y="152" textAnchor="middle" fontSize="6" fill="#1e293b" fontWeight="bold" fontFamily="monospace">libs / bins</text>
+
+                          {/* App B Layer */}
+                          <polygon points="115,110 160,110 175,102 130,102" fill="url(#appBGrad)" stroke="#059669" strokeWidth="0.5" />
+                          <polygon points="115,110 160,110 160,125 115,125" fill="#059669" />
+                          <polygon points="160,110 175,102 175,117 160,125" fill="#047857" />
+                          <text x="141" y="121" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold" className="animate-pulse">App B</text>
+                        </g>
+
+                        {/* Container C */}
+                        <g>
+                          {/* Libs/Bins Layer */}
+                          <polygon points="170,145 215,145 230,137 185,137" fill="url(#libGrad)" stroke="#64748b" strokeWidth="0.5" />
+                          <polygon points="170,145 215,145 215,155 170,155" fill="#94a3b8" />
+                          <polygon points="215,145 230,137 230,147 215,155" fill="#64748b" />
+                          <text x="196" y="152" textAnchor="middle" fontSize="6" fill="#1e293b" fontWeight="bold" fontFamily="monospace">libs / bins</text>
+
+                          {/* App C Layer */}
+                          <polygon points="170,110 215,110 230,102 185,102" fill="url(#appCGrad)" stroke="#4f46e5" strokeWidth="0.5" />
+                          <polygon points="170,110 215,110 215,125 170,125" fill="#4f46e5" />
+                          <polygon points="215,110 230,102 230,117 215,125" fill="#3730a3" />
+                          <text x="196" y="121" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold" className="animate-pulse">App C</text>
+                        </g>
+
+                        {/* Connection indicators showing shared kernel direct syscall paths */}
+                        <path d="M 86,155 L 86,198" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" />
+                        <path d="M 141,155 L 141,198" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" />
+                        <path d="M 196,155 L 196,198" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" />
+                        <text x="240" y="75" fontSize="7.5" fill="#15803d" fontWeight="bold">⚡ Direct Syscalls</text>
+                        <text x="240" y="86" fontSize="6.5" fill="#166534">Zero OS duplication</text>
+                      </g>
                     ) : (
-                      <div className="flex gap-1.5">
-                        <div className="flex-1 bg-amber-100 border border-amber-300 text-amber-900 text-center py-2 rounded-md text-[9px] font-semibold leading-tight shadow-sm animate-pulse">Guest OS<br />(Kernel+Bins)</div>
-                        <div className="flex-1 bg-amber-100 border border-amber-300 text-amber-900 text-center py-2 rounded-md text-[9px] font-semibold leading-tight shadow-sm animate-pulse">Guest OS<br />(Kernel+Bins)</div>
-                        <div className="flex-1 bg-amber-100 border border-amber-300 text-amber-900 text-center py-2 rounded-md text-[9px] font-semibold leading-tight shadow-sm animate-pulse">Guest OS<br />(Kernel+Bins)</div>
-                      </div>
+                      <g>
+                        {/* 1. Infrastructure Layer */}
+                        <polygon points="30,240 250,240 280,225 60,225" fill="url(#infraGrad)" stroke="#0f172a" strokeWidth="0.5" />
+                        <polygon points="30,240 250,240 250,252 30,252" fill="#0f172a" />
+                        <polygon points="250,240 280,225 280,237 250,252" fill="#020617" />
+                        <text x="145" y="247" textAnchor="middle" fontSize="7" fill="#94a3b8" fontWeight="bold" fontFamily="monospace">💻 BARE METAL / AWS EC2 INFRASTRUCTURE</text>
+
+                        {/* 2. Hypervisor Layer */}
+                        <polygon points="40,210 240,210 268,198 68,198" fill="url(#hyperGrad)" stroke="#c2410c" strokeWidth="0.5" className="active-svg-glow" />
+                        <polygon points="40,210 240,210 240,222 40,222" fill="#ea580c" />
+                        <polygon points="240,210 268,198 268,210 240,222" fill="#c2410c" />
+                        <text x="145" y="217" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">⚙️ HYPERVISOR (AWS NITRO / EMULATOR)</text>
+
+                        {/* Three heavy VM columns side-by-side! */}
+                        {/* VM A */}
+                        <g>
+                          {/* Guest OS Layer */}
+                          <polygon points="55,178 100,178 112,170 67,170" fill="url(#guestGrad)" stroke="#ca8a04" strokeWidth="0.5" />
+                          <polygon points="55,178 100,178 100,188 55,188" fill="#ca8a04" />
+                          <polygon points="100,178 112,170 112,180 100,188" fill="#a16207" />
+                          <text x="81" y="184" textAnchor="middle" fontSize="6.5" fill="#ffffff" fontWeight="bold">Guest OS A</text>
+
+                          {/* Libs/Bins Layer */}
+                          <polygon points="55,150 100,150 112,142 67,142" fill="url(#libGrad)" stroke="#64748b" strokeWidth="0.5" />
+                          <polygon points="55,150 100,150 100,160 55,160" fill="#94a3b8" />
+                          <polygon points="100,150 112,142 112,152 100,160" fill="#64748b" />
+                          <text x="81" y="156" textAnchor="middle" fontSize="6.5" fill="#1e293b" fontWeight="bold" fontFamily="monospace">libs / bins</text>
+
+                          {/* App A Layer */}
+                          <polygon points="55,122 100,122 112,114 67,114" fill="url(#appAGrad)" stroke="#0891b2" strokeWidth="0.5" />
+                          <polygon points="55,122 100,122 100,132 55,132" fill="#0891b2" />
+                          <polygon points="100,122 112,114 112,124 100,132" fill="#0369a1" />
+                          <text x="81" y="128" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold" className="animate-pulse">App A</text>
+                        </g>
+
+                        {/* VM B */}
+                        <g>
+                          {/* Guest OS Layer */}
+                          <polygon points="110,178 155,178 167,170 122,170" fill="url(#guestGrad)" stroke="#ca8a04" strokeWidth="0.5" />
+                          <polygon points="110,178 155,178 155,188 110,188" fill="#ca8a04" />
+                          <polygon points="155,178 167,170 167,180 155,188" fill="#a16207" />
+                          <text x="136" y="184" textAnchor="middle" fontSize="6.5" fill="#ffffff" fontWeight="bold">Guest OS B</text>
+
+                          {/* Libs/Bins Layer */}
+                          <polygon points="110,150 155,150 167,142 122,142" fill="url(#libGrad)" stroke="#64748b" strokeWidth="0.5" />
+                          <polygon points="110,150 155,150 155,160 110,160" fill="#94a3b8" />
+                          <polygon points="155,150 167,142 167,152 155,160" fill="#64748b" />
+                          <text x="136" y="156" textAnchor="middle" fontSize="6.5" fill="#1e293b" fontWeight="bold" fontFamily="monospace">libs / bins</text>
+
+                          {/* App B Layer */}
+                          <polygon points="110,122 155,122 167,114 122,114" fill="url(#appBGrad)" stroke="#059669" strokeWidth="0.5" />
+                          <polygon points="110,122 155,122 155,132 110,132" fill="#059669" />
+                          <polygon points="155,122 167,114 167,124 155,132" fill="#047857" />
+                          <text x="136" y="128" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold" className="animate-pulse">App B</text>
+                        </g>
+
+                        {/* VM C */}
+                        <g>
+                          {/* Guest OS Layer */}
+                          <polygon points="165,178 210,178 222,170 177,170" fill="url(#guestGrad)" stroke="#ca8a04" strokeWidth="0.5" />
+                          <polygon points="165,178 210,178 210,188 165,188" fill="#ca8a04" />
+                          <polygon points="210,178 222,170 222,180 210,188" fill="#a16207" />
+                          <text x="191" y="184" textAnchor="middle" fontSize="6.5" fill="#ffffff" fontWeight="bold">Guest OS C</text>
+
+                          {/* Libs/Bins Layer */}
+                          <polygon points="165,150 210,150 222,142 177,142" fill="url(#libGrad)" stroke="#64748b" strokeWidth="0.5" />
+                          <polygon points="165,150 210,150 210,160 165,160" fill="#94a3b8" />
+                          <polygon points="210,150 222,142 222,152 210,160" fill="#64748b" />
+                          <text x="191" y="156" textAnchor="middle" fontSize="6.5" fill="#1e293b" fontWeight="bold" fontFamily="monospace">libs / bins</text>
+
+                          {/* App C Layer */}
+                          <polygon points="165,122 210,122 222,114 177,114" fill="url(#appCGrad)" stroke="#4f46e5" strokeWidth="0.5" />
+                          <polygon points="165,122 210,122 210,132 165,132" fill="#4f46e5" />
+                          <polygon points="210,122 222,114 222,124 210,132" fill="#3730a3" />
+                          <text x="191" y="128" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold" className="animate-pulse">App C</text>
+                        </g>
+
+                        {/* Connection indicators showing hypervisor translation traps */}
+                        <path d="M 81,188 L 81,210" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                        <path d="M 136,188 L 136,210" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                        <path d="M 191,188 L 191,210" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                        <text x="235" y="75" fontSize="7.5" fill="#b91c1c" fontWeight="bold">⚠️ Emulated Hardware</text>
+                        <text x="235" y="86" fontSize="6.5" fill="#991b1b">Severe memory footprint</text>
+                      </g>
                     )}
-
-                    {dockerVmView === 'vm' && (
-                      <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white text-center py-3 rounded-lg text-xs font-bold border border-orange-400">
-                        ⚙️ Hypervisor (Nitro, ESXi, KVM)
-                        <div className="text-[8px] font-normal text-orange-200 mt-0.5">Full Hardware Emulation &amp; CPU/RAM Multiplexing</div>
-                      </div>
-                    )}
-
-                    {/* Host OS kernel */}
-                    <div className="bg-slate-800 text-slate-200 text-center py-2.5 rounded-lg text-xs font-medium border border-slate-700">
-                      🐧 Host OS kernel {dockerVmView === 'container' && <span className="text-emerald-400 font-bold font-mono text-[10px] ml-1">(Shared directly!)</span>}
-                    </div>
-
-                    {/* Physical Hardware */}
-                    <div className="bg-slate-900 text-slate-400 text-center py-2 rounded-lg text-[10px] font-mono border border-slate-950 uppercase tracking-wider">
-                      💻 Physical Infrastructure (Bare Metal / AWS EC2)
-                    </div>
-                  </div>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -1615,78 +1206,144 @@ export default function ElasticContainersVisualizer() {
                   </span>
 
                   {/* SVG diagram representing Fargate vs EC2 */}
-                  <svg width="100%" height="240" viewBox="0 0 400 240" className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    {/* Common ECS Control Plane */}
-                    <rect x="100" y="10" width="200" height="36" rx="6" fill="#e0f2fe" stroke="#0ea5e9" strokeWidth="1" className="active-svg-glow" />
-                    <text x="200" y="32" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#0369a1">🧠 ECS Control Plane (Scheduler)</text>
+                  <svg width="100%" height="240" viewBox="0 0 400 240" className="ecs-svg-bg rounded-lg border border-gray-200 shadow-sm">
+                    {/* Definitions for gradients */}
+                    <defs>
+                      <linearGradient id="planeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#0ea5e9" />
+                        <stop offset="100%" stopColor="#0369a1" />
+                      </linearGradient>
+                      <linearGradient id="fargateTaskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#047857" />
+                      </linearGradient>
+                      <linearGradient id="eniGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#3b82f6" />
+                        <stop offset="100%" stopColor="#1d4ed8" />
+                      </linearGradient>
+                      <linearGradient id="ec2ChassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#b45309" />
+                      </linearGradient>
+                      <linearGradient id="agentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#78716c" />
+                        <stop offset="100%" stopColor="#44403c" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Common ECS Control Plane Scheduler Plate - Flat 3D elevated card */}
+                    <g transform="translate(100, 10)">
+                      <polygon points="10,30 190,30 200,10 20,10" fill="url(#planeGrad)" stroke="#0ea5e9" strokeWidth="0.5" className="active-svg-glow" />
+                      <polygon points="10,30 190,30 190,36 10,36" fill="#0369a1" />
+                      <polygon points="190,30 200,10 200,16 190,36" fill="#0c4a6e" />
+                      <text x="105" y="23" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ffffff" fontFamily="monospace">🧠 ECS CONTROL PLANE (SCHEDULER)</text>
+                    </g>
 
                     {ecsLaunchType === 'fargate' ? (
                       // Fargate Model
                       <g>
-                        {/* Subnet Boundaries */}
-                        <rect x="20" y="80" width="360" height="135" rx="8" fill="#f0fdf4" stroke="#4ade80" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="30" y="96" fontSize="8" fontWeight="bold" fill="#166534">VPC subnet-1a (10.0.1.0/24)</text>
+                        {/* Subnet Boundaries - Glass 3D box */}
+                        <polygon points="20,120 380,120 395,95 35,95" fill="rgba(240, 253, 244, 0.4)" stroke="#4ade80" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="35" y="90" fontSize="7" fontWeight="bold" fill="#166534">VPC subnet-1a (10.0.1.0/24) | serverless-subnet</text>
 
                         {/* Task Fargate 1 */}
-                        <rect x="50" y="115" width="130" height="85" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" className="active-svg-glow" />
-                        <text x="115" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065f46">ECS Task (Fargate)</text>
-                        <rect x="60" y="140" width="110" height="20" rx="3" fill="#10b981" stroke="#047857" />
-                        <text x="115" y="152" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">App Container</text>
-                        <rect x="60" y="166" width="110" height="15" rx="2" fill="#eff6ff" stroke="#3b82f6" />
-                        <text x="115" y="176" textAnchor="middle" fontSize="8" fill="#1d4ed8">AWS ENI (10.0.1.43)</text>
+                        <g transform="translate(50, 110)">
+                          {/* 3D Task body */}
+                          <polygon points="5,50 115,50 125,38 15,38" fill="url(#fargateTaskGrad)" stroke="#10b981" strokeWidth="0.5" className="active-svg-glow" />
+                          <polygon points="5,50 115,50 115,62 5,62" fill="#047857" />
+                          <polygon points="115,50 125,38 125,50 115,62" fill="#064e3b" />
+                          <text x="65" y="47" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">ECS Task (Fargate)</text>
+
+                          {/* App Container Layer on top */}
+                          <polygon points="15,25 105,25 113,15 23,15" fill="#34d399" stroke="#059669" strokeWidth="0.5" />
+                          <polygon points="15,25 105,25 105,34 15,34" fill="#059669" />
+                          <polygon points="105,25 113,15 113,24 105,34" fill="#047857" />
+                          <text x="64" y="27" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">App Container</text>
+
+                          {/* AWS ENI Plate */}
+                          <rect x="25" y="68" width="80" height="15" rx="3" fill="url(#eniGrad)" stroke="#1d4ed8" strokeWidth="0.5" />
+                          <text x="65" y="78" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">ENI: 10.0.1.43</text>
+                        </g>
 
                         {/* Task Fargate 2 */}
-                        <rect x="220" y="115" width="130" height="85" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" className="active-svg-glow" />
-                        <text x="285" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065f46">ECS Task (Fargate)</text>
-                        <rect x="230" y="140" width="110" height="20" rx="3" fill="#10b981" stroke="#047857" />
-                        <text x="285" y="152" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">App Container</text>
-                        <rect x="230" y="166" width="110" height="15" rx="2" fill="#eff6ff" stroke="#3b82f6" />
-                        <text x="285" y="176" textAnchor="middle" fontSize="8" fill="#1d4ed8">AWS ENI (10.0.1.92)</text>
+                        <g transform="translate(220, 110)">
+                          {/* 3D Task body */}
+                          <polygon points="5,50 115,50 125,38 15,38" fill="url(#fargateTaskGrad)" stroke="#10b981" strokeWidth="0.5" className="active-svg-glow" />
+                          <polygon points="5,50 115,50 115,62 5,62" fill="#047857" />
+                          <polygon points="115,50 125,38 125,50 115,62" fill="#064e3b" />
+                          <text x="65" y="47" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">ECS Task (Fargate)</text>
+
+                          {/* App Container Layer on top */}
+                          <polygon points="15,25 105,25 113,15 23,15" fill="#34d399" stroke="#059669" strokeWidth="0.5" />
+                          <polygon points="15,25 105,25 105,34 15,34" fill="#059669" />
+                          <polygon points="105,25 113,15 113,24 105,34" fill="#047857" />
+                          <text x="64" y="27" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">App Container</text>
+
+                          {/* AWS ENI Plate */}
+                          <rect x="25" y="68" width="80" height="15" rx="3" fill="url(#eniGrad)" stroke="#1d4ed8" strokeWidth="0.5" />
+                          <text x="65" y="78" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">ENI: 10.0.1.92</text>
+                        </g>
 
                         {/* Connector scheduler lines */}
-                        <path d="M150 46 L115 115" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
-                        <path d="M250 46 L285 115" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
+                        <path d="M 120,46 L 115,115" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
+                        <path d="M 280,46 L 285,115" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
                       </g>
                     ) : (
                       // EC2 Model
                       <g>
-                        {/* Subnet Boundaries */}
-                        <rect x="15" y="65" width="370" height="160" rx="8" fill="#fef3c7" stroke="#fbbf24" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="25" y="78" fontSize="8" fontWeight="bold" fill="#92400e">VPC Subnet (10.0.1.0/24) | Auto Scaling Group (ASG)</text>
+                        {/* Subnet Boundaries - Glass 3D box */}
+                        <polygon points="15,100 375,100 392,75 32,75" fill="rgba(254, 243, 199, 0.4)" stroke="#fbbf24" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="32" y="70" fontSize="7" fontWeight="bold" fill="#92400e">VPC Subnet (10.0.1.0/24) | Auto Scaling Group compute-fleet</text>
 
-                        {/* EC2 Instance 1 */}
-                        <rect x="30" y="90" width="160" height="120" rx="6" fill="#fff" stroke="#d97706" strokeWidth="1.5" className="active-svg-glow" />
-                        <text x="110" y="103" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#b45309">EC2 Instance (t3.medium)</text>
-                        <rect x="40" y="112" width="140" height="24" rx="3" fill="#78716c" stroke="#44403c" />
-                        <text x="110" y="125" textAnchor="middle" fontSize="8" fill="#fff">ECS Agent daemon</text>
+                        {/* EC2 Instance 1 (detailed chassis) */}
+                        <g transform="translate(25, 95)">
+                          {/* physical chassis */}
+                          <polygon points="5,60 145,60 155,48 15,48" fill="url(#ec2ChassisGrad)" stroke="#b45309" strokeWidth="0.5" className="active-svg-glow" />
+                          <polygon points="5,60 145,60 145,118 5,118" fill="#b45309" />
+                          <polygon points="145,60 155,48 155,106 145,118" fill="#78350f" />
+                          <text x="75" y="56" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">EC2 Instance (t3.medium)</text>
 
-                        {/* Container Task 1 */}
-                        <rect x="40" y="142" width="65" height="42" rx="3" fill="#ecfdf5" stroke="#10b981" />
-                        <text x="72" y="152" textAnchor="middle" fontSize="7" fill="#065f46" fontWeight="bold">Task A</text>
-                        <text x="72" y="164" textAnchor="middle" fontSize="7" fill="#065f46">Port 80</text>
-                        <text x="72" y="176" textAnchor="middle" fontSize="7" fill="#b45309" fontWeight="bold">Host: 32768</text>
+                          {/* ECS Agent daemon inside */}
+                          <rect x="15" y="66" width="120" height="16" rx="2" fill="url(#agentGrad)" stroke="#44403c" strokeWidth="0.5" />
+                          <text x="75" y="76" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold">ECS Agent daemon</text>
 
-                        {/* Container Task 2 */}
-                        <rect x="115" y="142" width="65" height="42" rx="3" fill="#ecfdf5" stroke="#10b981" />
-                        <text x="147" y="152" textAnchor="middle" fontSize="7" fill="#065f46" fontWeight="bold">Task B</text>
-                        <text x="147" y="164" textAnchor="middle" fontSize="7" fill="#065f46">Port 80</text>
-                        <text x="147" y="176" textAnchor="middle" fontSize="7" fill="#b45309" fontWeight="bold">Host: 32769</text>
+                          {/* Task Slots inside rack */}
+                          <g transform="translate(15, 87)">
+                            <rect x="0" y="0" width="55" height="24" rx="2" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.5" />
+                            <text x="27.5" y="10" textAnchor="middle" fontSize="6.5" fill="#065f46" fontWeight="bold">Task A: Port 80</text>
+                            <text x="27.5" y="19" textAnchor="middle" fontSize="6" fill="#b45309" fontWeight="bold">Host: 32768</text>
+                          </g>
 
-                        {/* EC2 Instance 2 */}
-                        <rect x="210" y="90" width="160" height="120" rx="6" fill="#fff" stroke="#d97706" strokeWidth="1.5" className="active-svg-glow" />
-                        <text x="290" y="103" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#b45309">EC2 Instance (t3.medium)</text>
-                        <rect x="220" y="112" width="140" height="24" rx="3" fill="#78716c" stroke="#44403c" />
-                        <text x="290" y="125" textAnchor="middle" fontSize="8" fill="#fff">ECS Agent daemon</text>
+                          <g transform="translate(80, 87)">
+                            <rect x="0" y="0" width="55" height="24" rx="2" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.5" />
+                            <text x="27.5" y="10" textAnchor="middle" fontSize="6.5" fill="#065f46" fontWeight="bold">Task B: Port 80</text>
+                            <text x="27.5" y="19" textAnchor="middle" fontSize="6" fill="#b45309" fontWeight="bold">Host: 32769</text>
+                          </g>
+                        </g>
 
-                        {/* Container Task 3 */}
-                        <rect x="220" y="142" width="140" height="42" rx="3" fill="#ecfdf5" stroke="#10b981" />
-                        <text x="290" y="152" textAnchor="middle" fontSize="8" fill="#065f46" fontWeight="bold">Task C</text>
-                        <text x="290" y="164" textAnchor="middle" fontSize="7" fill="#065f46">Port 80</text>
-                        <text x="290" y="176" textAnchor="middle" fontSize="7" fill="#b45309" fontWeight="bold">Host: 32770</text>
+                        {/* EC2 Instance 2 (detailed chassis) */}
+                        <g transform="translate(210, 95)">
+                          {/* physical chassis */}
+                          <polygon points="5,60 145,60 155,48 15,48" fill="url(#ec2ChassisGrad)" stroke="#b45309" strokeWidth="0.5" className="active-svg-glow" />
+                          <polygon points="5,60 145,60 145,118 5,118" fill="#b45309" />
+                          <polygon points="145,60 155,48 155,106 145,118" fill="#78350f" />
+                          <text x="75" y="56" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">EC2 Instance (t3.medium)</text>
+
+                          {/* ECS Agent daemon inside */}
+                          <rect x="15" y="66" width="120" height="16" rx="2" fill="url(#agentGrad)" stroke="#44403c" strokeWidth="0.5" />
+                          <text x="75" y="76" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold">ECS Agent daemon</text>
+
+                          {/* Tasks inside rack */}
+                          <g transform="translate(15, 87)">
+                            <rect x="0" y="0" width="120" height="24" rx="2" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.5" />
+                            <text x="60" y="10" textAnchor="middle" fontSize="6.5" fill="#065f46" fontWeight="bold">Task C: Port 80</text>
+                            <text x="60" y="19" textAnchor="middle" fontSize="6.5" fill="#b45309" fontWeight="bold">Host Ephemeral Bind: 32770</text>
+                          </g>
+                        </g>
 
                         {/* Connector scheduler lines */}
-                        <path d="M150 46 L110 90" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" fill="none" />
-                        <path d="M250 46 L290 90" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" fill="none" />
+                        <path d="M 120,46 L 105,95" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
+                        <path d="M 280,46 L 290,95" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
                       </g>
                     )}
                   </svg>
@@ -1889,32 +1546,59 @@ export default function ElasticContainersVisualizer() {
                       </p>
 
                       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner flex flex-col items-center">
-                        <svg width="100%" height="160" viewBox="0 0 360 160">
-                          {/* ALB */}
-                          <rect x="10" y="55" width="60" height="50" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" className="active-svg-glow" />
-                          <text x="40" y="80" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1d4ed8">⚖️ ALB</text>
-                          <text x="40" y="92" textAnchor="middle" fontSize="8" fill="#1d4ed8">Port 443</text>
+                        <svg width="100%" height="180" viewBox="0 0 360 180" className="ecs-svg-bg rounded-lg border border-slate-200">
+                          {/* Defs for gradients */}
+                          <defs>
+                            <linearGradient id="albGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#ff9900" />
+                              <stop offset="100%" stopColor="#cc7a00" />
+                            </linearGradient>
+                            <linearGradient id="taskGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="#10b981" />
+                              <stop offset="100%" stopColor="#047857" />
+                            </linearGradient>
+                          </defs>
 
-                          {/* Dynamic target mappings */}
-                          <line x1="70" y1="80" x2="160" y2="40" stroke="#93c5fd" strokeWidth="1.5" className="flow-line-active" />
-                          <line x1="70" y1="80" x2="160" y2="120" stroke="#93c5fd" strokeWidth="1.5" className="flow-line-active" />
+                          {/* ALB 3D load balancer */}
+                          <g transform="translate(10, 60)">
+                            <polygon points="5,40 65,40 75,20 15,20" fill="url(#albGrad)" stroke="#ff9900" strokeWidth="0.5" className="active-svg-glow" />
+                            <polygon points="5,40 65,40 65,52 5,52" fill="#cc7a00" />
+                            <polygon points="65,40 75,20 75,32 65,52" fill="#995c00" />
+                            <text x="40" y="38" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">⚖️ ALB (443)</text>
+                          </g>
 
-                          <text x="115" y="50" fontSize="7" fill="#b45309" fontWeight="bold">Forward &rarr; 32768</text>
-                          <text x="115" y="110" fontSize="7" fill="#b45309" fontWeight="bold">Forward &rarr; 32769</text>
+                          {/* Dynamic target mapping pipelines */}
+                          <path d="M 85,85 L 160,50" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
+                          <path d="M 85,85 L 160,130" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="4,3" className="flow-line-active" fill="none" />
 
-                          {/* EC2 Instance */}
-                          <rect x="160" y="10" width="180" height="140" rx="8" fill="#fff" stroke="#d97706" strokeWidth="1.5" />
-                          <text x="250" y="24" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#b45309">Single EC2 Host (10.0.1.20)</text>
+                          <text x="110" y="55" fontSize="6.5" fill="#0284c7" fontWeight="bold" transform="rotate(-23, 110, 55)">Host: 32768</text>
+                          <text x="110" y="125" fontSize="6.5" fill="#0284c7" fontWeight="bold" transform="rotate(23, 110, 125)">Host: 32769</text>
 
-                          {/* Task 1 */}
-                          <rect x="175" y="35" width="150" height="40" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" className="active-svg-glow" />
-                          <text x="250" y="48" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#065f46">Container Task 1</text>
-                          <text x="250" y="60" textAnchor="middle" fontSize="7" fill="#065f46">Host Port 32768 &rarr; Container 80</text>
+                          {/* EC2 Instance 3D block */}
+                          <g transform="translate(160, 15)">
+                            <polygon points="10,135 180,135 190,115 20,115" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
+                            <polygon points="10,135 180,135 180,145 10,145" fill="#e2e8f0" />
+                            <polygon points="180,135 190,115 190,125 180,145" fill="#cbd5e1" />
+                            <text x="100" y="142" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#475569">Single EC2 Host (10.0.1.20)</text>
 
-                          {/* Task 2 */}
-                          <rect x="175" y="95" width="150" height="40" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" className="active-svg-glow" />
-                          <text x="250" y="108" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#065f46">Container Task 2</text>
-                          <text x="250" y="120" textAnchor="middle" fontSize="7" fill="#065f46">Host Port 32769 &rarr; Container 80</text>
+                            {/* Task 1 3D box */}
+                            <g transform="translate(20, 20)">
+                              <polygon points="5,30 140,30 148,20 13,20" fill="url(#taskGrad3)" stroke="#10b981" strokeWidth="0.5" className="active-svg-glow" />
+                              <polygon points="5,30 140,30 140,40 5,40" fill="#047857" />
+                              <polygon points="140,30 148,20 148,30 140,40" fill="#064e3b" />
+                              <text x="75" y="32" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#ffffff">ECS Task 1 (Container)</text>
+                              <text x="75" y="14" textAnchor="middle" fontSize="6" fill="#065f46" fontWeight="bold">Host Ephemeral Port 32768 &rarr; Container 80</text>
+                            </g>
+
+                            {/* Task 2 3D box */}
+                            <g transform="translate(20, 75)">
+                              <polygon points="5,30 140,30 148,20 13,20" fill="url(#taskGrad3)" stroke="#10b981" strokeWidth="0.5" className="active-svg-glow" />
+                              <polygon points="5,30 140,30 140,40 5,40" fill="#047857" />
+                              <polygon points="140,30 148,20 148,30 140,40" fill="#064e3b" />
+                              <text x="75" y="32" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#ffffff">ECS Task 2 (Container)</text>
+                              <text x="75" y="14" textAnchor="middle" fontSize="6" fill="#065f46" fontWeight="bold">Host Ephemeral Port 32769 &rarr; Container 80</text>
+                            </g>
+                          </g>
                         </svg>
                       </div>
                     </div>
@@ -1933,12 +1617,64 @@ export default function ElasticContainersVisualizer() {
 
                       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                         <span className="font-bold text-xs text-slate-800 block">🧠 Step-by-Step Scaling Coordination:</span>
-                        <ol className="list-decimal pl-4 text-[11px] text-slate-600 flex flex-col gap-2">
+                        <ol className="list-decimal pl-4 text-[11px] text-slate-600 flex flex-col gap-2 mb-4">
                           <li>Service Auto-Scaler triggers scaling action: task counts scale from <b>5 to 10</b>.</li>
                           <li>Physical EC2 host resources are completely full. ECS schedules the 5 new tasks as <b>⏳ PENDING</b>.</li>
                           <li>ECS <b>Capacity Provider</b> intercepts the pending state and coordinates with the Auto Scaling Group target tracking metric.</li>
                           <li>ASG provisions a new EC2 Instance, hooks it to the cluster, and pending tasks boot instantly.</li>
                         </ol>
+
+                        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner flex flex-col items-center">
+                          <svg width="100%" height="180" viewBox="0 0 360 180" className="ecs-svg-bg rounded-lg border border-slate-200">
+                            {/* 1. Scheduler asking for scale */}
+                            <g transform="translate(10, 15)">
+                              <rect x="5" y="5" width="90" height="40" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" />
+                              <text x="50" y="17" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#1d4ed8">ECS Scheduler</text>
+                              <text x="50" y="27" textAnchor="middle" fontSize="6" fill="#1d4ed8">Scale UP: +5 Tasks</text>
+                              <text x="50" y="37" textAnchor="middle" fontSize="6.5" fill="#f59e0b" fontWeight="bold" className="animate-pulse">⏳ 5 PENDING</text>
+                            </g>
+
+                            {/* 2. Capacity Provider Octagon Hub */}
+                            <g transform="translate(125, 20)">
+                              <polygon points="15,0 45,0 60,15 60,45 45,60 15,60 0,45 0,15" fill="#fef9c3" stroke="#eab308" strokeWidth="1.5" className="active-svg-glow" />
+                              <text x="30" y="25" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#854d0e">Capacity</text>
+                              <text x="30" y="35" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#854d0e">Provider</text>
+                              <text x="30" y="45" textAnchor="middle" fontSize="6.5" fill="#a16207" fontStyle="italic">ALARM</text>
+                            </g>
+
+                            {/* Flow paths */}
+                            <path d="M 105,35 L 125,50" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" fill="none" />
+                            <path d="M 185,50 L 220,50" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" fill="none" />
+
+                            {/* 3. ASG Dotted Chassis with EC2 server towers */}
+                            <g transform="translate(220, 10)">
+                              <rect x="0" y="0" width="130" height="160" rx="6" fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4,4" />
+                              <text x="65" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#c2410c">EC2 Auto Scaling Group</text>
+
+                              {/* EC2 Instance 1 (Existing) */}
+                              <g transform="translate(10, 20)">
+                                <rect x="0" y="0" width="50" height="120" rx="4" fill="#cbd5e1" stroke="#475569" strokeWidth="0.5" />
+                                <text x="25" y="15" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#1e293b">EC2 Host</text>
+                                <rect x="5" y="25" width="40" height="15" rx="2" fill="#4ade80" />
+                                <text x="25" y="35" textAnchor="middle" fontSize="6" fill="#ffffff" fontWeight="bold">Task 1</text>
+                                <rect x="5" y="45" width="40" height="15" rx="2" fill="#4ade80" />
+                                <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#ffffff" fontWeight="bold">Task 2</text>
+                                <text x="25" y="110" textAnchor="middle" fontSize="6" fill="#b91c1c" fontWeight="bold">⚠️ FULL (100%)</text>
+                              </g>
+
+                              {/* EC2 Instance 2 (Scaling Out!) */}
+                              <g transform="translate(70, 20)" className="active-svg-glow">
+                                <rect x="0" y="0" width="50" height="120" rx="4" fill="#ffedd5" stroke="#f97316" strokeWidth="1.5" strokeDasharray="3,2" />
+                                <text x="25" y="15" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c" className="animate-pulse">NEW HOST</text>
+                                <rect x="5" y="25" width="40" height="15" rx="2" fill="#10b981" stroke="#059669" className="animate-pulse" />
+                                <text x="25" y="35" textAnchor="middle" fontSize="6" fill="#ffffff" fontWeight="bold">Task 3</text>
+                                <rect x="5" y="45" width="40" height="15" rx="2" fill="#10b981" stroke="#059669" className="animate-pulse" />
+                                <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#ffffff" fontWeight="bold">Task 4</text>
+                                <text x="25" y="110" textAnchor="middle" fontSize="6" fill="#15803d" fontWeight="bold" className="animate-pulse">🔄 SPINNING UP</text>
+                              </g>
+                            </g>
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1954,21 +1690,62 @@ export default function ElasticContainersVisualizer() {
                         Decouple your public web APIs from compute-heavy background tasks (video transcoding, report compression). Frontend nodes push job metadata into SQS. ECS worker container services automatically scale task counts up/down based on CloudWatch metrics tracking SQS queue backlog depths.
                       </p>
 
-                      <div className="bg-white p-4 border border-gray-200 rounded-xl flex items-center justify-between text-xs text-gray-700 gap-4 shadow-sm">
-                        <div className="flex-1 bg-yellow-50/50 p-3 rounded-lg border border-yellow-200 text-center">
-                          <span className="font-bold block text-yellow-800">📥 Web APIs</span>
-                          <span className="text-[9px] text-yellow-600">Pushes jobs to SQS</span>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-gray-400 shrink-0 animate-pulse" />
-                        <div className="flex-1 bg-yellow-50/50 p-3 rounded-lg border border-yellow-200 text-center active-svg-glow">
-                          <span className="font-bold block text-yellow-800">✉️ SQS Queue</span>
-                          <span className="text-[9px] text-yellow-600">Metric: QueueDepth</span>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-gray-400 shrink-0 animate-pulse" />
-                        <div className="flex-1 bg-yellow-50/50 p-3 rounded-lg border border-yellow-200 text-center">
-                          <span className="font-bold block text-yellow-800">🐳 ECS Workers</span>
-                          <span className="text-[9px] text-yellow-600">Scales on backlog</span>
-                        </div>
+                      <div className="bg-white p-4 border border-gray-200 rounded-xl flex items-center justify-center shadow-inner">
+                        <svg width="100%" height="180" viewBox="0 0 360 180" className="ecs-svg-bg rounded-lg border border-slate-200">
+                          {/* 1. Frontend Web App */}
+                          <g transform="translate(10, 50)">
+                            <rect x="0" y="0" width="80" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" className="active-svg-glow" />
+                            <text x="40" y="25" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1d4ed8">📥 Web API Portal</text>
+                            <text x="40" y="40" textAnchor="middle" fontSize="6.5" fill="#3b82f6">Public client requests</text>
+                            <text x="40" y="50" textAnchor="middle" fontSize="6" fill="#2563eb" fontWeight="bold">Ingesting jobs...</text>
+                          </g>
+
+                          {/* Flow line App -> SQS */}
+                          <path d="M 90,80 L 140,80" stroke="#6366f1" strokeWidth="2" strokeDasharray="5,3" className="flow-line-active" fill="none" />
+
+                          {/* 2. SQS Queue cylinder */}
+                          <g transform="translate(140, 45)">
+                            {/* Cylinder face */}
+                            <ellipse cx="40" cy="15" rx="30" ry="10" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
+                            <path d="M 10,15 L 10,85 A 30,10 0 0,0 70,85 L 70,15" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
+                            <ellipse cx="40" cy="85" rx="30" ry="10" fill="#fffbeb" stroke="#d97706" strokeWidth="1" className="active-svg-glow" />
+                            <text x="40" y="45" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#b45309">✉️ SQS Queue</text>
+                            {/* Backlog items */}
+                            <rect x="20" y="60" width="40" height="10" rx="1" fill="#fef3c7" stroke="#fbbf24" />
+                            <rect x="25" y="65" width="30" height="10" rx="1" fill="#fbbf24" stroke="#d97706" />
+                            <text x="40" y="73" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#78350f">Job backlog</text>
+                          </g>
+
+                          {/* Flow line SQS -> Worker */}
+                          <path d="M 210,80 L 260,80" stroke="#22c55e" strokeWidth="2" strokeDasharray="5,3" className="flow-line-active" fill="none" />
+
+                          {/* 3. ECS Worker Fleet */}
+                          <g transform="translate(260, 20)">
+                            <rect x="0" y="0" width="90" height="135" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" className="active-svg-glow" />
+                            <text x="45" y="15" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#065f46">🐳 Worker fleet</text>
+
+                            {/* Worker 1 */}
+                            <g transform="translate(10, 25)">
+                              <rect x="0" y="0" width="70" height="28" rx="3" fill="#10b981" stroke="#047857" />
+                              <text x="35" y="12" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold">SqsWorker-A</text>
+                              <text x="35" y="22" textAnchor="middle" fontSize="6.5" fill="#a7f3d0">⚙️ Processing...</text>
+                            </g>
+
+                            {/* Worker 2 */}
+                            <g transform="translate(10, 60)">
+                              <rect x="0" y="0" width="70" height="28" rx="3" fill="#10b981" stroke="#047857" />
+                              <text x="35" y="12" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold">SqsWorker-B</text>
+                              <text x="35" y="22" textAnchor="middle" fontSize="6.5" fill="#a7f3d0">⚙️ Processing...</text>
+                            </g>
+
+                            {/* Worker 3 */}
+                            <g transform="translate(10, 95)">
+                              <rect x="0" y="0" width="70" height="28" rx="3" fill="#10b981" stroke="#047857" />
+                              <text x="35" y="12" textAnchor="middle" fontSize="7" fill="#ffffff" fontWeight="bold">SqsWorker-C</text>
+                              <text x="35" y="22" textAnchor="middle" fontSize="6.5" fill="#a7f3d0">⚙️ Processing...</text>
+                            </g>
+                          </g>
+                        </svg>
                       </div>
                     </div>
                   )}
@@ -1998,6 +1775,58 @@ export default function ElasticContainersVisualizer() {
 }`}
                         </pre>
                       </div>
+
+                      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner flex flex-col items-center">
+                        <svg width="100%" height="180" viewBox="0 0 360 180" className="ecs-svg-bg rounded-lg border border-slate-200">
+                          {/* 1. Cron Clock */}
+                          <g transform="translate(10, 45)">
+                            <circle cx="35" cy="35" r="28" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" className="active-svg-glow" />
+                            {/* ticking arms */}
+                            <line x1="35" y1="35" x2="35" y2="15" stroke="#701a75" strokeWidth="2" />
+                            <line x1="35" y1="35" x2="50" y2="40" stroke="#701a75" strokeWidth="1.5" />
+                            <text x="35" y="75" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#701a75">⏰ 2:00 AM CRON</text>
+                          </g>
+
+                          {/* Event path */}
+                          <path d="M 80,80 L 125,80" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" fill="none" />
+
+                          {/* 2. EventBridge logic rule card */}
+                          <g transform="translate(125, 45)">
+                            <rect x="0" y="0" width="90" height="65" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" />
+                            <text x="45" y="15" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#581c87">EventBridge Rule</text>
+                            <text x="45" y="27" textAnchor="middle" fontSize="6.5" fill="#701a75" fontFamily="monospace">"NightlyBatch"</text>
+                            <rect x="10" y="38" width="70" height="18" rx="2" fill="#701a75" />
+                            <text x="45" y="49" textAnchor="middle" fontSize="6" fill="#ffffff" fontWeight="bold">MATCH &rarr; RUN TASK</text>
+                          </g>
+
+                          {/* Dispatch path */}
+                          <path d="M 215,80 L 255,80" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" fill="none" />
+
+                          {/* 3. ECS Fargate launcher and S3 target */}
+                          <g transform="translate(255, 15)">
+                            <rect x="0" y="0" width="90" height="145" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                            <text x="45" y="14" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#065f46">Ad-hoc Fargate</text>
+
+                            {/* Fargate container task */}
+                            <g transform="translate(10, 24)">
+                              <rect x="0" y="0" width="70" height="36" rx="3" fill="#10b981" stroke="#047857" className="active-svg-glow" />
+                              <text x="35" y="14" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">BatchTask-92</text>
+                              <text x="35" y="27" textAnchor="middle" fontSize="6.5" fill="#a7f3d0" className="animate-pulse">🔄 PROCESSING</text>
+                            </g>
+
+                            {/* Flow path container -> S3 */}
+                            <path d="M 45,60 L 45,95" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" fill="none" />
+
+                            {/* S3 cylinder */}
+                            <g transform="translate(15, 95)">
+                              <ellipse cx="20" cy="8" rx="15" ry="5" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.5" />
+                              <path d="M 5,8 L 5,30 A 15,5 0 0,0 35,30 L 35,8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.5" />
+                              <ellipse cx="20" cy="30" rx="15" ry="5" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.5" className="active-svg-glow" />
+                              <text x="20" y="21" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#1d4ed8">S3 Bucket</text>
+                            </g>
+                          </g>
+                        </svg>
+                      </div>
                     </div>
                   )}
 
@@ -2024,6 +1853,51 @@ export default function ElasticContainersVisualizer() {
   }
 }`}
                         </pre>
+                      </div>
+
+                      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner flex flex-col items-center">
+                        <svg width="100%" height="180" viewBox="0 0 360 180" className="ecs-svg-bg rounded-lg border border-slate-200">
+                          {/* 1. Broken Task */}
+                          <g transform="translate(10, 45)">
+                            <rect x="0" y="0" width="85" height="70" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" className="active-svg-glow" />
+                            <text x="42.5" y="20" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#991b1b">💥 CRASHED TASK</text>
+                            <text x="42.5" y="35" textAnchor="middle" fontSize="6.5" fill="#b91c1c">WebTask-5a71</text>
+                            <rect x="8" y="44" width="69" height="16" rx="2" fill="#ef4444" />
+                            <text x="42.5" y="55" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">EXIT CODE: 137 (OOM)</text>
+                          </g>
+
+                          {/* Event pipeline */}
+                          <path d="M 95,80 L 140,80" stroke="#f87171" strokeWidth="1.5" strokeDasharray="3,3" className="flow-line-active" fill="none" />
+
+                          {/* 2. EventBridge rules auditor */}
+                          <g transform="translate(140, 40)">
+                            <rect x="0" y="0" width="90" height="75" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" />
+                            <text x="45" y="16" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#581c87">EventBridge Router</text>
+                            <text x="45" y="28" textAnchor="middle" fontSize="6" fill="#701a75">Rule: ExitCode != 0</text>
+                            <rect x="10" y="40" width="70" height="24" rx="2" fill="#701a75" />
+                            <text x="45" y="50" textAnchor="middle" fontSize="6" fill="#ffffff" fontWeight="bold">INTERCEPT &amp;</text>
+                            <text x="45" y="59" textAnchor="middle" fontSize="6.5" fill="#ffffff" fontWeight="bold">ROUTE PAYLOADS</text>
+                          </g>
+
+                          {/* Route paths */}
+                          <path d="M 230,65 L 270,35" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="3,2" className="flow-line-active" fill="none" />
+                          <path d="M 230,90 L 270,120" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="3,2" className="flow-line-active" fill="none" />
+
+                          {/* Targets */}
+                          {/* Target 1: Slack webhook */}
+                          <g transform="translate(270, 15)">
+                            <rect x="0" y="0" width="80" height="35" rx="3" fill="#f8fafc" stroke="#38bdf8" strokeWidth="1" />
+                            <text x="40" y="14" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#0369a1">💬 Slack Webhook</text>
+                            <text x="40" y="25" textAnchor="middle" fontSize="6.5" fill="#0284c7" className="animate-pulse">🚨 channels/ops-alerts</text>
+                          </g>
+
+                          {/* Target 2: SNS topic */}
+                          <g transform="translate(270, 110)">
+                            <rect x="0" y="0" width="80" height="35" rx="3" fill="#f8fafc" stroke="#f97316" strokeWidth="1" />
+                            <text x="40" y="14" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#c2410c">🔔 SNS Admin Alerts</text>
+                            <text x="40" y="25" textAnchor="middle" fontSize="6.5" fill="#ea580c" className="animate-pulse">Sends SMS/Emails</text>
+                          </g>
+                        </svg>
                       </div>
                     </div>
                   )}
@@ -2130,88 +2004,150 @@ export default function ElasticContainersVisualizer() {
                 </div>
               </div>
 
-              {/* Right Column: EKS SVGs Diagram with dynamic highlights */}
+              {/* Right Column: EKS CSI Storage & Node Topology */}
               <div className="ecs-card flex flex-col justify-between">
                 <div>
-                  <span className="badge badge-blue mb-2">EKS Blueprint Architecture</span>
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-gray-800 mb-3">Authoritative Cluster Diagram</h4>
-                </div>
+                  <h4 className="ecs-card-title">
+                    📦 Kubernetes Node &amp; Storage Topology
+                  </h4>
+                  <p className="ecs-card-desc mb-4">
+                    Hover over the volume steps on the left to trace PV/PVC CSI storage binding pipelines, node isolation boundaries, and pod persistent mounts in real-time.
+                  </p>
+                  <div className="border border-gray-200 bg-slate-50 rounded-xl p-4 flex flex-col items-center shadow-inner mt-2">
+                    <svg width="100%" height="280" viewBox="0 0 380 280" className="ecs-svg-bg rounded-lg border border-gray-200 shadow-sm">
+                      {/* Definitions for gradients */}
+                    <defs>
+                      <linearGradient id="eksControlGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#a855f7" />
+                        <stop offset="100%" stopColor="#6b21a8" />
+                      </linearGradient>
+                      <linearGradient id="k8sPodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#047857" />
+                      </linearGradient>
+                      <linearGradient id="ebsDiskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ec4899" />
+                        <stop offset="100%" stopColor="#be185d" />
+                      </linearGradient>
+                      <linearGradient id="scGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#b45309" />
+                      </linearGradient>
+                    </defs>
 
-                <div className="border border-gray-200 rounded-xl p-4 bg-slate-50 shadow-inner flex flex-col items-center">
-                  <svg width="100%" height="280" viewBox="0 0 380 280" className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                    {/* EKS Control plane (AWS Managed, Multi-AZ) */}
-                    <rect x="15" y="10" width="350" height="85" rx="8" fill="#ede9fe" stroke="#a855f7" strokeWidth="1.5" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''} />
-                    <text x="190" y="24" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#6b21a8">☸️ AWS Managed EKS Control Plane (Multi-AZ)</text>
+                    {/* EKS Control plane (AWS Managed, Multi-AZ) - Elevated 3D plate */}
+                    <g transform="translate(15, 10)">
+                      <polygon points="10,65 330,65 345,15 25,15" fill="url(#eksControlGrad)" stroke="#a855f7" strokeWidth="0.5" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''} />
+                      <polygon points="10,65 330,65 330,73 10,73" fill="#6b21a8" />
+                      <polygon points="330,65 345,15 345,23 330,73" fill="#4c1d95" />
+                      <text x="175" y="32" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#ffffff" fontFamily="monospace">☸️ AWS MANAGED HIGH-AVAILABILITY CONTROL PLANE</text>
+                      
+                      {/* Control Plane internals - 3D chips */}
+                      <g transform="translate(25, 40)">
+                        <rect x="0" y="0" width="60" height="15" rx="2" fill="#ffffff" stroke="#c084fc" strokeWidth="0.5" />
+                        <text x="30" y="10" textAnchor="middle" fontSize="7" fill="#581c87" fontWeight="bold">kube-api</text>
+                      </g>
+                      <g transform="translate(95, 40)">
+                        <rect x="0" y="0" width="60" height="15" rx="2" fill="#ffffff" stroke="#c084fc" strokeWidth="0.5" />
+                        <text x="30" y="10" textAnchor="middle" fontSize="7" fill="#581c87" fontWeight="bold">scheduler</text>
+                      </g>
+                      <g transform="translate(165, 40)" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''}>
+                        <rect x="0" y="0" width="80" height="15" rx="2" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" />
+                        <text x="40" y="10" textAnchor="middle" fontSize="7" fill="#701a75" fontWeight="bold">ebs-csi-controller</text>
+                      </g>
+                      <g transform="translate(255, 40)">
+                        <rect x="0" y="0" width="65" height="15" rx="2" fill="#ffffff" stroke="#c084fc" strokeWidth="0.5" />
+                        <text x="32.5" y="10" textAnchor="middle" fontSize="7" fill="#581c87" fontWeight="bold">etcd cluster</text>
+                      </g>
+                    </g>
 
-                    {/* Control Plane internals */}
-                    <rect x="25" y="34" width="70" height="20" rx="3" fill="#fff" stroke="#c084fc" />
-                    <text x="60" y="46" textAnchor="middle" fontSize="7.5" fill="#581c87">kube-api</text>
+                    {/* Nodes Subnet Bounds - 3D Translucent plane */}
+                    <polygon points="10,245 350,245 370,110 30,110" fill="rgba(243, 244, 246, 0.45)" stroke="#9ca3af" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="35" y="105" fontSize="7.5" fontWeight="bold" fill="#374151">VPC subnets | Customer Managed Nodes</text>
 
-                    <rect x="105" y="34" width="70" height="20" rx="3" fill="#fff" stroke="#c084fc" />
-                    <text x="140" y="46" textAnchor="middle" fontSize="7.5" fill="#581c87">scheduler</text>
+                    {/* Managed Node Group (EC2 Server Tower) */}
+                    <g transform="translate(25, 115)" className={eksStorageHover === 'csi' || eksStorageHover === 'mount' ? 'active-svg-glow' : ''}>
+                      {/* 3D EC2 Node Chassis */}
+                      <polygon points="5,80 145,80 155,68 15,68" fill="#f8fafc" stroke="#6b7280" strokeWidth="0.5" />
+                      <polygon points="5,80 145,80 145,115 5,115" fill="#e2e8f0" />
+                      <polygon points="145,80 155,68 155,103 145,115" fill="#cbd5e1" />
+                      <text x="75" y="76" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1f2937">EC2 Node Group (Host)</text>
 
-                    <rect x="185" y="34" width="80" height="20" rx="3" fill="#fff" stroke="#c084fc" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''} />
-                    <text x="225" y="46" textAnchor="middle" fontSize="7.5" fill="#581c87">ebs-csi-controller</text>
+                      {/* CSI daemonset inside host */}
+                      <rect x="15" y="85" width="120" height="13" rx="2" fill="#faf5ff" stroke="#a855f7" strokeWidth="0.5" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''} />
+                      <text x="75" y="94" textAnchor="middle" fontSize="6.5" fill="#6b21a8" fontWeight="bold">ebs-csi-node Daemonset</text>
 
-                    <rect x="275" y="34" width="80" height="20" rx="3" fill="#fff" stroke="#c084fc" />
-                    <text x="315" y="46" textAnchor="middle" fontSize="7.5" fill="#581c87">etcd state store</text>
+                      {/* Pod A */}
+                      <g transform="translate(15, 15)" className={(eksStorageHover === 'mount' || eksStorageHover === 'pvc') ? 'active-svg-glow' : ''}>
+                        <polygon points="2,25 58,25 64,15 8,15" fill="url(#k8sPodGrad)" stroke="#10b981" strokeWidth="0.5" />
+                        <polygon points="2,25 58,25 58,35 2,35" fill="#047857" />
+                        <polygon points="58,25 64,15 64,25 58,35" fill="#064e3b" />
+                        <text x="30" y="27" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">Pod A (App)</text>
+                        <text x="30" y="11" textAnchor="middle" fontSize="6" fill="#a7f3d0">Mount: /data</text>
+                      </g>
 
-                    <text x="190" y="72" textAnchor="middle" fontSize="7.5" fill="#701a75" fontStyle="italic">AWS manages Control Plane replication and scaling automatically</text>
+                      {/* Pod B */}
+                      <g transform="translate(80, 15)" className={eksStorageHover === 'mount' ? 'active-svg-glow' : ''}>
+                        <polygon points="2,25 58,25 64,15 8,15" fill="url(#k8sPodGrad)" stroke="#10b981" strokeWidth="0.5" />
+                        <polygon points="2,25 58,25 58,35 2,35" fill="#047857" />
+                        <polygon points="58,25 64,15 64,25 58,35" fill="#064e3b" />
+                        <text x="30" y="27" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">Pod B (App)</text>
+                        <text x="30" y="11" textAnchor="middle" fontSize="6" fill="#a7f3d0">Mount: /data</text>
+                      </g>
+                    </g>
 
-                    {/* Nodes (Customer Managed) */}
-                    <rect x="15" y="110" width="350" height="160" rx="8" fill="#f3f4f6" stroke="#9ca3af" strokeWidth="1.5" />
-                    <text x="190" y="122" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#374151">🔧 Worker Node Groups (Customer Managed VPC Subnets)</text>
+                    {/* Fargate Profile Profiles - 3D Blue container bounds */}
+                    <g transform="translate(195, 115)">
+                      <polygon points="5,80 145,80 155,68 15,68" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="0.5" strokeDasharray="3,2" />
+                      <polygon points="5,80 145,80 145,115 5,115" fill="#e0f2fe" stroke="#0ea5e9" strokeWidth="0.5" />
+                      <polygon points="145,80 155,68 155,103 145,115" fill="#bae6fd" />
+                      <text x="75" y="76" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0369a1">Fargate Profiles</text>
 
-                    {/* Managed Node Group (EC2) */}
-                    <rect x="25" y="132" width="160" height="128" rx="6" fill="#fff" stroke="#6b7280" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''} />
-                    <text x="105" y="143" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1f2937">Managed Node Group (EC2)</text>
+                      {/* Pod C serverless microVM */}
+                      <g transform="translate(15, 20)" className={eksStorageHover === 'mount' ? 'active-svg-glow' : ''}>
+                        <polygon points="2,25 110,25 118,15 10,15" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.5" />
+                        <polygon points="2,25 110,25 110,35 2,35" fill="#1d4ed8" />
+                        <polygon points="110,25 118,15 118,25 110,35" fill="#1e3a8a" />
+                        <text x="56" y="27" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">Pod C (Serverless micro-VM)</text>
+                      </g>
+                    </g>
 
-                    {/* CSI Driver DaemonSet */}
-                    <rect x="35" y="152" width="140" height="16" rx="2" fill="#faf5ff" stroke="#a855f7" className={eksStorageHover === 'csi' ? 'active-svg-glow' : ''} />
-                    <text x="105" y="163" textAnchor="middle" fontSize="7" fill="#6b21a8" fontWeight="bold">ebs-csi-node DaemonSet</text>
+                    {/* 4. Physical EBS Volume Cylinder on AZ-a boundary */}
+                    <g transform="translate(20, 220)" className={eksStorageHover === 'pv' || eksStorageHover === 'csi' || eksStorageHover === 'mount' ? 'active-svg-glow' : ''}>
+                      <ellipse cx="20" cy="8" rx="15" ry="5" fill="url(#ebsDiskGrad)" stroke="#be185d" strokeWidth="0.5" />
+                      <path d="M 5,8 L 5,30 A 15,5 0 0,0 35,30 L 35,8" fill="url(#ebsDiskGrad)" stroke="#be185d" strokeWidth="0.5" />
+                      <ellipse cx="20" cy="30" rx="15" ry="5" fill="#fbcfe8" stroke="#be185d" strokeWidth="0.5" className="active-svg-glow" />
+                      <text x="20" y="22" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#ffffff">EBS vol-09aa</text>
+                    </g>
 
-                    {/* Pods */}
-                    <rect x="35" y="174" width="65" height="35" rx="4" fill="#ecfdf5" stroke="#10b981" className={(eksStorageHover === 'mount' || eksStorageHover === 'pvc') ? 'active-svg-glow' : ''} />
-                    <text x="67" y="185" textAnchor="middle" fontSize="7" fill="#065f46" fontWeight="bold">Pod A (App)</text>
-                    <text x="67" y="195" textAnchor="middle" fontSize="6.5" fill="#047857" fontStyle="italic">Mount: /data</text>
-
-                    <rect x="110" y="174" width="65" height="35" rx="4" fill="#ecfdf5" stroke="#10b981" className={eksStorageHover === 'mount' ? 'active-svg-glow' : ''} />
-                    <text x="142" y="185" textAnchor="middle" fontSize="7" fill="#065f46" fontWeight="bold">Pod B (App)</text>
-                    <text x="142" y="195" textAnchor="middle" fontSize="6.5" fill="#047857" fontStyle="italic">Mount: /data</text>
-
-                    <rect x="35" y="214" width="140" height="18" rx="2" fill="#e0f2fe" stroke="#0ea5e9" />
-                    <text x="105" y="226" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold">AWS VPC CNI (Direct IP per Pod)</text>
-
-                    {/* Fargate Profile */}
-                    <rect x="195" y="132" width="160" height="128" rx="6" fill="#e0f2fe" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="3,2" />
-                    <text x="275" y="143" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#0369a1">AWS Fargate Profiles</text>
-
-                    <rect x="205" y="160" width="140" height="42" rx="4" fill="#eff6ff" stroke="#3b82f6" className={eksStorageHover === 'mount' ? 'active-svg-glow' : ''} />
-                    <text x="275" y="176" textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="bold">Pod C (Isolated micro-VM)</text>
-                    <text x="275" y="190" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontStyle="italic">Serverless Pod compute</text>
-
-                    <text x="275" y="235" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontStyle="italic">No Host node to manage</text>
-
-                    {/* Floating Storage Classes active nodes */}
+                    {/* Flow conduits mapping PVC mounts in real-time */}
                     {eksStorageHover && (
                       <g>
-                        <rect x="120" y="218" width="140" height="34" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" className="active-svg-glow" />
-                        <text x="190" y="230" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#6b21a8">Inspected Volume Resource State:</text>
-                        <text x="190" y="242" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#701a75">
-                          {eksStorageHover === 'pvc' && 'PVC: [AppClaim] &rarr; size: 20Gi (gp3)'}
-                          {eksStorageHover === 'sc' && 'SC: [gp3] &rarr; ebs.csi.aws.com'}
-                          {eksStorageHover === 'pv' && 'PV: [vol-09aa] &rarr; Bound (20Gi)'}
-                          {eksStorageHover === 'csi' && 'CSI: Attach EBS vol-09aa to EC2'}
-                          {eksStorageHover === 'mount' && 'Mount: volume mapped inside /data'}
-                        </text>
+                        {/* Highlights path from EBS Disk to EC2 Node Pod */}
+                        <path d="M 40,230 L 60,200" fill="none" stroke="#be185d" strokeWidth="2" strokeDasharray="3,3" className="flow-line-active" />
+                        <path d="M 60,200 L 70,165" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="3,3" className="flow-line-active" />
+
+                        {/* Floating Tooltip Card */}
+                        <g transform="translate(110, 225)">
+                          <rect x="0" y="0" width="165" height="36" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" className="active-svg-glow" />
+                          <text x="82.5" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#6b21a8" fontFamily="monospace">AWS STORAGE CONTROLLER LOGS:</text>
+                          <text x="82.5" y="24" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#701a75">
+                            {eksStorageHover === 'pvc' && 'Claim: [AppClaim] &rarr; size: 20Gi (gp3)'}
+                            {eksStorageHover === 'sc' && 'StorageClass: ebs.csi.aws.com gp3'}
+                            {eksStorageHover === 'pv' && 'PersistentVolume: vol-09aa BOUND'}
+                            {eksStorageHover === 'csi' && 'CSI: Attach physical EBS to EC2 Host'}
+                            {eksStorageHover === 'mount' && 'Mount: /dev/xvda mapped into Pod /data'}
+                          </text>
+                        </g>
                       </g>
                     )}
                   </svg>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Glossary */}
+          {/* Glossary */}
             <div className="ecs-card">
               <h4 className="ecs-card-title">
                 📚 Amazon EKS Control Plane &amp; CSI Storage Glossary
@@ -2356,71 +2292,78 @@ export default function ElasticContainersVisualizer() {
                 {/* SVG Pipeline Visualization */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center relative overflow-hidden h-[240px]">
                   {/* Grid overlay */}
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b11_1px,transparent_1px),linear-gradient(to_bottom,#1e293b11_1px,transparent_1px)] bg-[size:14px_14px]"></div>
-
-                  {/* App Runner domain tag */}
-                  <div className="absolute top-2.5 left-2.5 font-mono text-[9px] text-sky-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-                    HTTPS://{appRunnerTrigger === 'git' ? 'app-tomcat-git' : 'app-tomcat-ecr'}.awsapprunner.com
-                  </div>
-
+                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415511_1px,transparent_1px),linear-gradient(to_bottom,#33415511_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none" />
                   <svg width="100%" height="180" viewBox="0 0 400 180" className="z-10">
-                    {/* Source Node */}
-                    <g transform="translate(40, 90)">
-                      <circle r="22" fill="#1e293b" stroke="#334155" strokeWidth="1.5" />
-                      {appRunnerTrigger === 'git' ? (
-                        <text y="5" fontFamily="sans-serif" fontSize="14" textAnchor="middle" fill="#fff">🐈</text>
-                      ) : (
-                        <text y="5" fontFamily="sans-serif" fontSize="14" textAnchor="middle" fill="#fff">🐳</text>
-                      )}
-                      <text y="36" fontFamily="var(--font-sans)" fontSize="9" fontWeight="bold" textAnchor="middle" fill="#94a3b8">
-                        {appRunnerTrigger === 'git' ? 'GitHub Sync' : 'ECR Repo'}
+                    <defs>
+                      <linearGradient id="runnerChassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fef08a" />
+                        <stop offset="100%" stopColor="#eab308" />
+                      </linearGradient>
+                      <linearGradient id="dbChassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#93c5fd" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                      <linearGradient id="sourceChassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#475569" />
+                        <stop offset="100%" stopColor="#1e293b" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Source Node - Flat 3D box */}
+                    <g transform="translate(15, 60)">
+                      <polygon points="5,40 65,40 75,28 15,28" fill="url(#sourceChassisGrad)" stroke="#475569" strokeWidth="0.5" />
+                      <polygon points="5,40 65,40 65,52 5,52" fill="#1e293b" />
+                      <polygon points="65,40 75,28 75,40 65,52" fill="#0f172a" />
+                      <text x="40" y="49" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff" fontFamily="monospace">
+                        {appRunnerTrigger === 'git' ? '🐈 GIT CODE' : '🐳 ECR IMAGE'}
+                      </text>
+                      <text x="40" y="24" textAnchor="middle" fontSize="11">
+                        {appRunnerTrigger === 'git' ? '🐈' : '🐳'}
                       </text>
                     </g>
 
-                    {/* App Runner Controller Node */}
-                    <g transform="translate(200, 90)">
+                    {/* App Runner Controller Node - Large elevated 3D server pool */}
+                    <g transform="translate(160, 50)">
                       {appRunnerDeployState !== 'idle' && appRunnerDeployState !== 'completed' && (
-                        <circle r="34" fill="none" stroke="#eab308" strokeWidth="1.5" className="cyber-heartbeat" />
+                        <ellipse cx="40" cy="35" rx="42" ry="18" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="3,3" className="cyber-heartbeat" />
                       )}
-                      <rect x="-30" y="-30" width="60" height="60" rx="10" fill="#fef9c3" stroke="#eab308" strokeWidth="2"
-                        className={appRunnerDeployState !== 'idle' && appRunnerDeployState !== 'completed' ? 'active-svg-glow' : ''}
-                      />
-                      <text y="4" fontFamily="sans-serif" fontSize="18" textAnchor="middle">🚀</text>
-                      <text y="42" fontFamily="var(--font-sans)" fontSize="9" fontWeight="bold" textAnchor="middle" fill="#eab308">
-                        App Runner Service
-                      </text>
+                      <polygon points="5,48 75,48 85,32 15,32" fill="url(#runnerChassisGrad)" stroke="#eab308" strokeWidth="0.5" className={appRunnerDeployState !== 'idle' ? 'active-svg-glow' : ''} />
+                      <polygon points="5,48 75,48 75,64 5,64" fill="#ca8a04" />
+                      <polygon points="75,48 85,32 85,48 75,64" fill="#854d0e" />
+                      <text x="45" y="60" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#ffffff" fontFamily="monospace">🚀 APPRUNNER</text>
+                      <text x="45" y="26" textAnchor="middle" fontSize="14">🚀</text>
                     </g>
 
-                    {/* Private RDS DB Node */}
-                    <g transform="translate(340, 90)">
-                      <rect x="-26" y="-26" width="52" height="52" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5"
-                        className={appRunnerVpcDbLinked ? 'active-svg-glow' : ''}
-                      />
-                      <text y="5" fontFamily="sans-serif" fontSize="16" textAnchor="middle">💾</text>
-                      <text y="38" fontFamily="var(--font-sans)" fontSize="9" fontWeight="bold" textAnchor="middle" fill="#3b82f6">
-                        RDS DB Subnet
-                      </text>
+                    {/* Private RDS DB Node - 3D cylinder */}
+                    <g transform="translate(305, 55)" className={appRunnerVpcDbLinked ? 'active-svg-glow' : ''}>
+                      <ellipse cx="25" cy="10" rx="20" ry="6" fill="url(#dbChassisGrad)" stroke="#3b82f6" strokeWidth="0.5" />
+                      <path d="M 5,10 L 5,42 A 20,6 0 0,0 45,42 L 45,10" fill="url(#dbChassisGrad)" stroke="#3b82f6" strokeWidth="0.5" />
+                      <ellipse cx="25" cy="42" rx="20" ry="6" fill="#bfdbfe" stroke="#3b82f6" strokeWidth="0.5" className="active-svg-glow" />
+                      <text x="25" y="30" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e3a8a">💾 RDS DB</text>
                     </g>
 
-                    {/* Paths */}
-                    <path d="M62,90 L170,90" fill="none" stroke={appRunnerDeployState !== 'idle' ? '#eab308' : '#334155'} strokeWidth="2"
+                    {/* Connection paths */}
+                    {/* Path 1: Source -> App Runner */}
+                    <path d="M 80,95 L 170,95" fill="none" stroke={appRunnerDeployState !== 'idle' ? '#eab308' : '#475569'} strokeWidth="2"
                       className={appRunnerDeployState === 'fetching' || appRunnerDeployState === 'building' ? 'flow-line-active' : ''}
                     />
 
+                    {/* Path 2: App Runner -> RDS Private VPC link */}
                     {appRunnerVpcDbLinked && (
-                      <path d="M230,90 L314,90" fill="none" stroke="#3b82f6" strokeWidth="2"
+                      <path d="M 235,95 L 305,95" fill="none" stroke="#3b82f6" strokeWidth="2"
                         className={appRunnerDeployState === 'deploying' || appRunnerDeployState === 'completed' ? 'flow-line-active' : ''}
                       />
                     )}
 
+                    {/* Stepper info footer overlay inside SVG */}
                     {appRunnerDeployState !== 'idle' && (
-                      <g transform="translate(200, 160)">
-                        <rect x="-100" y="-12" width="200" height="24" rx="12" fill="#1e293b" stroke="#334155" strokeWidth="1" />
-                        <text y="4" fontFamily="var(--font-mono)" fontSize="8.5" textAnchor="middle" fill="#fef08a">
+                      <g transform="translate(200, 158)">
+                        <rect x="-105" y="-12" width="210" height="20" rx="10" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+                        <text y="1" fontFamily="var(--font-mono)" fontSize="8" textAnchor="middle" fill="#fef08a">
                           {appRunnerDeployState === 'fetching' && 'Step 1: Pulling Git commit...'}
                           {appRunnerDeployState === 'building' && 'Step 2: Compiling Dockerfile...'}
-                          {appRunnerDeployState === 'deploying' && 'Step 3: Direct VPC Connector routing...'}
-                          {appRunnerDeployState === 'completed' && 'Step 4: Microservice Deployment LIVE'}
+                          {appRunnerDeployState === 'deploying' && 'Step 3: Private VPC ENI Gateway routing...'}
+                          {appRunnerDeployState === 'completed' && 'Step 4: AWS App Runner Service LIVE!'}
                         </text>
                       </g>
                     )}
@@ -2665,18 +2608,205 @@ export default function ElasticContainersVisualizer() {
                   <div className="flex items-center justify-between w-full mb-3">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                      <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Cluster Network Pipeline Canvas</span>
+                      <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Cluster Network Pipeline SVG Dashboard</span>
                     </div>
-                    <span className="font-mono text-[9px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">880x400 Majestic Telemetry</span>
+                    <span className="font-mono text-[9px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">100% State-Reactive Vector Map</span>
                   </div>
                   <div className="flex justify-center items-center bg-[#0a0f1d] rounded-xl p-3 border border-slate-800 shadow-inner overflow-x-auto w-full">
-                    <canvas
-                      ref={canvasRef}
+                    <svg
                       width={860}
                       height={400}
-                      className="rounded-lg shadow-2xl border border-slate-900"
+                      viewBox="0 0 860 400"
+                      className="rounded-lg shadow-2xl border border-slate-900 bg-[#0a0f1d] ecs-svg-bg"
                       style={{ minWidth: '800px', width: '900px', height: '400px' }}
-                    />
+                    >
+                      {/* Definitions for 3D Gradients and Patterns */}
+                      <defs>
+                        <linearGradient id="simAlbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#f59e0b" />
+                          <stop offset="100%" stopColor="#d97706" />
+                        </linearGradient>
+                        <linearGradient id="webTaskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#0ea5e9" />
+                          <stop offset="100%" stopColor="#0284c7" />
+                        </linearGradient>
+                        <linearGradient id="workerTaskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="#047857" />
+                        </linearGradient>
+                        <linearGradient id="cronTaskGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#a855f7" />
+                          <stop offset="100%" stopColor="#7c3aed" />
+                        </linearGradient>
+                        <linearGradient id="sqsChassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#f43f5e" />
+                          <stop offset="100%" stopColor="#be185d" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* 1. Client App Station Console */}
+                      <g transform="translate(15, 120)">
+                        {/* 3D Chassis */}
+                        <polygon points="5,80 115,80 125,65 15,65" fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
+                        <polygon points="5,80 115,80 115,150 5,150" fill="#0f172a" stroke="#1e293b" strokeWidth="0.5" />
+                        <polygon points="115,80 125,65 125,135 115,150" fill="#020617" />
+                        <text x="60" y="93" textAnchor="middle" fontSize="7.5" fill="#38bdf8" fontWeight="bold" fontFamily="monospace">👤 USER CLIENTS</text>
+                        <rect x="15" y="102" width="90" height="35" rx="3" fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
+                        <text x="60" y="114" textAnchor="middle" fontSize="8" fill="#e2e8f0" fontWeight="bold">LOAD: {simTrafficLevel.toUpperCase()}</text>
+                        <text x="60" y="128" textAnchor="middle" fontSize="7.5" fill="#f87171" fontWeight="bold" fontFamily="monospace">
+                          {simTrafficLevel === 'low' && 'Rate: ~15 RPS'}
+                          {simTrafficLevel === 'normal' && 'Rate: ~50 RPS'}
+                          {simTrafficLevel === 'surge' && 'Rate: ~240 RPS'}
+                        </text>
+                      </g>
+
+                      {/* 2. ALB Octagon Load Balancer Hub */}
+                      <g transform="translate(160, 160)" className={simIsRunning ? 'active-svg-glow' : ''}>
+                        <polygon points="12,0 38,0 50,12 50,38 38,50 12,50 0,38 0,12" fill="url(#simAlbGrad)" stroke="#ff9900" strokeWidth="1" />
+                        <text x="25" y="23" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ffffff">⚖️ ALB</text>
+                        <text x="25" y="35" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">HTTP</text>
+                        {simIsRunning && (
+                          <circle cx="25" cy="25" r="32" fill="none" stroke="#f59e0b" strokeWidth="1.2" strokeDasharray="4,4" className="cyber-heartbeat" />
+                        )}
+                      </g>
+
+                      {/* 3. EventBridge Scheduled clock rule */}
+                      <g transform="translate(155, 30)">
+                        <circle cx="30" cy="30" r="24" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" className={simIsRunning ? 'active-svg-glow' : ''} />
+                        <line x1="30" y1="30" x2="30" y2="12" stroke="#701a75" strokeWidth="2" />
+                        <line x1="30" y1="30" x2="42" y2="35" stroke="#701a75" strokeWidth="1.5" />
+                        <text x="30" y="65" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#c084fc">EventBridge Cron</text>
+                      </g>
+
+                      {/* 4. SQS Queue Horizontal Chassis */}
+                      <g transform="translate(130, 290)" className={sqsQueueDepth > 0 ? 'active-svg-glow' : ''}>
+                        {/* Queue base */}
+                        <rect x="0" y="10" width="110" height="50" rx="4" fill="#1e293b" stroke="#f43f5e" strokeWidth="1" />
+                        <text x="55" y="24" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fda4af">✉️ SQS QUEUE</text>
+                        <text x="55" y="36" textAnchor="middle" fontSize="7.5" fill="#fda4af" fontFamily="monospace">depth: {sqsQueueDepth} jobs</text>
+
+                        {/* Message envelopes slots inside the queue chassis */}
+                        <g transform="translate(10, 42)">
+                          {Array.from({ length: Math.min(5, sqsQueueDepth) }).map((_, idx) => (
+                            <rect
+                              key={idx}
+                              x={idx * 18}
+                              y={0}
+                              width="14"
+                              height="10"
+                              rx="1"
+                              fill="#ffe4e6"
+                              stroke="#f43f5e"
+                              strokeWidth="0.5"
+                              className="animate-pulse"
+                            />
+                          ))}
+                          {sqsQueueDepth > 5 && (
+                            <text x="90" y="8" fontSize="7" fontWeight="bold" fill="#fda4af">+</text>
+                          )}
+                        </g>
+                      </g>
+
+                      {/* Animated Conduits connecting elements */}
+                      {/* Client -> ALB */}
+                      <path d="M 130,190 L 160,190" fill="none" stroke="#6366f1" strokeWidth="2" strokeDasharray="5,3" className={simIsRunning ? 'flow-line-active' : ''} />
+
+                      {/* Cron -> WebTask Subnet */}
+                      <path d="M 205,54 L 300,54" fill="none" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="3,3" className={simIsRunning ? 'flow-line-active' : ''} />
+
+                      {/* ALB -> Web subnet target dispatch */}
+                      <path d="M 210,185 L 290,120" fill="none" stroke="#eab308" strokeWidth="2" strokeDasharray="6,4" className={simIsRunning ? 'flow-line-active' : ''} />
+
+                      {/* ALB -> SQS enqueueing */}
+                      <path d="M 185,210 L 185,290" fill="none" stroke="#ec4899" strokeWidth="2" strokeDasharray="6,4" className={simIsRunning && sqsQueueDepth > 0 ? 'flow-line-active' : ''} />
+
+                      {/* SQS -> Worker Subnet polling */}
+                      <path d="M 240,320 L 290,320" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="6,4" className={simIsRunning && sqsQueueDepth > 0 ? 'flow-line-active' : ''} />
+
+
+                      {/* VPC boundary with glass subnets */}
+                      <g transform="translate(290, 20)">
+                        <rect x="0" y="0" width="550" height="360" rx="12" fill="none" stroke="#334155" strokeWidth="1.5" strokeDasharray="6,6" />
+                        <text x="540" y="15" textAnchor="end" fontSize="7.5" fontWeight="bold" fill="#94a3b8" fontFamily="monospace">AWS VPC BOUNDARY (10.0.0.0/16)</text>
+
+                        {/* Web Subnet */}
+                        <g transform="translate(10, 20)">
+                          <rect x="0" y="0" width="530" height="150" rx="8" fill="rgba(240, 253, 244, 0.05)" stroke="#10b981" strokeWidth="1" strokeDasharray="4,4" />
+                          <text x="10" y="12" fontSize="7" fontWeight="bold" fill="#4ade80">Web Subnet (Public Target Group)</text>
+                        </g>
+
+                        {/* Worker Subnet */}
+                        <g transform="translate(10, 200)">
+                          <rect x="0" y="0" width="530" height="150" rx="8" fill="rgba(254, 243, 199, 0.05)" stroke="#fbbf24" strokeWidth="1" strokeDasharray="4,4" />
+                          <text x="10" y="12" fontSize="7" fontWeight="bold" fill="#fbbf24">Worker Subnet (Private SQS Workers)</text>
+                        </g>
+                      </g>
+
+                      {/* State-reactive mapped Task blocks */}
+                      {simTasks.filter(t => t.status !== 'STOPPED').map((task, idx) => {
+                        // Dynamically calculate coordinate placements inside VPC
+                        let xOffset = 310;
+                        let yOffset = 55;
+                        let taskColor = "url(#webTaskGrad)";
+                        let strokeColor = "#0ea5e9";
+
+                        if (task.type === 'web') {
+                          xOffset = 310 + (idx % 4) * 125;
+                          yOffset = 65;
+                          taskColor = "url(#webTaskGrad)";
+                          strokeColor = "#0ea5e9";
+                        } else if (task.type === 'worker') {
+                          xOffset = 310 + (idx % 4) * 125;
+                          yOffset = 245;
+                          taskColor = "url(#workerTaskGrad)";
+                          strokeColor = "#10b981";
+                        } else if (task.type === 'cron') {
+                          xOffset = 310 + (idx % 4) * 125;
+                          yOffset = 155;
+                          taskColor = "url(#cronTaskGrad)";
+                          strokeColor = "#a855f7";
+                        }
+
+                        return (
+                          <g key={task.id} transform={`translate(${xOffset}, ${yOffset})`}>
+                            {/* 3D server chassis block */}
+                            <polygon points="5,35 105,35 113,23 13,23" fill={taskColor} stroke={strokeColor} strokeWidth="0.5" className={task.status === 'PROVISIONING' ? 'active-svg-glow' : ''} />
+                            <polygon points="5,35 105,35 105,75 5,75" fill={task.status === 'PROVISIONING' ? '#78350f' : '#1e293b'} stroke={strokeColor} strokeWidth="0.5" />
+                            <polygon points="105,35 113,23 113,63 105,75" fill="#0f172a" />
+
+                            {/* Task name */}
+                            <text x="55" y="32" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold" fontFamily="monospace">{task.name}</text>
+
+                            {task.status === 'PROVISIONING' ? (
+                              <g>
+                                {/* Spinning loading indicator */}
+                                <circle cx="55" cy="52" r="8" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="18,6" className="flow-line-active" />
+                                <text x="55" y="68" textAnchor="middle" fontSize="6.5" fill="#f59e0b" fontWeight="bold" className="animate-pulse">PROVISIONING</text>
+                              </g>
+                            ) : (
+                              <g>
+                                {/* Active heartbeat line */}
+                                <path d="M 12,50 L 22,50 L 25,40 L 28,60 L 31,50 L 41,50" fill="none" stroke="#22c55e" strokeWidth="1" />
+                                <text x="45" y="49" fontSize="6" fill="#a7f3d0" fontWeight="bold">UP: {task.uptime}s</text>
+
+                                {/* Live CPU resource utilization progress bar fill */}
+                                <text x="12" y="61" fontSize="6" fill="#94a3b8" fontWeight="bold">CPU UTIL: {task.cpu}%</text>
+                                <rect x="12" y="64" width="85" height="5" rx="2" fill="#334155" />
+                                <rect x="12" y="64" width={Math.max(3, 85 * (task.cpu / 100))} height="5" rx="2" fill={task.cpu > 80 ? '#ef4444' : '#10b981'} />
+                              </g>
+                            )}
+                          </g>
+                        );
+                      })}
+
+                      {simTasks.filter(t => t.status !== 'STOPPED').length === 0 && (
+                        <g transform="translate(420, 160)">
+                          <rect x="0" y="0" width="220" height="50" rx="6" fill="#1e293b" stroke="#ef4444" strokeWidth="1" />
+                          <text x="110" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#f87171">⚠️ ECS CLUSTER COMPUTE FLEET EMPTY</text>
+                          <text x="110" y="38" textAnchor="middle" fontSize="7.5" fill="#94a3b8">Scale Web/Worker above to spin up containers.</text>
+                        </g>
+                      )}
+                    </svg>
                   </div>
                 </div>
 
