@@ -157,6 +157,15 @@ const visualizers: VisualizerItem[] = [
     path: '/visualizers/databases-analytics',
     icon: '🗄️',
   },
+  {
+    id: 'cloudwatch-events',
+    title: '🛡️ Observability, Events & Audit',
+    description: 'Explore AWS observability & systems governance. Simulate Log Ingest pipelines, SQL-like Logs Insights queries, threshold Alarms, real-time Metric Streams, EventBridge event routing, and CloudTrail / Config compliance remediations.',
+    tags: ['CloudWatch Logs', 'EventBridge Bus', 'Trail Audit & Config'],
+    category: 'integration',
+    path: '/visualizers/cloudwatch-events',
+    icon: '🛡️',
+  },
   // Upcoming Roadmap Items
   {
     id: 'sorting-algorithms',

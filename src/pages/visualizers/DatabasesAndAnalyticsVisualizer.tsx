@@ -31,6 +31,137 @@ interface FlinkEvent {
   status: 'APPROVED' | 'FRAUD_SUSPECT';
 }
 
+interface DBDetails {
+  title: string;
+  emoji: string;
+  badgeClass: string;
+  awsServices: string;
+  engineTypes: string;
+  storageScaling: string;
+  idealWorkload: string;
+  desc: string;
+  metrics: {
+    write: number;
+    read: number;
+    rigidity: number;
+    complexity: number;
+    scale: number;
+  };
+}
+
+const CATEGORY_MAP: Record<string, DBDetails> = {
+  rdbms: {
+    title: '📑 RDBMS (Relational Databases)',
+    emoji: '📑',
+    badgeClass: 'badge-blue',
+    awsServices: 'Amazon RDS, Amazon Aurora',
+    engineTypes: 'Aurora Serverless v2, RDS PostgreSQL, RDS MySQL, RDS MariaDB, RDS SQL Server, RDS Oracle',
+    storageScaling: 'Aurora: Decoupled shared log-structured storage auto-scaling up to 128TB. RDS: VM coupled EBS storage blocks.',
+    idealWorkload: 'Core banking transactions, financial records, ERP platforms, complex relational joins with high SQL complexity.',
+    desc: 'Structured database engines matching tabular relationships. Enforces rigid schemas, strict primary/foreign key mappings, and 100% ACID transactional compliance.',
+    metrics: { write: 75, read: 85, rigidity: 95, complexity: 95, scale: 75 }
+  },
+  nosql_kv: {
+    title: '⚡ NoSQL (Key-Value Transactions)',
+    emoji: '⚡',
+    badgeClass: 'badge-purple',
+    awsServices: 'Amazon DynamoDB, Amazon Keyspaces',
+    engineTypes: 'DynamoDB Provisioned / On-Demand tables, DynamoDB Global Tables, Keyspaces (Cassandra compatible)',
+    storageScaling: 'Serverless partitioning across dynamic SSD pools based on partition key hashes.',
+    idealWorkload: 'E-commerce shopping carts, real-time gaming state, massive user profiles, IoT device logs with key-value lookup.',
+    desc: 'Horizontal sharding database engines optimized to scale to millions of requests per second. Delivers single-digit millisecond latency at any scale without joins.',
+    metrics: { write: 98, read: 95, rigidity: 10, complexity: 30, scale: 98 }
+  },
+  nosql_doc: {
+    title: '📂 NoSQL (Document Store)',
+    emoji: '📂',
+    badgeClass: 'badge-teal',
+    awsServices: 'Amazon DocumentDB',
+    engineTypes: 'DocumentDB (with MongoDB compatibility) Serverless and Provisioned clusters',
+    storageScaling: 'Decoupled log-structured document volume replicating 6-ways across 3 AZs. Scale reads to 15 replicas.',
+    idealWorkload: 'Content management, customer profile catalogs, nested mobile app session state directories.',
+    desc: 'Stores, indexes, and queries nested hierarchical JSON document trees natively. Provides high throughput and decoupled scaling while maintaining MongoDB API support.',
+    metrics: { write: 88, read: 88, rigidity: 15, complexity: 50, scale: 88 }
+  },
+  object: {
+    title: '🪣 Object Storage',
+    emoji: '🪣',
+    badgeClass: 'badge-amber',
+    awsServices: 'Amazon S3, S3 Glacier',
+    engineTypes: 'S3 Standard, S3 Express One Zone, S3 Infrequent Access, S3 Glacier Deep Archive',
+    storageScaling: 'Serverless flat namespace storing infinite, unstructured data blocks up to 5TB per object.',
+    idealWorkload: 'Analytical data lake raw layers, static website media assets, compliance archives, backups.',
+    desc: 'High durability (11 9s) serverless object storage layer. Supports object lifecycle transition engines to automate cost-efficient tiering from hot storage to deep archives.',
+    metrics: { write: 80, read: 60, rigidity: 5, complexity: 20, scale: 100 }
+  },
+  analytics: {
+    title: '📊 Data Warehouse & OLAP',
+    emoji: '📊',
+    badgeClass: 'badge-coral',
+    awsServices: 'Amazon Redshift, Amazon Athena',
+    engineTypes: 'Redshift Provisioned / Serverless, Redshift Spectrum, Athena (Serverless Presto SQL)',
+    storageScaling: 'Redshift: Massive Parallel Processing (MPP) columnar block cluster. Athena: Serverless query coordinator over S3.',
+    idealWorkload: 'Enterprise business intelligence dashboards, ad-hoc raw log scanning on S3, heavy reporting aggregations.',
+    desc: 'Columnar analytical database engines designed to scan petabytes of data. Converts typical row-based disks to column blocks, drastically reducing disk scans.',
+    metrics: { write: 60, read: 50, rigidity: 85, complexity: 92, scale: 95 }
+  },
+  search: {
+    title: '🔎 Search Index (Fuzzy & Log Search)',
+    emoji: '🔎',
+    badgeClass: 'badge-blue',
+    awsServices: 'Amazon OpenSearch Service',
+    engineTypes: 'OpenSearch Provisioned Cluster, OpenSearch Serverless, UltraWarm storage, Cold tier backups',
+    storageScaling: 'Distributed shard partitions (Primary + Replicas) with dedicated coordinating nodes.',
+    idealWorkload: 'Application log auditing dashboards, fuzzy catalog searching, real-time analytics autocomplete.',
+    desc: 'Specialized fuzzy search indexing engine designed for full-text search matching, fuzzy querying, and real-time application log indexing and visualization.',
+    metrics: { write: 82, read: 90, rigidity: 20, complexity: 75, scale: 90 }
+  },
+  graph: {
+    title: '🕸️ Graph Network (Neptune)',
+    emoji: '🕸️',
+    badgeClass: 'badge-purple',
+    awsServices: 'Amazon Neptune',
+    engineTypes: 'Neptune Gremlin Property Graphs, Neptune W3C RDF SPARQL, Neptune Streams CDC',
+    storageScaling: 'Decoupled graph storage volume auto-scaling up to 128TB. Auto-replicated across 3 AZs.',
+    idealWorkload: 'Fraud ring network tracing, user social network maps, recommenders, deep identity resolution.',
+    desc: 'Specially optimized database designed to traverse complex, highly connected many-to-many networks of nodes (vertices) and relationships (edges) in milliseconds.',
+    metrics: { write: 72, read: 80, rigidity: 25, complexity: 88, scale: 82 }
+  },
+  ledger: {
+    title: '🛡️ Ledger (Immutable Audit Logs)',
+    emoji: '🛡️',
+    badgeClass: 'badge-coral',
+    awsServices: 'Amazon QLDB',
+    engineTypes: 'Amazon QLDB (Quantum Ledger Database) serverless engine',
+    storageScaling: 'Serverless append-only journal ledger cryptographically chained using SHA-256 blocks.',
+    idealWorkload: 'Supply chain asset logs, DMV vehicle registrations, corporate compliance audit trails, banking logs.',
+    desc: 'A centralized, fully managed ledger database that provides an immutable, cryptographically verifiable transaction journal ledger ensuring no records can be deleted.',
+    metrics: { write: 65, read: 72, rigidity: 80, complexity: 40, scale: 78 }
+  },
+  timeseries: {
+    title: '📈 Time-Series (Telemetry & IoT)',
+    emoji: '📈',
+    badgeClass: 'badge-amber',
+    awsServices: 'Amazon Timestream',
+    engineTypes: 'Timestream for Live Metrics, Timestream for Historical Reports',
+    storageScaling: 'Serverless decoupled tiering: Hot metrics stored in RAM; Cold historical records migrated to magnetic disks.',
+    idealWorkload: 'IoT sensor telemetry streams, application performance metrics monitoring, stock trade ticking streams.',
+    desc: 'Purpose-built time-series engine designed to ingest trillions of append-only chronological events. Features built-in SQL functions for advanced time intervals.',
+    metrics: { write: 92, read: 85, rigidity: 40, complexity: 65, scale: 90 }
+  },
+  etl: {
+    title: '⚙️ ETL & Catalog Governance',
+    emoji: '⚙️',
+    badgeClass: 'badge-green',
+    awsServices: 'AWS Glue, AWS Lake Formation',
+    engineTypes: 'Glue Crawler, Glue Data Catalog Database, Glue Schema Registry, Glue Serverless Spark/Ray Jobs',
+    storageScaling: 'Serverless Hive schema metadata directory + dynamically allocated Spark DPU worker cores.',
+    idealWorkload: 'Automated schema discovery on S3 raw landing paths, JSON/CSV to Parquet data compaction pipelines.',
+    desc: 'The glue of the AWS analytical portfolio. Crawls files to populate central metastores, enforces data catalog security, and runs serverless code pipelines.',
+    metrics: { write: 85, read: 70, rigidity: 75, complexity: 70, scale: 95 }
+  }
+};
+
 export default function DatabasesAndAnalyticsVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
 
@@ -46,6 +177,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
   });
   const [recommendedDb, setRecommendedDb] = useState<string | null>(null);
   const [recReason, setRecReason] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('rdbms');
 
   const resetWizard = () => {
     setWizardStep(1);
@@ -242,6 +374,64 @@ export default function DatabasesAndAnalyticsVisualizer() {
   };
 
   // ==========================================
+  // NEW: AWS GLUE SERVERLESS ETL & SCHEMA REGISTRY STATE
+  // ==========================================
+  const [glueJobState, setGlueJobState] = useState<'idle' | 'crawling' | 'etl-running' | 'completed'>('idle');
+  const [glueLogs, setGlueLogs] = useState<string[]>([]);
+  const [glueFileType, setGlueFileType] = useState<'json' | 'csv' | 'parquet'>('json');
+  const [glueJobType, setGlueJobType] = useState<'spark' | 'ray' | 'python-shell'>('spark');
+  const [glueSchemaRegistry, setGlueSchemaRegistry] = useState<boolean>(true);
+
+  const runGlueCrawler = async () => {
+    if (glueJobState !== 'idle') return;
+    setGlueJobState('crawling');
+    setGlueLogs([]);
+    const time = new Date().toLocaleTimeString();
+    setGlueLogs(prev => [`[${time}] CRAWLER: AWS Glue Crawler "s3-raw-crawler" spawned. Scanning s3://raw-landing-bucket/...`, ...prev]);
+    
+    await new Promise(r => setTimeout(r, 1200));
+    setGlueLogs(prev => [`[${time}] CRAWLER: Inferred folder file format: ${glueFileType.toUpperCase()}. Scanning directory structure.`, ...prev]);
+    
+    await new Promise(r => setTimeout(r, 1200));
+    setGlueLogs(prev => [`[${time}] CRAWLER: Cataloged 1 new table schema [flight_raw_records] inside Glue Database "lakehouse_db".`, ...prev]);
+    setGlueLogs(prev => [`[${time}] CRAWLER: Identified schema: [id (int), name (string), email (string), region (string), sales (double)].`, ...prev]);
+    setGlueJobState('idle');
+  };
+
+  const runGlueEtlJob = async () => {
+    if (glueJobState !== 'idle') return;
+    setGlueJobState('etl-running');
+    setGlueLogs([]);
+    const time = new Date().toLocaleTimeString();
+    setGlueLogs(prev => [`[${time}] GLUE JOB: Spawning serverless Glue ${glueJobType.toUpperCase()} Executor nodes (10 DPUs configured).`, ...prev]);
+
+    if (glueSchemaRegistry) {
+      await new Promise(r => setTimeout(r, 800));
+      setGlueLogs(prev => [`[${time}] SCHEMA REGISTRY: Validating source stream compatibility using AVRO schema ID #71a94.`, ...prev]);
+      setGlueLogs(prev => [`[${time}] SCHEMA REGISTRY: Validation SUCCESS. 0 malformed records or poisoned pills detected.`, ...prev]);
+    }
+
+    await new Promise(r => setTimeout(r, 1200));
+    setGlueLogs(prev => [`[${time}] GLUE JOB: Extracting raw ${glueFileType.toUpperCase()} objects from S3 Landing Zone.`, ...prev]);
+    setGlueLogs(prev => [`[${time}] GLUE JOB: Applying Transformations (Mapping types, filtering null fields, consolidating files).`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1500));
+    setGlueLogs(prev => [`[${time}] GLUE JOB: Writing transformed snappy-compressed Columnar PARQUET blocks to s3://refined-lakehouse-bucket/year=2026/...`, ...prev]);
+    setGlueLogs(prev => [`[${time}] GLUE JOB: Updating Glue Data Catalog partition indexes.`, ...prev]);
+
+    setGlueJobState('completed');
+    setGlueLogs(prev => [`[${time}] ✅ GLUE JOB SUCCESS: Serverless ETL complete. Saved 82% storage space, query speedup 12x.`, ...prev]);
+  };
+
+  const resetGlueSandbox = () => {
+    setGlueJobState('idle');
+    setGlueLogs([]);
+    setGlueFileType('json');
+    setGlueJobType('spark');
+    setGlueSchemaRegistry(true);
+  };
+
+  // ==========================================
   // TAB 5 STATE: Redshift Warehousing & DR Snapshot
   // ==========================================
   const [redshiftState, setRedshiftState] = useState<'idle' | 'snapshotting' | 'replicating' | 'recovering' | 'completed'>('idle');
@@ -417,6 +607,184 @@ export default function DatabasesAndAnalyticsVisualizer() {
   const resetRedshiftDR = () => {
     setRedshiftState('idle');
     setRedshiftLogs([]);
+  };
+
+  // ==========================================
+  // NEW: AMAZON EMR, OPENSEARCH, & QUICKSIGHT SPICE STATES
+  // ==========================================
+  const [emrClusterType, setEmrClusterType] = useState<'long-running' | 'transient'>('long-running');
+  const [emrMasterState, setEmrMasterState] = useState<'idle' | 'provisioning' | 'active'>('active');
+  const [emrCoreCount, setEmrCoreCount] = useState<number>(3);
+  const [emrTaskCount, setEmrTaskCount] = useState<number>(0);
+  const [emrWorkload, setEmrWorkload] = useState<'idle' | 'spark-jobs' | 'presto-queries' | 'flink-aggregations'>('idle');
+  const [emrLogs, setEmrLogs] = useState<string[]>([]);
+  const [emrSpotPrice, setEmrSpotPrice] = useState<number>(0.24);
+
+  const triggerEmrJob = async (jobType: 'spark' | 'presto' | 'flink') => {
+    if (emrMasterState !== 'active' || emrWorkload !== 'idle') return;
+    setEmrLogs([]);
+    const time = new Date().toLocaleTimeString();
+    setEmrLogs(prev => [`[${time}] EMR MASTER: Initializing Big Data ${jobType.toUpperCase()} partition task mapping...`, ...prev]);
+
+    if (jobType === 'spark') {
+      setEmrWorkload('spark-jobs');
+      setEmrLogs(prev => [`[${time}] EMR MASTER: Task coordinates distributed across ${emrCoreCount} Core Nodes storing HDFS blocks.`, ...prev]);
+      
+      // Auto-scaling task nodes (Spot instances!)
+      if (emrTaskCount < 4) {
+        setEmrLogs(prev => [`[${time}] AUTO-SCALING: Surging workload detected. Programmatic scale-up triggered!`, ...prev]);
+        setEmrLogs(prev => [`[${time}] SPOT PROVISIONER: Requesting 4 optional Task Nodes (Spot purchasing option).`, ...prev]);
+        await new Promise(r => setTimeout(r, 1200));
+        setEmrTaskCount(4);
+        setEmrSpotPrice(0.08); // Spot pricing discount!
+        setEmrLogs(prev => [`[${time}] SPOT PROVISIONER: 4 Task Nodes provisioned at Spot price ($0.08/hr vs $0.24/hr on-demand).`, ...prev]);
+      }
+      
+      await new Promise(r => setTimeout(r, 1500));
+      setEmrLogs(prev => [`[${time}] SPARK: Running vast data processing job (machine learning and web indexing calculations).`, ...prev]);
+      await new Promise(r => setTimeout(r, 1500));
+      setEmrLogs(prev => [`[${time}] ✅ SUCCESS: Spark job complete. Output stored in Refined S3 Lake.`, ...prev]);
+    } else if (jobType === 'presto') {
+      setEmrWorkload('presto-queries');
+      setEmrLogs(prev => [`[${time}] PRESTO: Executing ad-hoc SQL queries on external Hive/Glue metastore schemas.`, ...prev]);
+      await new Promise(r => setTimeout(r, 1800));
+      setEmrLogs(prev => [`[${time}] ✅ SUCCESS: Presto ad-hoc scan complete. Returned 4.8M rows in 1.8s.`, ...prev]);
+    } else {
+      setEmrWorkload('flink-aggregations');
+      setEmrLogs(prev => [`[${time}] FLINK: Initializing stateful sliding window aggregations on Kinesis streams.`, ...prev]);
+      await new Promise(r => setTimeout(r, 1800));
+      setEmrLogs(prev => [`[${time}] ✅ SUCCESS: Flink stream aggregator is running hot.`, ...prev]);
+    }
+    
+    setEmrWorkload('idle');
+    if (emrClusterType === 'transient') {
+      setEmrLogs(prev => [`[${time}] TRANSIENT SHUTDOWN: Transient temporary cluster job complete. Tearing down EC2 instances...`, ...prev]);
+      await new Promise(r => setTimeout(r, 1000));
+      setEmrTaskCount(0);
+      setEmrMasterState('idle');
+      setEmrLogs(prev => [`[${time}] 💀 TRANSIENT TERMINATED: Cluster fully decommissioned. Total run cost minimized.`, ...prev]);
+    }
+  };
+
+  const provisionEmrCluster = async () => {
+    setEmrMasterState('provisioning');
+    setEmrLogs([]);
+    const time = new Date().toLocaleTimeString();
+    setEmrLogs(prev => [`[${time}] PROVISIONER: Provisioning Master Node (m5.xlarge, coordinates health)...`, ...prev]);
+    await new Promise(r => setTimeout(r, 1000));
+    setEmrLogs(prev => [`[${time}] PROVISIONER: Bootstrapping ${emrCoreCount} Core Nodes (m5.xlarge, stores HDFS tasks)...`, ...prev]);
+    await new Promise(r => setTimeout(r, 1200));
+    setEmrMasterState('active');
+    setEmrLogs(prev => [`[${time}] 🟢 ACTIVE: Hadoop EMR Cluster online and health status verified.`, ...prev]);
+  };
+
+  const resetEmrCluster = () => {
+    setEmrMasterState('active');
+    setEmrCoreCount(3);
+    setEmrTaskCount(0);
+    setEmrWorkload('idle');
+    setEmrLogs([]);
+    setEmrSpotPrice(0.24);
+  };
+
+  // OpenSearch Search states
+  const [osSearchQuery, setOsSearchQuery] = useState<string>('auth-error');
+  const [osIngestPath, setOsIngestPath] = useState<'dynamodb' | 'kinesis-firehose' | 'cloudwatch'>('dynamodb');
+  const [osState, setOsState] = useState<'idle' | 'searching' | 'ingesting'>('idle');
+  const [osLogs, setOsLogs] = useState<string[]>([]);
+  const [osSearchResults, setOsSearchResults] = useState<{id: string; message: string; matchedField: string; dbLatency: string}[]>([]);
+
+  const triggerOsSearch = async () => {
+    if (osState !== 'idle') return;
+    setOsState('searching');
+    setOsSearchResults([]);
+    setOsLogs([]);
+    const time = new Date().toLocaleTimeString();
+    setOsLogs(prev => [`[${time}] USER SEARCH: Executing full-text partial query for "${osSearchQuery}"...`, ...prev]);
+    
+    await new Promise(r => setTimeout(r, 800));
+    // Simulate finding matching fields on OpenSearch
+    const results = [
+      { id: 'usr-8924', message: 'Auth failed for token key', matchedField: `message: *${osSearchQuery}* (PARTIAL MATCH)`, dbLatency: '15ms (OpenSearch Index)' },
+      { id: 'usr-1049', message: 'System login auth timeout exception', matchedField: `message: *${osSearchQuery}* (PARTIAL MATCH)`, dbLatency: '15ms (OpenSearch Index)' }
+    ];
+    setOsSearchResults(results);
+    setOsLogs(prev => [`[${time}] OPENSEARCH: Succession to Elasticsearch. Scanned index. Found ${results.length} partially matching record IDs.`, ...prev]);
+    setOsLogs(prev => [`[${time}] 💡 INTEGRATION PATTERN: OpenSearch provides the search capability. We will now fetch the WHOLE items from DynamoDB via primary keys.`, ...prev]);
+
+    // Fetch whole item from DynamoDB!
+    await new Promise(r => setTimeout(r, 1200));
+    setOsLogs(prev => [`[${time}] DYNAMODB: BatchGetItem request dispatched for primary keys [usr-8924, usr-1049].`, ...prev]);
+    setOsLogs(prev => [`[${time}] DYNAMODB: Fetched complete row records (Profile, email, logs) successfully (latency: 4ms).`, ...prev]);
+    setOsState('idle');
+    setOsLogs(prev => [`[${time}] ✅ COMPLETED: Wholesome search resolved! Search complementary index matched ID, DB resolved details.`, ...prev]);
+  };
+
+  const triggerOsIngestion = async () => {
+    if (osState !== 'idle') return;
+    setOsState('ingesting');
+    setOsLogs([]);
+    const time = new Date().toLocaleTimeString();
+    
+    if (osIngestPath === 'dynamodb') {
+      setOsLogs(prev => [`[${time}] CRUD WRITE: Item inserted into DynamoDB table.`, ...prev]);
+      await new Promise(r => setTimeout(r, 800));
+      setOsLogs(prev => [`[${time}] DYNAMODB STREAMS: Stream segment captured the database mutation log.`, ...prev]);
+      await new Promise(r => setTimeout(r, 1000));
+      setOsLogs(prev => [`[${time}] AWS LAMBDA: Stream trigger invokes Lambda function to parse mutation.`, ...prev]);
+      await new Promise(r => setTimeout(r, 1000));
+      setOsLogs(prev => [`[${time}] OPENSEARCH: Lambda connector index writes the search documents in bulk (TLS encrypted).`, ...prev]);
+    } else if (osIngestPath === 'kinesis-firehose') {
+      setOsLogs(prev => [`[${time}] KINESIS DATA STREAMS: Heavy event stream ingested at 50,000 req/sec.`, ...prev]);
+      await new Promise(r => setTimeout(r, 800));
+      setOsLogs(prev => [`[${time}] KINESIS FIREHOSE: Aggregating and buffering micro-batches (near real-time).`, ...prev]);
+      await new Promise(r => setTimeout(r, 1000));
+      setOsLogs(prev => [`[${time}] AWS LAMBDA: Firehose invokes Lambda to transform telemetry payload format.`, ...prev]);
+      await new Promise(r => setTimeout(r, 1000));
+      setOsLogs(prev => [`[${time}] OPENSEARCH: Buffered payload written and indexed in OpenSearch cluster.`, ...prev]);
+    } else {
+      setOsLogs(prev => [`[${time}] CLOUDWATCH LOGS: System logs generated by application nodes.`, ...prev]);
+      await new Promise(r => setTimeout(r, 800));
+      setOsLogs(prev => [`[${time}] SUBSCRIPTION FILTER: Log filter rule intercepts logs and schedules batch delivery.`, ...prev]);
+      await new Promise(r => setTimeout(r, 1000));
+      setOsLogs(prev => [`[${time}] KINESIS FIREHOSE: Firehose buffers logs and forwards them to OpenSearch bulk endpoints.`, ...prev]);
+    }
+    
+    setOsState('idle');
+    setOsLogs(prev => [`[${time}] ✅ INGESTED: Search documents refreshed and fully indexed.`, ...prev]);
+  };
+
+  const resetOsSandbox = () => {
+    setOsState('idle');
+    setOsLogs([]);
+    setOsSearchResults([]);
+    setOsSearchQuery('auth-error');
+  };
+
+  // QuickSight SPICE states
+  const [qsSpiceEnabled, setQsSpiceEnabled] = useState<boolean>(true);
+  const [qsQueryLatency, setQsQueryLatency] = useState<number>(15);
+  const [qsLogs, setQsLogs] = useState<string[]>([]);
+  const [qsQuerying, setQsQuerying] = useState<boolean>(false);
+
+  const runQsDashboardQuery = async () => {
+    if (qsQuerying) return;
+    setQsQuerying(true);
+    setQsLogs([]);
+    const time = new Date().toLocaleTimeString();
+    setQsLogs(prev => [`[${time}] QUICKSIGHT: Dashboard rendering analytical visualization charts...`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 600));
+    if (qsSpiceEnabled) {
+      setQsQueryLatency(15); // Sub-second in-memory calculation!
+      setQsLogs(prev => [`[${time}] SPICE CACHE HIT: Query completed instantly using Super-fast, Parallel, In-memory Calculation Engine.`, ...prev]);
+      setQsLogs(prev => [`[${time}] 🚀 LATENCY: 15ms. Bypassed S3/Athena/Redshift querying and avoided network overhead.`, ...prev]);
+    } else {
+      setQsQueryLatency(480); // Sluggish direct query!
+      setQsLogs(prev => [`[${time}] SPICE CACHE MISS: Querying Amazon Athena and scanning raw data lake S3 files directly.`, ...prev]);
+      setQsLogs(prev => [`[${time}] ⚠️ LATENCY: 480ms. High query processing overhead, scanning S3 Parquet paths...`, ...prev]);
+    }
+    setQsQuerying(false);
   };
 
   // ==========================================
@@ -911,6 +1279,801 @@ export default function DatabasesAndAnalyticsVisualizer() {
                   Decoupling database compute cores from their physical disk partitions (like Aurora, DocumentDB, and Timestream do) allows AWS to scale disk volumes automatically on-demand up to 128TB, scale compute replicas instantly, and recover from failures in seconds.
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* INTERACTIVE AWS DATABASE CATEGORY ARCHITECTURE EXPLORER BOARD             */}
+          {/* ========================================================================= */}
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-6">
+            <h3 className="da-card-title text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-sky-500 animate-pulse" /> 🧩 AWS Database Architecture Matrix &amp; Interactive Explorer
+            </h3>
+            <p className="da-card-desc mb-6 text-slate-650 text-[11px] leading-relaxed">
+              AWS offers specialized database engines optimized for unique workload profiles rather than forcing all patterns into a single database. Review the visual database categories below, toggle to explore their active architectural topologies, configurations, and core capability comparisons.
+            </p>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Selector Panel: Category list */}
+              <div className="lg:col-span-4 flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-2">
+                {Object.entries(CATEGORY_MAP).map(([key, item]) => {
+                  const isActive = selectedCategory === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedCategory(key)}
+                      className={`p-3 text-left border rounded-xl transition-all duration-200 text-xs flex items-center justify-between font-semibold outline-none ${
+                        isActive
+                          ? 'bg-sky-50 border-sky-400 text-sky-950 shadow-sm ring-1 ring-sky-300'
+                          : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-sm">{item.emoji}</span>
+                        <div className="text-left">
+                          <span className="block font-bold text-[11.5px]">{item.title.split(' (')[0]}</span>
+                          <span className="block text-[9.5px] text-slate-400 font-medium truncate max-w-[170px]">{item.awsServices}</span>
+                        </div>
+                      </div>
+                      <span className={`text-[8.5px] px-1.5 py-0.5 rounded font-extrabold ${item.badgeClass}`}>
+                        {key.toUpperCase()}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right Panel: Detail and Topology Diagram */}
+              <div className="lg:col-span-8 border border-slate-150 rounded-2xl p-5 bg-slate-50/50 flex flex-col justify-between">
+                <div>
+                  {/* Category Metadata Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 mb-4 gap-2">
+                    <div className="text-left">
+                      <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                        <span className="text-base">{CATEGORY_MAP[selectedCategory].emoji}</span>
+                        {CATEGORY_MAP[selectedCategory].title}
+                      </h4>
+                      <p className="text-[10px] text-sky-700 font-bold mt-0.5">
+                        AWS Services: {CATEGORY_MAP[selectedCategory].awsServices}
+                      </p>
+                    </div>
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase self-start sm:self-center ${CATEGORY_MAP[selectedCategory].badgeClass}`}>
+                      {selectedCategory}
+                    </span>
+                  </div>
+
+                  <p className="text-[11.5px] leading-relaxed text-slate-655 text-left mb-4 font-medium">
+                    {CATEGORY_MAP[selectedCategory].desc}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10.5px] mb-4 text-left">
+                    <div className="bg-white border border-slate-200 rounded-xl p-3">
+                      <span className="font-bold text-slate-800 block mb-1">⚙️ Types &amp; Configurations:</span>
+                      <span className="text-slate-600 leading-normal block">{CATEGORY_MAP[selectedCategory].engineTypes}</span>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-xl p-3">
+                      <span className="font-bold text-slate-800 block mb-1">⚡ Storage &amp; Scaling Strategy:</span>
+                      <span className="text-slate-600 leading-normal block">{CATEGORY_MAP[selectedCategory].storageScaling}</span>
+                    </div>
+                  </div>
+
+                  {/* Operational Topology SVG Diagram */}
+                  <div className="w-full h-[180px] rounded-xl border border-slate-200 relative flex items-center justify-center shadow-inner bg-white overflow-hidden mb-4">
+                    
+                    {selectedCategory === 'rdbms' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 70 80 L 130 50" fill="none" stroke="#0ea5e9" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 70 80 L 130 110" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3 2" markerEnd="url(#ex-arrow)" />
+                        <path d="M 220 50 L 340 80" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-blue" />
+                        <path d="M 220 110 L 340 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(10, 55)">
+                          <rect width="60" height="50" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                          <text x="30" y="38" fill="#94a3b8" fontSize="7" textAnchor="middle">SQL Aggs</text>
+                        </g>
+                        <g transform="translate(130, 25)">
+                          <rect width="90" height="50" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
+                          <text x="45" y="22" fill="#047857" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🛢️ WRITER (1A)</text>
+                          <text x="45" y="35" fill="#1e293b" fontSize="7.5" textAnchor="middle">Primary Node</text>
+                          <text x="45" y="44" fill="#059669" fontSize="7" fontWeight="bold" textAnchor="middle">Status: Active</text>
+                        </g>
+                        <g transform="translate(130, 85)">
+                          <rect width="90" height="50" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" />
+                          <text x="45" y="22" fill="#1d4ed8" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🔌 READER (1B)</text>
+                          <text x="45" y="35" fill="#1e293b" fontSize="7.5" textAnchor="middle">Replica Node</text>
+                          <text x="45" y="44" fill="#2563eb" fontSize="7" fontWeight="bold" textAnchor="middle">Status: Standby</text>
+                        </g>
+                        <g transform="translate(340, 45)">
+                          <rect width="120" height="70" rx="10" fill="#fffbeb" stroke="#d97706" strokeWidth="2.5" />
+                          <text x="60" y="26" fill="#b45309" fontSize="10.5" fontWeight="extrabold" textAnchor="middle">⚡ SHARED STORAGE</text>
+                          <text x="60" y="44" fill="#78350f" fontSize="8" textAnchor="middle">6-way Replicated Pool</text>
+                          <text x="60" y="58" fill="#059669" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">Auto-scales up to 128TB</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'nosql_kv' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 75 80 H 130" fill="none" stroke="#a855f7" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 215 80 L 290 40" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <path d="M 215 80 H 290" fill="none" stroke="#a855f7" strokeWidth="2" strokeDasharray="5,3" className="da-flow-purple" />
+                        <path d="M 215 80 L 290 120" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        
+                        <g transform="translate(15, 55)">
+                          <rect width="60" height="50" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                          <text x="30" y="38" fill="#94a3b8" fontSize="7" textAnchor="middle">key: user_412</text>
+                        </g>
+                        <g transform="translate(130, 50)">
+                          <rect width="85" height="60" rx="8" fill="#faf5ff" stroke="#a855f7" strokeWidth="2" />
+                          <text x="42.5" y="22" fill="#7e22ce" fontSize="9" fontWeight="extrabold" textAnchor="middle">🔑 HASH ENGINE</text>
+                          <text x="42.5" y="38" fill="#581c87" fontSize="7.5" textAnchor="middle">Computes MD5/SHA</text>
+                          <text x="42.5" y="48" fill="#7e22ce" fontSize="7" fontStyle="italic" textAnchor="middle">Partition Routing</text>
+                        </g>
+                        
+                        {/* Partitions */}
+                        <g transform="translate(290, 20)">
+                          <rect width="170" height="30" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1.5" />
+                          <text x="10" y="18" fill="#64748b" fontSize="8.5" fontWeight="bold">Partition 0 (SSD)</text>
+                          <text x="160" y="18" fill="#94a3b8" fontSize="8" textAnchor="end">Slots: 0k - 10k</text>
+                        </g>
+                        <g transform="translate(290, 65)">
+                          <rect width="170" height="30" rx="4" fill="#f5f3ff" stroke="#a855f7" strokeWidth="1.5" />
+                          <text x="10" y="18" fill="#7e22ce" fontSize="8.5" fontWeight="bold">Partition 1 (SSD) MATCH</text>
+                          <text x="160" y="18" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="end">⚡ 2.5ms lookup</text>
+                        </g>
+                        <g transform="translate(290, 110)">
+                          <rect width="170" height="30" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1.5" />
+                          <text x="10" y="18" fill="#64748b" fontSize="8.5" fontWeight="bold">Partition 2 (SSD)</text>
+                          <text x="160" y="18" fill="#94a3b8" fontSize="8" textAnchor="end">Slots: 20k+</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'nosql_doc' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 85 80 H 135" fill="none" stroke="#0f766e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 215 80 H 270" fill="none" stroke="#0f766e" strokeWidth="2" strokeDasharray="5,3" className="da-flow-green" />
+                        <path d="M 360 80 H 400" fill="none" stroke="#0f766e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(15, 50)">
+                          <rect width="70" height="60" rx="6" fill="#f0fdfa" stroke="#0f766e" strokeWidth="1.5" />
+                          <text x="35" y="18" fill="#0f766e" fontSize="7.5" fontWeight="bold" textAnchor="middle">📂 JSON DOC</text>
+                          <text x="35" y="32" fill="#475569" fontSize="6.5" textAnchor="middle" fontFamily="monospace">{"{id: 9,"}</text>
+                          <text x="35" y="44" fill="#475569" fontSize="6.5" textAnchor="middle" fontFamily="monospace">{" name: 'A'}"}</text>
+                        </g>
+                        <g transform="translate(135, 55)">
+                          <rect width="80" height="50" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                          <text x="40" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 APP SERVER</text>
+                          <text x="40" y="38" fill="#94a3b8" fontSize="7" textAnchor="middle">Parses JSON</text>
+                        </g>
+                        <g transform="translate(270, 45)">
+                          <rect width="90" height="70" rx="10" fill="#f0fdfa" stroke="#0f766e" strokeWidth="2" />
+                          <text x="45" y="22" fill="#0f766e" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🛢️ PRIMARY WRITER</text>
+                          <text x="45" y="40" fill="#1e293b" fontSize="7.5" textAnchor="middle">DocumentDB Node</text>
+                          <text x="45" y="56" fill="#0d9488" fontSize="7.5" fontWeight="bold" textAnchor="middle">BSON Serializer</text>
+                        </g>
+                        <g transform="translate(400, 45)">
+                          <rect width="70" height="70" rx="10" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="35" y="24" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">⚡ STORAGE</text>
+                          <text x="35" y="40" fill="#78350f" fontSize="7" textAnchor="middle">Shared Log SSD</text>
+                          <text x="35" y="54" fill="#059669" fontSize="7" fontWeight="bold" textAnchor="middle">6-way Sync</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'object' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 60 80 H 120" fill="none" stroke="#d97706" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 215 80 H 265" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 360 80 H 405" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(10, 55)">
+                          <circle cx="25" cy="25" r="22" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="25" y="28" fill="#b45309" fontSize="9" fontWeight="bold" textAnchor="middle">📁 RAW</text>
+                        </g>
+                        <g transform="translate(120, 35)">
+                          <rect width="95" height="90" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="2.5" />
+                          <rect x="5" y="5" width="85" height="16" rx="2.5" fill="#fef3c7" />
+                          <text x="47.5" y="16.5" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">🪣 S3 STANDARD</text>
+                          <text x="47.5" y="44" fill="#78350f" fontSize="7.5" textAnchor="middle">Active Object Pool</text>
+                          <text x="47.5" y="60" fill="#059669" fontSize="7.5" fontWeight="bold" textAnchor="middle">11 9s Durability</text>
+                          <text x="47.5" y="74" fill="#475569" fontSize="7" textAnchor="middle">Hot Tier - Milliseconds</text>
+                        </g>
+                        <g transform="translate(265, 35)">
+                          <rect width="95" height="90" rx="8" fill="#fcf8f2" stroke="#d97706" strokeWidth="1.5" strokeDasharray="3 3" />
+                          <rect x="5" y="5" width="85" height="16" rx="2.5" fill="#faf0e6" />
+                          <text x="47.5" y="16.5" fill="#78350f" fontSize="8" fontWeight="bold" textAnchor="middle">S3 INFREQUENT</text>
+                          <text x="47.5" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Lifecycle Trigger</text>
+                          <text x="47.5" y="60" fill="#b45309" fontSize="7.5" fontWeight="bold" textAnchor="middle">90-day filter Rule</text>
+                          <text x="47.5" y="74" fill="#475569" fontSize="7" textAnchor="middle">Saves 40% cost</text>
+                        </g>
+                        <g transform="translate(405, 35)">
+                          <rect width="70" height="90" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                          <rect x="4" y="4" width="62" height="16" rx="2" fill="#f1f5f9" />
+                          <text x="35" y="15" fill="#475569" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">GLACIER</text>
+                          <text x="35" y="40" fill="#475569" fontSize="7" textAnchor="middle">Archive Tier</text>
+                          <text x="35" y="52" fill="#b91c1c" fontSize="7.5" fontWeight="bold" textAnchor="middle">🔒 Locked</text>
+                          <text x="35" y="66" fill="#475569" fontSize="6.5" textAnchor="middle">Saves 95% vs</text>
+                          <text x="35" y="76" fill="#475569" fontSize="6.5" textAnchor="middle">S3 Standard</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'analytics' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 85 80 H 130" fill="none" stroke="#ef4444" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 L 290 45" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 230 80 L 290 115" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 380 45 L 430 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <path d="M 380 115 L 430 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        
+                        <g transform="translate(10, 50)">
+                          <rect width="75" height="60" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="#991b1b" fontSize="8" fontWeight="bold" textAnchor="middle">📊 SQL QUERY</text>
+                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">SELECT SUM()</text>
+                          <text x="37.5" y="48" fill="#475569" fontSize="6.5" textAnchor="middle" fontStyle="italic">from pb_sales</text>
+                        </g>
+                        <g transform="translate(130, 45)">
+                          <rect width="100" height="70" rx="8" fill="#fff5f5" stroke="#ef4444" strokeWidth="2" />
+                          <text x="50" y="24" fill="#991b1b" fontSize="9" fontWeight="extrabold" textAnchor="middle">👑 LEADER NODE</text>
+                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Compiles Plan</text>
+                          <text x="50" y="56" fill="#7f1d1d" fontSize="7.5" fontWeight="bold" textAnchor="middle">Distributes slices</text>
+                        </g>
+                        
+                        {/* Compute Nodes */}
+                        <g transform="translate(290, 20)">
+                          <rect width="90" height="45" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">🖥️ COMPUTE 1</text>
+                          <text x="45" y="32" fill="#15803d" fontSize="7.5" fontWeight="bold" textAnchor="middle">Executing Scan</text>
+                        </g>
+                        <g transform="translate(290, 95)">
+                          <rect width="90" height="45" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">🖥️ COMPUTE 2</text>
+                          <text x="45" y="32" fill="#15803d" fontSize="7.5" fontWeight="bold" textAnchor="middle">Executing Scan</text>
+                        </g>
+                        <g transform="translate(400, 45)">
+                          <rect width="70" height="70" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="35" y="26" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">📊 COLUMN</text>
+                          <text x="35" y="38" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">BLOCKS</text>
+                          <text x="35" y="54" fill="#78350f" fontSize="7" textAnchor="middle">Skips unused</text>
+                          <text x="35" y="62" fill="#78350f" fontSize="7" textAnchor="middle">fields (90% faster)</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'search' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 85 80 H 130" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 H 275" fill="none" stroke="#0284c7" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-blue" />
+                        <path d="M 375 80 H 415" fill="none" stroke="#64748b" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(10, 50)">
+                          <rect width="75" height="60" rx="6" fill="#f0f9ff" stroke="#0284c7" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="#0369a1" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔎 USER SEARCH</text>
+                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">Query: "auth*"</text>
+                          <text x="37.5" y="48" fill="#0284c7" fontSize="7.5" fontWeight="bold" textAnchor="middle">Fuzzy Match</text>
+                        </g>
+                        <g transform="translate(130, 45)">
+                          <rect width="100" height="70" rx="8" fill="#f0f9ff" stroke="#0284c7" strokeWidth="2" />
+                          <text x="50" y="24" fill="#0369a1" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">👑 COORDINATOR</text>
+                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Master Node</text>
+                          <text x="50" y="56" fill="#0284c7" fontSize="7.5" fontWeight="bold" textAnchor="middle">Splits execution</text>
+                        </g>
+                        <g transform="translate(275, 25)">
+                          <rect width="100" height="110" rx="8" fill="#ffffff" stroke="#86efac" strokeWidth="1.5" />
+                          <rect x="5" y="5" width="90" height="14" rx="2" fill="#f0fdf4" />
+                          <text x="50" y="15" fill="#15803d" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Data Nodes (Shards)</text>
+                          
+                          <rect x="10" y="26" width="35" height="30" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
+                          <text x="27.5" y="42" fill="#16a34a" fontSize="8" fontWeight="bold" textAnchor="middle">P0</text>
+                          <rect x="55" y="26" width="35" height="30" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
+                          <text x="72.5" y="42" fill="#16a34a" fontSize="8" fontWeight="bold" textAnchor="middle">P1</text>
+                          
+                          <rect x="10" y="65" width="35" height="30" rx="2" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="27.5" y="82" fill="#64748b" fontSize="8" textAnchor="middle">R0</text>
+                          <rect x="55" y="65" width="35" height="30" rx="2" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="72.5" y="82" fill="#64748b" fontSize="8" textAnchor="middle">R1</text>
+                        </g>
+                        <g transform="translate(415, 50)">
+                          <rect width="55" height="60" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <ellipse cx="27.5" cy="20" rx="16" ry="6" fill="#cbd5e1" />
+                          <text x="27.5" y="38" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">UltraWarm</text>
+                          <text x="27.5" y="48" fill="#64748b" fontSize="6.5" textAnchor="middle">S3 cold tier</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'graph' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 80 80 H 130" fill="none" stroke="#7e22ce" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 H 260" fill="none" stroke="#7e22ce" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-purple" />
+                        <path d="M 375 80 H 410" fill="none" stroke="#64748b" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(10, 50)">
+                          <rect width="70" height="60" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" />
+                          <text x="35" y="20" fill="#7e22ce" fontSize="8.5" fontWeight="bold" textAnchor="middle">🕸️ GRAPH </text>
+                          <text x="35" y="36" fill="#475569" fontSize="7" textAnchor="middle">Gremlin: Hop 3</text>
+                          <text x="35" y="48" fill="#7e22ce" fontSize="7.5" fontWeight="bold" textAnchor="middle">Find rings</text>
+                        </g>
+                        <g transform="translate(130, 45)">
+                          <rect width="100" height="70" rx="8" fill="#faf5ff" stroke="#a855f7" strokeWidth="2" />
+                          <text x="50" y="24" fill="#7e22ce" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">👑 GRAPH ENGINE</text>
+                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Traverses indices</text>
+                          <text x="50" y="56" fill="#581c87" fontSize="7.5" fontWeight="bold" textAnchor="middle">Neptune Cluster</text>
+                        </g>
+                        
+                        {/* Connected Graph Topology */}
+                        <g transform="translate(260, 20)">
+                          <rect width="115" height="120" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <circle cx="30" cy="40" r="10" fill="#e9d5ff" stroke="#a855f7" strokeWidth="1.5" />
+                          <text x="30" y="43" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">U1</text>
+                          
+                          <circle cx="85" cy="40" r="10" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="85" y="43" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">A1</text>
+                          
+                          <circle cx="57" cy="95" r="10" fill="#e0f2fe" stroke="#0ea5e9" strokeWidth="1.5" />
+                          <text x="57" y="98" fill="#0369a1" fontSize="8" fontWeight="bold" textAnchor="middle">U2</text>
+                          
+                          {/* Edges */}
+                          <line x1="40" y1="40" x2="75" y2="40" stroke="#94a3b8" strokeWidth="1.5" />
+                          <line x1="30" y1="50" x2="49" y2="87" stroke="#94a3b8" strokeWidth="1.5" />
+                          <line x1="80" y1="49" x2="65" y2="87" stroke="#a855f7" strokeWidth="2" strokeDasharray="3 1" />
+                        </g>
+                        
+                        <g transform="translate(410, 45)">
+                          <rect width="60" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="#475569" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📡 STREAM</text>
+                          <text x="30" y="40" fill="#64748b" fontSize="7.5" textAnchor="middle">CDC Graph</text>
+                          <text x="30" y="54" fill="#10b981" fontSize="7.5" fontWeight="bold" textAnchor="middle">Lambda Sync</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'ledger' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 85 80 H 130" fill="none" stroke="#f43f5e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 220 80 H 265" fill="none" stroke="#f43f5e" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 375 80 H 410" fill="none" stroke="#f43f5e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(10, 50)">
+                          <rect width="75" height="60" rx="6" fill="#fff1f2" stroke="#f43f5e" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="#be123c" fontSize="8.5" fontWeight="bold" textAnchor="middle">📝 WRITE TXN</text>
+                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">Balance Update</text>
+                          <text x="37.5" y="48" fill="#be123c" fontSize="7.5" fontWeight="bold" textAnchor="middle">Append Only</text>
+                        </g>
+                        <g transform="translate(130, 45)">
+                          <rect width="90" height="70" rx="8" fill="#fff1f2" stroke="#f43f5e" strokeWidth="2" />
+                          <text x="45" y="22" fill="#be123c" fontSize="9" fontWeight="extrabold" textAnchor="middle">🗂️ JOURNAL</text>
+                          <text x="45" y="40" fill="#1e293b" fontSize="7.5" textAnchor="middle">Immutable block</text>
+                          <text x="45" y="54" fill="#9f1239" fontSize="7" fontWeight="bold" textAnchor="middle">Tamper Proof</text>
+                        </g>
+                        <g transform="translate(265, 45)">
+                          <rect width="110" height="70" rx="8" fill="#ffffff" stroke="#d97706" strokeWidth="1.5" />
+                          <rect x="5" y="5" width="100" height="15" rx="2" fill="#fffbeb" />
+                          <text x="55" y="15" fill="#b45309" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🔒 SHA-256 CHAIN</text>
+                          <text x="55" y="38" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">Block Chaining</text>
+                          <text x="55" y="52" fill="#78350f" fontSize="7" textAnchor="middle">Cryptographic Proof</text>
+                        </g>
+                        <g transform="translate(410, 45)">
+                          <rect width="60" height="70" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="#475569" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📋 AUDIT</text>
+                          <text x="30" y="40" fill="#64748b" fontSize="7.5" textAnchor="middle">Verifiable</text>
+                          <text x="30" y="54" fill="#10b981" fontSize="7.5" fontWeight="bold" textAnchor="middle">State Table</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'timeseries' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 85 80 H 130" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 H 265" fill="none" stroke="#ea580c" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 375 80 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        
+                        <g transform="translate(10, 50)">
+                          <rect width="75" height="60" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="#c2410c" fontSize="8.5" fontWeight="bold" textAnchor="middle">📈 METRICS FEED</text>
+                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">IoT Telemetry</text>
+                          <text x="37.5" y="48" fill="#ea580c" fontSize="7.5" fontWeight="bold" textAnchor="middle">100k writes/s</text>
+                        </g>
+                        <g transform="translate(130, 45)">
+                          <rect width="100" height="70" rx="8" fill="#fff7ed" stroke="#ea580c" strokeWidth="2" />
+                          <text x="50" y="24" fill="#c2410c" fontSize="9" fontWeight="extrabold" textAnchor="middle">💾 MEMORY TIER</text>
+                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Hot writes buffer</text>
+                          <text x="50" y="56" fill="#a16207" fontSize="7.5" fontWeight="bold" textAnchor="middle">Sub-ms writes</text>
+                        </g>
+                        <g transform="translate(265, 45)">
+                          <rect width="110" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <rect x="5" y="5" width="100" height="15" rx="2" fill="#f8fafc" />
+                          <text x="55" y="15" fill="#475569" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ MIGRATOR</text>
+                          <text x="55" y="38" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">Auto-Tiering</text>
+                          <text x="55" y="52" fill="#475569" fontSize="7" textAnchor="middle">Memory to Disk</text>
+                        </g>
+                        <g transform="translate(410, 45)">
+                          <rect width="60" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="#475569" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🖲️ DISK</text>
+                          <text x="30" y="40" fill="#64748b" fontSize="7.5" textAnchor="middle">Magnetic</text>
+                          <text x="30" y="54" fill="#b45309" fontSize="7.5" fontWeight="bold" textAnchor="middle">Cold tier</text>
+                        </g>
+                      </svg>
+                    )}
+
+                    {selectedCategory === 'etl' && (
+                      <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
+                        <defs>
+                          <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                          </marker>
+                        </defs>
+                        <path d="M 65 80 L 115 45" fill="none" stroke="#16a34a" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 65 80 L 115 115" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="2,2" />
+                        <path d="M 205 45 L 260 80" fill="none" stroke="#16a34a" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 330 80 H 400" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-green" />
+                        
+                        <g transform="translate(10, 55)">
+                          <rect width="55" height="50" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+                          <text x="27.5" y="24" fill="#15803d" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 RAW S3</text>
+                          <text x="27.5" y="38" fill="#475569" fontSize="7.5" textAnchor="middle">JSON files</text>
+                        </g>
+                        <g transform="translate(115, 20)">
+                          <rect width="90" height="50" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="#15803d" fontSize="8" fontWeight="extrabold" textAnchor="middle">🕷️ CRAWLER</text>
+                          <text x="45" y="32" fill="#475569" fontSize="7.5" textAnchor="middle">Scans files</text>
+                          <text x="45" y="42" fill="#16a34a" fontSize="7" fontWeight="bold" textAnchor="middle">Infers Schema</text>
+                        </g>
+                        <g transform="translate(115, 90)">
+                          <rect width="90" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">REGISTRY</text>
+                          <text x="45" y="32" fill="#64748b" fontSize="7.5" textAnchor="middle">AVRO checking</text>
+                          <text x="45" y="42" fill="#64748b" fontSize="7" textAnchor="middle">Prevents poison</text>
+                        </g>
+                        <g transform="translate(240, 45)">
+                          <rect width="90" height="70" rx="8" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2" />
+                          <text x="45" y="24" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📚 DATA CATALOG</text>
+                          <text x="45" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Hive Metastore</text>
+                          <text x="45" y="56" fill="#166534" fontSize="7.5" fontWeight="bold" textAnchor="middle">Schema Database</text>
+                        </g>
+                        <g transform="translate(400, 50)">
+                          <rect width="70" height="60" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                          <text x="35" y="24" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">⚡ SPARK</text>
+                          <text x="35" y="38" fill="#78350f" fontSize="7.5" textAnchor="middle">Serverless ETL</text>
+                          <text x="35" y="48" fill="#059669" fontSize="7.5" fontWeight="bold" textAnchor="middle">DPU Transform</text>
+                        </g>
+                      </svg>
+                    )}
+
+                  </div>
+
+                  {/* Capabilities Comparison Progress Bars */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-left">
+                    <span className="font-extrabold text-[11px] text-slate-800 uppercase tracking-wider block mb-3 border-b border-slate-100 pb-1">
+                      📊 Engine Characteristics &amp; Capability Ratings
+                    </span>
+                    <div className="space-y-3">
+                      {/* Write Throughput */}
+                      <div>
+                        <div className="flex justify-between text-[10px] font-bold text-slate-700 mb-1">
+                          <span>🚀 WRITE THROUGHPUT / INGESTION SPEED</span>
+                          <span className="text-amber-700 font-mono">{CATEGORY_MAP[selectedCategory].metrics.write}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-150">
+                          <div
+                            className="h-full bg-amber-500 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${CATEGORY_MAP[selectedCategory].metrics.write}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Read Latency */}
+                      <div>
+                        <div className="flex justify-between text-[10px] font-bold text-slate-700 mb-1">
+                          <span>⏱️ READ LATENCY / QUERY RETRIEVAL SPEED</span>
+                          <span className="text-emerald-700 font-mono">{CATEGORY_MAP[selectedCategory].metrics.read}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-150">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${CATEGORY_MAP[selectedCategory].metrics.read}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Schema Rigidity */}
+                      <div>
+                        <div className="flex justify-between text-[10px] font-bold text-slate-700 mb-1">
+                          <span>📑 SCHEMA RIGIDITY / STRUCTURE REGULATION</span>
+                          <span className="text-sky-700 font-mono">{CATEGORY_MAP[selectedCategory].metrics.rigidity}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-150">
+                          <div
+                            className="h-full bg-sky-500 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${CATEGORY_MAP[selectedCategory].metrics.rigidity}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Query Complexity */}
+                      <div>
+                        <div className="flex justify-between text-[10px] font-bold text-slate-700 mb-1">
+                          <span>🔗 QUERY COMPLEXITY / MULTI-RELATION JOIN CAPABILITIES</span>
+                          <span className="text-purple-700 font-mono">{CATEGORY_MAP[selectedCategory].metrics.complexity}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-150">
+                          <div
+                            className="h-full bg-purple-500 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${CATEGORY_MAP[selectedCategory].metrics.complexity}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Storage Scalability */}
+                      <div>
+                        <div className="flex justify-between text-[10px] font-bold text-slate-700 mb-1">
+                          <span>📈 STORAGE SCALABILITY / MAXIMUM DATA POOL CAPACITY</span>
+                          <span className="text-indigo-700 font-mono">{CATEGORY_MAP[selectedCategory].metrics.scale}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-150">
+                          <div
+                            className="h-full bg-indigo-500 rounded-full transition-all duration-500 ease-out"
+                            style={{ width: `${CATEGORY_MAP[selectedCategory].metrics.scale}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ideal Workload Banner */}
+                <div className="mt-4 bg-sky-50 border border-sky-150 rounded-xl p-3 text-[11px] leading-relaxed text-slate-700 flex gap-2 text-left">
+                  <Info className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-extrabold text-sky-950 block">🎯 Ideal Workload Profile Fitment:</span>
+                    <span className="text-slate-800 font-medium block mt-0.5">{CATEGORY_MAP[selectedCategory].idealWorkload}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* NEW: Unified AWS Database & Analytics Directory Table */}
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-6">
+            <h3 className="da-card-title text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+              <Database className="w-5 h-5 text-sky-500 animate-pulse" /> Unified AWS Database &amp; Analytics Portfolio Directory
+            </h3>
+            <p className="da-card-desc mb-4 text-slate-650 text-[11px] leading-relaxed">
+              AWS offers specialized database engines optimized for unique workload profiles rather than forcing all patterns into a single database. Review the unified directory below to choose the correct data structure, storage type, and cloud service.
+            </p>
+
+            <div className="overflow-x-auto border border-slate-200 rounded-xl">
+              <table className="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-extrabold text-[10.5px]">
+                    <th className="p-3 border-r border-slate-200">Category</th>
+                    <th className="p-3 border-r border-slate-200">AWS Services</th>
+                    <th className="p-3 border-r border-slate-200">Storage &amp; Scaling model</th>
+                    <th className="p-3 border-r border-slate-200">Core Characteristics</th>
+                    <th className="p-3">Ideal Workloads</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-sky-700">📑 RDBMS (Relational)</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-slate-800 block">Amazon RDS</span>
+                      <span className="font-bold text-sky-700 block">Amazon Aurora</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • VM coupled Block storage (EBS)<br />
+                      • Decoupled log-structured shared storage volume (up to 128TB)
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Highly structured tables, strict SQL schemas, rigid ACID compliance, complex relational joins.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">ERP systems, financial records, traditional enterprise transactions.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-purple-700">⚡ NoSQL (Key-Value)</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-slate-800 block">Amazon DynamoDB</span>
+                      <span className="font-bold text-purple-700 block">Amazon Keyspaces</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • Partitioned SSD tables (Serverless)<br />
+                      • Cassandra CQL compatible serverless scale
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Horizontal scaling, dynamic key-value attributes, single-digit millisecond latency at any scale, no complex table joins.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">High-volume user shopping carts, IoT telemetry, massive write clickstreams.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-indigo-700">📂 NoSQL (Document)</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-indigo-700 block">Amazon DocumentDB</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • MongoDB compatible decoupled engine<br />
+                      • Scale up to 15 read replicas instantly
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Native JSON document store. Replicates log blocks 6-ways across 3 Availability Zones. Decouples compute from disk.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Content management directories, mobile user profile catalogs.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-emerald-700">⏱️ In-Memory Cache</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-slate-800 block">Amazon ElastiCache</span>
+                      <span className="font-bold text-emerald-700 block">Amazon MemoryDB</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • RAM-based memory partitions<br />
+                      • Redis &amp; Memcached compliance
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Micro-second data delivery, high-performance in-memory caching layers, atomic counters, Redis sorted sets.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Database query accelerators, real-time gaming leaderboards, session profiles.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-amber-700">🪣 Object Store</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-slate-800 block">Amazon S3</span>
+                      <span className="font-bold text-amber-700 block">S3 Glacier / Archive</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • HTTP Object store API (Serverless)<br />
+                      • Unlimited scalable storage
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Flat namespace directory, high durability (11 9s), object lifecycle policy triggers, S3 batch jobs.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Static site assets hosting, analytical data lake repositories, cold logs backup.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-teal-700">📊 Data Warehouse &amp; OLAP</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-slate-800 block">Amazon Redshift</span>
+                      <span className="font-bold text-teal-700 block">Amazon Athena</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • Columnar block MPP data warehouse<br />
+                      • Serverless S3 direct querying
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Petabyte analytics, serverless SQL directly on raw S3 buckets, columnar indexes reducing scanned bytes.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Complex business intelligence analytics, S3 raw logs scanning.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-sky-700">🔎 Search Index</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-sky-700 block">Amazon OpenSearch</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • ElasticSearch successor shards<br />
+                      • Dedicated Master &amp; Data nodes
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Full-text search parsing, fuzzy partial matches, real-time log indexing, UltraWarm S3 backups integration.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Application log analysis, full-text catalog lookups, search complement stores.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-indigo-850">🕸️ Graph Network</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-indigo-850 block">Amazon Neptune</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • Decoupled Graph compute engine<br />
+                      • Gremlin &amp; SPARQL compatible
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Fast relational graph index maps, many-to-many relationship traversals, Neptune Streams CDC integrations.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Fraud ring network detection, user social graph maps, recommendation webs.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-rose-700">🛡️ Ledger (Immutable)</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-rose-700 block">Amazon QLDB</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • Cryptographically verifiable ledger<br />
+                      • Append-only transaction log journal
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Centralized trust tracking, historical document audits, cryptographic hash chains preventing database tampering.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Supply chain custody audits, vehicle registration records, banking histories.</td>
+                  </tr>
+
+                  <tr className="border-b border-slate-150 hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-orange-600">📈 Time-Series</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-orange-600 block">Amazon Timestream</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • Decoupled serverless metric memory<br />
+                      • Auto-migrates hot metrics to magnetic disk
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Ingests trillions of daily events chronologically, built-in time-series SQL math functions, auto-scaling metric indexes.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">IoT sensor monitoring tracking, application server logs telemetry.</td>
+                  </tr>
+
+                  <tr className="hover:bg-slate-50 text-slate-600">
+                    <td className="p-3 border-r border-slate-200 font-extrabold text-emerald-800">⚙️ ETL &amp; Metastore</td>
+                    <td className="p-3 border-r border-slate-200">
+                      <span className="font-bold text-slate-800 block">AWS Glue</span>
+                      <span className="font-bold text-emerald-800 block">AWS Lake Formation</span>
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      • Centralized database Metastore<br />
+                      • Serverless ETL engines (Spark/Ray)
+                    </td>
+                    <td className="p-3 border-r border-slate-200 leading-normal">
+                      Infers columns schemas via crawlers, converts raw text to snappy Parquet, row-level and column-level security gates.
+                    </td>
+                    <td className="p-3 font-semibold text-slate-800">Schema crawling catalogs, database conversions, central lake security rules.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1447,6 +2610,236 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     })
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* NEW: AWS GLUE SERVERLESS ETL & SCHEMA REGISTRY SANDBOX                   */}
+          {/* ========================================================================= */}
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mt-6">
+            <div className="w-full flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-4">
+              <div>
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                  <Sliders className="w-4 h-4 text-purple-600 animate-pulse" /> Sandbox: AWS Glue Serverless ETL &amp; Schema Registry
+                </h3>
+                <p className="text-[11px] text-slate-500">Configure crawler schemas, stream registries, and Spark conversion jobs to Parquet lakehouses</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2 items-center">
+                {/* File format */}
+                <select
+                  value={glueFileType}
+                  onChange={(e) => setGlueFileType(e.target.value as 'json' | 'csv' | 'parquet')}
+                  className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none font-bold text-slate-700"
+                >
+                  <option value="json">Source format: JSON (Raw)</option>
+                  <option value="csv">Source format: CSV (Raw)</option>
+                </select>
+
+                {/* Job engine */}
+                <select
+                  value={glueJobType}
+                  onChange={(e) => setGlueJobType(e.target.value as 'spark' | 'ray' | 'python-shell')}
+                  className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none font-bold text-slate-700"
+                >
+                  <option value="spark">Engine: Apache Spark (Serverless)</option>
+                  <option value="ray">Engine: Ray Distributed (Python)</option>
+                  <option value="python-shell">Engine: Python Shell (Lightweight)</option>
+                </select>
+
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700">
+                  <label htmlFor="registry-chk" className="cursor-pointer">Schema Registry:</label>
+                  <input
+                    id="registry-chk"
+                    type="checkbox"
+                    checked={glueSchemaRegistry}
+                    onChange={(e) => setGlueSchemaRegistry(e.target.checked)}
+                    className="w-3.5 h-3.5 accent-purple-600 cursor-pointer"
+                  />
+                </div>
+
+                <button
+                  disabled={glueJobState !== 'idle'}
+                  onClick={runGlueCrawler}
+                  className="px-3.5 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 transition-colors shadow-sm"
+                >
+                  🕸️ Run Crawler
+                </button>
+
+                <button
+                  disabled={glueJobState !== 'idle'}
+                  onClick={runGlueEtlJob}
+                  className="px-3.5 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-500 disabled:bg-slate-200 disabled:text-slate-400 transition-colors shadow-sm"
+                >
+                  ⚙️ Run ETL Job
+                </button>
+
+                <button
+                  onClick={resetGlueSandbox}
+                  className="p-2 bg-slate-100 text-slate-650 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Glue SVG Pipeline */}
+              <div className="lg:col-span-8 bg-slate-50 rounded-xl border border-slate-200 p-3 relative overflow-hidden flex items-center justify-center min-h-[350px] shadow-inner">
+                <svg className="w-full h-full max-w-[660px] da-svg-bg rounded-lg" viewBox="0 0 650 320">
+                  <defs>
+                    <marker id="glue-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                    </marker>
+                  </defs>
+
+                  {/* Flow conduits */}
+                  <path d="M 90 90 H 155" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#glue-arrow)" />
+                  <path d="M 255 90 H 315" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#glue-arrow)" />
+                  <path d="M 430 90 H 495" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#glue-arrow)" />
+                  
+                  {/* Crawler link paths */}
+                  <path d="M 372 135 V 205" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#glue-arrow)" />
+                  <path d="M 195 240 H 290" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#glue-arrow)" />
+
+                  {/* Active Crawler Flow */}
+                  {glueJobState === 'crawling' && (
+                    <>
+                      <path d="M 195 240 H 290" fill="none" stroke="#0ea5e9" strokeWidth="2" className="da-flow-blue" />
+                      <path d="M 372 135 V 205" fill="none" stroke="#0ea5e9" strokeWidth="2" className="da-flow-blue" />
+                    </>
+                  )}
+
+                  {/* Active ETL job flow */}
+                  {glueJobState === 'etl-running' && (
+                    <>
+                      <path d="M 90 90 H 155" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                      <path d="M 255 90 H 315" fill="none" stroke="#ea580c" strokeWidth="3" className="da-flow-orange" />
+                      <path d="M 430 90 H 495" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                    </>
+                  )}
+
+                  {glueJobState === 'completed' && (
+                    <>
+                      <path d="M 90 90 H 155" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                      <path d="M 255 90 H 315" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                      <path d="M 430 90 H 495" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                    </>
+                  )}
+
+                  {/* 1. S3 Landing zone (Raw) */}
+                  <g transform="translate(10, 52)">
+                    <ellipse cx="40" cy="65" rx="35" ry="9" fill="rgba(234, 88, 12, 0.1)" />
+                    <path d="M 5 20 V 65 A 35 9 0 0 0 75 65 V 20 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2" />
+                    <ellipse cx="40" cy="20" rx="35" ry="9" fill="#ffedd5" stroke="#ea580c" strokeWidth="2" />
+                    <text x="40" y="32" fill="#c2410c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 RAW S3</text>
+                    <text x="40" y="52" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">
+                      {glueFileType.toUpperCase()} Files
+                    </text>
+                  </g>
+
+                  {/* 2. Schema Registry */}
+                  <g transform="translate(155, 52)">
+                    <rect width="100" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" className={glueSchemaRegistry ? 'active-svg-glow' : ''} />
+                    <rect x="4" y="4" width="92" height="18" rx="3" fill="#faf5ff" />
+                    <text x="50" y="16.5" fill="#7e22ce" fontSize="8" fontWeight="extrabold" textAnchor="middle">📃 REGISTRY</text>
+                    <text x="50" y="38" fill="#581c87" fontSize="8" fontWeight="bold" textAnchor="middle">
+                      {glueSchemaRegistry ? 'AVRO Verified' : 'Registry Bypass'}
+                    </text>
+                    <text x="50" y="52" fill="#64748b" fontSize="7" textAnchor="middle">Enforces compatibility</text>
+                  </g>
+
+                  {/* 3. Glue Spark ETL Job compute engine */}
+                  <g transform="translate(315, 45)">
+                    <rect width="115" height="90" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
+                    <rect x="4" y="4" width="107" height="20" rx="3.5" fill="#fff7ed" />
+                    <text x="57.5" y="17.5" fill="#ea580c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ GLUE JOB ({glueJobType.toUpperCase()})</text>
+                    <circle cx="57.5" cy="55" r="16" fill="#fcfcfc" stroke="#d97706" strokeWidth="2" strokeDasharray="3 3" className={glueJobState === 'etl-running' ? 'pulse-circle' : ''} />
+                    <text x="57.5" y="58.5" fill="#d97706" fontSize="10" fontWeight="extrabold" textAnchor="middle">SPARK</text>
+                    <text x="57.5" y="82" fill="#7c2d12" fontSize="7" textAnchor="middle">10 DPUs Configured</text>
+                  </g>
+
+                  {/* 4. S3 Refined Zone (Parquet) */}
+                  <g transform="translate(495, 52)">
+                    <ellipse cx="40" cy="65" rx="35" ry="9" fill="rgba(22, 163, 74, 0.1)" />
+                    <path d="M 5 20 V 65 A 35 9 0 0 0 75 65 V 20 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2" />
+                    <ellipse cx="40" cy="20" rx="35" ry="9" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
+                    <text x="40" y="32" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 REFINED S3</text>
+                    <text x="40" y="52" fill="#166534" fontSize="8" fontWeight="bold" textAnchor="middle">PARQUET Blocks</text>
+                  </g>
+
+                  {/* 5. Glue Crawler (Bottom Left) */}
+                  <g transform="translate(75, 205)">
+                    <rect width="120" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#0ea5e9" strokeWidth="2" className={glueJobState === 'crawling' ? 'active-svg-glow' : ''} />
+                    <rect x="4" y="4" width="112" height="18" rx="3" fill="#f0f9ff" />
+                    <text x="60" y="16.5" fill="#0369a1" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🕸️ GLUE CRAWLER</text>
+                    <text x="60" y="38" fill="#0ea5e9" fontSize="8" fontWeight="bold" textAnchor="middle">Scans raw files</text>
+                    <text x="60" y="52" fill="#64748b" fontSize="7" textAnchor="middle">Infers columns schemas</text>
+                  </g>
+
+                  {/* 6. Centralized Glue Catalog Database (Bottom Center-Right) */}
+                  <g transform="translate(290, 205)">
+                    <rect width="165" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
+                    <rect x="4" y="4" width="157" height="18" rx="3.5" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
+                    <text x="82.5" y="16.5" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📖 CENTRAL GLUE CATALOG</text>
+                    <text x="82.5" y="38" fill="#166534" fontSize="8" textAnchor="middle" fontWeight="bold">Central Unified Hive Metastore</text>
+                    <text x="82.5" y="52" fill="#059669" fontSize="7.5" fontWeight="bold" textAnchor="middle">Syncs schemas to Athena SQL</text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Glue Trace Console */}
+              <div className="lg:col-span-4 flex flex-col gap-4">
+                <div className="border border-slate-200 rounded-xl p-4 bg-slate-50 shadow-sm flex flex-col justify-between h-[350px]">
+                  <div>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-2">
+                      <span className="font-bold text-slate-800 text-xs flex items-center gap-1">
+                        <Terminal className="w-4 h-4 text-sky-500" /> Glue Console Log Trace
+                      </span>
+                      <span className="badge bg-purple-50 text-purple-700 text-[10px] font-bold">DPU: active</span>
+                    </div>
+
+                    <div className="bg-slate-900 border border-slate-950 rounded-xl p-3 h-[250px] font-mono text-[9px] text-slate-300 overflow-y-auto space-y-1.5 shadow-inner">
+                      {glueLogs.length === 0 ? (
+                        <span className="text-slate-500 italic block text-center mt-24">Select schema options and trigger crawlers or serverless ETL jobs.</span>
+                      ) : (
+                        glueLogs.map((log, idx) => {
+                          let color = 'text-slate-350';
+                          if (log.includes('CRAWLER:')) color = 'text-sky-400 font-bold';
+                          if (log.includes('SCHEMA REGISTRY:')) color = 'text-purple-400 font-bold';
+                          if (log.includes('SUCCESS') || log.includes('✅')) color = 'text-emerald-400 font-bold bg-emerald-950/40 px-1 rounded';
+                          if (log.includes('GLUE JOB:')) color = 'text-amber-400';
+                          return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/40`}>{log}</div>;
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Glue Core Theory specifications sheet */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 border-t border-slate-100 pt-4 text-left">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                <span className="font-bold text-xs text-sky-950 block">🕸️ AWS Glue Schema Crawlers</span>
+                <p className="text-[10px] leading-relaxed text-slate-600">
+                  Crawlers programmatically connect to datastores (S3, RDS, DynamoDB), parse file formats (CSV, Parquet, JSON), determine keys, and write inferred catalog table schemas inside the centralized databases Metastore.
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                <span className="font-bold text-xs text-purple-950 block">🛡️ AWS Glue Schema Registry</span>
+                <p className="text-[10px] leading-relaxed text-slate-600">
+                  Enforces schema consistency rules across streaming interfaces (Kinesis Streams/Kafka brokers). Compares JSON or AVRO message payloads to registered metadata models, filtering out invalid, malformed fields automatically.
+                </p>
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                <span className="font-bold text-xs text-emerald-950 block">⚡ Serverless ETL Engines (Spark, Ray)</span>
+                <p className="text-[10px] leading-relaxed text-slate-600">
+                  Runs massively parallel serverless transformation clusters. Convert nested, heavy rows into snappy-compressed columnar Parquet blocks—**reducing S3 data scanned bytes by up to 85%** and speeding Athena query speeds 12x.
+                </p>
               </div>
             </div>
           </div>
@@ -2521,69 +3914,81 @@ export default function DatabasesAndAnalyticsVisualizer() {
       {/* TAB 7: BIG DATA INGESTION PIPELINES SANDBOX & OPENSEARCH                  */}
       {/* ========================================================================= */}
       {activeTab === 'ingestion' && (
-        <div className="space-y-6">
-          <div className="da-card">
-            <h2 className="da-card-title text-sky-700">
-              <LayoutDashboard className="w-5 h-5" /> Production Sandbox: Real-Time Streaming Ingestion vs. Batch ETL Pipelines
+        <div className="space-y-8 animate-fadeIn">
+          {/* Main Title Card */}
+          <div className="da-card bg-white/80 border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+            <h2 className="da-card-title text-sky-700 font-extrabold flex items-center gap-2 text-lg">
+              <LayoutDashboard className="w-5 h-5 text-sky-600" /> Advanced Big Data Pipelines &amp; Search Analytics Workbench
             </h2>
-            <p className="da-card-desc">
-              Compare architectural pipelines in a live ingestion sandbox. Connect telemetry signals to MSK Streaming or run AWS Glue Batch ETL to refined S3 partitions. Query metrics instantly via Athena, OpenSearch clusters, and SPICE-cached QuickSight dashboards.
+            <p className="da-card-desc text-slate-650 text-xs leading-relaxed max-w-4xl">
+              This interactive workbench visualizes large-scale serverless batch pipelines, real-time message streaming, and distributed full-text search indexing. Configure multi-node **Amazon EMR (Hadoop/Spark)** clusters, implement **Amazon OpenSearch Service** complementary key-lookup search patterns, and compare the performance speedup of **QuickSight SPICE** caching engines.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Sandbox Canvas diagram */}
-            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between shadow-sm">
-              <div className="w-full flex items-center justify-between border-b border-slate-150 pb-3 mb-4">
-                <div>
-                  <h3 className="font-bold text-sm text-slate-800">Big Data Sandbox Pipeline Simulator</h3>
-                  <p className="text-[11px] text-slate-500">Toggle Ingestion Pipeline model below, execute, and inspect system telemetry</p>
-                </div>
-                
-                <div className="flex gap-2">
-                  <select
-                    value={ingestionType}
-                    onChange={(e) => setIngestionType(e.target.value as 'streaming' | 'batch')}
-                    className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs outline-none font-semibold text-slate-800"
-                  >
-                    <option value="streaming">Track: Real-Time Stream Ingestion</option>
-                    <option value="batch">Track: Batch Data Lakehouse Ingestion</option>
-                  </select>
-                  <button
-                    disabled={sandboxState !== 'idle'}
-                    onClick={triggerIngestionSandbox}
-                    className="px-3.5 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-semibold hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 transition-colors flex items-center gap-1.5"
-                  >
-                    <Play className="w-3.5 h-3.5" /> Run Ingestion Sandbox
-                  </button>
-                  <button
-                    onClick={resetSandbox}
-                    className="p-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+          {/* ========================================================================= */}
+          {/* SANDBOX SECTION 1: BIG DATA PIPELINE SIMULATOR                            */}
+          {/* ========================================================================= */}
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div className="w-full flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-4">
+              <div>
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                  <Activity className="w-4 h-4 text-sky-500 animate-pulse" /> Sandbox 1: Production Ingestion Pipeline Simulator
+                </h3>
+                <p className="text-[11px] text-slate-500">Simulate streaming ingestion through MSK/Flink vs. batch ETL pipelines to refined S3 pools</p>
               </div>
+              
+              <div className="flex flex-wrap gap-2 items-center">
+                <select
+                  value={ingestionType}
+                  onChange={(e) => setIngestionType(e.target.value as 'streaming' | 'batch')}
+                  className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none font-bold text-slate-700"
+                >
+                  <option value="streaming">Track: Real-Time Stream (MSK ➔ Flink)</option>
+                  <option value="batch">Track: Batch Data Lakehouse (S3 ➔ Glue ETL)</option>
+                </select>
+                <button
+                  disabled={sandboxState !== 'idle'}
+                  onClick={triggerIngestionSandbox}
+                  className="px-4 py-2 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <Play className="w-3.5 h-3.5" /> Run Ingestion Sandbox
+                </button>
+                <button
+                  onClick={resetSandbox}
+                  className="p-2 bg-slate-100 text-slate-650 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                  title="Reset Simulator"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
 
-              <div className="w-full h-[330px] rounded-xl border border-slate-200 p-2 relative overflow-hidden flex items-center justify-center shadow-inner bg-slate-50">
-                <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 650 320">
-                  {/* Connecting lines */}
-                  {/* Top: Streaming */}
-                  <path d="M 95 87.5 H 145" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 240 87.5 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 385 87.5 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Sandbox SVG viewport */}
+              <div className="lg:col-span-8 bg-slate-50 rounded-xl border border-slate-200 p-3 relative overflow-hidden flex items-center justify-center min-h-[350px] shadow-inner">
+                <svg className="w-full h-full max-w-[660px] da-svg-bg rounded-lg" viewBox="0 0 650 320">
+                  <defs>
+                    <marker id="ingest-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                    </marker>
+                  </defs>
 
-                  {/* Bottom: Batch */}
-                  <path d="M 95 240 H 145" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 240 237.5 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 385 237.5 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  {/* Dynamic path lines */}
+                  {/* Top Track: Streaming */}
+                  <path d="M 95 87.5 H 145" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#ingest-arrow)" />
+                  <path d="M 240 87.5 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#ingest-arrow)" />
+                  <path d="M 385 87.5 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#ingest-arrow)" />
 
-                  {/* Output Consumer links */}
-                  <path d="M 570 87.5 V 163 H 440" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 575 240 V 163 H 440" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
+                  {/* Bottom Track: Batch */}
+                  <path d="M 95 240 H 145" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#ingest-arrow)" />
+                  <path d="M 240 237.5 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#ingest-arrow)" />
+                  <path d="M 385 237.5 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#ingest-arrow)" />
 
-                  {/* Flow glows */}
+                  {/* Output Consumer dotted links */}
+                  <path d="M 570 87.5 V 163 H 440" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#ingest-arrow)" />
+                  <path d="M 575 240 V 163 H 440" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#ingest-arrow)" />
+
+                  {/* Active telemetry lasers */}
                   {sandboxState === 'ingesting' && (
                     <>
                       {ingestionType === 'streaming' && <path d="M 95 87.5 H 145" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />}
@@ -2627,178 +4032,861 @@ export default function DatabasesAndAnalyticsVisualizer() {
                   )}
 
                   {/* Input Nodes */}
-                  <g transform="translate(15, 55)" className="da-node-btn">
+                  <g transform="translate(15, 52)">
                     <rect width="80" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                    <rect x="4" y="4" width="72" height="18" rx="3" fill="#f1f5f9" />
-                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">📱 IoT SENSORS</text>
-                    <text x="40" y="38" fill="#a855f7" fontSize="8" fontWeight="bold" textAnchor="middle">Real-Time</text>
-                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Telemetry Data</text>
+                    <rect x="4" y="4" width="72" height="18" rx="3.5" fill="#f8fafc" />
+                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="extrabold" textAnchor="middle">📱 IoT SENSORS</text>
+                    <text x="40" y="38" fill="#a855f7" fontSize="8.5" fontWeight="bold" textAnchor="middle">Real-Time</text>
+                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Sensor Metrics</text>
                   </g>
 
-                  <g transform="translate(15, 205)" className="da-node-btn">
+                  <g transform="translate(15, 205)">
                     <rect width="80" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                    <rect x="4" y="4" width="72" height="18" rx="3" fill="#f1f5f9" />
-                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">🛢️ APP LOGS</text>
-                    <text x="40" y="38" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">Batch OLTP</text>
-                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Server Activity</text>
+                    <rect x="4" y="4" width="72" height="18" rx="3.5" fill="#f8fafc" />
+                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="extrabold" textAnchor="middle">🛢️ APP LOGS</text>
+                    <text x="40" y="38" fill="#ea580c" fontSize="8.5" fontWeight="bold" textAnchor="middle">Batch OLTP</text>
+                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Raw Logs Pool</text>
                   </g>
 
-                  {/* Top path nodes */}
-                  <g transform="translate(145, 50)" className="da-node-btn">
-                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
+                  {/* Top track nodes (Streaming) */}
+                  <g transform="translate(145, 50)">
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.05)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
                     <rect x="5" y="5" width="85" height="18" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="47.5" y="18" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">⚡ KAFKA MSK</text>
-                    <text x="47.5" y="42" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="semibold">Broker Cluster</text>
-                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#f3e8ff" />
-                    <text x="47.5" y="61" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Serverless Shards</text>
+                    <text x="47.5" y="17.5" fill="#7e22ce" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚡ KAFKA MSK</text>
+                    <text x="47.5" y="41" fill="#581c87" fontSize="8.5" textAnchor="middle" fontWeight="bold">Brokers Cluster</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#f3e8ff" />
+                    <text x="47.5" y="61" fill="#7e22ce" fontSize="7.5" fontWeight="bold" textAnchor="middle">Serverless Shards</text>
                   </g>
 
-                  <g transform="translate(290, 50)" className="da-node-btn">
-                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
+                  <g transform="translate(290, 50)">
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.05)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
                     <rect x="5" y="5" width="85" height="18" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="47.5" y="18" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">⚙️ FLINK</text>
-                    <text x="47.5" y="42" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="semibold">Stream Aggs</text>
-                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#f3e8ff" />
-                    <text x="47.5" y="61.5" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Sliding Window</text>
+                    <text x="47.5" y="17.5" fill="#7e22ce" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ FLINK</text>
+                    <text x="47.5" y="41" fill="#581c87" fontSize="8.5" textAnchor="middle" fontWeight="bold">Stream Aggs</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#f3e8ff" />
+                    <text x="47.5" y="61.5" fill="#7e22ce" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Sliding Window</text>
                   </g>
 
-                  {/* Bottom path nodes */}
-                  <g transform="translate(145, 200)" className="da-node-btn">
-                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.1)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
+                  {/* Bottom track nodes (Batch) */}
+                  <g transform="translate(145, 200)">
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.05)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2" />
                     <rect x="5" y="5" width="85" height="18" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="47.5" y="18" fill="#ea580c" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 RAW S3</text>
-                    <text x="47.5" y="42" fill="#c2410c" fontSize="8" textAnchor="middle" fontWeight="semibold">Ingest Buffer</text>
-                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#ffedd5" />
-                    <text x="47.5" y="61.5" fill="#7c2d12" fontSize="7" fontWeight="bold" textAnchor="middle">Unstructured</text>
+                    <text x="47.5" y="17.5" fill="#ea580c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 RAW S3</text>
+                    <text x="47.5" y="41" fill="#c2410c" fontSize="8.5" textAnchor="middle" fontWeight="bold">Ingest Buffer</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#ffedd5" />
+                    <text x="47.5" y="61" fill="#7c2d12" fontSize="7.5" fontWeight="bold" textAnchor="middle">Unstructured DB</text>
                   </g>
 
-                  <g transform="translate(290, 200)" className="da-node-btn">
-                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.1)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
+                  <g transform="translate(290, 200)">
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.05)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2" />
                     <rect x="5" y="5" width="85" height="18" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="47.5" y="18" fill="#ea580c" fontSize="9" fontWeight="bold" textAnchor="middle">⚙️ GLUE SPARK</text>
-                    <text x="47.5" y="42" fill="#c2410c" fontSize="8" textAnchor="middle" fontWeight="semibold">Batch Spark ETL</text>
-                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#ffedd5" />
-                    <text x="47.5" y="61.5" fill="#7c2d12" fontSize="7" fontWeight="bold" textAnchor="middle">Parquet Convert</text>
+                    <text x="47.5" y="17.5" fill="#ea580c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ GLUE SPARK</text>
+                    <text x="47.5" y="41" fill="#c2410c" fontSize="8.5" textAnchor="middle" fontWeight="bold">Batch Spark ETL</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#ffedd5" />
+                    <text x="47.5" y="61.5" fill="#7c2d12" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Parquet Convert</text>
                   </g>
 
-                  {/* Central Destination Nodes */}
-                  <g transform="translate(440, 40)" className="da-node-btn">
-                    <ellipse cx="70" cy="75" rx="60" ry="12" fill="rgba(22, 163, 74, 0.15)" />
-                    <path d="M 10 20 V 75 A 60 12 0 0 0 130 75 V 20 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
+                  {/* Destination Nodes */}
+                  <g transform="translate(440, 40)">
+                    <ellipse cx="70" cy="75" rx="60" ry="12" fill="rgba(22, 163, 74, 0.1)" />
+                    <path d="M 10 20 V 75 A 60 12 0 0 0 130 75 V 20 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
                     <ellipse cx="70" cy="20" rx="60" ry="12" fill="#dcfce7" stroke="#16a34a" strokeWidth="2.5" />
                     <path d="M 10 32 A 60 10 0 0 0 130 32" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
-                    <text x="70" y="30" fill="#15803d" fontSize="11" fontWeight="bold" textAnchor="middle">🪣 DATA LAKE S3</text>
-                    <text x="70" y="52" fill="#166534" fontSize="9" textAnchor="middle" fontWeight="semibold">Refined Parquet</text>
-                    <text x="70" y="65" fill="#059669" fontSize="8.5" fontWeight="bold" textAnchor="middle">dw-backups-bucket</text>
+                    <text x="70" y="30.5" fill="#15803d" fontSize="10" fontWeight="extrabold" textAnchor="middle">🪣 DATA LAKE S3</text>
+                    <text x="70" y="51" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="bold">Refined Parquet</text>
+                    <text x="70" y="64" fill="#059669" fontSize="8" fontWeight="bold" textAnchor="middle">dw-backups-bucket</text>
                   </g>
 
-                  <g transform="translate(440, 200)" className="da-node-btn">
-                    <rect x="4" y="4" width="135" height="80" rx="8" fill="rgba(22, 163, 74, 0.1)" />
-                    <rect width="135" height="80" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <rect x="6" y="6" width="123" height="18" rx="3" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
-                    <text x="67.5" y="19" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">📖 GLUE CATALOG</text>
-                    <text x="67.5" y="44" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Centralized Metadata</text>
-                    <text x="67.5" y="60" fill="#059669" fontSize="8" textAnchor="middle">Lake Formation Scopes</text>
+                  <g transform="translate(440, 200)">
+                    <rect x="2" y="2" width="135" height="80" rx="8" fill="rgba(22, 163, 74, 0.05)" />
+                    <rect width="135" height="80" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
+                    <rect x="6" y="6" width="123" height="18" rx="3.5" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
+                    <text x="67.5" y="18.5" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📖 GLUE CATALOG</text>
+                    <text x="67.5" y="44" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="bold">Central Metadata Store</text>
+                    <text x="67.5" y="59" fill="#059669" fontSize="8" textAnchor="middle">Lake Formation Governance</text>
                   </g>
 
                   {/* Output Consumer Nodes */}
-                  <g transform="translate(290, 133)" className="da-node-btn">
-                    <rect x="3" y="3" width="150" height="60" rx="6" fill="rgba(59, 130, 246, 0.1)" />
-                    <rect width="150" height="60" rx="6" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                    <text x="75" y="20.5" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">📊 QUICKSIGHT (BI)</text>
-                    <text x="75" y="36" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="semibold">SPICE Caching Engine</text>
-                    <text x="75" y="49" fill="#059669" fontSize="8" fontWeight="bold" textAnchor="middle">Sub-second Visuals</text>
+                  <g transform="translate(290, 133)">
+                    <rect x="2" y="2" width="150" height="60" rx="6" fill="rgba(59, 130, 246, 0.05)" />
+                    <rect width="150" height="60" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                    <text x="75" y="20.5" fill="#1d4ed8" fontSize="9" fontWeight="extrabold" textAnchor="middle">📊 QUICKSIGHT (BI)</text>
+                    <text x="75" y="36.5" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">SPICE Caching Engine</text>
+                    <text x="75" y="49" fill="#059669" fontSize="8" fontWeight="extrabold" textAnchor="middle">Sub-second Latency</text>
                   </g>
 
-                  <g transform="translate(135, 133)" className="da-node-btn">
-                    <rect x="3" y="3" width="150" height="60" rx="6" fill="rgba(59, 130, 246, 0.1)" />
-                    <rect width="150" height="60" rx="6" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                    <text x="75" y="20.5" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
-                    <text x="75" y="36" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Master / Data Nodes</text>
-                    <text x="75" y="49" fill="#475569" fontSize="8" textAnchor="middle">Shard partitions &amp; indexes</text>
+                  <g transform="translate(115, 133)">
+                    <rect x="2" y="2" width="160" height="60" rx="6" fill="rgba(59, 130, 246, 0.05)" />
+                    <rect width="160" height="60" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                    <text x="80" y="20.5" fill="#1d4ed8" fontSize="9" fontWeight="extrabold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
+                    <text x="80" y="36.5" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">Primary &amp; Replica Shards</text>
+                    <text x="80" y="49" fill="#475569" fontSize="8" textAnchor="middle">Indexing log telemetry</text>
                   </g>
                 </svg>
               </div>
-            </div>
 
-            {/* Ingestion sandbox telemetry console & chart */}
-            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between h-[460px] shadow-sm">
-              <div>
-                <div className="flex items-center justify-between border-b border-slate-150 pb-2 mb-2">
-                  <span className="font-bold text-slate-800 text-xs flex items-center gap-1">
-                    <Activity className="w-4 h-4 text-sky-500" /> Active Sandbox Load
-                  </span>
-                  <span className="badge bg-emerald-50 text-emerald-700 text-[10px]">SPICE Caching Online</span>
+              {/* Sandbox logger trace console */}
+              <div className="lg:col-span-4 flex flex-col gap-4">
+                <div className="border border-slate-200 rounded-xl p-4 bg-slate-50 shadow-sm flex flex-col justify-between h-[350px]">
+                  <div>
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-2">
+                      <span className="font-bold text-slate-800 text-xs flex items-center gap-1">
+                        <Terminal className="w-4 h-4 text-sky-500" /> Pipeline Console Trace
+                      </span>
+                      <span className="badge bg-sky-50 text-sky-700 text-[10px] font-bold">Trace Active</span>
+                    </div>
+
+                    <div className="h-[180px] w-full mt-1">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={telemetryData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                          <XAxis dataKey="timestamp" stroke="#94a3b8" fontSize={8} />
+                          <YAxis stroke="#94a3b8" fontSize={8} />
+                          <Tooltip contentStyle={{ fontSize: '9px', borderRadius: '8px', background: '#ffffff' }} />
+                          <Bar dataKey="recordsIngested" fill="#0ea5e9" radius={[3, 3, 0, 0]} name="Vol Ingested" />
+                          <Bar dataKey="queryLatencyMs" fill="#a855f7" radius={[3, 3, 0, 0]} name="Speed (ms)" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900 border border-slate-950 rounded-xl p-3 h-[100px] font-mono text-[9px] text-slate-300 overflow-y-auto space-y-1.5 shadow-inner">
+                    {sandboxLogs.length === 0 ? (
+                      <span className="text-slate-500 italic block text-center mt-7">Select track and click run pipeline button to trace.</span>
+                    ) : (
+                      sandboxLogs.map((log, idx) => {
+                        let color = 'text-slate-350';
+                        if (log.includes('TRIGGERED:')) color = 'text-sky-400 font-bold bg-sky-950/40 px-1 rounded';
+                        if (log.includes('STREAM') || log.includes('GLUE')) color = 'text-purple-400 font-bold';
+                        if (log.includes('SUCCESS') || log.includes('✅')) color = 'text-emerald-400 font-bold bg-emerald-950/40 px-1 rounded';
+                        return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/50`}>{log}</div>;
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* SANDBOX SECTION 2: AMAZON EMR CLUSTER & AUTO-SCALING                      */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* EMR Control Deck */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div className="space-y-4">
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5 border-b border-slate-100 pb-3">
+                  <Sliders className="w-4 h-4 text-emerald-500" /> Sandbox 2: Amazon EMR Cluster Controller
+                </h3>
+                
+                {/* Cluster Type */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block">Cluster Model Mode:</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setEmrClusterType('long-running')}
+                      className={`py-1.5 rounded-lg text-[10.5px] font-bold border transition-all ${
+                        emrClusterType === 'long-running'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 text-slate-650 hover:bg-slate-100'
+                      }`}
+                    >
+                      Long-Running (HA)
+                    </button>
+                    <button
+                      onClick={() => setEmrClusterType('transient')}
+                      className={`py-1.5 rounded-lg text-[10.5px] font-bold border transition-all ${
+                        emrClusterType === 'transient'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 text-slate-650 hover:bg-slate-100'
+                      }`}
+                    >
+                      Transient (Temporary)
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-normal">
+                    {emrClusterType === 'long-running' 
+                      ? '✓ Ideal for continuous multi-tenant workloads. Storage persistent on HDFS blocks.'
+                      : '✓ Powers down core nodes instantly on job completion to minimize runtime cost.'
+                    }
+                  </p>
                 </div>
 
-                {/* Recharts chart */}
-                <div className="h-[180px] w-full mt-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={telemetryData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="timestamp" stroke="#94a3b8" fontSize={8.5} />
-                      <YAxis stroke="#94a3b8" fontSize={8.5} />
-                      <Tooltip contentStyle={{ fontSize: '10px', borderRadius: '8px' }} />
-                      <Bar dataKey="recordsIngested" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Volume Ingested" />
-                      <Bar dataKey="queryLatencyMs" fill="#a855f7" radius={[4, 4, 0, 0]} name="SQL Speed (ms)" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                {/* Core Nodes Count */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <label className="font-bold text-slate-700">Bootstrap Core Nodes (HDFS):</label>
+                    <span className="font-bold font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">{emrCoreCount} Nodes</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="2"
+                    max="6"
+                    value={emrCoreCount}
+                    disabled={emrMasterState === 'provisioning'}
+                    onChange={(e) => setEmrCoreCount(Number(e.target.value))}
+                    className="w-full accent-emerald-600 cursor-pointer"
+                  />
+                  <span className="text-[9.5px] text-slate-500 block">Core instances manage the HDFS filesystem directory.</span>
+                </div>
+
+                {/* Task Nodes Count */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <label className="font-bold text-slate-700">Scaling Task Nodes:</label>
+                    <span className="font-bold font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{emrTaskCount} Nodes</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="6"
+                    value={emrTaskCount}
+                    disabled={emrMasterState === 'provisioning'}
+                    onChange={(e) => setEmrTaskCount(Number(e.target.value))}
+                    className="w-full accent-amber-500 cursor-pointer"
+                  />
+                  <span className="text-[9.5px] text-slate-500 block">Task nodes execute jobs without local HDFS storage overhead.</span>
+                </div>
+
+                {/* Purchasing Options */}
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10.5px] font-bold text-slate-700">Bidding Option:</span>
+                    <span className="badge bg-amber-50 text-amber-700 text-[10px] font-extrabold flex items-center gap-0.5">
+                      {emrTaskCount > 0 ? '⚡ Spot Active' : 'On-Demand'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center font-mono text-[10px] text-slate-600">
+                    <span>Spot Node Cost:</span>
+                    <span className="font-bold text-emerald-700">${emrSpotPrice}/hr <span className="text-[8.5px] text-slate-400 font-normal line-through">$0.24</span></span>
+                  </div>
+                  <div className="text-[9px] text-slate-500 leading-normal border-t border-slate-200/60 pt-1">
+                    Spot purchasing utilizes spare EC2 capacity, offering up to a **70% discount** for scaling compute nodes!
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <button
+                    onClick={provisionEmrCluster}
+                    disabled={emrMasterState === 'provisioning'}
+                    className="py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500 transition-colors shadow-sm disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-1"
+                  >
+                    <Server className="w-3.5 h-3.5" /> Boot Cluster
+                  </button>
+                  <button
+                    onClick={() => triggerEmrJob('spark')}
+                    disabled={emrMasterState !== 'active' || emrWorkload !== 'idle'}
+                    className="py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-500 transition-colors shadow-sm disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-1"
+                  >
+                    <Play className="w-3.5 h-3.5" /> Spark Batch
+                  </button>
+                  <button
+                    onClick={() => triggerEmrJob('presto')}
+                    disabled={emrMasterState !== 'active' || emrWorkload !== 'idle'}
+                    className="py-2 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-500 transition-colors shadow-sm disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center gap-1"
+                  >
+                    <Play className="w-3.5 h-3.5" /> Presto SQL
+                  </button>
+                  <button
+                    onClick={resetEmrCluster}
+                    className="py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Reset EMR
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* EMR SVG Diagram */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-full flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-800">Hadoop/Spark Distributed Node Architecture</h4>
+                    <p className="text-[11px] text-slate-500">Visualizes physical roles: Master (coordinates), Core (HDFS storage), and optional Spot Task nodes</p>
+                  </div>
+                  <span className={`badge text-[10px] font-bold ${
+                    emrMasterState === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-650'
+                  }`}>
+                    Status: {emrMasterState.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="w-full h-[240px] rounded-xl border border-slate-200 relative flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
+                  <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 240">
+                    <defs>
+                      <marker id="emr-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                      </marker>
+                    </defs>
+
+                    {/* Master connection paths */}
+                    <path d="M 125 120 Q 210 50, 290 50" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
+                    <path d="M 125 120 H 290" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
+                    <path d="M 125 120 Q 210 190, 290 190" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
+
+                    {/* Active flow animations */}
+                    {emrWorkload === 'spark-jobs' && (
+                      <>
+                        <path d="M 125 120 Q 210 50, 290 50" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                        <path d="M 125 120 H 290" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                        <path d="M 125 120 Q 210 190, 290 190" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                      </>
+                    )}
+                    {emrWorkload === 'presto-queries' && (
+                      <>
+                        <path d="M 125 120 Q 210 50, 290 50" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
+                        <path d="M 125 120 H 290" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
+                        <path d="M 125 120 Q 210 190, 290 190" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
+                      </>
+                    )}
+                    {emrWorkload === 'flink-aggregations' && (
+                      <>
+                        <path d="M 125 120 Q 210 50, 290 50" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                        <path d="M 125 120 H 290" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                        <path d="M 125 120 Q 210 190, 290 190" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                      </>
+                    )}
+
+                    {/* Master Node */}
+                    <g transform="translate(15, 65)">
+                      <rect width="110" height="110" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
+                      <rect x="5" y="5" width="100" height="24" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                      <text x="55" y="20.5" fill="#1d4ed8" fontSize="9" fontWeight="extrabold" textAnchor="middle">👑 MASTER NODE</text>
+                      
+                      {/* Active coordinator dial */}
+                      <circle cx="55" cy="68" r="22" fill="#f8fafc" stroke="#cbd5e1" />
+                      <circle cx="55" cy="68" r="22" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="6 3" className={emrWorkload !== 'idle' ? 'pulse-circle' : ''} />
+                      <text x="55" y="71" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">
+                        {emrWorkload !== 'idle' ? 'SPARK RUN' : 'HA OK'}
+                      </text>
+                      <text x="55" y="102" fill="#64748b" fontSize="7" textAnchor="middle">m5.xlarge (Coord)</text>
+                    </g>
+
+                    {/* Core Nodes Block (HDFS Storage Capacity) */}
+                    <g transform="translate(290, 15)">
+                      <rect width="130" height="100" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
+                      <rect x="4" y="4" width="122" height="20" rx="3.5" fill="#dcfce7" />
+                      <text x="65" y="17" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🗄️ CORE FLEET ({emrCoreCount})</text>
+                      
+                      {/* Dynamically drawn core server slots */}
+                      {Array.from({ length: Math.min(emrCoreCount, 4) }).map((_, idx) => (
+                        <g key={idx} transform={`translate(${10 + idx * 28}, 32)`}>
+                          <rect width="24" height="42" rx="3" fill="#ffffff" stroke="#86efac" strokeWidth="1.5" />
+                          <rect x="2" y="2" width="20" height="8" rx="1.5" fill="#f0f9ff" />
+                          <text x="12" y="8" fill="#0369a1" fontSize="5.5" fontWeight="bold" textAnchor="middle">HDFS</text>
+                          <circle cx="6" cy="22" r="2" fill="#16a34a" />
+                          <circle cx="18" cy="22" r="2" fill="#16a34a" />
+                          <circle cx="12" cy="32" r="2" fill="#16a34a" />
+                        </g>
+                      ))}
+                      {emrCoreCount > 4 && (
+                        <text x="65" y="90" fill="#166534" fontSize="8" fontWeight="bold" textAnchor="middle">+ {emrCoreCount - 4} More Core Nodes</text>
+                      )}
+                      <text x="65" y="93" fill="#166534" fontSize="7" textAnchor="middle" fontWeight="bold">Stores Local Blocks</text>
+                    </g>
+
+                    {/* Task Nodes Block (Spot Compute) */}
+                    <g transform="translate(290, 125)">
+                      <rect width="130" height="100" rx="8" fill={emrTaskCount > 0 ? "rgba(255, 247, 237, 0.95)" : "rgba(241, 245, 249, 0.6)"} stroke={emrTaskCount > 0 ? "#ea580c" : "#cbd5e1"} strokeWidth="2" />
+                      <rect x="4" y="4" width="122" height="20" rx="3.5" fill={emrTaskCount > 0 ? "#ffedd5" : "#f1f5f9"} />
+                      <text x="65" y="17" fill={emrTaskCount > 0 ? "#c2410c" : "#475569"} fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚡ TASK FLEET ({emrTaskCount})</text>
+                      
+                      {emrTaskCount === 0 ? (
+                        <text x="65" y="60" fill="#94a3b8" fontSize="8.5" fontStyle="italic" textAnchor="middle">No Task Nodes (Idle)</text>
+                      ) : (
+                        <>
+                          {Array.from({ length: Math.min(emrTaskCount, 4) }).map((_, idx) => (
+                            <g key={idx} transform={`translate(${10 + idx * 28}, 32)`}>
+                              <rect width="24" height="42" rx="3" fill="#ffffff" stroke="#fdba74" strokeWidth="1.5" className={emrWorkload === 'spark-jobs' ? 'active-svg-glow' : ''} />
+                              <rect x="2" y="2" width="20" height="8" rx="1.5" fill="#fff7ed" />
+                              <text x="12" y="8" fill="#c2410c" fontSize="5.5" fontWeight="bold" textAnchor="middle">SPOT</text>
+                              <line x1="4" y1="20" x2="20" y2="20" stroke="#f97316" strokeWidth="2" />
+                              <line x1="4" y1="28" x2="20" y2="28" stroke="#f97316" strokeWidth="2" />
+                              <circle cx="12" cy="36" r="2.5" fill="#f97316" className={emrWorkload !== 'idle' ? 'pulse-circle' : ''} />
+                            </g>
+                          ))}
+                          {emrTaskCount > 4 && (
+                            <text x="65" y="90" fill="#c2410c" fontSize="8" fontWeight="bold" textAnchor="middle">+ {emrTaskCount - 4} Task Nodes</text>
+                          )}
+                          <text x="65" y="93" fill="#ea580c" fontSize="7" textAnchor="middle" fontWeight="bold">Compute-Only Nodes</text>
+                        </>
+                      )}
+                    </g>
+
+                    {/* Output Bucket */}
+                    <g transform="translate(490, 80)">
+                      <ellipse cx="35" cy="85" rx="30" ry="10" fill="rgba(22, 163, 74, 0.1)" />
+                      <path d="M 5 25 V 85 A 30 10 0 0 0 65 85 V 25 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2" />
+                      <ellipse cx="35" cy="25" rx="30" ry="10" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
+                      <text x="35" y="38" fill="#15803d" fontSize="9" fontWeight="extrabold" textAnchor="middle">🪣 REF S3</text>
+                      <text x="35" y="60" fill="#166534" fontSize="8" textAnchor="middle">Output</text>
+                      <text x="35" y="72" fill="#166534" fontSize="8" textAnchor="middle">Data Lake</text>
+                    </g>
+                    <path d="M 420 65 H 490" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
+                    <path d="M 420 175 H 490" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
+
+                    {emrWorkload !== 'idle' && (
+                      <>
+                        <path d="M 420 65 H 490" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-green" />
+                        <path d="M 420 175 H 490" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-green" />
+                      </>
+                    )}
+                  </svg>
                 </div>
               </div>
 
-              {/* Sandbox logger trace console */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-[160px] font-mono text-[9px] text-slate-700 overflow-y-auto space-y-1.5 shadow-inner">
-                {sandboxLogs.length === 0 ? (
-                  <span className="text-slate-500 italic block text-center mt-14">Dormant. Select pipeline and click execute button to map pathways.</span>
+              {/* Real-time EMR logger trace */}
+              <div className="bg-slate-900 border border-slate-950 rounded-xl p-3 h-[90px] font-mono text-[9px] text-slate-300 overflow-y-auto space-y-1 mt-3 shadow-inner">
+                {emrLogs.length === 0 ? (
+                  <span className="text-slate-500 italic block text-center mt-6">EMR Cluster online. Select job type and trigger analytics work.</span>
                 ) : (
-                  sandboxLogs.map((log, idx) => {
-                    let color = 'text-slate-650';
-                    if (log.includes('TRIGGERED:')) color = 'text-sky-700 font-semibold bg-sky-50 px-1 rounded';
-                    if (log.includes('STREAM') || log.includes('GLUE')) color = 'text-purple-700 font-semibold bg-purple-50 px-1 rounded';
-                    if (log.includes('SUCCESS') || log.includes('✅')) color = 'text-emerald-700 font-semibold bg-emerald-50 px-1 rounded border border-emerald-100';
-                    return <div key={idx} className={`${color} pb-1 border-b border-slate-100`}>{log}</div>;
+                  emrLogs.map((log, idx) => {
+                    let color = 'text-slate-350';
+                    if (log.includes('ACTIVE:')) color = 'text-emerald-400 font-bold bg-emerald-950/40 px-1 rounded';
+                    if (log.includes('AUTO-SCALING:')) color = 'text-amber-400 font-bold bg-amber-950/40 px-1 rounded animate-pulse';
+                    if (log.includes('SUCCESS') || log.includes('✅')) color = 'text-emerald-400 font-bold bg-emerald-950/40 px-1 rounded border border-emerald-900/50';
+                    if (log.includes('SPARK') || log.includes('PRESTO') || log.includes('FLINK')) color = 'text-sky-300 font-semibold';
+                    return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/40`}>{log}</div>;
                   })
                 )}
               </div>
             </div>
           </div>
 
-          {/* Quick specs details for OpenSearch and QuickSight SPICE */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-slate-150 rounded-2xl p-4 bg-white shadow-sm hover:border-sky-300 transition-all">
-              <h4 className="font-bold text-xs text-sky-800 block mb-2">🔎 Amazon OpenSearch Cluster Deep-Dive</h4>
-              <p className="text-[11.5px] leading-relaxed text-slate-600 mb-2">
-                OpenSearch partitions indexing data into physical chunks called **Shards**. To ensure disaster recovery and high availability, shards are backed up into **Replica Shards** synced across Availability Zones. 
-              </p>
-              <div className="grid grid-cols-3 gap-2 text-center text-[10px] mt-3 font-mono">
-                <div className="border border-slate-200 rounded-lg p-1.5 bg-slate-50">
-                  <span className="font-bold text-sky-700 block">Master Nodes</span>
-                  Coordinating cluster configurations
+          {/* ========================================================================= */}
+          {/* SANDBOX SECTION 3: AMAZON OPENSEARCH SERVICE                              */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* OpenSearch Integrations Controller */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div className="space-y-4">
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5 border-b border-slate-100 pb-3">
+                  <BookOpen className="w-4 h-4 text-sky-500" /> Sandbox 3: OpenSearch Search Index
+                </h3>
+
+                {/* Query selector */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block">1. Full-text Lookup Phrase:</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={osSearchQuery}
+                      onChange={(e) => setOsSearchQuery(e.target.value)}
+                      placeholder="e.g. auth-error, timeout"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none font-bold text-slate-700 focus:border-sky-500 transition-colors"
+                    />
+                    <button
+                      onClick={triggerOsSearch}
+                      disabled={osState !== 'idle'}
+                      className="px-3 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-500 transition-colors shadow-sm"
+                    >
+                      Search
+                    </button>
+                  </div>
+                  <span className="text-[9.5px] text-slate-500 block">OpenSearch parses fuzzy matches across all database shards.</span>
                 </div>
-                <div className="border border-slate-200 rounded-lg p-1.5 bg-slate-50">
-                  <span className="font-bold text-purple-700 block">Data Nodes</span>
-                  Indices, shard segments, search runs
+
+                {/* Ingestion track */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 block">2. Ingest Inflow Pathway:</label>
+                  <select
+                    value={osIngestPath}
+                    onChange={(e) => setOsIngestPath(e.target.value as 'dynamodb' | 'kinesis-firehose' | 'cloudwatch')}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none font-bold text-slate-700"
+                  >
+                    <option value="dynamodb">DynamoDB Streams (CDC lambda sync)</option>
+                    <option value="kinesis-firehose">Kinesis Firehose (Near-realtime streams)</option>
+                    <option value="cloudwatch">CloudWatch Logs Subscription filter</option>
+                  </select>
+                  
+                  <div className="pt-1 flex gap-2">
+                    <button
+                      onClick={triggerOsIngestion}
+                      disabled={osState !== 'idle'}
+                      className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-500 transition-colors shadow-sm disabled:bg-slate-200 disabled:text-slate-400"
+                    >
+                      🔒 Trigger Ingest Pipeline
+                    </button>
+                    <button
+                      onClick={resetOsSandbox}
+                      className="px-2.5 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="border border-slate-200 rounded-lg p-1.5 bg-slate-50">
-                  <span className="font-bold text-emerald-700 block">UltraWarm Nodes</span>
-                  Query backups on cold S3 directly
+
+                {/* Live Database complementary index results grid */}
+                <div className="border border-slate-200 rounded-xl p-3 bg-slate-50 space-y-2">
+                  <span className="text-[10px] font-extrabold text-slate-700 block border-b border-slate-200 pb-1 flex justify-between">
+                    <span>📋 Complementary Index Results</span>
+                    <span className="text-sky-600 font-mono text-[9px]">Resolved rows</span>
+                  </span>
+                  
+                  {osSearchResults.length === 0 ? (
+                    <span className="text-[9.5px] text-slate-400 italic block text-center py-4">No results matched. Click Search above.</span>
+                  ) : (
+                    <div className="space-y-2">
+                      {osSearchResults.map((res, i) => (
+                        <div key={i} className="bg-white border border-slate-200 rounded-lg p-2 text-[9.5px] leading-normal space-y-1">
+                          <div className="flex justify-between font-bold">
+                            <span className="text-slate-800">Key: <span className="font-mono text-sky-700">{res.id}</span></span>
+                            <span className="text-emerald-700 bg-emerald-50 px-1 rounded text-[8px] font-extrabold">{res.dbLatency}</span>
+                          </div>
+                          <div className="text-slate-650">{res.message}</div>
+                          <div className="text-[8px] font-semibold text-slate-400 border-t border-slate-100 pt-0.5">{res.matchedField}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="border border-slate-150 rounded-2xl p-4 bg-white shadow-sm hover:border-sky-300 transition-all">
-              <h4 className="font-bold text-xs text-sky-800 block mb-2">📊 Amazon QuickSight SPICE Caching Engine</h4>
-              <p className="text-[11.5px] leading-relaxed text-slate-600 mb-2">
-                **SPICE** (Super-fast, Parallel, In-memory Calculation Engine) represents QuickSight's robust memory cache. Instead of querying S3, Athena, or Redshift databases repeatedly (saving cost and avoiding network latency), SPICE loads dataset blocks directly in-memory to render visual charts under a sub-second response time.
-              </p>
-              <div className="bg-sky-50 border border-sky-100 rounded-xl p-2.5 text-[10.5px] leading-relaxed text-slate-700 mt-2">
-                <span className="font-bold text-sky-950 block">BI Performance Tip:</span>
-                Configure scheduled SPICE refreshes (e.g. hourly or daily) or trigger programmatic API catalog synchronizations on Glue ETL task completions to ensure data accuracy in visual dashboards.
+            {/* OpenSearch SVG Integration Pipeline */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-full flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-800">Complementary Index lookup &amp; Ingest Architecture</h4>
+                    <p className="text-[11px] text-slate-500">How OpenSearch maps indexes to fast DynamoDB key retrieval &amp; buffered ingestion pipelines</p>
+                  </div>
+                </div>
+
+                <div className="w-full h-[240px] rounded-xl border border-slate-200 relative flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
+                  <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 240">
+                    <defs>
+                      <marker id="os-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#cbd5e1" />
+                      </marker>
+                    </defs>
+
+                    {/* Pathways */}
+                    {/* Path 1: DynamoDB Stream Ingestion */}
+                    <path d="M 80 50 H 140" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#os-arrow)" />
+                    <path d="M 215 50 H 265" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#os-arrow)" />
+                    {osState === 'ingesting' && osIngestPath === 'dynamodb' && (
+                      <>
+                        <path d="M 80 50 H 140" fill="none" stroke="#ea580c" strokeWidth="2.5" className="da-flow-orange" />
+                        <path d="M 215 50 H 265" fill="none" stroke="#a855f7" strokeWidth="2.5" className="da-flow-purple" />
+                      </>
+                    )}
+
+                    {/* Path 2: Kinesis Firehose Ingestion */}
+                    <path d="M 80 120 H 140" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#os-arrow)" />
+                    <path d="M 215 120 H 265" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#os-arrow)" />
+                    {osState === 'ingesting' && osIngestPath === 'kinesis-firehose' && (
+                      <>
+                        <path d="M 80 120 H 140" fill="none" stroke="#a855f7" strokeWidth="2.5" className="da-flow-purple" />
+                        <path d="M 215 120 H 265" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-green" />
+                      </>
+                    )}
+
+                    {/* Path 3: CloudWatch Logs Ingestion */}
+                    <path d="M 80 190 H 140" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#os-arrow)" />
+                    <path d="M 215 190 H 265" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#os-arrow)" />
+                    {osState === 'ingesting' && osIngestPath === 'cloudwatch' && (
+                      <>
+                        <path d="M 80 190 H 140" fill="none" stroke="#0ea5e9" strokeWidth="2.5" className="da-flow-blue" />
+                        <path d="M 215 190 H 265" fill="none" stroke="#cbd5e1" strokeWidth="2.5" className="da-flow-sky" />
+                      </>
+                    )}
+
+                    {/* Path 4: Complementary Search Loop (OS lookup -> key lookup) */}
+                    <path d="M 440 50 Q 520 80, 500 135" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" markerEnd="url(#os-arrow)" />
+                    <path d="M 500 160 Q 420 185, 340 185" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" markerEnd="url(#os-arrow)" />
+                    {osState === 'searching' && (
+                      <>
+                        <path d="M 440 50 Q 520 80, 500 135" fill="none" stroke="#0ea5e9" strokeWidth="2.5" className="da-flow-blue" />
+                        <path d="M 500 160 Q 420 185, 340 185" fill="none" stroke="#ea580c" strokeWidth="2.5" className="da-flow-orange" />
+                      </>
+                    )}
+
+                    {/* Ingestion Source Nodes */}
+                    <g transform="translate(10, 20)">
+                      <rect width="70" height="55" rx="5" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="1.5" />
+                      <text x="35" y="16" fill="#c2410c" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🗄️ DynamoDB</text>
+                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="#ffedd5" />
+                      <text x="35" y="31.5" fill="#ea580c" fontSize="6.5" fontWeight="bold" textAnchor="middle">STREAMS CDC</text>
+                      <text x="35" y="47" fill="#64748b" fontSize="6" textAnchor="middle">Table Mutations</text>
+                    </g>
+
+                    <g transform="translate(10, 92)">
+                      <rect width="70" height="55" rx="5" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="1.5" />
+                      <text x="35" y="16" fill="#7e22ce" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ KINESIS</text>
+                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="#f3e8ff" />
+                      <text x="35" y="31.5" fill="#7e22ce" fontSize="6.5" fontWeight="bold" textAnchor="middle">DATA FIREHOSE</text>
+                      <text x="35" y="47" fill="#64748b" fontSize="6" textAnchor="middle">Raw Streams</text>
+                    </g>
+
+                    <g transform="translate(10, 162)">
+                      <rect width="70" height="55" rx="5" fill="rgba(255, 255, 255, 0.95)" stroke="#0ea5e9" strokeWidth="1.5" />
+                      <text x="35" y="16" fill="#0369a1" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📋 CLOUDWATCH</text>
+                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="#e0f2fe" />
+                      <text x="35" y="31.5" fill="#0ea5e9" fontSize="6.5" fontWeight="bold" textAnchor="middle">SUBSCRIPTION</text>
+                      <text x="35" y="47" fill="#64748b" fontSize="6" textAnchor="middle">Log rule filters</text>
+                    </g>
+
+                    {/* Middle Transformation Node (Lambda Connector) */}
+                    <g transform="translate(140, 25)">
+                      <rect width="75" height="190" rx="6" fill="rgba(254, 243, 199, 0.6)" stroke="#d97706" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="65" height="16" rx="2" fill="#fef3c7" />
+                      <text x="37.5" y="16" fill="#b45309" fontSize="7" fontWeight="extrabold" textAnchor="middle">λ LAMBDAS</text>
+                      
+                      {/* Lambda nodes */}
+                      <g transform="translate(17, 30)">
+                        <circle cx="20" cy="20" r="16" fill="#ffffff" stroke="#d97706" className={osState === 'ingesting' && osIngestPath === 'dynamodb' ? 'pulse-circle' : ''} />
+                        <text x="20" y="24" fill="#d97706" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
+                      </g>
+                      <g transform="translate(17, 85)">
+                        <circle cx="20" cy="20" r="16" fill="#ffffff" stroke="#d97706" className={osState === 'ingesting' && osIngestPath === 'kinesis-firehose' ? 'pulse-circle' : ''} />
+                        <text x="20" y="24" fill="#d97706" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
+                      </g>
+                      <g transform="translate(17, 140)">
+                        <circle cx="20" cy="20" r="16" fill="#ffffff" stroke="#d97706" />
+                        <text x="20" y="24" fill="#d97706" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
+                      </g>
+                    </g>
+
+                    {/* OpenSearch Service Core Cluster */}
+                    <g transform="translate(265, 25)">
+                      <rect width="175" height="190" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
+                      <rect x="5" y="5" width="165" height="20" rx="3.5" fill="#eff6ff" />
+                      <text x="87.5" y="18" fill="#1d4ed8" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
+                      
+                      {/* Coordinating Master Node */}
+                      <g transform="translate(10, 32)">
+                        <rect width="155" height="28" rx="4" fill="#ffffff" stroke="#93c5fd" />
+                        <circle cx="15" cy="14" r="3.5" fill="#3b82f6" />
+                        <text x="85" y="17" fill="#1e293b" fontSize="7.5" fontWeight="extrabold">Coordinating Master Node</text>
+                        <text x="85" y="24.5" fill="#64748b" fontSize="6.5">Config &amp; cluster management</text>
+                      </g>
+                      
+                      {/* Shard Partition Data Nodes */}
+                      <g transform="translate(10, 66)">
+                        <rect width="155" height="52" rx="4" fill="#ffffff" stroke="#86efac" />
+                        <rect x="4" y="4" width="147" height="12" rx="2" fill="#f0fdf4" />
+                        <text x="77.5" y="12" fill="#15803d" fontSize="7" fontWeight="extrabold" textAnchor="middle">Data Nodes (Primary Shards)</text>
+                        
+                        {/* Shards boxes */}
+                        <g transform="translate(15, 20)">
+                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
+                          <text x="12.5" y="14" fill="#16a34a" fontSize="8.5" fontWeight="bold" textAnchor="middle">P0</text>
+                        </g>
+                        <g transform="translate(48, 20)">
+                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
+                          <text x="12.5" y="14" fill="#16a34a" fontSize="8.5" fontWeight="bold" textAnchor="middle">P1</text>
+                        </g>
+                        
+                        {/* Replica Shards */}
+                        <g transform="translate(81, 20)">
+                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="12.5" y="14" fill="#64748b" fontSize="8.5" fontWeight="bold" textAnchor="middle">R0</text>
+                        </g>
+                        <g transform="translate(114, 20)">
+                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="12.5" y="14" fill="#64748b" fontSize="8.5" fontWeight="bold" textAnchor="middle">R1</text>
+                        </g>
+                      </g>
+
+                      {/* UltraWarm Tier */}
+                      <g transform="translate(10, 124)">
+                        <rect width="155" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" />
+                        <ellipse cx="15" cy="13" rx="10" ry="3" fill="#cbd5e1" />
+                        <text x="32" y="16" fill="#475569" fontSize="7.5" fontWeight="extrabold">UltraWarm Nodes</text>
+                        <text x="32" y="23.5" fill="#64748b" fontSize="6.5">Near-line caching tier</text>
+                      </g>
+
+                      {/* Cold S3 Storage */}
+                      <g transform="translate(10, 156)">
+                        <rect width="155" height="26" rx="4" fill="#f8fafc" stroke="#94a3b8" strokeDasharray="2 2" />
+                        <text x="77.5" y="16.5" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">Cold Tier (S3 backups bucket)</text>
+                      </g>
+                    </g>
+
+                    {/* Right Hand: Client Complementary Search patterns */}
+                    <g transform="translate(480, 130)">
+                      <rect width="80" height="40" rx="4" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="1.5" />
+                      <text x="40" y="16" fill="#15803d" fontSize="8" fontWeight="extrabold" textAnchor="middle">🏢 COMPLEMENT</text>
+                      <text x="40" y="26" fill="#166534" fontSize="7" textAnchor="middle">DYNAMODB KEY</text>
+                      <text x="40" y="35" fill="#166534" fontSize="6.5" fontStyle="italic" textAnchor="middle">BatchGetItem</text>
+                    </g>
+                  </svg>
+                </div>
               </div>
+
+              {/* Ingress Trace Console */}
+              <div className="bg-slate-900 border border-slate-950 rounded-xl p-3 h-[90px] font-mono text-[9px] text-slate-300 overflow-y-auto space-y-1 mt-3 shadow-inner">
+                {osLogs.length === 0 ? (
+                  <span className="text-slate-500 italic block text-center mt-6">OpenSearch Ingest Engine ready. Select path and run pipeline.</span>
+                ) : (
+                  osLogs.map((log, idx) => {
+                    let color = 'text-slate-350';
+                    if (log.includes('USER SEARCH:') || log.includes('OPENSEARCH:')) color = 'text-sky-300 font-semibold';
+                    if (log.includes('INTEGRATION PATTERN:')) color = 'text-purple-300 font-bold bg-purple-950/40 px-1 rounded animate-pulse';
+                    if (log.includes('DYNAMODB:') || log.includes('BatchGetItem')) color = 'text-amber-400 font-semibold';
+                    if (log.includes('SUCCESS') || log.includes('✅')) color = 'text-emerald-400 font-bold bg-emerald-950/40 px-1 rounded border border-emerald-905/50';
+                    return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/40`}>{log}</div>;
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* SANDBOX SECTION 4: QUICKSIGHT SPICE IN-MEMORY GAUGES                      */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* QuickSight SPICE Performance Deck */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div className="space-y-4">
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5 border-b border-slate-100 pb-3">
+                  <TrendingUp className="w-4 h-4 text-sky-600" /> Sandbox 4: QuickSight SPICE Caching
+                </h3>
+
+                {/* SPICE Enable Toggle */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 block">In-Memory SPICE Caching:</label>
+                  <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                      <span className="font-bold text-slate-800 text-xs block">SPICE Caching Engine</span>
+                      <span className="text-[10px] text-slate-500 leading-normal">Super-fast, Parallel, In-memory Engine</span>
+                    </div>
+                    <button
+                      onClick={() => setQsSpiceEnabled(!qsSpiceEnabled)}
+                      className={`px-4 py-1.5 rounded-lg font-extrabold text-[10px] border transition-all ${
+                        qsSpiceEnabled 
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-white border-slate-200 text-slate-650'
+                      }`}
+                    >
+                      {qsSpiceEnabled ? '🟢 ENABLED' : '❌ DISABLED'}
+                    </button>
+                  </div>
+                  <p className="text-[9.5px] text-slate-500 leading-relaxed">
+                    SPICE accelerates analytics dashboard latency from minutes down to **sub-seconds** by skipping S3 files and Athena compute networks entirely.
+                  </p>
+                </div>
+
+                {/* Action button */}
+                <button
+                  disabled={qsQuerying}
+                  onClick={runQsDashboardQuery}
+                  className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 disabled:bg-slate-200"
+                >
+                  <Play className="w-3.5 h-3.5" /> Query Analytical Dashboard
+                </button>
+              </div>
+            </div>
+
+            {/* QuickSight SPICE Latency Gauge Gauge */}
+            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="w-full flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-800">QuickSight Analytics Query Latency Gauge</h4>
+                    <p className="text-[11px] text-slate-500">Compares direct data lake Athena/S3 queries (sluggish) with SPICE memory speed</p>
+                  </div>
+                  <span className="font-mono text-xs font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                    Query Latency: <span className={qsSpiceEnabled ? "text-emerald-700" : "text-amber-700"}>{qsQueryLatency}ms</span>
+                  </span>
+                </div>
+
+                <div className="w-full h-[220px] rounded-xl border border-slate-200 relative flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
+                  <svg className="w-full h-full max-w-[500px]" viewBox="0 0 400 200">
+                    <defs>
+                      <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="30%" stopColor="#eab308" />
+                        <stop offset="100%" stopColor="#ef4444" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Outer arch path representing speedometer */}
+                    <path
+                      d="M 60 160 A 130 130 0 0 1 340 160"
+                      fill="none"
+                      stroke="url(#gauge-gradient)"
+                      strokeWidth="24"
+                      strokeLinecap="round"
+                    />
+
+                    {/* Scale markers */}
+                    <text x="50" y="180" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">0ms</text>
+                    <text x="110" y="80" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">50ms</text>
+                    <text x="200" y="40" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">250ms</text>
+                    <text x="350" y="180" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">500ms</text>
+
+                    {/* Needle */}
+                    {qsSpiceEnabled ? (
+                      /* Needle pointing to 15ms (left side) */
+                      <g transform="translate(200, 160) rotate(-75)">
+                        <polygon points="-4,0 4,0 0,-115" fill="#1e293b" />
+                        <circle cx="0" cy="0" r="8" fill="#16a34a" stroke="#ffffff" strokeWidth="2" />
+                      </g>
+                    ) : (
+                      /* Needle pointing to 480ms (right side) */
+                      <g transform="translate(200, 160) rotate(70)">
+                        <polygon points="-4,0 4,0 0,-115" fill="#1e293b" />
+                        <circle cx="0" cy="0" r="8" fill="#dc2626" stroke="#ffffff" strokeWidth="2" />
+                      </g>
+                    )}
+
+                    {/* Core stats panel */}
+                    <rect x="135" y="115" width="130" height="50" rx="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1.5" />
+                    <text x="200" y="132" fill="#64748b" fontSize="8" fontWeight="bold" textAnchor="middle">QUERY LATENCY</text>
+                    <text x="200" y="157" fill={qsSpiceEnabled ? "#15803d" : "#b91c1c"} fontSize="20" fontWeight="black" textAnchor="middle" className="font-mono">
+                      {qsQueryLatency} ms
+                    </text>
+
+                    {/* Performance classification text */}
+                    <text x="200" y="187" fill={qsSpiceEnabled ? "#16a34a" : "#ea580c"} fontSize="9.5" fontWeight="bold" textAnchor="middle">
+                      {qsSpiceEnabled ? "🚀 SUB-SECOND IN-MEMORY SPEED" : "⚠️ SLUGGISH DIRECT SCAN QUERY"}
+                    </text>
+                  </svg>
+                </div>
+              </div>
+
+              {/* SPICE latency logs */}
+              <div className="bg-slate-900 border border-slate-950 rounded-xl p-3 h-[90px] font-mono text-[9px] text-slate-300 overflow-y-auto space-y-1 mt-3 shadow-inner">
+                {qsLogs.length === 0 ? (
+                  <span className="text-slate-500 italic block text-center mt-6">QuickSight BI Engine ready. Trigger query scanner.</span>
+                ) : (
+                  qsLogs.map((log, idx) => {
+                    let color = 'text-slate-350';
+                    if (log.includes('SPICE CACHE HIT:')) color = 'text-emerald-400 font-bold bg-emerald-950/40 px-1 rounded animate-pulse';
+                    if (log.includes('SPICE CACHE MISS:')) color = 'text-amber-400 font-bold bg-amber-950/40 px-1 rounded';
+                    if (log.includes('LATENCY:')) color = qsSpiceEnabled ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+                    return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/40`}>{log}</div>;
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Quick specs details for OpenSearch and QuickSight SPICE at the bottom */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            <div className="border border-slate-150 rounded-2xl p-4 bg-white shadow-sm hover:border-sky-300 transition-all">
+              <h4 className="font-bold text-xs text-sky-800 block mb-2">🔎 Amazon OpenSearch Service &amp; DynamoDB Complement Pattern</h4>
+              <p className="text-[11.5px] leading-relaxed text-slate-600 mb-2">
+                DynamoDB limits complex query searches to partition keys and local indexes. By syncing updates to an **OpenSearch** cluster using DynamoDB Streams + Lambda triggers, you enable powerful fuzzy and full-text partial matches. When searching, you query the fast OpenSearch index (15ms), fetch document IDs, and issue high-speed BatchGetItem keys directly to DynamoDB (4ms) to return complete rows with 100% data integrity.
+              </p>
+            </div>
+
+            <div className="border border-slate-150 rounded-2xl p-4 bg-white shadow-sm hover:border-sky-300 transition-all">
+              <h4 className="font-bold text-xs text-sky-800 block mb-2">📊 Super-fast Parallel In-memory SPICE Caching</h4>
+              <p className="text-[11.5px] leading-relaxed text-slate-600 mb-2">
+                **SPICE** (Super-fast, Parallel, In-memory Calculation Engine) represents QuickSight's in-memory storage. Loading dataset snapshots into SPICE memory blocks bypasses raw data stores like S3/Athena or active relational Redshift databases entirely. Queries are served inside 15ms sub-second times, drastically reducing query costs by avoiding redundant S3/Athena column scanning charges.
+              </p>
             </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ import IntegrationAndMessagingVisualizer from './pages/visualizers/IntegrationAn
 import ElasticContainersVisualizer from './pages/visualizers/ElasticContainersVisualizer';
 import ServerlessVisualizer from './pages/visualizers/ServerlessVisualizer';
 import DatabasesAndAnalyticsVisualizer from './pages/visualizers/DatabasesAndAnalyticsVisualizer';
+import CloudWatchMAndEventsVisualizer from './pages/visualizers/CloudWatchMAndEventsVisualizer';
 import NotFound from './pages/NotFound';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="/visualizers/elastic-containers" element={<ElasticContainersVisualizer />} />
             <Route path="/visualizers/serverless" element={<ServerlessVisualizer />} />
             <Route path="/visualizers/databases-analytics" element={<DatabasesAndAnalyticsVisualizer />} />
+            <Route path="/visualizers/cloudwatch-events" element={<CloudWatchMAndEventsVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
