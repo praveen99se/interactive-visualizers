@@ -1160,330 +1160,153 @@ export default function ASGVisualizer() {
         )}
 
         {/* LIVE SIMULATION PLAYGROUND */}
-        {activeSection === 'sim' && (() => {
-          // Find healthy and total active instances
-          const activeInsts = instances.filter((i) => i.status !== 'terminated');
-          const healthyInsts = activeInsts.filter((i) => i.status === 'ok' && !i.failed);
-          const isScaleOutActive = isRunning && activeInsts.length < desCap;
-          const isAlarmTriggered = isRunning && metrics.avgCpu > targetCpu + 8;
-
-          return (
-            <div>
-              <div className="asg-sec">Live Simulation (ASG + Load Balancer Auto Scaling)</div>
-              
-              {/* Main Widescreen Dynamic scaling SVG panel */}
-              <div className="asg-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
-                    Interactive Elastic Compute Scaling Topology Diagram
-                  </span>
-                  <span style={{ fontSize: '11px', color: isScaleOutActive ? '#ea580c' : '#16a34a', fontWeight: 'bold' }}>
-                    {isScaleOutActive ? '⚡ HORIZONTAL SCALING FLEET...' : '🟢 FLEET SIZE STABILIZED'}
-                  </span>
-                </div>
-
-                <svg width="100%" viewBox="0 0 420 220" className="asg-svg-bg">
-                  <defs>
-                    <linearGradient id="g-orange-sim" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ea580c" />
-                      <stop offset="100%" stopColor="#f97316" />
-                    </linearGradient>
-                    <linearGradient id="g-green-sim" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#059669" />
-                    </linearGradient>
-                    <filter id="glow-orange-sim" x="-15%" y="-15%" width="130%" height="130%">
-                      <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#f97316" floodOpacity="0.5" />
-                    </filter>
-                    <filter id="glow-green-sim" x="-15%" y="-15%" width="130%" height="130%">
-                      <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10b981" floodOpacity="0.5" />
-                    </filter>
-                    <filter id="glow-red-sim" x="-15%" y="-15%" width="130%" height="130%">
-                      <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#ef4444" floodOpacity="0.5" />
-                    </filter>
-                  </defs>
-
-                  {/* Public Client */}
-                  <g>
-                    <rect x="15" y="15" width="60" height="40" rx="6" fill="#f0f9ff" stroke="#3b82f6" strokeWidth="1.5"/>
-                    <text x="45" y="34" fontSize="9" fontWeight="bold" fill="#0c4a6e" textAnchor="middle">🌐 Client</text>
-                    <text x="45" y="46" fontSize="7.5" fill="#0284c7" textAnchor="middle" fontFamily="monospace">{rps} RPS</text>
-                  </g>
-
-                  {/* ALB Router */}
-                  <g transform="translate(100, 15)">
-                    <rect width="60" height="40" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="30" y="24" fontSize="9" fontWeight="bold" fill="#047857" textAnchor="middle">ALB L7</text>
-                    <text x="30" y="35" fontSize="7" fill="#64748b" textAnchor="middle">Listener 80</text>
-                  </g>
-
-                  {/* CloudWatch CPU Monitor Box */}
-                  <g transform="translate(315, 12)" filter={isAlarmTriggered ? 'url(#glow-red-sim)' : undefined}>
-                    <rect width="90" height="45" rx="8" fill={isAlarmTriggered ? '#fff5f5' : '#f8fafc'} stroke={isAlarmTriggered ? '#ef4444' : '#cbd5e1'} strokeWidth={isAlarmTriggered ? 2 : 1.2} />
-                    <text x="45" y="23" fontSize="8" fontWeight="bold" fill={isAlarmTriggered ? '#991b1b' : '#475569'} textAnchor="middle">CloudWatch CPU</text>
-                    <text x="45" y="35" fontSize="9" fontWeight="bold" fill={isAlarmTriggered ? '#ef4444' : '#15803d'} textAnchor="middle" fontFamily="monospace">
-                      {Math.round(metrics.avgCpu)}% {isAlarmTriggered ? '⚠️' : '🟢'}
-                    </text>
-                    {isAlarmTriggered && (
-                      <circle cx="80" cy="12" r="3" fill="#ef4444" className="led-blink" />
-                    )}
-                  </g>
-
-                  {/* Ingress traffic path from client to LB */}
-                  <path
-                    d="M 75 35 L 100 35"
-                    fill="none"
-                    stroke={isRunning && rps > 0 ? '#10b981' : '#cbd5e1'}
-                    strokeWidth={isRunning && rps > 0 ? 2.5 : 1}
-                    className={isRunning && rps > 0 ? 'flow-active-line' : ''}
-                  />
-
-                  {/* Main horizontal bus from LB into ASG boundary */}
-                  <path
-                    d="M 160 35 L 180 35 L 180 90 L 195 90"
-                    fill="none"
-                    stroke={isRunning && healthyInsts.length > 0 && rps > 0 ? '#10b981' : '#cbd5e1'}
-                    strokeWidth={isRunning && healthyInsts.length > 0 && rps > 0 ? 2.5 : 1}
-                    className={isRunning && healthyInsts.length > 0 && rps > 0 ? 'flow-active-line' : ''}
-                  />
-
-                  {/* Auto Scaling Group dashed boundary box */}
-                  <rect
-                    x="195" y="65" width="215" height="145" rx="8"
-                    fill="none"
-                    stroke="#10b981"
-                    strokeWidth="1.5"
-                    strokeDasharray="4,3"
-                    opacity={0.8}
-                  />
-                  <text x="302.5" y="78" fontSize="8" fill="#137333" fontWeight="bold" textAnchor="middle">ASG Group Pool (Min: {minCap} · Max: {maxCap})</text>
-
-                  {/* Target servers rendering */}
-                  {activeInsts.slice(0, 12).map((inst, idx) => {
-                    const col = idx % 4;
-                    const row = Math.floor(idx / 4);
-                    const x = 205 + col * 50;
-                    const y = 88 + row * 38;
-                    const isHealthy = inst.status === 'ok' && !inst.failed;
-
-                    let fill = '#f8fafc';
-                    let stroke = '#cbd5e1';
-                    let label = 'WARM';
-                    let textFill = '#b45309';
-
-                    if (inst.status === 'ok') {
-                      if (inst.failed) {
-                        fill = '#fff5f5';
-                        stroke = '#ef4444';
-                        label = 'FAIL ×';
-                        textFill = '#b91c1c';
-                      } else {
-                        fill = '#ecfdf5';
-                        stroke = '#10b981';
-                        label = 'ONLINE';
-                        textFill = '#047857';
-                      }
-                    } else if (inst.status === 'drain') {
-                      fill = '#eff6ff';
-                      stroke = '#1d4ed8';
-                      label = 'DRAIN';
-                      textFill = '#1d4ed8';
-                    } else if (inst.status === 'warm') {
-                      fill = '#fffbeb';
-                      stroke = '#d97706';
-                      label = `WARM (${inst.warmTicks})`;
-                      textFill = '#b45309';
-                    }
-
-                    // Local line connection from bus trunk
-                    const isConduitActive = isRunning && isHealthy && rps > 0;
-                    
-                    return (
-                      <g key={inst.id}>
-                        {/* Dynamic branching conduits to active server nodes */}
-                        <path
-                          d={`M 180 90 L 180 ${y + 16} L ${x} ${y + 16}`}
-                          fill="none"
-                          stroke={isConduitActive ? '#10b981' : (inst.failed ? '#ef4444' : '#cbd5e1')}
-                          strokeWidth={isConduitActive ? 2 : 1}
-                          strokeDasharray={inst.failed ? '2,2' : undefined}
-                          className={isConduitActive ? 'flow-active-line' : ''}
-                          opacity={isConduitActive ? 1 : 0.4}
-                        />
-
-                        {/* Server Cylinder Tower */}
-                        <g transform={`translate(${x}, ${y})`}>
-                          <rect width="42" height="32" rx="4" fill={fill} stroke={stroke} strokeWidth="1.5" />
-                          <text x="21" y="11" fontSize="8" fontWeight="bold" fill="#1e293b" textAnchor="middle">i-{inst.id}</text>
-                          <text x="21" y="21" fontSize="6.5" fontWeight="bold" fill={textFill} textAnchor="middle">{label}</text>
-                          
-                          {/* Active glowing LED check lights */}
-                          {isHealthy ? (
-                            <circle cx="5" cy="27" r="1.5" fill="#10b981" className="led-blink" />
-                          ) : inst.failed ? (
-                            <circle cx="5" cy="27" r="1.5" fill="#ef4444" className="led-blink" />
-                          ) : inst.status === 'drain' ? (
-                            <circle cx="5" cy="27" r="1.5" fill="#1d4ed8" className="led-blink" />
-                          ) : (
-                            <circle cx="5" cy="27" r="1.5" fill="#d97706" />
-                          )}
-                        </g>
-                      </g>
-                    );
-                  })}
-
-                  {/* Empty Slot templates */}
-                  {Array.from({ length: Math.max(0, 12 - activeInsts.length) }).map((_, idx) => {
-                    const totalIdx = activeInsts.length + idx;
-                    if (totalIdx >= 12) return null;
-                    const col = totalIdx % 4;
-                    const row = Math.floor(totalIdx / 4);
-                    const x = 205 + col * 50;
-                    const y = 88 + row * 38;
-                    return (
-                      <g key={`empty-slot-${idx}`} opacity={0.15}>
-                        <rect x={x} y={y} width="42" height="32" rx="4" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3,2" />
-                        <text x={x + 21} y={y + 18} fontSize="7" fill="#64748b" textAnchor="middle">—</text>
-                      </g>
-                    );
-                  })}
-
-                  {/* Packet flow particles flowing from client to ALB and servers */}
-                  {isRunning && rps > 0 && healthyInsts.length > 0 && (
-                    <circle r="3.5" fill="#10b981" filter="url(#glow-green-sim)">
-                      <animateMotion
-                        dur={rps > 1200 ? '0.7s' : rps > 600 ? '1.2s' : '1.8s'}
-                        repeatCount="indefinite"
-                        path={`M 15 35 L 100 35 M 100 35 L 180 35 L 180 90 L 180 ${88 + Math.floor((healthyInsts[0].id - 1) / 4) * 38 + 16} L ${205 + ((healthyInsts[0].id - 1) % 4) * 50} ${88 + Math.floor((healthyInsts[0].id - 1) / 4) * 38 + 16}`}
-                      />
-                    </circle>
-                  )}
-                  {isRunning && rps > 1000 && healthyInsts.length > 1 && (
-                    <circle r="3.5" fill="#10b981" filter="url(#glow-green-sim)">
-                      <animateMotion
-                        dur="1.0s"
-                        repeatCount="indefinite"
-                        path={`M 100 35 L 180 35 L 180 90 L 180 ${88 + Math.floor((healthyInsts[1].id - 1) / 4) * 38 + 16} L ${205 + ((healthyInsts[1].id - 1) % 4) * 50} ${88 + Math.floor((healthyInsts[1].id - 1) / 4) * 38 + 16}`}
-                      />
-                    </circle>
-                  )}
-                </svg>
+        {activeSection === 'sim' && (
+          <div>
+            <div className="asg-sec">Live Simulation (ASG + Load Balancer Auto Scaling)</div>
+            <div className="asg-card">
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
+                This simulator demonstrates target tracking scaling in real-time. Drag traffic (RPS) up to overload servers and trigger scale-outs, or fail nodes to watch ASG self-heal!
               </div>
 
-              <div className="asg-card">
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>Simulation Controls</div>
-                
-                {/* Range inputs */}
-                <div className="asg-g2" style={{ marginBottom: '12px' }}>
-                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
-                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Incoming Traffic: <b>{rps} RPS</b></label>
+              {/* Range inputs */}
+              <div className="asg-g2" style={{ marginBottom: '12px' }}>
+                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Incoming Traffic: <b>{rps} RPS</b></label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1800"
+                    value={rps}
+                    onChange={(e) => setRps(parseInt(e.target.value))}
+                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                  />
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Target CPU Limit: <b>{targetCpu}%</b></label>
+                  <input
+                    type="range"
+                    min="20"
+                    max="80"
+                    value={targetCpu}
+                    onChange={(e) => setTargetCpu(parseInt(e.target.value))}
+                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                  />
+                </div>
+              </div>
+
+              <div className="asg-g2" style={{ marginBottom: '14px' }}>
+                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Boundaries (Min / Desired / Max Capacity):</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Min:</span>
                     <input
-                      type="range"
+                      type="number"
+                      value={minCap}
                       min="0"
-                      max="1800"
-                      value={rps}
-                      onChange={(e) => setRps(parseInt(e.target.value))}
-                      style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                      max="30"
+                      onChange={(e) => setMinCap(parseInt(e.target.value))}
+                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
                     />
-                  </div>
-
-                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
-                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Target CPU Limit: <b>{targetCpu}%</b></label>
+                    <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Desired:</span>
                     <input
-                      type="range"
-                      min="20"
-                      max="80"
-                      value={targetCpu}
-                      onChange={(e) => setTargetCpu(parseInt(e.target.value))}
-                      style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                      type="number"
+                      value={desCap}
+                      min="0"
+                      max="30"
+                      onChange={(e) => setDesCap(parseInt(e.target.value))}
+                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
                     />
-                  </div>
-                </div>
-
-                <div className="asg-g2" style={{ marginBottom: '14px' }}>
-                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
-                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Boundaries (Min / Desired / Max Capacity):</label>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Min:</span>
-                      <input
-                        type="number"
-                        value={minCap}
-                        min="0"
-                        max="30"
-                        onChange={(e) => setMinCap(parseInt(e.target.value))}
-                        style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
-                      />
-                      <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Desired:</span>
-                      <input
-                        type="number"
-                        value={desCap}
-                        min="0"
-                        max="30"
-                        onChange={(e) => setDesCap(parseInt(e.target.value))}
-                        style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
-                      />
-                      <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Max:</span>
-                      <input
-                        type="number"
-                        value={maxCap}
-                        min="0"
-                        max="50"
-                        onChange={(e) => setMaxCap(parseInt(e.target.value))}
-                        style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
-                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Instance Max Capacity: <b>{capPer} RPS</b></label>
+                    <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Max:</span>
                     <input
-                      type="range"
-                      min="50"
-                      max="400"
-                      value={capPer}
-                      onChange={(e) => setCapPer(parseInt(e.target.value))}
-                      style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                      type="number"
+                      value={maxCap}
+                      min="0"
+                      max="50"
+                      onChange={(e) => setMaxCap(parseInt(e.target.value))}
+                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
                     />
                   </div>
                 </div>
 
-                {/* KPIs */}
-                <div className="asg-g3" style={{ marginBottom: '14px' }}>
-                  <div className="asg-met">
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Healthy instances</div>
-                    <div style={{ fontSize: '18px', fontWeight: 600, color: '#16a34a' }}>{metrics.n}</div>
-                  </div>
-                  <div className="asg-met">
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg CPU Utilization</div>
-                    <div style={{ fontSize: '18px', fontWeight: 600, color: metrics.avgCpu > targetCpu + 8 ? '#c2410c' : '#15803d' }}>{Math.round(metrics.avgCpu)}%</div>
-                  </div>
-                  <div className="asg-met">
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>RPS per target</div>
-                    <div style={{ fontSize: '18px', fontWeight: 600, color: '#0369a1' }}>{metrics.n ? Math.round(metrics.rpt) : '∞'}</div>
-                  </div>
+                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                  <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Instance Max Capacity: <b>{capPer} RPS</b></label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="400"
+                    value={capPer}
+                    onChange={(e) => setCapPer(parseInt(e.target.value))}
+                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                  />
                 </div>
-
-                {/* Play buttons */}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '1.5px solid #cbd5e1', paddingBottom: '12px' }}>
-                  <button className="asg-btn asg-on" onClick={isRunning ? pause : start}>{isRunning ? 'Pause ⏸' : 'Start ▶'}</button>
-                  <button className="asg-btn" onClick={stepOnce}>Step ⏭</button>
-                  <button className="asg-btn" onClick={resetSim}>Reset 🔄</button>
-                  <button className="asg-btn" onClick={injectFailure}>Fail one node 💥</button>
-                  <button className="asg-btn" onClick={toggleDrain}>Draining: {drainingEnabled ? 'ON 🧯' : 'OFF 🚫'}</button>
-                </div>
-
-                {/* Logs */}
-                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Activity Event log:</div>
-                <div className="asg-log" style={{ minHeight: '120px', maxHeight: '180px', overflowY: 'auto' }}>
-                  {logs.map((entry, idx) => (
-                    <div key={idx} style={{ marginBottom: idx === logs.length - 1 ? 0 : 5 }} dangerouslySetInnerHTML={{ __html: entry }} />
-                  ))}
-                </div>
-
               </div>
+
+              {/* KPIs */}
+              <div className="asg-g3" style={{ marginBottom: '14px' }}>
+                <div className="asg-met">
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Healthy instances</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#16a34a' }}>{metrics.n}</div>
+                </div>
+                <div className="asg-met">
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg CPU Utilization</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600, color: metrics.avgCpu > targetCpu + 8 ? '#c2410c' : '#15803d' }}>{Math.round(metrics.avgCpu)}%</div>
+                </div>
+                <div className="asg-met">
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>RPS per target</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#0369a1' }}>{metrics.n ? Math.round(metrics.rpt) : '∞'}</div>
+                </div>
+              </div>
+
+              {/* Play buttons */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '1.5px solid #cbd5e1', paddingBottom: '12px' }}>
+                <button className="asg-btn asg-on" onClick={isRunning ? pause : start}>{isRunning ? 'Pause ⏸' : 'Start ▶'}</button>
+                <button className="asg-btn" onClick={stepOnce}>Step ⏭</button>
+                <button className="asg-btn" onClick={resetSim}>Reset 🔄</button>
+                <button className="asg-btn" onClick={injectFailure}>Fail one node 💥</button>
+                <button className="asg-btn" onClick={toggleDrain}>Draining: {drainingEnabled ? 'ON 🧯' : 'OFF 🚫'}</button>
+              </div>
+
+              {/* Instances display */}
+              <div style={{ margin: '12px 0 6px', fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Active Compute Fleet instances behind Load Balancer:</div>
+              <div className="asg-instances" style={{ marginBottom: '14px' }}>
+                {instances.filter((i) => i.status !== 'terminated').slice(0, 12).map((inst) => {
+                  const klass = inst.failed ? 'asg-inst asg-down' : inst.status === 'ok' ? 'asg-inst asg-ok' : inst.status === 'warm' ? 'asg-inst asg-warm' : inst.status === 'drain' ? 'asg-inst asg-drain' : 'asg-inst';
+                  const meta = inst.status === 'warm'
+                    ? `booting (${inst.warmTicks}t)`
+                    : inst.status === 'drain'
+                      ? `draining (${inst.drainTicks}t)`
+                      : inst.failed
+                        ? 'failed'
+                        : inst.healthy
+                          ? 'healthy'
+                          : 'not-ready';
+                  return (
+                    <div key={inst.id} className={klass}>
+                      <div className="name">i-{inst.id}</div>
+                      <div className="meta">{inst.status}<br />{meta}</div>
+                    </div>
+                  );
+                })}
+                {Array.from({ length: Math.max(0, 12 - instances.filter((i) => i.status !== 'terminated').length) }).map((_, idx) => (
+                  <div key={`empty-${idx}`} className="asg-inst" style={{ opacity: 0.35 }}>
+                    <div className="name">—</div>
+                    <div className="meta">empty</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Logs */}
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Activity Event log:</div>
+              <div className="asg-log" style={{ minHeight: '120px', maxHeight: '180px', overflowY: 'auto' }}>
+                {logs.map((entry, idx) => (
+                  <div key={idx} style={{ marginBottom: idx === logs.length - 1 ? 0 : 5 }} dangerouslySetInnerHTML={{ __html: entry }} />
+                ))}
+              </div>
+
             </div>
-          );
-        })()}
+          </div>
+        )}
 
       </div>
     </div>
