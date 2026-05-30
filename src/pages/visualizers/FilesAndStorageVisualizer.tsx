@@ -28,6 +28,38 @@ export default function FilesAndStorageVisualizer() {
     }
   ]);
 
+  // Tab 1 Interactive Trace States
+  const [tab1TraceActive, setTab1TraceActive] = useState<boolean>(false);
+  const [tab1TraceStep, setTab1TraceStep] = useState<number>(0);
+
+  const handleTab1Trace = () => {
+    if (tab1TraceActive) return;
+    setTab1TraceActive(true);
+    setTab1TraceStep(1);
+    addLog("Tab 1: Starting POSIX File System lookup trace for '/var/log/app.log'...", "info");
+    
+    setTimeout(() => {
+      setTab1TraceStep(2);
+      addLog("Tab 1: Metadata resolution. Scanning POSIX directory index... Inode #401039 found.", "info");
+      
+      setTimeout(() => {
+        setTab1TraceStep(3);
+        addLog("Tab 1: Resolving block pointers to physical NVMe sector addresses (Block 55, 56, 57).", "info");
+        
+        setTimeout(() => {
+          setTab1TraceStep(4);
+          addLog("Tab 1: Direct DMA read initiated. Transporting block data payloads back to Client Application.", "success");
+          
+          setTimeout(() => {
+            setTab1TraceStep(0);
+            setTab1TraceActive(false);
+            addLog("Tab 1: POSIX block translation completed successfully. 450 KB loaded in 0.4ms.", "success");
+          }, 800);
+        }, 800);
+      }, 800);
+    }, 800);
+  };
+
   // Tiering Calculator State
   const [totalDataGb, setTotalDataGb] = useState<number>(10000); // 10 TB
   const [coldPercent, setColdPercent] = useState<number>(70); // 70% cold
@@ -40,6 +72,9 @@ export default function FilesAndStorageVisualizer() {
 
   // DataSync Simulation Bandwidth
   const [datasyncBandwidth, setDatasyncBandwidth] = useState<number>(1000); // 1 Gbps default
+
+  // Decision Matrix table active filter
+  const [tableFilter, setTableFilter] = useState<string>('all');
 
   const addLog = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setSimLogs((prev) => [
@@ -228,37 +263,69 @@ export default function FilesAndStorageVisualizer() {
     let result = '';
     
     if (advisorDataType === 'object') {
-      result = 'Amazon S3 & S3 Glacier: Best-suited for unstructured objects, static websites, dynamic datasets, backends, logs, and long-term regulatory cold storage tape archiving.';
+      if (advisorMigration === 'ultra_low') {
+        result = 'Amazon S3 Express One Zone: High-performance, single-digit millisecond latency object storage designed for your most latency-sensitive applications and query engines.';
+      } else if (advisorMigration === 'cost_eff') {
+        result = 'Amazon S3 Glacier Flexible or Deep Archive: Secure, durable, and extremely low-cost offline vaulting for long-term compliance records with retrieval times ranging from minutes to 12 hours.';
+      } else {
+        result = 'Amazon S3 Standard: Highly durable (99.999999999% durability), infinite-scale cloud object store ideal for static assets, web logging streams, and dynamic data lakes.';
+      }
     } else if (advisorDataType === 'block_db') {
       if (advisorAccess === 'hybrid') {
-        result = 'AWS Storage Gateway (Volume Gateway): Cached or stored volumes bridging your on-premises servers via iSCSI block connections, replicating snapshots over dynamic TLS tunnels to EBS snapshots in the cloud.';
+        result = 'AWS Storage Gateway (Volume Gateway): Local server appliance presenting cached or stored iSCSI block volumes to local VMs, asynchronously syncing snapshots to Amazon EBS in AWS.';
+      } else if (advisorMigration === 'ultra_low') {
+        result = 'Amazon EBS io2 Block Express / Instance Store: Sub-millisecond persistent EBS volumes for critical databases, or ephemeral Instance Stores connected directly to physical hypervisor NVMe registers.';
+      } else if (advisorMigration === 'cost_eff') {
+        result = 'Amazon EBS gp3 or st1/sc1: General purpose gp3 SSDs balance cost/performance, while Throughput Optimized (st1) or Cold (sc1) HDDs offer lowest block costs for heavy sequential storage workloads.';
       } else {
-        result = 'Amazon EBS & Instance Store: Dynamic EBS volumes represent high-performance persistent blocks designed for databases like RDS, while Instance Stores provide zero-cost high-speed temporary ephemeral blocks attached directly to EC2 hypervisor motherboards.';
+        result = 'Amazon EBS gp3: Industry-standard general purpose persistent block storage with independent IOPS and throughput tuning, perfect for system boots and standard databases.';
       }
     } else if (advisorDataType === 'win_file') {
       if (advisorAccess === 'hybrid') {
-        result = 'Amazon FSx File Gateway: Provides low-latency local SMB caching for your managed FSx for Windows File Server shares deployed in AWS.';
+        result = 'Amazon FSx File Gateway: Deploys a low-latency on-premises virtual cache server, exposing Windows SMB network folders backed directly by your cloud-hosted FSx for Windows volumes.';
+      } else if (advisorMigration === 'cost_eff') {
+        result = 'Amazon FSx for Windows File Server (HDD Tier): Native Windows SMB file system utilizing deduplication and compressed HDD volumes to achieve highly cost-effective active directory file shares.';
       } else {
-        result = 'Amazon FSx for Windows File Server: Fully managed Windows storage running native SMB file systems, integrated seamlessly with Active Directory, DFS namespaces, and Multi-AZ replication groups.';
+        result = 'Amazon FSx for Windows File Server (SSD Tier): Fully managed Windows filesystems backed by high-throughput SSD arrays, supporting active Microsoft DFS namespaces and sub-millisecond SMB routing.';
+      }
+    } else if (advisorDataType === 'linux_shared') {
+      if (advisorMigration === 'ultra_low') {
+        result = 'Amazon FSx for OpenZFS: Deliver extreme POSIX shared performance (sub-millisecond latencies, up to 1 million IOPS) using SSDs and high-speed RAM-level caching.';
+      } else if (advisorMigration === 'cost_eff') {
+        result = 'Amazon EFS (Elastic Tiering): Fully elastic POSIX NFS sharing utilizing EFS Infrequent Access (IA) and Archive lifecycle policies to automatically drop cold data cost by up to 92%.';
+      } else {
+        result = 'Amazon EFS (General Purpose): Standard serverless shared filesystem automatically scaling from gigabytes to petabytes, mounting simultaneously across thousands of Linux nodes.';
       }
     } else if (advisorDataType === 'linux_hpc') {
-      result = 'Amazon FSx for Lustre: Designed to scale to millions of parallel IOPS and hundreds of GB/s throughput to feed high-performance GPU compute fleets. Features native automated lazy-loading and data exports with S3 buckets.';
+      if (advisorMigration === 'cost_eff') {
+        result = 'Amazon FSx for Lustre (HDD Scratch): A parallel HPC filesystem built on high-throughput HDD scratch pools, integrated with S3 to quickly load and export parallel workloads at minimal cost.';
+      } else {
+        result = 'Amazon FSx for Lustre (Persistent SSD/NVMe): An extreme parallel POSIX filesystem designed to saturate thousands of high-speed GPU nodes with NVMe backends for machine learning and heavy rendering.';
+      }
     } else if (advisorDataType === 'multi_proto') {
-      result = 'Amazon FSx for NetApp ONTAP: Enterprise-grade storage supporting multi-protocols (NFS, SMB, and block iSCSI concurrently). Features SnapMirror hybrid replication, FlexGroup scaling, and automated cold-tiering.';
+      if (advisorMigration === 'cost_eff') {
+        result = 'Amazon FSx for NetApp ONTAP (Auto-Tiering Active): Enterprise-grade NFS/SMB/iSCSI volumes utilizing ONTAP FabricPool to dynamically sweep up to 90% of inactive cold blocks to low-cost capacity pools.';
+      } else {
+        result = 'Amazon FSx for NetApp ONTAP (SSD Multi-AZ): Enterprise-grade multi-protocol storage with SnapMirror failover replication, high-speed RAM/SSD writes, and NetApp FlexGroup scale-out capacity.';
+      }
     } else if (advisorDataType === 'zfs_file') {
-      result = 'Amazon FSx for OpenZFS: Cloud-native Unix/Linux sharing delivering sub-millisecond latencies using SSD configurations and RAM caches, supporting instant snapshot histories and Copy-on-Write clones.';
-    } else if (advisorDataType === 'linux_shared') {
-      result = 'Amazon EFS (Elastic File System): Fully elastic POSIX filesystem mounting simultaneously to thousands of EC2 instances, automatically growing and shrinking from gigabytes to petabytes.';
+      result = 'Amazon FSx for OpenZFS: Premium Unix POSIX sharing built on the OpenZFS engine, offering sub-millisecond response speeds, dynamic data compression, and instant Copy-on-Write dataset clones.';
     } else if (advisorDataType === 'tape_backup') {
-      result = 'AWS Storage Gateway (Tape Gateway): Replaces physical Tape Libraries with a Virtual Tape Library (VTL) appliance, storing your local enterprise backups in secure, cost-effective S3 Glacier Vault tape archives.';
+      result = 'AWS Storage Gateway (Tape Gateway): Virtual Tape Library (VTL) appliance that lets you seamlessly transition on-premises backup systems (like NetBackup) to secure tape vaults in S3 Glacier.';
     } else if (advisorDataType === 'database') {
-      result = 'AWS Databases (RDS, Aurora, DynamoDB): Structured relational databases (RDS, Aurora) for transactional tables with automated backups, or fully managed serverless NoSQL databases (DynamoDB) for scale-out applications.';
+      if (advisorMigration === 'ultra_low') {
+        result = 'Amazon DynamoDB (with DAX): Serverless NoSQL key-value database delivering single-digit millisecond response times at massive scale, enhanced with an in-memory DAX accelerator cache.';
+      } else if (advisorMigration === 'cost_eff') {
+        result = 'Amazon RDS / Aurora Serverless v2: Relational database hosting (MySQL/PostgreSQL) that dynamically scales CPU and RAM capacities up or down in fractions of a second based on load, optimizing budget spent.';
+      } else {
+        result = 'Amazon Aurora Global Database: High-performance relational database with global clusters, leveraging storage-level replication to achieve sub-second cross-region read replicas.';
+      }
     } else if (advisorDataType === 'migration_offline') {
-      result = 'AWS Snow Family (Snowcone / Snowball / Snowmobile): Ruggedized physical data migration appliances shipped directly to your local centers to ingest and transport petabytes or exabytes of offline data securely.';
+      result = 'AWS Snowball Edge: Physical, ruggedized edge computing and data transfer appliances shipped straight to your facility, enabling secure physical ingest of petabytes of local datasets without internet dependency.';
     } else if (advisorDataType === 'migration_online') {
-      result = 'AWS DataSync: High-speed, automated data sync agent that copies large datasets from local NAS or NFS/SMB volumes to S3, EFS, or FSx over dedicated network links with full verification checks.';
+      result = 'AWS DataSync: Highly automated online data transfer service that accelerates syncing local NAS directories (NFS/SMB) to S3, EFS, or FSx over dedicated networks with integrity validation.';
     } else if (advisorDataType === 'legacy_transfer') {
-      result = 'AWS Transfer Family: Managed secure file transfers natively exposing standard SFTP, FTPS, and FTP endpoints directly linked to backend Amazon S3 or EFS volumes.';
+      result = 'AWS Transfer Family: Managed secure file transfer gateway exposing standard SFTP, FTPS, and FTP endpoints directly integrated with behind-the-scenes Amazon S3 or Amazon EFS storage volumes.';
     }
     
     setAdvisorResult(result);
@@ -268,54 +335,478 @@ export default function FilesAndStorageVisualizer() {
   return (
     <div>
       <style>{`
-        /* Scoped Files & Shared Storage styling */
-        .fs-container { font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-text-primary, #0f172a); }
-        .fs-h { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .fs-sub { font-size: 13px; color: var(--color-text-secondary, #475569); line-height: 1.5; margin-bottom: 14px; }
-        .fs-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .fs-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .fs-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .fs-tb.fs-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .fs-card { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-lg, 12px); padding: 14px 16px; background: var(--color-background-primary, #ffffff); margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .fs-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #475569); text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; }
-        .fs-sec:first-child { margin-top: 0; }
-        .fs-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .fs-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .fs-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); background: var(--color-background-secondary, #f8fafc); margin-bottom: 6px; font-size: 12px; line-height: 1.45; }
-        .fs-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: #fff; font-weight: 600; background: #10b981; }
-        .fs-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+        /* Scoped Files & Shared Storage premium styling */
+        .fs-container {
+          font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+          color: #1e293b;
+        }
+        .fs-h {
+          font-size: 24px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 6px;
+          color: #0f172a;
+          background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .fs-sub {
+          font-size: 13.5px;
+          color: #475569;
+          line-height: 1.6;
+          margin-bottom: 18px;
+        }
+        .fs-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          padding-bottom: 10px;
+        }
+        .fs-tb {
+          padding: 8px 16px;
+          border-radius: 10px;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          font-size: 12px;
+          cursor: pointer;
+          background: rgba(255, 255, 255, 0.85);
+          color: #475569;
+          transition: all 0.15s ease-in-out;
+          outline: none;
+          font-weight: 600;
+        }
+        .fs-tb:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #1e293b;
+        }
+        .fs-tb.fs-on {
+          background: #16a34a;
+          color: #ffffff;
+          border-color: #16a34a;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
+        }
+        .fs-card {
+          border: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-radius: 16px;
+          padding: 18px 20px;
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(16px);
+          margin-bottom: 18px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+        }
+        .fs-sec {
+          font-size: 12px;
+          font-weight: 700;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin: 20px 0 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .fs-sec:first-child {
+          margin-top: 0;
+        }
+        .fs-grid2 {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+        .fs-grid3 {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .fs-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          padding: 10px 12px;
+          border: 1.5px solid rgba(226, 232, 240, 0.7);
+          border-radius: 10px;
+          background: rgba(248, 250, 252, 0.6);
+          margin-bottom: 8px;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+        .fs-dot {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-size: 10.5px;
+          color: #ffffff;
+          font-weight: 800;
+          background: #10b981;
+          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
+        .fs-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 700;
+        }
         
         /* High contrast keywords matching other visualizers */
-        .fs-hl-purple { background-color: #f3e8ff; color: #6b21a8; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .fs-hl-emerald { background-color: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .fs-hl-blue { background-color: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .fs-hl-orange { background-color: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        .fs-hl-purple { background-color: #f3e8ff; color: #6b21a8; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #e9d5ff; }
+        .fs-hl-emerald { background-color: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #bbf7d0; }
+        .fs-hl-blue { background-color: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #bae6fd; }
+        .fs-hl-orange { background-color: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #fed7aa; }
 
         /* Muted parenthetical descriptions outside the highlight */
-        .fs-desc-mute { color: var(--color-text-secondary); font-size: 11px; font-style: italic; opacity: 0.9; font-weight: normal; background: none; padding: 0; }
+        .fs-desc-mute { color: #64748b; font-size: 11px; font-style: italic; opacity: 0.95; font-weight: normal; background: none; padding: 0; }
+
+        /* Blueprint dot grid background grid */
+        .fs-svg-bg {
+          background-color: #f8fafc;
+          background-image: radial-gradient(rgba(203, 213, 225, 0.45) 1.5px, transparent 1.5px);
+          background-size: 16px 16px;
+        }
 
         /* Simulator controls and output */
-        .fs-ctrl { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; }
-        .fs-ctrl label { display: block; font-size: 12px; font-weight: 600; color: var(--color-text-secondary, #475569); margin-bottom: 6px; }
-        .fs-ctrl select, .fs-ctrl input[type="range"] { width: 100%; padding: 6px; font-size: 12px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); border-radius: 4px; background: var(--color-background-primary, #ffffff); outline: none; }
-        .fs-ctrl select:focus { border-color: #10b981; }
-        .fs-btnbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .fs-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); background: var(--color-background-primary, #ffffff); color: var(--color-text-primary, #0f172a); cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; }
-        .fs-btn:hover { background: var(--color-background-secondary, #f8fafc); }
-        .fs-btn.fs-primary { background: #10b981; border-color: #10b981; color: #fff; }
-        .fs-btn.fs-primary:hover { background: #059669; }
-        .fs-btn.fs-danger { background: #ef4444; border-color: #ef4444; color: #fff; }
-        .fs-btn.fs-danger:hover { background: #dc2626; }
-        .fs-btn.fs-warning { background: #f59e0b; border-color: #f59e0b; color: #fff; }
-        .fs-btn.fs-warning:hover { background: #d97706; }
-        .fs-log { background: #0f172a; border-radius: var(--border-radius-md, 8px); padding: 12px; font-size: 11px; color: #cbd5e1; line-height: 1.6; min-height: 120px; max-height: 240px; overflow-y: auto; margin-top: 12px; font-family: var(--font-mono, monospace); }
-        .fs-log-entry { margin-bottom: 6px; border-bottom: 0.5px dashed #334155; padding-bottom: 4px; }
-        .fs-log-entry:last-child { border: none; }
+        .fs-ctrl {
+          background: rgba(248, 250, 252, 0.85);
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border-radius: 12px;
+          padding: 14px;
+        }
+        .fs-ctrl label {
+          display: block;
+          font-size: 12px;
+          font-weight: 700;
+          color: #475569;
+          margin-bottom: 6px;
+        }
+        .fs-ctrl select {
+          width: 100%;
+          padding: 8px;
+          font-size: 12px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 6px;
+          background: #ffffff;
+          outline: none;
+          color: #1e293b;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        .fs-ctrl select:focus {
+          border-color: #10b981;
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+        }
+        .fs-ctrl input[type="range"] {
+          width: 100%;
+          accent-color: #16a34a;
+          cursor: pointer;
+          margin: 6px 0;
+        }
+        .fs-btnbar {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 10px;
+        }
+        .fs-btn {
+          font-size: 12.5px;
+          padding: 8px 16px;
+          border-radius: 10px;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          background: #ffffff;
+          color: #1e293b;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease-in-out;
+          outline: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .fs-btn:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          transform: translateY(-1px);
+        }
+        .fs-btn.fs-primary {
+          background: #16a34a;
+          border-color: #16a34a;
+          color: #ffffff;
+        }
+        .fs-btn.fs-primary:hover {
+          background: #15803d;
+          border-color: #15803d;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.15);
+        }
+        .fs-btn.fs-danger {
+          background: #dc2626;
+          border-color: #dc2626;
+          color: #ffffff;
+        }
+        .fs-btn.fs-danger:hover {
+          background: #b91c1c;
+          border-color: #b91c1c;
+          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+        }
+        .fs-btn.fs-warning {
+          background: #ea580c;
+          border-color: #ea580c;
+          color: #ffffff;
+        }
+        .fs-btn.fs-warning:hover {
+          background: #c2410c;
+          border-color: #c2410c;
+          box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15);
+        }
+        .fs-log {
+          background: #0f172a;
+          border-radius: 12px;
+          padding: 14px;
+          font-size: 11.5px;
+          color: #cbd5e1;
+          line-height: 1.6;
+          min-height: 120px;
+          max-height: 240px;
+          overflow-y: auto;
+          margin-top: 12px;
+          font-family: var(--font-mono, monospace);
+          border: 1.5px solid #1e293b;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .fs-log-entry {
+          margin-bottom: 6px;
+          border-bottom: 1px dashed rgba(51, 65, 85, 0.5);
+          padding-bottom: 6px;
+        }
+        .fs-log-entry:last-child {
+          border: none;
+        }
         
-        .fs-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.4; }
-        .fs-table th { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; text-align: left; font-weight: 600; }
-        .fs-table td { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; }
-        .fs-table tr:nth-child(even) { background: var(--color-background-secondary, #f8fafc); }
+        .fs-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12.5px;
+          line-height: 1.5;
+        }
+        .fs-table th {
+          background: #f8fafc;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          padding: 10px 12px;
+          text-align: left;
+          font-weight: 700;
+          color: #475569;
+        }
+        .fs-table td {
+          border: 1.5px solid rgba(226, 232, 240, 0.8);
+          padding: 10px 12px;
+          color: #1e293b;
+        }
+        .fs-table tr:nth-child(even) {
+          background: rgba(248, 250, 252, 0.45);
+        }
+
+        /* Dynamic table row hovers and premium table badges */
+        .fs-table tr:hover {
+          background: rgba(59, 130, 246, 0.04) !important;
+          transition: background 0.15s ease-in-out;
+        }
+        
+        .fs-matrix-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1;
+        }
+        
+        .fs-badge-object { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+        .fs-badge-block { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .fs-badge-file { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .fs-badge-multiproto { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .fs-badge-hybrid { background-color: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
+        .fs-badge-mig-online { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .fs-badge-mig-offline { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
+        .fs-badge-db { background-color: #ecfeff; color: #155e75; border: 1px solid #c5f2f7; }
+        
+        .fs-badge-latency-ultra { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; box-shadow: 0 0 4px rgba(34, 197, 94, 0.15); }
+        .fs-badge-latency-low { background-color: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+        .fs-badge-latency-mid { background-color: #f0f9ff; color: #0369a1; border: 1px solid #e0f2fe; }
+        .fs-badge-latency-high { background-color: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
+        .fs-badge-latency-slow { background-color: #fff1f2; color: #9f1239; border: 1px solid #ffe4e6; }
+        
+        /* Interactive advisor form element glows */
+        .fs-advisor-box {
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border-radius: 12px;
+          padding: 14px;
+          background: rgba(255, 255, 255, 0.9);
+          transition: all 0.2s ease-in-out;
+        }
+        .fs-advisor-box:hover {
+          border-color: #3b82f6;
+          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08);
+          transform: translateY(-1px);
+        }
+        .fs-advisor-box.fs-active {
+          border-color: #10b981;
+          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+        }
+
+        /* Filter Tab Bar inside Decision Matrix */
+        .fs-filter-bar {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 14px;
+        }
+        .fs-filter-btn {
+          padding: 6px 12px;
+          font-size: 11.5px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          border: 1px solid rgba(226, 232, 240, 0.85);
+          background: rgba(255, 255, 255, 0.9);
+          color: #475569;
+          transition: all 0.15s ease-in-out;
+        }
+        .fs-filter-btn:hover {
+          background: #f1f5f9;
+          border-color: #cbd5e1;
+          color: #1e293b;
+        }
+        .fs-filter-btn.fs-active {
+          background: #3b82f6;
+          color: #ffffff;
+          border-color: #3b82f6;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        /* HUD Terminal Cost Calculator */
+        .fs-terminal-hud {
+          background: #090d16;
+          border: 2px solid #1e293b;
+          border-radius: 12px;
+          padding: 18px;
+          color: #38bdf8;
+          font-family: var(--font-mono), "Courier New", Courier, monospace;
+          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 2px 10px rgba(56, 189, 248, 0.05);
+          position: relative;
+          overflow: hidden;
+        }
+        .fs-terminal-hud::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+          background-size: 100% 4px, 6px 100%;
+          pointer-events: none;
+        }
+        .fs-terminal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1.5px solid #1e293b;
+          padding-bottom: 8px;
+          margin-bottom: 12px;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+        .fs-terminal-led {
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          margin-right: 6px;
+        }
+        .fs-terminal-led.fs-led-amber {
+          background: #f59e0b;
+          box-shadow: 0 0 8px #f59e0b;
+        }
+        .fs-terminal-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .fs-terminal-box {
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(56, 189, 248, 0.15);
+          border-radius: 8px;
+          padding: 10px;
+          text-shadow: 0 0 2px rgba(56, 189, 248, 0.3);
+        }
+        .fs-terminal-box.fs-box-save {
+          border-color: rgba(34, 197, 94, 0.2);
+          color: #4ade80;
+          text-shadow: 0 0 2px rgba(34, 197, 94, 0.3);
+        }
+        .fs-terminal-box.fs-box-alert {
+          border-color: rgba(239, 68, 68, 0.25);
+          color: #f87171;
+          text-shadow: 0 0 2px rgba(239, 68, 68, 0.3);
+        }
+        .fs-terminal-title {
+          font-size: 10px;
+          text-transform: uppercase;
+          color: #64748b;
+          margin-bottom: 4px;
+          font-weight: bold;
+        }
+        .fs-terminal-val {
+          font-size: 16px;
+          font-weight: 700;
+        }
+        
+        /* Bar Graph visual for Ratio */
+        .fs-ratio-bar-container {
+          background: rgba(15, 23, 42, 0.9);
+          border: 1px solid #1e293b;
+          height: 16px;
+          border-radius: 4px;
+          margin: 12px 0 6px 0;
+          display: flex;
+          overflow: hidden;
+        }
+        .fs-ratio-bar-ssd {
+          height: 100%;
+          background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          color: #ffffff;
+          font-weight: 800;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+          transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .fs-ratio-bar-hdd {
+          height: 100%;
+          background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          color: #1e293b;
+          font-weight: 800;
+          text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+          transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
       `}</style>
 
       <div className="fs-container">
@@ -393,54 +884,107 @@ export default function FilesAndStorageVisualizer() {
               </div>
 
               {/* Directory Node to Disk Sectors SVG */}
-              <div style={{ border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  How POSIX Paths Map through Inode Indexes to Physical Block Storage
+              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', boxShadow: 'inset 0 0 12px rgba(0,0,0,0.01)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>⚙️</span> How POSIX Paths Map through Inode Indexes to Physical Block Storage
+                  </div>
+                  <button 
+                    className={`fs-btn ${tab1TraceActive ? 'fs-warning' : 'fs-primary'}`} 
+                    style={{ padding: '6px 12px', fontSize: '11.5px' }} 
+                    onClick={handleTab1Trace}
+                    disabled={tab1TraceActive}
+                  >
+                    {tab1TraceActive ? '⌛ Resolving Inodes...' : '🔍 Trace POSIX Lookup Path'}
+                  </button>
                 </div>
 
-                <svg width="100%" viewBox="0 0 760 160" style={{ background: '#ecfdf5', borderRadius: '6px', border: '0.5px solid #a7f3d0' }}>
+                <svg width="100%" viewBox="0 0 760 160" className="fs-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
                   <defs>
                     <marker id="acn-fs" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857" /></marker>
+                    <marker id="acn-purple-trace" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#6b21a8" /></marker>
+                    <linearGradient id="grad-client" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="100%" stopColor="#f8fafc" />
+                    </linearGradient>
+                    <linearGradient id="grad-inode" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f5f3ff" />
+                      <stop offset="100%" stopColor="#ddd6fe" />
+                    </linearGradient>
+                    <filter id="shadow-fs" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#94a3b8" floodOpacity="0.1" />
+                    </filter>
                   </defs>
 
                   {/* Client OS Level */}
-                  <rect x="20" y="30" width="160" height="100" rx="6" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="100" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">💻 Client App Level</text>
-                  <rect x="35" y="65" width="130" height="25" rx="4" fill="#f0fdf4" stroke="#86efac" />
-                  <text x="100" y="81" textAnchor="middle" fontSize="8" fontWeight="700" fill="#166534">Path: /var/log/app.log</text>
-                  <text x="100" y="112" textAnchor="middle" fontSize="7" fill="#64748b">File System Mount Point</text>
+                  <g filter="url(#shadow-fs)">
+                    <rect x="20" y="30" width="160" height="100" rx="8" fill="url(#grad-client)" stroke={tab1TraceStep === 1 || tab1TraceStep === 4 ? '#3b82f6' : '#cbd5e1'} strokeWidth={tab1TraceStep === 1 || tab1TraceStep === 4 ? 2 : 1} />
+                    <text x="100" y="46" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">💻 Client App Level</text>
+                    <rect x="35" y="65" width="130" height="25" rx="6" fill="#f0fdf4" stroke="#86efac" strokeWidth="1" />
+                    <text x="100" y="81" textAnchor="middle" fontSize="8" fontWeight="800" fill="#15803d">Path: /var/log/app.log</text>
+                    <text x="100" y="112" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#94a3b8">File System Mount Point</text>
+                  </g>
 
                   {/* Inode Resolution Index */}
-                  <rect x="250" y="30" width="220" height="100" rx="6" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="360" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">⚙️ Metadata / Inode Table</text>
-                  
-                  {/* Inode entry box */}
-                  <rect x="265" y="60" width="190" height="55" rx="4" fill="#f5f3ff" stroke="#ddd6fe" />
-                  <text x="275" y="72" textAnchor="start" fontSize="8" fontWeight="700" fill="#581c87">Inode #401039 (File: app.log)</text>
-                  <text x="275" y="84" textAnchor="start" fontSize="7" fill="#6d28d9">Size: 450 KB | Owner: root</text>
-                  <text x="275" y="96" textAnchor="start" fontSize="7" fill="#6d28d9">Permissions: rw-r--r-- (POSIX)</text>
-                  <text x="275" y="108" textAnchor="start" fontSize="7" fill="#6d28d9">Pointers: Block 55, Block 56, Block 57</text>
+                  <g filter="url(#shadow-fs)">
+                    <rect x="250" y="30" width="220" height="100" rx="8" fill="url(#grad-client)" stroke={tab1TraceStep === 2 ? '#8b5cf6' : '#cbd5e1'} strokeWidth={tab1TraceStep === 2 ? 2 : 1} />
+                    <text x="360" y="46" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">⚙️ Metadata / Inode Table</text>
+                    
+                    {/* Inode entry box */}
+                    <rect x="265" y="60" width="190" height="55" rx="6" fill="url(#grad-inode)" stroke={tab1TraceStep === 2 ? '#a78bfa' : '#ddd6fe'} strokeWidth={1} />
+                    <text x="275" y="73" textAnchor="start" fontSize="8.5" fontWeight="800" fill="#581c87">Inode #401039 (File: app.log)</text>
+                    <text x="275" y="86" textAnchor="start" fontSize="7.5" fontWeight="500" fill="#6d28d9">Size: 450 KB | Owner: root</text>
+                    <text x="275" y="96" textAnchor="start" fontSize="7.5" fontWeight="500" fill="#6d28d9">Permissions: rw-r--r-- (POSIX)</text>
+                    <text x="275" y="106" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#4c1d95">Pointers: Block 55, Block 56, Block 57</text>
+                  </g>
 
                   {/* Physical storage blocks */}
-                  <rect x="540" y="30" width="200" height="100" rx="6" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="640" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">🗄️ Physical Block Storage</text>
+                  <g filter="url(#shadow-fs)">
+                    <rect x="540" y="30" width="200" height="100" rx="8" fill="url(#grad-client)" stroke={tab1TraceStep === 3 ? '#d97706' : '#cbd5e1'} strokeWidth={tab1TraceStep === 3 ? 2 : 1} />
+                    <text x="640" y="46" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🗄️ Physical Block Storage</text>
 
-                  <rect x="555" y="60" width="50" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
-                  <text x="580" y="73" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="700" fill="#78350f">Block 55</text>
+                    {/* Block 55 */}
+                    <g opacity={tab1TraceStep === 3 || tab1TraceStep === 4 ? 1 : 0.75}>
+                      <rect x="555" y="60" width="50" height="25" rx="4" fill="#fffbeb" stroke={tab1TraceStep === 3 ? '#fbbf24' : '#fde68a'} strokeWidth={1.5} />
+                      <text x="580" y="73" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#78350f">Block 55</text>
+                    </g>
 
-                  <rect x="615" y="60" width="50" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
-                  <text x="640" y="73" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="700" fill="#78350f">Block 56</text>
+                    {/* Block 56 */}
+                    <g opacity={tab1TraceStep === 3 || tab1TraceStep === 4 ? 1 : 0.75}>
+                      <rect x="615" y="60" width="50" height="25" rx="4" fill="#fffbeb" stroke={tab1TraceStep === 3 ? '#fbbf24' : '#fde68a'} strokeWidth={1.5} />
+                      <text x="640" y="73" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#78350f">Block 56</text>
+                    </g>
 
-                  <rect x="675" y="60" width="50" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
-                  <text x="700" y="73" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="700" fill="#78350f">Block 57</text>
+                    {/* Block 57 */}
+                    <g opacity={tab1TraceStep === 3 || tab1TraceStep === 4 ? 1 : 0.75}>
+                      <rect x="675" y="60" width="50" height="25" rx="4" fill="#fffbeb" stroke={tab1TraceStep === 3 ? '#fbbf24' : '#fde68a'} strokeWidth={1.5} />
+                      <text x="700" y="73" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#78350f">Block 57</text>
+                    </g>
 
-                  <text x="640" y="105" textAnchor="middle" fontSize="7" fill="#64748b">NVMe SSD Hardware Sectors</text>
+                    <text x="640" y="112" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#94a3b8">NVMe SSD Hardware Sectors</text>
+                  </g>
 
                   {/* Connectors */}
-                  <path d="M 180 77 L 250 77" fill="none" stroke="#047857" strokeWidth="1.5" markerEnd="url(#acn-fs)" />
-                  <path d="M 470 77 L 540 77" fill="none" stroke="#047857" strokeWidth="1.5" markerEnd="url(#acn-fs)" />
-                  <text x="215" y="68" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="600">Mount Lookup</text>
-                  <text x="505" y="68" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="600">Fetch Blocks</text>
+                  <path d="M 180 80 L 250 80" fill="none" stroke={tab1TraceStep >= 1 ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" markerEnd="url(#acn-fs)" />
+                  <path d="M 470 80 L 540 80" fill="none" stroke={tab1TraceStep >= 3 ? '#8b5cf6' : '#cbd5e1'} strokeWidth="1.5" markerEnd="url(#acn-purple-trace)" />
+                  <text x="215" y="71" textAnchor="middle" fontSize="8" fill="#3b82f6" fontWeight="700">Mount Lookup</text>
+                  <text x="505" y="71" textAnchor="middle" fontSize="8" fill="#8b5cf6" fontWeight="700">Fetch Blocks</text>
+
+                  {/* Trace animation dot */}
+                  {tab1TraceActive && (
+                    <circle r="4" fill={tab1TraceStep === 1 ? '#3b82f6' : tab1TraceStep === 2 ? '#8b5cf6' : tab1TraceStep === 3 ? '#d97706' : '#10b981'}>
+                      <animateMotion 
+                        dur="0.8s" 
+                        repeatCount="indefinite"
+                        path={
+                          tab1TraceStep === 1 ? "M 180 80 L 250 80" :
+                          tab1TraceStep === 2 ? "M 265 85 Q 360 110 455 85" :
+                          tab1TraceStep === 3 ? "M 470 80 L 540 80" :
+                          tab1TraceStep === 4 ? "M 540 95 L 180 95" : "M 180 80 L 250 80"
+                        }
+                      />
+                    </circle>
+                  )}
                 </svg>
               </div>
 
@@ -512,49 +1056,121 @@ export default function FilesAndStorageVisualizer() {
               </div>
 
               {/* Windows Multi-AZ SVG */}
-              <div style={{ border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff', marginTop: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  FSx for Windows File Server (Active/Passive Multi-AZ Synchronous Replication)
+              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginTop: '14px', boxShadow: 'inset 0 0 12px rgba(0,0,0,0.01)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🗄️</span> FSx for Windows File Server (Active/Passive Multi-AZ Synchronous Replication)
+                  </div>
+                  <button 
+                    className={`fs-btn ${azFailed ? 'fs-warning' : 'fs-danger'}`} 
+                    style={{ padding: '6px 12px', fontSize: '11.5px' }} 
+                    onClick={handleTriggerFailover}
+                  >
+                    {azFailed ? '🔄 Recover Primary Node (AZ-a)' : '⚠️ Inject AZ-a Outage Failover'}
+                  </button>
                 </div>
 
-                <svg width="100%" viewBox="0 0 760 180" style={{ background: '#f0f9ff', borderRadius: '6px', border: '0.5px solid #bae6fd' }}>
+                <svg width="100%" viewBox="0 0 760 180" className="fs-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
                   <defs>
                     <marker id="acn-blue-fs" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
+                    <marker id="acn-orange-fs2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
                     <marker id="acn-green-fs" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                    <linearGradient id="grad-win-client" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f0fdf4" />
+                      <stop offset="100%" stopColor="#dcfce7" />
+                    </linearGradient>
+                    <linearGradient id="grad-active-node" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#eff6ff" />
+                      <stop offset="100%" stopColor="#dbeafe" />
+                    </linearGradient>
+                    <linearGradient id="grad-failed-node" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fef2f2" />
+                      <stop offset="100%" stopColor="#fee2e2" />
+                    </linearGradient>
+                    <filter id="shadow-fs-win" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#94a3b8" floodOpacity="0.1" />
+                    </filter>
                   </defs>
 
                   {/* VPC boundary */}
                   <rect x="15" y="10" width="730" height="160" rx="8" fill="none" stroke="#94a3b8" strokeDasharray="3,3" />
-                  <text x="380" y="22" textAnchor="middle" fontSize="9" fontWeight="600" fill="#64748b">VPC (Virtual Private Cloud)</text>
+                  <text x="380" y="22" textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">VPC (Virtual Private Cloud)</text>
 
                   {/* Subnet A */}
-                  <rect x="25" y="35" width="220" height="120" rx="6" fill="#ffffff" stroke="#bae6fd" />
-                  <text x="135" y="48" textAnchor="middle" fontSize="9" fontWeight="600" fill="#0369a1">Availability Zone a (AZ-a)</text>
-                  <rect x="40" y="65" width="190" height="70" rx="4" fill="#eff6ff" stroke="#3b82f6" />
-                  <text x="135" y="80" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1d4ed8">🖥️ Primary Active Node</text>
-                  <text x="135" y="95" textAnchor="middle" fontSize="7" fill="#1e40af">SSD Storage Share | Active DNS Target</text>
-                  <text x="135" y="115" textAnchor="middle" fontSize="8" fill="#1e40af"><b>STATUS: Normal</b></text>
+                  <rect x="25" y="35" width="220" height="120" rx="8" fill="none" stroke={azFailed ? '#ef4444' : '#bae6fd'} strokeWidth={1.5} strokeDasharray={azFailed ? '4,4' : ''} />
+                  <text x="135" y="48" textAnchor="middle" fontSize="9" fontWeight="700" fill={azFailed ? '#b91c1c' : '#0369a1'}>
+                    Availability Zone a (AZ-a) {azFailed && '⚠️ [OUTAGE]'}
+                  </text>
+                  
+                  <g filter="url(#shadow-fs-win)">
+                    <rect x="40" y="65" width="190" height="70" rx="6" fill={azFailed ? 'url(#grad-failed-node)' : 'url(#grad-active-node)'} stroke={azFailed ? '#ef4444' : '#3b82f6'} strokeWidth={1.5} />
+                    <text x="135" y="80" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={azFailed ? '#b91c1c' : '#1d4ed8'}>
+                      {azFailed ? '❌ Node Offline' : '🖥️ Primary Active Node'}
+                    </text>
+                    <text x="135" y="94" textAnchor="middle" fontSize="7.5" fill={azFailed ? '#7f1d1d' : '#1e40af'} fontWeight="600">SSD Storage Share | Active DNS Target</text>
+                    <text x="135" y="116" textAnchor="middle" fontSize="8.5" fontWeight="700" fill={azFailed ? '#b91c1c' : '#15803d'}>
+                      STATUS: {azFailed ? 'CRASHED (FAILOVER ACTIVE)' : 'ONLINE & HEALTHY'}
+                    </text>
+                  </g>
 
                   {/* Subnet B */}
-                  <rect x="515" y="35" width="220" height="120" rx="6" fill="#ffffff" stroke="#bae6fd" />
-                  <text x="625" y="48" textAnchor="middle" fontSize="9" fontWeight="600" fill="#0369a1">Availability Zone b (AZ-b)</text>
-                  <rect x="530" y="65" width="190" height="70" rx="4" fill="#f8fafc" stroke="#64748b" />
-                  <text x="625" y="80" textAnchor="middle" fontSize="9" fontWeight="700" fill="#475569">🛡️ Standby Passive Node</text>
-                  <text x="625" y="95" textAnchor="middle" fontSize="7" fill="#475569">Standby disk volume | DNS standby target</text>
-                  <text x="625" y="115" textAnchor="middle" fontSize="8" fill="#475569"><b>STATUS: Idle Replica</b></text>
+                  <rect x="515" y="35" width="220" height="120" rx="8" fill="none" stroke="#bae6fd" strokeWidth={1.5} />
+                  <text x="625" y="48" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0369a1">Availability Zone b (AZ-b)</text>
+                  
+                  <g filter="url(#shadow-fs-win)">
+                    <rect x="530" y="65" width="190" height="70" rx="6" fill={azFailed ? 'url(#grad-active-node)' : '#ffffff'} stroke={azFailed ? '#ea580c' : '#64748b'} strokeWidth={1.5} />
+                    <text x="625" y="80" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={azFailed ? '#ea580c' : '#475569'}>
+                      {azFailed ? '👑 Promoted Active Node' : '🛡️ Standby Passive Node'}
+                    </text>
+                    <text x="625" y="94" textAnchor="middle" fontSize="7.5" fill={azFailed ? '#1e40af' : '#475569'} fontWeight="600">
+                      {azFailed ? 'Active DNS Target | Mounted Share' : 'Standby disk volume | Standby DNS'}
+                    </text>
+                    <text x="625" y="116" textAnchor="middle" fontSize="8.5" fontWeight="700" fill={azFailed ? '#15803d' : '#64748b'}>
+                      STATUS: {azFailed ? 'PROMOTED PRIMARY' : 'IDLE REPLICA (STANDBY)'}
+                    </text>
+                  </g>
 
                   {/* Client / VPC Router */}
-                  <rect x="300" y="65" width="160" height="70" rx="6" fill="#f0fdf4" stroke="#86efac" />
-                  <text x="380" y="80" textAnchor="middle" fontSize="10" fontWeight="700" fill="#166534">🏢 Client Workspace</text>
-                  <text x="380" y="95" textAnchor="middle" fontSize="7" fill="#15803d">Targeting: \\fsx-win-corp\share</text>
-                  <text x="380" y="115" textAnchor="middle" fontSize="8" fill="#15803d">SMB v3 Connection</text>
+                  <g filter="url(#shadow-fs-win)">
+                    <rect x="300" y="65" width="160" height="70" rx="8" fill="url(#grad-win-client)" stroke="#86efac" strokeWidth="1.5" />
+                    <text x="380" y="80" textAnchor="middle" fontSize="10.5" fontWeight="800" fill="#15803d">🏢 Client Workspace</text>
+                    <text x="380" y="94" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="600">Targeting: \\fsx-win-corp\share</text>
+                    <text x="380" y="116" textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#15803d">SMB v3 Connection</text>
+                  </g>
 
                   {/* Connections */}
                   {/* Client -> Primary */}
-                  <path d="M 300 90 L 235 90" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-blue-fs)" />
+                  {!azFailed ? (
+                    <g>
+                      <path d="M 300 90 L 235 90" fill="none" stroke="#0284c7" strokeWidth="2.5" markerEnd="url(#acn-blue-fs)" />
+                      <circle r="4" fill="#0284c7">
+                        <animateMotion dur="1s" repeatCount="indefinite" path="M 300 90 L 235 90" />
+                      </circle>
+                    </g>
+                  ) : (
+                    <g>
+                      <path d="M 460 90 L 525 90" fill="none" stroke="#ea580c" strokeWidth="2.5" markerEnd="url(#acn-orange-fs2)" />
+                      <circle r="4" fill="#ea580c">
+                        <animateMotion dur="1s" repeatCount="indefinite" path="M 460 90 L 525 90" />
+                      </circle>
+                    </g>
+                  )}
+
                   {/* Synchronous Replication line */}
-                  <path d="M 135 135 L 135 160 L 625 160 L 625 135" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#acn-green-fs)" />
-                  <text x="380" y="155" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="600">Continuous Block Synchronous Mirroring 🔄</text>
+                  {!azFailed ? (
+                    <g>
+                      <path d="M 135 135 L 135 160 L 625 160 L 625 135" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="none" markerEnd="url(#acn-green-fs)" />
+                      <circle r="4.5" fill="#10b981">
+                        <animateMotion dur="1.8s" repeatCount="indefinite" path="M 135 135 L 135 160 L 625 160 L 625 135" />
+                      </circle>
+                      <text x="380" y="153" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="700">Continuous Block Synchronous Mirroring 🔄</text>
+                    </g>
+                  ) : (
+                    <g>
+                      <path d="M 135 135 L 135 160 L 625 160 L 625 135" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="3,3" />
+                      <text x="380" y="153" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="800">⚠️ REPLICATION SUSPENDED — PRIMARY DOWN</text>
+                    </g>
+                  )}
                 </svg>
               </div>
 
@@ -626,53 +1242,129 @@ export default function FilesAndStorageVisualizer() {
               </div>
 
               {/* FSx for Lustre Parallel S3 Sync SVG */}
-              <div style={{ border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff', marginTop: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  FSx for Lustre High-Performance Computing (HPC) &amp; S3 Lazy-Loading Pipeline
+              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginTop: '14px', boxShadow: 'inset 0 0 12px rgba(0,0,0,0.01)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>🚀</span> FSx for Lustre Parallel High-Performance Computing (HPC) &amp; S3 Lazy-Loading Pipeline
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      className={`fs-btn ${lazyLoaded ? 'fs-warning' : 'fs-primary'}`} 
+                      style={{ padding: '6px 12px', fontSize: '11.5px' }} 
+                      onClick={() => {
+                        setLazyLoaded(prev => !prev);
+                        if (!lazyLoaded) {
+                          addLog("Tab 3: Simulating Lustre local NVMe cache load. S3 dataset indexed.", "success");
+                        } else {
+                          addLog("Tab 3: Flushed Lustre local NVMe cache sectors. Next reads will lazy-load from S3.", "warning");
+                        }
+                      }}
+                    >
+                      {lazyLoaded ? '❄️ Flush local SSD Cache' : '🔥 Pre-warm local SSD Cache'}
+                    </button>
+                  </div>
                 </div>
 
-                <svg width="100%" viewBox="0 0 760 180" style={{ background: '#fff7ed', borderRadius: '6px', border: '0.5px solid #fed7aa' }}>
+                <svg width="100%" viewBox="0 0 760 180" className="fs-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
                   <defs>
-                    <marker id="acn-orange-fs" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c2410c" /></marker>
-                    <marker id="acn-green-lustre" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                    <marker id="acn-orange-fs3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
+                    <marker id="acn-green-lustre2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                    <linearGradient id="grad-s3" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ecfdf5" />
+                      <stop offset="100%" stopColor="#d1fae5" />
+                    </linearGradient>
+                    <linearGradient id="grad-lustre" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fff7ed" />
+                      <stop offset="100%" stopColor="#ffedd5" />
+                    </linearGradient>
+                    <linearGradient id="grad-gpu" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#eff6ff" />
+                      <stop offset="100%" stopColor="#dbeafe" />
+                    </linearGradient>
+                    <filter id="shadow-fs-lustre" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#94a3b8" floodOpacity="0.1" />
+                    </filter>
                   </defs>
 
                   {/* S3 Bucket Data Repository */}
-                  <rect x="25" y="45" width="130" height="90" rx="8" fill="#ecfdf5" stroke="#a7f3d0" />
-                  <text x="90" y="65" textAnchor="middle" fontSize="10" fontWeight="700" fill="#047857">🪣 Amazon S3</text>
-                  <text x="90" y="85" textAnchor="middle" fontSize="7" fill="#065f46">Master Dataset (10 TB)</text>
-                  <text x="90" y="105" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="600">S3 Source Repository</text>
+                  <g filter="url(#shadow-fs-lustre)">
+                    <rect x="25" y="45" width="130" height="90" rx="8" fill="url(#grad-s3)" stroke="#10b981" strokeWidth="1.5" />
+                    <ellipse cx="90" cy="53" rx="65" ry="8" fill="#10b981" opacity="0.3" />
+                    <text x="90" y="72" textAnchor="middle" fontSize="10.5" fontWeight="800" fill="#047857">🪣 Amazon S3</text>
+                    <text x="90" y="88" textAnchor="middle" fontSize="7.5" fill="#065f46" fontWeight="600">Master Dataset (10 TB)</text>
+                    <text x="90" y="108" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="700">S3 Source Repository</text>
+                  </g>
 
                   {/* FSx for Lustre Parallel Filesystem */}
-                  <rect x="250" y="35" width="260" height="110" rx="8" fill="#ffffff" stroke="#fed7aa" />
-                  <text x="380" y="48" textAnchor="middle" fontSize="9" fontWeight="700" fill="#c2410c">🚀 Amazon FSx for Lustre Cluster</text>
-                  
-                  {/* Metadata and Storage targets */}
-                  <rect x="265" y="65" width="100" height="60" rx="4" fill="#fff7ed" stroke="#fdba74" />
-                  <text x="315" y="80" textAnchor="middle" fontSize="8" fontWeight="700" fill="#c2410c">Metadata Server</text>
-                  <text x="315" y="95" textAnchor="middle" fontSize="6" fill="#ea580c">Indices &amp; File Paths</text>
-                  <text x="315" y="110" textAnchor="middle" fontSize="6" fill="#ea580c">Index Sync: Active</text>
+                  <g filter="url(#shadow-fs-lustre)">
+                    <rect x="250" y="35" width="260" height="110" rx="8" fill="url(#grad-lustre)" stroke="#ea580c" strokeWidth="1.5" />
+                    <text x="380" y="50" textAnchor="middle" fontSize="10" fontWeight="800" fill="#c2410c">🚀 Amazon FSx for Lustre Cluster</text>
+                    
+                    {/* Metadata Server */}
+                    <rect x="265" y="65" width="100" height="60" rx="6" fill="#ffffff" stroke="#fdba74" strokeWidth="1" />
+                    <text x="315" y="80" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#c2410c">Metadata Server</text>
+                    <text x="315" y="95" textAnchor="middle" fontSize="7.5" fill="#ea580c">Indices &amp; File Paths</text>
+                    <text x="315" y="110" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#15803d">INDEX SYNCD 🟢</text>
 
-                  <rect x="390" y="65" width="100" height="60" rx="4" fill="#fff7ed" stroke="#fdba74" />
-                  <text x="440" y="80" textAnchor="middle" fontSize="8" fontWeight="700" fill="#c2410c">Storage Targets</text>
-                  <text x="440" y="95" textAnchor="middle" fontSize="6" fill="#ea580c">Parallel Data Striping</text>
-                  <text x="440" y="110" textAnchor="middle" fontSize="7" fill="#ea580c"><b>NVMe Disk Arrays</b></text>
+                    {/* Storage Targets */}
+                    <rect x="390" y="65" width="100" height="60" rx="6" fill="#ffffff" stroke="#fdba74" strokeWidth="1" />
+                    <text x="440" y="80" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#c2410c">Storage Targets</text>
+                    <text x="440" y="94" textAnchor="middle" fontSize="7.5" fill="#ea580c">Striped SSD Chassis</text>
+                    <text x="440" y="112" textAnchor="middle" fontSize="8" fontWeight="800" fill={lazyLoaded ? '#15803d' : '#4b5563'}>
+                      {lazyLoaded ? '🔥 SSD CACHE WARM' : '❄️ SSD CACHE COLD'}
+                    </text>
+                  </g>
 
                   {/* GPU EC2 Instances parallel read */}
-                  <rect x="600" y="45" width="130" height="90" rx="8" fill="#eff6ff" stroke="#bfdbfe" />
-                  <text x="665" y="65" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">🖥️ HPC GPU Fleet</text>
-                  <text x="665" y="85" textAnchor="middle" fontSize="7" fill="#2563eb">PyTorch / ML Training</text>
-                  <text x="665" y="105" textAnchor="middle" fontSize="8" fill="#1e40af" fontWeight="600">Parallel Read/Writes</text>
+                  <g filter="url(#shadow-fs-lustre)">
+                    <rect x="600" y="45" width="130" height="90" rx="8" fill="url(#grad-gpu)" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="665" y="65" textAnchor="middle" fontSize="10" fontWeight="800" fill="#1e40af">🖥️ HPC GPU Fleet</text>
+                    <text x="665" y="85" textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="600">PyTorch ML Cluster</text>
+                    <text x="665" y="105" textAnchor="middle" fontSize="8" fill="#1e40af" fontWeight="700">Parallel Read/Writes</text>
+                  </g>
 
                   {/* Connections */}
                   {/* S3 -> Lustre Lazy load on-demand */}
-                  <path d="M 155 90 L 250 90" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#acn-green-lustre)" />
-                  <text x="202" y="76" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="600">Lazy Load 🟢</text>
-                  <text x="202" y="84" textAnchor="middle" fontSize="6" fill="#047857">(Block stream)</text>
+                  <path d="M 155 90 L 250 90" fill="none" stroke={lazyLoaded ? '#cbd5e1' : '#10b981'} strokeWidth={lazyLoaded ? 1.5 : 2.5} strokeDasharray={lazyLoaded ? 'none' : '4,3'} markerEnd="url(#acn-green-lustre2)" />
+                  <text x="202" y="73" textAnchor="middle" fontSize="8" fill={lazyLoaded ? '#64748b' : '#047857'} fontWeight="700">
+                    {lazyLoaded ? 'Sync Idle' : 'Lazy Load 🟢'}
+                  </text>
+                  <text x="202" y="83" textAnchor="middle" fontSize="6.5" fill={lazyLoaded ? '#64748b' : '#047857'} fontWeight="600">
+                    {lazyLoaded ? '(S3 Sourced)' : '(Direct Stream)'}
+                  </text>
 
                   {/* Lustre -> GPU parallel */}
-                  <path d="M 510 90 L 600 90" fill="none" stroke="#c2410c" strokeWidth="2" markerEnd="url(#acn-orange-fs)" />
-                  <text x="555" y="78" textAnchor="middle" fontSize="8" fill="#c2410c" fontWeight="600">50+ GB/s ⚡</text>
+                  <path d="M 510 90 L 600 90" fill="none" stroke="#ea580c" strokeWidth={3} markerEnd="url(#acn-orange-fs3)" />
+                  <text x="555" y="73" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="800">
+                    {lazyLoaded ? '50+ GB/s ⚡' : 'S3 Pulling...'}
+                  </text>
+                  <text x="555" y="83" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="600">
+                    {lazyLoaded ? 'Direct NVMe Read' : 'Caching blocks'}
+                  </text>
+
+                  {/* Anim Motion Paths */}
+                  {!lazyLoaded ? (
+                    <g>
+                      {/* Packet from S3 to Lustre */}
+                      <circle r="4.5" fill="#10b981">
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 155 90 L 250 90" />
+                      </circle>
+                      {/* Sluggish packet from Lustre to GPU */}
+                      <circle r="4.5" fill="#ea580c">
+                        <animateMotion dur="2.2s" repeatCount="indefinite" path="M 510 90 L 600 90" />
+                      </circle>
+                    </g>
+                  ) : (
+                    <g>
+                      {/* Blazing packet stream from Lustre to GPU */}
+                      <circle r="5" fill="#ef4444">
+                        <animateMotion dur="0.6s" repeatCount="indefinite" path="M 510 90 L 600 90" />
+                      </circle>
+                      <circle r="3.5" fill="#fbbf24">
+                        <animateMotion dur="0.6s" begin="0.2s" repeatCount="indefinite" path="M 510 90 L 600 90" />
+                      </circle>
+                    </g>
+                  )}
                 </svg>
               </div>
 
@@ -752,66 +1444,106 @@ export default function FilesAndStorageVisualizer() {
               </div>
 
               {/* Hybrid Storage Gateway SVG Architecture */}
-              <div style={{ border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  AWS Storage Gateway Hybrid Network Topology (On-Premises to Cloud)
+              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginBottom: '14px', boxShadow: 'inset 0 0 12px rgba(0,0,0,0.01)' }}>
+                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🔌</span> AWS Storage Gateway Hybrid Network Topology (On-Premises to Cloud Integration)
                 </div>
 
-                <svg width="100%" viewBox="0 0 760 220" style={{ background: '#f8fafc', borderRadius: '6px', border: '0.5px solid #cbd5e1' }}>
+                <svg width="100%" viewBox="0 0 760 220" className="fs-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
                   <defs>
-                    <marker id="acn-hybrid" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c2410c" /></marker>
-                    <marker id="acn-cloud" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
+                    <marker id="acn-hybrid" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
+                    <marker id="acn-cloud-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
+                    <linearGradient id="grad-onprem" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="100%" stopColor="#f1f5f9" />
+                    </linearGradient>
+                    <linearGradient id="grad-aws" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="100%" stopColor="#f0f9ff" />
+                    </linearGradient>
+                    <filter id="shadow-fs-hybrid" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#94a3b8" floodOpacity="0.1" />
+                    </filter>
                   </defs>
 
                   {/* On-Premises Boundary */}
-                  <rect x="15" y="30" width="230" height="170" rx="8" fill="#ffffff" stroke="#94a3b8" />
-                  <text x="130" y="46" textAnchor="middle" fontSize="10" fontWeight="700" fill="#475569">🏢 Corporate Local Data Center</text>
+                  <rect x="15" y="30" width="230" height="170" rx="8" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="130" y="46" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#475569">🏢 Corporate Local Data Center</text>
 
                   {/* Local Server */}
-                  <rect x="25" y="65" width="90" height="50" rx="4" fill="#f1f5f9" stroke="#cbd5e1" />
-                  <text x="70" y="85" textAnchor="middle" fontSize="8" fontWeight="700" fill="#334155">Local Application</text>
-                  <text x="70" y="98" textAnchor="middle" fontSize="7" fill="#64748b">NFS / SMB / iSCSI</text>
+                  <g filter="url(#shadow-fs-hybrid)">
+                    <rect x="25" y="65" width="90" height="50" rx="6" fill="url(#grad-onprem)" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="70" y="85" textAnchor="middle" fontSize="8" fontWeight="800" fill="#334155">Local Server</text>
+                    <text x="70" y="98" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="600">NFS / SMB / iSCSI</text>
+                  </g>
 
                   {/* Gateway VM Appliance */}
-                  <rect x="140" y="65" width="90" height="90" rx="6" fill="#fff7ed" stroke="#fdba74" />
-                  <text x="185" y="85" textAnchor="middle" fontSize="8" fontWeight="700" fill="#c2410c">Storage Gateway</text>
-                  <text x="185" y="98" textAnchor="middle" fontSize="8" fontWeight="700" fill="#ea580c">VM Appliance</text>
-                  <rect x="150" y="115" width="70" height="25" rx="3" fill="#ffedd5" stroke="#fed7aa" />
-                  <text x="185" y="130" textAnchor="middle" fontSize="7" fontWeight="700" fill="#ea580c">💾 Hot SSD Cache</text>
+                  <g filter="url(#shadow-fs-hybrid)">
+                    <rect x="140" y="65" width="90" height="90" rx="6" fill="#fff7ed" stroke="#fdba74" strokeWidth="1.5" />
+                    <text x="185" y="82" textAnchor="middle" fontSize="8" fontWeight="800" fill="#c2410c">Storage Gateway</text>
+                    <text x="185" y="94" textAnchor="middle" fontSize="8" fontWeight="800" fill="#ea580c">VM Appliance</text>
+                    <rect x="148" y="112" width="74" height="30" rx="4" fill="#ffedd5" stroke="#fed7aa" strokeWidth="1" />
+                    <text x="185" y="124" textAnchor="middle" fontSize="7" fontWeight="800" fill="#ea580c">💾 local SSD Cache</text>
+                    <text x="185" y="134" textAnchor="middle" fontSize="6.5" fill="#c2410c" fontWeight="600">&lt; 1ms hot reads</text>
+                  </g>
 
                   {/* Network Tunnel */}
-                  <rect x="270" y="75" width="180" height="50" rx="4" fill="#eff6ff" stroke="#bfdbfe" />
-                  <text x="360" y="95" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1d4ed8">VPN / Direct Connect Tunnel</text>
-                  <text x="360" y="110" textAnchor="middle" fontSize="7" fill="#2563eb">Secure HTTPS / TLS 1.3 Encryption</text>
+                  <rect x="270" y="75" width="180" height="50" rx="8" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                  <path d="M 270 100 L 450 100" stroke="#6366f1" strokeWidth="3" fill="none" opacity="0.3" />
+                  <text x="360" y="92" textAnchor="middle" fontSize="9" fontWeight="800" fill="#1d4ed8">VPN / Direct Connect Tunnel</text>
+                  <text x="360" y="106" textAnchor="middle" fontSize="7" fill="#2563eb" fontWeight="600">Secure HTTPS / TLS 1.3 Encryption</text>
 
                   {/* AWS Cloud Boundary */}
-                  <rect x="475" y="30" width="265" height="170" rx="8" fill="#ffffff" stroke="#0284c7" />
-                  <text x="607" y="46" textAnchor="middle" fontSize="10" fontWeight="700" fill="#0284c7">☁️ AWS Cloud Infrastructure</text>
+                  <rect x="475" y="30" width="265" height="170" rx="8" fill="none" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="607" y="46" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#0284c7">☁️ AWS Cloud Infrastructure</text>
 
                   {/* Cloud Target S3 File */}
-                  <rect x="490" y="60" width="110" height="40" rx="4" fill="#ecfdf5" stroke="#a7f3d0" />
-                  <text x="545" y="78" textAnchor="middle" fontSize="8" fontWeight="700" fill="#047857">🪣 Amazon S3</text>
-                  <text x="545" y="90" textAnchor="middle" fontSize="7" fill="#059669">Object Caches (File GW)</text>
+                  <g filter="url(#shadow-fs-hybrid)">
+                    <rect x="490" y="60" width="110" height="40" rx="6" fill="url(#grad-aws)" stroke="#10b981" strokeWidth="1.2" />
+                    <ellipse cx="545" cy="65" rx="55" ry="4" fill="#10b981" opacity="0.2" />
+                    <text x="545" y="76" textAnchor="middle" fontSize="8" fontWeight="800" fill="#047857">🪣 Amazon S3</text>
+                    <text x="545" y="88" textAnchor="middle" fontSize="6.5" fill="#059669" fontWeight="600">Objects (File GW)</text>
+                  </g>
 
                   {/* Cloud Target EBS Snap */}
-                  <rect x="615" y="60" width="110" height="40" rx="4" fill="#f0f9ff" stroke="#bae6fd" />
-                  <text x="670" y="78" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0369a1">💾 EBS Snapshots</text>
-                  <text x="670" y="90" textAnchor="middle" fontSize="7" fill="#0284c7">Block Backups (Volume GW)</text>
+                  <g filter="url(#shadow-fs-hybrid)">
+                    <rect x="615" y="60" width="110" height="40" rx="6" fill="url(#grad-aws)" stroke="#0284c7" strokeWidth="1.2" />
+                    <ellipse cx="670" cy="65" rx="55" ry="4" fill="#0284c7" opacity="0.2" />
+                    <text x="670" y="76" textAnchor="middle" fontSize="8" fontWeight="800" fill="#0369a1">💾 EBS Snapshots</text>
+                    <text x="670" y="88" textAnchor="middle" fontSize="6.5" fill="#0284c7" fontWeight="600">Blocks (Volume GW)</text>
+                  </g>
 
                   {/* Cloud Target Glacier Vault */}
-                  <rect x="550" y="125" width="115" height="45" rx="4" fill="#faf5ff" stroke="#e9d5ff" />
-                  <text x="607" y="142" textAnchor="middle" fontSize="8" fontWeight="700" fill="#6b21a8">📼 S3 Glacier Vault</text>
-                  <text x="607" y="155" textAnchor="middle" fontSize="7" fill="#7c3aed">Virtual Tape VTL (Tape GW)</text>
+                  <g filter="url(#shadow-fs-hybrid)">
+                    <rect x="550" y="125" width="115" height="45" rx="6" fill="url(#grad-aws)" stroke="#8b5cf6" strokeWidth="1.2" />
+                    <ellipse cx="607" cy="130" rx="57.5" ry="4" fill="#8b5cf6" opacity="0.2" />
+                    <text x="607" y="142" textAnchor="middle" fontSize="8" fontWeight="800" fill="#6b21a8">📼 S3 Glacier Vault</text>
+                    <text x="607" y="154" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="600">Virtual Tapes (Tape GW)</text>
+                  </g>
 
                   {/* Connectors */}
                   {/* Local App -> Gateway VM */}
-                  <path d="M 115 90 L 140 90" fill="none" stroke="#c2410c" strokeWidth="1.5" markerEnd="url(#acn-hybrid)" />
+                  <path d="M 115 90 L 140 90" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#acn-hybrid)" />
                   {/* Gateway VM -> Tunnel */}
-                  <path d="M 230 110 L 270 110" fill="none" stroke="#1d4ed8" strokeWidth="1.5" markerEnd="url(#acn-cloud)" />
+                  <path d="M 230 100 L 270 100" fill="none" stroke="#6366f1" strokeWidth="2.5" markerEnd="url(#acn-cloud-blue)" />
                   {/* Tunnel -> Cloud targets */}
-                  <path d="M 450 100 L 490 80" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-cloud)" />
-                  <path d="M 450 100 L 615 80" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-cloud)" />
-                  <path d="M 450 100 L 550 142" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-cloud)" />
+                  <path d="M 450 100 Q 470 80 490 80" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-cloud-blue)" />
+                  <path d="M 450 100 Q 532.5 80 615 80" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-cloud-blue)" />
+                  <path d="M 450 100 Q 500 142 550 142" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#acn-cloud-blue)" />
+
+                  {/* Dynamic background replication packet streams */}
+                  <circle r="4" fill="#6366f1">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 230 100 L 450 100" />
+                  </circle>
+                  <circle r="3.5" fill="#0284c7">
+                    <animateMotion dur="2s" repeatCount="indefinite" path="M 450 100 Q 470 80 490 80" />
+                  </circle>
+                  <circle r="3.5" fill="#0284c7">
+                    <animateMotion dur="2s" begin="0.7s" repeatCount="indefinite" path="M 450 100 Q 532.5 80 615 80" />
+                  </circle>
+                  <circle r="3.5" fill="#8b5cf6">
+                    <animateMotion dur="2.2s" begin="1.4s" repeatCount="indefinite" path="M 450 100 Q 500 142 550 142" />
+                  </circle>
                 </svg>
               </div>
 
@@ -987,71 +1719,425 @@ export default function FilesAndStorageVisualizer() {
                 <div className="fs-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   
                   {/* Dynamic SVG tracing paths */}
-                  <svg width="100%" height="200" viewBox="0 0 480 200" style={{ background: '#f8fafc', borderRadius: '8px', border: '0.5px solid #cbd5e1' }}>
-                    {/* Client / User Node */}
-                    <circle cx="50" cy="100" r="18" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="1.5" />
-                    <text x="50" y="100" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#fff" fontWeight="700">
-                      {activeScenario === 'windows_multiaz' ? 'SMB' : activeScenario === 'lustre_ml' ? 'GPU' : activeScenario === 'zfs_dev' ? 'DEV' : activeScenario === 'gateway_hybrid' ? 'NFS' : activeScenario === 'datasync_migration' ? 'NAS' : 'SAP'}
-                    </text>
-                    <text x="50" y="130" textAnchor="middle" fontSize="8" fill="#475569">
-                      {activeScenario === 'gateway_hybrid' ? 'Local Server' : activeScenario === 'datasync_migration' ? 'Source Storage' : 'Client / Compute'}
-                    </text>
+                  <svg width="100%" height="200" viewBox="0 0 480 200" className="fs-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.01))' }}>
+                    <defs>
+                      <marker id="acn-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
+                      <marker id="acn-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                      <marker id="acn-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
+                      <marker id="acn-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                      <linearGradient id="grad-client-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#eff6ff" />
+                      </linearGradient>
+                      <linearGradient id="grad-primary-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#ecfdf5" />
+                      </linearGradient>
+                      <linearGradient id="grad-standby-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f8fafc" />
+                      </linearGradient>
+                      <linearGradient id="grad-failed-sim" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fef2f2" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <filter id="shadow-sim" x="-15%" y="-15%" width="130%" height="130%">
+                        <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#94a3b8" floodOpacity="0.12" />
+                      </filter>
+                    </defs>
 
-                    {/* Intermediate Layer / Router / Active AD / Lustre MD */}
-                    <rect x="140" y="70" width="80" height="60" rx="4" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="180" y="90" textAnchor="middle" fontSize="8" fontWeight="700" fill="#475569">
-                      {activeScenario === 'windows_multiaz' ? 'Managed AD' : activeScenario === 'lustre_ml' ? 'Lustre MD' : activeScenario === 'zfs_dev' ? 'ZFS RAM Cache' : activeScenario === 'gateway_hybrid' ? 'Gateway Appliance' : activeScenario === 'datasync_migration' ? 'DataSync Agent' : 'ONTAP Flex'}
-                    </text>
-                    <text x="180" y="105" textAnchor="middle" fontSize="7" fill="#64748b">
-                      {simStep >= 2 ? 'Active 🟢' : 'Idle'}
-                    </text>
+                    {/* Scenario 1: Windows Multi-AZ Failover Layout */}
+                    {activeScenario === 'windows_multiaz' && (
+                      <g>
+                        {/* Client Node */}
+                        <g filter="url(#shadow-sim)">
+                          <circle cx="50" cy="100" r="18" fill="url(#grad-client-sim)" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="50" y="100" textAnchor="middle" dominantBaseline="central" fontSize="7.5" fontWeight="800" fill="#1e40af">SMB</text>
+                          <text x="50" y="130" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#475569">Workstation</text>
+                        </g>
 
-                    {/* Storage Primary Volume */}
-                    <rect x="270" y="65" width="75" height="70" rx="6" fill={simStep >= 3 ? '#ecfdf5' : '#ffffff'} stroke={simStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
-                    <text x="307" y="85" textAnchor="middle" fontSize="8" fontWeight="700" fill={simStep >= 3 ? '#047857' : '#475569'}>
-                      {activeScenario === 'windows_multiaz' ? (azFailed ? 'AZ-b Primary' : 'AZ-a Primary') : activeScenario === 'lustre_ml' ? 'Lustre NVMe' : activeScenario === 'zfs_dev' ? 'OpenZFS SSD' : activeScenario === 'gateway_hybrid' ? 'Local Cache' : activeScenario === 'datasync_migration' ? 'Cloud Target' : 'ONTAP Volume'}
-                    </text>
-                    <text x="307" y="100" textAnchor="middle" fontSize="7" fill={simStep >= 3 ? '#047857' : '#64748b'}>
-                      {simStep >= 3 ? 'Active I/O ⚡' : 'Mountable'}
-                    </text>
-                    <text x="307" y="115" textAnchor="middle" fontSize="7" fill="#64748b">
-                      {activeScenario === 'zfs_dev' && clonedZfs ? 'Clone Dataset' : activeScenario === 'gateway_hybrid' ? 'SSD Disk' : activeScenario === 'datasync_migration' ? 'Amazon S3' : 'Primary Tier'}
-                    </text>
+                        {/* Active Directory Hub */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="125" y="70" width="75" height="60" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                          <text x="162" y="88" textAnchor="middle" fontSize="8" fontWeight="800" fill="#475569">Managed AD</text>
+                          <text x="162" y="100" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#10b981">AUTH OK</text>
+                          <text x="162" y="112" textAnchor="middle" fontSize="6.5" fill="#94a3b8">DFS Namesp</text>
+                        </g>
 
-                    {/* Storage Secondary Volume / Replication / S3 Target */}
-                    <rect x="390" y="65" width="75" height="70" rx="6" fill={simStep >= 4 ? '#fffbeb' : '#ffffff'} stroke={simStep >= 4 ? '#d97706' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={activeScenario === 'lustre_ml' || activeScenario === 'gateway_hybrid' ? '' : '3,3'} />
-                    <text x="427" y="85" textAnchor="middle" fontSize="8" fontWeight="700" fill={simStep >= 4 ? '#b45309' : '#475569'}>
-                      {activeScenario === 'windows_multiaz' ? 'AZ-b Standby' : activeScenario === 'lustre_ml' ? 'Amazon S3' : activeScenario === 'zfs_dev' ? 'Prod Source' : activeScenario === 'gateway_hybrid' ? 'Amazon S3' : activeScenario === 'datasync_migration' ? 'EFS Archive' : 'SnapMirror'}
-                    </text>
-                    <text x="427" y="100" textAnchor="middle" fontSize="7" fill={simStep >= 4 ? '#b45309' : '#64748b'}>
-                      {activeScenario === 'lustre_ml' && lazyLoaded ? 'Sync Warm' : activeScenario === 'windows_multiaz' && azFailed ? 'Offline ❌' : 'Sync Active'}
-                    </text>
-                    <text x="427" y="115" textAnchor="middle" fontSize="7" fill="#64748b">
-                      {activeScenario === 'lustre_ml' || activeScenario === 'gateway_hybrid' ? 'Data Repo' : 'Backup Replica'}
-                    </text>
+                        {/* AZ-a Storage Node */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="250" y="30" width="105" height="55" rx="6" fill={azFailed ? 'url(#grad-failed-sim)' : 'url(#grad-primary-sim)'} stroke={azFailed ? '#ef4444' : '#10b981'} strokeWidth={azFailed ? 1.5 : 1} />
+                          <ellipse cx="302" cy="35" rx="52.5" ry="3.5" fill={azFailed ? '#ef4444' : '#10b981'} opacity="0.2" />
+                          <text x="302" y="52" textAnchor="middle" fontSize="8" fontWeight="800" fill={azFailed ? '#b91c1c' : '#047857'}>AZ-a Primary</text>
+                          <text x="302" y="65" textAnchor="middle" fontSize="7.5" fontWeight="700" fill={azFailed ? '#b91c1c' : '#15803d'}>
+                            {azFailed ? '❌ OFFLINE' : '🟢 ACTIVE'}
+                          </text>
+                        </g>
 
-                    {/* Connector lines */}
-                    {/* Client to Router */}
-                    <path d="M 68 100 L 140 100" fill="none" stroke={simStep >= 1 ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" />
-                    {/* Router to Primary */}
-                    <path d="M 220 100 L 270 100" fill="none" stroke={simStep >= 2 ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" />
-                    {/* Primary to Secondary */}
-                    <path d="M 345 100 L 390 100" fill="none" stroke={simStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={activeScenario === 'lustre_ml' || activeScenario === 'gateway_hybrid' ? '3,2' : ''} />
+                        {/* AZ-b Standby Storage Node */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="250" y="115" width="105" height="55" rx="6" fill={azFailed ? 'url(#grad-primary-sim)' : 'url(#grad-standby-sim)'} stroke={azFailed ? '#ea580c' : '#64748b'} strokeWidth={1.5} />
+                          <ellipse cx="302" cy="120" rx="52.5" ry="3.5" fill={azFailed ? '#ea580c' : '#64748b'} opacity="0.2" />
+                          <text x="302" y="137" textAnchor="middle" fontSize="8" fontWeight="800" fill={azFailed ? '#ea580c' : '#475569'}>AZ-b Standby</text>
+                          <text x="302" y="150" textAnchor="middle" fontSize="7.5" fontWeight="700" fill={azFailed ? '#15803d' : '#64748b'}>
+                            {azFailed ? '👑 PROMOTED' : '💤 STANDBY'}
+                          </text>
+                        </g>
 
-                    {/* Packet Animation Dot */}
-                    {isSimulating && (
-                      <circle r="4" fill="#f59e0b">
-                        <animateMotion 
-                          dur="1.5s" 
-                          repeatCount="indefinite" 
-                          path={
-                            simStep === 1 ? 'M 50 100 L 140 100' :
-                            simStep === 2 ? 'M 140 100 L 270 100' :
-                            simStep === 3 ? 'M 270 100 L 307 100' :
-                            simStep === 4 ? (activeScenario === 'lustre_ml' && !lazyLoaded ? 'M 427 100 L 307 100' : 'M 307 100 L 427 100') : 'M 50 100 L 140 100'
-                          } 
-                        />
-                      </circle>
+                        {/* Sync replication link */}
+                        <path d="M 355 57 Q 410 87 355 142" fill="none" stroke={azFailed ? '#ef4444' : '#10b981'} strokeWidth={2} strokeDasharray={azFailed ? '3,3' : 'none'} />
+                        <text x="430" y="102" textAnchor="middle" fontSize="7" fontWeight="700" fill={azFailed ? '#ef4444' : '#15803d'}>
+                          {azFailed ? 'SYNC BROKEN' : 'SYNC OK 🔄'}
+                        </text>
+
+                        {/* Connection channels */}
+                        <path d="M 68 100 L 125 100" fill="none" stroke="#3b82f6" strokeWidth="1.5" markerEnd="url(#acn-blue)" />
+                        
+                        {!azFailed ? (
+                          <g>
+                            <path d="M 200 90 L 250 65" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#acn-blue)" />
+                            {isSimulating && (
+                              <circle r="4" fill="#2563eb">
+                                <animateMotion dur="1.2s" repeatCount="indefinite" path={
+                                  simStep === 1 ? "M 50 100 L 125 100" :
+                                  simStep === 2 ? "M 125 100 Q 162 80 200 90 L 250 65" :
+                                  simStep === 3 ? "M 250 65 L 290 65" :
+                                  simStep === 4 ? "M 355 57 Q 410 87 355 142" : "M 50 100 L 125 100"
+                                } />
+                              </circle>
+                            )}
+                          </g>
+                        ) : (
+                          <g>
+                            <path d="M 200 110 L 250 135" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#acn-orange)" />
+                            {isSimulating && (
+                              <circle r="4" fill="#ea580c">
+                                <animateMotion dur="1.2s" repeatCount="indefinite" path={
+                                  simStep === 1 ? "M 50 100 L 125 100" :
+                                  simStep === 2 ? "M 125 100 Q 162 120 200 110 L 250 135" :
+                                  simStep === 3 ? "M 250 135 L 290 135" :
+                                  simStep === 4 ? "M 250 135 L 310 135" : "M 50 100 L 125 100"
+                                } />
+                              </circle>
+                            )}
+                          </g>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Scenario 2: FSx for Lustre ML Parallel Caching */}
+                    {activeScenario === 'lustre_ml' && (
+                      <g>
+                        {/* GPU Compute Node */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="25" y="60" width="85" height="80" rx="6" fill="url(#grad-client-sim)" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="67" y="80" textAnchor="middle" fontSize="8" fontWeight="800" fill="#1e40af">🖥️ GPU FLEET</text>
+                          <text x="67" y="95" textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="600">PyTorch ML</text>
+                          <text x="67" y="112" textAnchor="middle" fontSize="8" fontWeight="700" fill={isSimulating ? '#166534' : '#475569'}>
+                            {isSimulating ? 'TRAINING...' : 'STANDBY'}
+                          </text>
+                        </g>
+
+                        {/* Lustre NVMe Targets */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="175" y="55" width="115" height="90" rx="6" fill="url(#grad-primary-sim)" stroke="#ea580c" strokeWidth="1.5" />
+                          <ellipse cx="232.5" cy="60" rx="57.5" ry="4" fill="#ea580c" opacity="0.2" />
+                          <text x="232.5" y="76" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#c2410c">Lustre NVMe</text>
+                          <text x="232.5" y="90" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="600">Parallel SSD Array</text>
+                          <rect x="187" y="105" width="90" height="25" rx="4" fill="#fff7ed" stroke="#fed7aa" strokeWidth="1" />
+                          <text x="232" y="120" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#c2410c">
+                            {lazyLoaded ? '🔥 CACHE WARM' : '❄️ CACHE COLD'}
+                          </text>
+                        </g>
+
+                        {/* S3 Storage Repository */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="350" y="65" width="105" height="70" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="402.5" cy="70" rx="52.5" ry="3.5" fill="#10b981" opacity="0.2" />
+                          <text x="402.5" y="88" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#047857">🪣 Amazon S3</text>
+                          <text x="402.5" y="102" textAnchor="middle" fontSize="7.5" fill="#065f46" fontWeight="600">Master Repository</text>
+                          <text x="402.5" y="116" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="700">10 TB Bucket</text>
+                        </g>
+
+                        {/* Pipelines */}
+                        <path d="M 175 100 L 110 100" fill="none" stroke="#ea580c" strokeWidth="2.5" markerEnd="url(#acn-orange)" />
+                        <path d="M 350 100 L 290 100" fill="none" stroke="#10b981" strokeWidth={lazyLoaded ? 1 : 2} strokeDasharray={lazyLoaded ? 'none' : '3,2'} markerEnd="url(#acn-green)" />
+                        <text x="320" y="88" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="800">
+                          {lazyLoaded ? 'Sync Idle' : 'Lazy Load 🟢'}
+                        </text>
+
+                        {/* Traffic animation */}
+                        {isSimulating && (
+                          <g>
+                            {!lazyLoaded ? (
+                              <g>
+                                {/* S3 to Lustre download */}
+                                <circle r="4.5" fill="#10b981">
+                                  <animateMotion dur="1s" repeatCount="indefinite" path="M 350 100 L 290 100" />
+                                </circle>
+                                {/* Sluggish Lustre to GPU */}
+                                <circle r="4.5" fill="#ea580c">
+                                  <animateMotion dur="1.8s" repeatCount="indefinite" path="M 175 100 L 110 100" />
+                                </circle>
+                              </g>
+                            ) : (
+                              <g>
+                                {/* Blazing fast direct reads from NVMe cache */}
+                                <circle r="5" fill="#ef4444">
+                                  <animateMotion dur="0.5s" repeatCount="indefinite" path="M 175 100 L 110 100" />
+                                </circle>
+                                <circle r="3.5" fill="#fbbf24">
+                                  <animateMotion dur="0.5s" begin="0.15s" repeatCount="indefinite" path="M 175 100 L 110 100" />
+                                </circle>
+                              </g>
+                            )}
+                          </g>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Scenario 3: FSx for OpenZFS Database Clones */}
+                    {activeScenario === 'zfs_dev' && (
+                      <g>
+                        {/* Developer Client */}
+                        <g filter="url(#shadow-sim)">
+                          <circle cx="50" cy="100" r="18" fill="url(#grad-client-sim)" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="50" y="100" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#1e40af">DEV</text>
+                          <text x="50" y="130" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#475569">Workspace</text>
+                        </g>
+
+                        {/* OpenZFS SSD Master Pool */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="150" y="55" width="110" height="90" rx="6" fill="url(#grad-primary-sim)" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="205" cy="60" rx="55" ry="4" fill="#10b981" opacity="0.2" />
+                          <text x="205" y="76" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#047857">ZFS Prod SSD</text>
+                          <text x="205" y="90" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">80,000 IOPS</text>
+                          <text x="205" y="115" textAnchor="middle" fontSize="7" fill="#64748b">LZ4 Compression</text>
+                        </g>
+
+                        {/* OpenZFS Copy-on-Write Dev Clone */}
+                        {clonedZfs ? (
+                          <g filter="url(#shadow-sim)">
+                            <rect x="330" y="55" width="115" height="90" rx="6" fill="#faf5ff" stroke="#8b5cf6" strokeWidth="1.5" />
+                            <ellipse cx="387.5" cy="60" rx="57.5" ry="4" fill="#8b5cf6" opacity="0.2" />
+                            <text x="387.5" y="76" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#6b21a8">ZFS Clone DB</text>
+                            <text x="387.5" y="92" textAnchor="middle" fontSize="7" fill="#7c3aed" fontWeight="600">Spawn: 12ms ⚡</text>
+                            <text x="387.5" y="108" textAnchor="middle" fontSize="6.5" fill="#7c3aed">Copy-on-Write</text>
+                            <text x="387.5" y="122" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#6b21a8">0-Cost Blocks</text>
+                          </g>
+                        ) : (
+                          <g opacity="0.35">
+                            <rect x="330" y="55" width="115" height="90" rx="6" fill="#f8fafc" stroke="#94a3b8" strokeDasharray="3,3" />
+                            <text x="387.5" y="100" textAnchor="middle" fontSize="8" fontWeight="600" fill="#64748b">No Clone Active</text>
+                          </g>
+                        )}
+
+                        {/* Pipes */}
+                        <path d="M 68 100 L 150 100" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#acn-green)" />
+                        
+                        {clonedZfs && (
+                          <g>
+                            <path d="M 260 100 L 330 100" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="2,2" markerEnd="url(#acn-purple)" />
+                            <text x="295" y="90" textAnchor="middle" fontSize="7" fill="#6b21a8" fontWeight="700">Metadata ptr</text>
+                          </g>
+                        )}
+
+                        {/* Animation particle */}
+                        {isSimulating && (
+                          <g>
+                            {clonedZfs ? (
+                              <circle r="4" fill="#8b5cf6">
+                                <animateMotion dur="0.9s" repeatCount="indefinite" path="M 50 100 Q 100 130 150 100 Q 240 130 330 100 L 387 100" />
+                              </circle>
+                            ) : (
+                              <circle r="4" fill="#10b981">
+                                <animateMotion dur="0.9s" repeatCount="indefinite" path="M 50 100 L 150 100" />
+                              </circle>
+                            )}
+                          </g>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Scenario 4: FSx for NetApp ONTAP SAP Tiering */}
+                    {activeScenario === 'ontap_enterprise' && (
+                      <g>
+                        {/* SAP Database App Server */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="20" y="65" width="85" height="70" rx="6" fill="url(#grad-client-sim)" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="62.5" y="85" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#1e40af">SAP HANA</text>
+                          <text x="62.5" y="98" textAnchor="middle" fontSize="7" fill="#2563eb" fontWeight="600">Linux DB Cluster</text>
+                          <text x="62.5" y="112" textAnchor="middle" fontSize="7" fill="#475569">iSCSI LUN</text>
+                        </g>
+
+                        {/* ONTAP Multi-Protocol SSD Primary */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="155" y="30" width="125" height="60" rx="6" fill="url(#grad-primary-sim)" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="217.5" cy="35" rx="62.5" ry="3.5" fill="#10b981" opacity="0.2" />
+                          <text x="217.5" y="50" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#047857">ONTAP SSD Volume</text>
+                          <text x="217.5" y="62" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">Active Hot Blocks</text>
+                          <text x="217.5" y="74" textAnchor="middle" fontSize="7" fill="#64748b">NFS &amp; SMB shared</text>
+                        </g>
+
+                        {/* ONTAP Cheap HDD Capacity Pool */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="155" y="110" width="125" height="60" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1" />
+                          <ellipse cx="217.5" cy="115" rx="62.5" ry="3.5" fill="#ea580c" opacity="0.2" />
+                          <text x="217.5" y="130" textAnchor="middle" fontSize="8" fontWeight="800" fill="#c2410c">Capacity HDD Pool</text>
+                          <text x="217.5" y="142" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="600">Cold blocks auto-tiered</text>
+                          <text x="217.5" y="154" textAnchor="middle" fontSize="7" fill="#7c2d12">90% Storage Savings</text>
+                        </g>
+
+                        {/* SnapMirror replication target */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="335" y="65" width="120" height="70" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1" strokeDasharray="3,3" />
+                          <ellipse cx="395" cy="70" rx="60" ry="3.5" fill="#d97706" opacity="0.1" />
+                          <text x="395" y="88" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#b45309">SnapMirror DR</text>
+                          <text x="395" y="102" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="600">Secondary Region</text>
+                          <text x="395" y="116" textAnchor="middle" fontSize="7" fill="#d97706">Async replication</text>
+                        </g>
+
+                        {/* Connectors */}
+                        <path d="M 105 100 L 155 70" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#acn-blue)" />
+                        <path d="M 217 90 L 217 110" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#acn-orange)" />
+                        <path d="M 280 60 Q 307.5 50 335 75" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#acn-green)" />
+
+                        {/* Flow stream particles */}
+                        {isSimulating && (
+                          <g>
+                            {/* SAP writes to SSD hot storage */}
+                            <circle r="4" fill="#2563eb">
+                              <animateMotion dur="1s" repeatCount="indefinite" path="M 105 100 L 155 70" />
+                            </circle>
+                            {/* Cold blocks shifting down to capacity pool */}
+                            <circle r="4.5" fill="#ea580c">
+                              <animateMotion dur="1.8s" repeatCount="indefinite" path="M 217 90 L 217 110" />
+                            </circle>
+                            {/* SnapMirror async replicator sync channel */}
+                            <circle r="3.5" fill="#10b981">
+                              <animateMotion dur="2.2s" begin="0.4s" repeatCount="indefinite" path="M 280 60 Q 307.5 50 335 75" />
+                            </circle>
+                          </g>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Scenario 5: Hybrid S3 Storage Gateway */}
+                    {activeScenario === 'gateway_hybrid' && (
+                      <g>
+                        {/* On-prem application host */}
+                        <g filter="url(#shadow-sim)">
+                          <circle cx="50" cy="100" r="18" fill="url(#grad-client-sim)" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="50" y="100" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#1e40af">NFS</text>
+                          <text x="50" y="130" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#475569">On-Prem Host</text>
+                        </g>
+
+                        {/* Storage Gateway Cached VM appliance */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="135" y="55" width="100" height="90" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
+                          <ellipse cx="185" cy="60" rx="50" ry="4" fill="#ea580c" opacity="0.2" />
+                          <text x="185" y="76" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#c2410c">Storage Gateway</text>
+                          <text x="185" y="88" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="600">Local VM appliance</text>
+                          <rect x="145" y="102" width="80" height="25" rx="4" fill="#ffedd5" stroke="#fed7aa" strokeWidth="1" />
+                          <text x="185" y="117" textAnchor="middle" fontSize="7.5" fontWeight="800" fill="#c2410c">💾 Hot SSD Cache</text>
+                        </g>
+
+                        {/* Secure VPN tunnel */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="260" y="80" width="80" height="40" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                          <text x="300" y="97" textAnchor="middle" fontSize="8" fontWeight="800" fill="#1d4ed8">VPN Tunnel</text>
+                          <text x="300" y="109" textAnchor="middle" fontSize="6.5" fill="#2563eb">TLS HTTPS sync</text>
+                        </g>
+
+                        {/* Amazon S3 target */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="365" y="65" width="95" height="70" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="412.5" cy="70" rx="47.5" ry="3.5" fill="#10b981" opacity="0.2" />
+                          <text x="412.5" y="88" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#047857">🪣 Amazon S3</text>
+                          <text x="412.5" y="102" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">Infinite S3 Bucket</text>
+                          <text x="412.5" y="116" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="600">Cloud Target</text>
+                        </g>
+
+                        {/* Flow lines */}
+                        <path d="M 68 100 L 135 100" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#acn-orange)" />
+                        <path d="M 235 100 L 260 100" fill="none" stroke="#6366f1" strokeWidth="1.5" markerEnd="url(#acn-purple)" />
+                        <path d="M 340 100 L 365 100" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#acn-green)" />
+
+                        {/* Traffic animation particles */}
+                        {isSimulating && (
+                          <g>
+                            {/* Server saves file instantly to SSD cache */}
+                            <circle r="4" fill="#ea580c">
+                              <animateMotion dur="0.8s" repeatCount="indefinite" path="M 50 100 L 135 100" />
+                            </circle>
+                            {/* Gateway background upload thread transfers over VPN */}
+                            <circle r="4.5" fill="#6366f1">
+                              <animateMotion dur="2.2s" begin="0.2s" repeatCount="indefinite" path="M 135 100 Q 185 100 235 100 L 260 100 L 340 100 L 365 100 L 412 100" />
+                            </circle>
+                          </g>
+                        )}
+                      </g>
+                    )}
+
+                    {/* Scenario 6: Large Scale 100 TB AWS DataSync Migration */}
+                    {activeScenario === 'datasync_migration' && (
+                      <g>
+                        {/* On-premises Corporate NAS Source */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="20" y="60" width="90" height="80" rx="6" fill="url(#grad-client-sim)" stroke="#4f46e5" strokeWidth="1.5" />
+                          <ellipse cx="65" cy="65" rx="45" ry="4" fill="#4f46e5" opacity="0.2" />
+                          <text x="65" y="82" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#4338ca">On-Prem NAS</text>
+                          <text x="65" y="96" textAnchor="middle" fontSize="7.5" fill="#4f46e5" fontWeight="600">Local Source Files</text>
+                          <text x="65" y="112" textAnchor="middle" fontSize="8" fontWeight="700" fill="#4338ca">100 TB Payload</text>
+                        </g>
+
+                        {/* AWS DataSync Transfer Agent */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="160" y="70" width="90" height="60" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                          <text x="205" y="88" textAnchor="middle" fontSize="8" fontWeight="800" fill="#475569">DataSync Agent</text>
+                          <text x="205" y="100" textAnchor="middle" fontSize="7.5" fill="#10b981" fontWeight="700">AGENT ACTIVE 🟢</text>
+                          <text x="205" y="112" textAnchor="middle" fontSize="6.5" fill="#94a3b8">SHA-256 Check</text>
+                        </g>
+
+                        {/* Target Amazon S3 Bucket */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="325" y="30" width="125" height="55" rx="6" fill="url(#grad-primary-sim)" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="387.5" cy="35" rx="62.5" ry="3.5" fill="#10b981" opacity="0.2" />
+                          <text x="387.5" y="52" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#047857">🪣 Target Amazon S3</text>
+                          <text x="387.5" y="65" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">Sync Target volume 1</text>
+                        </g>
+
+                        {/* Target Amazon EFS POSIX filesystem */}
+                        <g filter="url(#shadow-sim)">
+                          <rect x="325" y="115" width="125" height="55" rx="6" fill="url(#grad-primary-sim)" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="387.5" cy="120" rx="62.5" ry="3.5" fill="#10b981" opacity="0.2" />
+                          <text x="387.5" y="137" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#047857">📂 Target AWS EFS</text>
+                          <text x="387.5" y="150" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">Sync Target volume 2</text>
+                        </g>
+
+                        {/* Channels */}
+                        <path d="M 110 100 L 160 100" fill="none" stroke="#4f46e5" strokeWidth="1.5" markerEnd="url(#acn-purple)" />
+                        <path d="M 250 90 L 325 60" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#acn-green)" />
+                        <path d="M 250 110 L 325 140" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#acn-green)" />
+
+                        {/* Animation particle flow responding dynamically to datasyncBandwidth */}
+                        {isSimulating && (
+                          <g>
+                            {/* NAS to DataSync Agent */}
+                            <circle r="4" fill="#4338ca">
+                              <animateMotion dur={Math.max(0.4, 4 - datasyncBandwidth / 2500) + 's'} repeatCount="indefinite" path="M 110 100 L 160 100" />
+                            </circle>
+                            {/* Agent to target S3 */}
+                            <circle r="4" fill="#10b981">
+                              <animateMotion dur={Math.max(0.4, 4 - datasyncBandwidth / 2500) + 's'} repeatCount="indefinite" path="M 250 90 L 325 60" />
+                            </circle>
+                            {/* Agent to target EFS */}
+                            <circle r="4" fill="#10b981">
+                              <animateMotion dur={Math.max(0.4, 4 - datasyncBandwidth / 2500) + 's'} begin="0.25s" repeatCount="indefinite" path="M 250 110 L 325 140" />
+                            </circle>
+                          </g>
+                        )}
+                      </g>
                     )}
                   </svg>
 
@@ -1115,15 +2201,17 @@ export default function FilesAndStorageVisualizer() {
           <div>
             <div className="fs-sec">Interactive Storage Workload Advisor Questionnaire</div>
             <div className="fs-card">
-              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '16px', color: '#475569' }}>
                 Unsure which AWS storage, database, or migration service is best suited for your workload? Complete this dynamic questionnaire, and our architectural engine will calculate the ideal storage path based on your protocol, residency, and latency requirements.
               </div>
 
-              <div className="fs-grid3" style={{ gap: '12px', marginBottom: '14px' }}>
+              <div className="fs-grid3" style={{ gap: '14px', marginBottom: '16px' }}>
                 {/* Selector 1: Data Type */}
-                <div className="fs-ctrl">
-                  <label>1. Select Primary Data Type</label>
-                  <select value={advisorDataType} onChange={(e) => { setAdvisorDataType(e.target.value); setAdvisorResult(null); }}>
+                <div className={`fs-advisor-box ${advisorDataType ? 'fs-active' : ''}`}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+                    💾 1. Data Type & Protocol
+                  </label>
+                  <select value={advisorDataType} onChange={(e) => { setAdvisorDataType(e.target.value); setAdvisorResult(null); }} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '12px', color: '#1e293b', outline: 'none', background: '#fff' }}>
                     <option value="object">Unstructured Web Objects / Static Files (S3 / Glacier)</option>
                     <option value="block_db">Stateful Database Blocks (EBS / Instance Store)</option>
                     <option value="win_file">Managed Windows SMB Files (FSx Windows)</option>
@@ -1140,18 +2228,22 @@ export default function FilesAndStorageVisualizer() {
                 </div>
 
                 {/* Selector 2: Access Location */}
-                <div className="fs-ctrl">
-                  <label>2. Core Access Location</label>
-                  <select value={advisorAccess} onChange={(e) => { setAdvisorAccess(e.target.value); setAdvisorResult(null); }}>
+                <div className={`fs-advisor-box ${advisorAccess ? 'fs-active' : ''}`}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+                    📍 2. Core Access Location
+                  </label>
+                  <select value={advisorAccess} onChange={(e) => { setAdvisorAccess(e.target.value); setAdvisorResult(null); }} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '12px', color: '#1e293b', outline: 'none', background: '#fff' }}>
                     <option value="cloud">Cloud-Native (100% Hosted inside AWS Networks)</option>
                     <option value="hybrid">Hybrid Cloud (Local corporate cache + backed by AWS)</option>
                   </select>
                 </div>
 
                 {/* Selector 3: Performance Priority */}
-                <div className="fs-ctrl">
-                  <label>3. Core Performance Constraint</label>
-                  <select value={advisorMigration} onChange={(e) => { setAdvisorMigration(e.target.value); setAdvisorResult(null); }}>
+                <div className={`fs-advisor-box ${advisorMigration ? 'fs-active' : ''}`}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#1e293b', marginBottom: '8px' }}>
+                    ⚡ 3. Performance Constraint
+                  </label>
+                  <select value={advisorMigration} onChange={(e) => { setAdvisorMigration(e.target.value); setAdvisorResult(null); }} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '12px', color: '#1e293b', outline: 'none', background: '#fff' }}>
                     <option value="ultra_low">Sub-millisecond latency (&lt; 1ms speed)</option>
                     <option value="high_tps">High Concurrency (Hundreds of parallel readers)</option>
                     <option value="cost_eff">Cost Efficiency (Deep cold archives / HDD tiering)</option>
@@ -1159,33 +2251,57 @@ export default function FilesAndStorageVisualizer() {
                 </div>
               </div>
 
-              <div className="fs-btnbar" style={{ marginBottom: '14px' }}>
-                <button className="fs-btn fs-primary" style={{ width: '100%', padding: '10px', fontWeight: 600, justifyContent: 'center' }} onClick={handleRunAdvisor}>
+              <div className="fs-btnbar" style={{ marginBottom: '16px' }}>
+                <button className="fs-btn fs-primary" style={{ width: '100%', padding: '12px', fontWeight: 700, justifyContent: 'center', fontSize: '13px', borderRadius: '10px' }} onClick={handleRunAdvisor}>
                   🔍 Compute Storage Advisor Recommendation
                 </button>
               </div>
 
               {/* Advisor Results Display */}
               {advisorResult && (
-                <div style={{ background: '#ecfdf5', border: '1px solid #10b981', borderRadius: '8px', padding: '14px', marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '18px' }}>🎯</span>
-                    <span style={{ fontWeight: 700, fontSize: '13px', color: '#065f46' }}>
+                <div style={{ background: 'rgba(236, 253, 245, 0.65)', border: '1.5px solid #10b981', borderRadius: '12px', padding: '16px', boxShadow: '0 4px 16px rgba(16, 185, 129, 0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>🎯</span>
+                    <span style={{ fontWeight: 800, fontSize: '14px', color: '#065f46' }}>
                       AWS Storage Advisor Architect Recommendation:
                     </span>
+                    <span className="fs-matrix-badge fs-badge-latency-ultra" style={{ marginLeft: 'auto' }}>MATCH FOUND</span>
                   </div>
-                  <div style={{ fontSize: '12px', lineHeight: '1.6', color: '#047857' }}>
-                    <strong>{advisorResult.split(':')[0]}:</strong> {advisorResult.substring(advisorResult.indexOf(':') + 1)}
+                  <div style={{ fontSize: '13px', lineHeight: '1.6', color: '#047857', marginBottom: '10px' }}>
+                    <strong style={{ fontSize: '14px', color: '#065f46' }}>{advisorResult.split(':')[0]}:</strong> {advisorResult.substring(advisorResult.indexOf(':') + 1)}
+                  </div>
+                  
+                  {/* Complementary architectures / tags */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid rgba(16, 185, 129, 0.25)', paddingTop: '10px', marginTop: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#065f46', fontWeight: 600 }}>💡 Best Integration Complement:</span>
+                    {advisorDataType === 'object' && <span className="fs-matrix-badge fs-badge-object">Amazon CloudFront CDN</span>}
+                    {advisorDataType === 'win_file' && <span className="fs-matrix-badge fs-badge-file">Active Directory Connector</span>}
+                    {advisorDataType === 'linux_hpc' && <span className="fs-matrix-badge fs-badge-latency-ultra">Amazon EC2 GPU Clusters</span>}
+                    {advisorDataType === 'multi_proto' && <span className="fs-matrix-badge fs-badge-multiproto">SAP HANA / Oracle DB</span>}
+                    {advisorDataType === 'zfs_file' && <span className="fs-matrix-badge fs-badge-latency-ultra">DevOps Dataset Snapshots</span>}
+                    {advisorDataType === 'linux_shared' && <span className="fs-matrix-badge fs-badge-file">AWS Lambda Serverless</span>}
+                    <span className="fs-matrix-badge fs-badge-latency-low" style={{ background: 'rgba(16, 185, 129, 0.1)', border: 'none' }}>
+                      Resilience: Tier-4 (High)
+                    </span>
                   </div>
                 </div>
               )}
-
             </div>
 
             <div className="fs-sec">Master AWS Storage &amp; Database Decision Flow Matrix</div>
             <div className="fs-card">
-              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px', color: '#475569' }}>
                 This unified matrix contrasts the performance, protocols, limits, and primary use cases across all **14 key storage, migration, and database families** to serve as a fast architectural reference.
+              </div>
+
+              {/* Table Interactive Filters */}
+              <div className="fs-filter-bar">
+                <button className={`fs-filter-btn ${tableFilter === 'all' ? 'fs-active' : ''}`} onClick={() => setTableFilter('all')}>📂 All Families (14)</button>
+                <button className={`fs-filter-btn ${tableFilter === 'object' ? 'fs-active' : ''}`} onClick={() => setTableFilter('object')}>🪣 Object Storage</button>
+                <button className={`fs-filter-btn ${tableFilter === 'block' ? 'fs-active' : ''}`} onClick={() => setTableFilter('block')}>💾 Block Storage</button>
+                <button className={`fs-filter-btn ${tableFilter === 'file' ? 'fs-active' : ''}`} onClick={() => setTableFilter('file')}>📁 Shared File Systems</button>
+                <button className={`fs-filter-btn ${tableFilter === 'hybrid' ? 'fs-active' : ''}`} onClick={() => setTableFilter('hybrid')}>🔌 Hybrid &amp; Transfer</button>
+                <button className={`fs-filter-btn ${tableFilter === 'db' ? 'fs-active' : ''}`} onClick={() => setTableFilter('db')}>🛢️ Databases</button>
               </div>
 
               {/* Comprehensive Storage Decision Table */}
@@ -1193,144 +2309,174 @@ export default function FilesAndStorageVisualizer() {
                 <table className="fs-table" style={{ minWidth: '850px' }}>
                   <thead>
                     <tr>
-                      <th>Service Family</th>
-                      <th>💾 Access Type</th>
-                      <th>🔑 Primary Protocols</th>
-                      <th>⚡ Latency Spec</th>
-                      <th>📦 Concurrency Limits</th>
+                      <th style={{ width: '180px' }}>Service Family</th>
+                      <th style={{ width: '130px' }}>💾 Access Type</th>
+                      <th style={{ width: '170px' }}>🔑 Primary Protocols</th>
+                      <th style={{ width: '130px' }}>⚡ Latency Spec</th>
+                      <th style={{ width: '190px' }}>📦 Concurrency Limits</th>
                       <th>🎯 Best Real-World Workload Target</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td><strong>🪣 Amazon S3</strong></td>
-                      <td>Object</td>
-                      <td>HTTPS REST API</td>
-                      <td>10–12 ms</td>
-                      <td>Infinite Scale (100+ Petabytes)</td>
-                      <td>Static website hosting, dynamic web logs, data lakes, backend assets</td>
-                    </tr>
-                    <tr>
-                      <td><strong>📼 S3 Glacier</strong></td>
-                      <td>Object (Cold Archive)</td>
-                      <td>HTTPS REST API</td>
-                      <td>Minutes to 12 Hrs</td>
-                      <td>Infinite Scale (Archived Tapes)</td>
-                      <td>Regulatory cold database archives, compliance records, historical snaps</td>
-                    </tr>
-                    <tr>
-                      <td><strong>💾 Amazon EBS</strong></td>
-                      <td>Block (Persistent)</td>
-                      <td>NVMe / PCIe Block API</td>
-                      <td>&lt; 1 ms</td>
-                      <td>Single EC2 Node (Multi-attach has limits)</td>
-                      <td>EC2 system boot volumes, transactional relational databases (RDS/SQL)</td>
-                    </tr>
-                    <tr>
-                      <td><strong>⚡ Instance Store</strong></td>
-                      <td>Block (Ephemeral)</td>
-                      <td>SATA / NVMe Physical bus</td>
-                      <td>Microseconds (Physical NVMe)</td>
-                      <td>Single host hypervisor motherboards</td>
-                      <td>Temporary swap spaces, high-speed RAM caching buffers, NoSQL scratch disks</td>
-                    </tr>
-                    <tr>
-                      <td><strong>📂 Amazon EFS</strong></td>
-                      <td>Shared File (POSIX)</td>
-                      <td>NFS v4.0 / NFS v4.1</td>
-                      <td>1.5–3 ms</td>
-                      <td>Thousands of concurrent Linux nodes</td>
-                      <td>Shared developer home folders, serverless AWS Lambda backend volumes</td>
-                    </tr>
-                    <tr>
-                      <td><strong>🗄️ FSx for Windows</strong></td>
-                      <td>Shared File (SMB)</td>
-                      <td>SMB v2.0 to SMB v3.1.1</td>
-                      <td>1.5–3 ms</td>
-                      <td>Multiple Windows client computers</td>
-                      <td>Corporate user file shares, Microsoft active directory, Windows legacy apps</td>
-                    </tr>
-                    <tr>
-                      <td><strong>🚀 FSx for Lustre</strong></td>
-                      <td>Parallel File (HPC)</td>
-                      <td>POSIX Lustre parallel client</td>
-                      <td>&lt; 1 ms (NVMe speed)</td>
-                      <td>Tens of thousands of HPC GPU nodes</td>
-                      <td>SageMaker AI training, high-performance rendering, heavy analytics</td>
-                    </tr>
-                    <tr>
-                      <td><strong>🌌 FSx for NetApp ONTAP</strong></td>
-                      <td>Multi-protocol (File/Block)</td>
-                      <td>NFS, SMB, and iSCSI blocks</td>
-                      <td>1.5–3.5 ms</td>
-                      <td>Petabyte-scale FlexGroup volumes</td>
-                      <td>Enterprise SAP HANA backends, SQL DB, local NetApp migration backups</td>
-                    </tr>
-                    <tr>
-                      <td><strong>⚡ FSx for OpenZFS</strong></td>
-                      <td>Shared File (ZFS)</td>
-                      <td>NFS v3, NFS v4</td>
-                      <td>&lt; 0.5 ms</td>
-                      <td>Linux/Unix nodes</td>
-                      <td>Dynamic developer sandboxes (dataset clones), low-latency web caches</td>
-                    </tr>
-                    <tr>
-                      <td><strong>🔌 AWS Storage Gateway</strong></td>
-                      <td>Hybrid File/Block/Tape</td>
-                      <td>NFS, SMB, iSCSI, VTL Slots</td>
-                      <td>&lt; 1 ms (Local cache SSD)</td>
-                      <td>Local datacenter network clients</td>
-                      <td>Local branch caches, backup Volume/Tape snap mirroring, hybrid architectures</td>
-                    </tr>
-                    <tr>
-                      <td><strong>⚡ AWS DataSync</strong></td>
-                      <td>Data Migration (Online)</td>
-                      <td>NFS, SMB, API integrations</td>
-                      <td>N/A (Transfer only)</td>
-                      <td>Accelerates large petabyte sync tasks</td>
-                      <td>Scheduled migrations from local datacenters to cloud buckets</td>
-                    </tr>
-                    <tr>
-                      <td><strong>💼 AWS Transfer Family</strong></td>
-                      <td>Data Transfer (Secure)</td>
-                      <td>SFTP, FTPS, FTP</td>
-                      <td>N/A (Transfer only)</td>
-                      <td>Exposes secure external client routes</td>
-                      <td>Automated external client file delivery directly to S3 or EFS backends</td>
-                    </tr>
-                    <tr>
-                      <td><strong>📦 AWS Snow Family</strong></td>
-                      <td>Physical Migration (Offline)</td>
-                      <td>Physical ruggedized transport</td>
-                      <td>N/A (Days to ship)</td>
-                      <td>Offline petabytes/exabytes copies</td>
-                      <td>Migrations from edge settings (ships, mines) lacking active internet lines</td>
-                    </tr>
-                    <tr>
-                      <td><strong>🛢️ AWS Databases</strong></td>
-                      <td>Structured Relational/NoSQL</td>
-                      <td>SQL, NoSQL API, DynamoDB</td>
-                      <td>Sub-10ms (DynamoDB &lt;10ms)</td>
-                      <td>Managed scaling clusters</td>
-                      <td>Transactional databases (Aurora/RDS), high-scale serverless apps (DynamoDB)</td>
-                    </tr>
+                    {(tableFilter === 'all' || tableFilter === 'object') && (
+                      <tr>
+                        <td><strong>🪣 Amazon S3</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-object">Object</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>HTTPS REST API</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-mid">10–12 ms</span></td>
+                        <td>Infinite Scale (100+ PB)</td>
+                        <td>Static website hosting, dynamic web logs, data lakes, backend assets</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'object') && (
+                      <tr>
+                        <td><strong>📼 S3 Glacier</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-object" style={{ opacity: 0.85 }}>Object (Archive)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>HTTPS REST API</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-slow">Minutes to 12 Hrs</span></td>
+                        <td>Infinite Scale (Tape pool)</td>
+                        <td>Regulatory cold database archives, compliance records, historical snaps</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'block') && (
+                      <tr>
+                        <td><strong>💾 Amazon EBS</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-block">Block (Persistent)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>NVMe / PCIe Block API</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">&lt; 1 ms</span></td>
+                        <td>Single EC2 Node mount</td>
+                        <td>EC2 system boot volumes, transactional relational databases (RDS/SQL)</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'block') && (
+                      <tr>
+                        <td><strong>⚡ Instance Store</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-block" style={{ opacity: 0.85 }}>Block (Ephemeral)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>SATA / NVMe Bus</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">Microseconds</span></td>
+                        <td>Single Motherboard Hypervisor</td>
+                        <td>Temporary swap spaces, high-speed RAM caching buffers, NoSQL scratch disks</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'file') && (
+                      <tr>
+                        <td><strong>📂 Amazon EFS</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-file">Shared File</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>NFS v4.0 / NFS v4.1</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-low">1.5–3 ms</span></td>
+                        <td>Thousands of concurrent Linux nodes</td>
+                        <td>Shared developer home folders, serverless AWS Lambda backend volumes</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'file') && (
+                      <tr>
+                        <td><strong>🗄️ FSx for Windows</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-file">Shared File (SMB)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>SMB v2.0 to v3.1.1</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-low">1.5–3 ms</span></td>
+                        <td>Multiple Active Directory users</td>
+                        <td>Corporate user file shares, Microsoft active directory, Windows legacy apps</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'file') && (
+                      <tr>
+                        <td><strong>🚀 FSx for Lustre</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">Parallel File (HPC)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>Lustre Client Driver</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">&lt; 1 ms NVMe</span></td>
+                        <td>Tens of thousands of HPC GPU nodes</td>
+                        <td>SageMaker AI training, high-performance rendering, heavy analytics</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'file') && (
+                      <tr>
+                        <td><strong>🌌 FSx for ONTAP</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-multiproto">Multi-Protocol</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>NFS, SMB, and iSCSI</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-low">1.5–3.5 ms</span></td>
+                        <td>Petabyte-scale FlexGroup volumes</td>
+                        <td>Enterprise SAP HANA backends, SQL DB, local NetApp migration backups</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'file') && (
+                      <tr>
+                        <td><strong>⚡ FSx for OpenZFS</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-file">Shared File (ZFS)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>NFS v3, NFS v4</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">&lt; 0.5 ms SSD</span></td>
+                        <td>Linux and Unix instances</td>
+                        <td>Dynamic developer sandboxes (dataset clones), low-latency web caches</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'hybrid') && (
+                      <tr>
+                        <td><strong>🔌 AWS Storage Gateway</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-hybrid">Hybrid Gateway</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>NFS, SMB, iSCSI, VTL</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">&lt; 1 ms Local Cache</span></td>
+                        <td>Datacenter local network client nodes</td>
+                        <td>Local branch caches, backup Volume/Tape snap mirroring, hybrid architectures</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'hybrid') && (
+                      <tr>
+                        <td><strong>🔌 AWS DataSync</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-mig-online">Migration (Online)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>NFS, SMB, AWS API</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-high">N/A (Online Sync)</span></td>
+                        <td>Parallels multi-threaded threads</td>
+                        <td>Scheduled migrations from local datacenters to cloud buckets</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'hybrid') && (
+                      <tr>
+                        <td><strong>💼 AWS Transfer Family</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-mig-online" style={{ opacity: 0.8 }}>Secure Transfer</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>SFTP, FTPS, FTP</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-high">N/A (Transfer)</span></td>
+                        <td>Automated external client uploads</td>
+                        <td>Automated external client file delivery directly to S3 or EFS backends</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'hybrid') && (
+                      <tr>
+                        <td><strong>📦 AWS Snow Family</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-mig-offline">Migration (Offline)</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>Physical Rugged Ingest</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-slow">Days to Ship</span></td>
+                        <td>Offline Petabytes copy scales</td>
+                        <td>Migrations from edge settings (ships, mines) lacking active internet lines</td>
+                      </tr>
+                    )}
+                    {(tableFilter === 'all' || tableFilter === 'db') && (
+                      <tr>
+                        <td><strong>🛢️ AWS Databases</strong></td>
+                        <td><span className="fs-matrix-badge fs-badge-db">Database SQL/NoSQL</span></td>
+                        <td><code style={{ fontSize: '11px', background: '#f1f5f9', padding: '2px 4px', borderRadius: '4px' }}>SQL, GraphQL, NoSQL</code></td>
+                        <td><span className="fs-matrix-badge fs-badge-latency-ultra">Sub-10ms (DynamoDB &lt;10ms)</span></td>
+                        <td>Fully managed scale clusters</td>
+                        <td>Transactional databases (Aurora/RDS), high-scale serverless apps (DynamoDB)</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
-
             </div>
 
             <div className="fs-sec">Active Storage Tiering &amp; Deduplication Calculator</div>
             <div className="fs-card">
-              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '12px' }}>
+              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '16px', color: '#475569' }}>
                 Enterprise filesystems like **NetApp ONTAP** and **Windows HDD** allow you to automatically shift inactive blocks (cold data) to cheaper storage tiers. Adjust this calculator to estimate monthly billing savings!
               </div>
 
-              <div className="fs-grid2" style={{ gap: '14px' }}>
+              <div className="fs-grid2" style={{ gap: '16px' }}>
                 {/* Slider controls */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div className="fs-ctrl">
-                    <label>Total Dataset Volume: <strong>{(totalDataGb / 1000).toFixed(0)} TB</strong></label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="fs-ctrl" style={{ background: 'rgba(248, 250, 252, 0.75)', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', color: '#1e293b' }}>
+                      <span>Total Dataset Volume:</span>
+                      <strong style={{ color: '#0284c7' }}>{(totalDataGb / 1000).toFixed(0)} TB ({(totalDataGb).toLocaleString()} GB)</strong>
+                    </label>
                     <input 
                       type="range" 
                       min="1000" 
@@ -1339,9 +2485,18 @@ export default function FilesAndStorageVisualizer() {
                       value={totalDataGb} 
                       onChange={(e) => setTotalDataGb(parseInt(e.target.value))} 
                     />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                      <span>1 TB</span>
+                      <span>50 TB</span>
+                      <span>100 TB</span>
+                    </div>
                   </div>
-                  <div className="fs-ctrl">
-                    <label>Cold Data Ratio (Shifts to Capacity/HDD Tier): <strong>{coldPercent}%</strong></label>
+                  
+                  <div className="fs-ctrl" style={{ background: 'rgba(248, 250, 252, 0.75)', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', color: '#1e293b' }}>
+                      <span>Cold Data Ratio (Capacity Pool):</span>
+                      <strong style={{ color: '#d97706' }}>{coldPercent}% Cold Blocks</strong>
+                    </label>
                     <input 
                       type="range" 
                       min="10" 
@@ -1350,27 +2505,70 @@ export default function FilesAndStorageVisualizer() {
                       value={coldPercent} 
                       onChange={(e) => setColdPercent(parseInt(e.target.value))} 
                     />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                      <span>10% (Hot Workload)</span>
+                      <span>50% (Balanced)</span>
+                      <span>90% (Deep Archive)</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Calculations breakdown */}
-                <div style={{ background: '#ffffff', border: '0.5px solid #cbd5e1', borderRadius: '6px', padding: '10px', fontSize: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', color: '#10b981', marginBottom: '6px' }}>
-                    Estimated AWS Monthly Billing Report
+                {/* HUD Command Line Console Terminal */}
+                <div className="fs-terminal-hud">
+                  <div className="fs-terminal-header">
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <span className="fs-terminal-led"></span>
+                      <span>ONTAP FabricPool Optimization Engine</span>
+                    </div>
+                    <span>v4.2.1-PROD</span>
                   </div>
-                  <div style={{ fontFamily: 'monospace', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div>Raw SSD Cost (Single Tier): <span style={{ color: '#ef4444' }}>${costMetrics.totalSsdCost} / mo</span></div>
-                    <div>Active Tiered Cost (SSD+Capacity): <span style={{ color: '#10b981' }}>${costMetrics.totalTieredCost} / mo</span></div>
-                    <hr style={{ border: 'none', borderTop: '0.5px solid #cbd5e1', margin: '4px 0' }} />
-                    <div style={{ fontWeight: 700 }}>Monthly Budget Savings: <span style={{ color: '#10b981' }}>${costMetrics.monthlySavings} / mo</span></div>
-                    <div style={{ fontWeight: 700 }}>Yearly Storage Savings: <span style={{ color: '#10b981' }}>${costMetrics.yearlySavings} / yr</span></div>
+
+                  {/* Segmented active ratio bar graph */}
+                  <div className="fs-ratio-bar-container">
+                    <div className="fs-ratio-bar-ssd" style={{ width: `${100 - coldPercent}%` }}>
+                      {100 - coldPercent >= 15 && `SSD: ${100 - coldPercent}%`}
+                    </div>
+                    <div className="fs-ratio-bar-hdd" style={{ width: `${coldPercent}%` }}>
+                      {coldPercent >= 15 && `Capacity: ${coldPercent}%`}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '9px', color: '#64748b', marginTop: '8px', fontStyle: 'italic' }}>
-                    *Calculations assume standard storage pricing: SSD $0.13/GB-mo and Capacity HDD/Pool $0.013/GB-mo. Deduplication efficiencies may yield higher savings.
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', fontFamily: 'monospace', color: '#64748b', marginBottom: '12px' }}>
+                    <span>Active SSD Pool (${(totalDataGb * (1 - coldPercent / 100)).toFixed(0)} GB)</span>
+                    <span>Cold Capacity Pool (${(totalDataGb * (coldPercent / 100)).toFixed(0)} GB)</span>
+                  </div>
+
+                  {/* Calculations breakdown metrics */}
+                  <div className="fs-terminal-grid">
+                    <div className="fs-terminal-box fs-box-alert">
+                      <div className="fs-terminal-title">Raw SSD Single-Tier</div>
+                      <div className="fs-terminal-val">${costMetrics.totalSsdCost}</div>
+                    </div>
+                    
+                    <div className="fs-terminal-box" style={{ borderColor: 'rgba(56, 189, 248, 0.3)' }}>
+                      <div className="fs-terminal-title">Active Tiered Cost</div>
+                      <div className="fs-terminal-val">${costMetrics.totalTieredCost}</div>
+                    </div>
+                    
+                    <div className="fs-terminal-box fs-box-save" style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderStyle: 'dashed' }}>
+                      <div>
+                        <div className="fs-terminal-title" style={{ color: '#4ade80' }}>Monthly Savings (70% deduplicated estimate)</div>
+                        <div className="fs-terminal-val" style={{ fontSize: '20px' }}>${costMetrics.monthlySavings} / mo</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div className="fs-terminal-title" style={{ color: '#4ade80' }}>Annualized Savings</div>
+                        <div style={{ fontWeight: 800, fontSize: '13px' }}>${costMetrics.yearlySavings} / yr</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Terminal CLI lines */}
+                  <div style={{ fontSize: '10px', color: '#64748b', borderTop: '1px solid #1e293b', paddingTop: '8px', lineHeight: '1.4' }}>
+                    <div style={{ color: '#38bdf8' }}>$ aws fsx update-volume --volume-id vol-ontap-09e --ontap-configuration TieringPolicy=&#123;Name=AUTO,CoolingPeriod=30&#125;</div>
+                    <div style={{ color: '#4ade80' }}>&gt; ONTAP CLI: Policy 'AUTO' applied successfully. FabricPool Sweep sweeping... [OK]</div>
+                    <div style={{ color: '#eab308' }}>&gt; Compression: 2.4:1 ratio enabled. Deduplication savings active. [SAVINGS IN EFFECT]</div>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         )}

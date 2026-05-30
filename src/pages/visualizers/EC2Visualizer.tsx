@@ -522,28 +522,62 @@ export default function EC2Visualizer() {
   return (
     <div style={{ fontSize: '13.5px' }}>
       <style>{`
-        .ec2-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .ec2-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .ec2-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .ec2-tb.ec2-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .ec2-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
-        .ec2-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
+        .ec2-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .ec2-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: rgba(255, 255, 255, 0.6); color: var(--color-text-secondary, #475569); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
+        .ec2-tb:hover { background: rgba(241, 245, 249, 0.8); color: var(--color-text-primary, #1e293b); transform: translateY(-1px); }
+        .ec2-tb.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2); }
+        .ec2-card { border: 1.5px solid rgba(226, 232, 240, 0.8); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.6); margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: #1e293b; }
+        .ec2-sec { font-size: 12.5px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
         .ec2-sec:first-child { margin-top: 0; }
-        .ec2-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .ec2-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+        .ec2-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .ec2-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .ec2-kv { display: flex; gap: 8px; font-size: 13px; margin: 6px 0; align-items: baseline; }
-        .ec2-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; }
-        .ec2-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-        .ec2-btn { font-size: 13px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.15s; outline: none; }
-        .ec2-btn:hover { background: var(--color-background-secondary); }
-        .ec2-btn.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; }
-        .ec2-terminal { background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 12px; padding: 12px; border-radius: 8px; border: 0.5px solid #334155; max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.45; }
+        .ec2-kk { min-width: 160px; color: #475569; flex-shrink: 0; font-weight: 500; }
+        .ec2-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+        .ec2-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary, #cbd5e1); background: rgba(255, 255, 255, 0.8); color: #1e293b; cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
+        .ec2-btn:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .ec2-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .ec2-btn.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15); }
+        .ec2-terminal { background: #0a0d16; color: #38bdf8; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+        .ec2-svg-bg { background-color: #fafbfd; background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid rgba(226, 232, 240, 0.8); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
         
         /* Unified Dropdown Selection Visual Cues */
         .ec2-card select {
-          border: 2px solid #f59e0b !important;
-          box-shadow: 0 0 0 3px rgba(245,158,11,0.2) !important;
+          border: 1.5px solid #e2e8f0 !important;
+          border-radius: 8px;
+          padding: 6px 12px;
+          background: rgba(255, 255, 255, 0.85);
+          color: #1e293b;
+          font-weight: 500;
           outline: none;
+          transition: all 0.2s;
+        }
+        .ec2-card select:focus {
+          border-color: #f59e0b !important;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
+        }
+        .ec2-card select.ec2-highlight {
+          border: 1.5px solid #f59e0b !important;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
+        }
+        .ec2-card input[type="text"] {
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          padding: 6px 10px;
+          background: rgba(255, 255, 255, 0.85);
+          color: #1e293b;
+          outline: none;
+          transition: all 0.2s;
+        }
+        .ec2-card input[type="text"]:focus {
+          border-color: #0284c7;
+          box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+        .ec2-card input[type="range"] {
+          accent-color: #0284c7;
+          background: #cbd5e1;
+          height: 6px;
+          border-radius: 3px;
         }
       `}</style>
 
@@ -640,40 +674,125 @@ export default function EC2Visualizer() {
                 </div>
 
                 {/* SVG Baking Flow */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>AMI Baking &amp; Auto-Scaling Launch Pipeline</div>
-                  <svg viewBox="0 0 450 150" width="100%" style={{ background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>AMI Baking &amp; Auto-Scaling Launch Pipeline</div>
+                  <svg viewBox="0 0 470 160" width="100%" className="ec2-svg-bg">
                     <defs>
-                      <marker id="arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                      <marker id="arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#64748b"/></marker>
+                      <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#3b82f6" />
+                        <stop offset="100%" stopColor="#1d4ed8" />
+                      </linearGradient>
+                      <linearGradient id="pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ec4899" />
+                        <stop offset="100%" stopColor="#be185d" />
+                      </linearGradient>
+                      <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#d97706" />
+                      </linearGradient>
+                      <linearGradient id="green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#047857" />
+                      </linearGradient>
                     </defs>
-                    {/* Source VM */}
-                    <rect x="10" y="45" width="80" height="60" rx="4" fill="#eff6ff" stroke="#1e40af" strokeWidth="1" />
-                    <text x="50" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1e40af">Source EC2</text>
-                    <text x="50" y="90" textAnchor="middle" fontSize="7" fill="#64748b">(Configured Host)</text>
+                    
+                    {/* Paths with animatemotion */}
+                    <path id="path1" d="M 95, 75 L 135, 75" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path2" d="M 215, 75 L 255, 75" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path3" d="M 335, 75 L 375, 45" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path4" d="M 335, 75 L 375, 105" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
 
-                    <path d="M90,75 L125,75" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+                    {/* Active moving pulses */}
+                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#3b82f6"}>
+                      <animateMotion dur={isBootstrapping ? "1s" : "3s"} repeatCount="indefinite" path="M 95, 75 L 135, 75" />
+                    </circle>
+                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#ec4899"}>
+                      <animateMotion dur={isBootstrapping ? "1s" : "3s"} repeatCount="indefinite" path="M 215, 75 L 255, 75" />
+                    </circle>
+                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#10b981"}>
+                      <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 375, 45" />
+                    </circle>
+                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#10b981"}>
+                      <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 375, 105" />
+                    </circle>
 
-                    {/* Snapshot */}
-                    <rect x="125" y="45" width="80" height="60" rx="4" fill="#fdf2f8" stroke="#9d174d" strokeWidth="1" />
-                    <text x="165" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#9d174d">Snapshot</text>
-                    <text x="165" y="90" textAnchor="middle" fontSize="7" fill="#64748b">(Root EBS copy)</text>
+                    {/* Source EC2 3D Rack */}
+                    <g transform="translate(15, 40)">
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#blue-grad)" />
+                      <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Source EC2</text>
+                      
+                      {/* Rack units */}
+                      <rect x="5" y="25" width="70" height="8" rx="1.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
+                      <circle cx="12" cy="29" r="1.5" fill="#22c55e" />
+                      <rect x="20" y="28" width="45" height="2" rx="1" fill="#cbd5e1" />
+                      
+                      <rect x="5" y="37" width="70" height="8" rx="1.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
+                      <circle cx="12" cy="41" r="1.5" fill="#22c55e" />
+                      <rect x="20" y="40" width="45" height="2" rx="1" fill="#cbd5e1" />
 
-                    <path d="M205,75 L240,75" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+                      <rect x="5" y="49" width="70" height="8" rx="1.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
+                      <circle cx="12" cy="53" r="1.5" fill="#ef4444" />
+                      <rect x="20" y="52" width="45" height="2" rx="1" fill="#cbd5e1" />
+                      
+                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="500">(Configured Host)</text>
+                    </g>
 
-                    {/* Golden AMI */}
-                    <rect x="240" y="45" width="80" height="60" rx="4" fill="#fef3c7" stroke="#d97706" strokeWidth="1" />
-                    <text x="280" y="70" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#d97706">Golden AMI</text>
-                    <text x="280" y="82" textAnchor="middle" fontSize="7" fill="#64748b">(Baked Image)</text>
-                    <text x="280" y="94" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Ready for Launch</text>
+                    {/* Snapshot Storage Cylinder */}
+                    <g transform="translate(135, 40)">
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#pink-grad)" />
+                      <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Snapshot</text>
+                      
+                      {/* 3D database disk cylinder outline */}
+                      <ellipse cx="40" cy="32" rx="20" ry="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
+                      <path d="M20,32 L20,44 A20,6 0 0,0 60,44 L60,32" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
+                      <path d="M20,44 L20,56 A20,6 0 0,0 60,56 L60,44" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
+                      
+                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="500">(Root EBS Copy)</text>
+                    </g>
 
-                    <path d="M320,75 L355,55" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
-                    <path d="M320,75 L355,95" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arrow)" />
+                    {/* Golden AMI (Baked disc) */}
+                    <g transform="translate(255, 40)">
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="rgba(255,255,255,0.95)" stroke="#ea580c" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#orange-grad)" />
+                      <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Golden AMI</text>
+                      
+                      {/* Compact Disc shape */}
+                      <circle cx="40" cy="38" r="14" fill="#fff" stroke="#ea580c" strokeWidth="1.5" />
+                      <circle cx="40" cy="38" r="4" fill="#fafbfd" stroke="#ea580c" strokeWidth="1" />
+                      <path d="M 40,24 A 14,14 0 0, 1 54,38" stroke="#ea580c" strokeWidth="1" strokeDasharray="2,2" fill="none" />
+                      
+                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="500">(Template Image)</text>
+                    </g>
 
-                    {/* Scaling Replicas */}
-                    <rect x="355" y="20" width="80" height="40" rx="3" fill="#f0fdf4" stroke="#166534" strokeWidth="0.8" />
-                    <text x="395" y="40" textAnchor="middle" fontSize="8" fill="#166534">EC2 Replica 1</text>
-                    <rect x="355" y="80" width="80" height="40" rx="3" fill="#f0fdf4" stroke="#166534" strokeWidth="0.8" />
-                    <text x="395" y="100" textAnchor="middle" fontSize="8" fill="#166534">EC2 Replica 2</text>
+                    {/* Replicas (Green Racks) */}
+                    {/* Replica 1 */}
+                    <g transform="translate(375, 10)">
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
+                      <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 1</text>
+                      
+                      {/* mini rack lines */}
+                      <rect x="10" y="24" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
+                      <rect x="10" y="32" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
+                      
+                      <text x="40" y="48" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Active</text>
+                    </g>
+
+                    {/* Replica 2 */}
+                    <g transform="translate(375, 85)">
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
+                      <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 2</text>
+                      
+                      {/* mini rack lines */}
+                      <rect x="10" y="24" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
+                      <rect x="10" y="32" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
+                      
+                      <text x="40" y="48" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Active</text>
+                    </g>
                   </svg>
                 </div>
               </div>
@@ -827,32 +946,188 @@ export default function EC2Visualizer() {
                   </div>
 
                   {/* Visual packet trace */}
-                  <div style={{ flex: 1, border: '0.5px solid var(--color-border-secondary)', background: 'var(--color-background-primary)', borderRadius: '6px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '120px' }}>
-                    {sendingPacket ? (
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ animation: 'bounce 1s infinite', fontSize: '24px' }}>✉️</div>
-                        <div style={{ fontSize: '11px', color: '#0284c7', marginTop: '6px', fontWeight: 600 }}>Analyzing Ingress Security Headers...</div>
+                  <div style={{ flex: 1, border: '1.5px solid rgba(226, 232, 240, 0.8)', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+                    <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                      
+                      {/* Interactive SVG Sandbox */}
+                      <svg viewBox="0 0 450 180" width="100%" className="ec2-svg-bg">
+                        <defs>
+                          <marker id="firewall-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                          <linearGradient id="shield-grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#60a5fa" />
+                            <stop offset="100%" stopColor="#2563eb" />
+                          </linearGradient>
+                          <linearGradient id="shield-grad-green" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#34d399" />
+                            <stop offset="100%" stopColor="#059669" />
+                          </linearGradient>
+                          <linearGradient id="shield-grad-red" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#f87171" />
+                            <stop offset="100%" stopColor="#dc2626" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Connection Paths from Left Nodes to Firewall Center (200, 90) */}
+                        <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
+                        <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
+                        <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
+                        <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
+
+                        {/* Connection Path from Firewall to EC2 (230, 90) to (315, 90) */}
+                        <path d="M 230, 90 L 315, 90" stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
+
+                        {/* Animated Packets */}
+                        {sendingPacket === 'internet' && (
+                          <circle r="5" fill="#f59e0b">
+                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 30 L 200, 90" />
+                          </circle>
+                        )}
+                        {sendingPacket === 'bastion' && (
+                          <circle r="5" fill="#f59e0b">
+                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 70 L 200, 90" />
+                          </circle>
+                        )}
+                        {sendingPacket === 'corp_app' && (
+                          <circle r="5" fill="#f59e0b">
+                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 110 L 200, 90" />
+                          </circle>
+                        )}
+                        {sendingPacket === 'hacker' && (
+                          <circle r="5" fill="#f59e0b">
+                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 150 L 200, 90" />
+                          </circle>
+                        )}
+
+                        {/* Green Allowed Flow through the Gate */}
+                        {firewallTestResult?.status === 'ALLOW' && (
+                          <circle r="5" fill="#10b981">
+                            <animateMotion dur="0.6s" repeatCount="indefinite" path="M 230, 90 L 315, 90" />
+                          </circle>
+                        )}
+
+                        {/* Red Packet Drop / Collision at Firewall */}
+                        {firewallTestResult?.status === 'DROP' && (
+                          <g>
+                            <circle cx="200" cy="90" r="8" fill="none" stroke="#ef4444" strokeWidth="2">
+                              <animate attributeName="r" values="5;18" dur="0.6s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="1;0" dur="0.6s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="200" cy="90" r="3.5" fill="#ef4444" />
+                          </g>
+                        )}
+
+                        {/* Left Clients / Nodes */}
+                        {/* 1. Public Client */}
+                        <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(10, 12)">
+                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#0284c7" strokeWidth="1" />
+                          <text x="50" y="18" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">🌐 Public (Port 80)</text>
+                        </g>
+
+                        {/* 2. Bastion */}
+                        <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(10, 52)">
+                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#6366f1" strokeWidth="1" />
+                          <text x="50" y="18" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">🔒 Bastion (Port 22)</text>
+                        </g>
+
+                        {/* 3. Corporate Intranet */}
+                        <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(10, 92)">
+                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#0d9488" strokeWidth="1" />
+                          <text x="50" y="18" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🏢 Corp App (Port 8080)</text>
+                        </g>
+
+                        {/* 4. Anonymous Hacker */}
+                        <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(10, 132)">
+                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#ef4444" strokeWidth="1" />
+                          <text x="50" y="18" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">🚨 Hacker (Port 22)</text>
+                        </g>
+
+                        {/* Firewall Stateful Shield Gate */}
+                        <g transform="translate(180, 20)">
+                          <rect x="0" y="0" width="40" height="140" rx="8" fill="#334155" stroke="#475569" strokeWidth="1" />
+                          <text x="20" y="18" textAnchor="middle" fontSize="6.5" fill="#94a3b8" fontWeight="bold">FIREWALL</text>
+                          
+                          {/* Stateful brick segments */}
+                          <line x1="5" y1="28" x2="35" y2="28" stroke="#475569" strokeWidth="1" />
+                          <line x1="5" y1="48" x2="35" y2="48" stroke="#475569" strokeWidth="1" />
+                          <line x1="5" y1="68" x2="35" y2="68" stroke="#475569" strokeWidth="1" />
+                          <line x1="5" y1="88" x2="35" y2="88" stroke="#475569" strokeWidth="1" />
+                          <line x1="5" y1="108" x2="35" y2="108" stroke="#475569" strokeWidth="1" />
+                          <line x1="5" y1="128" x2="35" y2="128" stroke="#475569" strokeWidth="1" />
+
+                          {/* Glowing central SG Shield */}
+                          <circle cx="20" cy="70" r="15" 
+                            fill={
+                              firewallTestResult?.status === 'ALLOW' ? 'url(#shield-grad-green)' :
+                              firewallTestResult?.status === 'DROP' ? 'url(#shield-grad-red)' :
+                              'url(#shield-grad-blue)'
+                            }
+                            stroke="#fff" 
+                            strokeWidth="1.5" 
+                          />
+                          <text x="20" y="73" textAnchor="middle" fontSize="9" fill="#fff" fontWeight="bold">SG</text>
+                        </g>
+
+                        {/* Destination EC2 Host on Right */}
+                        <g transform="translate(325, 45)">
+                          <rect x="0" y="0" width="105" height="90" rx="8" fill="rgba(255,255,255,0.95)" 
+                            stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#475569'} 
+                            strokeWidth={firewallTestResult?.status === 'ALLOW' ? '2.5' : '1.5'} 
+                          />
+                          
+                          {/* Server header */}
+                          <rect x="5" y="5" width="95" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? '#ecfdf5' : '#f1f5f9'} />
+                          <text x="52.5" y="17" textAnchor="middle" fontSize="8.5" fill="#1e293b" fontWeight="bold">EC2 Guest Host</text>
+
+                          {/* Interactive status bulb */}
+                          <circle cx="20" cy="40" r="4.5" 
+                            fill={
+                              firewallTestResult?.status === 'ALLOW' ? '#10b981' :
+                              firewallTestResult?.status === 'DROP' ? '#ef4444' :
+                              '#64748b'
+                            } 
+                          />
+                          <text x="32" y="43" fontSize="7.5" fill="#475569" fontWeight="bold">
+                            {firewallTestResult ? `PORT MATCH: ${firewallTestResult.status}` : 'PORT IDLE'}
+                          </text>
+
+                          {/* Details mock */}
+                          <rect x="15" y="55" width="75" height="4" rx="2" fill="#e2e8f0" />
+                          <rect x="15" y="65" width="55" height="4" rx="2" fill="#e2e8f0" />
+                          <rect x="15" y="75" width="65" height="4" rx="2" fill="#e2e8f0" />
+                        </g>
+
+                      </svg>
+
+                      {/* Stateful text explanation below SVG */}
+                      <div style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.9)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+                        {sendingPacket ? (
+                          <div style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', animation: 'ping 1s infinite' }} />
+                            Evaluating packet headers against Ingress Security Group rules table...
+                          </div>
+                        ) : firewallTestResult ? (
+                          <div>
+                            <span className="ec2-badge" style={{ 
+                              background: firewallTestResult.status === 'ALLOW' ? '#10b981' : '#ef4444', 
+                              color: '#fff', 
+                              fontSize: '11px',
+                              marginBottom: '6px',
+                              fontWeight: 'bold'
+                            }}>
+                              {firewallTestResult.status}
+                            </span>
+                            <div style={{ fontSize: '11px', color: '#1e293b', fontWeight: 500, lineHeight: '1.45', padding: '0 8px' }}>
+                              {firewallTestResult.msg}
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
+                            💡 <b>Test network:</b> Click any left client node directly in the SVG sandbox to fire a simulated TCP connection!
+                          </div>
+                        )}
                       </div>
-                    ) : firewallTestResult ? (
-                      <div style={{ width: '100%', textAlign: 'center' }}>
-                        <span className="ec2-badge" style={{ 
-                          background: firewallTestResult.status === 'ALLOW' ? '#10b981' : '#ef4444', 
-                          color: '#fff', 
-                          fontSize: '11px',
-                          marginBottom: '8px',
-                          fontWeight: 'bold'
-                        }}>
-                          {firewallTestResult.status}
-                        </span>
-                        <div style={{ fontSize: '11px', color: 'var(--color-text-primary)', lineHeight: '1.45', padding: '0 8px' }}>
-                          {firewallTestResult.msg}
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center' }}>
-                        No packet transmission active. Click one of the source nodes above to fire a TCP test packet.
-                      </div>
-                    )}
+
+                    </div>
                   </div>
                 </div>
               </div>
@@ -860,123 +1135,184 @@ export default function EC2Visualizer() {
 
             <div className="ec2-sec">EC2 Instance Placement Groups Architectures</div>
             <div className="ec2-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.4' }}>
+              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', lineHeight: '1.4' }}>
                 Placement Groups control the physical distribution logic of your EC2 instances within the AWS underlying physical hardware backplane.
               </div>
 
               <div className="ec2-g3">
                 {/* Cluster PG */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>📍</span> Cluster Placement Group
+                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: '#ea580c' }}>📍</span> Cluster Group
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
                     Packs instances close together inside a **single Availability Zone** on the same physical server rack. Provides ultra-low latency and maximum inter-node throughput (up to 100 Gbps).
                   </div>
 
                   {/* SVG Cluster */}
-                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '6px', textAlign: 'center', marginBottom: '10px' }}>
-                    <svg viewBox="0 0 200 110" width="100%">
-                      <rect x="10" y="5" width="180" height="100" rx="4" fill="none" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,2" />
-                      <text x="100" y="18" textAnchor="middle" fontSize="7" fill="#f59e0b" fontWeight="600">Single AZ Rack Boundary</text>
+                  <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
+                      <rect x="5" y="5" width="190" height="110" rx="6" fill="none" stroke="#ea580c" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="100" y="16" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">Single AZ Rack Boundary</text>
                       
                       {/* Top Switch */}
-                      <rect x="50" y="26" width="100" height="20" rx="3" fill="#fef3c7" stroke="#d97706" strokeWidth="1" />
-                      <text x="100" y="38" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#d97706">⚡ 100Gbps Local Switch</text>
-
-                      {/* Clustered EC2 nodes */}
-                      <rect x="25" y="66" width="40" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="45" y="80" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-A</text>
-                      
-                      <rect x="80" y="66" width="40" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="100" y="80" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-B</text>
-
-                      <rect x="135" y="66" width="40" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="155" y="80" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-C</text>
+                      <rect x="50" y="24" width="100" height="18" rx="4" fill="#fff" stroke="#ea580c" strokeWidth="1.2" />
+                      <text x="100" y="35" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c">⚡ 100Gbps Switch</text>
 
                       {/* Connections */}
-                      <path d="M45,66 L70,46" stroke="#94a3b8" strokeWidth="1" />
-                      <path d="M100,66 L100,46" stroke="#94a3b8" strokeWidth="1" />
-                      <path d="M155,66 L130,46" stroke="#94a3b8" strokeWidth="1" />
+                      <path id="cluster-p1" d="M 45, 75 L 70, 42" stroke="#cbd5e1" strokeWidth="1" />
+                      <path id="cluster-p2" d="M 100, 75 L 100, 42" stroke="#cbd5e1" strokeWidth="1" />
+                      <path id="cluster-p3" d="M 155, 75 L 130, 42" stroke="#cbd5e1" strokeWidth="1" />
+
+                      {/* Packets */}
+                      <circle r="2.5" fill="#ea580c">
+                        <animateMotion dur="1s" repeatCount="indefinite" path="M 45, 75 L 70, 42" />
+                      </circle>
+                      <circle r="2.5" fill="#ea580c">
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 100, 75 L 100, 42" />
+                      </circle>
+                      <circle r="2.5" fill="#ea580c">
+                        <animateMotion dur="1s" repeatCount="indefinite" path="M 155, 75 L 130, 42" />
+                      </circle>
+
+                      {/* Clustered EC2 nodes */}
+                      <g transform="translate(20, 75)">
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1" />
+                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-A</text>
+                      </g>
+                      
+                      <g transform="translate(77, 75)">
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1" />
+                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-B</text>
+                      </g>
+
+                      <g transform="translate(135, 75)">
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1" />
+                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-C</text>
+                      </g>
                     </svg>
                   </div>
-                  <span className="ec2-badge" style={{ background: '#f59e0b', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: High Performance Compute (HPC)</span>
+                  <span className="ec2-badge" style={{ background: '#ea580c', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: High Performance Compute (HPC)</span>
                 </div>
 
                 {/* Spread PG */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>📍</span> Spread Placement Group
+                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: '#10b981' }}>📍</span> Spread Group
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
                     Maps each instance onto **strictly different physical hardware power racks**, separate switches, and isolated power sources. Maximum safety boundary: 7 instances per AZ.
                   </div>
 
                   {/* SVG Spread */}
-                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '6px', textAlign: 'center', marginBottom: '10px' }}>
-                    <svg viewBox="0 0 200 110" width="100%">
+                  <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
                       {/* Rack 1 */}
-                      <rect x="15" y="10" width="45" height="90" rx="3" fill="none" stroke="#10b981" strokeWidth="1" />
-                      <text x="37" y="22" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Rack A</text>
-                      <rect x="22" y="32" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="37" y="43" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-1</text>
-                      <text x="37" y="68" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-A</text>
-                      <text x="37" y="82" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-A</text>
+                      <g transform="translate(10, 8)">
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(255,255,255,0.95)" stroke="#10b981" strokeWidth="1" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">Rack A</text>
+                        
+                        {/* 3D server */}
+                        <rect x="5" y="16" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
+                        <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-1</text>
+                        
+                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-A</text>
+                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-A</text>
+                        <circle cx="25" cy="85" r="4.5" fill="#10b981" />
+                        <circle cx="25" cy="85" r="2" fill="#fff" />
+                      </g>
 
                       {/* Rack 2 */}
-                      <rect x="77" y="10" width="45" height="90" rx="3" fill="none" stroke="#10b981" strokeWidth="1" />
-                      <text x="99" y="22" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Rack B</text>
-                      <rect x="84" y="32" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="99" y="43" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-2</text>
-                      <text x="99" y="68" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-B</text>
-                      <text x="99" y="82" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-B</text>
+                      <g transform="translate(75, 8)">
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(255,255,255,0.95)" stroke="#10b981" strokeWidth="1" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">Rack B</text>
+                        
+                        <rect x="5" y="16" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
+                        <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-2</text>
+                        
+                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-B</text>
+                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-B</text>
+                        <circle cx="25" cy="85" r="4.5" fill="#10b981" />
+                        <circle cx="25" cy="85" r="2" fill="#fff" />
+                      </g>
 
                       {/* Rack 3 */}
-                      <rect x="140" y="10" width="45" height="90" rx="3" fill="none" stroke="#10b981" strokeWidth="1" />
-                      <text x="162" y="22" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">Rack C</text>
-                      <rect x="147" y="32" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="162" y="43" textAnchor="middle" fontSize="7" fill="#1e40af">EC2-3</text>
-                      <text x="162" y="68" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-C</text>
-                      <text x="162" y="82" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-C</text>
+                      <g transform="translate(140, 8)">
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(255,255,255,0.95)" stroke="#10b981" strokeWidth="1" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">Rack C</text>
+                        
+                        <rect x="5" y="16" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
+                        <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-3</text>
+                        
+                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-C</text>
+                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-C</text>
+                        <circle cx="25" cy="85" r="4.5" fill="#10b981" />
+                        <circle cx="25" cy="85" r="2" fill="#fff" />
+                      </g>
                     </svg>
                   </div>
-                  <span className="ec2-badge" style={{ background: '#10b981', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Domain Controllers, Core Apps</span>
+                  <span className="ec2-badge" style={{ background: '#10b981', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Core Controllers, Core Database Nodes</span>
                 </div>
 
                 {/* Partition PG */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>📍</span> Partition Placement Group
+                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: '#0284c7' }}>📍</span> Partition Group
                   </div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
                     Divides placement into isolated partitions. Racks in one partition do not share hardware with racks in other partitions. Allows multiple nodes in a single partition.
                   </div>
 
                   {/* SVG Partition */}
-                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '6px', textAlign: 'center', marginBottom: '10px' }}>
-                    <svg viewBox="0 0 200 110" width="100%">
+                  <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
                       {/* Partition 1 */}
-                      <rect x="10" y="10" width="85" height="90" rx="3" fill="none" stroke="#0284c7" strokeWidth="1" />
-                      <text x="52" y="22" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Partition 1 (Rack A)</text>
-                      <rect x="18" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="33" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-A1</text>
-                      <rect x="58" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="73" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-A2</text>
-                      <rect x="38" y="62" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="53" y="73" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-A3</text>
+                      <g transform="translate(6, 8)">
+                        <rect x="0" y="0" width="90" height="104" rx="4" fill="none" stroke="#0284c7" strokeWidth="1" />
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">Partition 1 (Rack A)</text>
+                        
+                        <rect x="5" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                        <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-1</text>
+
+                        <rect x="49" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                        <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-2</text>
+
+                        <rect x="27" y="44" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                        <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-3</text>
+                        
+                        <path d="M 15, 85 L 75, 85" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <circle r="3" fill="#0284c7">
+                          <animateMotion dur="1.5s" repeatCount="indefinite" path="M 15, 85 L 75, 85" />
+                        </circle>
+                        <text x="45" y="98" textAnchor="middle" fontSize="5.5" fill="#64748b" fontWeight="bold">HDFS / Data Node Pool</text>
+                      </g>
 
                       {/* Partition 2 */}
-                      <rect x="105" y="10" width="85" height="90" rx="3" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,2" />
-                      <text x="147" y="22" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Partition 2 (Rack B)</text>
-                      <rect x="113" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="128" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-B1</text>
-                      <rect x="153" y="34" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="168" y="45" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-B2</text>
-                      <rect x="133" y="62" width="30" height="18" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="148" y="73" textAnchor="middle" fontSize="6" fill="#1e40af">EC2-B3</text>
+                      <g transform="translate(104, 8)">
+                        <rect x="0" y="0" width="90" height="104" rx="4" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">Partition 2 (Rack B)</text>
+                        
+                        <rect x="5" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                        <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-4</text>
+
+                        <rect x="49" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                        <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-5</text>
+
+                        <rect x="27" y="44" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                        <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-6</text>
+                        
+                        <path d="M 15, 85 L 75, 85" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <circle r="3" fill="#0284c7">
+                          <animateMotion dur="1.5s" repeatCount="indefinite" path="M 15, 85 L 75, 85" />
+                        </circle>
+                        <text x="45" y="98" textAnchor="middle" fontSize="5.5" fill="#64748b" fontWeight="bold">Cassandra replicas</text>
+                      </g>
                     </svg>
                   </div>
-                  <span className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Kafka, HDFS, Cassandra</span>
+                  <span className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Kafka, HDFS, Cassandra, Hadoop</span>
                 </div>
               </div>
             </div>
@@ -1313,71 +1649,139 @@ export default function EC2Visualizer() {
                   </div>
 
                   {/* SVG Lifecycle Transitions */}
-                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '10px', textAlign: 'center', marginBottom: '8px' }}>
-                    <svg viewBox="0 0 320 120" width="100%">
+                  <div style={{ padding: '4px', textAlign: 'center', marginBottom: '8px' }}>
+                    <svg viewBox="0 0 320 130" width="100%" className="ec2-svg-bg">
                       <defs>
                         <marker id="storage-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                        <linearGradient id="efs-std-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                        <linearGradient id="efs-ia-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#3b82f6" />
+                          <stop offset="100%" stopColor="#1d4ed8" />
+                        </linearGradient>
+                        <linearGradient id="efs-arc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#8b5cf6" />
+                          <stop offset="100%" stopColor="#6d28d9" />
+                        </linearGradient>
                       </defs>
                       
-                      {/* EFS Standard */}
-                      <rect x="5" y="25" width="80" height="50" rx="3" fill="#ecfdf5" stroke="#059669" strokeWidth="1" />
-                      <text x="45" y="42" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#059669">EFS Standard</text>
-                      <text x="45" y="55" textAnchor="middle" fontSize="6.5" fill="#64748b">(Frequent Access)</text>
-                      <text x="45" y="68" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#111827">$0.30 / GB</text>
+                      {/* Connections with animatemotion */}
+                      <path d="M 90, 50 L 115, 50" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+                      <path d="M 202, 50 L 227, 50" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
 
-                      <path d="M85,50 L115,50" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+                      <circle r="3" fill="#10b981">
+                        <animateMotion dur="2.5s" repeatCount="indefinite" path="M 90, 50 L 115, 50" />
+                      </circle>
+                      <circle r="3" fill="#3b82f6">
+                        <animateMotion dur="2.5s" repeatCount="indefinite" path="M 202, 50 L 227, 50" />
+                      </circle>
+
+                      {/* EFS Standard */}
+                      <g transform="translate(6, 20)">
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.2" />
+                        <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-std-grad)" />
+                        <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">Standard</text>
+                        <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Frequent Access)</text>
+                        <text x="41" y="42" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="extrabold">$0.30 / GB</text>
+                        <text x="41" y="52" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">⚡ <tspan fontSize="5">GP Storage</tspan></text>
+                      </g>
 
                       {/* EFS Infrequent Access */}
-                      <rect x="115" y="25" width="85" height="50" rx="3" fill="#eff6ff" stroke="#2563eb" strokeWidth="1" />
-                      <text x="157.5" y="42" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#2563eb">EFS IA</text>
-                      <text x="157.5" y="55" textAnchor="middle" fontSize="6.5" fill="#64748b">(Idle {efsLifecycleDays} Days)</text>
-                      <text x="157.5" y="68" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#111827">$0.025 / GB</text>
-
-                      <path d="M200,50 L230,50" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+                      <g transform="translate(118, 20)">
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="1.2" />
+                        <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-ia-grad)" />
+                        <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS IA</text>
+                        <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Idle {efsLifecycleDays} Days)</text>
+                        <text x="41" y="42" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="extrabold">$0.025 / GB</text>
+                        <text x="41" y="52" textAnchor="middle" fontSize="6" fill="#3b82f6" fontWeight="bold">📉 Save 92%</text>
+                      </g>
 
                       {/* EFS Archive */}
-                      <rect x="230" y="25" width="85" height="50" rx="3" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1" />
-                      <text x="272.5" y="42" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#7c3aed">EFS Archive</text>
-                      <text x="272.5" y="55" textAnchor="middle" fontSize="6.5" fill="#64748b">(Idle 90+ Days)</text>
-                      <text x="272.5" y="68" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#111827">$0.008 / GB</text>
+                      <g transform="translate(230, 20)">
+                        <rect x="0" y="0" width="84" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#6d28d9" strokeWidth="1.2" />
+                        <rect x="4" y="4" width="76" height="12" rx="3" fill="url(#efs-arc-grad)" />
+                        <text x="42" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS Archive</text>
+                        <text x="42" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Idle 90+ Days)</text>
+                        <text x="42" y="42" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="extrabold">$0.008 / GB</text>
+                        <text x="42" y="52" textAnchor="middle" fontSize="6" fill="#8b5cf6" fontWeight="bold">❄️ Save 97%</text>
+                      </g>
 
-                      <text x="160" y="95" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="600">Savings: ~92% Cost Reduction on Cold Tiers</text>
+                      <rect x="20" y="94" width="280" height="24" rx="6" fill="rgba(240, 253, 244, 0.8)" stroke="#bbf7d0" strokeWidth="0.8" />
+                      <text x="160" y="110" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="bold">💰 Tiered Storage Audit: Automatic lifecycle savings applied concurrently</text>
                     </svg>
                   </div>
                 </div>
 
                 {/* EBS Multi-Attach & Encryption */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>💾 EBS Multi-Attach (io1/io2) &amp; KMS Encryption</div>
-                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#1e293b' }}>💾 EBS Multi-Attach (io1/io2) &amp; KMS Encryption</div>
+                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
                     - <b>EBS Multi-Attach:</b> Enables mounting a single high-performance **Provisioned IOPS (io1 or io2)** volume concurrently to up to 16 Nitro-based EC2 instances within the *same* AZ. Requires a cluster-aware filesystem (e.g. GFS2) to prevent data corruption.
                     <br />- <b>Hypervisor-level Encryption:</b> EBS utilizes **AWS KMS Keys (AES-256)** to encrypt data in transit between compute hosts and storage fabrics, data at rest, and all snapshots automatically.
                   </div>
-
+ 
                   {/* SVG Multiattach & Encryption */}
-                  <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--color-border-secondary)', borderRadius: '6px', padding: '10px', textAlign: 'center', marginBottom: '8px' }}>
-                    <svg viewBox="0 0 320 120" width="100%">
-                      {/* EC2 instances */}
-                      <rect x="10" y="10" width="60" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="40" y="24" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">EC2 Host A</text>
+                  <div style={{ padding: '4px', textAlign: 'center', marginBottom: '8px' }}>
+                    <svg viewBox="0 0 320 120" width="100%" className="ec2-svg-bg">
+                      <defs>
+                        <linearGradient id="multi-ebs-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#f87171" />
+                          <stop offset="100%" stopColor="#dc2626" />
+                        </linearGradient>
+                      </defs>
 
-                      <rect x="10" y="48" width="60" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="40" y="62" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">EC2 Host B</text>
+                      {/* Connections pointing to shared volume */}
+                      <path d="M 70, 22 L 160, 50" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
+                      <path d="M 70, 60 L 160, 60" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
+                      <path d="M 70, 98 L 160, 70" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
 
-                      <rect x="10" y="86" width="60" height="24" rx="2" fill="#eff6ff" stroke="#1e40af" strokeWidth="0.8" />
-                      <text x="40" y="100" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">EC2 Host C</text>
+                      {/* Active animated pulses */}
+                      <circle r="2.5" fill="#ef4444">
+                        <animateMotion dur="1.5s" repeatCount="indefinite" path="M 70, 22 L 160, 50" />
+                      </circle>
+                      <circle r="2.5" fill="#ef4444">
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 70, 60 L 160, 60" />
+                      </circle>
+                      <circle r="2.5" fill="#ef4444">
+                        <animateMotion dur="1.7s" repeatCount="indefinite" path="M 70, 98 L 160, 70" />
+                      </circle>
 
-                      {/* Arrows pointing to shared volume */}
-                      <path d="M70,22 L160,50" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,1" />
-                      <path d="M70,60 L160,60" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,1" />
-                      <path d="M70,98 L160,70" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,1" />
+                      {/* EC2 instances (3D) */}
+                      <g transform="translate(10, 10)">
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="rgba(255,255,255,0.95)" stroke="#1e40af" strokeWidth="1" />
+                        <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
+                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host A</text>
+                      </g>
 
-                      {/* Shared KMS Encrypted EBS */}
-                      <rect x="160" y="30" width="150" height="60" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.2" />
-                      <text x="235" y="46" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ef4444">Shared EBS io1/io2 Volume</text>
-                      <text x="235" y="58" textAnchor="middle" fontSize="6.5" fill="#ef4444" fontWeight="600">⛓️ Multi-Attach Enabled (Same AZ)</text>
-                      <text x="235" y="72" textAnchor="middle" fontSize="6.5" fill="#b91c1c" fontWeight="bold">🔒 Encrypted: KMS AES-256</text>
-                      <text x="235" y="82" textAnchor="middle" fontSize="6" fill="#64748b">(In-Transit &amp; At-Rest)</text>
+                      <g transform="translate(10, 48)">
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="rgba(255,255,255,0.95)" stroke="#1e40af" strokeWidth="1" />
+                        <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
+                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host B</text>
+                      </g>
+
+                      <g transform="translate(10, 86)">
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="rgba(255,255,255,0.95)" stroke="#1e40af" strokeWidth="1" />
+                        <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
+                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host C</text>
+                      </g>
+
+                      {/* Shared KMS Encrypted EBS Cylinder */}
+                      <g transform="translate(160, 15)">
+                        <rect x="0" y="0" width="150" height="90" rx="6" fill="rgba(255,255,255,0.95)" stroke="#dc2626" strokeWidth="1.2" />
+                        <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#multi-ebs-grad)" />
+                        <text x="75" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Shared EBS io1/io2</text>
+                        
+                        {/* Cylinder drawing */}
+                        <ellipse cx="40" cy="46" rx="18" ry="5" fill="#fef2f2" stroke="#ef4444" strokeWidth="0.8" />
+                        <path d="M22,46 L22,60 A18,5 0 0,0 58,60 L58,46" fill="#fef2f2" stroke="#ef4444" strokeWidth="0.8" />
+                        
+                        <text x="100" y="39" textAnchor="middle" fontSize="6.5" fill="#be123c" fontWeight="bold">⛓️ Multi-AZ Attach</text>
+                        <text x="100" y="52" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">🔑 KMS AES-256</text>
+                        
+                        <text x="75" y="80" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Safe Persistent Network SAN Block</text>
+                      </g>
                     </svg>
                   </div>
                 </div>
@@ -1483,9 +1887,9 @@ export default function EC2Visualizer() {
                 </div>
 
                 {/* Hypervisor status screen */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>🖥️ Virtual Hypervisor Status:</span>
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>🖥️ Virtual Motherboard Chassis:</span>
                     <span className="ec2-badge" style={{ 
                       background: vmState === 'Running' ? '#10b981' : vmState === 'Stopped' ? '#ef4444' : vmState === 'Terminated' ? '#64748b' : '#eab308', 
                       color: '#fff',
@@ -1494,12 +1898,145 @@ export default function EC2Visualizer() {
                     }}>{vmState.toUpperCase()}</span>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'var(--color-background-primary)', padding: '6px', borderRadius: '4px' }}>
+                  {(() => {
+                    const isEbsPresent = consoleStorageType === 'ebs' || consoleStorageType === 'both';
+                    const isEbsRendered = isEbsPresent && !(vmState === 'Terminated' && deleteEbsOnTerm);
+                    const isEbsDetached = vmState === 'Terminated' && !deleteEbsOnTerm;
+                    const isNvmePresent = consoleStorageType === 'ephemeral' || consoleStorageType === 'both' || consoleInstanceType === 'i3.xlarge';
+                    return (
+                      <div style={{ margin: '6px 0', textAlign: 'center' }}>
+                        <svg viewBox="0 0 320 170" width="100%" style={{ background: '#0a0d16', borderRadius: '10px', border: '1.5px solid #1e293b' }}>
+                          {/* Grid background on board */}
+                          <defs>
+                            <pattern id="motherboard-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                              <circle cx="2" cy="2" r="0.6" fill="#1e293b" />
+                            </pattern>
+                          </defs>
+                          <rect width="320" height="170" fill="#070a13" />
+                          <rect width="320" height="170" fill="url(#motherboard-grid)" />
+                          
+                          {/* Circuits / Buses */}
+                          <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                          <path d="M 60,70 L 120,105" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                          <path d="M 60,70 L 215,105" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
+
+                          {/* CPU Socket */}
+                          <g transform="translate(20, 40)">
+                            <rect x="0" y="0" width="60" height="60" rx="6" fill="#111827" stroke="#1f2937" strokeWidth="1.5" />
+                            <rect x="10" y="10" width="40" height="40" rx="4" fill="#3b82f6" opacity={vmState === 'Running' ? '0.2' : '0.05'} />
+                            <text x="30" y="32" textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="bold">CPU</text>
+                            <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold">vCPU Cores</text>
+                            
+                            {/* Pulse paths if running */}
+                            {vmState === 'Running' && (
+                              <g>
+                                <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? '#f59e0b' : '#3b82f6'} strokeWidth="1.5">
+                                  <animate attributeName="r" values="10;25" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
+                                  <animate attributeName="opacity" values="1;0" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
+                                </circle>
+                              </g>
+                            )}
+                          </g>
+
+                          {/* RAM DIMMs */}
+                          <g transform="translate(120, 22)">
+                            <rect x="0" y="0" width="80" height="34" rx="4" fill="#111827" stroke="#1f2937" strokeWidth="1" />
+                            <text x="40" y="10" textAnchor="middle" fontSize="7" fill="#94a3b8" fontWeight="bold">RAM slots</text>
+                            
+                            {/* DIMM sticks */}
+                            <line x1="10" y1="16" x2="70" y2="16" stroke="#4b5563" strokeWidth="2" />
+                            <line x1="10" y1="22" x2="70" y2="22" stroke="#4b5563" strokeWidth="2" />
+
+                            {/* RAM LEDs based on instance class */}
+                            <g transform="translate(15, 14)">
+                              <circle cx="0" cy="0" r="1.5" fill={vmState === 'Running' ? '#10b981' : '#4b5563'} />
+                              <circle cx="10" cy="0" r="1.5" fill={vmState === 'Running' && ['c6g.large', 'r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? '#10b981' : '#4b5563'} />
+                              <circle cx="20" cy="0" r="1.5" fill={vmState === 'Running' && ['r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? '#10b981' : '#4b5563'} />
+                              <circle cx="30" cy="0" r="1.5" fill={vmState === 'Running' && consoleInstanceType === 'r6g.xlarge' ? '#10b981' : '#4b5563'} />
+                            </g>
+                            <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="#3b82f6" fontWeight="bold">
+                              {consoleInstanceType === 't3.medium' ? '4 GiB (Standard)' :
+                               consoleInstanceType === 'c6g.large' ? '8 GiB (Compute)' :
+                               consoleInstanceType === 'r6g.xlarge' ? '32 GiB (Memory!)' :
+                               '16 GiB (Storage Opt)'}
+                            </text>
+                          </g>
+
+                          {/* Storage Mount Area */}
+                          {/* 1. EBS Volume */}
+                          {isEbsRendered && (
+                            <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`}>
+                              <rect x="0" y="0" width="80" height="38" rx="4" 
+                                fill={isEbsDetached ? '#111827' : 'rgba(255,255,255,0.95)'} 
+                                stroke={isEbsDetached ? '#ef4444' : vmState === 'Running' ? '#10b981' : '#cbd5e1'} 
+                                strokeWidth="1.2" 
+                              />
+                              <rect x="2" y="2" width="76" height="6" rx="1" fill={isEbsDetached ? '#ef4444' : '#0284c7'} />
+                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill={isEbsDetached ? '#ef4444' : '#1e293b'} fontWeight="extrabold">EBS Root</text>
+                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill={isEbsDetached ? '#94a3b8' : '#475569'} fontWeight="bold">/dev/xvda</text>
+                              
+                              <text x="40" y="33" textAnchor="middle" fontSize="6" fill={isEbsDetached ? '#ef4444' : '#059669'} fontWeight="extrabold">
+                                {isEbsDetached ? '⚠️ DETACHED' : vmState === 'Running' ? '● MOUNT ACTIVE' : '● STANDBY'}
+                              </text>
+                            </g>
+                          )}
+                          
+                          {/* EBS deleted representation placeholder */}
+                          {!isEbsRendered && isEbsPresent && (
+                            <g transform="translate(120, 90)">
+                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" />
+                              <text x="40" y="20" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">EBS DELETED</text>
+                              <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="#64748b">(Terminated)</text>
+                            </g>
+                          )}
+
+                          {/* 2. NVMe Ephemeral SSD */}
+                          {isNvmePresent && (
+                            <g transform="translate(215, 90)">
+                              <rect x="0" y="0" width="80" height="38" rx="4" 
+                                fill={['Stopped', 'Terminated'].includes(vmState) ? '#1f1315' : 'rgba(255,255,255,0.95)'} 
+                                stroke={['Stopped', 'Terminated'].includes(vmState) ? '#ef4444' : vmState === 'Running' ? '#10b981' : '#cbd5e1'} 
+                                strokeWidth="1.2" 
+                              />
+                              <rect x="2" y="2" width="76" height="6" rx="1" fill={['Stopped', 'Terminated'].includes(vmState) ? '#ef4444' : '#8b5cf6'} />
+                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill={['Stopped', 'Terminated'].includes(vmState) ? '#fca5a5' : '#1e293b'} fontWeight="extrabold">NVMe SSD</text>
+                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill="#64748b" fontWeight="bold">/dev/nvme0n1</text>
+                              
+                              {['Stopped', 'Terminated'].includes(vmState) ? (
+                                <g>
+                                  {/* flashing alert */}
+                                  <rect x="5" y="28" width="70" height="7" rx="1.5" fill="#ef4444">
+                                    <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" />
+                                  </rect>
+                                  <text x="40" y="34" textAnchor="middle" fontSize="5.5" fill="#fff" fontWeight="extrabold">WIPED / LOSS</text>
+                                </g>
+                              ) : (
+                                <text x="40" y="34" textAnchor="middle" fontSize="6" fill={vmState === 'Running' ? '#059669' : '#475569'} fontWeight="extrabold">
+                                  {vmState === 'Running' ? '⚡ VOLATILE' : 'STANDBY'}
+                                </text>
+                              )}
+                            </g>
+                          )}
+
+                          {/* If NVMe is not present */}
+                          {!isNvmePresent && (
+                            <g transform="translate(215, 90)">
+                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="#1f2937" strokeWidth="1" />
+                              <text x="40" y="18" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="bold">No Inst Store</text>
+                              <text x="40" y="28" textAnchor="middle" fontSize="6.5" fill="#64748b">(EBS Only)</text>
+                            </g>
+                          )}
+                        </svg>
+                      </div>
+                    );
+                  })()}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'rgba(255, 255, 255, 0.8)', padding: '6px', borderRadius: '4px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
                     <span>Compute CPU Meter:</span>
                     <b style={{ color: consoleCpuGauge > 50 ? '#ef4444' : '#10b981' }}>{consoleCpuGauge}%</b>
                   </div>
 
-                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '130px', background: '#090e1a' }}>
+                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '140px', background: '#0a0d16' }}>
                     {consoleLogs.map((log, index) => (
                       <div key={index} style={{ 
                         color: log.includes('⚠️') ? '#ef4444' : log.includes('[system]') ? '#10b981' : log.includes('[user-data]') ? '#f59e0b' : '#38bdf8',
@@ -1525,39 +2062,104 @@ export default function EC2Visualizer() {
               </div>
 
               {/* SVG HA Flow */}
-              <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', textAlign: 'center', marginBottom: '14px' }}>
-                <svg viewBox="0 0 680 180" width="100%" style={{ background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+              <div style={{ padding: '4px', textAlign: 'center', marginBottom: '14px' }}>
+                <svg viewBox="0 0 680 180" width="100%" className="ec2-svg-bg">
+                  <defs>
+                    <linearGradient id="ha-blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#1d4ed8" />
+                    </linearGradient>
+                    <linearGradient id="ha-pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ec4899" />
+                      <stop offset="100%" stopColor="#be185d" />
+                    </linearGradient>
+                    <linearGradient id="ha-green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Connecting paths */}
+                  <path d="M 110, 90 L 160, 90" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3,3" />
+                  <path d="M 260, 75 L 330, 55" stroke="#cbd5e1" strokeWidth="2" />
+                  <path d="M 260, 105 L 330, 125" stroke="#cbd5e1" strokeWidth="2" />
+                  <path d="M 480, 50 L 550, 75" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 480, 130 L 550, 105" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  {/* Active moving pulses */}
+                  <circle r="3.5" fill="#047857">
+                    <animateMotion dur="2s" repeatCount="indefinite" path="M 110, 90 L 160, 90" />
+                  </circle>
+                  <circle r="3.5" fill="#1d4ed8">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 260, 75 L 330, 55" />
+                  </circle>
+                  <circle r="3.5" fill="#1d4ed8">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 260, 105 L 330, 125" />
+                  </circle>
+                  <circle r="3.5" fill="#0284c7">
+                    <animateMotion dur="2.2s" repeatCount="indefinite" path="M 480, 50 L 550, 75" />
+                  </circle>
+                  <circle r="3.5" fill="#0284c7">
+                    <animateMotion dur="2.2s" repeatCount="indefinite" path="M 480, 130 L 550, 105" />
+                  </circle>
+
                   {/* Public Internet */}
-                  <rect x="10" y="60" width="100" height="60" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1" />
-                  <text x="60" y="95" textAnchor="middle" fontSize="11" fontWeight="600" fill="#166534">🌐 Internet</text>
-                  
-                  <path d="M110,90 L160,90" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <g transform="translate(10, 55)">
+                    <rect x="0" y="0" width="100" height="70" rx="8" fill="rgba(255,255,255,0.95)" stroke="#047857" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-green-grad)" />
+                    <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🌐 Internet</text>
+                    <text x="50" y="42" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="bold">Public Clients</text>
+                    <text x="50" y="55" textAnchor="middle" fontSize="7" fill="#64748b">(Secure HTTP Traffic)</text>
+                  </g>
                   
                   {/* ALB */}
-                  <rect x="160" y="40" width="100" height="100" rx="6" fill="#eff6ff" stroke="#1e40af" strokeWidth="1" />
-                  <text x="210" y="85" textAnchor="middle" fontSize="11" fontWeight="600" fill="#1e40af">🍪 ALB</text>
-                  <text x="210" y="105" textAnchor="middle" fontSize="9" fill="#1e40af">(Port 80/443)</text>
-
-                  <path d="M260,75 L330,55" stroke="#94a3b8" strokeWidth="1.5" />
-                  <path d="M260,105 L330,125" stroke="#94a3b8" strokeWidth="1.5" />
+                  <g transform="translate(160, 35)">
+                    <rect x="0" y="0" width="100" height="110" rx="8" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-blue-grad)" />
+                    <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🍪 Application LB</text>
+                    
+                    {/* Cookies / listeners */}
+                    <circle cx="25" cy="45" r="4.5" fill="#3b82f6" />
+                    <text x="35" y="48" fontSize="7.5" fill="#1e293b" fontWeight="bold">SSL listener</text>
+                    <rect x="15" y="65" width="70" height="4" rx="2" fill="#cbd5e1" />
+                    <rect x="15" y="75" width="50" height="4" rx="2" fill="#cbd5e1" />
+                    <text x="50" y="98" textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="bold">Target Groups</text>
+                  </g>
 
                   {/* Private AZ-A */}
-                  <rect x="330" y="15" width="150" height="70" rx="6" fill="#fdf2f8" stroke="#9d174d" strokeWidth="1" />
-                  <text x="405" y="40" textAnchor="middle" fontSize="10" fontWeight="600" fill="#9d174d">🔒 AZ-a (EC2 sg-app)</text>
-                  <text x="405" y="60" textAnchor="middle" fontSize="9" fill="#9d174d">Private IP: 10.0.1.x</text>
+                  <g transform="translate(330, 15)">
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.2" />
+                    <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
+                    <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-a (sg-app-fleet)</text>
+                    
+                    <rect x="15" y="32" width="120" height="16" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="0.8" />
+                    <text x="75" y="43" textAnchor="middle" fontSize="8" fill="#9d174d" fontWeight="bold">EC2 Instance (10.0.1.x)</text>
+                    <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Healthy in Private Subnet</text>
+                  </g>
 
                   {/* Private AZ-B */}
-                  <rect x="330" y="95" width="150" height="70" rx="6" fill="#fdf2f8" stroke="#9d174d" strokeWidth="1" />
-                  <text x="405" y="120" textAnchor="middle" fontSize="10" fontWeight="600" fill="#9d174d">🔒 AZ-b (EC2 sg-app)</text>
-                  <text x="405" y="140" textAnchor="middle" fontSize="9" fill="#9d174d">Private IP: 10.0.2.x</text>
-
-                  <path d="M480,50 L550,75" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M480,130 L550,105" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <g transform="translate(330, 95)">
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.2" />
+                    <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
+                    <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-b (sg-app-fleet)</text>
+                    
+                    <rect x="15" y="32" width="120" height="16" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="0.8" />
+                    <text x="75" y="43" textAnchor="middle" fontSize="8" fill="#9d174d" fontWeight="bold">EC2 Instance (10.0.2.x)</text>
+                    <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Healthy in Private Subnet</text>
+                  </g>
 
                   {/* EFS Mount */}
-                  <rect x="550" y="55" width="110" height="70" rx="6" fill="#ecfdf5" stroke="#065f46" strokeWidth="1" />
-                  <text x="605" y="85" textAnchor="middle" fontSize="11" fontWeight="600" fill="#065f46">📁 Shared EFS</text>
-                  <text x="605" y="105" textAnchor="middle" fontSize="9" fill="#065f46">Multi-AZ NAS Mount</text>
+                  <g transform="translate(550, 50)">
+                    <rect x="0" y="0" width="120" height="80" rx="8" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="112" height="15" rx="3" fill="url(#ha-green-grad)" />
+                    <text x="60" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">📁 Shared NAS (EFS)</text>
+                    
+                    {/* Database disks drawing inside */}
+                    <ellipse cx="60" cy="42" rx="16" ry="4" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
+                    <path d="M44,42 L44,52 A16,4 0 0,0 76,52 L76,42" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
+                    
+                    <text x="60" y="70" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">Multi-AZ Mount Targets</text>
+                  </g>
                 </svg>
               </div>
             </div>
@@ -1576,39 +2178,71 @@ export default function EC2Visualizer() {
                 </div>
 
                 {/* SVG Comparative Hardware */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Physical Hypervisor Host vs SAN Storage Architecture</div>
-                  <svg viewBox="0 0 450 160" width="100%" style={{ background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                <div style={{ padding: '4px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Physical Hypervisor Host vs SAN Storage Architecture</div>
+                  <svg viewBox="0 0 450 160" width="100%" className="ec2-svg-bg">
+                    <defs>
+                      <linearGradient id="host-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f472b6" />
+                        <stop offset="100%" stopColor="#db2777" />
+                      </linearGradient>
+                      <linearGradient id="san-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#34d399" />
+                        <stop offset="100%" stopColor="#059669" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Connection paths inside motherboard & outwards */}
+                    {/* Local NVMe PCIe path */}
+                    <path id="pcie-path" d="M 70, 70 L 70, 100" stroke="#ef4444" strokeWidth="2.5" />
+                    {/* VPC Network Outward path */}
+                    <path id="vpc-path" d="M 150, 70 L 150, 115 L 280, 115" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3,2" />
+
+                    {/* Active moving pulses */}
+                    <circle r="3" fill="#f43f5e">
+                      <animateMotion dur="0.8s" repeatCount="indefinite" path="M 70, 70 L 70, 100" />
+                    </circle>
+                    <circle r="3" fill="#3b82f6">
+                      <animateMotion dur="2.5s" repeatCount="indefinite" path="M 150, 70 L 150, 115 L 280, 115" />
+                    </circle>
+
                     {/* Hypervisor Host Motherboard */}
-                    <rect x="10" y="10" width="200" height="140" rx="6" fill="#fdf2f8" stroke="#9d174d" strokeWidth="1" />
-                    <text x="110" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#9d174d">Physical Host Motherboard (Hypervisor)</text>
+                    <g transform="translate(10, 10)">
+                      <rect x="0" y="0" width="200" height="140" rx="8" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="192" height="15" rx="3" fill="url(#host-grad)" />
+                      <text x="100" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Physical Motherboard (Hypervisor Host)</text>
+                    </g>
 
                     {/* CPU RAM Core */}
-                    <rect x="25" y="40" width="170" height="30" rx="3" fill="#eff6ff" stroke="#1e40af" strokeWidth="1" />
-                    <text x="110" y="58" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e40af">Virtual EC2 Guest VM (CPU &amp; RAM)</text>
+                    <g transform="translate(25, 40)">
+                      <rect x="0" y="0" width="170" height="30" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.2" />
+                      <text x="85" y="18" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1d4ed8">Virtual Guest VM (vCPU &amp; RAM)</text>
+                    </g>
 
-                    {/* Local NVMe Bus Connection */}
-                    <path d="M70,70 L70,100" stroke="#f43f5e" strokeWidth="2.5" />
-                    <text x="76" y="88" fontSize="6.5" fill="#f43f5e" fontWeight="bold">Direct PCIe bus</text>
+                    <text x="76" y="88" fontSize="6.5" fill="#ef4444" fontWeight="extrabold">PCIe Bus</text>
 
                     {/* Local Instance Store SSD */}
-                    <rect x="30" y="100" width="80" height="35" rx="3" fill="#ffe4e6" stroke="#f43f5e" strokeWidth="1.2" />
-                    <text x="70" y="116" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#be123c">Instance Store</text>
-                    <text x="70" y="128" textAnchor="middle" fontSize="6.5" fill="#be123c">💥 Ephemeral SSD</text>
+                    <g transform="translate(30, 100)">
+                      <rect x="0" y="0" width="80" height="35" rx="4" fill="#fff1f2" stroke="#f43f5e" strokeWidth="1.2" />
+                      <text x="40" y="14" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#be123c">Instance Store</text>
+                      <text x="40" y="26" textAnchor="middle" fontSize="6" fill="#be123c" fontWeight="extrabold">💥 Ephemeral NVMe</text>
+                    </g>
 
-                    {/* Network link outwards */}
-                    <path d="M150,70 L150,110 L280,110" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="3,2" />
-                    <text x="210" y="104" fontSize="7" fill="#2563eb" fontWeight="bold">VPC Network Fabric</text>
+                    <text x="210" y="106" fontSize="7" fill="#2563eb" fontWeight="extrabold">Dedicated SAN Fiber link</text>
 
                     {/* Remote EBS SAN Cluster */}
-                    <rect x="280" y="25" width="160" height="110" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1.2" />
-                    <text x="360" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#166534">EBS Dedicated Storage Cluster (SAN)</text>
+                    <g transform="translate(280, 20)">
+                      <rect x="0" y="0" width="160" height="120" rx="8" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="152" height="15" rx="3" fill="url(#san-grad)" />
+                      <text x="80" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">EBS Storage SAN Cluster</text>
+                      
+                      {/* EBS volume cylinders */}
+                      <ellipse cx="80" cy="50" rx="30" ry="8" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
+                      <path d="M50,50 L50,68 A30,8 0 0,0 110,68 L110,50" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
 
-                    <rect x="295" y="60" width="130" height="30" rx="3" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
-                    <text x="360" y="78" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#059669">EBS Volume Container</text>
-                    
-                    <text x="360" y="112" textAnchor="middle" fontSize="7" fill="#15803d">✅ Data Persists on Stop/Terminate</text>
-                    <text x="360" y="124" textAnchor="middle" fontSize="6.5" fill="#64748b">(Network Detach &amp; Re-attachable)</text>
+                      <text x="80" y="94" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">✅ Data Persists on VM Stop</text>
+                      <text x="80" y="106" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Network Detached &amp; Detourable)</text>
+                    </g>
                   </svg>
                 </div>
               </div>

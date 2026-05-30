@@ -542,56 +542,287 @@ export default function CloudfrontVisualizer() {
   return (
     <div>
       <style>{`
-        /* Scoped CloudFront styling */
-        .cf-container { font-family: var(--font-sans, system-ui, sans-serif); color: var(--color-text-primary, #0f172a); }
-        .cf-h { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .cf-sub { font-size: 13px; color: var(--color-text-secondary, #475569); line-height: 1.5; margin-bottom: 14px; }
-        .cf-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .cf-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .cf-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .cf-tb.cf-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .cf-card { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-lg, 12px); padding: 14px 16px; background: var(--color-background-primary, #ffffff); margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .cf-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #475569); text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; }
+        /* Scoped CloudFront Styling & Glassmorphic Tokens */
+        .cf-container {
+          font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+          color: #1e293b;
+        }
+        .cf-h {
+          font-size: 24px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 6px;
+          color: #0f172a;
+          background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .cf-sub {
+          font-size: 13.5px;
+          color: #475569;
+          line-height: 1.6;
+          margin-bottom: 18px;
+        }
+        .cf-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          padding-bottom: 12px;
+        }
+        .cf-tb {
+          padding: 8px 16px;
+          border-radius: 12px;
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          font-size: 12.5px;
+          cursor: pointer;
+          background: rgba(248, 250, 252, 0.7);
+          color: #475569;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+          font-weight: 600;
+          backdrop-filter: blur(8px);
+        }
+        .cf-tb:hover {
+          background: rgba(241, 245, 249, 0.9);
+          color: #0f172a;
+          transform: translateY(-1px);
+        }
+        .cf-tb.cf-on {
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          color: #ffffff;
+          border-color: #4f46e5;
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+        .cf-card {
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border-radius: 16px;
+          padding: 18px 20px;
+          background: rgba(255, 255, 255, 0.8);
+          margin-bottom: 18px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08);
+          backdrop-filter: blur(12px);
+          transition: border-color 0.2s;
+        }
+        .cf-card:hover {
+          border-color: rgba(99, 102, 241, 0.35);
+        }
+        .cf-sec {
+          font-size: 12px;
+          font-weight: 700;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.07em;
+          margin: 20px 0 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
         .cf-sec:first-child { margin-top: 0; }
-        .cf-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .cf-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .cf-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); background: var(--color-background-secondary, #f8fafc); margin-bottom: 6px; font-size: 12px; line-height: 1.45; }
-        .cf-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; color: #fff; font-weight: 600; background: #6366f1; }
-        .cf-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; }
-        .cf-binfo { background: #e0e7ff; color: #4338ca; }
-        .cf-bok { background: #dcfce7; color: #15803d; }
-        .cf-bwarn { background: #fef3c7; color: #b45309; }
-        .cf-bbad { background: #fee2e2; color: #b91c1c; }
-        .cf-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .cf-ctrl { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); border-radius: var(--border-radius-md, 8px); padding: 12px; }
-        .cf-ctrl label { display: block; font-size: 12px; font-weight: 600; color: var(--color-text-secondary, #475569); margin-bottom: 6px; }
-        .cf-ctrl select, .cf-ctrl input[type="text"] { width: 100%; padding: 6px; font-size: 12px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); border-radius: 4px; background: var(--color-background-primary, #ffffff); outline: none; }
-        .cf-ctrl select:focus, .cf-ctrl input[type="text"]:focus { border-color: #6366f1; }
-        .cf-mono { font-family: var(--font-mono, monospace); font-size: 11px; }
-        .cf-btnbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .cf-btn { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary, #cbd5e1); background: var(--color-background-primary, #ffffff); color: var(--color-text-primary, #0f172a); cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; }
-        .cf-btn:hover { background: var(--color-background-secondary, #f8fafc); }
-        .cf-btn.cf-primary { background: #6366f1; border-color: #6366f1; color: #fff; }
-        .cf-btn.cf-primary:hover { background: #4f46e5; }
-        .cf-btn.cf-danger { background: #ef4444; border-color: #ef4444; color: #fff; }
-        .cf-btn.cf-danger:hover { background: #dc2626; }
-        .cf-log { background: #1e293b; border-radius: var(--border-radius-md, 8px); padding: 12px; font-size: 11px; color: #cbd5e1; line-height: 1.6; min-height: 120px; max-height: 240px; overflow-y: auto; margin-top: 12px; font-family: var(--font-mono, monospace); }
-        .cf-log-entry { margin-bottom: 6px; border-bottom: 0.5px dashed #334155; padding-bottom: 4px; }
+        .cf-grid2 {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+        .cf-grid3 {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+        .cf-row {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          padding: 10px 12px;
+          border: 1px solid rgba(226, 232, 240, 0.8);
+          border-radius: 10px;
+          background: rgba(248, 250, 252, 0.6);
+          margin-bottom: 8px;
+          font-size: 12.5px;
+          line-height: 1.5;
+          transition: background 0.2s;
+        }
+        .cf-row:hover {
+          background: rgba(241, 245, 249, 0.85);
+        }
+        .cf-dot {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-size: 11px;
+          color: #ffffff;
+          font-weight: 700;
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+        }
+        .cf-badge {
+          display: inline-block;
+          padding: 3px 10px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+        .cf-binfo { background: #e0e7ff; color: #4338ca; border: 0.5px solid #c7d2fe; }
+        .cf-bok { background: #dcfce7; color: #15803d; border: 0.5px solid #bbf7d0; }
+        .cf-bwarn { background: #fef3c7; color: #b45309; border: 0.5px solid #fde68a; }
+        .cf-bbad { background: #fee2e2; color: #b91c1c; border: 0.5px solid #fecaca; }
+        .cf-controls {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        .cf-ctrl {
+          background: rgba(248, 250, 252, 0.8);
+          border: 1.5px solid rgba(226, 232, 240, 0.95);
+          border-radius: 12px;
+          padding: 14px;
+          transition: border-color 0.2s;
+        }
+        .cf-ctrl:hover {
+          border-color: rgba(99, 102, 241, 0.3);
+        }
+        .cf-ctrl label {
+          display: block;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #475569;
+          margin-bottom: 8px;
+        }
+        .cf-ctrl select, .cf-ctrl input[type="text"] {
+          width: 100%;
+          padding: 8px;
+          font-size: 12px;
+          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          border-radius: 8px;
+          background: #ffffff;
+          outline: none;
+          color: #1e293b;
+          font-weight: 500;
+          transition: all 0.15s;
+        }
+        .cf-ctrl select:focus, .cf-ctrl input[type="text"]:focus {
+          border-color: #6366f1;
+          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+        .cf-mono {
+          font-family: var(--font-mono, ui-monospace, monospace);
+          font-size: 11.5px;
+        }
+        .cf-btnbar {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-top: 14px;
+        }
+        .cf-btn {
+          font-size: 12px;
+          font-weight: 700;
+          padding: 8px 16px;
+          border-radius: 10px;
+          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          background: #ffffff;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transform: translateY(0);
+        }
+        .cf-btn:hover {
+          background: rgba(248, 250, 252, 0.9);
+          color: #0f172a;
+          border-color: rgba(99, 102, 241, 0.25);
+          transform: translateY(-1px);
+        }
+        .cf-btn.cf-primary {
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          border: none;
+          color: #ffffff;
+          box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+        .cf-btn.cf-primary:hover {
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+          box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+        .cf-btn.cf-danger {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          border: none;
+          color: #ffffff;
+          box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        }
+        .cf-btn.cf-danger:hover {
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+          box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        }
+        .cf-log {
+          background: #0f172a;
+          border: 1.5px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          color: #cbd5e1;
+          line-height: 1.7;
+          min-height: 120px;
+          max-height: 240px;
+          overflow-y: auto;
+          margin-top: 14px;
+          font-family: var(--font-mono, ui-monospace, monospace);
+          box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        .cf-log-entry {
+          margin-bottom: 6px;
+          border-bottom: 1px dashed rgba(51, 65, 85, 0.5);
+          padding-bottom: 4px;
+        }
         .cf-log-entry:last-child { border: none; }
-        .cf-table { width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.4; }
-        .cf-table th { background: var(--color-background-secondary, #f8fafc); border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; text-align: left; font-weight: 600; }
-        .cf-table td { border: 0.5px solid var(--color-border-tertiary, #e2e8f0); padding: 8px; }
-        .cf-table tr:nth-child(even) { background: var(--color-background-secondary, #f8fafc); }
+        .cf-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+        .cf-table th {
+          background: rgba(248, 250, 252, 0.8);
+          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          padding: 10px 12px;
+          text-align: left;
+          font-weight: 700;
+          color: #475569;
+        }
+        .cf-table td {
+          border: 1.5px solid rgba(226, 232, 240, 0.8);
+          padding: 10px 12px;
+          color: #1e293b;
+        }
+        .cf-table tr:nth-child(even) { background: rgba(248, 250, 252, 0.45); }
         
-        /* High-contrast keyword highlighting matching S3 */
-        .cf-hl-cyan { background-color: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .cf-hl-indigo { background-color: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .cf-hl-orange { background-color: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .cf-hl-green { background-color: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-        .cf-hl-purple { background-color: #f3e8ff; color: #6b21a8; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        /* High-Contrast Highlights for light-mode text readability */
+        .cf-hl-cyan { background-color: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #bae6fd; }
+        .cf-hl-indigo { background-color: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #c7d2fe; }
+        .cf-hl-orange { background-color: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #fed7aa; }
+        .cf-hl-green { background-color: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #bbf7d0; }
+        .cf-hl-purple { background-color: #f3e8ff; color: #6b21a8; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #e9d5ff; }
 
-        /* Muted descriptions in parentheses outside highlights */
-        .cf-desc-mute { color: var(--color-text-secondary); font-size: 11px; font-style: italic; opacity: 0.9; font-weight: normal; background: none; padding: 0; }
+        /* Blueprint dot grid background grid */
+        .cf-svg-bg {
+          background-color: #f8fafc;
+          background-image: radial-gradient(rgba(203, 213, 225, 0.45) 1.5px, transparent 1.5px);
+          background-size: 16px 16px;
+        }
+
+        .cf-desc-mute { color: #64748b; font-size: 11px; font-style: italic; opacity: 0.95; font-weight: normal; background: none; padding: 0; }
       `}</style>
 
       <div className="cf-container">
@@ -661,91 +892,163 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* High Level Architecture SVG */}
-              <div style={{ border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  CloudFront Global Request Processing Pipeline (High-Level Topology)
+              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginBottom: '18px' }}>
+                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🌐</span> Global Request Processing Pipeline (High-Fidelity 3D Grid Blueprint)
                 </div>
                 
-                <svg width="100%" viewBox="0 0 760 220" style={{ background: '#faf5ff', borderRadius: '6px', border: '0.5px solid #d8b4fe' }}>
+                <svg width="100%" viewBox="0 0 760 220" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.8)' }}>
                   <defs>
-                    <marker id="acn-cf" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#6366f1" /></marker>
-                    <marker id="acn-green-cf" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#16a34a" /></marker>
+                    <linearGradient id="grad-cf-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#60a5fa" />
+                      <stop offset="100%" stopColor="#2563eb" />
+                    </linearGradient>
+                    <linearGradient id="grad-cf-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#c084fc" />
+                      <stop offset="100%" stopColor="#7c3aed" />
+                    </linearGradient>
+                    <linearGradient id="grad-cf-pink" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f472b6" />
+                      <stop offset="100%" stopColor="#db2777" />
+                    </linearGradient>
+                    <linearGradient id="grad-cf-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#94a3b8" floodOpacity="0.15" />
+                    </filter>
                   </defs>
 
-                  {/* Geographies */}
-                  <rect x="10" y="30" width="160" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="90" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">🌍 Client Locations</text>
+                  {/* Column 1: Client Locations Grid */}
+                  <rect x="15" y="25" width="150" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
+                  <text x="90" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🌍 Client Locations</text>
                   
-                  {/* Clients */}
-                  <rect x="25" y="65" width="130" height="30" rx="4" fill="#eff6ff" stroke="#93c5fd" />
-                  <text x="90" y="83" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1e3a8a">Client US (New York)</text>
+                  {/* US Client Card */}
+                  <g filter="url(#shadow)">
+                    <rect x="25" y="58" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                    <text x="90" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client US (New York)</text>
+                  </g>
                   
-                  <rect x="25" y="110" width="130" height="30" rx="4" fill="#eff6ff" stroke="#93c5fd" />
-                  <text x="90" y="128" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1e3a8a">Client EU (Frankfurt)</text>
+                  {/* EU Client Card */}
+                  <g filter="url(#shadow)">
+                    <rect x="25" y="102" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                    <text x="90" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client EU (Frankfurt)</text>
+                  </g>
 
-                  <rect x="25" y="155" width="130" height="30" rx="4" fill="#eff6ff" stroke="#93c5fd" />
-                  <text x="90" y="173" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1e3a8a">Client ASIA (Tokyo)</text>
+                  {/* ASIA Client Card */}
+                  <g filter="url(#shadow)">
+                    <rect x="25" y="146" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                    <text x="90" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client ASIA (Tokyo)</text>
+                  </g>
 
-                  {/* Edge locations */}
-                  <rect x="210" y="30" width="160" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="290" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">⚡ Edge Locations (POPs)</text>
+                  {/* Column 2: Edge Locations */}
+                  <rect x="195" y="25" width="160" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
+                  <text x="275" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">⚡ Edge POPs (caching)</text>
                   
-                  <rect x="225" y="65" width="130" height="30" rx="4" fill="#f5f3ff" stroke="#c084fc" />
-                  <text x="290" y="83" textAnchor="middle" fontSize="9" fontWeight="600" fill="#581c87">New York Edge</text>
+                  {/* New York Edge PoP */}
+                  <g filter="url(#shadow)">
+                    <rect x="205" y="58" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
+                    <circle cx="218" cy="74" r="3" fill="#10b981" />
+                    <text x="280" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">New York Edge (POP)</text>
+                  </g>
                   
-                  <rect x="225" y="110" width="130" height="30" rx="4" fill="#f5f3ff" stroke="#c084fc" />
-                  <text x="290" y="128" textAnchor="middle" fontSize="9" fontWeight="600" fill="#581c87">Frankfurt Edge</text>
+                  {/* Frankfurt Edge PoP */}
+                  <g filter="url(#shadow)">
+                    <rect x="205" y="102" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
+                    <circle cx="218" cy="118" r="3" fill="#10b981" />
+                    <text x="280" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">Frankfurt Edge (POP)</text>
+                  </g>
 
-                  <rect x="225" y="155" width="130" height="30" rx="4" fill="#f5f3ff" stroke="#c084fc" />
-                  <text x="290" y="173" textAnchor="middle" fontSize="9" fontWeight="600" fill="#581c87">Tokyo Edge</text>
+                  {/* Tokyo Edge PoP */}
+                  <g filter="url(#shadow)">
+                    <rect x="205" y="146" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
+                    <circle cx="218" cy="162" r="3" fill="#10b981" />
+                    <text x="280" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">Tokyo Edge (POP)</text>
+                  </g>
 
-                  {/* Regional Edge Caches */}
-                  <rect x="410" y="30" width="150" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="485" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">🛡️ Regional Edge Cache</text>
+                  {/* Column 3: Regional Edge Cache (REC) */}
+                  <rect x="385" y="25" width="160" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
+                  <text x="465" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🛡️ Regional Edge Cache</text>
                   
-                  <rect x="425" y="75" width="120" height="40" rx="4" fill="#fdf2f8" stroke="#fbcfe8" />
-                  <text x="485" y="93" textAnchor="middle" fontSize="9" fontWeight="600" fill="#9d174d">US East REC</text>
-                  <text x="485" y="105" textAnchor="middle" fontSize="8" fill="#c91a68">(Primary Buffer)</text>
+                  {/* US East REC */}
+                  <g filter="url(#shadow)">
+                    <rect x="395" y="58" width="140" height="50" rx="6" fill="#fdf2f8" stroke="#fbcfe8" strokeWidth="1.5" />
+                    <text x="465" y="78" textAnchor="middle" fontSize="10" fontWeight="700" fill="#9d174d">US-East REC</text>
+                    <text x="465" y="94" textAnchor="middle" fontSize="8" fill="#db2777" fontWeight="600">(Primary Buffer)</text>
+                  </g>
 
-                  <rect x="425" y="135" width="120" height="40" rx="4" fill="#fdf2f8" stroke="#fbcfe8" />
-                  <text x="485" y="153" textAnchor="middle" fontSize="9" fontWeight="600" fill="#9d174d">Europe REC</text>
-                  <text x="485" y="165" textAnchor="middle" fontSize="8" fill="#c91a68">(Primary Buffer)</text>
+                  {/* Europe REC */}
+                  <g filter="url(#shadow)">
+                    <rect x="395" y="128" width="140" height="50" rx="6" fill="#fdf2f8" stroke="#fbcfe8" strokeWidth="1.5" />
+                    <text x="465" y="148" textAnchor="middle" fontSize="10" fontWeight="700" fill="#9d174d">Europe REC</text>
+                    <text x="465" y="164" textAnchor="middle" fontSize="8" fill="#db2777" fontWeight="600">(Primary Buffer)</text>
+                  </g>
 
-                  {/* Origin */}
-                  <rect x="600" y="30" width="140" height="170" rx="8" fill="#f8fafc" stroke="#94a3b8" />
-                  <text x="670" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">🗄️ Origins (US-East-1)</text>
+                  {/* Column 4: Origin Servers */}
+                  <rect x="575" y="25" width="170" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
+                  <text x="660" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🗄️ Origins (Source)</text>
 
-                  <rect x="610" y="70" width="120" height="45" rx="6" fill="#ecfdf5" stroke="#a7f3d0" />
-                  <text x="670" y="90" textAnchor="middle" fontSize="9" fontWeight="600" fill="#047857">🪣 Amazon S3</text>
-                  <text x="670" y="105" textAnchor="middle" fontSize="8" fill="#065f46">OAC Secure Static</text>
+                  {/* S3 Storage Cylinder */}
+                  <g filter="url(#shadow)">
+                    <path d="M 595 72 A 50 12 0 0 0 695 72 L 695 90 A 50 12 0 0 1 595 90 Z" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                    <ellipse cx="645" cy="72" rx="50" ry="12" fill="#dcfce7" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="645" y="86" textAnchor="middle" fontSize="9" fontWeight="700" fill="#047857">🪣 private-s3-bucket</text>
+                  </g>
 
-                  <rect x="610" y="130" width="120" height="45" rx="6" fill="#eff6ff" stroke="#bfdbfe" />
-                  <text x="670" y="150" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1d4ed8">⚙️ ALB / Custom EC2</text>
-                  <text x="670" y="165" textAnchor="middle" fontSize="8" fill="#1e40af">Dynamic API / Apps</text>
+                  {/* ALB Compute Tower */}
+                  <g filter="url(#shadow)">
+                    <rect x="595" y="128" width="130" height="42" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="660" y="146" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e3a8a">⚙️ alb-dynamic-api</text>
+                    <text x="660" y="158" textAnchor="middle" fontSize="8" fill="#2563eb" fontWeight="600">VPC API Gateway</text>
+                  </g>
 
-                  {/* Connectors */}
-                  {/* Clients to Edges via DNS Anycast */}
-                  <path d="M 155 80 L 225 80" fill="none" stroke="#6366f1" strokeWidth="1.2" markerEnd="url(#acn-cf)" />
-                  <path d="M 155 125 L 225 125" fill="none" stroke="#6366f1" strokeWidth="1.2" markerEnd="url(#acn-cf)" />
-                  <path d="M 155 170 L 225 170" fill="none" stroke="#6366f1" strokeWidth="1.2" markerEnd="url(#acn-cf)" />
-                  <text x="190" y="72" textAnchor="middle" fontSize="7" fill="#4f46e5" fontWeight="600">Anycast DNS</text>
+                  {/* Routing Conduits & Waveguide Paths */}
+                  {/* US Client to NY Edge */}
+                  <path d="M 155 74 L 205 74" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 155 74 L 205 74" id="path-us-pop" fill="none" stroke="url(#grad-cf-blue)" strokeWidth="1.5" strokeLinecap="round" />
 
-                  {/* New York & Tokyo Edges to US REC */}
-                  <path d="M 355 80 L 425 90" fill="none" stroke="#6366f1" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#acn-cf)" />
-                  <path d="M 355 170 L 425 105" fill="none" stroke="#6366f1" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#acn-cf)" />
-                  
-                  {/* Frankfurt Edge to EU REC */}
-                  <path d="M 355 125 L 425 150" fill="none" stroke="#6366f1" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#acn-cf)" />
+                  {/* EU Client to Frankfurt Edge */}
+                  <path d="M 155 118 L 205 118" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 155 118 L 205 118" id="path-eu-pop" fill="none" stroke="url(#grad-cf-blue)" strokeWidth="1.5" strokeLinecap="round" />
 
+                  {/* Asia Client to Tokyo Edge */}
+                  <path d="M 155 162 L 205 162" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 155 162 L 205 162" id="path-asia-pop" fill="none" stroke="url(#grad-cf-blue)" strokeWidth="1.5" strokeLinecap="round" />
+
+                  {/* POPs to RECs */}
+                  {/* NY Edge PoP to US East REC */}
+                  <path d="M 345 74 L 395 83" fill="none" stroke="rgba(99, 102, 241, 0.25)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  {/* Tokyo Edge PoP to US East REC */}
+                  <path d="M 345 162 L 395 100" fill="none" stroke="rgba(99, 102, 241, 0.25)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  {/* Frankfurt Edge PoP to Europe REC */}
+                  <path d="M 345 121 L 395 153" fill="none" stroke="rgba(99, 102, 241, 0.25)" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  {/* RECs to Origins */}
                   {/* US REC to S3 and ALB */}
-                  <path d="M 545 95 L 610 90" fill="none" stroke="#16a34a" strokeWidth="1.2" markerEnd="url(#acn-green-cf)" />
-                  <path d="M 545 100 L 610 145" fill="none" stroke="#16a34a" strokeWidth="1.2" markerEnd="url(#acn-green-cf)" />
+                  <path d="M 535 83 L 595 83" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M 535 90 L 595 140" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
 
-                  {/* EU REC to S3 and ALB */}
-                  <path d="M 545 155 L 610 100" fill="none" stroke="#16a34a" strokeWidth="1.2" markerEnd="url(#acn-green-cf)" />
-                  <path d="M 545 160 L 610 155" fill="none" stroke="#16a34a" strokeWidth="1.2" markerEnd="url(#acn-green-cf)" />
-                  
-                  <text x="578" y="112" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="600">Backbone fiber</text>
+                  {/* Europe REC to S3 and ALB */}
+                  <path d="M 535 145 L 595 89" fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M 535 153 L 595 153" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+
+                  {/* Dynamic Packet Pulses */}
+                  <circle r="4" fill="#a855f7">
+                    <animateMotion dur="2.5s" repeatCount="indefinite">
+                      <mpath href="#path-us-pop" />
+                    </animateMotion>
+                  </circle>
+                  <circle r="4" fill="#3b82f6">
+                    <animateMotion dur="3s" repeatCount="indefinite">
+                      <mpath href="#path-eu-pop" />
+                    </animateMotion>
+                  </circle>
+                  <circle r="4" fill="#ec4899">
+                    <animateMotion dur="2.2s" repeatCount="indefinite">
+                      <mpath href="#path-asia-pop" />
+                    </animateMotion>
+                  </circle>
                 </svg>
               </div>
 
@@ -819,72 +1122,107 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* 🎨 New Origins Security SVG Diagram */}
-              <div className="cf-sec">VPC Private Origins, S3 OAC request signing &amp; Custom Header Verification Pipelines</div>
+              <div className="cf-sec">🛡️ VPC Private Origins, S3 OAC Request Signing &amp; Custom Header Verification Pipelines</div>
               <div className="cf-card" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
-                  CloudFront provides multiple ways to lock down backend ingress. Trace the three standard security architectures below:
+                <div style={{ fontSize: '12.5px', color: '#475569', marginBottom: '14px', textAlign: 'left', lineHeight: '1.5' }}>
+                  CloudFront provides multiple mechanisms to lock down backend ingress. Trace the three standard security architectures below:
                 </div>
-                <svg viewBox="0 0 740 320" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                <svg viewBox="0 0 740 320" width="100%" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.01))' }}>
                   <defs>
-                    <marker id="arr-cf-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
-                    <marker id="arr-cf-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                    <marker id="arr-cf-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
-                    <marker id="arr-cf-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#1d4ed8" />
+                    </linearGradient>
+                    <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#047857" />
+                    </linearGradient>
+                    <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#a855f7" />
+                      <stop offset="100%" stopColor="#6d28d9" />
+                    </linearGradient>
+                    <linearGradient id="grad-rose" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f43f5e" />
+                      <stop offset="100%" stopColor="#be185d" />
+                    </linearGradient>
+                    <filter id="shadow-sec" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#94a3b8" floodOpacity="0.1" />
+                    </filter>
                   </defs>
 
-                  {/* Public Client Ingress */}
-                  <rect x="15" y="115" width="115" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                  <text x="72" y="140" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Global Users</text>
-                  <text x="72" y="155" textAnchor="middle" fontSize="8" fill="#3b82f6" fontWeight="bold">💻 Web Requests</text>
-                  <text x="72" y="170" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">HTTPS / HTTP/3</text>
-                  <text x="72" y="185" textAnchor="middle" fontSize="6.5" fill="#10b981" fontWeight="bold">Accelerated CDN Route</text>
+                  {/* Public Client Ingress Card */}
+                  <g filter="url(#shadow-sec)">
+                    <rect x="15" y="115" width="115" height="90" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="72" y="138" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0f172a">Global Users</text>
+                    <text x="72" y="156" textAnchor="middle" fontSize="8.5" fill="#3b82f6" fontWeight="700">💻 Web Requests</text>
+                    <text x="72" y="172" textAnchor="middle" fontSize="7.5" fill="#64748b">HTTPS / HTTP/3</text>
+                    <rect x="25" y="181" width="94" height="15" rx="3" fill="#dcfce7" />
+                    <text x="72" y="191" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">CDN ACCELERATED</text>
+                  </g>
 
-                  {/* CloudFront Edge Controller */}
-                  <rect x="180" y="85" width="145" height="150" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="2" />
-                  <text x="252" y="105" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#6d28d9">⚡ CloudFront Edge</text>
-                  <rect x="190" y="125" width="125" height="30" rx="3" fill="#ffffff" stroke="#ddd6fe" />
-                  <text x="252" y="136" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#6d28d9">SigV4 OAC Signer</text>
-                  <text x="252" y="147" textAnchor="middle" fontSize="6" fill="#7c3aed">(For S3 Bucket Origin)</text>
+                  {/* CloudFront Edge Controller Card */}
+                  <g filter="url(#shadow-sec)">
+                    <rect x="180" y="85" width="145" height="150" rx="8" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="2" />
+                    <text x="252" y="105" textAnchor="middle" fontSize="11" fontWeight="800" fill="#6d28d9">⚡ CloudFront Edge</text>
+                    
+                    <g filter="url(#shadow-sec)">
+                      <rect x="190" y="122" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
+                      <text x="252" y="133" textAnchor="middle" fontSize="8" fontWeight="700" fill="#6d28d9">SigV4 OAC Signer</text>
+                      <text x="252" y="144" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="600">(For S3 Bucket Origin)</text>
+                    </g>
 
-                  <rect x="190" y="165" width="125" height="30" rx="3" fill="#ffffff" stroke="#ddd6fe" />
-                  <text x="252" y="176" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0284c7">VPC Endpoint Link</text>
-                  <text x="252" y="187" textAnchor="middle" fontSize="6" fill="#0369a1">(For Private ALB Subnet)</text>
+                    <g filter="url(#shadow-sec)">
+                      <rect x="190" y="158" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
+                      <text x="252" y="169" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0284c7">VPC Endpoint Link</text>
+                      <text x="252" y="180" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="600">(For Private ALB Subnet)</text>
+                    </g>
 
-                  <rect x="190" y="202" width="125" height="25" rx="3" fill="#ffffff" stroke="#ddd6fe" />
-                  <text x="252" y="212" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#be185d">Inject: X-Origin-Verify</text>
+                    <g filter="url(#shadow-sec)">
+                      <rect x="190" y="194" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
+                      <text x="252" y="205" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#be185d">X-Origin-Verify Header</text>
+                      <text x="252" y="216" textAnchor="middle" fontSize="6.5" fill="#db2777" fontWeight="600">(Shared Token Injection)</text>
+                    </g>
+                  </g>
 
                   {/* Connectors from Client */}
-                  <path d="M130,160 L175,160" stroke="#3b82f6" strokeWidth="2" markerEnd="url(#arr-cf-blue)" />
+                  <path d="M 130 160 L 180 160" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx="155" cy="160" r="3" fill="#1d4ed8" />
 
                   {/* Integration A: S3 Private Origin + OAC */}
-                  <path d="M325,120 L400,60" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#arr-cf-green)" />
-                  <text x="365" y="80" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">SigV4 Signed</text>
+                  <path d="M 325 125 L 400 70" fill="none" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="365" y="88" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="700">SigV4 Signed</text>
 
-                  <rect x="400" y="15" width="310" height="70" rx="4" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                  <text x="415" y="32" textAnchor="start" fontSize="9" fontWeight="bold" fill="#065f46">🪣 Option A: S3 Bucket Origin with OAC</text>
-                  <text x="415" y="44" textAnchor="start" fontSize="7" fill="#047857">S3 Bucket is 100% PRIVATE. Public WWW bypass attempts are rejected (HTTP 403) ❌</text>
-                  <text x="415" y="56" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#15803d">✔ S3 accepts signed request payload carrying verified CloudFront OAC credentials</text>
+                  <g filter="url(#shadow-sec)">
+                    <rect x="400" y="15" width="310" height="70" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="415" y="32" textAnchor="start" fontSize="9" fontWeight="800" fill="#065f46">🪣 Option A: S3 Bucket Origin with OAC</text>
+                    <text x="415" y="44" textAnchor="start" fontSize="7.5" fill="#047857">S3 Bucket is 100% PRIVATE. Public WWW bypass attempts are rejected (HTTP 403) ❌</text>
+                    <text x="415" y="58" textAnchor="start" fontSize="8" fontWeight="700" fill="#15803d">✔ S3 accepts requests carrying verified CloudFront OAC credentials</text>
+                  </g>
 
                   {/* Integration B: CloudFront VPC Private Origin */}
-                  <path d="M325,160 L400,160" fill="none" stroke="#0ea5e9" strokeWidth="1.5" markerEnd="url(#arr-cf-blue)" />
-                  <text x="365" y="152" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold">Private Link</text>
+                  <path d="M 325 160 L 400 160" fill="none" stroke="#0ea5e9" strokeWidth="1.5" />
+                  <text x="365" y="153" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="700">Private Link</text>
 
-                  <rect x="400" y="100" width="310" height="85" rx="4" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="1.5" />
-                  <text x="415" y="118" textAnchor="start" fontSize="9" fontWeight="bold" fill="#0369a1">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
-                  <text x="415" y="130" textAnchor="start" fontSize="7" fill="#0284c7">CloudFront establishes private VPC endpoints inside your private backend subnets.</text>
-                  <text x="415" y="142" textAnchor="start" fontSize="7" fill="#0284c7">ALBs and EC2 nodes have NO public IPs and cannot be probed from public WWW.</text>
-                  <text x="415" y="156" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#0284c7">✔ 100% private transit over dedicated internal network routes 🔒</text>
+                  <g filter="url(#shadow-sec)">
+                    <rect x="400" y="100" width="310" height="85" rx="6" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="1.5" />
+                    <text x="415" y="118" textAnchor="start" fontSize="9" fontWeight="800" fill="#0369a1">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
+                    <text x="415" y="130" textAnchor="start" fontSize="7.5" fill="#0284c7">CloudFront establishes private VPC endpoint interfaces inside private backend subnets.</text>
+                    <text x="415" y="144" textAnchor="start" fontSize="7.5" fill="#0284c7">ALBs and EC2 nodes have NO public IPs and cannot be probed from public WWW.</text>
+                    <text x="415" y="160" textAnchor="start" fontSize="8" fontWeight="700" fill="#0284c7">✔ 100% private transit over dedicated internal network routes 🔒</text>
+                  </g>
 
                   {/* Integration C: Public Custom Origin + Ingress Header Restriction */}
-                  <path d="M325,200 L400,250" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#arr-cf-purple)" />
-                  <text x="365" y="235" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="bold">Secret Token</text>
+                  <path d="M 325 195 L 400 245" fill="none" stroke="#8b5cf6" strokeWidth="1.5" />
+                  <text x="365" y="228" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="700">Secret Token</text>
 
-                  <rect x="400" y="200" width="310" height="105" rx="4" fill="#fff1f2" stroke="#ec4899" strokeWidth="1.5" />
-                  <text x="415" y="218" textAnchor="start" fontSize="9" fontWeight="bold" fill="#9f1239">⚡ Option C: Custom Origin with Ingress Headers</text>
-                  <text x="415" y="230" textAnchor="start" fontSize="7" fill="#be185d">ALB is in a public subnet. Public hackers try to bypass CloudFront to attack ALB directly 👿</text>
-                  <text x="415" y="244" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#9f1239">⚠ ALB validates request for headers: "X-Origin-Verify: shared-secret-key"</text>
-                  <text x="415" y="258" textAnchor="start" fontSize="7" fill="#be185d">If header matches: Accept write traffic ✅</text>
-                  <text x="415" y="270" textAnchor="start" fontSize="7" fill="#b91c1c">If header is missing/mismatched: REJECT request instantly with HTTP 403 Access Denied ❌</text>
+                  <g filter="url(#shadow-sec)">
+                    <rect x="400" y="200" width="310" height="105" rx="6" fill="#fff1f2" stroke="#ec4899" strokeWidth="1.5" />
+                    <text x="415" y="218" textAnchor="start" fontSize="9" fontWeight="800" fill="#9f1239">⚡ Option C: Custom Origin with Ingress Headers</text>
+                    <text x="415" y="230" textAnchor="start" fontSize="7.5" fill="#be185d">ALB is in a public subnet. Public hackers try to bypass CloudFront to attack ALB directly 👿</text>
+                    <text x="415" y="244" textAnchor="start" fontSize="8" fontWeight="700" fill="#9f1239">⚠ ALB validates request for headers: "X-Origin-Verify: shared-secret-key"</text>
+                    <text x="415" y="258" textAnchor="start" fontSize="7.5" fill="#be185d">If header matches: Accept write traffic ✅</text>
+                    <text x="415" y="270" textAnchor="start" fontSize="7.5" fill="#b91c1c">If header is missing/mismatched: REJECT request instantly with HTTP 403 ❌</text>
+                  </g>
                 </svg>
               </div>
 
@@ -1096,44 +1434,105 @@ export default function CloudfrontVisualizer() {
                     <div style={{ border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '10px', background: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', alignSelf: 'flex-start', marginBottom: '6px' }}>Failover Route Topology:</span>
                       
-                      <svg width="100%" height="110" viewBox="0 0 320 110" style={{ background: '#f8fafc', borderRadius: '6px', border: '0.5px solid #e2e8f0' }}>
+                      <svg width="100%" height="110" viewBox="0 0 320 110" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
+                        <defs>
+                          <linearGradient id="grad-active-pri" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#34d399" />
+                            <stop offset="100%" stopColor="#059669" />
+                          </linearGradient>
+                          <linearGradient id="grad-active-sec" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#60a5fa" />
+                            <stop offset="100%" stopColor="#2563eb" />
+                          </linearGradient>
+                          <filter id="shadow-fail" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#475569" floodOpacity="0.1" />
+                          </filter>
+                        </defs>
+
                         {/* Client Node */}
-                        <circle cx="25" cy="55" r="10" fill="#6366f1" />
-                        <text x="25" y="55" textAnchor="middle" dominantBaseline="central" fontSize="7" fill="#fff" fontWeight="bold">Cli</text>
-                        <text x="25" y="72" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="600">Client</text>
+                        <g filter="url(#shadow-fail)">
+                          <rect x="10" y="38" width="30" height="34" rx="4" fill="#ffffff" stroke="#94a3b8" />
+                          <rect x="14" y="42" width="22" height="16" rx="2" fill="#eff6ff" stroke="#3b82f6" />
+                          <line x1="20" y1="62" x2="30" y2="62" stroke="#94a3b8" strokeWidth="1.5" />
+                          <line x1="25" y1="62" x2="25" y2="68" stroke="#94a3b8" strokeWidth="2" />
+                          <text x="25" y="82" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#475569">Client</text>
+                        </g>
 
-                        {/* Edge Node */}
-                        <rect x="80" y="35" width="40" height="40" rx="3" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1" />
-                        <text x="100" y="50" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">CloudFront</text>
-                        <text x="100" y="62" textAnchor="middle" fontSize="6" fill="#7c3aed">Edge</text>
+                        {/* Edge Location */}
+                        <g filter="url(#shadow-fail)">
+                          <rect x="80" y="32" width="42" height="42" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1.5" />
+                          <text x="101" y="47" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#6d28d9">CF Edge</text>
+                          <circle cx="91" cy="62" r="2.5" fill="#10b981" />
+                          <circle cx="101" cy="62" r="2.5" fill="#10b981" />
+                          <circle cx="111" cy="62" r="2.5" fill="#10b981" />
+                        </g>
 
-                        {/* Primary S3 (Virginia) */}
-                        <rect x="180" y="10" width="55" height="35" rx="3" fill={cfActiveOrigin === 'primary' ? '#ecfdf5' : '#ffffff'} stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? '#10b981' : '#cbd5e1'} strokeWidth={cfActiveOrigin === 'primary' || cfFailoverStep >= 3 ? 1.5 : 1} />
-                        <text x="207.5" y="22" textAnchor="middle" fontSize="7" fill="#334155" fontWeight="bold">S3 Primary</text>
-                        <text x="207.5" y="32" textAnchor="middle" fontSize="6" fill={cfFailoverStep >= 3 ? '#ef4444' : '#64748b'}>
-                          {cfPrimaryOriginStatus === 'healthy' ? '🟢 us-east-1' : '🔴 502 Bad'}
-                        </text>
+                        {/* Primary S3 (Virginia) Cylinder */}
+                        <g filter="url(#shadow-fail)">
+                          <path d="M 180 20 A 27.5 7 0 0 0 235 20 L 235 32 A 27.5 7 0 0 1 180 32 Z" 
+                            fill={cfPrimaryOriginStatus === 'healthy' ? '#ecfdf5' : '#fee2e2'} 
+                            stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? '#10b981' : '#cbd5e1'} 
+                            strokeWidth={cfActiveOrigin === 'primary' || cfFailoverStep >= 3 ? 1.5 : 1} 
+                          />
+                          <ellipse cx="207.5" cy="20" rx="27.5" ry="7" 
+                            fill={cfPrimaryOriginStatus === 'healthy' ? '#dcfce7' : '#fecaca'} 
+                            stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? '#10b981' : '#cbd5e1'} 
+                            strokeWidth={cfActiveOrigin === 'primary' || cfFailoverStep >= 3 ? 1.5 : 1} 
+                          />
+                          <text x="207.5" y="31" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#475569">S3 Primary</text>
+                          <text x="207.5" y="41" textAnchor="middle" fontSize="5.5" fontWeight="700" fill={cfFailoverStep >= 3 ? '#ef4444' : '#047857'}>
+                            {cfPrimaryOriginStatus === 'healthy' ? '🟢 Virginia' : '🔴 OUTAGE 502'}
+                          </text>
+                        </g>
 
-                        {/* Secondary S3 (Dublin) */}
-                        <rect x="180" y="65" width="55" height="35" rx="3" fill={cfActiveOrigin === 'secondary' ? '#eff6ff' : '#ffffff'} stroke={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#cbd5e1'} strokeWidth={cfActiveOrigin === 'secondary' ? 1.5 : 1} />
-                        <text x="207.5" y="77" textAnchor="middle" fontSize="7" fill="#334155" fontWeight="bold">S3 Backup</text>
-                        <text x="207.5" y="87" textAnchor="middle" fontSize="6" fill={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#64748b'}>🔵 eu-west-1</text>
+                        {/* Secondary S3 (Dublin) Cylinder */}
+                        <g filter="url(#shadow-fail)">
+                          <path d="M 180 72 A 27.5 7 0 0 0 235 72 L 235 84 A 27.5 7 0 0 1 180 84 Z" 
+                            fill={cfActiveOrigin === 'secondary' ? '#eff6ff' : '#ffffff'} 
+                            stroke={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#cbd5e1'} 
+                            strokeWidth={cfActiveOrigin === 'secondary' ? 1.5 : 1} 
+                          />
+                          <ellipse cx="207.5" cy="72" rx="27.5" ry="7" 
+                            fill={cfActiveOrigin === 'secondary' ? '#dbeafe' : '#f8fafc'} 
+                            stroke={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#cbd5e1'} 
+                            strokeWidth={cfActiveOrigin === 'secondary' ? 1.5 : 1} 
+                          />
+                          <text x="207.5" y="83" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#475569">S3 Backup</text>
+                          <text x="207.5" y="93" textAnchor="middle" fontSize="5.5" fontWeight="700" fill={cfActiveOrigin === 'secondary' ? '#2563eb' : '#64748b'}>🔵 Dublin (REC)</text>
+                        </g>
 
-                        {/* Arrows */}
+                        {/* Routing Lines */}
                         {/* Client to Edge */}
-                        <path d="M 35 55 L 80 55" stroke={cfFailoverStep >= 1 ? '#6366f1' : '#cbd5e1'} strokeWidth="1" strokeDasharray={cfFailoverIsSimulating && cfFailoverStep === 1 ? '3,3' : ''} />
+                        <path d="M 40 55 L 80 55" id="f-path-cli-edge" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
                         
-                        {/* Edge to Primary */}
-                        <path d="M 120 50 L 180 27" fill="none" stroke={cfFailoverStep === 3 ? '#ef4444' : cfFailoverStep >= 2 ? '#6366f1' : '#cbd5e1'} strokeWidth="1" />
+                        {/* Edge to Primary S3 */}
+                        <path d="M 122 50 L 180 26" id="f-path-edge-pri" fill="none" stroke={cfFailoverStep === 3 ? '#fca5a5' : '#cbd5e1'} strokeWidth="1.5" />
                         
-                        {/* Edge to Backup */}
-                        <path d="M 120 60 L 180 82" fill="none" stroke={cfFailoverStep >= 5 ? '#3b82f6' : '#cbd5e1'} strokeWidth="1" strokeDasharray={cfFailoverStep === 5 ? '3,3' : ''} />
+                        {/* Edge to Secondary S3 */}
+                        <path d="M 122 60 L 180 78" id="f-path-edge-sec" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+
+                        {/* Packet Animation Dots */}
+                        {cfFailoverIsSimulating && (
+                          <circle r="3.5" fill="#f59e0b">
+                            <animateMotion 
+                              dur="1.2s" 
+                              repeatCount="indefinite" 
+                              path={
+                                cfFailoverStep === 1 ? "M 40 55 L 80 55" :
+                                cfFailoverStep === 2 ? "M 122 50 L 180 26" :
+                                cfFailoverStep === 3 ? "M 122 50 L 180 26" :
+                                cfFailoverStep === 5 ? "M 122 60 L 180 78" : "M 40 55 L 80 55"
+                              }
+                            />
+                          </circle>
+                        )}
 
                         {/* Failover Shield status logo */}
                         {cfFailoverStep === 4 && (
                           <g>
-                            <circle cx="150" cy="55" r="9" fill="#fee2e2" stroke="#ef4444" strokeWidth="1" />
-                            <text x="150" y="55" textAnchor="middle" dominantBaseline="central" fontSize="7.5" fill="#b91c1c" fontWeight="bold">⚠️</text>
+                            <circle cx="150" cy="55" r="9" fill="#fee2e2" stroke="#ef4444" strokeWidth="1.5" />
+                            <text x="150" y="55" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#b91c1c" fontWeight="bold">⚠️</text>
+                            <animate attributeName="opacity" values="0.2;1;0.2" dur="0.8s" repeatCount="indefinite" />
                           </g>
                         )}
                       </svg>
@@ -1205,78 +1604,122 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* Global Accelerator Routing Pipeline SVG */}
-              <div style={{ border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', background: '#ffffff', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  AWS Global Accelerator Architecture (Anycast Static IP Routing)
+              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginBottom: '18px' }}>
+                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🚀</span> AWS Global Accelerator Architecture (L4 Anycast Static IP Routing)
                 </div>
 
-                <svg width="100%" viewBox="0 0 760 220" style={{ background: '#fffbeb', borderRadius: '6px', border: '0.5px solid #fde68a' }}>
+                <svg width="100%" viewBox="0 0 760 220" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.8)' }}>
                   <defs>
-                    <marker id="acn-aga" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c2410c" /></marker>
-                    <marker id="acn-backbone" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#4f46e5" /></marker>
+                    <linearGradient id="grad-aga-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fb923c" />
+                      <stop offset="100%" stopColor="#ea580c" />
+                    </linearGradient>
+                    <linearGradient id="grad-aga-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#c084fc" />
+                      <stop offset="100%" stopColor="#6366f1" />
+                    </linearGradient>
+                    <linearGradient id="grad-aga-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#059669" />
+                    </linearGradient>
+                    <linearGradient id="grad-aga-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f87171" />
+                      <stop offset="100%" stopColor="#dc2626" />
+                    </linearGradient>
+                    <filter id="shadow-aga" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#475569" floodOpacity="0.1" />
+                    </filter>
                   </defs>
 
-                  {/* Geographies / Clients */}
-                  <rect x="10" y="30" width="160" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="90" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">🌍 Global Users</text>
+                  {/* Column 1: Global Users */}
+                  <rect x="15" y="25" width="150" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow-aga)" />
+                  <text x="90" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🌍 Global Users</text>
 
-                  <rect x="25" y="65" width="130" height="30" rx="4" fill="#eff6ff" stroke="#93c5fd" />
-                  <text x="90" y="83" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1e3a8a">US Client ➔ Anycast IP</text>
+                  <rect x="25" y="58" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                  <text x="90" y="77" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">US Client ➔ Anycast</text>
 
-                  <rect x="25" y="110" width="130" height="30" rx="4" fill="#eff6ff" stroke="#93c5fd" />
-                  <text x="90" y="128" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1e3a8a">EU Client ➔ Anycast IP</text>
+                  <rect x="25" y="102" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                  <text x="90" y="121" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">EU Client ➔ Anycast</text>
 
-                  <rect x="25" y="155" width="130" height="30" rx="4" fill="#eff6ff" stroke="#93c5fd" />
-                  <text x="90" y="173" textAnchor="middle" fontSize="9" fontWeight="600" fill="#1e3a8a">Asia Client ➔ Anycast IP</text>
+                  <rect x="25" y="146" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                  <text x="90" y="165" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">Asia Client ➔ Anycast</text>
 
-                  {/* Anycast Static IPs Edge Ingestion */}
-                  <rect x="200" y="30" width="160" height="170" rx="8" fill="#ffffff" stroke="#cbd5e1" />
-                  <text x="280" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">⚡ BGP Anycast POPs</text>
+                  {/* Column 2: BGP Anycast POPs Ingestion */}
+                  <rect x="195" y="25" width="160" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow-aga)" />
+                  <text x="275" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">⚡ BGP Anycast POPs</text>
 
                   {/* Static IP Blocks */}
-                  <rect x="215" y="60" width="130" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" />
-                  <text x="280" y="78" textAnchor="middle" fontSize="9" fontWeight="700" fill="#c2410c">Static IP #1</text>
-                  <text x="280" y="93" textAnchor="middle" fontSize="9" fontWeight="600" fill="#ea580c">1.2.3.4 (Anycast)</text>
+                  <g filter="url(#shadow-aga)">
+                    <rect x="205" y="58" width="140" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
+                    <text x="275" y="76" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#c2410c">Static IP #1</text>
+                    <text x="275" y="92" textAnchor="middle" fontSize="9" fontWeight="700" fill="#ea580c">1.2.3.4 (Anycast)</text>
+                  </g>
 
-                  <rect x="215" y="130" width="130" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" />
-                  <text x="280" y="148" textAnchor="middle" fontSize="9" fontWeight="700" fill="#c2410c">Static IP #2</text>
-                  <text x="280" y="163" textAnchor="middle" fontSize="9" fontWeight="600" fill="#ea580c">5.6.7.8 (Anycast)</text>
+                  <g filter="url(#shadow-aga)">
+                    <rect x="205" y="128" width="140" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
+                    <text x="275" y="146" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#c2410c">Static IP #2</text>
+                    <text x="275" y="162" textAnchor="middle" fontSize="9" fontWeight="700" fill="#ea580c">5.6.7.8 (Anycast)</text>
+                  </g>
 
-                  {/* Private AWS Backbone */}
-                  <rect x="390" y="30" width="150" height="170" rx="8" fill="#f5f3ff" stroke="#ddd6fe" />
-                  <text x="465" y="46" textAnchor="middle" fontSize="9" fontWeight="700" fill="#4f46e5">⚡ AWS Private Fiber</text>
-                  <path d="M 465 65 L 465 185" fill="none" stroke="#818cf8" strokeWidth="4" />
-                  <text x="475" y="125" textAnchor="start" fontSize="8" fill="#4f46e5" fontWeight="600">Congestion-Free Transit</text>
+                  {/* Column 3: Private AWS Backbone */}
+                  <rect x="385" y="25" width="150" height="175" rx="10" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" filter="url(#shadow-aga)" />
+                  <text x="460" y="42" textAnchor="middle" fontSize="10" fontWeight="800" fill="#4f46e5">⚡ AWS Private Fiber</text>
+                  
+                  {/* Thick glowing private fiber bus */}
+                  <path d="M 460 55 L 460 180" id="aga-backbone" fill="none" stroke="url(#grad-aga-purple)" strokeWidth="6" strokeLinecap="round" />
+                  <text x="470" y="118" textAnchor="start" fontSize="8.5" fill="#4f46e5" fontWeight="700">Congestion-Free</text>
+                  <text x="470" y="130" textAnchor="start" fontSize="7.5" fill="#6366f1" fontWeight="600">Transit Backbone</text>
 
-                  {/* Target Endpoint Groups */}
-                  <rect x="570" y="30" width="180" height="170" rx="8" fill="#f8fafc" stroke="#94a3b8" />
-                  <text x="660" y="46" textAnchor="middle" fontSize="10" fontWeight="600" fill="#475569">🗄️ Application Endpoints</text>
+                  {/* Column 4: Application Endpoint Groups */}
+                  <rect x="565" y="25" width="180" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow-aga)" />
+                  <text x="655" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🗄️ Application Endpoints</text>
 
-                  <rect x="585" y="60" width="150" height="50" rx="6" fill="#ecfdf5" stroke="#a7f3d0" />
-                  <text x="660" y="80" textAnchor="middle" fontSize="9" fontWeight="700" fill="#047857">us-east-1 Endpoint</text>
-                  <text x="660" y="95" textAnchor="middle" fontSize="8" fill="#059669">ALB (Healthy 🟢 Dial 100%)</text>
+                  {/* US East Endpoint Group */}
+                  <g filter="url(#shadow-aga)">
+                    <rect x="575" y="58" width="160" height="50" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="655" y="78" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#047857">us-east-1 Endpoint</text>
+                    <rect x="585" y="86" width="140" height="15" rx="3" fill="#dcfce7" />
+                    <text x="655" y="96" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">ALB ACTIVE 🟢 DIAL 100%</text>
+                  </g>
 
-                  <rect x="585" y="130" width="150" height="50" rx="6" fill="#fef2f2" stroke="#fecaca" />
-                  <text x="660" y="150" textAnchor="middle" fontSize="9" fontWeight="700" fill="#b91c1c">eu-central-1 Endpoint</text>
-                  <text x="660" y="165" textAnchor="middle" fontSize="8" fill="#dc2626">ALB (Degraded ❌ Failover Active)</text>
+                  {/* EU Central Endpoint Group (Unhealthy - Redirected) */}
+                  <g filter="url(#shadow-aga)">
+                    <rect x="575" y="128" width="160" height="50" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                    <text x="655" y="148" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#b91c1c">eu-central-1 Endpoint</text>
+                    <rect x="585" y="156" width="140" height="15" rx="3" fill="#fee2e2" />
+                    <text x="655" y="166" textAnchor="middle" fontSize="7" fill="#dc2626" fontWeight="700">DEGRADED ❌ FAILOVER ACTIVE</text>
+                  </g>
 
-                  {/* Connector lines */}
-                  {/* Users to POPs */}
-                  <path d="M 155 80 L 200 85" fill="none" stroke="#c2410c" strokeWidth="1.2" markerEnd="url(#acn-aga)" />
-                  <path d="M 155 125 L 200 100" fill="none" stroke="#c2410c" strokeWidth="1.2" markerEnd="url(#acn-aga)" />
-                  <path d="M 155 170 L 200 155" fill="none" stroke="#c2410c" strokeWidth="1.2" markerEnd="url(#acn-aga)" />
+                  {/* Connectors */}
+                  {/* Global Users to Ingestion POPs */}
+                  <path d="M 155 74 L 205 74" fill="none" stroke="url(#grad-aga-orange)" strokeWidth="1.5" />
+                  <path d="M 155 118 L 205 90" fill="none" stroke="url(#grad-aga-orange)" strokeWidth="1.2" />
+                  <path d="M 155 162 L 205 148" fill="none" stroke="url(#grad-aga-orange)" strokeWidth="1.2" />
 
-                  {/* POPs to Backbone */}
-                  <path d="M 335 85 L 390 100" fill="none" stroke="#4f46e5" strokeWidth="1.5" markerEnd="url(#acn-backbone)" />
-                  <path d="M 335 155 L 390 120" fill="none" stroke="#4f46e5" strokeWidth="1.5" markerEnd="url(#acn-backbone)" />
+                  {/* Ingestion POPs to AWS Private Backbone */}
+                  <path d="M 345 83 L 390 100" fill="none" stroke="#4f46e5" strokeWidth="1.5" />
+                  <path d="M 345 153 L 390 120" fill="none" stroke="#4f46e5" strokeWidth="1.5" />
 
-                  {/* Backbone to endpoints */}
-                  {/* Normal flow to healthy US endpoint */}
-                  <path d="M 540 100 L 585 85" fill="none" stroke="#16a34a" strokeWidth="1.5" markerEnd="url(#acn-backbone)" />
-                  {/* Failed flow redirected away from unhealthy EU endpoint */}
-                  <path d="M 540 140 L 585 95" fill="none" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#acn-backbone)" />
-                  <text x="562" y="132" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="700">Sub-10s Shift</text>
+                  {/* Backbone to Endpoints */}
+                  {/* Normal routing from backbone to healthy US ALB */}
+                  <path d="M 530 90 L 575 83" fill="none" stroke="#10b981" strokeWidth="2" />
+                  
+                  {/* Rerouted path away from failed EU Central ALB to US ALB */}
+                  <path d="M 530 140 L 575 92" id="path-failover-aga" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="552.5" y="122" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="800">Sub-10s Dynamic Shift</text>
 
+                  {/* Dynamic packets streaming along the backbone */}
+                  <circle r="3.5" fill="#f59e0b">
+                    <animateMotion dur="2s" repeatCount="indefinite">
+                      <mpath href="#aga-backbone" />
+                    </animateMotion>
+                  </circle>
+                  <circle r="3.5" fill="#a855f7">
+                    <animateMotion dur="1.8s" repeatCount="indefinite">
+                      <mpath href="#path-failover-aga" />
+                    </animateMotion>
+                  </circle>
                 </svg>
               </div>
 
@@ -1475,7 +1918,62 @@ export default function CloudfrontVisualizer() {
                     </button>
 
                     {/* Micro-animations and phase indicator */}
-                    <div style={{ background: '#ffffff', border: '0.5px solid #cbd5e1', borderRadius: '6px', padding: '8px', fontSize: '10.5px' }}>
+                    <div style={{ background: '#ffffff', border: '1.5px solid rgba(226, 232, 240, 0.9)', borderRadius: '12px', padding: '12px', fontSize: '11px', marginBottom: '10px' }}>
+                      <div style={{ fontWeight: 700, color: '#475569', marginBottom: '8px' }}>⚡ Edge Interception Stage Mapping:</div>
+                      
+                      {/* Brand New Interception Events SVG */}
+                      <svg width="100%" height="60" viewBox="0 0 320 60" style={{ background: '#f8fafc', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '10px' }}>
+                        {/* Flow Conduit */}
+                        <line x1="20" y1="30" x2="300" y2="30" stroke="#cbd5e1" strokeWidth="2.5" />
+                        <line x1="20" y1="30" x2="300" y2="30" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                        {/* Viewer Request Node (Stage 1) */}
+                        <circle cx="40" cy="30" r="7" 
+                          fill={cfSelectedTemplate === 'rewrite' ? '#a855f7' : '#ffffff'} 
+                          stroke={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#94a3b8'} 
+                          strokeWidth="2" 
+                        />
+                        {cfSelectedTemplate === 'rewrite' && (
+                          <circle cx="40" cy="30" r="11" fill="none" stroke="#a855f7" strokeWidth="1.5">
+                            <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="40" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#64748b'}>Viewer Req</text>
+
+                        {/* Origin Request Node (Stage 2) */}
+                        <circle cx="120" cy="30" r="7" 
+                          fill={cfSelectedTemplate === 'ab' ? '#3b82f6' : '#ffffff'} 
+                          stroke={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#94a3b8'} 
+                          strokeWidth="2" 
+                        />
+                        {cfSelectedTemplate === 'ab' && (
+                          <circle cx="120" cy="30" r="11" fill="none" stroke="#3b82f6" strokeWidth="1.5">
+                            <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="120" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#64748b'}>Origin Req</text>
+
+                        {/* Origin Response Node (Stage 3) */}
+                        <circle cx="200" cy="30" r="7" fill="#ffffff" stroke="#94a3b8" strokeWidth="2" />
+                        <text x="200" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#64748b">Origin Resp</text>
+
+                        {/* Viewer Response Node (Stage 4) */}
+                        <circle cx="280" cy="30" r="7" 
+                          fill={cfSelectedTemplate === 'hsts' ? '#10b981' : '#ffffff'} 
+                          stroke={cfSelectedTemplate === 'hsts' ? '#059669' : '#94a3b8'} 
+                          strokeWidth="2" 
+                        />
+                        {cfSelectedTemplate === 'hsts' && (
+                          <circle cx="280" cy="30" r="11" fill="none" stroke="#10b981" strokeWidth="1.5">
+                            <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="280" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'hsts' ? '#059669' : '#64748b'}>Viewer Resp</text>
+                      </svg>
+
                       <div style={{ fontWeight: 700, color: '#475569', marginBottom: '6px' }}>Pipeline Progress Stages:</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <div style={{ color: cfEdgeStep >= 1 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 1 ? 'bold' : 'normal' }}>
@@ -1714,78 +2212,155 @@ export default function CloudfrontVisualizer() {
                 <div className="cf-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   
                   {/* Dynamic SVG tracing paths */}
-                  <svg width="100%" height="200" viewBox="0 0 480 200" style={{ background: '#f8fafc', borderRadius: '8px', border: '0.5px solid #cbd5e1' }}>
-                    {/* Node US Client */}
-                    <circle cx="40" cy="40" r="14" fill={clientRegion === 'us' ? '#6366f1' : '#cbd5e1'} stroke={clientRegion === 'us' ? '#4f46e5' : '#94a3b8'} strokeWidth="1.5" />
-                    <text x="40" y="40" textAnchor="middle" dominantBaseline="central" fontSize="8" fill={clientRegion === 'us' ? '#fff' : '#475569'} fontWeight="700">US</text>
-                    <text x="40" y="60" textAnchor="middle" fontSize="8" fill="#475569">Client US</text>
+                  <svg width="100%" height="200" viewBox="0 0 480 200" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
+                    <defs>
+                      <linearGradient id="grad-edge-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#a855f7" />
+                        <stop offset="100%" stopColor="#6366f1" />
+                      </linearGradient>
+                      <linearGradient id="grad-rec-3d" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ec4899" />
+                        <stop offset="100%" stopColor="#be185d" />
+                      </linearGradient>
+                      <filter id="shadow-sim" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#475569" floodOpacity="0.1" />
+                      </filter>
+                    </defs>
 
-                    {/* Node EU Client */}
-                    <circle cx="40" cy="100" r="14" fill={clientRegion === 'eu' ? '#6366f1' : '#cbd5e1'} stroke={clientRegion === 'eu' ? '#4f46e5' : '#94a3b8'} strokeWidth="1.5" />
-                    <text x="40" y="100" textAnchor="middle" dominantBaseline="central" fontSize="8" fill={clientRegion === 'eu' ? '#fff' : '#475569'} fontWeight="700">EU</text>
-                    <text x="40" y="120" textAnchor="middle" fontSize="8" fill="#475569">Client EU</text>
+                    {/* Node US Client Card */}
+                    <g filter="url(#shadow-sim)">
+                      <rect x="15" y="22" width="50" height="34" rx="4" fill={clientRegion === 'us' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'us' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'us' ? 1.5 : 1} />
+                      <text x="40" y="38" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'us' ? '#1d4ed8' : '#475569'}>US East</text>
+                      <text x="40" y="47" textAnchor="middle" fontSize="6" fill="#64748b">New York</text>
+                    </g>
 
-                    {/* Node Asia Client */}
-                    <circle cx="40" cy="160" r="14" fill={clientRegion === 'asia' ? '#6366f1' : '#cbd5e1'} stroke={clientRegion === 'asia' ? '#4f46e5' : '#94a3b8'} strokeWidth="1.5" />
-                    <text x="40" y="160" textAnchor="middle" dominantBaseline="central" fontSize="8" fill={clientRegion === 'asia' ? '#fff' : '#475569'} fontWeight="700">AS</text>
-                    <text x="40" y="180" textAnchor="middle" fontSize="8" fill="#475569">Client Asia</text>
+                    {/* Node EU Client Card */}
+                    <g filter="url(#shadow-sim)">
+                      <rect x="15" y="82" width="50" height="34" rx="4" fill={clientRegion === 'eu' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'eu' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'eu' ? 1.5 : 1} />
+                      <text x="40" y="98" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'eu' ? '#1d4ed8' : '#475569'}>EU West</text>
+                      <text x="40" y="107" textAnchor="middle" fontSize="6" fill="#64748b">Frankfurt</text>
+                    </g>
+
+                    {/* Node Asia Client Card */}
+                    <g filter="url(#shadow-sim)">
+                      <rect x="15" y="142" width="50" height="34" rx="4" fill={clientRegion === 'asia' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'asia' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'asia' ? 1.5 : 1} />
+                      <text x="40" y="158" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'asia' ? '#1d4ed8' : '#475569'}>AP East</text>
+                      <text x="40" y="167" textAnchor="middle" fontSize="6" fill="#64748b">Tokyo</text>
+                    </g>
 
                     {/* Anycast DNS Gateway */}
-                    <rect x="120" y="75" width="45" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1" />
-                    <text x="142" y="94" textAnchor="middle" fontSize="8" fontWeight="700" fill="#475569">Anycast</text>
-                    <text x="142" y="108" textAnchor="middle" fontSize="8" fontWeight="700" fill="#475569">DNS</text>
+                    <g filter="url(#shadow-sim)">
+                      <rect x="105" y="77" width="45" height="46" rx="6" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" />
+                      <text x="127.5" y="94" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#475569">Anycast</text>
+                      <text x="127.5" y="107" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#475569">DNS</text>
+                      <circle cx="127.5" cy="115" r="2.5" fill="#3b82f6" />
+                    </g>
 
                     {/* Edge Server Location */}
-                    <rect x="210" y="70" width="55" height="60" rx="6" fill={simStep >= 3 ? '#e0e7ff' : '#ffffff'} stroke={simStep >= 3 ? '#6366f1' : '#cbd5e1'} strokeWidth="1.5" />
-                    <text x="237" y="90" textAnchor="middle" fontSize="9" fontWeight="700" fill={simStep >= 3 ? '#4338ca' : '#475569'}>Edge PoP</text>
-                    <text x="237" y="105" textAnchor="middle" fontSize="7" fill={simStep >= 3 ? '#4338ca' : '#64748b'}>
-                      {simStep >= 7 && simResults?.cacheHeader.includes('Hit') ? '⭐ HIT' : simStep >= 3 ? 'Checking...' : 'Idle'}
-                    </text>
+                    <g filter="url(#shadow-sim)">
+                      <rect x="190" y="70" width="60" height="60" rx="8" fill={simStep >= 3 ? '#f5f3ff' : '#ffffff'} stroke={simStep === 5 ? '#ef4444' : simStep >= 3 ? '#8b5cf6' : '#cbd5e1'} strokeWidth={simStep === 5 || simStep >= 3 ? 2 : 1} />
+                      <text x="220" y="87" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 3 ? '#6d28d9' : '#475569'}>Edge PoP</text>
+                      
+                      <g transform="translate(198, 97)">
+                        <rect x="0" y="0" width="44" height="24" rx="2" fill="#ffffff" stroke="#ddd6fe" />
+                        {simStep === 5 ? (
+                          <text x="22" y="15" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="800">BLOCKED</text>
+                        ) : simStep >= 7 && simResults?.cacheHeader.includes('Hit') ? (
+                          <text x="22" y="15" textAnchor="middle" fontSize="8.5" fill="#10b981" fontWeight="800">⭐ HIT</text>
+                        ) : simStep >= 3 ? (
+                          <g>
+                            <circle cx="12" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                            <circle cx="22" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.6s" repeatCount="indefinite" /></circle>
+                            <circle cx="32" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                          </g>
+                        ) : (
+                          <text x="22" y="15" textAnchor="middle" fontSize="7.5" fill="#94a3b8">Idle</text>
+                        )}
+                      </g>
+                    </g>
 
                     {/* Regional Edge Cache (REC) */}
-                    <rect x="300" y="70" width="55" height="60" rx="6" fill={simStep >= 3.5 ? '#fdf2f8' : '#ffffff'} stroke={simStep >= 3.5 ? '#db2777' : '#cbd5e1'} strokeWidth="1" strokeDasharray={useOriginShield ? '' : '3,3'} />
-                    <text x="327" y="90" textAnchor="middle" fontSize="9" fontWeight="700" fill={simStep >= 3.5 ? '#be185d' : '#475569'}>REC Cache</text>
-                    <text x="327" y="105" textAnchor="middle" fontSize="7" fill={simStep >= 3.5 ? '#be185d' : '#64748b'}>
-                      {simStep >= 7 && simResults?.cacheHeader.includes('REC') ? '⭐ HIT' : simStep >= 3.5 ? 'Checking...' : 'Idle'}
-                    </text>
+                    <g filter="url(#shadow-sim)">
+                      <rect x="290" y="70" width="60" height="60" rx="8" fill={simStep >= 3.5 ? '#fdf2f8' : '#ffffff'} stroke={simStep >= 3.5 ? '#db2777' : '#cbd5e1'} strokeWidth={simStep >= 3.5 ? 1.5 : 1} strokeDasharray={useOriginShield ? '' : '3,3'} />
+                      <text x="320" y="87" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 3.5 ? '#be185d' : '#475569'}>REC Buffer</text>
+                      
+                      <g transform="translate(298, 97)">
+                        <rect x="0" y="0" width="44" height="24" rx="2" fill="#ffffff" stroke="#fbcfe8" />
+                        {simStep >= 7 && simResults?.cacheHeader.includes('REC Hit') ? (
+                          <text x="22" y="15" textAnchor="middle" fontSize="8.5" fill="#be185d" fontWeight="800">⭐ REC HIT</text>
+                        ) : simStep >= 3.5 ? (
+                          <g>
+                            <line x1="8" y1="12" x2="36" y2="12" stroke="#db2777" strokeWidth="1.5" strokeDasharray="3,2" />
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite" />
+                          </g>
+                        ) : (
+                          <text x="22" y="15" textAnchor="middle" fontSize="7.5" fill="#94a3b8">Idle</text>
+                        )}
+                      </g>
+                    </g>
 
-                    {/* Origin server */}
-                    <rect x="390" y="70" width="60" height="60" rx="6" fill={simStep >= 4 ? '#ecfdf5' : '#ffffff'} stroke={simStep >= 4 ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
-                    <text x="420" y="90" textAnchor="middle" fontSize="9" fontWeight="700" fill={simStep >= 4 ? '#047857' : '#475569'}>Origin</text>
-                    <text x="420" y="105" textAnchor="middle" fontSize="7" fill={simStep >= 4 ? '#047857' : '#64748b'}>{originType === 's3' ? 'S3 Bucket' : 'App ALB'}</text>
+                    {/* Origin Server Cylinder */}
+                    <g filter="url(#shadow-sim)">
+                      <path d="M 385 82 A 27.5 7 0 0 0 440 82 L 440 120 A 27.5 7 0 0 1 385 120 Z" 
+                        fill={simStep >= 4 ? '#ecfdf5' : '#ffffff'} 
+                        stroke={simStep >= 4 ? '#10b981' : '#cbd5e1'} 
+                        strokeWidth={simStep >= 4 ? 2 : 1} 
+                      />
+                      <ellipse cx="412.5" cy="82" rx="27.5" ry="7" 
+                        fill={simStep >= 4 ? '#dcfce7' : '#f8fafc'} 
+                        stroke={simStep >= 4 ? '#10b981' : '#cbd5e1'} 
+                        strokeWidth={simStep >= 4 ? 2 : 1} 
+                      />
+                      <text x="412.5" y="99" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 4 ? '#047857' : '#475569'}>Origin</text>
+                      <text x="412.5" y="112" textAnchor="middle" fontSize="7.5" fontWeight="700" fill={simStep >= 4 ? '#059669' : '#64748b'}>
+                        {originType === 's3' ? '🪣 private-s3' : '⚙️ app-alb'}
+                      </text>
+                    </g>
 
-                    {/* Connector Paths */}
-                    {/* US to DNS */}
-                    <path d="M 54 40 L 120 90" fill="none" stroke={clientRegion === 'us' && simStep >= 1 ? '#6366f1' : '#e2e8f0'} strokeWidth={clientRegion === 'us' ? '1.5' : '1'} />
-                    {/* EU to DNS */}
-                    <path d="M 54 100 L 120 100" fill="none" stroke={clientRegion === 'eu' && simStep >= 1 ? '#6366f1' : '#e2e8f0'} strokeWidth={clientRegion === 'eu' ? '1.5' : '1'} />
-                    {/* ASIA to DNS */}
-                    <path d="M 54 160 L 120 110" fill="none" stroke={clientRegion === 'asia' && simStep >= 1 ? '#6366f1' : '#e2e8f0'} strokeWidth={clientRegion === 'asia' ? '1.5' : '1'} />
+                    {/* Conduit Trace Lines */}
+                    {/* US Client to DNS */}
+                    <path d={clientRegion === 'us' ? "M 65 39 L 105 100" : "M 65 39 L 105 100"} fill="none" stroke={clientRegion === 'us' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'us' && simStep >= 1 ? 2.5 : 1.5} />
+                    
+                    {/* EU Client to DNS */}
+                    <path d="M 65 100 L 105 100" fill="none" stroke={clientRegion === 'eu' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'eu' && simStep >= 1 ? 2.5 : 1.5} />
+                    
+                    {/* ASIA Client to DNS */}
+                    <path d={clientRegion === 'asia' ? "M 65 159 L 105 100" : "M 65 159 L 105 100"} fill="none" stroke={clientRegion === 'asia' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'asia' && simStep >= 1 ? 2.5 : 1.5} />
 
                     {/* DNS to Edge */}
-                    <path d="M 165 100 L 210 100" fill="none" stroke={simStep >= 2 ? (simStep === 5 ? '#ef4444' : '#6366f1') : '#e2e8f0'} strokeWidth="1.5" />
+                    <path d="M 150 100 L 190 100" fill="none" stroke={simStep >= 2 ? (simStep === 5 ? '#ef4444' : '#6366f1') : '#e2e8f0'} strokeWidth={2.5} />
 
                     {/* Edge to REC */}
-                    <path d="M 265 100 L 300 100" fill="none" stroke={simStep >= 3.5 ? '#db2777' : '#e2e8f0'} strokeWidth="1.5" />
+                    <path d="M 250 100 L 290 100" fill="none" stroke={simStep >= 3.5 ? '#db2777' : '#e2e8f0'} strokeWidth={2} strokeDasharray={useOriginShield ? '' : '3,3'} />
 
                     {/* REC to Origin */}
-                    <path d="M 355 100 L 390 100" fill="none" stroke={simStep >= 4 ? '#10b981' : '#e2e8f0'} strokeWidth="1.5" />
+                    <path d="M 350 100 L 385 100" fill="none" stroke={simStep >= 4 ? '#10b981' : '#e2e8f0'} strokeWidth={2.5} />
 
-                    {/* Packet Animation Dot */}
+                    {/* Stateful Packet Animations */}
                     {isSimulating && (
                       <circle r="4.5" fill="#f59e0b">
                         <animateMotion 
-                          dur="1.8s" 
+                          dur="1.4s" 
                           repeatCount="indefinite" 
                           path={
-                            simStep === 1 ? (clientRegion === 'us' ? 'M 40 40 L 120 75' : clientRegion === 'eu' ? 'M 40 100 L 120 100' : 'M 40 160 L 120 125') :
-                            simStep === 2 ? 'M 120 100 L 210 100' :
-                            simStep === 3 ? 'M 210 100 L 237 100' :
-                            simStep === 3.5 ? 'M 237 100 L 327 100' :
-                            simStep === 4 ? 'M 327 100 L 420 100' : 'M 210 100 L 237 100'
+                            simStep === 1 ? (clientRegion === 'us' ? 'M 65 39 L 105 100' : clientRegion === 'eu' ? 'M 65 100 L 105 100' : 'M 65 159 L 105 100') :
+                            simStep === 2 ? 'M 150 100 L 190 100' :
+                            simStep === 3 ? 'M 190 100 L 250 100' :
+                            simStep === 3.5 ? 'M 250 100 L 290 100' :
+                            simStep === 4 ? 'M 290 100 L 385 100' : 'M 190 100 L 250 100'
                           } 
                         />
                       </circle>
+                    )}
+
+                    {/* Geo-Blocked Firewall Shield Burst */}
+                    {simStep === 5 && (
+                      <g transform="translate(170, 70)">
+                        <polygon points="0,0 20,-10 40,0 30,30 20,40 10,30" fill="rgba(239, 68, 68, 0.25)" stroke="#ef4444" strokeWidth="2">
+                          <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite" />
+                        </polygon>
+                        <text x="20" y="22" textAnchor="middle" fontSize="10" fill="#fee2e2" fontWeight="bold">🛡️</text>
+                      </g>
                     )}
                   </svg>
 
@@ -1934,24 +2509,95 @@ export default function CloudfrontVisualizer() {
                   )}
 
                   {/* Active POP Map Visualisation */}
-                  <div style={{ border: '0.5px solid #cbd5e1', borderRadius: '6px', background: '#ffffff', padding: '10px', marginTop: '12px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600 }}>Active Edge Locations Visual Mapping:</span>
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-                      <span className="cf-badge cf-bok" style={{ opacity: 1 }}>US East (Active)</span>
-                      <span className="cf-badge cf-bok" style={{ opacity: 1 }}>EU West (Active)</span>
-                      <span className="cf-badge" style={{ background: activePriceClass !== '100' ? '#dcfce7' : '#f1f5f9', color: activePriceClass !== '100' ? '#15803d' : '#94a3b8' }}>
-                        East Asia ({activePriceClass !== '100' ? 'Active' : 'Disabled'})
-                      </span>
-                      <span className="cf-badge" style={{ background: activePriceClass !== '100' ? '#dcfce7' : '#f1f5f9', color: activePriceClass !== '100' ? '#15803d' : '#94a3b8' }}>
-                        South America ({activePriceClass !== '100' ? 'Active' : 'Disabled'})
-                      </span>
-                      <span className="cf-badge" style={{ background: activePriceClass === 'all' ? '#dcfce7' : '#f1f5f9', color: activePriceClass === 'all' ? '#15803d' : '#94a3b8' }}>
-                        Australia ({activePriceClass === 'all' ? 'Active' : 'Disabled'})
-                      </span>
-                      <span className="cf-badge" style={{ background: activePriceClass === 'all' ? '#dcfce7' : '#f1f5f9', color: activePriceClass === 'all' ? '#15803d' : '#94a3b8' }}>
-                        South Africa ({activePriceClass === 'all' ? 'Active' : 'Disabled'})
-                      </span>
-                    </div>
+                  <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '12px', background: '#ffffff', padding: '14px', marginTop: '16px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '12.5px', color: '#475569', marginBottom: '10px' }}>🌐 Active Edge Locations Visual Mapping:</div>
+                    
+                    <svg width="100%" height="150" viewBox="0 0 340 150" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1px solid #cbd5e1', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.01))' }}>
+                      {/* Continental Outline Shapes (Abstract Geometric Vectors) */}
+                      <g fill="rgba(203, 213, 225, 0.45)" stroke="#cbd5e1" strokeWidth="1">
+                        {/* North America */}
+                        <path d="M 20,25 C 40,20 70,15 80,35 C 65,40 55,55 35,60 Z" />
+                        {/* South America */}
+                        <path d="M 70,75 Q 85,95 75,125 Q 65,100 60,80 Z" />
+                        {/* Europe */}
+                        <path d="M 120,25 Q 140,20 160,30 Q 150,40 130,40 Z" />
+                        {/* Africa */}
+                        <path d="M 130,60 Q 165,60 175,85 Q 155,120 140,95 Z" />
+                        {/* Asia */}
+                        <path d="M 190,35 C 220,25 260,35 270,60 C 230,70 200,85 190,60 Z" />
+                        {/* Australia */}
+                        <path d="M 260,105 Q 285,100 290,120 Q 270,125 255,115 Z" />
+                      </g>
+
+                      {/* Active POP Nodes */}
+                      {/* US East (Always Active) */}
+                      <g>
+                        <circle cx="55" cy="38" r="4" fill="#10b981" />
+                        <circle cx="55" cy="38" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <animate attributeName="r" values="4;10;4" dur="2s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                        <text x="55" y="28" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#047857">US East</text>
+                      </g>
+
+                      {/* EU West (Always Active) */}
+                      <g>
+                        <circle cx="140" cy="30" r="4" fill="#10b981" />
+                        <circle cx="140" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <animate attributeName="r" values="4;10;4" dur="2.2s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="1;0;1" dur="2.2s" repeatCount="indefinite" />
+                        </circle>
+                        <text x="140" y="20" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#047857">EU West</text>
+                      </g>
+
+                      {/* East Asia (Active on 200 and all) */}
+                      <g opacity={activePriceClass !== '100' ? 1 : 0.35}>
+                        <circle cx="245" cy="50" r="4" fill={activePriceClass !== '100' ? '#10b981' : '#64748b'} />
+                        {activePriceClass !== '100' && (
+                          <circle cx="245" cy="50" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                            <animate attributeName="r" values="4;10;4" dur="1.9s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="1.9s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="245" y="42" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass !== '100' ? '#047857' : '#475569'}>East Asia</text>
+                      </g>
+
+                      {/* South America (Active on 200 and all) */}
+                      <g opacity={activePriceClass !== '100' ? 1 : 0.35}>
+                        <circle cx="72" cy="92" r="4" fill={activePriceClass !== '100' ? '#10b981' : '#64748b'} />
+                        {activePriceClass !== '100' && (
+                          <circle cx="72" cy="92" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                            <animate attributeName="r" values="4;10;4" dur="2.1s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="2.1s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="72" y="84" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass !== '100' ? '#047857' : '#475569'}>S. America</text>
+                      </g>
+
+                      {/* South Africa (Active on all only) */}
+                      <g opacity={activePriceClass === 'all' ? 1 : 0.35}>
+                        <circle cx="158" cy="94" r="4" fill={activePriceClass === 'all' ? '#10b981' : '#64748b'} />
+                        {activePriceClass === 'all' && (
+                          <circle cx="158" cy="94" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                            <animate attributeName="r" values="4;10;4" dur="1.8s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="1.8s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="158" y="104" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass === 'all' ? '#047857' : '#475569'}>S. Africa</text>
+                      </g>
+
+                      {/* Australia (Active on all only) */}
+                      <g opacity={activePriceClass === 'all' ? 1 : 0.35}>
+                        <circle cx="272" cy="112" r="4" fill={activePriceClass === 'all' ? '#10b981' : '#64748b'} />
+                        {activePriceClass === 'all' && (
+                          <circle cx="272" cy="112" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                            <animate attributeName="r" values="4;10;4" dur="2.3s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0;1" dur="2.3s" repeatCount="indefinite" />
+                          </circle>
+                        )}
+                        <text x="272" y="122" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass === 'all' ? '#047857' : '#475569'}>Australia</text>
+                      </g>
+                    </svg>
                   </div>
 
                 </div>

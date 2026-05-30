@@ -1465,38 +1465,43 @@ export default function S3Visualizer() {
   return (
     <div style={{ fontSize: '13.5px' }}>
       <style>{`
-        .s3-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .s3-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .s3-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .s3-tb.s3-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .s3-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 20px; background: var(--color-background-primary); margin-bottom: 16px; font-size: 13px; line-height: 1.55; }
-        .s3-sec { font-size: 13px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .06em; margin: 24px 0 10px; }
+        .s3-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
+        .s3-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: rgba(255, 255, 255, 0.6); color: var(--color-text-secondary, #475569); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
+        .s3-tb:hover { background: rgba(241, 245, 249, 0.8); color: var(--color-text-primary, #1e293b); transform: translateY(-1px); }
+        .s3-tb.s3-on { background: #10b981; color: #fff; border-color: #10b981; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -2px rgba(16, 185, 129, 0.2); }
+        
+        .s3-card { border: 1.5px solid rgba(226, 232, 240, 0.8); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.6); margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: #1e293b; }
+        .s3-sec { font-size: 12.5px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
         .s3-sec:first-child { margin-top: 0; }
         .s3-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-        .s3-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .s3-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .s3-kv { display: flex; gap: 8px; font-size: 13px; margin: 6px 0; align-items: baseline; }
-        .s3-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; }
-        .s3-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-        .s3-btn { font-size: 13px; padding: 5px 12px; border-radius: 6px; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.15s; outline: none; }
-        .s3-btn:hover { background: var(--color-background-secondary); }
-        .s3-btn.s3-on { background: #0891b2; color: #fff; border-color: #0891b2; }
-        .s3-terminal { background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 12px; padding: 12px; border-radius: 8px; border: 0.5px solid #334155; max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.45; }
+        .s3-kk { min-width: 160px; color: #475569; flex-shrink: 0; font-weight: 500; }
+        .s3-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+        
+        .s3-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary, #cbd5e1); background: rgba(255, 255, 255, 0.8); color: #1e293b; cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
+        .s3-btn:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .s3-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .s3-btn.s3-on { background: #10b981; color: #fff; border-color: #10b981; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.15); }
+        
+        .s3-terminal { background: #0a0d16; color: #34d399; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+        .s3-svg-bg { background-color: #fafbfd; background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid rgba(226, 232, 240, 0.8); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
         
         /* Visually stunning Deep Dive layouts */
         .s3-grid-edu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 18px; }
         
         .s3-edu-card-new { 
-          background: var(--color-background-primary); 
-          border: 0.5px solid var(--color-border-secondary); 
-          border-top: 4px solid var(--theme-color, #0891b2); 
+          background: rgba(255, 255, 255, 0.8); 
+          border: 1.5px solid rgba(226, 232, 240, 0.8); 
+          border-top: 4px solid var(--theme-color, #10b981); 
           padding: 16px 18px; 
           border-radius: 8px; 
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .s3-edu-card-new:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
         
         .s3-pill-badge {
@@ -1525,7 +1530,7 @@ export default function S3Visualizer() {
         .s3-hl-purple { background: rgba(168, 85, 247, 0.15); color: #9333ea; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
         .s3-hl-pink { background: rgba(236, 72, 153, 0.15); color: #db2777; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
         
-        .s3-desc-mute { color: var(--color-text-secondary); font-size: 11px; font-style: italic; opacity: 0.9; font-weight: normal; background: none; padding: 0; }
+        .s3-desc-mute { color: var(--color-text-secondary); font-size: 11.5px; font-style: italic; opacity: 0.95; font-weight: normal; background: none; padding: 0; }
         
         [data-theme='dark'] .s3-hl-cyan { background: rgba(6, 182, 212, 0.25); color: #22d3ee; }
         [data-theme='dark'] .s3-hl-orange { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
@@ -1536,27 +1541,58 @@ export default function S3Visualizer() {
 
         /* Unified Dropdown Selection Visual Cues */
         .s3-card select {
-          border: 2px solid #f59e0b !important;
-          box-shadow: 0 0 0 3px rgba(245,158,11,0.2) !important;
+          border: 1.5px solid #cbd5e1 !important;
+          border-radius: 8px;
+          padding: 6px 12px;
+          background: rgba(255, 255, 255, 0.85);
+          color: #1e293b;
+          font-weight: 500;
           outline: none;
-          background: var(--color-background-primary);
-          color: var(--color-text-primary);
+          transition: all 0.2s;
+        }
+        .s3-card select:focus {
+          border-color: #10b981 !important;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+        }
+        .s3-card select.s3-highlight {
+          border: 1.5px solid #f59e0b !important;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
+        }
+        .s3-card input[type="text"] {
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          padding: 6px 10px;
+          background: rgba(255, 255, 255, 0.85);
+          color: #1e293b;
+          outline: none;
+          transition: all 0.2s;
+        }
+        .s3-card input[type="text"]:focus {
+          border-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+        .s3-card input[type="range"] {
+          accent-color: #10b981;
+          background: #cbd5e1;
+          height: 6px;
+          border-radius: 3px;
         }
 
         .s3-card textarea {
-          background: #0f172a;
+          background: #0a0d16;
           color: #e2e8f0;
-          font-family: monospace;
-          font-size: 11px;
-          border: 1px solid var(--color-border-secondary);
-          border-radius: 6px;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 11.5px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
           padding: 10px;
           width: 100%;
           outline: none;
+          transition: all 0.2s;
         }
         .s3-card textarea:focus {
-          border-color: #f59e0b;
-          box-shadow: 0 0 0 3px rgba(245,158,11,0.2);
+          border-color: #10b981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         .s3-g-circle {
@@ -1666,39 +1702,40 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Note how folders are only simulated logical prefixes in a flat metadata partition.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Logical User Directory Structure */}
-                <rect x="20" y="20" width="220" height="140" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="35" y="38" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">📁 Logical Folder Tree (Mock View)</text>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
+                {/* Logical User Directory Structure (Left Card) */}
+                <rect x="25" y="20" width="220" height="140" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                <text x="40" y="38" fontSize="11" fontWeight="bold" fill="#1e293b">📁 Logical Folder Tree (Browser Mock)</text>
 
-                <text x="45" y="65" fontSize="10" fill="var(--color-text-secondary)">📁 assets/</text>
-                <text x="65" y="85" fontSize="9.5" fill="var(--color-text-secondary)">📁 images/</text>
-                <text x="85" y="105" fontSize="9" fill="#0891b2" fontWeight="bold">📄 logo.png</text>
-                <text x="45" y="130" fontSize="10" fill="var(--color-text-secondary)">📁 logs/ ➔ 📄 app.log</text>
+                <text x="50" y="65" fontSize="10.5" fontWeight="500" fill="#475569">📁 assets/</text>
+                <text x="70" y="85" fontSize="10" fontWeight="500" fill="#475569">📁 images/</text>
+                <text x="90" y="105" fontSize="10" fill="#10b981" fontWeight="bold">📄 logo.png</text>
+                <text x="50" y="130" fontSize="10.5" fontWeight="500" fill="#475569">📁 logs/ ➔ 📄 app.log</text>
 
-                <path d="M250,90 L320,90" stroke="#94a3b8" strokeWidth="2" />
+                {/* Flow Arrow */}
+                <path d="M 260 90 L 305 90" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#arr-repl-green)" />
 
-                {/* S3 Flat Database Index Key-Value store */}
-                <rect x="330" y="20" width="350" height="140" rx="6" fill="var(--color-background-primary)" stroke="#0891b2" strokeWidth="1.5" />
-                <text x="345" y="38" fontSize="10.5" fontWeight="bold" fill="#0891b2">🛢️ Actual S3 Flat Key-Value Database Table</text>
+                {/* S3 Flat Database Index Key-Value store (Right Card) */}
+                <rect x="320" y="20" width="355" height="140" rx="8" fill="rgba(255,255,255,0.75)" stroke="#10b981" strokeWidth="1.5" />
+                <text x="335" y="38" fontSize="11" fontWeight="bold" fill="#047857">🛢️ Actual S3 Flat Key-Value Database Table</text>
 
                 {/* Headers */}
-                <rect x="340" y="52" width="330" height="20" fill="var(--color-background-tertiary)" />
-                <text x="345" y="66" fontSize="9" fontWeight="bold" fill="var(--color-text-secondary)">Full Object Key String (Flat Prefix + Name)</text>
-                <text x="590" y="66" fontSize="9" fontWeight="bold" fill="var(--color-text-secondary)">Physical Block</text>
+                <rect x="330" y="52" width="335" height="22" fill="#ecfdf5" rx="4" />
+                <text x="335" y="66" fontSize="9.5" fontWeight="bold" fill="#047857">Full Object Key String (Flat Prefix + Name)</text>
+                <text x="590" y="66" fontSize="9.5" fontWeight="bold" fill="#047857">Physical Storage Block</text>
 
                 {/* Rows */}
-                <text x="345" y="90" fontSize="8.5" fontFamily="monospace" fill="#0e7490">assets/images/logo.png</text>
-                <text x="590" y="90" fontSize="8.5" fill="var(--color-text-secondary)">Block-A92k</text>
+                <text x="335" y="90" fontSize="9" fontFamily="monospace" fontWeight="500" fill="#0f766e">assets/images/logo.png</text>
+                <text x="590" y="90" fontSize="9" fill="#475569" fontWeight="500">Block-A92k-NVMe</text>
 
-                <text x="345" y="112" fontSize="8.5" fontFamily="monospace" fill="#0e7490">logs/2026/05/sys.log</text>
-                <text x="590" y="112" fontSize="8.5" fill="var(--color-text-secondary)">Block-B18a</text>
+                <text x="335" y="112" fontSize="9" fontFamily="monospace" fontWeight="500" fill="#0f766e">logs/2026/05/sys.log</text>
+                <text x="590" y="112" fontSize="9" fill="#475569" fontWeight="500">Block-B18a-NVMe</text>
 
-                <text x="345" y="134" fontSize="8.5" fontFamily="monospace" fill="#0e7490">index.html</text>
-                <text x="590" y="134" fontSize="8.5" fill="var(--color-text-secondary)">Block-C42f</text>
+                <text x="335" y="134" fontSize="9" fontFamily="monospace" fontWeight="500" fill="#0f766e">index.html</text>
+                <text x="590" y="134" fontSize="9" fill="#475569" fontWeight="500">Block-C42f-NVMe</text>
 
-                <line x1="340" y1="98" x2="670" y2="98" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
-                <line x1="340" y1="120" x2="670" y2="120" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                <line x1="330" y1="98" x2="665" y2="98" stroke="#e2e8f0" strokeWidth="1" />
+                <line x1="330" y1="120" x2="665" y2="120" stroke="#e2e8f0" strokeWidth="1" />
               </svg>
             </div>
 
@@ -1982,58 +2019,74 @@ export default function S3Visualizer() {
 
                 {/* AZ replication topology SVG */}
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+                  <svg viewBox="0 0 500 240" width="100%" height="240" className="s3-svg-bg">
                     <defs>
                       <marker id="arr-repl-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                     </defs>
 
-                    {/* S3 Ingest Gateway */}
-                    <rect x="120" y="15" width="110" height="40" rx="6" fill="#eff6ff" stroke="#0891b2" strokeWidth="1.5" />
-                    <text x="175" y="32" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#025a70">🪣 Ingest Gateway</text>
-                    <text x="175" y="44" textAnchor="middle" fontSize="6.5" fill="#0891b2">Strong SSL Boundary</text>
+                    {/* Client Browser */}
+                    <rect x="20" y="85" width="100" height="70" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <text x="70" y="105" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                    <text x="70" y="122" textAnchor="middle" fontSize="8.5" fontWeight="600" fill="#0891b2">PUT Request</text>
+                    <text x="70" y="140" textAnchor="middle" fontSize="8" fill="#475569" fontFamily="monospace">{replicatePayload}</text>
 
-                    {/* AZ Datacenters */}
-                    {/* AZ-1 */}
-                    <rect x="15" y="130" width="90" height="70" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1} />
-                    <text x="60" y="148" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#334155">🏢 AZ-1</text>
-                    <text x="60" y="162" textAnchor="middle" fontSize="8" fill="#64748b">{urlRegion}a</text>
-                    <text x="60" y="185" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#10b981">
+                    {/* Ingest Gateway */}
+                    <rect x="165" y="85" width="100" height="70" rx="8" fill="rgba(255,255,255,0.85)" stroke="#0891b2" strokeWidth="1.5" />
+                    <text x="215" y="105" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">🪣 Ingest Gateway</text>
+                    <text x="215" y="122" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="600">SSL Handshake</text>
+                    <text x="215" y="138" textAnchor="middle" fontSize="7.5" fill="#0891b2" fontWeight="bold">Parity Engine</text>
+
+                    {/* AZ-1 (Top Right) */}
+                    <rect x="360" y="20" width="120" height="50" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
+                    <text x="420" y="38" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">🏢 AZ-1 ({urlRegion}a)</text>
+                    <text x="420" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#10b981">
                       {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
                     </text>
 
-                    {/* AZ-2 */}
-                    <rect x="130" y="130" width="90" height="70" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1} />
-                    <text x="175" y="148" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#334155">🏢 AZ-2</text>
-                    <text x="175" y="162" textAnchor="middle" fontSize="8" fill="#64748b">{urlRegion}b</text>
-                    <text x="175" y="185" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#10b981">
+                    {/* AZ-2 (Middle Right) */}
+                    <rect x="360" y="95" width="120" height="50" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
+                    <text x="420" y="113" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">🏢 AZ-2 ({urlRegion}b)</text>
+                    <text x="420" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#10b981">
                       {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
                     </text>
 
-                    {/* AZ-3 */}
-                    <rect x="245" y="130" width="90" height="70" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1} />
-                    <text x="290" y="148" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#334155">🏢 AZ-3</text>
-                    <text x="290" y="162" textAnchor="middle" fontSize="8" fill="#64748b">{urlRegion}c</text>
-                    <text x="290" y="185" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#10b981">
+                    {/* AZ-3 (Bottom Right) */}
+                    <rect x="360" y="170" width="120" height="50" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
+                    <text x="420" y="188" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">🏢 AZ-3 ({urlRegion}c)</text>
+                    <text x="420" y="205" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#10b981">
                       {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
                     </text>
 
                     {/* Propagation lines */}
-                    <path d="M140,55 L75,130" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 2 ? 1.8 : 1} markerEnd="url(#arr-repl-green)" />
-                    <path d="M175,55 L175,130" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 2 ? 1.8 : 1} markerEnd="url(#arr-repl-green)" />
-                    <path d="M210,55 L275,130" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 2 ? 1.8 : 1} markerEnd="url(#arr-repl-green)" />
+                    <path d="M 120 120 L 165 120" stroke={replicateStep >= 1 ? '#0891b2' : '#cbd5e1'} strokeWidth="2.5" strokeDasharray={replicateStep === 1 ? "4,4" : "none"} />
+                    
+                    <path d="M 265 110 L 360 45" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
+                    <path d="M 265 120 L 360 120" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
+                    <path d="M 265 130 L 360 195" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
 
-                    <text x="175" y="225" textAnchor="middle" fontSize="8" fill={replicateStep === 4 ? '#166534' : '#475569'} fontWeight="bold">
-                      {replicateStep === 4 ? '🎉 100% Replicated cross 3 datacenters (200 OK)' : 'Synchronous replication pipelines'}
-                    </text>
-
-                    {/* Animated particles */}
+                    {/* Animated packets */}
+                    {replicateIsRunning && replicateStep === 1 && (
+                      <circle r="5" fill="#0891b2">
+                        <animateMotion dur="0.6s" repeatCount="indefinite" path="M 120 120 L 165 120" />
+                      </circle>
+                    )}
                     {replicateIsRunning && replicateStep === 2 && (
                       <>
-                        <circle cx="155" cy="70" r="4" fill="#0891b2" className="s3-g-circle" />
-                        <circle cx="175" cy="75" r="4" fill="#0891b2" className="s3-g-circle" />
-                        <circle cx="195" cy="70" r="4" fill="#0891b2" className="s3-g-circle" />
+                        <circle r="4.5" fill="#10b981">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 110 L 360 45" />
+                        </circle>
+                        <circle r="4.5" fill="#10b981">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 120 L 360 120" />
+                        </circle>
+                        <circle r="4.5" fill="#10b981">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 130 L 360 195" />
+                        </circle>
                       </>
                     )}
+
+                    <text x="250" y="230" textAnchor="middle" fontSize="9.5" fill={replicateStep === 4 ? '#166534' : '#475569'} fontWeight="bold">
+                      {replicateStep === 4 ? '🎉 100% Replicated cross 3 Availability Zones (PUT 200 OK)' : 'Synchronous parallel write replication pipelines'}
+                    </text>
                   </svg>
                 </div>
               </div>
@@ -2181,36 +2234,97 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 How browsers issue CORS preflight check requests (HTTP OPTIONS) to secure resources across domains.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Origin Site */}
-                <rect x="20" y="30" width="130" height="120" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="85" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Client Browser</text>
-                <text x="85" y="70" textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="bold">💻 domain-a.com</text>
-                <text x="85" y="90" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">Loads JS fetching</text>
-                <text x="85" y="102" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">assets from S3</text>
-                <rect x="35" y="115" width="100" height="20" rx="3" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="0.8" />
-                <text x="85" y="128" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">Host A (Frontend)</text>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
+                {/* Client Browser */}
+                <rect x="25" y="25" width="160" height="130" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                <text x="105" y="45" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                <text x="105" y="65" textAnchor="middle" fontSize="9" fill="#0891b2" fontWeight="bold">Origin: {corsOriginInput}</text>
+                <text x="105" y="85" textAnchor="middle" fontSize="8.5" fill="#475569">Sending {corsMethodInput} request</text>
+                
+                <rect x="35" y="105" width="140" height="38" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                <text x="105" y="118" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">JS Execution Thread</text>
+                <text x="105" y="130" textAnchor="middle" fontSize="7.5" fill="#1e40af">fetch("https://domain-b.s3...")</text>
 
-                {/* Handshake: Request */}
-                <path d="M150,55 L380,55" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" />
-                <text x="265" y="46" textAnchor="middle" fontSize="7.5" fill="#b91c1c" fontWeight="bold">1. OPTIONS Preflight Ping (Origin: domain-a.com)</text>
+                {/* Handshake flow lines */}
+                {/* Line 1: OPTIONS request */}
+                <path id="cors-p1" d="M 185 60 L 270 60" fill="none" stroke={corsAnimationState === 'preflight' ? '#f59e0b' : corsAnimationState === 'authorized' ? '#10b981' : corsAnimationState === 'blocked' ? '#ef4444' : '#cbd5e1'} strokeWidth="2" strokeDasharray="3,3" />
+                <text x="228" y="52" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#475569">OPTIONS Ping</text>
 
-                {/* Handshake: Response */}
-                <path d="M380,75 L150,75" stroke="#10b981" strokeWidth="1.5" />
-                <text x="265" y="86" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">2. Allow-Origin: domain-a.com (200 OK)</text>
+                {/* Line 2: OPTIONS Response */}
+                <path id="cors-p2" d="M 270 85 L 185 85" fill="none" stroke={corsAnimationState === 'authorized' ? '#10b981' : corsAnimationState === 'blocked' ? '#ef4444' : '#cbd5e1'} strokeWidth="2" strokeDasharray="3,3" />
+                <text x="228" y="98" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#475569">Response</text>
 
-                {/* Handshake: Actual Fetch */}
-                <path d="M150,115 L380,115" stroke="#10b981" strokeWidth="2" />
-                <text x="265" y="110" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">3. Actual GET payload.json request (Allowed)</text>
+                {/* Center CORS Gateway Validator */}
+                <rect x="270" y="25" width="160" height="130" rx="8" fill="rgba(255,255,255,0.85)" stroke="#0891b2" strokeWidth="1.5" />
+                <text x="350" y="45" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">🛡️ CORS Firewall Gate</text>
+                
+                {/* Gate State indicators */}
+                {corsAnimationState === 'idle' && (
+                  <>
+                    <circle cx="350" cy="85" r="16" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">⏳</text>
+                    <text x="350" y="125" textAnchor="middle" fontSize="8" fill="#475569">Awaiting preflight trigger</text>
+                  </>
+                )}
+                {corsAnimationState === 'preflight' && (
+                  <>
+                    <circle cx="350" cy="85" r="16" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1.5" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#d97706" fontWeight="bold">⚙️</text>
+                    <text x="350" y="125" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold">Evaluating Origin...</text>
+                  </>
+                )}
+                {corsAnimationState === 'authorized' && (
+                  <>
+                    <circle cx="350" cy="85" r="16" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#059669" fontWeight="bold">✔</text>
+                    <text x="350" y="125" textAnchor="middle" fontSize="8.5" fill="#059669" fontWeight="bold">ORIGIN ALLOWED</text>
+                  </>
+                )}
+                {corsAnimationState === 'blocked' && (
+                  <>
+                    <circle cx="350" cy="85" r="16" fill="#fef2f2" stroke="#ef4444" strokeWidth="2" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#dc2626" fontWeight="bold">✘</text>
+                    <text x="350" y="125" textAnchor="middle" fontSize="8.5" fill="#dc2626" fontWeight="bold">ORIGIN BLOCKED</text>
+                  </>
+                )}
 
-                {/* S3 Destination */}
-                <rect x="380" y="30" width="290" height="120" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                <text x="525" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">🪣 Target S3 Bucket: domain-b.s3.amazonaws.com</text>
-                <text x="395" y="75" fontSize="8" fill="var(--color-text-secondary)" fontWeight="bold">CORS Rules Configured:</text>
-                <rect x="395" y="85" width="260" height="50" rx="4" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="0.8" />
-                <text x="405" y="100" textAnchor="start" fontSize="8" fontFamily="monospace" fill="#0e7490">AllowedOrigin: "https://domain-a.com"</text>
-                <text x="405" y="112" textAnchor="start" fontSize="8" fontFamily="monospace" fill="#0e7490">AllowedMethod: "GET", "PUT", "HEAD"</text>
-                <text x="405" y="124" textAnchor="start" fontSize="8" fontFamily="monospace" fill="#0e7490">MaxAgeSeconds: 3000</text>
+                {/* Gateway ➔ S3 Data Path */}
+                <path d="M 430 90 L 500 90" fill="none" stroke={corsAnimationState === 'authorized' ? '#10b981' : '#cbd5e1'} strokeWidth="2.5" />
+                <text x="465" y="82" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="bold">Data Pipeline</text>
+
+                {/* Target S3 Bucket */}
+                <rect x="500" y="25" width="175" height="130" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                <text x="587" y="45" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">🪣 Target S3 Bucket</text>
+                <text x="587" y="60" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace">{bucketNameInput}</text>
+                
+                <rect x="510" y="72" width="155" height="70" rx="4" fill="rgba(255,255,255,0.7)" stroke="#a7f3d0" strokeWidth="1" />
+                <text x="515" y="85" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#475569">Configured CORS Rules:</text>
+                <text x="515" y="98" textAnchor="start" fontSize="7.5" fontFamily="monospace" fill="#0e7490">AllowedOrigin: "https://domain-a.com"</text>
+                <text x="515" y="110" textAnchor="start" fontSize="7.5" fontFamily="monospace" fill="#0e7490">AllowedMethod: "GET", "PUT"</text>
+                <text x="515" y="122" textAnchor="start" fontSize="7.5" fontFamily="monospace" fill="#0e7490">ExposeHeaders: "ETag"</text>
+                <text x="515" y="134" textAnchor="start" fontSize="7.5" fontFamily="monospace" fill="#0e7490">MaxAgeSeconds: 3000</text>
+
+                {/* Animated preflight packets */}
+                {corsAnimationState === 'preflight' && (
+                  <circle r="4.5" fill="#f59e0b">
+                    <animateMotion dur="0.8s" repeatCount="indefinite" path="M 185 60 L 270 60" />
+                  </circle>
+                )}
+                {corsAnimationState === 'authorized' && (
+                  <>
+                    <circle r="4" fill="#10b981">
+                      <animateMotion dur="0.8s" repeatCount="indefinite" path="M 270 85 L 185 85" />
+                    </circle>
+                    <circle r="5" fill="#10b981">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 430 90 L 500 90" />
+                    </circle>
+                  </>
+                )}
+                {corsAnimationState === 'blocked' && (
+                  <circle r="4.5" fill="#ef4444">
+                    <animateMotion dur="0.4s" repeatCount="3" path="M 185 60 L 270 60" />
+                  </circle>
+                )}
               </svg>
             </div>
           </div>
@@ -2285,44 +2399,146 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 How S3 processes IAM policies, resource statements, and the Block Public Access override master gate.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Client Packet */}
-                <rect x="15" y="65" width="80" height="50" rx="4" fill="#0891b2" stroke="#0e7490" strokeWidth="1" />
-                <text x="55" y="90" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">Inbound Request</text>
-                <text x="55" y="102" textAnchor="middle" fontSize="7.5" fill="#fff">GET/PUT s3://</text>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
+                {/* Client Ingress Request Node */}
+                <rect x="15" y="55" width="90" height="70" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                <text x="60" y="75" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Inbound</text>
+                <text x="60" y="92" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600" fontFamily="monospace">GET/PUT s3://</text>
+                <text x="60" y="108" textAnchor="middle" fontSize="7.5" fill="#0891b2" fontWeight="bold">
+                  {ingressTrafficSource === 'internet' ? 'Internet (HTTP)' :
+                   ingressTrafficSource === 'https_user' ? 'HTTPS Secure' :
+                   ingressTrafficSource === 'http_user' ? 'HTTP Unsecure' : 'VPC Endpoint'}
+                </text>
 
-                <path d="M95,90 L140,90" stroke="#94a3b8" strokeWidth="1.5" />
+                {/* Path Segment 1 */}
+                <path d="M 105 90 L 150 90" fill="none" stroke="#94a3b8" strokeWidth="2.5" />
 
-                {/* Gate 1: BPA */}
-                <rect x="140" y="45" width="100" height="90" rx="6" fill="#fef2f2" stroke="#991b1b" strokeWidth="1" />
-                <text x="190" y="70" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#991b1b">Gate 1: BPA</text>
-                <text x="190" y="85" textAnchor="middle" fontSize="8" fill="#7f1d1d">Block Public</text>
-                <text x="190" y="98" textAnchor="middle" fontSize="8" fill="#7f1d1d">Access Settings</text>
-                <text x="190" y="115" textAnchor="middle" fontSize="7" fill="#be123c" fontWeight="bold">Override Evaluated</text>
+                {/* Gate 1: BPA Override Shield */}
+                <rect x="150" y="35" width="110" height="110" rx="8" 
+                  fill={selectedPolicyTemplate === 'public' && bpaPolicies ? '#fef2f2' : '#f0fdf4'} 
+                  stroke={selectedPolicyTemplate === 'public' && bpaPolicies ? '#ef4444' : '#10b981'} 
+                  strokeWidth="1.5" />
+                <text x="205" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">Gate 1: BPA</text>
+                <text x="205" y="78" textAnchor="middle" fontSize="8" fill="#475569">Block Public</text>
+                <text x="205" y="93" textAnchor="middle" fontSize="8" fill="#475569">Access Switch</text>
+                <text x="205" y="125" textAnchor="middle" fontSize="9" fontWeight="bold" 
+                  fill={selectedPolicyTemplate === 'public' && bpaPolicies ? '#ef4444' : '#10b981'}>
+                  {selectedPolicyTemplate === 'public' && bpaPolicies ? '❌ BLOCKED' : '🟢 PASSED'}
+                </text>
 
-                <path d="M240,90 L285,90" stroke="#94a3b8" strokeWidth="1.5" />
+                {/* Path Segment 2 */}
+                <path d="M 260 90 L 310 90" fill="none" 
+                  stroke={selectedPolicyTemplate === 'public' && bpaPolicies ? '#e2e8f0' : '#94a3b8'} 
+                  strokeWidth="2.5" />
 
-                {/* Gate 2: Explicit Deny */}
-                <rect x="285" y="45" width="110" height="90" rx="6" fill="#ffe4e6" stroke="#e11d48" strokeWidth="1" />
-                <text x="340" y="70" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#e11d48">Gate 2: Explicit Deny</text>
-                <text x="340" y="85" textAnchor="middle" fontSize="8" fill="#9f1239">Matches Deny</text>
-                <text x="340" y="98" textAnchor="middle" fontSize="8" fill="#9f1239">Conditions?</text>
-                <text x="340" y="115" textAnchor="middle" fontSize="7.5" fill="#be123c" fontWeight="bold">(HTTP, Non-VPCE)</text>
+                {/* Gate 2: Explicit Deny Logic */}
+                {(() => {
+                  const isSSLDeny = selectedPolicyTemplate === 'https' && ingressTrafficSource !== 'https_user';
+                  const isVPCEDeny = selectedPolicyTemplate === 'vpce' && ingressTrafficSource !== 'vpce_ip';
+                  const isBpaBlocked = selectedPolicyTemplate === 'public' && bpaPolicies;
+                  const isDenyActive = !isBpaBlocked && (isSSLDeny || isVPCEDeny);
+                  return (
+                    <>
+                      <rect x="310" y="35" width="120" height="110" rx="8" 
+                        fill={isBpaBlocked ? '#f1f5f9' : isDenyActive ? '#fef2f2' : '#f0fdf4'} 
+                        stroke={isBpaBlocked ? '#cbd5e1' : isDenyActive ? '#ef4444' : '#10b981'} 
+                        strokeWidth="1.5" />
+                      <text x="370" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">Gate 2: Denies</text>
+                      <text x="370" y="78" textAnchor="middle" fontSize="8" fill="#475569">SSL &amp; VPC</text>
+                      <text x="370" y="93" textAnchor="middle" fontSize="8" fill="#475569">Deny Statement</text>
+                      <text x="370" y="125" textAnchor="middle" fontSize="9" fontWeight="bold" 
+                        fill={isBpaBlocked ? '#94a3b8' : isDenyActive ? '#ef4444' : '#10b981'}>
+                        {isBpaBlocked ? '💤 BYPASSED' : isDenyActive ? '❌ DENIED' : '🟢 PASSED'}
+                      </text>
+                    </>
+                  );
+                })()}
 
-                <path d="M395,90 L440,90" stroke="#94a3b8" strokeWidth="1.5" />
+                {/* Path Segment 3 */}
+                <path d="M 430 90 L 480 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
 
-                {/* Gate 3: Explicit Allow */}
-                <rect x="440" y="45" width="110" height="90" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1" />
-                <text x="495" y="70" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#166534">Gate 3: Allow checks</text>
-                <text x="495" y="85" textAnchor="middle" fontSize="8" fill="#14532d">Matches Bucket</text>
-                <text x="495" y="98" textAnchor="middle" fontSize="8" fill="#14532d">or IAM Allow?</text>
-                <text x="495" y="115" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold">(Action matching)</text>
+                {/* Gate 3: Explicit Allow checks */}
+                {(() => {
+                  const isBpaBlocked = selectedPolicyTemplate === 'public' && bpaPolicies;
+                  const isSSLDeny = selectedPolicyTemplate === 'https' && ingressTrafficSource !== 'https_user';
+                  const isVPCEDeny = selectedPolicyTemplate === 'vpce' && ingressTrafficSource !== 'vpce_ip';
+                  const isDenyBlocked = isSSLDeny || isVPCEDeny;
+                  
+                  const isAllowed = !isBpaBlocked && !isDenyBlocked && (
+                    (selectedPolicyTemplate === 'public') ||
+                    (selectedPolicyTemplate === 'https' && ingressTrafficSource === 'https_user') ||
+                    (selectedPolicyTemplate === 'vpce' && ingressTrafficSource === 'vpce_ip')
+                  );
+                  return (
+                    <>
+                      <rect x="480" y="35" width="120" height="110" rx="8" 
+                        fill={(isBpaBlocked || isDenyBlocked) ? '#f1f5f9' : isAllowed ? '#f0fdf4' : '#fef2f2'} 
+                        stroke={(isBpaBlocked || isDenyBlocked) ? '#cbd5e1' : isAllowed ? '#10b981' : '#ef4444'} 
+                        strokeWidth="1.5" />
+                      <text x="540" y="58" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">Gate 3: Allows</text>
+                      <text x="540" y="78" textAnchor="middle" fontSize="8" fill="#475569">Resource Policy</text>
+                      <text x="540" y="93" textAnchor="middle" fontSize="8" fill="#475569">Allow Whitelist</text>
+                      <text x="540" y="125" textAnchor="middle" fontSize="9" fontWeight="bold" 
+                        fill={(isBpaBlocked || isDenyBlocked) ? '#94a3b8' : isAllowed ? '#10b981' : '#ef4444'}>
+                        {(isBpaBlocked || isDenyBlocked) ? '💤 BYPASSED' : isAllowed ? '🟢 ALLOWED' : '❌ NO MATCH'}
+                      </text>
+                    </>
+                  );
+                })()}
 
-                <path d="M550,90 L600,90" stroke="#94a3b8" strokeWidth="1.5" />
+                {/* Path Segment 4 */}
+                <path d="M 600 90 L 635 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
 
-                {/* Decision */}
-                <circle cx="630" cy="90" r="25" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
-                <text x="630" y="94" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#065f46">Result</text>
+                {/* Decision Result Node */}
+                {(() => {
+                  const isBpaBlocked = selectedPolicyTemplate === 'public' && bpaPolicies;
+                  const isSSLDeny = selectedPolicyTemplate === 'https' && ingressTrafficSource !== 'https_user';
+                  const isVPCEDeny = selectedPolicyTemplate === 'vpce' && ingressTrafficSource !== 'vpce_ip';
+                  const isDenyBlocked = isSSLDeny || isVPCEDeny;
+                  
+                  const isAllowed = !isBpaBlocked && !isDenyBlocked && (
+                    (selectedPolicyTemplate === 'public') ||
+                    (selectedPolicyTemplate === 'https' && ingressTrafficSource === 'https_user') ||
+                    (selectedPolicyTemplate === 'vpce' && ingressTrafficSource === 'vpce_ip')
+                  );
+                  return (
+                    <>
+                      <circle cx="645" cy="90" r="22" 
+                        fill={ingressPacketStatus === 'idle' ? '#f1f5f9' : isAllowed ? '#ecfdf5' : '#fef2f2'} 
+                        stroke={ingressPacketStatus === 'idle' ? '#cbd5e1' : isAllowed ? '#10b981' : '#ef4444'} 
+                        strokeWidth="2" />
+                      <text x="645" y="94" textAnchor="middle" fontSize="10.5" fontWeight="bold" 
+                        fill={ingressPacketStatus === 'idle' ? '#475569' : isAllowed ? '#047857' : '#991b1b'}>
+                        {ingressPacketStatus === 'idle' ? '⏳' : isAllowed ? '✔ OK' : '✘ Deny'}
+                      </text>
+                    </>
+                  );
+                })()}
+
+                {/* Ingress Packet Animating Motion */}
+                {ingressPacketStatus === 'testing' && (() => {
+                  const isBpaBlocked = selectedPolicyTemplate === 'public' && bpaPolicies;
+                  const isSSLDeny = selectedPolicyTemplate === 'https' && ingressTrafficSource !== 'https_user';
+                  const isVPCEDeny = selectedPolicyTemplate === 'vpce' && ingressTrafficSource !== 'vpce_ip';
+                  const isDenyBlocked = isSSLDeny || isVPCEDeny;
+                  
+                  const isAllowed = !isBpaBlocked && !isDenyBlocked && (
+                    (selectedPolicyTemplate === 'public') ||
+                    (selectedPolicyTemplate === 'https' && ingressTrafficSource === 'https_user') ||
+                    (selectedPolicyTemplate === 'vpce' && ingressTrafficSource === 'vpce_ip')
+                  );
+
+                  let motionPath = "M 60 90 L 645 90";
+                  if (isBpaBlocked) motionPath = "M 60 90 L 205 90";
+                  else if (isDenyBlocked) motionPath = "M 60 90 L 370 90";
+                  else if (!isAllowed) motionPath = "M 60 90 L 540 90";
+
+                  return (
+                    <circle r="6" fill={isAllowed ? '#10b981' : '#ef4444'}>
+                      <animateMotion dur="1s" repeatCount="1" fill="freeze" path={motionPath} />
+                    </circle>
+                  );
+                })()}
               </svg>
             </div>
 
@@ -2688,184 +2904,266 @@ export default function S3Visualizer() {
               </div>
 
               {encryptionType === 'sse-s3' && (
-                <svg viewBox="0 0 700 180" width="100%" style={{ background: '#f0fdf4', borderRadius: '6px', border: '0.5px solid #a7f3d0' }}>
+                <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                   <defs>
-                    <marker id="arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857" /></marker>
+                    <marker id="arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                   </defs>
                   
                   {/* User Client */}
-                  <rect x="25" y="45" width="120" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="85" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#334155">💻 Client (User)</text>
-                  <rect x="35" y="80" width="100" height="40" rx="4" fill="#f8fafc" stroke="#e2e8f0" />
-                  <text x="85" y="93" textAnchor="middle" fontSize="6.5" fill="#475569">HTTPS upload request</text>
-                  <text x="85" y="103" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#047857">"x-amz-server-side-encryption":</text>
-                  <text x="85" y="112" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#047857">"AES-256"</text>
+                  <rect x="25" y="35" width="130" height="110" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                  <text x="90" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="35" y="70" width="110" height="60" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                  <text x="90" y="85" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">HTTPS Request</text>
+                  <text x="90" y="100" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontFamily="monospace">"x-amz-server-side-</text>
+                  <text x="90" y="112" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontFamily="monospace">encryption": "AES-256"</text>
 
                   {/* Flow Arrow */}
-                  <path d="M145,90 L210,90" stroke="#047857" strokeWidth="1.5" markerEnd="url(#arr-green)" />
-                  <text x="177" y="82" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Upload ➔</text>
+                  <path d="M 155 90 L 230 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="192" y="80" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="bold">Upload ➔</text>
 
                   {/* S3 Service Node */}
-                  <rect x="220" y="45" width="160" height="90" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="1.5" />
-                  <text x="300" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#065f46">🪣 S3 Service Engine</text>
-                  <text x="300" y="80" textAnchor="middle" fontSize="7.5" fill="#047857">Header Match: AES-256</text>
-                  <rect x="235" y="92" width="130" height="30" rx="3" fill="#ecfdf5" stroke="#a7f3d0" />
-                  <text x="300" y="102" textAnchor="middle" fontSize="7" fill="#065f46" fontWeight="bold">S3 Key (Owned by AWS)</text>
-                  <text x="300" y="112" textAnchor="middle" fontSize="6.5" fill="#047857">AES-256 Symmetric Cipher</text>
+                  <rect x="230" y="35" width="190" height="110" rx="8" fill="rgba(255,255,255,0.85)" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="325" y="55" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#047857">🪣 S3 Service Engine</text>
+                  <text x="325" y="72" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">Header Match: AES-256</text>
+                  <rect x="245" y="85" width="160" height="48" rx="4" fill="#ecfdf5" stroke="#a7f3d0" strokeWidth="1" />
+                  <text x="325" y="98" textAnchor="middle" fontSize="8" fill="#065f46" fontWeight="bold">S3 Key (Owned by AWS)</text>
+                  <text x="325" y="110" textAnchor="middle" fontSize="8" fill="#047857">AES-256 Symmetric Cipher</text>
+                  <text x="325" y="122" textAnchor="middle" fontSize="7.5" fill="#475569" fontStyle="italic">Scrubbed immediately on write</text>
 
                   {/* Flow Arrow */}
-                  <path d="M380,90 L445,90" stroke="#047857" strokeWidth="1.5" markerEnd="url(#arr-green)" />
-                  <text x="412" y="82" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Encrypt ➔</text>
+                  <path d="M 420 90 L 485 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="452" y="80" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="bold">Encrypt ➔</text>
 
                   {/* S3 Storage Target */}
-                  <rect x="455" y="45" width="220" height="90" rx="6" fill="#ffffff" stroke="#047857" strokeWidth="1.5" />
-                  <text x="565" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#065f46">🗄️ Physical SSD Disk Sectors</text>
-                  <rect x="470" y="80" width="190" height="42" rx="4" fill="#f0fdf4" stroke="#86efac" />
-                  <text x="565" y="93" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#166534">🔒 Ciphertext Object Payload</text>
-                  <text x="565" y="105" textAnchor="middle" fontSize="7" fill="#15803d">Stored securely in target prefix</text>
-                  <text x="565" y="115" textAnchor="middle" fontSize="6.5" fill="#065f46" fontStyle="italic">Decryption requires matching IAM GET permission</text>
+                  <rect x="485" y="35" width="190" height="110" rx="8" fill="#ecfdf5" stroke="#047857" strokeWidth="1.5" />
+                  <text x="580" y="55" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#065f46">🗄️ SSD Disk Sectors</text>
+                  <rect x="495" y="70" width="170" height="60" rx="4" fill="rgba(255,255,255,0.7)" stroke="#86efac" strokeWidth="1" />
+                  <text x="580" y="85" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#166534">🔒 Ciphertext Payload</text>
+                  <text x="580" y="100" textAnchor="middle" fontSize="7.5" fill="#15803d">Stored securely at-rest</text>
+                  <text x="580" y="115" textAnchor="middle" fontSize="7" fill="#047857" fontStyle="italic">Decryption triggers on GET</text>
+
+                  {/* Active Animation Stream */}
+                  {encryptionStep === 1 && (
+                    <circle r="4.5" fill="#10b981">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 155 90 L 230 90" />
+                    </circle>
+                  )}
+                  {encryptionStep >= 2 && encryptionStep <= 4 && (
+                    <circle r="4.5" fill="#10b981">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 420 90 L 485 90" />
+                    </circle>
+                  )}
                 </svg>
               )}
 
               {encryptionType === 'sse-kms' && (
-                <svg viewBox="0 0 700 190" width="100%" style={{ background: '#f0f9ff', borderRadius: '6px', border: '0.5px solid #bae6fd' }}>
+                <svg viewBox="0 0 700 190" width="100%" className="s3-svg-bg">
                   <defs>
                     <marker id="arr-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
                     <marker id="arr-gold" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#d97706" /></marker>
                   </defs>
 
                   {/* User Client */}
-                  <rect x="15" y="55" width="115" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="72" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#334155">💻 Client (User)</text>
-                  <rect x="25" y="90" width="95" height="40" rx="4" fill="#f8fafc" stroke="#e2e8f0" />
-                  <text x="72" y="103" textAnchor="middle" fontSize="6" fill="#475569">HTTPS upload request</text>
-                  <text x="72" y="113" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#0284c7">"x-amz-server-side-encryption":</text>
-                  <text x="72" y="122" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#0284c7">"aws:kms"</text>
+                  <rect x="15" y="45" width="125" height="120" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                  <text x="77" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="25" y="80" width="105" height="70" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                  <text x="77" y="93" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">HTTPS Upload</text>
+                  <text x="77" y="110" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontFamily="monospace">"x-amz-server-side-</text>
+                  <text x="77" y="122" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontFamily="monospace">encryption": "aws:kms"</text>
+                  <text x="77" y="138" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="bold" fontFamily="monospace">Rotate: Active</text>
 
                   {/* Flow Arrow */}
-                  <path d="M130,100 L185,100" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#arr-blue)" />
-                  <text x="157" y="92" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Upload ➔</text>
+                  <path d="M 140 105 L 205 105" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="172" y="95" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="bold">Upload ➔</text>
 
                   {/* S3 Service Engine */}
-                  <rect x="185" y="55" width="145" height="90" rx="6" fill="#ffffff" stroke="#0ea5e9" strokeWidth="1.5" />
-                  <text x="257" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#0369a1">🪣 S3 Service Engine</text>
-                  <text x="257" y="90" textAnchor="middle" fontSize="7" fill="#0284c7">Requests Data Key</text>
-                  <rect x="195" y="105" width="125" height="25" rx="3" fill="#f0f9ff" stroke="#bae6fd" />
-                  <text x="257" y="115" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="bold">GenerateDataKey Request</text>
+                  <rect x="205" y="45" width="165" height="120" rx="8" fill="rgba(255,255,255,0.85)" stroke="#0ea5e9" strokeWidth="1.5" />
+                  <text x="287" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">🪣 S3 Service Engine</text>
+                  <text x="287" y="80" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="600">Requests Data Key</text>
+                  <rect x="215" y="95" width="145" height="58" rx="4" fill="#f0f9ff" stroke="#bae6fd" strokeWidth="1" />
+                  <text x="287" y="108" textAnchor="middle" fontSize="8" fill="#0369a1" fontWeight="bold">GenerateDataKey Call</text>
+                  <text x="287" y="122" textAnchor="middle" fontSize="7.5" fill="#0ea5e9" fontWeight="bold">RAM Plaintext Active</text>
+                  <text x="287" y="138" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="bold" fontStyle="italic">
+                    {encryptionStep >= 4 ? '🚫 ZEROIZED REGISTER' : '⏳ CACHED IN MEMORY'}
+                  </text>
 
                   {/* S3 to KMS loop */}
-                  <path d="M257,55 L257,25 L405,25 L405,55" fill="none" stroke="#d97706" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-gold)" />
-                  <text x="331" y="18" textAnchor="middle" fontSize="6.5" fill="#b45309" fontWeight="bold">KMS API Call 🔄 (CloudTrail Audited)</text>
+                  <path d="M 287 45 L 287 18 L 435 18 L 435 45" fill="none" stroke={encryptionStep === 3 ? '#d97706' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="361" y="12" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">KMS API Call 🔄 (CloudTrail Audited)</text>
 
                   {/* AWS KMS Block */}
-                  <rect x="350" y="55" width="110" height="90" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                  <text x="405" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#b45309">🔑 AWS KMS</text>
-                  <text x="405" y="90" textAnchor="middle" fontSize="7.5" fill="#b45309"><b>CMK Master Key</b></text>
-                  <rect x="360" y="105" width="90" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
-                  <text x="405" y="115" textAnchor="middle" fontSize="6.5" fill="#78350f">Returns Plain+Cipher Key</text>
+                  <rect x="385" y="45" width="120" height="120" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                  <text x="445" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#b45309">🔑 AWS KMS</text>
+                  <text x="445" y="82" textAnchor="middle" fontSize="8.5" fill="#78350f" fontWeight="bold">CMK Master Key</text>
+                  <rect x="395" y="95" width="100" height="58" rx="4" fill="rgba(255,255,255,0.7)" stroke="#fde68a" strokeWidth="1" />
+                  <text x="445" y="108" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">Hardware HSM</text>
+                  <text x="445" y="122" textAnchor="middle" fontSize="7.5" fill="#78350f">Generates Envelope</text>
+                  <text x="445" y="136" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Symmetric AES-256</text>
 
                   {/* Flow Arrow */}
-                  <path d="M460,100 L515,100" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#arr-blue)" />
-                  <text x="487" y="92" textAnchor="middle" fontSize="7" fill="#0284c7" fontWeight="bold">Encrypt ➔</text>
+                  <path d="M 505 105 L 545 105" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="525" y="95" textAnchor="middle" fontSize="8" fill="#cbd5e1" fontWeight="bold">Commit ➔</text>
 
                   {/* Physical disks storage */}
-                  <rect x="515" y="55" width="170" height="90" rx="6" fill="#ffffff" stroke="#166534" strokeWidth="1.5" />
-                  <text x="600" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#15803d">🗄️ SSD Disk storage</text>
-                  <rect x="525" y="90" width="150" height="42" rx="4" fill="#f0fdf4" stroke="#bbf7d0" />
-                  <text x="600" y="103" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#166534">🔒 Ciphertext + Cipher Key</text>
-                  <text x="600" y="113" textAnchor="middle" fontSize="6.5" fill="#14532d">Plaintext Data Key is Erased 🚫</text>
-                  <text x="600" y="123" textAnchor="middle" fontSize="5.5" fill="#047857" fontStyle="italic">(RAM register completely scrubbed)</text>
+                  <rect x="545" y="45" width="140" height="120" rx="8" fill="#ecfdf5" stroke="#166534" strokeWidth="1.5" />
+                  <text x="615" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#15803d">🗄️ SSD Target Disk</text>
+                  <rect x="555" y="80" width="120" height="73" rx="4" fill="rgba(255,255,255,0.7)" stroke="#bbf7d0" strokeWidth="1" />
+                  <text x="615" y="93" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#166534">🔒 Ciphertext Block</text>
+                  <text x="615" y="108" textAnchor="middle" fontSize="7.5" fill="#475569">Saves Encrypted Key</text>
+                  <text x="615" y="124" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="bold">Plaintext Wiped</text>
+                  <text x="615" y="138" textAnchor="middle" fontSize="6.5" fill="#047857" fontStyle="italic">(HSM Key Scrubbed)</text>
+
+                  {/* Active Animation Stream */}
+                  {encryptionStep === 1 && (
+                    <circle r="4.5" fill="#0284c7">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 140 105 L 205 105" />
+                    </circle>
+                  )}
+                  {encryptionStep === 3 && (
+                    <>
+                      <circle r="4" fill="#d97706">
+                        <animateMotion dur="0.8s" repeatCount="indefinite" path="M 287 45 L 287 18 L 435 18 L 435 45" />
+                      </circle>
+                    </>
+                  )}
+                  {encryptionStep === 5 && (
+                    <circle r="4.5" fill="#10b981">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 505 105 L 545 105" />
+                    </circle>
+                  )}
                 </svg>
               )}
 
               {encryptionType === 'sse-c' && (
-                <svg viewBox="0 0 700 180" width="100%" style={{ background: '#faf5ff', borderRadius: '6px', border: '0.5px solid #d8b4fe' }}>
+                <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                   <defs>
-                    <marker id="arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#6d28d9" /></marker>
+                    <marker id="arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
                   </defs>
 
                   {/* User Client */}
-                  <rect x="25" y="45" width="125" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="87" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#334155">💻 Client (User)</text>
-                  <rect x="35" y="80" width="105" height="40" rx="4" fill="#faf5ff" stroke="#e9d5ff" />
-                  <text x="87" y="93" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">HTTPS Only (SSL/TLS)</text>
-                  <text x="87" y="103" textAnchor="middle" fontSize="6" fill="#7c3aed">Header: base64 Customer Key</text>
-                  <text x="87" y="112" textAnchor="middle" fontSize="6" fill="#7c3aed" fontStyle="italic">(Only configured via CLI/API)</text>
+                  <rect x="25" y="35" width="140" height="110" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                  <text x="95" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="35" y="70" width="120" height="60" rx="4" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
+                  <text x="95" y="85" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Symmetric Customer Key</text>
+                  <text x="95" y="100" textAnchor="middle" fontSize="7" fill="#7c3aed" fontFamily="monospace">"x-amz-server-side-</text>
+                  <text x="95" y="112" textAnchor="middle" fontSize="7" fill="#7c3aed" fontFamily="monospace">encryption-customer-key"</text>
 
                   {/* Flow Arrow */}
-                  <path d="M150,90 L215,90" stroke="#6d28d9" strokeWidth="1.5" markerEnd="url(#arr-purple)" />
-                  <text x="182" y="82" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Key Header ➔</text>
+                  <path d="M 165 90 L 230 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="197" y="80" textAnchor="middle" fontSize="8" fill="#7c3aed" fontWeight="bold">Key Header ➔</text>
 
                   {/* S3 Service Engine */}
-                  <rect x="220" y="45" width="165" height="90" rx="6" fill="#ffffff" stroke="#a855f7" strokeWidth="1.5" />
-                  <text x="302" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6b21a8">🪣 S3 Service Engine</text>
-                  <text x="302" y="80" textAnchor="middle" fontSize="7.5" fill="#7c3aed">RAM Symmetric Encryption</text>
-                  <rect x="230" y="92" width="145" height="30" rx="3" fill="#faf5ff" stroke="#ddd6fe" />
-                  <text x="302" y="102" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">🔑 Custom Key Used in RAM</text>
-                  <text x="302" y="112" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="bold">Scrubbed immediately on write! ❌</text>
+                  <rect x="230" y="35" width="200" height="110" rx="8" fill="rgba(255,255,255,0.85)" stroke="#a855f7" strokeWidth="1.5" />
+                  <text x="330" y="55" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#6b21a8">🪣 S3 Service Engine</text>
+                  <text x="330" y="72" textAnchor="middle" fontSize="8.5" fill="#7c3aed" fontWeight="600">RAM Symmetric Decryption</text>
+                  <rect x="242" y="85" width="176" height="48" rx="4" fill="#faf5ff" stroke="#ddd6fe" strokeWidth="1" />
+                  <text x="330" y="98" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">🔑 Custom Key Active in RAM</text>
+                  <text x="330" y="110" textAnchor="middle" fontSize="8" fill="#dc2626" fontWeight="bold">
+                    {encryptionStep >= 4 ? '💥 RAM BLOCK ZEROIZED' : '⏳ Awaiting Disk Commit'}
+                  </text>
+                  <text x="330" y="122" textAnchor="middle" fontSize="6.5" fill="#475569" fontStyle="italic">AWS never persists key to disk</text>
 
                   {/* Flow Arrow */}
-                  <path d="M385,90 L450,90" stroke="#6d28d9" strokeWidth="1.5" markerEnd="url(#arr-purple)" />
-                  <text x="417" y="82" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Encrypt ➔</text>
+                  <path d="M 430 90 L 490 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="460" y="80" textAnchor="middle" fontSize="8" fill="#cbd5e1" fontWeight="bold">Encrypt ➔</text>
 
                   {/* S3 Storage Disk */}
-                  <rect x="460" y="45" width="215" height="90" rx="6" fill="#ffffff" stroke="#6d28d9" strokeWidth="1.5" />
-                  <text x="567" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#581c87">🗄️ SSD Disk storage</text>
-                  <rect x="475" y="80" width="185" height="42" rx="4" fill="#faf5ff" stroke="#e9d5ff" />
-                  <text x="567" y="93" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#6d28d9">🔒 Ciphertext Payload ONLY</text>
-                  <text x="567" y="105" textAnchor="middle" fontSize="7" fill="#7c3aed">S3 does NOT store your key!</text>
-                  <text x="567" y="115" textAnchor="middle" fontSize="6.5" fill="#581c87" fontStyle="italic">(Loss of key means data is lost forever)</text>
+                  <rect x="490" y="35" width="185" height="110" rx="8" fill="#faf5ff" stroke="#6d28d9" strokeWidth="1.5" />
+                  <text x="582" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#581c87">🗄️ Target SSD Disk</text>
+                  <rect x="500" y="70" width="165" height="60" rx="4" fill="rgba(255,255,255,0.7)" stroke="#e9d5ff" strokeWidth="1" />
+                  <text x="582" y="85" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#6d28d9">🔒 Raw Ciphertext Payload</text>
+                  <text x="582" y="100" textAnchor="middle" fontSize="7.5" fill="#7c3aed">Stored without key metadata</text>
+                  <text x="582" y="115" textAnchor="middle" fontSize="6.5" fill="#581c87" fontStyle="italic">(Loss of key = data lost forever)</text>
+
+                  {/* Active Animation Stream */}
+                  {encryptionStep === 1 && (
+                    <circle r="4.5" fill="#7c3aed">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 165 90 L 230 90" />
+                    </circle>
+                  )}
+                  {encryptionStep >= 2 && encryptionStep <= 4 && (
+                    <circle r="4.5" fill="#a855f7">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 430 90 L 490 90" />
+                    </circle>
+                  )}
                 </svg>
               )}
 
               {encryptionType === 'dsse-kms' && (
-                <svg viewBox="0 0 700 190" width="100%" style={{ background: '#fffbeb', borderRadius: '6px', border: '0.5px solid #fed7aa' }}>
+                <svg viewBox="0 0 700 190" width="100%" className="s3-svg-bg">
                   <defs>
                     <marker id="arr-orange-dsse" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
                     <marker id="arr-gold-dsse" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#d97706" /></marker>
                   </defs>
 
                   {/* User Client */}
-                  <rect x="15" y="55" width="115" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="72" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#334155">💻 Client (User)</text>
-                  <rect x="25" y="90" width="95" height="40" rx="4" fill="#fffbeb" stroke="#ffedd5" />
-                  <text x="72" y="103" textAnchor="middle" fontSize="6" fill="#475569">HTTPS upload request</text>
-                  <text x="72" y="113" textAnchor="middle" fontSize="6" fontWeight="bold" fill="#ea580c">"x-amz-server-side-encryption":</text>
-                  <text x="72" y="122" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#ea580c">"aws:kms:dsse"</text>
+                  <rect x="15" y="45" width="125" height="120" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                  <text x="77" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="25" y="80" width="105" height="70" rx="4" fill="#fffbeb" stroke="#ffedd5" strokeWidth="1" />
+                  <text x="77" y="93" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">Double Envelope</text>
+                  <text x="77" y="110" textAnchor="middle" fontSize="7" fill="#b45309" fontFamily="monospace">"x-amz-server-side-</text>
+                  <text x="77" y="122" textAnchor="middle" fontSize="7" fill="#b45309" fontFamily="monospace">encryption": "aws:kms:dsse"</text>
+                  <text x="77" y="138" textAnchor="middle" fontSize="6.5" fill="#c2410c" fontWeight="bold">FIPS 140-3 Active</text>
 
                   {/* Flow Arrow */}
-                  <path d="M130,100 L185,100" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#arr-orange-dsse)" />
-                  <text x="157" y="92" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold">Upload ➔</text>
+                  <path d="M 140 105 L 205 105" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="172" y="95" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="bold">Upload ➔</text>
 
                   {/* S3 Service Engine */}
-                  <rect x="185" y="55" width="145" height="90" rx="6" fill="#ffffff" stroke="#ea580c" strokeWidth="1.5" />
-                  <text x="257" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#c2410c">🪣 S3 Service Engine</text>
-                  <text x="257" y="90" textAnchor="middle" fontSize="7" fill="#ea580c">Requests 2 Master Keys</text>
-                  <rect x="195" y="105" width="125" height="25" rx="3" fill="#fffbeb" stroke="#fed7aa" />
-                  <text x="257" y="115" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">2x GenerateDataKey calls</text>
+                  <rect x="205" y="45" width="165" height="120" rx="8" fill="rgba(255,255,255,0.85)" stroke="#ea580c" strokeWidth="1.5" />
+                  <text x="287" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#ea580c">🪣 S3 Service Engine</text>
+                  <text x="287" y="80" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="600">Requests 2 Master Keys</text>
+                  <rect x="215" y="95" width="145" height="58" rx="4" fill="#fffbeb" stroke="#fed7aa" strokeWidth="1" />
+                  <text x="287" y="108" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">GenerateDataKey x2</text>
+                  <text x="287" y="122" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold">Double Plaintext RAM</text>
+                  <text x="287" y="138" textAnchor="middle" fontSize="7.5" fill="#dc2626" fontWeight="bold" fontStyle="italic">
+                    {encryptionStep >= 4 ? '🚫 DUAL SCRUBBED' : '⏳ CACHED IN MEMORY'}
+                  </text>
 
                   {/* S3 to KMS loop */}
-                  <path d="M257,55 L257,25 L405,25 L405,55" fill="none" stroke="#d97706" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-gold-dsse)" />
-                  <text x="331" y="18" textAnchor="middle" fontSize="6.5" fill="#b45309" fontWeight="bold">Twin KMS Calls 🔄 (2x CMK Audited)</text>
+                  <path d="M 287 45 L 287 18 L 435 18 L 435 45" fill="none" stroke={encryptionStep === 3 ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="361" y="12" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">Twin KMS Calls 🔄 (2x CMK Audited)</text>
 
                   {/* AWS KMS Block */}
-                  <rect x="350" y="55" width="110" height="90" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                  <text x="405" y="75" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#b45309">🔑 AWS KMS CMKs</text>
-                  <text x="405" y="92" textAnchor="middle" fontSize="7" fill="#b45309">Key A + Key B</text>
-                  <rect x="360" y="105" width="90" height="25" rx="3" fill="#fef3c7" stroke="#fde68a" />
-                  <text x="405" y="115" textAnchor="middle" fontSize="6" fill="#78350f">Returns 2x Plain+Cipher</text>
+                  <rect x="385" y="45" width="120" height="120" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                  <text x="445" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#b45309">🔑 AWS KMS CMKs</text>
+                  <text x="445" y="82" textAnchor="middle" fontSize="8.5" fill="#78350f" fontWeight="bold">Key A + Key B</text>
+                  <rect x="395" y="95" width="100" height="58" rx="4" fill="rgba(255,255,255,0.7)" stroke="#fde68a" strokeWidth="1" />
+                  <text x="445" y="108" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">FIPS Cryptography</text>
+                  <text x="445" y="122" textAnchor="middle" fontSize="7.5" fill="#78350f">Generates 2 Data Keys</text>
+                  <text x="445" y="136" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Dual Layer AES-256</text>
 
                   {/* Flow Arrow */}
-                  <path d="M460,100 L515,100" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#arr-orange-dsse)" />
-                  <text x="487" y="92" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold">Double Enc ➔</text>
+                  <path d="M 505 105 L 545 105" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
+                  <text x="525" y="95" textAnchor="middle" fontSize="8" fill="#cbd5e1" fontWeight="bold">Commit ➔</text>
 
                   {/* Physical disks storage */}
-                  <rect x="515" y="55" width="170" height="90" rx="6" fill="#ffffff" stroke="#ea580c" strokeWidth="1.5" />
-                  <text x="600" y="72" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#ea580c">🗄️ SSD Dual-Cipher Disk</text>
-                  <rect x="522" y="86" width="156" height="48" rx="4" fill="#fffbeb" stroke="#fed7aa" />
-                  <text x="600" y="98" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#b45309">🔒 Layer 1 AES + Layer 2 AES</text>
-                  <text x="600" y="108" textAnchor="middle" fontSize="6.5" fill="#7c2d12">Plaintext Keys A &amp; B Wiped 🚫</text>
-                  <text x="600" y="118" textAnchor="middle" fontSize="5.5" fill="#b45309" fontStyle="italic">(Scrubbed transient hypervisor RAM)</text>
+                  <rect x="545" y="45" width="140" height="120" rx="8" fill="#fffbeb" stroke="#ea580c" strokeWidth="1.5" />
+                  <text x="615" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#ea580c">🗄️ SSD Dual-Cipher Disk</text>
+                  <rect x="555" y="80" width="120" height="73" rx="4" fill="rgba(255,255,255,0.7)" stroke="#fed7aa" strokeWidth="1" />
+                  <text x="615" y="93" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#b45309">🔒 Layer1 AES + Layer2 AES</text>
+                  <text x="615" y="108" textAnchor="middle" fontSize="7.5" fill="#475569">Double Encrypted Keys</text>
+                  <text x="615" y="124" textAnchor="middle" fontSize="7" fill="#dc2626" fontWeight="bold">Plaintexts Scrubbed</text>
+                  <text x="615" y="138" textAnchor="middle" fontSize="6.5" fill="#c2410c" fontStyle="italic">(Zeroized hypervisor RAM)</text>
+
+                  {/* Active Animation Stream */}
+                  {encryptionStep === 1 && (
+                    <circle r="4.5" fill="#ea580c">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 140 105 L 205 105" />
+                    </circle>
+                  )}
+                  {encryptionStep === 3 && (
+                    <>
+                      <circle r="4" fill="#ea580c">
+                        <animateMotion dur="0.8s" repeatCount="indefinite" path="M 287 45 L 287 18 L 435 18 L 435 45" />
+                      </circle>
+                    </>
+                  )}
+                  {encryptionStep === 5 && (
+                    <circle r="4.5" fill="#ea580c">
+                      <animateMotion dur="0.6s" repeatCount="indefinite" path="M 505 105 L 545 105" />
+                    </circle>
+                  )}
                 </svg>
               )}
             </div>
@@ -2943,37 +3241,122 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Understand how S3 stacks historical versions and inserts Delete Markers to hide objects logical listings.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Stack 1: Standard Active */}
-                <rect x="50" y="20" width="180" height="140" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="140" y="38" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Scenario A: Active version</text>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
+                {/* 1. S3 Logical API Namespace (Left Card) */}
+                <rect x="20" y="20" width="200" height="140" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                <text x="120" y="38" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">🔍 Logical Bucket API Listing</text>
+                
+                {(() => {
+                  const top = versionStack[0];
+                  if (!top) {
+                    return (
+                      <>
+                        <circle cx="120" cy="90" r="18" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
+                        <text x="120" y="94" textAnchor="middle" fontSize="12" fill="#94a3b8">Empty</text>
+                      </>
+                    );
+                  }
+                  if (top.isDeleteMarker) {
+                    return (
+                      <>
+                        <rect x="35" y="55" width="170" height="75" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                        <text x="120" y="75" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#b91c1c">❌ HTTP 404 NOT FOUND</text>
+                        <text x="120" y="93" textAnchor="middle" fontSize="8" fill="#7f1d1d">Logical Delete Marker is Active</text>
+                        <text x="120" y="108" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold" fontStyle="italic">Physical bytes still persist!</text>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <rect x="35" y="55" width="170" height="75" rx="6" fill="#eff6ff" stroke="#0ea5e9" strokeWidth="1.5" />
+                      <text x="120" y="75" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#0369a1">📄 file.pdf (Active)</text>
+                      <text x="120" y="93" textAnchor="middle" fontSize="8" fill="#475569">Current Version ID: {top.id}</text>
+                      <text x="120" y="108" textAnchor="middle" fontSize="8" fill="#0284c7" fontWeight="bold">HTTP 200 OK — Ready</text>
+                    </>
+                  );
+                })()}
 
-                <rect x="65" y="55" width="150" height="35" rx="3" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1" />
-                <text x="140" y="72" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#0369a1">📄 Active Version: v3</text>
-                <text x="140" y="84" textAnchor="middle" fontSize="7.5" fill="#0369a1">ID: A92kd81 - Current</text>
+                {/* Flow Arrow */}
+                <path d="M 230 90 L 260 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
 
-                <rect x="65" y="100" width="150" height="25" rx="3" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" strokeWidth="0.5" />
-                <text x="140" y="116" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">📄 Old version: v2 (B19dfa)</text>
+                {/* 2. Version Storage Stack (Center Card) */}
+                <rect x="270" y="20" width="220" height="140" rx="8" fill="rgba(255,255,255,0.75)" stroke="#6366f1" strokeWidth="1.5" />
+                <text x="380" y="38" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#312e81">🗄️ Physical S3 HDD Stack</text>
 
-                {/* Stack 2: Standard Deleted */}
-                <rect x="260" y="20" width="180" height="140" rx="6" fill="var(--color-background-primary)" stroke="#ef4444" strokeWidth="1" />
-                <text x="350" y="38" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#991b1b">Scenario B: Logical Delete</text>
+                {(() => {
+                  return (
+                    <g transform="translate(285, 45)">
+                      {versionStack.slice(0, 3).map((item, idx) => {
+                        const yPos = idx * 28;
+                        const fill = item.isDeleteMarker ? '#fef2f2' : idx === 0 ? '#ecfdf5' : '#f8fafc';
+                        const stroke = item.isDeleteMarker ? '#ef4444' : idx === 0 ? '#10b981' : '#94a3b8';
+                        const textColor = item.isDeleteMarker ? '#b91c1c' : idx === 0 ? '#047857' : '#475569';
+                        return (
+                          <g key={idx} transform={`translate(0, ${yPos})`}>
+                            <rect x="0" y="5" width="190" height="24" rx="4" fill={fill} stroke={stroke} strokeWidth={idx === 0 ? 1.8 : 1} />
+                            <text x="10" y="21" fontSize="9" fontWeight="bold" fill={textColor}>
+                              {item.isDeleteMarker ? '🛑 DELETE MARKER' : `📄 file.pdf (v${versionStack.length - idx})`}
+                            </text>
+                            <text x="180" y="20" textAnchor="end" fontSize="7.5" fontFamily="monospace" fill={textColor}>ID: {item.id}</text>
+                          </g>
+                        );
+                      })}
+                      {versionStack.length > 3 && (
+                        <text x="95" y="105" textAnchor="middle" fontSize="7.5" fill="#475569" fontStyle="italic">
+                          ... and {versionStack.length - 3} older version segment(s)
+                        </text>
+                      )}
+                    </g>
+                  );
+                })()}
 
-                <rect x="275" y="55" width="150" height="35" rx="3" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                <text x="350" y="72" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#991b1b">🛑 DELETE MARKER</text>
-                <text x="350" y="84" textAnchor="middle" fontSize="7.5" fill="#991b1b">Hides all below (Logical Empty)</text>
+                {/* Flow Arrow */}
+                <path d="M 500 90 L 520 90" fill="none" stroke="#cbd5e1" strokeWidth="2.5" />
 
-                <rect x="275" y="100" width="150" height="25" rx="3" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" strokeWidth="0.5" />
-                <text x="350" y="116" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">📄 Old version: v3 (A92kd81)</text>
+                {/* 3. S3 WORM Compliance Lock (Right Card) */}
+                {(() => {
+                  const isLocked = legalHold || (objectLockMode !== 'none' && simulatedTimeOffsetDays < objectLockRetentionDays);
+                  const isExpired = objectLockMode !== 'none' && simulatedTimeOffsetDays >= objectLockRetentionDays;
+                  const border = isLocked ? '#ef4444' : '#cbd5e1';
+                  const bg = isLocked ? '#fef2f2' : '#f8fafc';
+                  return (
+                    <g transform="translate(530, 20)">
+                      <rect x="0" y="0" width="150" height="140" rx="8" fill={bg} stroke={border} strokeWidth="1.5" />
+                      <text x="75" y="18" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">🛡️ WORM Gate</text>
 
-                {/* Stack 3: WORM lock */}
-                <rect x="470" y="20" width="180" height="140" rx="6" fill="var(--color-background-primary)" stroke="#166534" strokeWidth="1.5" />
-                <text x="560" y="38" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#166534">Scenario C: WORM locked</text>
-
-                <rect x="485" y="55" width="150" height="45" rx="3" fill="#f0fdf4" stroke="#166534" strokeWidth="1.5" />
-                <text x="560" y="72" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#15803d">🔒 COMPLIANCE LOCK</text>
-                <text x="560" y="84" textAnchor="middle" fontSize="7.5" fill="#15803d">Retention days: Active</text>
-                <text x="560" y="93" textAnchor="middle" fontSize="7" fill="#166534" fontWeight="bold">DELETIONS FULLY REJECTED</text>
+                      {isLocked ? (
+                        <>
+                          <rect x="15" y="30" width="120" height="98" rx="6" fill="#fff5f5" stroke="#ef4444" strokeWidth="1" />
+                          <text x="75" y="48" textAnchor="middle" fontSize="22">🔒</text>
+                          <text x="75" y="72" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#b91c1c">WORM LOCKED</text>
+                          <text x="75" y="88" textAnchor="middle" fontSize="7.5" fill="#7f1d1d">
+                            {legalHold ? '⚖️ Legal Hold: ON' : `⏱️ Lock: ${objectLockRetentionDays - simulatedTimeOffsetDays} Days left`}
+                          </text>
+                          <text x="75" y="105" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">DELETIONS BLOCKED</text>
+                          <text x="75" y="116" textAnchor="middle" fontSize="6.5" fill="#991b1b" fontStyle="italic">SEC 17a-4 Compliant</text>
+                        </>
+                      ) : isExpired ? (
+                        <>
+                          <rect x="15" y="30" width="120" height="98" rx="6" fill="#eff6ff" stroke="#0284c7" strokeWidth="1" />
+                          <text x="75" y="48" textAnchor="middle" fontSize="22">🔓</text>
+                          <text x="75" y="72" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#0369a1">LOCK EXPIRED</text>
+                          <text x="75" y="88" textAnchor="middle" fontSize="7.5" fill="#475569">Timer hit zero ({simulatedTimeOffsetDays} days)</text>
+                          <text x="75" y="105" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontWeight="bold">Bypasses allowed</text>
+                          <text x="75" y="116" textAnchor="middle" fontSize="6.5" fill="#475569" fontStyle="italic">Governed by IAM</text>
+                        </>
+                      ) : (
+                        <>
+                          <rect x="15" y="30" width="120" height="98" rx="6" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
+                          <text x="75" y="48" textAnchor="middle" fontSize="22">🔓</text>
+                          <text x="75" y="72" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#475569">NO LOCKS</text>
+                          <text x="75" y="88" textAnchor="middle" fontSize="7.5" fill="#64748b">No active retention</text>
+                          <text x="75" y="105" textAnchor="middle" fontSize="7.5" fill="#475569">Deletes Authorized</text>
+                          <text x="75" y="116" textAnchor="middle" fontSize="6.5" fill="#64748b" fontStyle="italic">Standard stack checks</text>
+                        </>
+                      )}
+                    </g>
+                  );
+                })()}
               </svg>
             </div>
 
@@ -3250,36 +3633,67 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Watch objects cool down over time, shifting from expensive hot Standard classes down into hyper-cheap deep archival tapes.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                {/* Timeline axis */}
-                <line x1="40" y1="90" x2="660" y2="90" stroke="#94a3b8" strokeWidth="2.5" />
-                <polygon points="660,86 670,90 660,94" fill="#94a3b8" />
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
+                {/* Math variables for dynamic positioning */}
+                {(() => {
+                  const startX = 60;
+                  const endX = 640;
+                  const width = endX - startX;
+                  
+                  // Compute scales
+                  const iaX = startX + (lifecycleIa / lifecycleExpiration) * width;
+                  const glacierX = startX + (lifecycleGlacier / lifecycleExpiration) * width;
+                  const currentX = startX + (Math.min(lifecycleDaysPassed, lifecycleExpiration) / lifecycleExpiration) * width;
+                  
+                  return (
+                    <>
+                      {/* Timeline axis */}
+                      <line x1={startX} y1="90" x2={endX} y2="90" stroke="#cbd5e1" strokeWidth="3" />
+                      <polygon points={`${endX},85 ${endX+10},90 ${endX},95`} fill="#cbd5e1" />
 
-                {/* Stages */}
-                <circle cx="80" cy="90" r="8" fill="#0891b2" />
-                <text x="80" y="112" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">Day 0: Standard</text>
-                <text x="80" y="125" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">$0.023 per GB</text>
-                <rect x="55" y="40" width="50" height="20" rx="3" fill="#e0f7fa" stroke="#00acc1" strokeWidth="0.8" />
-                <text x="80" y="52" textAnchor="middle" fontSize="7.5" fill="#006064" fontWeight="bold">🔥 Hot Data</text>
+                      {/* Day 0: Standard */}
+                      <circle cx={startX} cy="90" r="8" fill="#10b981" />
+                      <text x={startX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Day 0: Standard</text>
+                      <text x={startX} y="125" textAnchor="middle" fontSize="8" fill="#475569">$0.023 / GB</text>
+                      <rect x={startX - 30} y="40" width="60" height="20" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                      <text x={startX} y="52" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">🔥 Hot Data</text>
 
-                {/* Transition 1 */}
-                <circle cx="280" cy="90" r="8" fill="#f59e0b" />
-                <text x="280" y="112" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">Day 90: Standard-IA</text>
-                <text x="280" y="125" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">$0.0125 per GB</text>
-                <rect x="255" y="40" width="50" height="20" rx="3" fill="#fff8e1" stroke="#ffb300" strokeWidth="0.8" />
-                <text x="280" y="52" textAnchor="middle" fontSize="7.5" fill="#5d4037" fontWeight="bold">❄️ Infrequent</text>
+                      {/* Day IA: Standard-IA */}
+                      <circle cx={iaX} cy="90" r="8" fill="#f59e0b" />
+                      <text x={iaX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Day {lifecycleIa}: IA</text>
+                      <text x={iaX} y="125" textAnchor="middle" fontSize="8" fill="#475569">$0.0125 / GB</text>
+                      <rect x={iaX - 30} y="40" width="60" height="20" rx="3" fill="#fff8e1" stroke="#f59e0b" strokeWidth="1" />
+                      <text x={iaX} y="52" textAnchor="middle" fontSize="7.5" fill="#d97706" fontWeight="bold">❄️ Infrequent</text>
 
-                {/* Transition 2 */}
-                <circle cx="480" cy="90" r="8" fill="#a855f7" />
-                <text x="480" y="112" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">Day 180: Glacier Deep</text>
-                <text x="480" y="125" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">$0.00099 per GB</text>
-                <rect x="450" y="40" width="60" height="20" rx="3" fill="#f3e5f5" stroke="#8e24aa" strokeWidth="0.8" />
-                <text x="480" y="52" textAnchor="middle" fontSize="7.5" fill="#4a148c" fontWeight="bold">🕳️ Archive</text>
+                      {/* Day Glacier: Glacier Deep */}
+                      <circle cx={glacierX} cy="90" r="8" fill="#a855f7" />
+                      <text x={glacierX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Day {lifecycleGlacier}: Glacier</text>
+                      <text x={glacierX} y="125" textAnchor="middle" fontSize="8" fill="#475569">$0.00099 / GB</text>
+                      <rect x={glacierX - 30} y="40" width="60" height="20" rx="3" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" />
+                      <text x={glacierX} y="52" textAnchor="middle" fontSize="7.5" fill="#7c3aed" fontWeight="bold">🕳️ Cold Tape</text>
 
-                {/* Expiration */}
-                <circle cx="620" cy="90" r="8" fill="#ef4444" />
-                <text x="620" y="112" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#b91c1c">Day 365: Expired</text>
-                <text x="620" y="125" textAnchor="middle" fontSize="8" fill="#b91c1c">Deleted (Free)</text>
+                      {/* Day Expiration: Expired */}
+                      <circle cx={endX} cy="90" r="8" fill="#ef4444" />
+                      <text x={endX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#b91c1c">Day {lifecycleExpiration}: Expired</text>
+                      <text x={endX} y="125" textAnchor="middle" fontSize="8" fill="#b91c1c">Purged / Free</text>
+                      <rect x={endX - 30} y="40" width="60" height="20" rx="3" fill="#fef2f2" stroke="#ef4444" strokeWidth="1" />
+                      <text x={endX} y="52" textAnchor="middle" fontSize="7.5" fill="#dc2626" fontWeight="bold">❌ Expired</text>
+
+                      {/* Dynamic Progress Indicator (Connected to elapsed clock!) */}
+                      {lifecycleDaysPassed > 0 && (
+                        <g>
+                          <line x1={currentX} y1="30" x2={currentX} y2="135" stroke="#0ea5e9" strokeWidth="2" strokeDasharray="3,3" />
+                          <circle cx={currentX} cy="90" r="12" fill="#eff6ff" stroke="#0284c7" strokeWidth="2" />
+                          <circle cx={currentX} cy="90" r="5" fill="#0284c7" />
+                          
+                          <rect x={currentX - 45} y="142" width="90" height="26" rx="4" fill="#0284c7" />
+                          <text x={currentX} y="153" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#ffffff">Elapsed: {lifecycleDaysPassed} Days</text>
+                          <text x={currentX} y="163" textAnchor="middle" fontSize="7" fill="#e0f2fe" fontFamily="monospace">Active Class</text>
+                        </g>
+                      )}
+                    </>
+                  );
+                })()}
               </svg>
             </div>
 
@@ -3462,34 +3876,69 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Contrast public internet routing (via Internet Gateway) against private, free routing via S3 Gateway VPC Endpoint.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+                <defs>
+                  <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#e0f2fe" />
+                    <stop offset="100%" stopColor="#bae6fd" />
+                  </linearGradient>
+                  <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ecfdf5" />
+                    <stop offset="100%" stopColor="#a7f3d0" />
+                  </linearGradient>
+                  <linearGradient id="roseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fff1f2" />
+                    <stop offset="100%" stopColor="#fecdd3" />
+                  </linearGradient>
+                  <marker id="vpce-arr-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                  <marker id="vpce-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                </defs>
+
                 {/* Private Subnet VM */}
-                <rect x="25" y="45" width="130" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="90" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">Private EC2 Instances</text>
-                <text x="90" y="85" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Subnet: 10.0.1.0/24</text>
-                <text x="90" y="100" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">(No Public IPs)</text>
+                <rect x="25" y="25" width="170" height="130" rx="8" fill="rgba(255,255,255,0.85)" stroke="#0ea5e9" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.03))' }} />
+                <rect x="25" y="25" width="170" height="24" rx="8" fill="url(#blueGradient)" opacity="0.6" />
+                <text x="110" y="41" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">💻 VPC Private Subnet</text>
+                <text x="110" y="70" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">Private EC2 Instance</text>
+                <text x="110" y="88" textAnchor="middle" fontSize="9" fontFamily="monospace" fill="#64748b">IP: 10.0.1.42 (No Public IP)</text>
+                
+                {/* Embedded Mini Subnet Table */}
+                <rect x="35" y="105" width="150" height="38" rx="4" fill="rgba(241,245,249,0.8)" stroke="#cbd5e1" strokeWidth="0.8" />
+                <text x="42" y="117" fontSize="7.5" fontWeight="bold" fill="#334155">Route Target IP</text>
+                <text x="115" y="117" fontSize="7.5" fontWeight="bold" fill="#334155">Gateway</text>
+                <text x="42" y="129" fontSize="7.5" fill="#475569" fontFamily="monospace">pl-63a5400a (S3)</text>
+                <text x="115" y="129" fontSize="7.5" fill="#059669" fontWeight="bold" fontFamily="monospace">vpce-3a29bc (FREE)</text>
 
-                {/* Route A: Public route */}
-                <path d="M155,70 L250,70 L250,30 L380,30" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" />
-                <rect x="235" y="40" width="30" height="15" rx="3" fill="#fef2f2" stroke="#ef4444" strokeWidth="0.8" />
-                <text x="250" y="50" textAnchor="middle" fontSize="6.5" fill="#ef4444" fontWeight="bold">NAT/IGW</text>
-                <text x="310" y="24" fontSize="7.5" fill="#ef4444" fontWeight="bold">Egress Fees Apply (Public Web)</text>
+                {/* Route A: Public route via NAT */}
+                <path d="M 195 65 L 290 65 L 290 40 L 465 40" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                <rect x="260" y="48" width="60" height="18" rx="3" fill="#fef2f2" stroke="#fca5a5" strokeWidth="1" />
+                <text x="290" y="60" textAnchor="middle" fontSize="8.5" fill="#ef4444" fontWeight="bold">NAT / IGW</text>
+                <text x="360" y="32" fontSize="8" fill="#ef4444" fontWeight="bold">💰 Public Egress Transit Charges Apply ($)</text>
 
-                {/* Route B: Gateway vpce route */}
-                <path d="M155,100 L380,100" fill="none" stroke="#10b981" strokeWidth="2.5" />
-                <rect x="210" y="108" width="110" height="20" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
-                <text x="265" y="121" textAnchor="middle" fontSize="7.5" fill="#065f46" fontWeight="bold">🔗 S3 VPC Endpoint Link</text>
-                <text x="265" y="93" fontSize="8" fill="#065f46" fontWeight="bold">Private Internal Transit (100% Free)</text>
+                {/* Route B: Gateway VPCE route */}
+                <path d="M 195 115 L 465 115" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                <rect x="235" y="122" width="160" height="24" rx="4" fill="url(#emeraldGradient)" stroke="#10b981" strokeWidth="1" />
+                <text x="315" y="137" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold">🔗 Private Gateway Endpoint Link</text>
+                <text x="315" y="104" fontSize="9" fill="#047857" fontWeight="bold">🔒 Secure Direct AWS Regional Backbone (Free)</text>
 
                 {/* S3 Public Endpoint */}
-                <rect x="380" y="15" width="120" height="35" rx="3" fill="var(--color-background-primary)" stroke="#ef4444" strokeWidth="1" />
-                <text x="440" y="30" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#ef4444">s3.amazonaws.com</text>
-                <text x="440" y="42" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)">(Public Edge Router)</text>
+                <rect x="465" y="15" width="210" height="42" rx="6" fill="url(#roseGradient)" stroke="#f43f5e" strokeWidth="1.5" />
+                <text x="570" y="40" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#be123c">🌐 Public Host: s3.amazonaws.com</text>
 
                 {/* S3 gateway vpce endpoint target */}
-                <rect x="380" y="80" width="130" height="50" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                <text x="445" y="98" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065f46">S3 Service backplane</text>
-                <text x="445" y="112" textAnchor="middle" fontSize="7.5" fill="#065f46">Prefix: pl-63a5400a</text>
+                <rect x="465" y="85" width="210" height="80" rx="6" fill="url(#emeraldGradient)" stroke="#10b981" strokeWidth="1.5" />
+                <text x="570" y="107" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#047857">🪣 AWS S3 Service Backplane</text>
+                <text x="570" y="126" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold" fontFamily="monospace">Prefix List: pl-63a5400a</text>
+                <text x="570" y="144" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928bcde1a38</text>
+
+                {/* Streaming packets */}
+                <circle r="4.5" fill="#ef4444">
+                  <animateMotion path="M 195 65 L 290 65 L 290 40 L 465 40" dur="2.2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite" />
+                </circle>
+                <circle r="5" fill="#10b981">
+                  <animateMotion path="M 195 115 L 465 115" dur="1.4s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite" />
+                </circle>
               </svg>
             </div>
 
@@ -3499,48 +3948,48 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Inside the VPC router fabrics: S3 Prefix Lists override default routes, forwarding traffic privately via Gateway links.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 {/* Private subnet route table */}
-                <rect x="20" y="25" width="310" height="135" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="35" y="42" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">📁 VPC Private Route Table Rules</text>
+                <rect x="20" y="20" width="320" height="140" rx="6" fill="rgba(255,255,255,0.85)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
+                <text x="35" y="38" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">📁 VPC Private Route Table Rules</text>
 
                 {/* Headers */}
-                <rect x="30" y="52" width="290" height="18" fill="var(--color-background-tertiary)" />
-                <text x="35" y="65" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Destination IP Block (Prefix)</text>
-                <text x="175" y="65" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Target Gateway / Interface</text>
-                <text x="275" y="65" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Status</text>
+                <rect x="30" y="48" width="300" height="20" fill="var(--color-background-tertiary)" rx="2" />
+                <text x="35" y="61" fontSize="8" fontWeight="bold" fill="var(--color-text-secondary)">Destination IP Block (Prefix)</text>
+                <text x="175" y="61" fontSize="8" fontWeight="bold" fill="var(--color-text-secondary)">Target Gateway / Interface</text>
+                <text x="285" y="61" fontSize="8" fontWeight="bold" fill="var(--color-text-secondary)">Status</text>
 
                 {/* Rows */}
-                <text x="35" y="86" fontSize="8" fontFamily="monospace" fill="var(--color-text-primary)">10.0.0.0/16 (Local Subnet)</text>
-                <text x="175" y="86" fontSize="8" fontFamily="monospace" fill="var(--color-text-secondary)">local</text>
-                <text x="275" y="86" fontSize="8" fontWeight="bold" fill="#10b981">Active</text>
-                <line x1="30" y1="92" x2="320" y2="92" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                <text x="35" y="84" fontSize="8.5" fontFamily="monospace" fill="var(--color-text-primary)">10.0.0.0/16 (Local Subnet)</text>
+                <text x="175" y="84" fontSize="8.5" fontFamily="monospace" fill="var(--color-text-secondary)">local</text>
+                <text x="285" y="84" fontSize="8.5" fontWeight="bold" fill="#10b981">Active</text>
+                <line x1="30" y1="92" x2="330" y2="92" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
 
                 {/* S3 gateway route rule */}
-                <rect x="30" y="96" width="290" height="18" fill="rgba(16, 185, 129, 0.08)" />
-                <text x="35" y="108" fontSize="8" fontFamily="monospace" fill="#047857" fontWeight="bold">pl-63a5400a (AWS S3 Virginia)</text>
-                <text x="175" y="108" fontSize="8" fontFamily="monospace" fill="#047857" fontWeight="bold">vpce-0d8fa928bcde1a38</text>
-                <text x="275" y="108" fontSize="8" fontWeight="bold" fill="#10b981">Active</text>
-                <line x1="30" y1="116" x2="320" y2="116" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                <rect x="30" y="96" width="300" height="20" fill="rgba(16, 185, 129, 0.06)" rx="2" />
+                <text x="35" y="109" fontSize="8.5" fontFamily="monospace" fill="#047857" fontWeight="bold">pl-63a5400a (AWS S3 Virginia)</text>
+                <text x="175" y="109" fontSize="8.5" fontFamily="monospace" fill="#047857" fontWeight="bold">vpce-0d8fa928bcde1a38</text>
+                <text x="285" y="109" fontSize="8.5" fontWeight="bold" fill="#10b981">Active</text>
+                <line x1="30" y1="120" x2="330" y2="120" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
 
                 {/* Public Egress Route */}
-                <text x="35" y="130" fontSize="8" fontFamily="monospace" fill="#ef4444">0.0.0.0/0 (Global Public Egress)</text>
-                <text x="175" y="130" fontSize="8" fontFamily="monospace" fill="#ef4444">nat-0d8fa2bcda1128</text>
-                <text x="275" y="130" fontSize="8" fontWeight="bold" fill="#10b981">Active</text>
+                <text x="35" y="137" fontSize="8.5" fontFamily="monospace" fill="#ef4444">0.0.0.0/0 (Global Public Egress)</text>
+                <text x="175" y="137" fontSize="8.5" fontFamily="monospace" fill="#ef4444">nat-0d8fa2bcda1128</text>
+                <text x="285" y="137" fontSize="8.5" fontWeight="bold" fill="#10b981">Active</text>
 
                 {/* Packet Routing Visual */}
-                <path d="M335,90 L400,90" stroke="#10b981" strokeWidth="2.5" />
-                <text x="365" y="82" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Private match</text>
+                <path d="M 345 105 L 395 105" stroke="#10b981" strokeWidth="2.5" fill="none" markerEnd="url(#vpce-arr-green)" />
+                <text x="370" y="96" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">Match</text>
 
                 {/* Target Private AWS Endpoint */}
-                <rect x="410" y="25" width="270" height="135" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                <text x="545" y="45" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">🔌 Gateway Endpoint Private Transit</text>
-                <text x="425" y="70" fontSize="8.5" fill="var(--color-text-secondary)">
+                <rect x="405" y="20" width="275" height="140" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                <text x="542" y="40" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#047857">🔌 Gateway Endpoint Private Transit</text>
+                <text x="418" y="62" fontSize="9" fill="var(--color-text-secondary)" style={{ lineHeight: '1.4' }}>
                   When EC2 makes requests to S3 Virginia, the OS router checks matching tables. S3 Prefix matching rules hijack default egress routing, shifting connections directly into VPCE Gateway fabrics.
                 </text>
-                <rect x="425" y="105" width="240" height="40" rx="4" fill="var(--color-background-primary)" stroke="#10b981" strokeWidth="0.8" />
-                <text x="435" y="120" fontSize="8" fill="#047857" fontWeight="bold">✔ ZERO DATA TRANSFER COST OUT OF VPC</text>
-                <text x="435" y="132" fontSize="8" fill="#047857" fontWeight="bold">✔ SECURE INTERNAL NETWORK LINK (No Public IPs)</text>
+                <rect x="418" y="108" width="250" height="40" rx="4" fill="var(--color-background-primary)" stroke="#10b981" strokeWidth="0.8" />
+                <text x="428" y="123" fontSize="8.5" fill="#047857" fontWeight="bold">✔ ZERO DATA TRANSFER COST OUT OF VPC</text>
+                <text x="428" y="136" fontSize="8.5" fill="#047857" fontWeight="bold">✔ SECURE INTERNAL AWS Backbone (No Public IPs)</text>
               </svg>
             </div>
 
@@ -3550,7 +3999,7 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
                 Access Points act as unique entry gates with their own scoped IAM resource policies. They eliminate complex monolithic bucket policies by isolating users to their respective subfolders.
               </div>
-              <svg viewBox="0 0 740 310" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 740 310" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <marker id="ap-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
                   <marker id="ap-arr-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0d9488" /></marker>
@@ -3560,76 +4009,76 @@ export default function S3Visualizer() {
 
                 {/* Left Column: Department Users */}
                 {/* Finance User */}
-                <rect x="15" y="25" width="110" height="65" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" />
-                <text x="70" y="45" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Finance Dept</text>
-                <text x="70" y="60" textAnchor="middle" fontSize="8" fill="#8b5cf6" fontWeight="bold">👤 Finance User</text>
-                <path d="M125,57 L175,57" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
+                <rect x="15" y="25" width="120" height="65" rx="6" fill="rgba(255,255,255,0.85)" stroke="#e9d5ff" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="75" y="44" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Finance Dept</text>
+                <text x="75" y="60" textAnchor="middle" fontSize="9.5" fill="#8b5cf6" fontWeight="bold">👤 Finance User</text>
+                <path d="M 135 57 L 180 57" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
 
                 {/* Sales User */}
-                <rect x="15" y="115" width="110" height="65" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" />
-                <text x="70" y="135" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Sales Dept</text>
-                <text x="70" y="150" textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">👤 Sales User</text>
-                <path d="M125,147 L175,147" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
+                <rect x="15" y="120" width="120" height="65" rx="6" fill="rgba(255,255,255,0.85)" stroke="#ccfbf1" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="75" y="139" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Sales Dept</text>
+                <text x="75" y="155" textAnchor="middle" fontSize="9.5" fill="#0d9488" fontWeight="bold">👤 Sales User</text>
+                <path d="M 135 152 L 180 152" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
 
                 {/* Analytics Platform */}
-                <rect x="15" y="205" width="110" height="65" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" />
-                <text x="70" y="225" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Analytics Sys</text>
-                <text x="70" y="240" textAnchor="middle" fontSize="8" fill="#ea580c" fontWeight="bold">🤖 Analytics App</text>
-                <path d="M125,237 L175,237" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
+                <rect x="15" y="215" width="120" height="65" rx="6" fill="rgba(255,255,255,0.85)" stroke="#ffedd5" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="75" y="234" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Analytics Sys</text>
+                <text x="75" y="250" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="bold">🤖 Analytics App</text>
+                <path d="M 135 247 L 180 247" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
 
                 {/* Middle Column: Scoped Access Points + Policies */}
                 {/* Finance Access Point */}
-                <rect x="175" y="20" width="165" height="75" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1.5" />
-                <text x="257" y="36" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#6d28d9">🔑 Finance Access Point</text>
-                <text x="187" y="52" fontSize="7.5" fill="#7c3aed" fontWeight="bold">✔ Scoped: /finance/* prefix</text>
-                <text x="187" y="65" fontSize="7" fill="var(--color-text-secondary)">Policy: Grant R/W to Finance</text>
-                <rect x="315" y="70" width="16" height="12" rx="2" fill="#8b5cf6" />
-                <text x="323" y="79" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">✔</text>
-                <path d="M340,57 L440,57 L440,90 L480,90" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
+                <rect x="180" y="20" width="175" height="75" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.05))' }} />
+                <text x="267" y="36" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6d28d9">🔑 Finance Access Point</text>
+                <text x="192" y="54" fontSize="8.5" fill="#7c3aed" fontWeight="bold">✔ Scoped: /finance/* prefix</text>
+                <text x="192" y="68" fontSize="8" fill="var(--color-text-secondary)">Policy: Grant R/W to Finance</text>
+                <rect x="330" y="70" width="16" height="12" rx="2" fill="#8b5cf6" />
+                <text x="338" y="79" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">✔</text>
+                <path d="M 355 57 L 450 57 L 450 90 L 490 90" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
 
                 {/* Sales Access Point */}
-                <rect x="175" y="110" width="165" height="75" rx="6" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" />
-                <text x="257" y="126" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#0f766e">🔑 Sales Access Point</text>
-                <text x="187" y="142" fontSize="7.5" fill="#0f766e" fontWeight="bold">✔ Scoped: /sales/* prefix</text>
-                <text x="187" y="155" fontSize="7" fill="var(--color-text-secondary)">Policy: Grant R/W to Sales</text>
-                <rect x="315" y="160" width="16" height="12" rx="2" fill="#0d9488" />
-                <text x="323" y="169" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">✔</text>
-                <path d="M340,147 L480,147" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
+                <rect x="180" y="115" width="175" height="75" rx="6" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(13, 148, 136, 0.05))' }} />
+                <text x="267" y="131" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#0f766e">🔑 Sales Access Point</text>
+                <text x="192" y="149" fontSize="8.5" fill="#0f766e" fontWeight="bold">✔ Scoped: /sales/* prefix</text>
+                <text x="192" y="163" fontSize="8" fill="var(--color-text-secondary)">Policy: Grant R/W to Sales</text>
+                <rect x="330" y="165" width="16" height="12" rx="2" fill="#0d9488" />
+                <text x="338" y="174" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">✔</text>
+                <path d="M 355 152 L 490 152" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
 
                 {/* Analytics Access Point */}
-                <rect x="175" y="200" width="165" height="75" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
-                <text x="257" y="216" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#c2410c">🔑 Analytics Access Point</text>
-                <text x="187" y="232" fontSize="7.5" fill="#c2410c" fontWeight="bold">✔ Scoped: Entire Bucket</text>
-                <text x="187" y="245" fontSize="7" fill="var(--color-text-secondary)">Policy: Grant Read to all prefixes</text>
-                <rect x="315" y="250" width="16" height="12" rx="2" fill="#ea580c" />
-                <text x="323" y="259" textAnchor="middle" fontSize="7" fill="#fff" fontWeight="bold">✔</text>
-                <path d="M340,237 L440,237 L440,205 L480,205" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
+                <rect x="180" y="210" width="175" height="75" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(234, 88, 12, 0.05))' }} />
+                <text x="267" y="226" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#c2410c">🔑 Analytics Access Point</text>
+                <text x="192" y="244" fontSize="8.5" fill="#c2410c" fontWeight="bold">✔ Scoped: Entire Bucket</text>
+                <text x="192" y="258" fontSize="8" fill="var(--color-text-secondary)">Policy: Grant Read to all prefixes</text>
+                <rect x="330" y="260" width="16" height="12" rx="2" fill="#ea580c" />
+                <text x="338" y="269" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">✔</text>
+                <path d="M 355 247 L 450 247 L 450 215 L 490 215" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
 
                 {/* Right Column: Shared S3 Bucket */}
-                <rect x="480" y="20" width="245" height="255" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
-                <text x="602" y="38" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1e40af">🪣 Shared S3 Bucket</text>
+                <rect x="490" y="20" width="235" height="255" rx="8" fill="#f8fafc" stroke="#2563eb" strokeWidth="2" style={{ filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.05))' }} />
+                <text x="607" y="38" textAnchor="middle" fontSize="11.5" fontWeight="bold" fill="#1e40af">🪣 Shared Monolithic S3 Bucket</text>
 
                 {/* Red Monolithic Policy warning */}
-                <rect x="620" y="48" width="95" height="35" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                <text x="667" y="60" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#991b1b">Bucket Policy</text>
-                <text x="667" y="72" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">❌ Simplified!</text>
+                <rect x="620" y="48" width="95" height="32" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.2" />
+                <text x="667" y="60" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#991b1b">Bucket Policy</text>
+                <text x="667" y="72" textAnchor="middle" fontSize="7.5" fill="#b91c1c" fontWeight="bold">❌ Simplified!</text>
 
                 {/* Folders (Subpaths) */}
                 {/* /finance */}
-                <rect x="495" y="90" width="215" height="60" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1.5" />
-                <text x="505" y="106" fontSize="9.5" fontWeight="bold" fill="#6b21a8">📂 /finance/ subpath</text>
-                <text x="505" y="122" fontSize="7.5" fill="var(--color-text-secondary)">Holds cost reports, ledgers &amp; invoices</text>
-                <text x="505" y="136" fontSize="7.5" fill="#6b21a8" fontWeight="bold">Authorized for: Finance User &amp; Analytics</text>
+                <rect x="500" y="90" width="215" height="60" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="510" y="106" fontSize="10" fontWeight="bold" fill="#6b21a8">📂 /finance/ subpath</text>
+                <text x="510" y="122" fontSize="8" fill="var(--color-text-secondary)">Holds cost reports, ledgers &amp; invoices</text>
+                <text x="510" y="136" fontSize="8" fill="#6b21a8" fontWeight="bold">Authorized for: Finance User &amp; Analytics</text>
 
                 {/* /sales */}
-                <rect x="495" y="170" width="215" height="60" rx="4" fill="#ffffff" stroke="#2dd4bf" strokeWidth="1.5" />
-                <text x="505" y="186" fontSize="9.5" fontWeight="bold" fill="#0f766e">📂 /sales/ subpath</text>
-                <text x="505" y="202" fontSize="7.5" fill="var(--color-text-secondary)">Holds customer contracts &amp; pipelines</text>
-                <text x="505" y="216" fontSize="7.5" fill="#0f766e" fontWeight="bold">Authorized for: Sales User &amp; Analytics</text>
+                <rect x="500" y="170" width="215" height="60" rx="4" fill="#ffffff" stroke="#2dd4bf" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="510" y="186" fontSize="10" fontWeight="bold" fill="#0f766e">📂 /sales/ subpath</text>
+                <text x="510" y="202" fontSize="8" fill="var(--color-text-secondary)">Holds customer contracts &amp; pipelines</text>
+                <text x="510" y="216" fontSize="8" fill="#0f766e" fontWeight="bold">Authorized for: Sales User &amp; Analytics</text>
 
                 {/* Divider Line */}
-                <line x1="480" y1="245" x2="725" y2="245" stroke="#bfdbfe" strokeWidth="1" />
-                <text x="602" y="260" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#2563eb">✔ Access Management: Simplify security management for S3 Buckets</text>
+                <line x1="490" y1="245" x2="725" y2="245" stroke="#bfdbfe" strokeWidth="1" />
+                <text x="607" y="260" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#2563eb">✔ Access Management: Simplify security control</text>
               </svg>
             </div>
 
@@ -3648,7 +4097,7 @@ export default function S3Visualizer() {
                   <div className="s3-g3" style={{ gap: '10px', marginBottom: '12px' }}>
                     <div>
                       <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>1. Inbound Identity</label>
-                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apIdentity} onChange={(e) => setApIdentity(e.target.value as any)}>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apIdentity} onChange={(e) => { setApIdentity(e.target.value as any); setApAnimationState('idle'); }}>
                         <option value="finance_user">👤 Finance IAM User</option>
                         <option value="sales_user">👤 Sales IAM User</option>
                         <option value="auditor">🔎 Compliance Auditor</option>
@@ -3656,7 +4105,7 @@ export default function S3Visualizer() {
                     </div>
                     <div>
                       <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>2. Connection Gateway</label>
-                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apEndpoint} onChange={(e) => setApEndpoint(e.target.value as any)}>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apEndpoint} onChange={(e) => { setApEndpoint(e.target.value as any); setApAnimationState('idle'); }}>
                         <option value="bucket_root">🪣 Main Bucket Endpoint</option>
                         <option value="finance_ap">🔌 Finance Access Point</option>
                         <option value="sales_ap">🔌 Sales Access Point</option>
@@ -3664,7 +4113,7 @@ export default function S3Visualizer() {
                     </div>
                     <div>
                       <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>3. Target Folder Path</label>
-                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apAction} onChange={(e) => setApAction(e.target.value as any)}>
+                      <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px' }} value={apAction} onChange={(e) => { setApAction(e.target.value as any); setApAnimationState('idle'); }}>
                         <option value="read_finance">📁 Read /finance/ledger.xlsx</option>
                         <option value="read_sales">📁 Read /sales/contracts.pdf</option>
                       </select>
@@ -3697,50 +4146,172 @@ export default function S3Visualizer() {
                 </div>
 
                 {/* Status Overlay and Diagram Visual */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Live Routing Visualization:</div>
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '300px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Live Routing Visualization:</div>
                   
-                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '120px', margin: '8px 0' }}>
-                    {apAnimationState === 'idle' && (
-                      <div style={{ textAlign: 'center', color: '#64748b' }}>
-                        <div style={{ fontSize: '28px' }}>💤</div>
-                        <div style={{ fontSize: '11px', marginTop: '6px' }}>Ready to analyze. Configure variables and dispatch a packet.</div>
-                      </div>
-                    )}
-                    {apAnimationState === 'routing' && (
-                      <div style={{ textAlign: 'center', color: '#8b5cf6', animation: 'draw 2s linear infinite' }}>
-                        <div style={{ fontSize: '32px' }}>⚡📡</div>
-                        <div style={{ fontSize: '12px', fontWeight: 'bold', marginTop: '6px' }}>EVALUATING ACCESS POINT POLICIES...</div>
-                      </div>
-                    )}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                    {/* Beautiful reactive sandbox SVG */}
+                    <svg viewBox="0 0 350 220" width="100%" height="220" style={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'visible' }}>
+                      <defs>
+                        <marker id="sandbox-arr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="#cbd5e1" /></marker>
+                        <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+                        <filter id="glow-teal" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+                        <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+                      </defs>
+
+                      {/* Dynamic Connection Path */}
+                      {(() => {
+                        const callerY = apIdentity === 'finance_user' ? 45 : apIdentity === 'sales_user' ? 110 : 175;
+                        const gatewayY = apEndpoint === 'bucket_root' ? 45 : apEndpoint === 'finance_ap' ? 110 : 175;
+                        const targetY = apAction === 'read_finance' ? 75 : 145;
+                        const apPathD = `M 65 ${callerY} L 170 ${gatewayY} L 275 ${targetY}`;
+                        const packetColor = apIdentity === 'finance_user' ? '#8b5cf6' : apIdentity === 'sales_user' ? '#0d9488' : '#ea580c';
+                        
+                        return (
+                          <>
+                            {/* Standard connector pathway */}
+                            <path d={apPathD} fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                            {/* Active packet flow under evaluation */}
+                            {apAnimationState === 'routing' && (
+                              <circle r="6" fill={packetColor} style={{ filter: `drop-shadow(0 0 4px ${packetColor})` }}>
+                                <animateMotion dur="1.4s" repeatCount="indefinite" path={apPathD} />
+                                <animate attributeName="opacity" values="1;0.4;1" dur="0.7s" repeatCount="indefinite" />
+                              </circle>
+                            )}
+
+                            {/* Granted packet at target */}
+                            {apAnimationState === 'granted' && (
+                              <circle cx="280" cy={targetY} r="7" fill="#10b981" style={{ filter: 'drop-shadow(0 0 6px #10b981)' }}>
+                                <animate attributeName="r" values="7;10;7" dur="1.5s" repeatCount="indefinite" />
+                              </circle>
+                            )}
+
+                            {/* Denied packet hitting barrier */}
+                            {apAnimationState === 'denied' && (
+                              <>
+                                {/* Blocked red packet particle blast */}
+                                <circle cx="170" cy={gatewayY} r="7" fill="#ef4444" style={{ filter: 'drop-shadow(0 0 6px #ef4444)' }} />
+                                <line x1="170" y1={gatewayY} x2="160" y2={gatewayY - 12} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
+                                <line x1="170" y1={gatewayY} x2="180" y2={gatewayY + 12} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
+                                <line x1="170" y1={gatewayY} x2="155" y2={gatewayY + 8} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
+                                <line x1="170" y1={gatewayY} x2="185" y2={gatewayY - 8} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
+                                <circle cx="160" cy={gatewayY - 12} r="2" fill="#ef4444" />
+                                <circle cx="180" cy={gatewayY + 12} r="2" fill="#ef4444" />
+                                <circle cx="155" cy={gatewayY + 8} r="2" fill="#ef4444" />
+                                <circle cx="185" cy={gatewayY - 8} r="2" fill="#ef4444" />
+                              </>
+                            )}
+                          </>
+                        );
+                      })()}
+
+                      {/* Identities (Column 1) */}
+                      {/* Finance User */}
+                      <rect x="5" y="20" width="60" height="50" rx="4" 
+                        fill={apIdentity === 'finance_user' ? '#f5f3ff' : '#ffffff'} 
+                        stroke={apIdentity === 'finance_user' ? '#8b5cf6' : '#cbd5e1'} 
+                        strokeWidth={apIdentity === 'finance_user' ? '2' : '1'} 
+                        style={{ filter: apIdentity === 'finance_user' ? 'drop-shadow(0 0 5px rgba(139, 92, 246, 0.2))' : 'none' }} />
+                      <text x="35" y="38" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'finance_user' ? '#6d28d9' : '#475569'}>👤 Finance</text>
+                      <text x="35" y="52" textAnchor="middle" fontSize="6.5" fill="#8b5cf6" fontWeight="bold">IAM User</text>
+
+                      {/* Sales User */}
+                      <rect x="5" y="85" width="60" height="50" rx="4" 
+                        fill={apIdentity === 'sales_user' ? '#f0fdfa' : '#ffffff'} 
+                        stroke={apIdentity === 'sales_user' ? '#0d9488' : '#cbd5e1'} 
+                        strokeWidth={apIdentity === 'sales_user' ? '2' : '1'} 
+                        style={{ filter: apIdentity === 'sales_user' ? 'drop-shadow(0 0 5px rgba(13, 148, 136, 0.2))' : 'none' }} />
+                      <text x="35" y="103" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'sales_user' ? '#0f766e' : '#475569'}>👤 Sales</text>
+                      <text x="35" y="117" textAnchor="middle" fontSize="6.5" fill="#0d9488" fontWeight="bold">IAM User</text>
+
+                      {/* Auditor */}
+                      <rect x="5" y="150" width="60" height="50" rx="4" 
+                        fill={apIdentity === 'auditor' ? '#fff7ed' : '#ffffff'} 
+                        stroke={apIdentity === 'auditor' ? '#ea580c' : '#cbd5e1'} 
+                        strokeWidth={apIdentity === 'auditor' ? '2' : '1'} 
+                        style={{ filter: apIdentity === 'auditor' ? 'drop-shadow(0 0 5px rgba(234, 88, 12, 0.2))' : 'none' }} />
+                      <text x="35" y="168" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'auditor' ? '#c2410c' : '#475569'}>🔎 Auditor</text>
+                      <text x="35" y="182" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">Compliance</text>
+
+
+                      {/* Gateways (Column 2) */}
+                      {/* Main Bucket Endpoint */}
+                      <rect x="140" y="20" width="60" height="50" rx="4" 
+                        fill={apEndpoint === 'bucket_root' ? '#fff1f2' : '#ffffff'} 
+                        stroke={apEndpoint === 'bucket_root' ? '#ef4444' : '#cbd5e1'} 
+                        strokeWidth={apEndpoint === 'bucket_root' ? '2' : '1'} />
+                      <text x="170" y="38" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'bucket_root' ? '#b91c1c' : '#475569'}>🪣 Root</text>
+                      <text x="170" y="52" textAnchor="middle" fontSize="6" fill="#be123c" fontWeight="bold">Direct Gate</text>
+
+                      {/* Finance AP */}
+                      <rect x="140" y="85" width="60" height="50" rx="4" 
+                        fill={apEndpoint === 'finance_ap' ? '#f5f3ff' : '#ffffff'} 
+                        stroke={apEndpoint === 'finance_ap' ? '#8b5cf6' : '#cbd5e1'} 
+                        strokeWidth={apEndpoint === 'finance_ap' ? '2' : '1'} />
+                      <text x="170" y="103" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'finance_ap' ? '#6d28d9' : '#475569'}>🔌 Finance</text>
+                      <text x="170" y="117" textAnchor="middle" fontSize="6.5" fill="#8b5cf6" fontWeight="bold">Access Pt</text>
+
+                      {/* Sales AP */}
+                      <rect x="140" y="150" width="60" height="50" rx="4" 
+                        fill={apEndpoint === 'sales_ap' ? '#f0fdfa' : '#ffffff'} 
+                        stroke={apEndpoint === 'sales_ap' ? '#0d9488' : '#cbd5e1'} 
+                        strokeWidth={apEndpoint === 'sales_ap' ? '2' : '1'} />
+                      <text x="170" y="168" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'sales_ap' ? '#0f766e' : '#475569'}>🔌 Sales</text>
+                      <text x="170" y="182" textAnchor="middle" fontSize="6.5" fill="#0d9488" fontWeight="bold">Access Pt</text>
+
+
+                      {/* Target Folder Subpaths (Column 3) */}
+                      {/* /finance/ */}
+                      <rect x="275" y="45" width="70" height="60" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1" />
+                      <text x="310" y="65" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#6b21a8">📂 /finance/</text>
+                      <text x="310" y="78" textAnchor="middle" fontSize="6" fill="#701a75">Ledgers &amp; Bills</text>
+                      <rect x="282" y="85" width="56" height="12" rx="2" fill="#f3e8ff" />
+                      <text x="310" y="93.5" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#6b21a8">Scoped Path</text>
+
+                      {/* /sales/ */}
+                      <rect x="275" y="120" width="70" height="60" rx="4" fill="#ffffff" stroke="#2dd4bf" strokeWidth="1" />
+                      <text x="310" y="140" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0f766e">📂 /sales/</text>
+                      <text x="310" y="153" textAnchor="middle" fontSize="6" fill="#115e59">Contracts &amp; Leads</text>
+                      <rect x="282" y="160" width="56" height="12" rx="2" fill="#ccfbf1" />
+                      <text x="310" y="168.5" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#0f766e">Scoped Path</text>
+
+                      {/* Active security verdicts displayed on sandbox SVG */}
+                      {apAnimationState === 'granted' && (
+                        <g transform="translate(170, 110)">
+                          <circle r="22" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(16,185,129,0.3))' }} />
+                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#047857">✔</text>
+                        </g>
+                      )}
+                      {apAnimationState === 'denied' && (
+                        <g transform="translate(170, 110)">
+                          <circle r="22" fill="#fef2f2" stroke="#ef4444" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(239,68,68,0.3))' }} />
+                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#991b1b">✖</text>
+                        </g>
+                      )}
+                    </svg>
+
+                    {/* Verdict overlay text */}
                     {apAnimationState === 'granted' && (
-                      <div style={{ textAlign: 'center', color: '#166534', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '12px', borderRadius: '8px', width: '100%' }}>
-                        <div style={{ fontSize: '28px' }}>✅🎉</div>
-                        <div style={{ fontSize: '12.5px', fontWeight: 'bold', marginTop: '4px' }}>GET 200 AUTHORIZED!</div>
-                        <div style={{ fontSize: '10.5px', color: '#15803d', marginTop: '4px', lineHeight: '1.3' }}>
-                          Scoped Access Point policy verified the client credentials and matched the requested directory prefix `{apAction === 'read_finance' ? 'finance/' : 'sales/'}` perfectly.
-                        </div>
+                      <div style={{ marginTop: '8px', color: '#15803d', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}>
+                        🎉 GET 200 AUTHORIZED! ACCESS AP HANDSHAKE SUCCESS!
                       </div>
                     )}
                     {apAnimationState === 'denied' && (
-                      <div style={{ textAlign: 'center', color: '#991b1b', background: '#fef2f2', border: '1px solid #fca5a5', padding: '12px', borderRadius: '8px', width: '100%' }}>
-                        <div style={{ fontSize: '28px' }}>❌🚫</div>
-                        <div style={{ fontSize: '12.5px', fontWeight: 'bold', marginTop: '4px' }}>ACCESS DENIED (HTTP 403)</div>
-                        <div style={{ fontSize: '10.5px', color: '#b91c1c', marginTop: '4px', lineHeight: '1.3' }}>
-                          {apEndpoint === 'bucket_root' 
-                            ? 'Root directory is blocked for standard team accounts under security baseline profiles.' 
-                            : `Endpoint restriction mismatch: Scoped AP does not permit this identity or folder pathway.`}
-                        </div>
-                        <button className="s3-btn" style={{ fontSize: '9px', padding: '2px 8px', marginTop: '8px', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => setApAnimationState('idle')}>
-                          Reset Sandbox
-                        </button>
+                      <div style={{ marginTop: '8px', color: '#b91c1c', background: '#fef2f2', border: '1px solid #fca5a5', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}>
+                        ❌ ACCESS DENIED (HTTP 403) — CHECK PERMISSIONS/GATEWAY!
+                      </div>
+                    )}
+                    {apAnimationState === 'idle' && (
+                      <div style={{ marginTop: '8px', color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center' }}>
+                        💤 Sandbox Ready: Click <b>Dispatch Request Packet</b> to simulate route validation.
                       </div>
                     )}
                   </div>
 
-                  {apAnimationState === 'granted' && (
-                    <button className="s3-btn" style={{ fontSize: '11px', width: '100%', fontWeight: 600 }} onClick={() => setApAnimationState('idle')}>
-                      Clear &amp; Run Next Test
+                  {apAnimationState !== 'idle' && (
+                    <button className="s3-btn" style={{ fontSize: '11px', width: '100%', fontWeight: 600, marginTop: '8px' }} onClick={() => setApAnimationState('idle')}>
+                      Reset &amp; Run Next Test
                     </button>
                   )}
                 </div>
@@ -3878,95 +4449,94 @@ export default function S3Visualizer() {
                 {/* SVG Route Visualization with animated packet */}
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   {transferRouteMode === 'standard' ? (
-                    <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: '#fef2f2', borderRadius: '6px', border: '0.5px solid #fecaca' }}>
+                    <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #fecaca', background: '#fffbeb' }}>
                       <defs>
                         <marker id="arr-accel-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
                       </defs>
 
                       {/* Nodes */}
                       {/* USA Terminal */}
-                      <rect x="15" y="25" width="90" height="50" rx="4" fill="var(--color-background-primary)" stroke="#fca5a5" strokeWidth="1" />
-                      <text x="60" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">💻 Client (USA)</text>
-                      <text x="60" y="54" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">Standard GET/PUT</text>
+                      <rect x="15" y="25" width="100" height="50" rx="6" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                      <text x="65" y="42" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">💻 Client (USA)</text>
+                      <text x="65" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">Standard WWW</text>
 
                       {/* ISP hop */}
-                      <circle cx="60" cy="125" r="16" fill="#fff" stroke="#ef4444" strokeWidth="1" />
-                      <text x="60" y="128" textAnchor="middle" fontSize="7.5" fill="#b91c1c" fontWeight="bold">Local ISP</text>
+                      <circle cx="65" cy="125" r="18" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" />
+                      <text x="65" y="128" textAnchor="middle" fontSize="8" fill="#991b1b" fontWeight="bold">Local ISP</text>
 
                       {/* BGP 1 hop */}
-                      <circle cx="160" cy="90" r="16" fill="#fff" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,1" />
-                      <text x="160" y="93" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">AS-Peer A</text>
+                      <circle cx="165" cy="90" r="18" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" strokeDasharray="3,1" />
+                      <text x="165" y="93" textAnchor="middle" fontSize="7.5" fill="#991b1b" fontWeight="bold">AS-Peer A</text>
 
                       {/* BGP 2 hop */}
-                      <circle cx="160" cy="170" r="16" fill="#fff" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,1" />
-                      <text x="160" y="173" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">AS-Peer B</text>
+                      <circle cx="165" cy="170" r="18" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" strokeDasharray="3,1" />
+                      <text x="165" y="173" textAnchor="middle" fontSize="7.5" fill="#991b1b" fontWeight="bold">AS-Peer B</text>
 
                       {/* Sydney S3 Bucket */}
-                      <rect x="235" y="120" width="100" height="70" rx="4" fill="var(--color-background-primary)" stroke="#ef4444" strokeWidth="1.5" />
-                      <text x="285" y="140" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">🪣 Target S3</text>
-                      <text x="285" y="155" textAnchor="middle" fontSize="8" fill="#c53030" fontWeight="bold">🇦🇺 Australia</text>
-                      <text x="285" y="168" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">Standard Route</text>
+                      <rect x="235" y="120" width="100" height="70" rx="6" fill="#ffffff" stroke="#fca5a5" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                      <text x="285" y="140" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">🪣 Target S3</text>
+                      <text x="285" y="155" textAnchor="middle" fontSize="8.5" fill="#be123c" fontWeight="bold">🇦🇺 Australia</text>
+                      <text x="285" y="168" textAnchor="middle" fontSize="7.5" fill="#475569">Public Link</text>
 
                       {/* Paths */}
-                      <path d="M60,75 L60,109" fill="none" stroke="#fca5a5" strokeWidth="1" markerEnd="url(#arr-accel-red)" />
-                      <path d="M76,120 L144,95" fill="none" stroke="#fca5a5" strokeWidth="1" markerEnd="url(#arr-accel-red)" />
-                      <path d="M160,106 L160,154" fill="none" stroke="#fca5a5" strokeWidth="1" markerEnd="url(#arr-accel-red)" />
-                      <path d="M176,170 L235,155" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 65 75 L 65 107" fill="none" stroke="#fca5a5" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 83 125 L 147 95" fill="none" stroke="#fca5a5" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 165 108 L 165 152" fill="none" stroke="#fca5a5" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 183 170 L 235 155" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
 
-                      <text x="175" y="225" textAnchor="middle" fontSize="8" fill="#b91c1c" fontWeight="bold">🐌 Multi-Hop Congested Public WWW (~820ms)</text>
+                      <text x="175" y="225" textAnchor="middle" fontSize="9.5" fill="#be123c" fontWeight="bold">🐌 Multi-Hop Congested Public WWW (~820ms)</text>
 
                       {/* Glowing animated data packet */}
                       {transferIsRunning && (
                         <circle cx={
-                          transferStep === 1 ? 60 :
-                          transferStep === 2 ? 60 :
-                          transferStep === 3 ? 160 :
+                          transferStep === 1 ? 65 :
+                          transferStep === 2 ? 65 :
+                          transferStep === 3 ? 165 :
                           285
                         } cy={
                           transferStep === 1 ? 50 :
                           transferStep === 2 ? 125 :
                           transferStep === 3 ? 170 :
                           155
-                        } r="6" fill="#ef4444" className="s3-g-circle">
+                        } r="7" fill="#ef4444" style={{ filter: 'drop-shadow(0 0 5px #ef4444)' }}>
                           <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                         </circle>
                       )}
                     </svg>
                   ) : (
-                    <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: '#ecfdf5', borderRadius: '6px', border: '0.5px solid #a7f3d0' }}>
+                    <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ecfdf5' }}>
                       <defs>
                         <marker id="arr-accel-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
                       </defs>
 
-                      {/* Nodes */}
                       {/* USA Terminal */}
-                      <rect x="15" y="25" width="90" height="50" rx="4" fill="var(--color-background-primary)" stroke="#86efac" strokeWidth="1" />
-                      <text x="60" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">💻 Client (USA)</text>
-                      <text x="60" y="54" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold">Accelerated Host</text>
+                      <rect x="15" y="25" width="100" height="50" rx="6" fill="#ffffff" stroke="#86efac" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                      <text x="65" y="42" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">💻 Client (USA)</text>
+                      <text x="65" y="55" textAnchor="middle" fontSize="8" fill="#16a34a" fontWeight="bold">Accelerated Endpoint</text>
 
                       {/* USA POP Ingestion */}
-                      <rect x="15" y="115" width="100" height="42" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
-                      <text x="65" y="130" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#065f46">USA POP Edge</text>
-                      <text x="65" y="142" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">CloudFront Node</text>
+                      <rect x="15" y="115" width="110" height="42" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                      <text x="70" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065f46">USA POP Edge</text>
+                      <text x="70" y="143" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="bold">CloudFront Node</text>
 
                       {/* Sydney S3 Bucket */}
-                      <rect x="235" y="120" width="100" height="70" rx="4" fill="var(--color-background-primary)" stroke="#166534" strokeWidth="1.5" />
-                      <text x="285" y="140" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">🪣 Target S3</text>
-                      <text x="285" y="155" textAnchor="middle" fontSize="8" fill="#166534" fontWeight="bold">🇦🇺 Australia</text>
-                      <text x="285" y="168" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">ap-southeast-2</text>
+                      <rect x="235" y="120" width="100" height="70" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                      <text x="285" y="140" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">🪣 Target S3</text>
+                      <text x="285" y="155" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">🇦🇺 Australia</text>
+                      <text x="285" y="168" textAnchor="middle" fontSize="7.5" fill="#475569">ap-southeast-2</text>
 
                       {/* Paths */}
-                      <path d="M60,75 L60,115" fill="none" stroke="#10b981" strokeWidth="2" markerEnd="url(#arr-accel-green)" />
-                      <path d="M115,136 L235,136" fill="none" stroke="#10b981" strokeWidth="2.5" markerEnd="url(#arr-accel-green)" />
+                      <path d="M 65 75 L 65 115" fill="none" stroke="#10b981" strokeWidth="2" markerEnd="url(#arr-accel-green)" />
+                      <path d="M 125 136 L 235 136" fill="none" stroke="#10b981" strokeWidth="2.5" markerEnd="url(#arr-accel-green)" />
 
-                      <text x="175" y="120" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">⚡ Undersea Dark Fiber</text>
-                      <text x="175" y="225" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="bold">⚡ Dedicated AWS Backbone Transit (~190ms)</text>
+                      <text x="180" y="126" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">⚡ Undersea Dark Fiber</text>
+                      <text x="175" y="225" textAnchor="middle" fontSize="9.5" fill="#047857" fontWeight="bold">⚡ Direct AWS Private Global Backbone Transit (~190ms)</text>
 
                       {/* Glowing animated data packet */}
                       {transferIsRunning && (
                         <circle cx={
-                          transferStep === 1 ? 60 :
-                          transferStep === 2 ? 60 :
+                          transferStep === 1 ? 65 :
+                          transferStep === 2 ? 65 :
                           transferStep === 3 ? 175 :
                           285
                         } cy={
@@ -3974,7 +4544,7 @@ export default function S3Visualizer() {
                           transferStep === 2 ? 136 :
                           transferStep === 3 ? 136 :
                           155
-                        } r="6" fill="#10b981" className="s3-g-circle">
+                        } r="7" fill="#10b981" style={{ filter: 'drop-shadow(0 0 5px #10b981)' }}>
                           <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                         </circle>
                       )}
@@ -3998,32 +4568,60 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Replication is asynchronous. Inbound objects trigger background IAM workers to copy files securely across AZs or geographical borders.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+                <defs>
+                  <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#eff6ff" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#dbeafe" stopOpacity="0.8" />
+                  </linearGradient>
+                  <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#faf5ff" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#f3e8ff" stopOpacity="0.8" />
+                  </linearGradient>
+                  <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f0fdf4" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#dcfce7" stopOpacity="0.8" />
+                  </linearGradient>
+                  <marker id="rep-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                  <marker id="rep-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                </defs>
+
                 {/* Source Region */}
-                <rect x="20" y="20" width="180" height="140" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="110" y="42" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">🇺🇸 Source (Virginia)</text>
+                <rect x="20" y="20" width="190" height="140" rx="8" fill="url(#primaryGradient)" stroke="#3b82f6" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="115" y="42" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1e3a8a">🇺🇸 Source Region (Virginia)</text>
 
-                <rect x="35" y="60" width="150" height="35" rx="3" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" />
-                <text x="110" y="77" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1e40af">🪣 Source Bucket</text>
-                <text x="110" y="89" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">Versioning: ENABLED</text>
-
-                {/* IAM worker transit */}
-                <path d="M200,77 L340,77" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3,2" />
-                <path d="M200,110 L500,110" stroke="#a855f7" strokeWidth="2.5" />
+                <rect x="35" y="60" width="160" height="42" rx="4" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(59, 130, 246, 0.08))' }} />
+                <text x="115" y="76" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e40af">🪣 Production Bucket</text>
+                <text x="115" y="90" textAnchor="middle" fontSize="8" fill="#10b981" fontWeight="bold">🔄 Versioning: ENABLED</text>
 
                 {/* SRR Target */}
-                <rect x="340" y="45" width="140" height="100" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1" />
-                <text x="410" y="65" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#047857">🇺🇸 Same-Region Target</text>
-                <text x="410" y="78" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">Virginia Sub-Zone</text>
-                <rect x="350" y="92" width="120" height="22" rx="3" fill="#e8f5e9" stroke="#2e7d32" strokeWidth="0.8" />
-                <text x="410" y="106" textAnchor="middle" fontSize="8" fill="#1b5e20" fontWeight="bold">🪣 SRR Backup (DR)</text>
+                <rect x="350" y="45" width="150" height="100" rx="8" fill="url(#greenGradient)" stroke="#10b981" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="425" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#047857">🇺🇸 Same-Region Target</text>
+                <text x="425" y="78" textAnchor="middle" fontSize="8" fill="#475569">Virginia Sub-Zone (US)</text>
+                <rect x="360" y="92" width="130" height="26" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.08))' }} />
+                <text x="425" y="108" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">🪣 SRR DR Replica Bucket</text>
 
                 {/* CRR Target */}
-                <rect x="500" y="45" width="180" height="100" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" />
-                <text x="590" y="65" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#6b21a8">🇪🇺 Cross-Region Target</text>
-                <text x="590" y="78" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">Frankfurt Region (EU)</text>
-                <rect x="510" y="92" width="160" height="22" rx="3" fill="#f3e5f5" stroke="#4a148c" strokeWidth="0.8" />
-                <text x="590" y="106" textAnchor="middle" fontSize="8" fill="#4a148c" fontWeight="bold">🪣 CRR Sovereign Archive</text>
+                <rect x="525" y="45" width="155" height="100" rx="8" fill="url(#purpleGradient)" stroke="#8b5cf6" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="602" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6d28d9">🇪🇺 Cross-Region Target</text>
+                <text x="602" y="78" textAnchor="middle" fontSize="8" fill="#475569">Frankfurt Region (EU)</text>
+                <rect x="535" y="92" width="135" height="26" rx="3" fill="#ffffff" stroke="#8b5cf6" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.08))' }} />
+                <text x="602" y="108" textAnchor="middle" fontSize="8.5" fill="#6d28d9" fontWeight="bold">🪣 CRR Sovereign Archive</text>
+
+                {/* Background continuous packet streams representing active loops */}
+                {/* Path to SRR */}
+                <path d="M 195 81 Q 275 60 350 81" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4,4" />
+                <circle r="4.5" fill="#10b981" style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}>
+                  <animateMotion path="M 195 81 Q 275 60 350 81" dur="2s" repeatCount="indefinite" />
+                </circle>
+
+                {/* Path to CRR */}
+                <path d="M 195 95 Q 360 140 525 95" fill="none" stroke="#8b5cf6" strokeWidth="1.8" strokeDasharray="4,4" />
+                <circle r="4.5" fill="#8b5cf6" style={{ filter: 'drop-shadow(0 0 3px #8b5cf6)' }}>
+                  <animateMotion path="M 195 95 Q 360 140 525 95" dur="2.8s" repeatCount="indefinite" />
+                </circle>
+
+                <text x="360" y="165" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold">✔ Asynchronous Background Copy Loops (Zero Performance Drag on Main Write)</text>
               </svg>
             </div>
 
@@ -4033,35 +4631,50 @@ export default function S3Visualizer() {
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 How application servers generate secure signatures to authorize limited, direct client uploads without exposing credentials.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+                <defs>
+                  <marker id="pre-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
+                  <marker id="pre-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                </defs>
+
                 {/* Client browser */}
-                <rect x="20" y="45" width="120" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-tertiary)" strokeWidth="1" />
-                <text x="80" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">Client Frontend</text>
-                <text x="80" y="90" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">No AWS Credentials</text>
+                <rect x="20" y="45" width="130" height="90" rx="8" fill="rgba(255,255,255,0.85)" stroke="#cbd5e1" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                <text x="85" y="75" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">Client Browser</text>
+                <text x="85" y="93" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">❌ No AWS Credentials</text>
+                <text x="85" y="110" textAnchor="middle" fontSize="8" fill="#475569">Direct Upload/Download</text>
 
                 {/* Step 1: Request URL */}
-                <path d="M140,65 L360,65" stroke="#3b82f6" strokeWidth="1.5" />
-                <text x="250" y="58" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">1. Request Download Token</text>
+                <path d="M 150 65 L 360 65" stroke="#3b82f6" strokeWidth="1.8" markerEnd="url(#pre-arr)" />
+                <text x="255" y="56" textAnchor="middle" fontSize="8.5" fill="#1e40af" fontWeight="bold">1. Request Temporal Signatures Link</text>
+                <circle r="4" fill="#3b82f6">
+                  <animateMotion path="M 150 65 L 360 65" dur="1.8s" repeatCount="indefinite" />
+                </circle>
 
                 {/* Step 2: Receive Presigned URL */}
-                <path d="M360,85 L140,85" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" />
-                <text x="250" y="98" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">2. Returns URL with cryptographic signature</text>
+                <path d="M 360 85 L 150 85" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#pre-arr)" />
+                <text x="255" y="98" textAnchor="middle" fontSize="8.5" fill="#1e40af" fontWeight="bold">2. Returns URL with embedded crypto HMAC token</text>
+                <circle r="4" fill="#3b82f6">
+                  <animateMotion path="M 360 85 L 150 85" dur="1.8s" repeatCount="indefinite" />
+                </circle>
 
                 {/* Step 3: Fetch directly from S3 */}
-                <path d="M80,135 L80,165 L550,165 L550,135" fill="none" stroke="#10b981" strokeWidth="2.5" />
-                <text x="315" y="160" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="bold">3. Direct GET request with URL query credentials (Bypasses Server!)</text>
+                <path d="M 85 135 L 85 165 L 560 165 L 560 135" fill="none" stroke="#10b981" strokeWidth="2.5" markerEnd="url(#pre-arr-green)" />
+                <text x="320" y="160" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold">3. Direct Secure HTTPS GET / PUT payload (Bypasses App Server Bandwidth completely!)</text>
+                <circle r="5" fill="#10b981" style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}>
+                  <animateMotion path="M 85 135 L 85 165 L 560 165 L 560 135" dur="2.4s" repeatCount="indefinite" />
+                </circle>
 
                 {/* App Server */}
-                <rect x="360" y="30" width="140" height="80" rx="6" fill="#f0fdf4" stroke="#166534" strokeWidth="1" />
-                <text x="430" y="52" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#166534">Application Server</text>
-                <text x="430" y="68" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">Owns IAM permissions</text>
-                <text x="430" y="82" textAnchor="middle" fontSize="7" fill="#1b5e20" fontWeight="bold">Generates signed URL</text>
+                <rect x="360" y="30" width="140" height="80" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.08))' }} />
+                <text x="430" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">Application Server</text>
+                <text x="430" y="70" textAnchor="middle" fontSize="8.5" fill="#475569">Possesses IAM Credentials</text>
+                <text x="430" y="85" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="bold">Generates signed temporal link</text>
 
                 {/* S3 Storage Endpoint */}
-                <rect x="520" y="45" width="160" height="90" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                <text x="600" y="75" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e40af">S3 Secure Storage</text>
-                <text x="600" y="90" textAnchor="middle" fontSize="8" fill="#1e40af">Validates Signature</text>
-                <text x="600" y="102" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">&amp; Expiration Timer</text>
+                <rect x="520" y="45" width="160" height="90" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(59, 130, 246, 0.08))' }} />
+                <text x="600" y="72" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e40af">S3 Secure Storage</text>
+                <text x="600" y="90" textAnchor="middle" fontSize="8.5" fill="#10b981" fontWeight="bold">Validates Signature</text>
+                <text x="600" y="104" textAnchor="middle" fontSize="8" fill="#475569">&amp; Expiration Timer Checks</text>
               </svg>
             </div>
 
@@ -4133,7 +4746,7 @@ export default function S3Visualizer() {
                 </div>
 
                 {/* Parallel Upload Progress Channels Grid */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '320px' }}>
                   <div>
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                       Parallel Chunk Ingestion Streams: {mpUploadId && `[Session ID: ${mpUploadId}]`}
@@ -4154,7 +4767,7 @@ export default function S3Visualizer() {
                     )}
 
                     {mpStep >= 2 && mpParts.length > 0 && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto' }}>
                         {mpParts.map((part) => (
                           <div key={part.id} style={{ background: 'var(--color-background-primary)', padding: '8px 10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '10.5px' }}>
@@ -4183,6 +4796,29 @@ export default function S3Visualizer() {
                       </div>
                     )}
                   </div>
+
+                  {/* Reassembly Dynamic Graphic */}
+                  {mpStep >= 2 && (
+                    <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '10px', marginTop: '10px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>🧩 Reassembly Engine at rest:</div>
+                      <svg viewBox="0 0 100 24" width="100%" height="24" style={{ background: '#ffffff', borderRadius: '4px', border: '0.5px solid #cbd5e1' }}>
+                        <rect x="2" y="2" width="96" height="20" rx="3" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
+                        {mpParts.map((part, idx) => {
+                          const w = 96 / mpParts.length;
+                          const x = 2 + idx * w;
+                          let fill = '#cbd5e1';
+                          if (part.status === 'completed') fill = '#10b981';
+                          else if (part.status === 'failed') fill = '#ef4444';
+                          else if (part.status === 'uploading') fill = '#0891b2';
+                          return (
+                            <rect key={part.id} x={x + 0.5} y="3" width={w - 1} height="18" rx="1.5" fill={fill} opacity={part.status === 'uploading' ? 0.6 : 1} stroke={part.status === 'uploading' ? '#0284c7' : 'none'} strokeWidth="0.5">
+                              {part.status === 'uploading' && <animate attributeName="opacity" values="0.4;1;0.4" dur="0.8s" repeatCount="indefinite" />}
+                            </rect>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                  )}
 
                   {mpStep === 5 && (
                     <div style={{ marginTop: '12px', padding: '10px', borderRadius: '6px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', textAlign: 'center', fontSize: '11.5px', fontWeight: 'bold' }}>
@@ -4395,46 +5031,58 @@ export default function S3Visualizer() {
                 <div>
                   {eventRoutingMode === 'direct' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <svg viewBox="0 0 350 170" width="100%" height="170" style={{ background: '#fffbeb', borderRadius: '6px', border: '0.5px solid #fde68a' }}>
+                      <svg viewBox="0 0 350 170" width="100%" height="170" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #fde68a', background: '#fffbeb' }}>
                         <defs>
                           <marker id="arr-notify-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b45309" /></marker>
+                          <linearGradient id="snsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#fff7ed" />
+                            <stop offset="100%" stopColor="#ffedd5" />
+                          </linearGradient>
+                          <linearGradient id="sqsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#eff6ff" />
+                            <stop offset="100%" stopColor="#dbeafe" />
+                          </linearGradient>
+                          <linearGradient id="lambdaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#faf5ff" />
+                            <stop offset="100%" stopColor="#f3e8ff" />
+                          </linearGradient>
                         </defs>
 
                         {/* S3 Bucket */}
-                        <rect x="15" y="55" width="90" height="60" rx="4" fill="#f0fdf4" stroke="#166534" strokeWidth="1" />
-                        <text x="60" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#166534">🪣 Source S3</text>
-                        <text x="60" y="90" textAnchor="middle" fontSize="7.5" fill="#15803d">my-premium-bucket</text>
-                        <rect x="23" y="98" width="74" height="12" rx="2" fill="#e8f5e9" stroke="#81c784" strokeWidth="0.5" />
-                        <text x="60" y="106" textAnchor="middle" fontSize="6.5" fill="#1b5e20" fontWeight="bold">PutObject Event</text>
+                        <rect x="15" y="50" width="95" height="70" rx="6" fill="#ffffff" stroke="#166534" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                        <text x="62" y="70" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#166534">🪣 Source S3</text>
+                        <text x="62" y="85" textAnchor="middle" fontSize="7.5" fill="#475569">my-premium-bucket</text>
+                        <rect x="22" y="94" width="80" height="15" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
+                        <text x="62" y="104" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold">PutObject Event</text>
 
                         {/* Paths */}
-                        <path d="M105,75 L160,35" fill="none" stroke="#b45309" strokeWidth="1" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
-                        <path d="M105,85 L160,85" fill="none" stroke="#b45309" strokeWidth="1" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
-                        <path d="M105,95 L160,135" fill="none" stroke="#b45309" strokeWidth="1" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M 110 75 Q 140 45 170 30" fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M 110 85 L 170 85" fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M 110 95 Q 140 125 170 140" fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
 
                         {/* Targets */}
-                        <rect x="170" y="15" width="160" height="30" rx="3" fill="#ffffff" stroke="#f97316" strokeWidth="1" />
-                        <text x="250" y="33" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ea580c">📥 Amazon SNS Topic</text>
+                        <rect x="170" y="15" width="165" height="30" rx="4" fill="url(#snsGrad)" stroke="#ea580c" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(234, 88, 12, 0.05))' }} />
+                        <text x="252" y="33" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#c2410c">📥 Amazon SNS Topic</text>
 
-                        <rect x="170" y="70" width="160" height="30" rx="3" fill="#ffffff" stroke="#2563eb" strokeWidth="1" />
-                        <text x="250" y="88" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1d4ed8">📥 Amazon SQS Queue</text>
+                        <rect x="170" y="70" width="165" height="30" rx="4" fill="url(#sqsGrad)" stroke="#2563eb" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(37, 99, 235, 0.05))' }} />
+                        <text x="252" y="88" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1d4ed8">📥 Amazon SQS Queue</text>
 
-                        <rect x="170" y="125" width="160" height="30" rx="3" fill="#ffffff" stroke="#a855f7" strokeWidth="1" />
-                        <text x="250" y="143" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#7c3aed">📥 AWS Lambda Function</text>
+                        <rect x="170" y="125" width="165" height="30" rx="4" fill="url(#lambdaGrad)" stroke="#8b5cf6" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.05))' }} />
+                        <text x="252" y="143" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#6d28d9">📥 AWS Lambda Function</text>
 
                         {/* Animated Glowing Packet */}
                         {eventIsRunning && (
                           <circle cx={
-                            eventStep === 1 ? 60 :
+                            eventStep === 1 ? 62 :
                             eventStep === 2 ? 100 :
-                            eventStep === 3 ? 160 :
-                            250
+                            eventStep === 3 ? 165 :
+                            252
                           } cy={
                             eventStep === 1 ? 85 :
                             eventStep === 2 ? 85 :
                             eventStep === 3 ? 85 :
                             88
-                          } r="5" fill="#b45309" className="s3-g-circle">
+                          } r="6" fill="#b45309" style={{ filter: 'drop-shadow(0 0 4px #b45309)' }}>
                             <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                           </circle>
                         )}
@@ -4458,53 +5106,61 @@ export default function S3Visualizer() {
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <svg viewBox="0 0 350 170" width="100%" height="170" style={{ background: '#faf5ff', borderRadius: '6px', border: '0.5px solid #d8b4fe' }}>
+                      <svg viewBox="0 0 350 170" width="100%" height="170" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #d8b4fe', background: '#faf5ff' }}>
                         <defs>
                           <marker id="arr-notify-eb" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                          <linearGradient id="ebGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#faf5ff" />
+                            <stop offset="100%" stopColor="#f3e8ff" />
+                          </linearGradient>
                         </defs>
 
                         {/* S3 Bucket */}
-                        <rect x="15" y="55" width="90" height="60" rx="4" fill="#fdf4ff" stroke="#a855f7" strokeWidth="1" />
-                        <text x="60" y="75" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#701a75">🪣 Source S3</text>
-                        <text x="60" y="90" textAnchor="middle" fontSize="7.5" fill="#a21caf">EventBridge Natively On</text>
+                        <rect x="15" y="50" width="95" height="70" rx="6" fill="#ffffff" stroke="#a855f7" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                        <text x="62" y="72" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#701a75">🪣 Source S3</text>
+                        <text x="62" y="87" textAnchor="middle" fontSize="7.5" fill="#a21caf" fontWeight="bold">EventBridge On</text>
+                        <rect x="22" y="95" width="80" height="15" rx="3" fill="#fdf4ff" stroke="#d8b4fe" strokeWidth="0.8" />
+                        <text x="62" y="105" textAnchor="middle" fontSize="7" fill="#701a75" fontWeight="bold">JSON Publisher</text>
 
                         {/* Path */}
-                        <path d="M105,85 L155,85" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arr-notify-eb)" />
+                        <path d="M 110 85 L 155 85" fill="none" stroke="#7c3aed" strokeWidth="1.8" markerEnd="url(#arr-notify-eb)" />
 
                         {/* EventBridge Router */}
-                        <rect x="155" y="35" width="80" height="95" rx="4" fill="#ffffff" stroke="#7c3aed" strokeWidth="1.5" />
-                        <text x="195" y="52" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#5b21b6">⚙️ EventBridge</text>
-                        <rect x="162" y="65" width="66" height="52" rx="2" fill="#faf5ff" stroke="#ddd6fe" />
-                        <text x="195" y="76" textAnchor="middle" fontSize="6.5" fill="#6d28d9" fontWeight="bold">JSON Rule Match</text>
-                        <text x="195" y="86" textAnchor="middle" fontSize="5.5" fill="var(--color-text-secondary)">Prefix: uploads/</text>
-                        <text x="195" y="96" textAnchor="middle" fontSize="5.5" fill="var(--color-text-secondary)">Size &gt; 5MB</text>
-                        <text x="195" y="108" textAnchor="middle" fontSize="6" fontWeight="bold" color={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '#10b981' : '#ef4444'}>
+                        <rect x="155" y="25" width="90" height="110" rx="6" fill="url(#ebGrad)" stroke="#7c3aed" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(124, 58, 237, 0.05))' }} />
+                        <text x="200" y="42" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#5b21b6">⚙️ EventBridge</text>
+                        <rect x="162" y="52" width="76" height="73" rx="3" fill="#ffffff" stroke="#ddd6fe" strokeWidth="0.8" />
+                        <text x="200" y="65" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Filter Pattern</text>
+                        <text x="200" y="78" textAnchor="middle" fontSize="6" fill="var(--color-text-secondary)">Prefix: uploads/</text>
+                        <text x="200" y="89" textAnchor="middle" fontSize="6" fill="var(--color-text-secondary)">Size &gt; 5 MB</text>
+                        
+                        <rect x="167" y="99" width="66" height="18" rx="2" fill={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '#ecfdf5' : '#fef2f2'} />
+                        <text x="200" y="111" textAnchor="middle" fontSize="7" fontWeight="bold" fill={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '#047857' : '#be123c'}>
                           {simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '✔ Matched' : '❌ Ignored'}
                         </text>
 
                         {/* Target Egress */}
-                        <path d="M235,85 L260,85" stroke="#7c3aed" strokeWidth="1.2" markerEnd="url(#arr-notify-eb)" />
+                        <path d="M 245 85 L 265 85" fill="none" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arr-notify-eb)" />
 
                         {/* 18+ services */}
-                        <rect x="260" y="45" width="80" height="75" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1" />
-                        <text x="300" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e40af">🎯 18+ Target</text>
-                        <text x="300" y="78" textAnchor="middle" fontSize="7" fill="#1e40af">Step Functions</text>
-                        <text x="300" y="90" textAnchor="middle" fontSize="7" fill="#1e40af">Kinesis Streams</text>
-                        <text x="300" y="102" textAnchor="middle" fontSize="7" fill="#1e40af">ECS Clusters</text>
+                        <rect x="265" y="35" width="75" height="95" rx="6" fill="#ffffff" stroke="#2563eb" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(37, 99, 235, 0.05))' }} />
+                        <text x="302" y="50" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e40af">🎯 18+ Targets</text>
+                        <text x="302" y="68" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">Step Fns</text>
+                        <text x="302" y="84" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">Kinesis</text>
+                        <text x="302" y="100" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">ECS Tasks</text>
 
                         {/* Animated Glowing Packet */}
                         {eventIsRunning && (
                           <circle cx={
-                            eventStep === 1 ? 60 :
+                            eventStep === 1 ? 62 :
                             eventStep === 2 ? 130 :
-                            eventStep === 3 ? 195 :
-                            300
+                            eventStep === 3 ? 200 :
+                            302
                           } cy={
                             eventStep === 1 ? 85 :
                             eventStep === 2 ? 85 :
                             eventStep === 3 ? 85 :
                             85
-                          } r="5" fill="#7c3aed" className="s3-g-circle">
+                          } r="6" fill="#7c3aed" style={{ filter: 'drop-shadow(0 0 4px #7c3aed)' }}>
                             <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                           </circle>
                         )}
@@ -4603,49 +5259,62 @@ export default function S3Visualizer() {
 
                 {/* S3 Batch Pipeline SVG with animated packet */}
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <svg viewBox="0 0 350 250" width="100%" height="250" style={{ background: 'var(--color-background-secondary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
+                  <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                     <defs>
                       <marker id="arr-batch-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
                       <marker id="arr-batch-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#166534" /></marker>
+                      <marker id="arr-batch-pink" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#be185d" /></marker>
+                      <linearGradient id="invGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fdf2f8" />
+                        <stop offset="100%" stopColor="#fbcfe8" />
+                      </linearGradient>
+                      <linearGradient id="athGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#bfdbfe" />
+                      </linearGradient>
+                      <linearGradient id="batGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#bbf7d0" />
+                      </linearGradient>
                     </defs>
 
                     {/* S3 Inventory */}
-                    <rect x="15" y="25" width="85" height="50" rx="4" fill="#fdf2f8" stroke="#ec4899" strokeWidth="1" />
-                    <text x="57" y="45" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#be185d">📋 S3 Inventory</text>
-                    <text x="57" y="55" textAnchor="middle" fontSize="6.5" fill="#db2777">Daily Object Audit</text>
+                    <rect x="15" y="25" width="85" height="50" rx="6" fill="url(#invGrad)" stroke="#ec4899" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(236,72,153,0.05))' }} />
+                    <text x="57" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#be185d">📋 S3 Inventory</text>
+                    <text x="57" y="56" textAnchor="middle" fontSize="7.5" fill="#db2777" fontWeight="bold">Metadata Audit</text>
 
                     {/* Path 1 */}
-                    <path d="M100,50 L140,50" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3,1" markerEnd="url(#arr-batch-blue)" />
+                    <path d="M100,50 L140,50" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-batch-blue)" />
 
                     {/* Athena */}
-                    <rect x="140" y="25" width="85" height="50" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.2" />
-                    <text x="182" y="45" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e40af">🔍 Athena SQL</text>
-                    <text x="182" y="55" textAnchor="middle" fontSize="6.5" fill="#2563eb">Compiles CSV list</text>
+                    <rect x="140" y="25" width="85" height="50" rx="6" fill="url(#athGrad)" stroke="#2563eb" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(37,99,235,0.05))' }} />
+                    <text x="182" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e40af">🔍 Athena SQL</text>
+                    <text x="182" y="56" textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="bold">Generates Manifest</text>
 
                     {/* Path 2 */}
-                    <path d="M225,50 L265,50" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="3,1" markerEnd="url(#arr-batch-green)" />
+                    <path d="M225,50 L265,50" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-batch-green)" />
 
                     {/* Batch Job */}
-                    <rect x="265" y="25" width="70" height="50" rx="4" fill="#f0fdf4" stroke="#166534" strokeWidth="1.2" />
-                    <text x="300" y="45" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#14532d">⚙️ Batch Job</text>
-                    <text x="300" y="55" textAnchor="middle" fontSize="6" fill="#15803d">Saves manifest.csv</text>
+                    <rect x="265" y="25" width="70" height="50" rx="6" fill="url(#batGrad)" stroke="#166534" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 2px 4px rgba(22,101,52,0.05))' }} />
+                    <text x="300" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#14532d">⚙️ Batch Job</text>
+                    <text x="300" y="56" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold">Runs Manifest</text>
 
                     {/* Distributed threads radiating out */}
                     <path d="M300,75 L300,120" stroke="#166534" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
-                    <path d="M265,65 L170,120" stroke="#166534" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
-                    <path d="M335,65 L335,120" stroke="#166534" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
+                    <path d="M265,65 L170,120" stroke="#166534" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
+                    <path d="M335,65 L335,120" stroke="#166534" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
 
                     {/* Heavy process targets */}
-                    <rect x="120" y="120" width="100" height="42" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="170" y="135" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#475569">📄 uploads/financials/*</text>
-                    <text x="170" y="147" textAnchor="middle" fontSize="6.5" fill="#94a3b8">Overwrote encryption key</text>
+                    <rect x="115" y="120" width="105" height="42" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                    <text x="167" y="134" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">📄 /financials/*</text>
+                    <text x="167" y="146" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Key Overwrites</text>
 
-                    <rect x="235" y="120" width="100" height="42" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="285" y="135" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#475569">📄 uploads/archives/*</text>
-                    <text x="285" y="147" textAnchor="middle" fontSize="6.5" fill="#94a3b8">WORM Retention Set</text>
+                    <rect x="230" y="120" width="105" height="42" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                    <text x="282" y="134" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">📄 /archives/*</text>
+                    <text x="282" y="146" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Object Locks Set</text>
 
-                    <rect x="175" y="175" width="120" height="30" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                    <text x="235" y="193" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#047857">SUCCESS! ✅ JOB COMPLETE</text>
+                    <rect x="175" y="178" width="120" height="26" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" style={{ filter: 'drop-shadow(0 2px 4px rgba(16,185,129,0.1))' }} />
+                    <text x="235" y="194" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#047857">SUCCESS! ✅ COMPLETED</text>
 
                     {/* Animated Manifest Glowing Packet */}
                     {batchIsRunning && (
@@ -4653,15 +5322,15 @@ export default function S3Visualizer() {
                         batchStep === 1 ? 57 :
                         batchStep === 2 ? 182 :
                         batchStep === 3 ? 300 :
-                        batchStep === 4 ? (batchProgressPercentage < 50 ? 170 : 285) :
+                        batchStep === 4 ? (batchProgressPercentage < 50 ? 170 : 282) :
                         235
                       } cy={
                         batchStep === 1 ? 50 :
                         batchStep === 2 ? 50 :
                         batchStep === 3 ? 50 :
                         batchStep === 4 ? 135 :
-                        193
-                      } r="6" fill="#ec4899" className="s3-g-circle">
+                        191
+                      } r="7" fill="#ec4899" style={{ filter: 'drop-shadow(0 0 5px #ec4899)' }}>
                         <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                       </circle>
                     )}
