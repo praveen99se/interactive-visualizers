@@ -1,19 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 type TabType = 'concept' | 'compare' | 'arch' | 'usecases' | 'security' | 'sim';
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  targetX: number;
-  targetY: number;
-  speed: number;
-  color: string;
-  type: 'hit' | 'miss';
-  state: 'to_cache' | 'to_db' | 'back_to_client';
-  label: string;
-}
 
 const ucData = {
   session: {
@@ -191,17 +178,6 @@ export default function ElastiCacheVisualizer() {
   const [isRunning, setIsRunning] = useState(false);
   const [simLogs, setSimLogs] = useState<string[]>([]);
   
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const particleIdRef = useRef(0);
-  const animationFrameIdRef = useRef<number | null>(null);
-  const isRunningRef = useRef(isRunning);
-
-  // Synchronize ref for callback access
-  useEffect(() => {
-    isRunningRef.current = isRunning;
-  }, [isRunning]);
-
   const toggleSecCheck = (index: number) => {
     setSecChecks(prev => {
       const copy = [...prev];
@@ -232,219 +208,69 @@ export default function ElastiCacheVisualizer() {
     if (!isRunning) return;
     setIsRunning(false);
     logSimEvent('⏹ Cache simulator stopped.');
-    if (animationFrameIdRef.current) {
-      cancelAnimationFrame(animationFrameIdRef.current);
-    }
   };
 
   const clearLog = () => {
     setSimLogs([]);
   };
 
-  // Canvas loop logic
-  const drawCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Node locations
-    const clientX = 40;
-    const clientY = 90;
-    const cacheX = 220;
-    const cacheY = 45;
-    const dbX = 220;
-    const dbY = 135;
-
-    // Draw static nodes
-    // 1. Client Node
-    ctx.fillStyle = '#eff6ff';
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.roundRect(10, 65, 60, 50, 6);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#1d4ed8';
-    ctx.font = '10px var(--font-sans)';
-    ctx.textAlign = 'center';
-    ctx.fillText('Client', 40, 90);
-    ctx.fillText('App', 40, 102);
-
-    // 2. ElastiCache Redis Node
-    ctx.fillStyle = '#fef9c3';
-    ctx.strokeStyle = '#eab308';
-    ctx.beginPath();
-    ctx.roundRect(170, 20, 100, 50, 6);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#854d0e';
-    ctx.fillText('⚡ ElastiCache', 220, 45);
-    ctx.font = '9px var(--font-sans)';
-    ctx.fillText('RAM (<1ms)', 220, 57);
-
-    // 3. Database Node
-    ctx.fillStyle = '#dbeafe';
-    ctx.strokeStyle = '#2563eb';
-    ctx.font = '10px var(--font-sans)';
-    ctx.beginPath();
-    ctx.roundRect(170, 110, 100, 50, 6);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#1d4ed8';
-    ctx.fillText('🗄️ Relational DB', 220, 135);
-    ctx.font = '9px var(--font-sans)';
-    ctx.fillText('Disk (15-40ms)', 220, 147);
-
-    // Draw network conduits
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-
-    ctx.beginPath();
-    ctx.moveTo(clientX + 30, clientY);
-    ctx.lineTo(cacheX - 50, cacheY + 10);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(clientX + 30, clientY);
-    ctx.lineTo(dbX - 50, dbY - 10);
-    ctx.stroke();
-
-    ctx.setLineDash([]); // Reset line dash
-
-    // Spawn new particles periodically if running
-    if (isRunningRef.current && Math.random() < 0.15) {
-      const id = particleIdRef.current++;
-      const randKey = Math.floor(Math.random() * 900 + 100);
-      const label = `GET user:${randKey}`;
-      particlesRef.current.push({
-        id,
-        x: clientX + 30,
-        y: clientY,
-        targetX: cacheX - 50,
-        targetY: cacheY + 10,
-        speed: 2 + Math.random() * 2,
-        color: '#64748b',
-        type: 'hit',
-        state: 'to_cache',
-        label
-      });
-    }
-
-    // Process particles
-    const particles = particlesRef.current;
-    particlesRef.current = particles.filter(p => {
-      // Vector movement
-      const dx = p.targetX - p.x;
-      const dy = p.targetY - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < 4) {
-        // Destination node reached, trigger transition
-        if (p.state === 'to_cache') {
-          // Check Hit/Miss
-          const isHit = Math.random() * 100 < hitRate;
-          if (isHit) {
-            p.type = 'hit';
-            p.color = '#22c55e'; // Green
-            p.targetX = clientX + 30;
-            p.targetY = clientY;
-            p.state = 'back_to_client';
-            logSimEvent(`${p.label} → Cache HIT (0.1ms) ✅`);
-          } else {
-            p.type = 'miss';
-            p.color = '#ef4444'; // Red
-            p.targetX = dbX - 50;
-            p.targetY = dbY - 10;
-            p.state = 'to_db';
-            logSimEvent(`${p.label} → Cache MISS ❌ → Query DB (25ms)`);
-          }
-        } else if (p.state === 'to_db') {
-          // Query DB completed, route back to client
-          p.targetX = clientX + 30;
-          p.targetY = clientY;
-          p.state = 'back_to_client';
-          logSimEvent(`${p.label} → Read DB → Write back to Cache 💾`);
-        } else if (p.state === 'back_to_client') {
-          // Returned to caller, delete particle
-          return false;
-        }
-      } else {
-        // Move towards target
-        p.x += (dx / dist) * p.speed;
-        p.y += (dy / dist) * p.speed;
-      }
-
-      // Draw particle
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Draw label tooltip above leading particle
-      if (dist > 15) {
-        ctx.fillStyle = 'var(--color-text-secondary)';
-        ctx.font = '8px var(--font-mono)';
-        ctx.fillText(p.label, p.x, p.y - 8);
-      }
-
-      return true;
-    });
-
-    if (isRunningRef.current) {
-      animationFrameIdRef.current = requestAnimationFrame(drawCanvas);
-    }
-  }, [hitRate]);
-
-  // Control simulation canvas updates
+  // Interval loop for live log streaming when running
   useEffect(() => {
-    if (activeSection === 'sim') {
-      if (isRunning) {
-        drawCanvas();
-      } else {
-        // Force a static render
-        setTimeout(() => {
-          drawCanvas();
-        }, 100);
-      }
+    let interval: NodeJS.Timeout | null = null;
+    if (isRunning) {
+      interval = setInterval(() => {
+        const randKey = Math.floor(Math.random() * 900 + 100);
+        const label = `GET user:${randKey}`;
+        const isHit = Math.random() * 100 < hitRate;
+        if (isHit) {
+          logSimEvent(`${label} → Cache HIT (0.1ms) ✅`);
+        } else {
+          logSimEvent(`${label} → Cache MISS ❌ → Query DB (25ms) → Write-back Cache 💾`);
+        }
+      }, Math.max(150, 2000 - Math.round(rps / 5.5))); // Speed scales with RPS
     }
     return () => {
-      if (animationFrameIdRef.current) {
-        cancelAnimationFrame(animationFrameIdRef.current);
-      }
+      if (interval) clearInterval(interval);
     };
-  }, [activeSection, isRunning, drawCanvas]);
+  }, [isRunning, hitRate, rps]);
 
   return (
     <div>
       <style>{`
         .ec-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-        .ec-pill{border:0.5px solid var(--color-border-tertiary);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--color-text-secondary);background:var(--color-background-primary);cursor:pointer;transition:all .15s}
-        .ec-pill.active{background:#dc2626;border-color:#dc2626;color:#fff}
-        .ec-sec{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 7px}
-        .ec-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;background:var(--color-background-primary);margin-bottom:10px}
-        .ec-kv{display:flex;gap:8px;font-size:12px;margin:5px 0;align-items:baseline}
-        .ec-kk{min-width:155px;color:var(--color-text-secondary);flex-shrink:0}
-        .ec-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-        .ec-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-        .ec-met{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
-        ul.ec-ck li{font-size:12px;margin-bottom:4px;list-style:none;padding-left:16px;position:relative}
+        .ec-pill{border:1px solid #cbd5e1;border-radius:999px;padding:6px 12px;font-size:12px;color:#475569;background:rgba(255,255,255,0.8);cursor:pointer;transition:all .15s;font-weight:500}
+        .ec-pill.active{background:#dc2626;border-color:#dc2626;color:#fff;box-shadow:0 2px 4px rgba(220,38,38,0.2)}
+        .ec-sec{font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}
+        .ec-card{border:1px solid #e2e8f0;border-radius:16px;padding:14px 16px;background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);box-shadow:0 4px 6px -1px rgba(0,0,0,0.03),0 2px 4px -1px rgba(0,0,0,0.02);margin-bottom:12px}
+        .ec-kv{display:flex;gap:8px;font-size:12px;margin:6px 0;align-items:baseline}
+        .ec-kk{min-width:145px;color:#475569;font-weight:600;flex-shrink:0}
+        .ec-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+        .ec-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+        .ec-met{background:#f8fafc;border-radius:12px;padding:10px;text-align:center;border:1px solid #e2e8f0}
+        ul.ec-ck li{font-size:12px;margin-bottom:6px;list-style:none;padding-left:18px;position:relative;color:#334155}
         ul.ec-ck li::before{content:"✓";position:absolute;left:0;color:#15803d;font-weight:700}
-        .ec-log{border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:8px 10px;background:var(--color-background-secondary);font-size:11px;font-family:var(--font-mono,monospace);min-height:60px;white-space:pre-wrap}
-        .ec-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .ec-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
-        .ec-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .ec-tb.on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        button.ec-btn{font-size:12px;padding:6px 14px;border-radius:8px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;transition:all .15s}
-        button.ec-btn.primary{background:#dc2626;border-color:#dc2626;color:#fff}
+        .ec-log{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;background:#f8fafc;color:#1e293b;font-size:11px;font-family:var(--font-mono,monospace);min-height:60px;white-space:pre-wrap;line-height:1.5;box-shadow:inset 0 1px 2px rgba(0,0,0,0.03)}
+        .ec-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 12px; }
+        .ec-tb { padding: 6px 14px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 12px; cursor: pointer; background: rgba(255,255,255,0.8); color: #475569; transition: all 0.15s ease-in-out; outline: none; font-weight: 500; }
+        .ec-tb:hover { background: #f1f5f9; border-color: #94a3b8; color: #0f172a; }
+        .ec-tb.on { background: #16a34a; color: #fff; border-color: #16a34a; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2); }
+        button.ec-btn{font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#475569;cursor:pointer;transition:all .15s;font-weight:500}
+        button.ec-btn:hover{background:#f8fafc;color:#0f172a;border-color:#94a3b8}
+        button.ec-btn.primary{background:#dc2626;border-color:#dc2626;color:#fff;box-shadow:0 2px 4px rgba(220,38,38,0.15)}
+        button.ec-btn.primary:hover{background:#b91c1c;border-color:#b91c1c;color:#fff}
+        .ec-svg-bg {
+          background-color: #f8fafc;
+          background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+          background-size: 14px 14px;
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
       `}</style>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">⚡ AWS ElastiCache Visualizer</h1>
-        <p className="text-gray-600">Explore fully managed in-memory cache architectures, Redis vs Memcached parameters, and cache strategies.</p>
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">⚡ AWS ElastiCache Visualizer</h1>
+        <p className="text-slate-600">Explore fully managed in-memory cache architectures, Redis vs Memcached parameters, and cache strategies.</p>
       </div>
 
       <div className="ec-tabs">
@@ -456,49 +282,57 @@ export default function ElastiCacheVisualizer() {
         <button className={`ec-tb ${activeSection === 'sim' ? 'on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Cache Simulator</button>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-slate-50/60 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 shadow-sm">
         {activeSection === 'concept' && (
           <div id="pnl-concept">
             <div className="ec-g2" style={{ marginBottom: '10px' }}>
               <div>
                 <div className="ec-sec">What is ElastiCache?</div>
-                <svg width="100%" viewBox="0 0 340 420" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 340 420" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="ec1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#dc2626"/></marker>
-                    <marker id="ec2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                    <marker id="ec3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/></marker>
+                    <marker id="ec1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b91c1c"/></marker>
+                    <marker id="ec2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857"/></marker>
+                    <marker id="ec3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#475569"/></marker>
                   </defs>
-                  <rect x="10" y="10" width="320" height="52" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x="170" y="30" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">🌐 User Request (Axios / App)</text>
-                  <text x="170" y="48" textAnchor="middle" fontSize="11" fill="#dc2626">GET /product/123 · GET /user/profile</text>
-
-                  <rect x="10" y="88" width="320" height="52" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                  <text x="170" y="108" textAnchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">🖥️ Application Server / Lambda</text>
-                  <text x="170" y="126" textAnchor="middle" fontSize="11" fill="#c2410c">Checks cache first before hitting DB</text>
-
-                  <rect x="10" y="166" width="148" height="72" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                  <text x="84" y="188" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="500">⚡ ElastiCache</text>
-                  <text x="84" y="206" textAnchor="middle" fontSize="11" fill="#854d0e">In-Memory Store</text>
-                  <text x="84" y="222" textAnchor="middle" fontSize="11" fill="#854d0e">~0.1ms latency</text>
-
-                  <rect x="182" y="166" width="148" height="72" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                  <text x="256" y="188" textAnchor="middle" fontSize="13" fill="#1d4ed8" fontWeight="500">🗄️ RDS / Aurora</text>
-                  <text x="256" y="206" textAnchor="middle" fontSize="11" fill="#1d4ed8">Persistent DB</text>
-                  <text x="256" y="222" textAnchor="middle" fontSize="11" fill="#1d4ed8">~5–50ms latency</text>
-
-                  <rect x="10" y="264" width="320" height="52" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                  <text x="170" y="284" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">✅ Cache HIT → Return instantly</text>
-                  <text x="170" y="302" textAnchor="middle" fontSize="11" fill="#166534">No DB query · ~0.1ms · Saves cost + CPU</text>
-
-                  <rect x="10" y="342" width="320" height="52" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                  <text x="170" y="362" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">❌ Cache MISS → Query DB → Store in Cache</text>
-                  <text x="170" y="380" textAnchor="middle" fontSize="11" fill="#7c3aed">DB hit once · Cache for next N requests</text>
-
-                  <line x1="170" y1="62" x2="170" y2="88" stroke="#dc2626" strokeWidth="1" markerEnd="url(#ec1)"/>
-                  <line x1="110" y1="140" x2="84" y2="166" stroke="#854d0e" strokeWidth="1" markerEnd="url(#ec1)"/>
-                  <line x1="230" y1="140" x2="256" y2="166" stroke="#1d4ed8" strokeWidth="1" markerEnd="url(#ec3)"/>
-                  <line x1="84" y1="238" x2="84" y2="264" stroke="#15803d" strokeWidth="1" markerEnd="url(#ec2)"/>
-                  <line x1="256" y1="238" x2="256" y2="264" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ec1)"/>
+                  
+                  {/* Step 1: User Request */}
+                  <rect x="15" y="15" width="310" height="52" rx="10" fill="rgba(239, 68, 68, 0.05)" stroke="#f87171" strokeWidth="1.5"/>
+                  <text x="170" y="36" textAnchor="middle" fontSize="12" fill="#991b1b" fontWeight="600">🌐 User Request (Axios / App)</text>
+                  <text x="170" y="50" textAnchor="middle" fontSize="10.5" fill="#c2410c" fontFamily="monospace">GET /product/123 · GET /user/profile</text>
+ 
+                  {/* Step 2: Application Server */}
+                  <rect x="15" y="93" width="310" height="52" rx="10" fill="rgba(249, 115, 22, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
+                  <text x="170" y="114" textAnchor="middle" fontSize="12" fill="#9a3412" fontWeight="600">🖥️ Application Server / Lambda</text>
+                  <text x="170" y="128" textAnchor="middle" fontSize="10.5" fill="#7c2d12">Checks cache first before hitting DB</text>
+ 
+                  {/* Step 3a: ElastiCache */}
+                  <rect x="15" y="172" width="144" height="72" rx="10" fill="rgba(234, 179, 8, 0.05)" stroke="#facc15" strokeWidth="1.5"/>
+                  <text x="87" y="196" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="bold">⚡ ElastiCache</text>
+                  <text x="87" y="214" textAnchor="middle" fontSize="10.5" fill="#713f12" fontWeight="500">In-Memory Store</text>
+                  <text x="87" y="228" textAnchor="middle" fontSize="10" fill="#a16207" fontFamily="monospace">~0.1ms latency</text>
+ 
+                  {/* Step 3b: Relational DB */}
+                  <rect x="181" y="172" width="144" height="72" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#60a5fa" strokeWidth="1.5"/>
+                  <text x="253" y="196" textAnchor="middle" fontSize="13" fill="#1e40af" fontWeight="bold">🗄️ RDS / Aurora</text>
+                  <text x="253" y="214" textAnchor="middle" fontSize="10.5" fill="#1e3a8a" fontWeight="500">Persistent DB</text>
+                  <text x="253" y="228" textAnchor="middle" fontSize="10" fill="#2563eb" fontFamily="monospace">~5–50ms latency</text>
+ 
+                  {/* Step 4a: Cache Hit Path */}
+                  <rect x="15" y="270" width="310" height="52" rx="10" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1.5"/>
+                  <text x="170" y="291" textAnchor="middle" fontSize="12" fill="#065f46" fontWeight="600">✅ Cache HIT → Return instantly</text>
+                  <text x="170" y="305" textAnchor="middle" fontSize="10.5" fill="#047857">No DB query · ~0.1ms · Saves cost + CPU</text>
+ 
+                  {/* Step 4b: Cache Miss Path */}
+                  <rect x="15" y="348" width="310" height="52" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#a78bfa" strokeWidth="1.5"/>
+                  <text x="170" y="369" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="600">❌ Cache MISS → Query DB → Write Cache</text>
+                  <text x="170" y="383" textAnchor="middle" fontSize="10.5" fill="#6d28d9">DB hit once · Cache for next N requests</text>
+ 
+                  {/* Connectors */}
+                  <line x1="170" y1="67" x2="170" y2="93" stroke="#b91c1c" strokeWidth="1.5" markerEnd="url(#ec1)"/>
+                  <line x1="110" y1="145" x2="87" y2="172" stroke="#854d0e" strokeWidth="1.5" markerEnd="url(#ec1)"/>
+                  <line x1="230" y1="145" x2="253" y2="172" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ec3)"/>
+                  <line x1="87" y1="244" x2="87" y2="270" stroke="#047857" strokeWidth="1.5" markerEnd="url(#ec2)"/>
+                  <line x1="253" y1="244" x2="253" y2="348" stroke="#5b21b6" strokeWidth="1.5" markerEnd="url(#ec1)"/>
                 </svg>
               </div>
               <div>
@@ -619,99 +453,112 @@ export default function ElastiCacheVisualizer() {
         {activeSection === 'arch' && (
           <div id="pnl-arch">
             <div className="ec-sec">Redis Cluster Architecture (Multi-AZ)</div>
-            <svg width="100%" viewBox="0 0 680 320" style={{ display: 'block', marginBottom: '12px' }}>
+            <svg width="100%" viewBox="0 0 680 320" className="ec-svg-bg" style={{ display: 'block', marginBottom: '12px' }}>
               <defs>
-                <marker id="aa1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#dc2626"/></marker>
-                <marker id="aa2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                <marker id="aa3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/></marker>
+                <marker id="aa1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b91c1c"/></marker>
+                <marker id="aa2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857"/></marker>
               </defs>
-              <rect x="10" y="10" width="660" height="300" rx="16" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-              <text x="340" y="30" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">VPC — ElastiCache Redis Cluster (Cluster Mode Enabled)</text>
+              
+              {/* Outer VPC frame */}
+              <rect x="10" y="10" width="660" height="300" rx="16" fill="rgba(255, 255, 255, 0.4)" stroke="#cbd5e1" strokeWidth="1.5"/>
+              <text x="340" y="30" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="700">VPC — ElastiCache Redis Cluster (Cluster Mode Enabled)</text>
 
-              <rect x="25" y="44" width="190" height="250" rx="12" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-              <text x="120" y="64" textAnchor="middle" fontSize="11" fill="#c2410c" fontWeight="500">AZ-1 (us-east-1a)</text>
-              <rect x="38" y="76" width="164" height="60" rx="8" fill="#fef3c7" stroke="#fde68a" strokeWidth="0.5"/>
-              <text x="120" y="96" textAnchor="middle" fontSize="12" fill="#92400e" fontWeight="500">Primary Node</text>
-              <text x="120" y="114" textAnchor="middle" fontSize="11" fill="#92400e">Shard 1 · Slots 0–5460</text>
-              <rect x="38" y="152" width="164" height="60" rx="8" fill="#fef3c7" stroke="#fde68a" strokeWidth="0.5"/>
-              <text x="120" y="172" textAnchor="middle" fontSize="12" fill="#92400e" fontWeight="500">Primary Node</text>
-              <text x="120" y="190" textAnchor="middle" fontSize="11" fill="#92400e">Shard 2 · Slots 5461–10922</text>
-              <rect x="38" y="228" width="164" height="52" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-              <text x="120" y="248" textAnchor="middle" fontSize="11" fill="#166534">Replica (from AZ-2)</text>
-              <text x="120" y="266" textAnchor="middle" fontSize="11" fill="#166534">Shard 3 replica</text>
+              {/* AZ-1 Subnet */}
+              <rect x="25" y="44" width="190" height="250" rx="12" fill="rgba(255, 255, 255, 0.7)" stroke="#cbd5e1" strokeWidth="1"/>
+              <text x="120" y="64" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="bold">AZ-1 (us-east-1a)</text>
+              <rect x="38" y="76" width="164" height="60" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
+              <text x="120" y="96" textAnchor="middle" fontSize="12" fill="#78350f" fontWeight="bold">Primary Node</text>
+              <text x="120" y="114" textAnchor="middle" fontSize="10.5" fill="#9a3412" fontFamily="monospace">Shard 1 · Slots 0–5460</text>
+              <rect x="38" y="152" width="164" height="60" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
+              <text x="120" y="172" textAnchor="middle" fontSize="12" fill="#78350f" fontWeight="bold">Primary Node</text>
+              <text x="120" y="190" textAnchor="middle" fontSize="10.5" fill="#9a3412" fontFamily="monospace">Shard 2 · Slots 5461–10922</text>
+              <rect x="38" y="228" width="164" height="52" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1"/>
+              <text x="120" y="248" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="600">Replica (from AZ-2)</text>
+              <text x="120" y="264" textAnchor="middle" fontSize="9.5" fill="#047857" fontFamily="monospace">Shard 3 replica</text>
 
-              <rect x="245" y="44" width="190" height="250" rx="12" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-              <text x="340" y="64" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="500">AZ-2 (us-east-1b)</text>
-              <rect x="258" y="76" width="164" height="60" rx="8" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-              <text x="340" y="96" textAnchor="middle" fontSize="12" fill="#166534" fontWeight="500">Replica Node</text>
-              <text x="340" y="114" textAnchor="middle" fontSize="11" fill="#166534">Shard 1 replica</text>
-              <rect x="258" y="152" width="164" height="60" rx="8" fill="#fef3c7" stroke="#fde68a" strokeWidth="0.5"/>
-              <text x="340" y="172" textAnchor="middle" fontSize="12" fill="#92400e" fontWeight="500">Primary Node</text>
-              <text x="340" y="190" textAnchor="middle" fontSize="11" fill="#92400e">Shard 3 · Slots 10923–16383</text>
-              <rect x="258" y="228" width="164" height="52" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-              <text x="340" y="248" textAnchor="middle" fontSize="11" fill="#166534">Replica (from AZ-1)</text>
-              <text x="340" y="266" textAnchor="middle" fontSize="11" fill="#166534">Shard 2 replica</text>
+              {/* AZ-2 Subnet */}
+              <rect x="245" y="44" width="190" height="250" rx="12" fill="rgba(255, 255, 255, 0.7)" stroke="#cbd5e1" strokeWidth="1"/>
+              <text x="340" y="64" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="bold">AZ-2 (us-east-1b)</text>
+              <rect x="258" y="76" width="164" height="60" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1"/>
+              <text x="340" y="96" textAnchor="middle" fontSize="12" fill="#065f46" fontWeight="bold">Replica Node</text>
+              <text x="340" y="114" textAnchor="middle" fontSize="10.5" fill="#047857" fontFamily="monospace">Shard 1 replica</text>
+              <rect x="258" y="152" width="164" height="60" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
+              <text x="340" y="172" textAnchor="middle" fontSize="12" fill="#78350f" fontWeight="bold">Primary Node</text>
+              <text x="340" y="190" textAnchor="middle" fontSize="10.5" fill="#9a3412" fontFamily="monospace">Shard 3 · Slots 10923–16383</text>
+              <rect x="258" y="228" width="164" height="52" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1"/>
+              <text x="340" y="248" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="600">Replica (from AZ-1)</text>
+              <text x="340" y="264" textAnchor="middle" fontSize="9.5" fill="#047857" fontFamily="monospace">Shard 2 replica</text>
 
-              <rect x="465" y="44" width="190" height="250" rx="12" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-              <text x="560" y="64" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="500">AZ-3 (us-east-1c)</text>
-              <rect x="478" y="76" width="164" height="60" rx="8" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
-              <text x="560" y="96" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="500">Replica Node</text>
-              <text x="560" y="114" textAnchor="middle" fontSize="11" fill="#6d28d9">Shard 2 replica</text>
-              <rect x="478" y="152" width="164" height="60" rx="8" fill="#ede9fe" stroke="#c4b5fd" strokeWidth="0.5"/>
-              <text x="560" y="172" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="500">Replica Node</text>
-              <text x="560" y="190" textAnchor="middle" fontSize="11" fill="#6d28d9">Shard 3 replica</text>
-              <rect x="478" y="228" width="164" height="52" rx="8" fill="#fef3c7" stroke="#fde68a" strokeWidth="0.5"/>
-              <text x="560" y="248" textAnchor="middle" fontSize="11" fill="#92400e">Primary Node</text>
-              <text x="560" y="266" textAnchor="middle" fontSize="11" fill="#92400e">Shard 1 replica</text>
+              {/* AZ-3 Subnet */}
+              <rect x="465" y="44" width="190" height="250" rx="12" fill="rgba(255, 255, 255, 0.7)" stroke="#cbd5e1" strokeWidth="1"/>
+              <text x="560" y="64" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="bold">AZ-3 (us-east-1c)</text>
+              <rect x="478" y="76" width="164" height="60" rx="8" fill="rgba(139, 92, 246, 0.05)" stroke="#a78bfa" strokeWidth="1"/>
+              <text x="560" y="96" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">Replica Node</text>
+              <text x="560" y="114" textAnchor="middle" fontSize="10.5" fill="#6d28d9" fontFamily="monospace">Shard 2 replica</text>
+              <rect x="478" y="152" width="164" height="60" rx="8" fill="rgba(139, 92, 246, 0.05)" stroke="#a78bfa" strokeWidth="1"/>
+              <text x="560" y="172" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">Replica Node</text>
+              <text x="560" y="190" textAnchor="middle" fontSize="10.5" fill="#6d28d9" fontFamily="monospace">Shard 3 replica</text>
+              <rect x="478" y="228" width="164" height="52" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
+              <text x="560" y="248" textAnchor="middle" fontSize="11" fill="#78350f" fontWeight="bold">Primary Node</text>
+              <text x="560" y="264" textAnchor="middle" fontSize="9.5" fill="#9a3412" fontFamily="monospace">Shard 1 replica</text>
 
-              <line x1="202" y1="106" x2="258" y2="106" stroke="#dc2626" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#aa1)"/>
-              <line x1="202" y1="182" x2="258" y2="182" stroke="#dc2626" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#aa1)"/>
-              <line x1="422" y1="106" x2="478" y2="106" stroke="#15803d" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#aa2)"/>
-              <line x1="422" y1="182" x2="478" y2="182" stroke="#15803d" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#aa2)"/>
+              {/* Replication links */}
+              <line x1="202" y1="106" x2="258" y2="106" stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa1)"/>
+              <line x1="202" y1="182" x2="258" y2="182" stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa1)"/>
+              <line x1="422" y1="106" x2="478" y2="106" stroke="#047857" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa2)"/>
+              <line x1="422" y1="182" x2="478" y2="182" stroke="#047857" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa2)"/>
             </svg>
 
             <div className="ec-g2" style={{ marginBottom: '10px' }}>
               <div>
                 <div className="ec-sec">Full Infrastructure Integration</div>
-                <svg width="100%" viewBox="0 0 340 460" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 340 460" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="ai1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#dc2626"/></marker>
-                    <marker id="ai2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
-                    <marker id="ai3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#0369a1"/></marker>
+                    <marker id="ai1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#475569"/></marker>
                   </defs>
-                  <rect x="10" y="10" width="320" height="44" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x="170" y="36" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">🌐 CloudFront CDN / Route 53</text>
+                  
+                  {/* CloudFront */}
+                  <rect x="15" y="15" width="310" height="44" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#c4b5fd" strokeWidth="1.5"/>
+                  <text x="170" y="41" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">🌐 CloudFront CDN / Route 53</text>
 
-                  <rect x="10" y="78" width="320" height="44" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                  <text x="170" y="104" textAnchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">⚖️ ALB (Application Load Balancer)</text>
+                  {/* ALB */}
+                  <rect x="15" y="85" width="310" height="44" rx="10" fill="rgba(249, 115, 22, 0.05)" stroke="#fed7aa" strokeWidth="1.5"/>
+                  <text x="170" y="111" textAnchor="middle" fontSize="12" fill="#9a3412" fontWeight="bold">⚖️ ALB (Application Load Balancer)</text>
 
-                  <rect x="10" y="146" width="148" height="44" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                  <text x="84" y="172" textAnchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="500">EC2 / ECS App</text>
-                  <rect x="182" y="146" width="148" height="44" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                  <text x="256" y="172" textAnchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="500">Lambda Functions</text>
+                  {/* Compute */}
+                  <rect x="15" y="155" width="144" height="44" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#93c5fd" strokeWidth="1.5"/>
+                  <text x="87" y="181" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">EC2 / ECS App</text>
+                  <rect x="181" y="155" width="144" height="44" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#93c5fd" strokeWidth="1.5"/>
+                  <text x="253" y="181" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">Lambda Functions</text>
 
-                  <rect x="80" y="218" width="180" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5"/>
-                  <text x="170" y="238" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="500">⚡ ElastiCache</text>
-                  <text x="170" y="256" textAnchor="middle" fontSize="11" fill="#854d0e">Redis / Memcached</text>
+                  {/* ElastiCache */}
+                  <rect x="80" y="225" width="180" height="52" rx="10" fill="rgba(234, 179, 8, 0.05)" stroke="#fde047" strokeWidth="1.5"/>
+                  <text x="170" y="247" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="bold">⚡ ElastiCache</text>
+                  <text x="170" y="265" textAnchor="middle" fontSize="11" fill="#713f12" fontWeight="500">Redis / Memcached</text>
 
-                  <rect x="10" y="298" width="148" height="52" rx="10" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5"/>
-                  <text x="84" y="318" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">🗄️ RDS / Aurora</text>
-                  <text x="84" y="336" textAnchor="middle" fontSize="11" fill="#166534">Primary DB</text>
-                  <rect x="182" y="298" width="148" height="52" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                  <text x="256" y="318" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">📦 S3 / DynamoDB</text>
-                  <text x="256" y="336" textAnchor="middle" fontSize="11" fill="#7c3aed">Object / NoSQL</text>
+                  {/* RDS Primary */}
+                  <rect x="15" y="305" width="144" height="52" rx="10" fill="rgba(16, 185, 129, 0.05)" stroke="#86efac" strokeWidth="1.5"/>
+                  <text x="87" y="327" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="bold">🗄️ RDS / Aurora</text>
+                  <text x="87" y="345" textAnchor="middle" fontSize="11" fill="#166534" fontWeight="500">Primary DB</text>
+                  
+                  {/* S3 Storage */}
+                  <rect x="181" y="305" width="144" height="52" rx="10" fill="rgba(139, 92, 246, 0.05)" stroke="#c4b5fd" strokeWidth="1.5"/>
+                  <text x="253" y="327" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="bold">📦 S3 / DynamoDB</text>
+                  <text x="253" y="345" textAnchor="middle" fontSize="11" fill="#5b21b6" fontWeight="500">Object / NoSQL</text>
 
-                  <rect x="10" y="374" width="320" height="44" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                  <text x="170" y="400" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="500">📊 CloudWatch · X-Ray · SNS Alerts</text>
+                  {/* CloudWatch Monitor */}
+                  <rect x="15" y="385" width="310" height="44" rx="10" fill="rgba(20, 184, 166, 0.05)" stroke="#5eead4" strokeWidth="1.5"/>
+                  <text x="170" y="411" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="bold">📊 CloudWatch · X-Ray · SNS Alerts</text>
 
-                  <line x1="170" y1="54" x2="170" y2="78" stroke="#dc2626" strokeWidth="1" markerEnd="url(#ai1)"/>
-                  <line x1="120" y1="122" x2="84" y2="146" stroke="#c2410c" strokeWidth="1" markerEnd="url(#ai1)"/>
-                  <line x1="220" y1="122" x2="256" y2="146" stroke="#c2410c" strokeWidth="1" markerEnd="url(#ai1)"/>
-                  <line x1="84" y1="190" x2="130" y2="218" stroke="#854d0e" strokeWidth="1" markerEnd="url(#ai1)"/>
-                  <line x1="256" y1="190" x2="210" y2="218" stroke="#854d0e" strokeWidth="1" markerEnd="url(#ai1)"/>
-                  <line x1="130" y1="270" x2="84" y2="298" stroke="#15803d" strokeWidth="1" markerEnd="url(#ai2)"/>
-                  <line x1="210" y1="270" x2="256" y2="298" stroke="#7c3aed" strokeWidth="1" markerEnd="url(#ai1)"/>
-                  <line x1="84" y1="350" x2="84" y2="374" stroke="#0f766e" strokeWidth="1" markerEnd="url(#ai2)"/>
+                  {/* Conduits */}
+                  <line x1="170" y1="59" x2="170" y2="85" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="120" y1="129" x2="87" y2="155" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="220" y1="129" x2="253" y2="155" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="87" y1="199" x2="130" y2="225" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="253" y1="199" x2="210" y2="225" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="130" y1="277" x2="87" y2="305" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="210" y1="277" x2="253" y2="305" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  <line x1="87" y1="357" x2="87" y2="385" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
                 </svg>
               </div>
               <div>
@@ -760,9 +607,10 @@ export default function ElastiCacheVisualizer() {
                   style={{
                     fontSize: '11px',
                     padding: '5px 12px',
-                    background: activeUsecase === key ? '#dc2626' : undefined,
+                    background: activeUsecase === key ? '#16a34a' : undefined,
                     color: activeUsecase === key ? '#fff' : undefined,
-                    borderColor: activeUsecase === key ? '#dc2626' : undefined
+                    borderColor: activeUsecase === key ? '#16a34a' : undefined,
+                    boxShadow: activeUsecase === key ? '0 2px 4px rgba(22, 163, 74, 0.15)' : undefined
                   }}
                 >
                   {ucData[key].label}
@@ -771,37 +619,44 @@ export default function ElastiCacheVisualizer() {
             </div>
             <div className="ec-g2">
               <div>
-                <svg width="100%" viewBox="0 0 340 300" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 340 300" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="ucarr" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-                      <path d="M0,0 L0,6 L7,3 z" fill={ucData[activeUsecase].svgColor} />
+                    <marker id="ucarr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                      <path d="M0,0 L0,6 L6,3 z" fill="#475569" />
                     </marker>
                   </defs>
-                  <rect x="10" y="10" width="320" height="52" rx="10" fill={ucData[activeUsecase].svgFill} stroke={ucData[activeUsecase].svgStroke} strokeWidth="0.5" />
-                  <text x="170" y="30" textAnchor="middle" fontSize="12" fill={ucData[activeUsecase].svgColor} fontWeight="500">🌐 App / Lambda</text>
-                  <text x="170" y="48" textAnchor="middle" fontSize="11" fill={ucData[activeUsecase].svgColor}>Client request</text>
                   
-                  <rect x="80" y="90" width="180" height="52" rx="10" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
-                  <text x="170" y="112" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="500">⚡ ElastiCache Redis</text>
-                  <text x="170" y="130" textAnchor="middle" fontSize="11" fill="#854d0e">{ucData[activeUsecase].title}</text>
+                  {/* App / Lambda */}
+                  <rect x="15" y="15" width="310" height="52" rx="10" fill="rgba(255, 255, 255, 0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
+                  <text x="170" y="36" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="bold">🌐 App / Lambda</text>
+                  <text x="170" y="50" textAnchor="middle" fontSize="10.5" fill="#475569">Client request</text>
                   
-                  <rect x="80" y="170" width="180" height="52" rx="10" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
-                  <text x="170" y="192" textAnchor="middle" fontSize="12" fill="#1d4ed8" fontWeight="500">🗄️ RDS / DynamoDB</text>
-                  <text x="170" y="210" textAnchor="middle" fontSize="11" fill="#1d4ed8">Source of truth (on miss)</text>
+                  {/* ElastiCache Redis */}
+                  <rect x="80" y="93" width="180" height="52" rx="10" fill="rgba(234, 179, 8, 0.05)" stroke="#facc15" strokeWidth="1.5" />
+                  <text x="170" y="115" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="bold">⚡ ElastiCache Redis</text>
+                  <text x="170" y="131" textAnchor="middle" fontSize="10.5" fill="#713f12" fontWeight="500">{ucData[activeUsecase].title}</text>
                   
-                  <line x1="170" y1="62" x2="170" y2="90" stroke={ucData[activeUsecase].svgColor} strokeWidth="1" markerEnd="url(#ucarr)" />
-                  <line x1="170" y1="142" x2="170" y2="170" stroke="#1d4ed8" strokeWidth="1" strokeDasharray="4,3" markerEnd="url(#ucarr)" />
+                  {/* DB Relational */}
+                  <rect x="80" y="171" width="180" height="52" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#60a5fa" strokeWidth="1.5" />
+                  <text x="170" y="193" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">🗄️ RDS / DynamoDB</text>
+                  <text x="170" y="209" textAnchor="middle" fontSize="10.5" fill="#2563eb" fontWeight="500">Source of truth (on miss)</text>
                   
-                  <rect x="10" y="248" width="148" height="40" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
-                  <text x="84" y="272" textAnchor="middle" fontSize="11" fill="#166534">✅ HIT → &lt;1ms</text>
+                  {/* Connections */}
+                  <line x1="170" y1="67" x2="170" y2="93" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ucarr)" />
+                  <line x1="170" y1="145" x2="170" y2="171" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#ucarr)" />
                   
-                  <rect x="182" y="248" width="148" height="40" rx="8" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5" />
-                  <text x="256" y="272" textAnchor="middle" fontSize="11" fill="#dc2626">❌ MISS → DB query</text>
+                  {/* HIT */}
+                  <rect x="15" y="248" width="144" height="40" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1.5" />
+                  <text x="87" y="273" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="bold">✅ HIT → &lt;1ms</text>
+                  
+                  {/* MISS */}
+                  <rect x="181" y="248" width="144" height="40" rx="8" fill="rgba(239, 68, 68, 0.05)" stroke="#f87171" strokeWidth="1.5" />
+                  <text x="253" y="273" textAnchor="middle" fontSize="11" fill="#991b1b" fontWeight="bold">❌ MISS → DB query</text>
                 </svg>
               </div>
               <div>
-                <div style={{ fontWeight: 500, fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>{ucData[activeUsecase].title}</div>
-                <div className="ec-card" style={{ marginBottom: '8px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>{ucData[activeUsecase].desc}</div>
+                <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>{ucData[activeUsecase].title}</div>
+                <div className="ec-card" style={{ marginBottom: '8px', fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{ucData[activeUsecase].desc}</div>
                 <div className="ec-sec">Code Pattern</div>
                 <div className="ec-log" style={{ whiteSpace: 'pre-wrap' }}>{ucData[activeUsecase].code}</div>
                 <div className="ec-sec">Key Redis Commands</div>
@@ -816,52 +671,61 @@ export default function ElastiCacheVisualizer() {
             <div className="ec-g2" style={{ marginBottom: '10px' }}>
               <div>
                 <div className="ec-sec">ElastiCache Security Architecture</div>
-                <svg width="100%" viewBox="0 0 340 460" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 340 460" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="as1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6b7280"/></marker>
+                    <marker id="as1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#475569"/></marker>
                   </defs>
-                  <rect x="10" y="10" width="320" height="440" rx="16" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5"/>
-                  <text x="170" y="30" textAnchor="middle" fontSize="12" fill="#475569" fontWeight="500">VPC Security Boundary</text>
+                  
+                  {/* Outer boundary */}
+                  <rect x="10" y="10" width="320" height="440" rx="16" fill="rgba(255, 255, 255, 0.4)" stroke="#cbd5e1" strokeWidth="1.5"/>
+                  <text x="170" y="30" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="700">VPC Security Boundary</text>
 
-                  <rect x="25" y="44" width="290" height="48" rx="10" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5"/>
-                  <text x="170" y="64" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">🌐 App / Lambda / EC2</text>
-                  <text x="170" y="80" textAnchor="middle" fontSize="11" fill="#dc2626">Client in same VPC (private subnet)</text>
+                  {/* App Subnet */}
+                  <rect x="25" y="44" width="290" height="48" rx="10" fill="rgba(239, 68, 68, 0.05)" stroke="#fca5a5" strokeWidth="1.5"/>
+                  <text x="170" y="64" textAnchor="middle" fontSize="12" fill="#991b1b" fontWeight="bold">🌐 App / Lambda / EC2</text>
+                  <text x="170" y="80" textAnchor="middle" fontSize="10.5" fill="#c2410c">Client in same VPC (private subnet)</text>
 
-                  <rect x="25" y="110" width="290" height="48" rx="10" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="0.5"/>
-                  <text x="170" y="130" textAnchor="middle" fontSize="12" fill="#7c3aed" fontWeight="500">🔒 TLS in Transit</text>
-                  <text x="170" y="146" textAnchor="middle" fontSize="11" fill="#6d28d9">Redis 6+ · TLS 1.2+ · in-transit encryption</text>
+                  {/* TLS */}
+                  <rect x="25" y="110" width="290" height="48" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#c4b5fd" strokeWidth="1.5"/>
+                  <text x="170" y="130" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">🔒 TLS in Transit</text>
+                  <text x="170" y="146" textAnchor="middle" fontSize="10.5" fill="#6d28d9">Redis 6+ · TLS 1.2+ · in-transit encryption</text>
 
-                  <rect x="25" y="176" width="290" height="48" rx="10" fill="#fff7ed" stroke="#fed7aa" strokeWidth="0.5"/>
-                  <text x="170" y="196" textAnchor="middle" fontSize="12" fill="#c2410c" fontWeight="500">🛡️ Security Groups</text>
-                  <text x="170" y="212" textAnchor="middle" fontSize="11" fill="#c2410c">Port 6379 (Redis) / 11211 (Memcached) · App SG only</text>
+                  {/* Security Groups */}
+                  <rect x="25" y="176" width="290" height="48" rx="10" fill="rgba(249, 115, 22, 0.05)" stroke="#fed7aa" strokeWidth="1.5"/>
+                  <text x="170" y="196" textAnchor="middle" fontSize="12" fill="#9a3412" fontWeight="bold">🛡️ Security Groups</text>
+                  <text x="170" y="212" textAnchor="middle" fontSize="10.5" fill="#c2410c">Port 6379 (Redis) / 11211 (Memcached) · App SG only</text>
 
-                  <rect x="25" y="242" width="290" height="80" rx="10" fill="#f0fdf4" stroke="#86efac" strokeWidth="0.5"/>
-                  <text x="170" y="262" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="500">🔑 Authentication</text>
-                  <rect x="38" y="274" width="120" height="34" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-                  <text x="98" y="289" textAnchor="middle" fontSize="11" fill="#166534">Redis AUTH</text>
-                  <text x="98" y="303" textAnchor="middle" fontSize="11" fill="#166534">Token password</text>
-                  <rect x="172" y="274" width="128" height="34" rx="6" fill="#dcfce7" stroke="#4ade80" strokeWidth="0.5"/>
-                  <text x="236" y="289" textAnchor="middle" fontSize="11" fill="#166534">IAM Auth (Redis 7+)</text>
-                  <text x="236" y="303" textAnchor="middle" fontSize="11" fill="#166534">Token-based</text>
+                  {/* Authentication */}
+                  <rect x="25" y="242" width="290" height="80" rx="10" fill="rgba(16, 185, 129, 0.05)" stroke="#86efac" strokeWidth="1.5"/>
+                  <text x="170" y="262" textAnchor="middle" fontSize="12" fill="#065f46" fontWeight="bold">🔑 Authentication</text>
+                  <rect x="38" y="274" width="120" height="34" rx="6" fill="#ffffff" stroke="#a7f3d0" strokeWidth="1"/>
+                  <text x="98" y="289" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="600">Redis AUTH</text>
+                  <text x="98" y="302" textAnchor="middle" fontSize="9.5" fill="#065f46">Token password</text>
+                  <rect x="172" y="274" width="128" height="34" rx="6" fill="#ffffff" stroke="#a7f3d0" strokeWidth="1"/>
+                  <text x="236" y="289" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="600">IAM Auth (Redis 7+)</text>
+                  <text x="236" y="302" textAnchor="middle" fontSize="9.5" fill="#065f46">Token-based</text>
 
-                  <rect x="25" y="340" width="290" height="48" rx="10" fill="#ccfbf1" stroke="#5eead4" strokeWidth="0.5"/>
-                  <text x="170" y="360" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="500">🔐 Encryption at Rest (KMS)</text>
-                  <text x="170" y="376" textAnchor="middle" fontSize="11" fill="#0f766e">Redis data on disk · Snapshots · aws/elasticache or CMK</text>
+                  {/* Encryption at Rest */}
+                  <rect x="25" y="340" width="290" height="48" rx="10" fill="rgba(20, 184, 166, 0.05)" stroke="#5eead4" strokeWidth="1.5"/>
+                  <text x="170" y="360" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="bold">🔐 Encryption at Rest (KMS)</text>
+                  <text x="170" y="376" textAnchor="middle" fontSize="10.5" fill="#0d9488">Redis data on disk · Snapshots · aws/elasticache or CMK</text>
 
-                  <rect x="25" y="406" width="290" height="36" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5"/>
-                  <text x="170" y="428" textAnchor="middle" fontSize="11" fill="#1d4ed8">Subnet Groups · No public access · CloudTrail audit</text>
+                  {/* Private Subnets */}
+                  <rect x="25" y="406" width="290" height="36" rx="8" fill="rgba(59, 130, 246, 0.05)" stroke="#93c5fd" strokeWidth="1.5"/>
+                  <text x="170" y="428" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="600">Subnet Groups · No public access · CloudTrail audit</text>
 
-                  <line x1="170" y1="92" x2="170" y2="110" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="158" x2="170" y2="176" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="224" x2="170" y2="242" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="322" x2="170" y2="340" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="388" x2="170" y2="406" stroke="#6b7280" strokeWidth="1" markerEnd="url(#as1)"/>
+                  {/* Connectors */}
+                  <line x1="170" y1="92" x2="170" y2="110" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
+                  <line x1="170" y1="158" x2="170" y2="176" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
+                  <line x1="170" y1="224" x2="170" y2="242" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
+                  <line x1="170" y1="322" x2="170" y2="340" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
+                  <line x1="170" y1="388" x2="170" y2="406" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
                 </svg>
               </div>
               <div>
                 <div className="ec-sec">Auth methods explained</div>
                 <div className="ec-card" style={{ borderLeft: '3px solid #dc2626', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#dc2626' }}>🔑 Redis AUTH (Classic)</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#dc2626' }}>🔑 Redis AUTH (Classic)</div>
                   <div className="ec-kv"><span className="ec-kk">How</span><b>Single password token set on cluster</b></div>
                   <div className="ec-kv"><span className="ec-kk">Command</span><b style={{ fontFamily: 'monospace', fontSize: '11px' }}>AUTH &lt;password&gt;</b></div>
                   <div className="ec-kv"><span className="ec-kk">Engines</span><b>Redis 2.8+</b></div>
@@ -869,20 +733,20 @@ export default function ElastiCacheVisualizer() {
                   <div className="ec-kv"><span className="ec-kk">Limitation</span><b>Single shared password</b></div>
                 </div>
                 <div className="ec-card" style={{ borderLeft: '3px solid #15803d', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#15803d' }}>🔑 Redis RBAC (Redis 6+)</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#15803d' }}>🔑 Redis RBAC (Redis 6+)</div>
                   <div className="ec-kv"><span className="ec-kk">How</span><b>Multiple users with ACL rules</b></div>
                   <div className="ec-kv"><span className="ec-kk">Permissions</span><b>Per-command, per-key-pattern</b></div>
                   <div className="ec-kv"><span className="ec-kk">Example</span><b>readonly user: GET only, no SET/DEL</b></div>
                   <div className="ec-kv"><span className="ec-kk">Best for</span><b>Multi-tenant, least-privilege access</b></div>
                 </div>
                 <div className="ec-card" style={{ borderLeft: '3px solid #7c3aed', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#7c3aed' }}>🔑 IAM Auth (Redis 7+ / Valkey)</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#7c3aed' }}>🔑 IAM Auth (Redis 7+ / Valkey)</div>
                   <div className="ec-kv"><span className="ec-kk">How</span><b>IAM role → temp token → Redis AUTH</b></div>
                   <div className="ec-kv"><span className="ec-kk">No password</span><b>Token auto-rotates (15 min TTL)</b></div>
                   <div className="ec-kv"><span className="ec-kk">Best for</span><b>Lambda, ECS, EC2 (no stored creds)</b></div>
                 </div>
                 <div className="ec-card" style={{ borderLeft: '3px solid #0f766e', marginBottom: '8px' }}>
-                  <div style={{ fontWeight: 500, fontSize: '12px', marginBottom: '6px', color: '#0f766e' }}>🔐 Encryption at Rest</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#0f766e' }}>🔐 Encryption at Rest</div>
                   <div className="ec-kv"><span className="ec-kk">Covers</span><b>RDB snapshots, AOF logs, swap files</b></div>
                   <div className="ec-kv"><span className="ec-kk">Key</span><b>aws/elasticache or Customer KMS CMK</b></div>
                   <div className="ec-kv"><span className="ec-kk">Enable when?</span><b style={{ color: '#dc2626' }}>At cluster creation only</b></div>
@@ -895,15 +759,16 @@ export default function ElastiCacheVisualizer() {
                       key={idx}
                       onClick={() => toggleSecCheck(idx)}
                       style={{
-                        border: '0.5px solid var(--color-border-tertiary)',
-                        borderRadius: 'var(--border-radius-md)',
+                        border: '1px solid',
+                        borderRadius: '10px',
                         padding: '8px 10px',
                         cursor: 'pointer',
                         borderColor: item.done ? '#86efac' : '#fca5a5',
-                        background: item.done ? '#f0fdf4' : '#fef2f2'
+                        background: item.done ? 'rgba(22, 163, 74, 0.04)' : 'rgba(239, 68, 68, 0.04)',
+                        transition: 'all 0.15s ease-in-out'
                       }}
                     >
-                      <div style={{ fontSize: '11px', fontWeight: 500, color: item.done ? '#166534' : '#b91c1c' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: item.done ? '#166534' : '#b91c1c' }}>
                         {item.done ? '✅ ' : '❌ '}{item.label}
                       </div>
                     </div>
@@ -919,49 +784,107 @@ export default function ElastiCacheVisualizer() {
             <div className="ec-sec">Cache Hit/Miss Simulator — see how caching reduces DB load</div>
             <div className="ec-g2" style={{ marginBottom: '12px' }}>
               <div className="ec-card">
-                <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '10px' }}>⚙️ Configure Cache</div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Cache Hit Rate (%)</div>
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>⚙️ Configure Cache</div>
+                
+                <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>Cache Hit Rate (%)</div>
                 <input 
                   type="range" 
                   min="0" 
                   max="100" 
                   value={hitRate} 
-                  style={{ width: '100%' }} 
+                  style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }} 
                   onChange={(e) => setHitRate(Number(e.target.value))} 
                 />
-                <div style={{ fontSize: '12px', marginTop: '4px' }}>Hit rate: <b>{hitRate}%</b></div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '8px 0 4px' }}>Requests per second</div>
+                <div style={{ fontSize: '12px', marginTop: '4px', marginBottom: '12px' }}>Hit rate: <b>{hitRate}%</b></div>
+                
+                <div style={{ fontSize: '12px', color: '#475569', margin: '8px 0 4px' }}>Requests per second</div>
                 <input 
                   type="range" 
                   min="100" 
                   max="10000" 
                   step="100" 
                   value={rps} 
-                  style={{ width: '100%' }} 
+                  style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }} 
                   onChange={(e) => setRps(Number(e.target.value))} 
                 />
                 <div style={{ fontSize: '12px', marginTop: '4px' }}>RPS: <b>{rps}</b></div>
-                <div className="ec-g2" style={{ marginTop: '12px' }}>
-                  <div className="ec-met"><div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Cache hits/s</div><div style={{ fontSize: '16px', fontWeight: 500, color: '#15803d' }}>{simulatedHits}</div></div>
-                  <div className="ec-met"><div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>DB queries/s</div><div style={{ fontSize: '16px', fontWeight: 500, color: '#dc2626' }}>{simulatedMisses}</div></div>
-                  <div className="ec-met"><div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg latency</div><div style={{ fontSize: '16px', fontWeight: 500 }}>{simulatedLatency}ms</div></div>
-                  <div className="ec-met"><div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>DB saved %</div><div style={{ fontSize: '16px', fontWeight: 500, color: '#15803d' }}>{hitRate}%</div></div>
+                
+                <div className="ec-g2" style={{ marginTop: '16px' }}>
+                  <div className="ec-met"><div style={{ fontSize: '11px', color: '#475569' }}>Cache hits/s</div><div style={{ fontSize: '16px', fontWeight: 600, color: '#15803d' }}>{simulatedHits}</div></div>
+                  <div className="ec-met"><div style={{ fontSize: '11px', color: '#475569' }}>DB queries/s</div><div style={{ fontSize: '16px', fontWeight: 600, color: '#dc2626' }}>{simulatedMisses}</div></div>
+                  <div className="ec-met"><div style={{ fontSize: '11px', color: '#475569' }}>Avg latency</div><div style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b' }}>{simulatedLatency}ms</div></div>
+                  <div className="ec-met"><div style={{ fontSize: '11px', color: '#475569' }}>DB saved %</div><div style={{ fontSize: '16px', fontWeight: 600, color: '#15803d' }}>{hitRate}%</div></div>
                 </div>
               </div>
-              <div className="ec-card">
-                <div style={{ fontWeight: 500, fontSize: '13px', marginBottom: '10px' }}>📊 Request Flow Visualizer</div>
-                <canvas 
-                  ref={canvasRef} 
-                  width={280} 
-                  height={180} 
-                  style={{ width: '100%', borderRadius: '8px', background: 'var(--color-background-secondary)' }}
-                />
-                <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+              
+              <div className="ec-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>📊 Request Flow Visualizer</div>
+                
+                <svg width="100%" viewBox="0 0 320 180" className="ec-svg-bg" style={{ display: 'block', borderRadius: '12px' }}>
+                  {/* Static pipelines */}
+                  <path d="M 75 90 Q 135 60 195 40" fill="none" stroke={isRunning ? "#cbd5e1" : "#e2e8f0"} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 75 90 Q 135 115 195 130" fill="none" stroke={isRunning ? "#cbd5e1" : "#e2e8f0"} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 235 65 L 235 110" fill="none" stroke={isRunning ? "#cbd5e1" : "#e2e8f0"} strokeWidth="1.5" strokeDasharray="3,3" />
+
+                  {/* Cache HIT particle motion */}
+                  {isRunning && hitRate > 0 && (
+                    <circle r="3.5" fill="#10b981">
+                      <animateMotion
+                        dur={rps > 5000 ? "0.4s" : rps > 2000 ? "0.8s" : "1.4s"}
+                        repeatCount="indefinite"
+                        path="M 75 90 Q 135 60 195 40 Q 135 60 75 90"
+                      />
+                    </circle>
+                  )}
+
+                  {/* Cache MISS particle motion */}
+                  {isRunning && hitRate < 100 && (
+                    <circle r="3.5" fill="#ef4444">
+                      <animateMotion
+                        dur={rps > 5000 ? "0.6s" : rps > 2000 ? "1.2s" : "2.0s"}
+                        repeatCount="indefinite"
+                        path="M 75 90 Q 135 60 195 40 L 235 65 L 235 110 Q 135 115 75 90"
+                      />
+                    </circle>
+                  )}
+
+                  {/* Client App */}
+                  <g transform="translate(15, 65)">
+                    <rect width="60" height="50" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="30" y="24" fontSize="9" fontWeight="bold" fill="#1e40af" textAnchor="middle">Client App</text>
+                    <text x="30" y="38" fontSize="7.5" fill="#2563eb" textAnchor="middle" fontFamily="monospace">Active</text>
+                  </g>
+
+                  {/* ElastiCache Redis Cylinder */}
+                  <g transform="translate(195, 20)">
+                    <path d="M 0 10 L 0 35 A 40 10 0 0 0 80 35 L 80 10 Z" fill="rgba(234, 179, 8, 0.05)" stroke="#fbbf24" strokeWidth="1.5" />
+                    <ellipse cx="40" cy="10" rx="40" ry="10" fill="#fef9c3" stroke="#fbbf24" strokeWidth="1.5" />
+                    <text x="40" y="28" fontSize="9" fontWeight="bold" fill="#78350f" textAnchor="middle">⚡ Cache</text>
+                    <text x="40" y="38" fontSize="7.5" fill="#a16207" textAnchor="middle" fontFamily="monospace">RAM &lt;1ms</text>
+                    {isRunning && (
+                      <circle cx="72" cy="10" r="2" fill="#10b981" className="led-blink" />
+                    )}
+                  </g>
+
+                  {/* DB cylinder */}
+                  <g transform="translate(195, 110)">
+                    <path d="M 0 10 L 0 35 A 40 10 0 0 0 80 35 L 80 10 Z" fill="rgba(59, 130, 246, 0.05)" stroke="#60a5fa" strokeWidth="1.5" />
+                    <ellipse cx="40" cy="10" rx="40" ry="10" fill="#dbeafe" stroke="#60a5fa" strokeWidth="1.5" />
+                    <text x="40" y="28" fontSize="9" fontWeight="bold" fill="#1e40af" textAnchor="middle">🗄️ DB</text>
+                    <text x="40" y="38" fontSize="7.5" fill="#2563eb" textAnchor="middle" fontFamily="monospace">Disk 20ms</text>
+                    {isRunning && (
+                      <circle cx="72" cy="10" r="2" fill="#3b82f6" />
+                    )}
+                  </g>
+                </svg>
+
+                <div style={{ marginTop: '8px', fontSize: '11px', color: '#475569' }}>
                   <span style={{ display: 'inline-block', width: '10px', height: '10px', background: '#22c55e', borderRadius: '2px', marginRight: '4px' }}></span>Cache Hit (fast)
                   <span style={{ display: 'inline-block', width: '10px', height: '10px', background: '#ef4444', borderRadius: '2px', marginRight: '4px', marginLeft: '12px' }}></span>DB Miss (slow)
                 </div>
               </div>
             </div>
+            
             <div className="ec-sec">Live Cache Request Log</div>
             <div className="ec-log" style={{ minHeight: '120px', maxHeight: '160px', overflowY: 'auto' }}>
               {simLogs.length === 0 ? 'Simulation inactive. Press "Start Simulation" to stream logs...' : simLogs.join('\n')}
