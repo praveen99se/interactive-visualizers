@@ -706,8 +706,8 @@ export default function DatabasesAndAnalyticsVisualizer() {
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-node-btn:hover {
-          filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.4));
-          transform: translateY(-1px);
+          filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.45));
+          opacity: 0.95;
         }
         
         .pulse-circle {
@@ -1303,8 +1303,8 @@ export default function DatabasesAndAnalyticsVisualizer() {
                 </p>
                 
                 {/* SVG Coordinator-Worker */}
-                <div className="w-full h-[180px] rounded-xl border border-slate-200 relative p-1 flex items-center justify-center shadow-inner bg-slate-50">
-                  <svg className="w-full h-full da-svg-bg" viewBox="0 0 400 180">
+                <div className="w-full h-[250px] rounded-xl border border-slate-200 relative p-2.5 flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
+                  <svg className="w-full h-full da-svg-bg" viewBox="0 0 540 240">
                     <defs>
                       <marker id="lake-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                         <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
@@ -1312,69 +1312,69 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     </defs>
 
                     {/* Path links */}
-                    <path d="M 50 90 H 115" fill="none" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#lake-arrow)" />
-                    <path d="M 210 87 Q 225 36, 255 36" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
-                    <path d="M 210 87 H 255" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
-                    <path d="M 210 87 Q 225 144, 255 144" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 80 120 H 135" fill="none" stroke="#3b82f6" strokeWidth="2.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 260 115 Q 290 47, 325 47" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 260 115 H 325" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 260 115 Q 290 191, 325 191" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
 
-                    <path d="M 325 36 Q 348 36, 348 70" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
-                    <path d="M 325 90 H 348" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
-                    <path d="M 325 144 Q 348 144, 348 95" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 420 47 Q 460 47, 460 100" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 420 120 H 460" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
+                    <path d="M 420 191 Q 460 191, 460 135" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#lake-arrow)" />
 
                     {/* Nodes */}
-                    <g transform="translate(5, 60)" className="da-node-btn">
-                      <rect width="45" height="60" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="37" height="22" rx="4" fill="#f1f5f9" />
-                      <text x="22.5" y="18" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                      <text x="22.5" y="40" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle">SQL Query</text>
-                      <text x="22.5" y="50" fill="#64748b" fontSize="5.5" textAnchor="middle">Select *</text>
+                    <g transform="translate(15, 80)" className="da-node-btn">
+                      <rect width="65" height="80" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="57" height="30" rx="4" fill="#f1f5f9" />
+                      <text x="32.5" y="22" fill="#1e293b" fontSize="9.5" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                      <text x="32.5" y="52" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">SQL Query</text>
+                      <text x="32.5" y="66" fill="#64748b" fontSize="7" textAnchor="middle">Select *</text>
                     </g>
 
-                    <g transform="translate(115, 45)" className="da-node-btn">
-                      <rect x="3" y="3" width="95" height="85" rx="8" fill="rgba(59, 130, 246, 0.1)" />
-                      <rect width="95" height="85" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                      <rect x="6" y="6" width="83" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                      <text x="47.5" y="19" fill="#1d4ed8" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔍 COORDINATOR</text>
-                      <text x="47.5" y="42" fill="#1e40af" fontSize="7" textAnchor="middle" fontWeight="semibold">Parses SQL Query</text>
-                      <text x="47.5" y="56" fill="#0d9488" fontSize="7.5" fontWeight="bold" textAnchor="middle">Checks Glue Schema</text>
-                      <rect x="10" y="66" width="75" height="12" rx="3" fill="#ccfbf1" />
-                      <text x="47.5" y="74.5" fill="#0d9488" fontSize="6.5" fontWeight="bold" textAnchor="middle">Task Optimizer</text>
+                    <g transform="translate(135, 55)" className="da-node-btn">
+                      <rect x="3" y="3" width="122" height="117" rx="8" fill="rgba(59, 130, 246, 0.1)" />
+                      <rect width="122" height="117" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
+                      <rect x="6" y="6" width="110" height="26" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                      <text x="61" y="22" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🔍 COORDINATOR</text>
+                      <text x="61" y="48" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Parses SQL Query</text>
+                      <text x="61" y="64" fill="#0d9488" fontSize="8.5" fontWeight="bold" textAnchor="middle">Checks Glue Catalog</text>
+                      <rect x="12" y="78" width="98" height="18" rx="3.5" fill="#ccfbf1" />
+                      <text x="61" y="90" fill="#0d9488" fontSize="8" fontWeight="bold" textAnchor="middle">Task Optimizer</text>
                     </g>
 
                     {/* Workers */}
-                    <g transform="translate(255, 15)" className="da-node-btn">
-                      <rect width="70" height="42" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="62" height="12" rx="3" fill="#f1f5f9" />
-                      <circle cx="10" cy="10" r="2.5" fill="#10b981" />
-                      <text x="38" y="13" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">👷 Worker #1</text>
-                      <text x="35" y="32" fill="#64748b" fontSize="6.5" textAnchor="middle" fontWeight="semibold">Scan Partition A</text>
+                    <g transform="translate(325, 20)" className="da-node-btn">
+                      <rect width="95" height="55" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="87" height="16" rx="3" fill="#f1f5f9" />
+                      <circle cx="12" cy="12" r="3.5" fill="#10b981" />
+                      <text x="51" y="15" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #1</text>
+                      <text x="47" y="40" fill="#64748b" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition A</text>
                     </g>
-                    <g transform="translate(255, 69)" className="da-node-btn">
-                      <rect width="70" height="42" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="62" height="12" rx="3" fill="#f1f5f9" />
-                      <circle cx="10" cy="10" r="2.5" fill="#10b981" />
-                      <text x="38" y="13" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">👷 Worker #2</text>
-                      <text x="35" y="32" fill="#64748b" fontSize="6.5" textAnchor="middle" fontWeight="semibold">Scan Partition B</text>
+                    <g transform="translate(325, 92)" className="da-node-btn">
+                      <rect width="95" height="55" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="87" height="16" rx="3" fill="#f1f5f9" />
+                      <circle cx="12" cy="12" r="3.5" fill="#10b981" />
+                      <text x="51" y="15" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #2</text>
+                      <text x="47" y="40" fill="#64748b" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition B</text>
                     </g>
-                    <g transform="translate(255, 123)" className="da-node-btn">
-                      <rect width="70" height="42" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="62" height="12" rx="3" fill="#f1f5f9" />
-                      <circle cx="10" cy="10" r="2.5" fill="#10b981" />
-                      <text x="38" y="13" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">👷 Worker #3</text>
-                      <text x="35" y="32" fill="#64748b" fontSize="6.5" textAnchor="middle" fontWeight="semibold">Scan Partition C</text>
+                    <g transform="translate(325, 164)" className="da-node-btn">
+                      <rect width="95" height="55" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="87" height="16" rx="3" fill="#f1f5f9" />
+                      <circle cx="12" cy="12" r="3.5" fill="#10b981" />
+                      <text x="51" y="15" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #3</text>
+                      <text x="47" y="40" fill="#64748b" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition C</text>
                     </g>
 
                     {/* S3 Lake */}
-                    <g transform="translate(348, 50)" className="da-node-btn">
-                      <ellipse cx="22" cy="55" rx="20" ry="6" fill="rgba(22, 163, 74, 0.15)" />
-                      <path d="M 2 15 V 55 A 20 6 0 0 0 42 55 V 15 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
-                      <ellipse cx="22" cy="15" rx="20" ry="6" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
-                      <path d="M 2 25 A 20 5 0 0 0 42 25" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="2 2" />
-                      <path d="M 2 35 A 20 5 0 0 0 42 35" fill="none" stroke="#86efac" strokeWidth="1.2" />
+                    <g transform="translate(460, 65)" className="da-node-btn">
+                      <ellipse cx="32" cy="75" rx="30" ry="9" fill="rgba(22, 163, 74, 0.15)" />
+                      <path d="M 2 20 V 75 A 30 9 0 0 0 62 75 V 20 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
+                      <ellipse cx="32" cy="20" rx="30" ry="9" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
+                      <path d="M 2 34 A 30 8 0 0 0 62 34" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
+                      <path d="M 2 48 A 30 8 0 0 0 62 48" fill="none" stroke="#86efac" strokeWidth="1.2" />
                       
-                      <text x="22" y="25" fill="#15803d" fontSize="9.5" fontWeight="bold" textAnchor="middle">🪣 S3</text>
-                      <text x="22" y="45" fill="#166534" fontSize="7" textAnchor="middle" fontWeight="bold">Parquet</text>
-                      <text x="22" y="52" fill="#166534" fontSize="6.5" textAnchor="middle">Lake</text>
+                      <text x="32" y="32" fill="#15803d" fontSize="12" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="32" y="56" fill="#166534" fontSize="9" textAnchor="middle" fontWeight="bold">Parquet</text>
+                      <text x="32" y="66" fill="#166534" fontSize="8.5" textAnchor="middle">Lake</text>
                     </g>
                   </svg>
                 </div>
@@ -1649,8 +1649,8 @@ export default function DatabasesAndAnalyticsVisualizer() {
                 </div>
 
                 {/* Brand New Federated Query SVG Map */}
-                <div className="w-full h-[180px] rounded-xl border border-slate-200 relative p-1 flex items-center justify-center shadow-inner bg-slate-50">
-                  <svg className="w-full h-full da-svg-bg" viewBox="0 0 420 180">
+                <div className="w-full h-[250px] rounded-xl border border-slate-200 relative p-1.5 flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
+                  <svg className="w-full h-full da-svg-bg" viewBox="0 0 540 240">
                     <defs>
                       <marker id="fed-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                         <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
@@ -1658,84 +1658,84 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     </defs>
 
                     {/* Base conduits */}
-                    <path d="M 60 40 Q 90 20, 130 35" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                    <path d="M 170 65 V 110" fill="none" stroke="#a855f7" strokeWidth="2" markerEnd="url(#fed-arrow)" />
+                    <path d="M 90 45 Q 130 25, 170 45" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
+                    <path d="M 220 90 V 125" fill="none" stroke="#a855f7" strokeWidth="2" markerEnd="url(#fed-arrow)" />
                     
-                    <path d="M 170 125 Q 120 135, 60 115" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
-                    <path d="M 170 125 Q 120 155, 60 160" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
-                    <path d="M 170 125 H 280" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
-                    <path d="M 170 125 Q 230 155, 290 160" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
-                    <path d="M 170 125 Q 230 135, 340 120" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 195 155 Q 120 160, 85 140" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 195 155 Q 120 195, 85 205" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 245 155 H 370" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 245 155 Q 315 195, 380 205" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 245 155 Q 345 160, 445 140" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
 
                     {/* Active flow animations */}
                     {federatedState === 'querying' && (
-                      <path d="M 170 65 V 110" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                      <path d="M 220 90 V 125" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
                     )}
 
                     {federatedState === 'fetching' && (
                       <>
-                        <path d="M 170 65 V 110" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
-                        {federatedDb === 'dynamodb' && <path d="M 170 125 Q 120 135, 60 115" fill="none" stroke="#ea580c" strokeWidth="3.5" className="da-flow-orange" />}
-                        {federatedDb === 'rds-aurora' && <path d="M 170 125 Q 120 155, 60 160" fill="none" stroke="#10b981" strokeWidth="3.5" className="da-flow-green" />}
-                        {federatedDb === 'elasticache' && <path d="M 170 125 H 280" fill="none" stroke="#ef4444" strokeWidth="3.5" className="da-flow-orange" />}
-                        {federatedDb === 'documentdb' && <path d="M 170 125 Q 230 155, 290 160" fill="none" stroke="#a855f7" strokeWidth="3.5" className="da-flow-purple" />}
-                        {federatedDb === 'redshift' && <path d="M 170 125 Q 230 135, 340 120" fill="none" stroke="#0ea5e9" strokeWidth="3.5" className="da-flow-blue" />}
-                        {federatedDb === 'emr-hbase' && <path d="M 170 125 H 280" fill="none" stroke="#3b82f6" strokeWidth="3.5" className="da-flow-blue" />}
-                        {federatedDb === 'on-prem' && <path d="M 170 125 Q 230 155, 290 160" fill="none" stroke="#64748b" strokeWidth="3" className="da-flow-sky" />}
+                        <path d="M 220 90 V 125" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                        {federatedDb === 'dynamodb' && <path d="M 195 155 Q 120 160, 85 140" fill="none" stroke="#ea580c" strokeWidth="3.5" className="da-flow-orange" />}
+                        {federatedDb === 'rds-aurora' && <path d="M 195 155 Q 120 195, 85 205" fill="none" stroke="#10b981" strokeWidth="3.5" className="da-flow-green" />}
+                        {federatedDb === 'elasticache' && <path d="M 245 155 H 370" fill="none" stroke="#ef4444" strokeWidth="3.5" className="da-flow-orange" />}
+                        {federatedDb === 'documentdb' && <path d="M 245 155 Q 315 195, 380 205" fill="none" stroke="#a855f7" strokeWidth="3.5" className="da-flow-purple" />}
+                        {federatedDb === 'redshift' && <path d="M 245 155 Q 345 160, 445 140" fill="none" stroke="#0ea5e9" strokeWidth="3.5" className="da-flow-blue" />}
+                        {federatedDb === 'emr-hbase' && <path d="M 245 155 H 370" fill="none" stroke="#3b82f6" strokeWidth="3.5" className="da-flow-blue" />}
+                        {federatedDb === 'on-prem' && <path d="M 245 155 Q 315 195, 380 205" fill="none" stroke="#64748b" strokeWidth="3" className="da-flow-sky" />}
                       </>
                     )}
 
                     {federatedState === 'saving' && (
-                      <path d="M 130 35 Q 90 20, 60 40" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                      <path d="M 170 45 Q 130 25, 90 45" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
                     )}
 
                     {/* Nodes */}
-                    <g transform="translate(10, 10)" className="da-node-btn">
-                      <rect width="50" height="42" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="1.5" />
-                      <text x="25" y="18" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3</text>
-                      <text x="25" y="32" fill="#166534" fontSize="7" textAnchor="middle">Results Storage</text>
+                    <g transform="translate(20, 20)" className="da-node-btn">
+                      <rect width="70" height="50" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="1.5" />
+                      <text x="35" y="22" fill="#15803d" fontSize="10.5" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="35" y="38" fill="#166534" fontSize="8" textAnchor="middle">Results Storage</text>
                     </g>
 
-                    <g transform="translate(130, 15)" className="da-node-btn">
-                      <rect width="80" height="50" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                      <text x="40" y="20" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🔍 ATHENA</text>
-                      <text x="40" y="36" fill="#1e40af" fontSize="7.5" textAnchor="middle">Federated Query</text>
-                      <text x="40" y="44" fill="#475569" fontSize="6.5" textAnchor="middle" fontWeight="bold">Distributor Engine</text>
+                    <g transform="translate(170, 25)" className="da-node-btn">
+                      <rect width="110" height="65" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
+                      <text x="55" y="24" fill="#1d4ed8" fontSize="11" fontWeight="bold" textAnchor="middle">🔍 ATHENA</text>
+                      <text x="55" y="44" fill="#1e40af" fontSize="8.5" textAnchor="middle">Federated Query</text>
+                      <text x="55" y="54" fill="#475569" fontSize="7.5" textAnchor="middle" fontWeight="bold">Distributor Engine</text>
                     </g>
 
-                    <g transform="translate(145, 95)" className="da-node-btn">
-                      <circle cx="25" cy="25" r="22" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2" />
-                      <circle cx="25" cy="25" r="22" fill="none" stroke="#ea580c" strokeWidth="1.5" className={federatedState === 'fetching' ? 'pulse-circle' : ''} />
-                      <text x="25" y="29" fill="#ea580c" fontSize="15" fontWeight="bold" textAnchor="middle">λ</text>
-                      <text x="25" y="44" fill="#ea580c" fontSize="6" fontWeight="bold" textAnchor="middle">CONNECTOR</text>
+                    <g transform="translate(195, 125)" className="da-node-btn">
+                      <circle cx="25" cy="25" r="28" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2" />
+                      <circle cx="25" cy="25" r="28" fill="none" stroke="#ea580c" strokeWidth="1.5" className={federatedState === 'fetching' ? 'pulse-circle' : ''} />
+                      <text x="25" y="31" fill="#ea580c" fontSize="18" fontWeight="bold" textAnchor="middle">λ</text>
+                      <text x="25" y="46" fill="#ea580c" fontSize="6.5" fontWeight="bold" textAnchor="middle">CONNECTOR</text>
                     </g>
 
-                    <g transform="translate(5, 90)" className="da-node-btn">
-                      <rect width="55" height="30" rx="4" fill={federatedDb === 'dynamodb' ? '#ffedd5' : '#ffffff'} stroke={federatedDb === 'dynamodb' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">⚡ DynamoDB</text>
+                    <g transform="translate(10, 120)" className="da-node-btn">
+                      <rect width="75" height="40" rx="5" fill={federatedDb === 'dynamodb' ? '#ffedd5' : '#ffffff'} stroke={federatedDb === 'dynamodb' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="37.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ DynamoDB</text>
                     </g>
-                    <g transform="translate(5, 140)" className="da-node-btn">
-                      <rect width="55" height="30" rx="4" fill={federatedDb === 'rds-aurora' ? '#dcfce7' : '#ffffff'} stroke={federatedDb === 'rds-aurora' ? '#16a34a' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">🛢️ RDS Aurora</text>
+                    <g transform="translate(10, 185)" className="da-node-btn">
+                      <rect width="75" height="40" rx="5" fill={federatedDb === 'rds-aurora' ? '#dcfce7' : '#ffffff'} stroke={federatedDb === 'rds-aurora' ? '#16a34a' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="37.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">🛢️ RDS Aurora</text>
                     </g>
                     
-                    <g transform="translate(280, 110)" className="da-node-btn">
-                      <rect width="55" height="30" rx="4" fill={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#eff6ff' : '#ffffff'} stroke={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">
+                    <g transform="translate(370, 140)" className="da-node-btn">
+                      <rect width="80" height="40" rx="5" fill={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#eff6ff' : '#ffffff'} stroke={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="40" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">
                         {federatedDb === 'emr-hbase' ? '📦 HBase EMR' : '🔌 Redis Cache'}
                       </text>
                     </g>
 
-                    <g transform="translate(290, 145)" className="da-node-btn">
-                      <rect width="60" height="30" rx="4" fill={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#fdf4ff' : '#ffffff'} stroke={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="30" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">
+                    <g transform="translate(380, 185)" className="da-node-btn">
+                      <rect width="85" height="40" rx="5" fill={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#fdf4ff' : '#ffffff'} stroke={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="42.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">
                         {federatedDb === 'on-prem' ? '🏢 On-Prem DB' : '🗄️ DocumentDB'}
                       </text>
                     </g>
 
-                    <g transform="translate(340, 95)" className="da-node-btn">
-                      <rect width="55" height="30" rx="4" fill={federatedDb === 'redshift' ? '#f0f9ff' : '#ffffff'} stroke={federatedDb === 'redshift' ? '#0ea5e9' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">⚡ Redshift DW</text>
+                    <g transform="translate(445, 120)" className="da-node-btn">
+                      <rect width="75" height="40" rx="5" fill={federatedDb === 'redshift' ? '#f0f9ff' : '#ffffff'} stroke={federatedDb === 'redshift' ? '#0ea5e9' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="37.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Redshift DW</text>
                     </g>
                   </svg>
                 </div>
@@ -2566,161 +2566,160 @@ export default function DatabasesAndAnalyticsVisualizer() {
                 </div>
               </div>
 
-              {/* Large Ingestion Diagram */}
-              <div className="w-full h-[280px] rounded-xl border border-slate-200 p-2 relative overflow-hidden flex items-center justify-center shadow-inner bg-slate-50">
-                <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 280">
+              <div className="w-full h-[330px] rounded-xl border border-slate-200 p-2 relative overflow-hidden flex items-center justify-center shadow-inner bg-slate-50">
+                <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 650 320">
                   {/* Connecting lines */}
                   {/* Top: Streaming */}
-                  <path d="M 70 72.5 H 140" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 215 72.5 H 280" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 355 72.5 H 425" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 95 87.5 H 145" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 240 87.5 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 385 87.5 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
 
                   {/* Bottom: Batch */}
-                  <path d="M 70 197.5 H 140" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 215 197.5 H 280" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 355 197.5 H 425" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 95 240 H 145" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 240 237.5 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 385 237.5 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
 
                   {/* Output Consumer links */}
-                  <path d="M 480 72.5 V 133 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 480 197.5 V 133 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 570 87.5 V 163 H 440" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 575 240 V 163 H 440" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
 
                   {/* Flow glows */}
                   {sandboxState === 'ingesting' && (
                     <>
-                      {ingestionType === 'streaming' && <path d="M 70 72.5 H 140" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />}
-                      {ingestionType === 'batch' && <path d="M 70 197.5 H 140" fill="none" stroke="#ea580c" strokeWidth="3" className="da-flow-orange" />}
+                      {ingestionType === 'streaming' && <path d="M 95 87.5 H 145" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />}
+                      {ingestionType === 'batch' && <path d="M 95 240 H 145" fill="none" stroke="#ea580c" strokeWidth="3" className="da-flow-orange" />}
                     </>
                   )}
 
                   {sandboxState === 'aggregating' && (
                     <>
-                      {ingestionType === 'streaming' && <path d="M 215 72.5 H 280" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />}
-                      {ingestionType === 'batch' && <path d="M 215 197.5 H 280" fill="none" stroke="#ea580c" strokeWidth="3" className="da-flow-orange" />}
+                      {ingestionType === 'streaming' && <path d="M 240 87.5 H 290" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />}
+                      {ingestionType === 'batch' && <path d="M 240 237.5 H 290" fill="none" stroke="#ea580c" strokeWidth="3" className="da-flow-orange" />}
                     </>
                   )}
 
                   {sandboxState === 'storing' && (
                     <>
-                      {ingestionType === 'streaming' && <path d="M 355 72.5 H 425" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />}
-                      {ingestionType === 'batch' && <path d="M 355 197.5 H 425" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />}
+                      {ingestionType === 'streaming' && <path d="M 385 87.5 H 450" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />}
+                      {ingestionType === 'batch' && <path d="M 385 237.5 H 450" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />}
                     </>
                   )}
 
                   {sandboxState === 'indexing' && (
                     <>
-                      {ingestionType === 'streaming' && <path d="M 480 72.5 V 133 H 410" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />}
-                      {ingestionType === 'batch' && <path d="M 355 197.5 H 425" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />}
+                      {ingestionType === 'streaming' && <path d="M 570 87.5 V 163 H 440" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />}
+                      {ingestionType === 'batch' && <path d="M 385 237.5 H 450" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />}
                     </>
                   )}
 
                   {sandboxState === 'visualizing' && (
                     <>
-                      {ingestionType === 'streaming' && <path d="M 480 72.5 V 133 H 410" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />}
-                      {ingestionType === 'batch' && <path d="M 480 197.5 V 133 H 410" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />}
+                      {ingestionType === 'streaming' && <path d="M 570 87.5 V 163 H 440" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />}
+                      {ingestionType === 'batch' && <path d="M 575 240 V 163 H 440" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />}
                     </>
                   )}
 
                   {sandboxState === 'completed' && (
                     <>
-                      <path d="M 480 72.5 V 133 H 410" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
-                      <path d="M 480 197.5 V 133 H 410" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                      <path d="M 570 87.5 V 163 H 440" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                      <path d="M 575 240 V 163 H 440" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
                     </>
                   )}
 
                   {/* Input Nodes */}
-                  <g transform="translate(10, 45)" className="da-node-btn">
-                    <rect width="60" height="55" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                    <rect x="4" y="4" width="52" height="15" rx="3" fill="#f1f5f9" />
-                    <text x="30" y="14" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">📱 IoT SENSORS</text>
-                    <text x="30" y="32" fill="#a855f7" fontSize="6.5" fontWeight="bold" textAnchor="middle">Real-Time</text>
-                    <text x="30" y="44" fill="#64748b" fontSize="6" textAnchor="middle">Telemetry</text>
+                  <g transform="translate(15, 55)" className="da-node-btn">
+                    <rect width="80" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="72" height="18" rx="3" fill="#f1f5f9" />
+                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">📱 IoT SENSORS</text>
+                    <text x="40" y="38" fill="#a855f7" fontSize="8" fontWeight="bold" textAnchor="middle">Real-Time</text>
+                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Telemetry Data</text>
                   </g>
 
-                  <g transform="translate(10, 170)" className="da-node-btn">
-                    <rect width="60" height="55" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                    <rect x="4" y="4" width="52" height="15" rx="3" fill="#f1f5f9" />
-                    <text x="30" y="14" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">🛢️ APP LOGS</text>
-                    <text x="30" y="32" fill="#ea580c" fontSize="6.5" fontWeight="bold" textAnchor="middle">Batch OLTP</text>
-                    <text x="30" y="44" fill="#64748b" fontSize="6" textAnchor="middle">Server logs</text>
+                  <g transform="translate(15, 205)" className="da-node-btn">
+                    <rect width="80" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="72" height="18" rx="3" fill="#f1f5f9" />
+                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">🛢️ APP LOGS</text>
+                    <text x="40" y="38" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">Batch OLTP</text>
+                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Server Activity</text>
                   </g>
 
                   {/* Top path nodes */}
-                  <g transform="translate(140, 40)" className="da-node-btn">
-                    <rect x="3" y="3" width="75" height="65" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="75" height="65" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
-                    <rect x="5" y="5" width="65" height="15" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="37.5" y="16" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ KAFKA MSK</text>
-                    <text x="37.5" y="36" fill="#581c87" fontSize="7" textAnchor="middle" fontWeight="semibold">Broker Cluster</text>
-                    <rect x="8" y="46" width="59" height="11" rx="2.5" fill="#f3e8ff" />
-                    <text x="37.5" y="54" fill="#7e22ce" fontSize="6" fontWeight="bold" textAnchor="middle">Serverless</text>
+                  <g transform="translate(145, 50)" className="da-node-btn">
+                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.1)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
+                    <text x="47.5" y="18" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">⚡ KAFKA MSK</text>
+                    <text x="47.5" y="42" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="semibold">Broker Cluster</text>
+                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#f3e8ff" />
+                    <text x="47.5" y="61" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Serverless Shards</text>
                   </g>
 
-                  <g transform="translate(280, 40)" className="da-node-btn">
-                    <rect x="3" y="3" width="75" height="65" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="75" height="65" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
-                    <rect x="5" y="5" width="65" height="15" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="37.5" y="16" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚙️ FLINK</text>
-                    <text x="37.5" y="36" fill="#581c87" fontSize="7" textAnchor="middle" fontWeight="semibold">Stream Aggs</text>
-                    <rect x="8" y="46" width="59" height="11" rx="2.5" fill="#f3e8ff" />
-                    <text x="37.5" y="54" fill="#7e22ce" fontSize="6.5" fontWeight="bold" textAnchor="middle">Sliding Window</text>
+                  <g transform="translate(290, 50)" className="da-node-btn">
+                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.1)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
+                    <text x="47.5" y="18" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">⚙️ FLINK</text>
+                    <text x="47.5" y="42" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="semibold">Stream Aggs</text>
+                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#f3e8ff" />
+                    <text x="47.5" y="61.5" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Sliding Window</text>
                   </g>
 
                   {/* Bottom path nodes */}
-                  <g transform="translate(140, 165)" className="da-node-btn">
-                    <rect x="3" y="3" width="75" height="65" rx="8" fill="rgba(234, 88, 12, 0.1)" />
-                    <rect width="75" height="65" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
-                    <rect x="5" y="5" width="65" height="15" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="37.5" y="16" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 RAW S3</text>
-                    <text x="37.5" y="36" fill="#c2410c" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Ingest Buffer</text>
-                    <rect x="8" y="46" width="59" height="11" rx="2.5" fill="#ffedd5" />
-                    <text x="37.5" y="54.5" fill="#7c2d12" fontSize="6" fontWeight="bold" textAnchor="middle">Unstructured</text>
+                  <g transform="translate(145, 200)" className="da-node-btn">
+                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.1)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
+                    <text x="47.5" y="18" fill="#ea580c" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 RAW S3</text>
+                    <text x="47.5" y="42" fill="#c2410c" fontSize="8" textAnchor="middle" fontWeight="semibold">Ingest Buffer</text>
+                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#ffedd5" />
+                    <text x="47.5" y="61.5" fill="#7c2d12" fontSize="7" fontWeight="bold" textAnchor="middle">Unstructured</text>
                   </g>
 
-                  <g transform="translate(280, 165)" className="da-node-btn">
-                    <rect x="3" y="3" width="75" height="65" rx="8" fill="rgba(234, 88, 12, 0.1)" />
-                    <rect width="75" height="65" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
-                    <rect x="5" y="5" width="65" height="15" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="37.5" y="16" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">⚙️ GLUE SPARK</text>
-                    <text x="37.5" y="36" fill="#c2410c" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Batch Spark ETL</text>
-                    <rect x="8" y="46" width="59" height="11" rx="2.5" fill="#ffedd5" />
-                    <text x="37.5" y="54.5" fill="#7c2d12" fontSize="6" fontWeight="bold" textAnchor="middle">Parquet Convert</text>
+                  <g transform="translate(290, 200)" className="da-node-btn">
+                    <rect x="3" y="3" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.1)" />
+                    <rect width="95" height="75" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
+                    <text x="47.5" y="18" fill="#ea580c" fontSize="9" fontWeight="bold" textAnchor="middle">⚙️ GLUE SPARK</text>
+                    <text x="47.5" y="42" fill="#c2410c" fontSize="8" textAnchor="middle" fontWeight="semibold">Batch Spark ETL</text>
+                    <rect x="12" y="52" width="71" height="13" rx="2.5" fill="#ffedd5" />
+                    <text x="47.5" y="61.5" fill="#7c2d12" fontSize="7" fontWeight="bold" textAnchor="middle">Parquet Convert</text>
                   </g>
 
                   {/* Central Destination Nodes */}
-                  <g transform="translate(425, 30)" className="da-node-btn">
-                    <ellipse cx="60" cy="65" rx="50" ry="10" fill="rgba(22, 163, 74, 0.15)" />
-                    <path d="M 10 15 V 55 A 50 10 0 0 0 110 55 V 15 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <ellipse cx="60" cy="15" rx="50" ry="10" fill="#dcfce7" stroke="#16a34a" strokeWidth="2.5" />
-                    <path d="M 10 26 A 50 8 0 0 0 110 26" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
-                    <text x="60" y="24" fill="#15803d" fontSize="9.5" fontWeight="bold" textAnchor="middle">🪣 DATA LAKE S3</text>
-                    <text x="60" y="42" fill="#166534" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Refined Parquet</text>
-                    <text x="60" y="53" fill="#059669" fontSize="7" fontWeight="bold" textAnchor="middle">dw-backups-bucket</text>
+                  <g transform="translate(440, 40)" className="da-node-btn">
+                    <ellipse cx="70" cy="75" rx="60" ry="12" fill="rgba(22, 163, 74, 0.15)" />
+                    <path d="M 10 20 V 75 A 60 12 0 0 0 130 75 V 20 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
+                    <ellipse cx="70" cy="20" rx="60" ry="12" fill="#dcfce7" stroke="#16a34a" strokeWidth="2.5" />
+                    <path d="M 10 32 A 60 10 0 0 0 130 32" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
+                    <text x="70" y="30" fill="#15803d" fontSize="11" fontWeight="bold" textAnchor="middle">🪣 DATA LAKE S3</text>
+                    <text x="70" y="52" fill="#166534" fontSize="9" textAnchor="middle" fontWeight="semibold">Refined Parquet</text>
+                    <text x="70" y="65" fill="#059669" fontSize="8.5" fontWeight="bold" textAnchor="middle">dw-backups-bucket</text>
                   </g>
 
-                  <g transform="translate(425, 170)" className="da-node-btn">
-                    <rect x="4" y="4" width="115" height="70" rx="8" fill="rgba(22, 163, 74, 0.1)" />
-                    <rect width="115" height="70" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <rect x="6" y="6" width="103" height="15" rx="3" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
-                    <text x="57.5" y="16.5" fill="#15803d" fontSize="8" fontWeight="bold" textAnchor="middle">📖 GLUE CATALOG</text>
-                    <text x="57.5" y="38" fill="#166534" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Centralized Metadata</text>
-                    <text x="57.5" y="52" fill="#059669" fontSize="7" textAnchor="middle">Lake Formation Scopes</text>
+                  <g transform="translate(440, 200)" className="da-node-btn">
+                    <rect x="4" y="4" width="135" height="80" rx="8" fill="rgba(22, 163, 74, 0.1)" />
+                    <rect width="135" height="80" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
+                    <rect x="6" y="6" width="123" height="18" rx="3" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
+                    <text x="67.5" y="19" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">📖 GLUE CATALOG</text>
+                    <text x="67.5" y="44" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Centralized Metadata</text>
+                    <text x="67.5" y="60" fill="#059669" fontSize="8" textAnchor="middle">Lake Formation Scopes</text>
                   </g>
 
                   {/* Output Consumer Nodes */}
-                  <g transform="translate(280, 107)" className="da-node-btn">
-                    <rect x="3" y="3" width="130" height="52" rx="6" fill="rgba(59, 130, 246, 0.1)" />
-                    <rect width="130" height="52" rx="6" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                    <text x="65" y="18" fill="#1d4ed8" fontSize="8.5" fontWeight="bold" textAnchor="middle">📊 QUICKSIGHT (BI)</text>
-                    <text x="65" y="32" fill="#1e40af" fontSize="7.5" textAnchor="middle" fontWeight="semibold">SPICE Caching Engine</text>
-                    <text x="65" y="44" fill="#059669" fontSize="7" fontWeight="bold" textAnchor="middle">Sub-second Visuals</text>
+                  <g transform="translate(290, 133)" className="da-node-btn">
+                    <rect x="3" y="3" width="150" height="60" rx="6" fill="rgba(59, 130, 246, 0.1)" />
+                    <rect width="150" height="60" rx="6" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                    <text x="75" y="20.5" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">📊 QUICKSIGHT (BI)</text>
+                    <text x="75" y="36" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="semibold">SPICE Caching Engine</text>
+                    <text x="75" y="49" fill="#059669" fontSize="8" fontWeight="bold" textAnchor="middle">Sub-second Visuals</text>
                   </g>
 
-                  <g transform="translate(130, 107)" className="da-node-btn">
-                    <rect x="3" y="3" width="130" height="52" rx="6" fill="rgba(59, 130, 246, 0.1)" />
-                    <rect width="130" height="52" rx="6" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                    <text x="65" y="18" fill="#1d4ed8" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
-                    <text x="65" y="32" fill="#1e40af" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Master / Data Nodes</text>
-                    <text x="65" y="44" fill="#475569" fontSize="6.5" textAnchor="middle">Shard partitions &amp; indexes</text>
+                  <g transform="translate(135, 133)" className="da-node-btn">
+                    <rect x="3" y="3" width="150" height="60" rx="6" fill="rgba(59, 130, 246, 0.1)" />
+                    <rect width="150" height="60" rx="6" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                    <text x="75" y="20.5" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
+                    <text x="75" y="36" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Master / Data Nodes</text>
+                    <text x="75" y="49" fill="#475569" fontSize="8" textAnchor="middle">Shard partitions &amp; indexes</text>
                   </g>
                 </svg>
               </div>
