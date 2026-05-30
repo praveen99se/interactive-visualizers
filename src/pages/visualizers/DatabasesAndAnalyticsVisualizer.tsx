@@ -247,6 +247,144 @@ export default function DatabasesAndAnalyticsVisualizer() {
   const [redshiftState, setRedshiftState] = useState<'idle' | 'snapshotting' | 'replicating' | 'recovering' | 'completed'>('idle');
   const [redshiftLogs, setRedshiftLogs] = useState<string[]>([]);
 
+  // ==========================================
+  // NEW ATHENA PERFORMANCE & FEDERATED STATES
+  // ==========================================
+  const [athenaFormat, setAthenaFormat] = useState<'row' | 'columnar'>('row');
+  const [athenaCompress, setAthenaCompress] = useState<boolean>(false);
+  const [athenaPartition, setAthenaPartition] = useState<boolean>(false);
+  const [athenaFileSize, setAthenaFileSize] = useState<'small' | 'large'>('small');
+  
+  const [federatedDb, setFederatedDb] = useState<string>('dynamodb');
+  const [federatedState, setFederatedState] = useState<'idle' | 'querying' | 'fetching' | 'saving' | 'completed'>('idle');
+  const [federatedLogs, setFederatedLogs] = useState<string[]>([]);
+
+  const triggerFederatedQuery = async () => {
+    if (federatedState !== 'idle') return;
+    setFederatedLogs([]);
+    setFederatedState('querying');
+    const time = new Date().toLocaleTimeString();
+    setFederatedLogs(prev => [`[${time}] DISPATCH: Athena Federated Query engine parses request: "SELECT * FROM federated_${federatedDb}"`, ...prev]);
+    
+    await new Promise(r => setTimeout(r, 1200));
+    setFederatedState('fetching');
+    setFederatedLogs(prev => [`[${time}] CONNECTOR: Invoking AWS Lambda Data Source Connector for ${federatedDb.toUpperCase()}`, ...prev]);
+    setFederatedLogs(prev => [`[${time}] QUERY: Lambda connector establishes JDBC/connection socket, executing targeted scan on external table...`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1500));
+    setFederatedState('saving');
+    setFederatedLogs(prev => [`[${time}] METADATA: Fetched records from external database successfully (250 items).`, ...prev]);
+    setFederatedLogs(prev => [`[${time}] S3 WRITE: Query results compiled, serialized, and persisted to central Athena S3 output query bucket.`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1000));
+    setFederatedState('completed');
+    setFederatedLogs(prev => [`[${time}] ✅ SUCCESS: Federated query complete! Data aggregated seamlessly across S3 and remote ${federatedDb.toUpperCase()} pool.`, ...prev]);
+  };
+
+  const resetFederatedQuery = () => {
+    setFederatedState('idle');
+    setFederatedLogs([]);
+  };
+
+  // ==========================================
+  // NEW REDSHIFT MPP EXECUTOR & SNAPSHOT STATES
+  // ==========================================
+  const [redshiftQuery, setRedshiftQuery] = useState<string>('sales-sum');
+  const [redshiftMppState, setRedshiftMppState] = useState<'idle' | 'client-send' | 'leader-plan' | 'compute-scan' | 'leader-aggregate' | 'client-receive' | 'completed'>('idle');
+  const [redshiftMppLogs, setRedshiftMppLogs] = useState<string[]>([]);
+  
+  const [rsSnapshotFreq, setRsSnapshotFreq] = useState<'5h' | '8h' | 'scheduled'>('8h');
+  const [rsCrossRegion, setRsCrossRegion] = useState<boolean>(false);
+  const [rsRetention, setRsRetention] = useState<number>(7);
+  const [rsSnapshotsList, setRsSnapshotsList] = useState<{id: string; time: string; type: string; size: string}[]>([
+    { id: 'rs-snap-initial', time: '10:00:00 AM', type: 'Manual', size: '12.4 GB' }
+  ]);
+  const [rsDRState, setRsDRState] = useState<'idle' | 'snapshotting' | 'replicating' | 'restoring' | 'completed'>('idle');
+  const [rsDRLogs, setRsDRLogs] = useState<string[]>([]);
+  const [selectedSnapshot, setSelectedSnapshot] = useState<string>('rs-snap-initial');
+
+  const triggerRedshiftMppQuery = async () => {
+    if (redshiftMppState !== 'idle') return;
+    setRedshiftMppLogs([]);
+    setRedshiftMppState('client-send');
+    const time = new Date().toLocaleTimeString();
+    setRedshiftMppLogs(prev => [`[${time}] CLIENT: Dispatching SQL query via JDBC/ODBC connection endpoint.`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1000));
+    setRedshiftMppState('leader-plan');
+    setRedshiftMppLogs(prev => [`[${time}] LEADER NODE: Parsing SQL statement, analyzing PostgreSQL metadata schema, and compiling parallel execution plan.`, ...prev]);
+    setRedshiftMppLogs(prev => [`[${time}] LEADER NODE: Distributing task partitions across computed column slices.`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1500));
+    setRedshiftMppState('compute-scan');
+    setRedshiftMppLogs(prev => [`[${time}] COMPUTE NODES: Massively Parallel Processing (MPP) activated! Compute Node #1 & #2 executing scans concurrently.`, ...prev]);
+    setRedshiftMppLogs(prev => [`[${time}] COLUMNAR STORAGE: OLAP columnar disk blocks filter out unneeded columns, scanning ONLY the target fields. Ignored 85% of table schema!`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1500));
+    setRedshiftMppState('leader-aggregate');
+    setRedshiftMppLogs(prev => [`[${time}] LEADER NODE: Gathering computed aggregations from all data node slices and performing final SQL compile.`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 1000));
+    setRedshiftMppState('client-receive');
+    setRedshiftMppLogs(prev => [`[${time}] CLIENT: Result received (10x faster than traditional OLTP row-by-row scans).`, ...prev]);
+    
+    await new Promise(r => setTimeout(r, 800));
+    setRedshiftMppState('completed');
+    setRedshiftMppLogs(prev => [`[${time}] ✅ SUCCESS: Analytics OLAP query completed. PB-scale storage aggregated efficiently thanks to parallel columnar indices.`, ...prev]);
+  };
+
+  const resetRedshiftMpp = () => {
+    setRedshiftMppState('idle');
+    setRedshiftMppLogs([]);
+  };
+
+  const triggerRsManualSnapshot = async () => {
+    if (rsDRState !== 'idle') return;
+    setRsDRLogs([]);
+    setRsDRState('snapshotting');
+    const time = new Date().toLocaleTimeString();
+    setRsDRLogs(prev => [`[${time}] 📸 SNAPSHOT: Initiating consistent point-in-time snapshot backup.`, ...prev]);
+    
+    await new Promise(r => setTimeout(r, 1200));
+    const snapId = `rs-snap-manual-${Math.floor(Math.random() * 9000) + 1000}`;
+    const newSnap = {
+      id: snapId,
+      time: new Date().toLocaleTimeString(),
+      type: 'Manual',
+      size: '12.8 GB'
+    };
+    setRsSnapshotsList(prev => [...prev, newSnap]);
+    setSelectedSnapshot(snapId);
+    setRsDRLogs(prev => [`[${time}] 💾 SUCCESS: Snapshot "${snapId}" saved incrementally inside S3 bucket (size: 12.8 GB).`, ...prev]);
+
+    if (rsCrossRegion) {
+      setRsDRState('replicating');
+      setRsDRLogs(prev => [`[${time}] 📡 REPLICATION: Replicating snapshot "${snapId}" automatically to secondary recovery region for disaster recovery (DR).`, ...prev]);
+      await new Promise(r => setTimeout(r, 1500));
+    }
+
+    setRsDRState('completed');
+    setRsDRLogs(prev => [`[${time}] ✅ COMPLETED: Snapshot operations completed. Retention enforcement rule set to ${rsRetention} days.`, ...prev]);
+  };
+
+  const triggerRsRestoreSnapshot = async () => {
+    if (rsDRState !== 'idle') return;
+    setRsDRLogs([]);
+    setRsDRState('restoring');
+    const time = new Date().toLocaleTimeString();
+    setRsDRLogs(prev => [`[${time}] ⚙️ RESTORE: Restoring snapshot "${selectedSnapshot}" into a brand new PostgreSQL-compatible Redshift cluster.`, ...prev]);
+    setRsDRLogs(prev => [`[${time}] S3 PULL: Fetching incremental blocks from backup vault...`, ...prev]);
+
+    await new Promise(r => setTimeout(r, 2000));
+    setRsDRState('completed');
+    setRsDRLogs(prev => [`[${time}] ✅ SUCCESS: Restoration complete! Redshift Cluster "rs-restored-node" is online and accepting JDBC/ODBC queries.`, ...prev]);
+  };
+
+  const resetRsDR = () => {
+    setRsDRState('idle');
+    setRsDRLogs([]);
+  };
+
   const addRedshiftLog = (msg: string) => {
     const time = new Date().toLocaleTimeString();
     setRedshiftLogs((prev) => [`[${time}] ${msg}`, ...prev]);
@@ -1312,6 +1450,313 @@ export default function DatabasesAndAnalyticsVisualizer() {
               </div>
             </div>
           </div>
+
+          {/* ========================================================================= */}
+          {/* NEW: ATHENA PERFORMANCE TUNER & FEDERATED WORKBENCH                      */}
+          {/* ========================================================================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 border-t border-slate-200 pt-6">
+            {/* Left Column: Performance Tuner Workbench */}
+            <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-800 border-b border-slate-150 pb-2 mb-3 flex items-center gap-1.5">
+                  📈 Athena Query Performance &amp; Cost Optimizer Workbench
+                </h3>
+                <p className="text-[11px] text-slate-500 mb-4">
+                  Handwritten Notes Reference: Implement columnar formatting, SNAPPY compression, S3 dataset partitioning, and optimized file sizes (&gt;128MB) to reduce scanned bytes.
+                </p>
+
+                {/* Optimizers Control Panel */}
+                <div className="space-y-4 text-xs">
+                  {/* Format Toggle */}
+                  <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                    <div>
+                      <span className="font-bold text-slate-700 block">1. Storage Format (Parquet/ORC vs Row)</span>
+                      <span className="text-[10px] text-slate-500">Columnar scans only target columns; Row (CSV/JSON) scans full lines.</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => setAthenaFormat('row')}
+                        className={`px-3 py-1 rounded-lg font-bold text-[10px] border transition-all ${athenaFormat === 'row' ? 'bg-amber-600 text-white border-amber-600 shadow-sm' : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'}`}
+                      >
+                        CSV/JSON (Row)
+                      </button>
+                      <button
+                        onClick={() => setAthenaFormat('columnar')}
+                        className={`px-3 py-1 rounded-lg font-bold text-[10px] border transition-all ${athenaFormat === 'columnar' ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'}`}
+                      >
+                        Parquet/ORC
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Compression Toggle */}
+                  <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                    <div>
+                      <span className="font-bold text-slate-700 block">2. Data Compression (Snappy/Gzip)</span>
+                      <span className="text-[10px] text-slate-500">Compressing files minimizes data retrieval sizes over S3 network.</span>
+                    </div>
+                    <button
+                      onClick={() => setAthenaCompress(!athenaCompress)}
+                      className={`px-4 py-1.5 rounded-lg font-bold text-[10px] border transition-all ${athenaCompress ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                      {athenaCompress ? '🟢 Enabled (Snappy)' : '❌ Disabled (Plain)'}
+                    </button>
+                  </div>
+
+                  {/* Partitioning Toggle */}
+                  <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                    <div>
+                      <span className="font-bold text-slate-700 block">3. Dataset Partitioning (Virtual Columns)</span>
+                      <span className="text-[10px] text-slate-500">Limits scans to directories matching virtual prefix (e.g. year=1991).</span>
+                    </div>
+                    <button
+                      onClick={() => setAthenaPartition(!athenaPartition)}
+                      className={`px-4 py-1.5 rounded-lg font-bold text-[10px] border transition-all ${athenaPartition ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                      {athenaPartition ? '🟢 Enabled (Partitioned)' : '❌ Disabled (Full Scan)'}
+                    </button>
+                  </div>
+
+                  {/* File Size Toggle */}
+                  <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                    <div>
+                      <span className="font-bold text-slate-700 block">4. File Size Consolidation (&gt;128 MB)</span>
+                      <span className="text-[10px] text-slate-500">Larger consolidated files minimize Glue/S3 directory metadata overhead.</span>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => setAthenaFileSize('small')}
+                        className={`px-3 py-1 rounded-lg font-bold text-[10px] border transition-all ${athenaFileSize === 'small' ? 'bg-amber-600 text-white border-amber-600 shadow-sm' : 'bg-white border-slate-200 text-slate-650'}`}
+                      >
+                        Small Files (&lt;10MB)
+                      </button>
+                      <button
+                        onClick={() => setAthenaFileSize('large')}
+                        className={`px-3 py-1 rounded-lg font-bold text-[10px] border transition-all ${athenaFileSize === 'large' ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-white border-slate-200 text-slate-650'}`}
+                      >
+                        Large Files (&gt;128MB)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Live Cost & Performance Stats Indicator */}
+              <div className="mt-4 border-t border-slate-150 pt-4 space-y-3">
+                <span className="text-xs font-bold text-slate-700 block">Simulated Execution Metrics:</span>
+                
+                {/* Metrics boxes */}
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+                  {/* Scanned size */}
+                  <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50">
+                    <span className="text-[9px] font-bold text-slate-400 block uppercase mb-0.5">Bytes Scanned</span>
+                    <span className={`text-sm font-extrabold ${athenaFormat === 'columnar' && athenaPartition ? 'text-emerald-700' : 'text-slate-800'}`}>
+                      {(() => {
+                        let size = 500; // GB
+                        if (athenaCompress) size = size * 0.3;
+                        if (athenaFormat === 'columnar') size = size * 0.05;
+                        if (athenaPartition) size = size * 0.1;
+                        return size >= 1 ? `${size.toFixed(1)} GB` : `${(size * 1024).toFixed(0)} MB`;
+                      })()}
+                    </span>
+                  </div>
+
+                  {/* Scanned Cost */}
+                  <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50">
+                    <span className="text-[9px] font-bold text-slate-400 block uppercase mb-0.5">Query Cost ($)</span>
+                    <span className="text-sm font-extrabold text-sky-700">
+                      ${(() => {
+                        let size = 500; // GB
+                        if (athenaCompress) size = size * 0.3;
+                        if (athenaFormat === 'columnar') size = size * 0.05;
+                        if (athenaPartition) size = size * 0.1;
+                        let cost = (size / 1024) * 5; // $5 per TB
+                        return cost < 0.01 ? '0.001' : cost.toFixed(3);
+                      })()}
+                    </span>
+                  </div>
+
+                  {/* Latency */}
+                  <div className="border border-slate-200 rounded-xl p-2 bg-slate-50/50">
+                    <span className="text-[9px] font-bold text-slate-400 block uppercase mb-0.5">Scan Latency</span>
+                    <span className="text-sm font-extrabold text-amber-700">
+                      {(() => {
+                        let latency = 18.5; // s
+                        if (athenaCompress) latency *= 0.6;
+                        if (athenaFormat === 'columnar') latency *= 0.15;
+                        if (athenaPartition) latency *= 0.2;
+                        if (athenaFileSize === 'large') latency *= 0.8;
+                        return `${latency.toFixed(2)}s`;
+                      })()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Directory S3 Path Box */}
+                <div className="bg-slate-900 text-slate-200 p-2.5 rounded-xl text-[10.5px] font-mono leading-relaxed overflow-x-auto shadow-inner">
+                  <div className="text-slate-400 text-[9px] uppercase font-bold mb-1 border-b border-slate-800 pb-0.5">Target S3 Directory Path</div>
+                  {athenaPartition ? (
+                    <span className="text-emerald-400">s3://athena-flight-bucket/parquet/year=1991/month=1/day=1/</span>
+                  ) : (
+                    <span className="text-amber-400">s3://athena-flight-bucket/raw-logs/*</span>
+                  )}
+                  <span className="block text-slate-500 mt-1 text-[9px]">
+                    {athenaFormat === 'columnar' ? '🚀 COLUMNAR SCAN: Scanning only selected index bytes!' : '⚠️ ROW SCAN: Scanning all table columns across full text files!'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Federated Query Active Simulator Map */}
+            <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-800 border-b border-slate-150 pb-2 mb-3 flex items-center justify-between">
+                  <span>🔌 Athena Federated Queries (Multi-Source Connectors)</span>
+                  <span className="badge bg-purple-50 text-purple-700 text-[10px]">Lambda Connectors</span>
+                </h3>
+                <p className="text-[11.5px] text-slate-650 mb-3 leading-relaxed">
+                  Handwritten Notes Reference: Run SQL queries across relational, non-relational, object &amp; custom data pools (AWS/on-premise). Utilizes Lambda datasource connectors and saves final consolidated aggregates back into S3.
+                </p>
+
+                {/* Federated Control bar */}
+                <div className="flex gap-2 mb-3">
+                  <select
+                    value={federatedDb}
+                    onChange={(e) => setFederatedDb(e.target.value)}
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs outline-none font-bold text-slate-700"
+                  >
+                    <option value="dynamodb">Source: Amazon DynamoDB</option>
+                    <option value="rds-aurora">Source: RDS Aurora Cluster</option>
+                    <option value="elasticache">Source: ElastiCache Redis</option>
+                    <option value="documentdb">Source: Amazon DocumentDB</option>
+                    <option value="redshift">Source: Amazon Redshift DW</option>
+                    <option value="emr-hbase">Source: HBase in EMR Hadoop</option>
+                    <option value="on-prem">Source: On-Premises database</option>
+                  </select>
+                  <button
+                    disabled={federatedState !== 'idle'}
+                    onClick={triggerFederatedQuery}
+                    className="px-4 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-500 disabled:bg-slate-200 disabled:text-slate-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <Play className="w-3.5 h-3.5" /> Query Source
+                  </button>
+                  <button
+                    onClick={resetFederatedQuery}
+                    className="p-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Brand New Federated Query SVG Map */}
+                <div className="w-full h-[180px] rounded-xl border border-slate-200 relative p-1 flex items-center justify-center shadow-inner bg-slate-50">
+                  <svg className="w-full h-full da-svg-bg" viewBox="0 0 420 180">
+                    <defs>
+                      <marker id="fed-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                      </marker>
+                    </defs>
+
+                    {/* Base conduits */}
+                    <path d="M 60 40 Q 90 20, 130 35" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
+                    <path d="M 170 65 V 110" fill="none" stroke="#a855f7" strokeWidth="2" markerEnd="url(#fed-arrow)" />
+                    
+                    <path d="M 170 125 Q 120 135, 60 115" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 170 125 Q 120 155, 60 160" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 170 125 H 280" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 170 125 Q 230 155, 290 160" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+                    <path d="M 170 125 Q 230 135, 340 120" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#fed-arrow)" />
+
+                    {/* Active flow animations */}
+                    {federatedState === 'querying' && (
+                      <path d="M 170 65 V 110" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                    )}
+
+                    {federatedState === 'fetching' && (
+                      <>
+                        <path d="M 170 65 V 110" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
+                        {federatedDb === 'dynamodb' && <path d="M 170 125 Q 120 135, 60 115" fill="none" stroke="#ea580c" strokeWidth="3.5" className="da-flow-orange" />}
+                        {federatedDb === 'rds-aurora' && <path d="M 170 125 Q 120 155, 60 160" fill="none" stroke="#10b981" strokeWidth="3.5" className="da-flow-green" />}
+                        {federatedDb === 'elasticache' && <path d="M 170 125 H 280" fill="none" stroke="#ef4444" strokeWidth="3.5" className="da-flow-orange" />}
+                        {federatedDb === 'documentdb' && <path d="M 170 125 Q 230 155, 290 160" fill="none" stroke="#a855f7" strokeWidth="3.5" className="da-flow-purple" />}
+                        {federatedDb === 'redshift' && <path d="M 170 125 Q 230 135, 340 120" fill="none" stroke="#0ea5e9" strokeWidth="3.5" className="da-flow-blue" />}
+                        {federatedDb === 'emr-hbase' && <path d="M 170 125 H 280" fill="none" stroke="#3b82f6" strokeWidth="3.5" className="da-flow-blue" />}
+                        {federatedDb === 'on-prem' && <path d="M 170 125 Q 230 155, 290 160" fill="none" stroke="#64748b" strokeWidth="3" className="da-flow-sky" />}
+                      </>
+                    )}
+
+                    {federatedState === 'saving' && (
+                      <path d="M 130 35 Q 90 20, 60 40" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                    )}
+
+                    {/* Nodes */}
+                    <g transform="translate(10, 10)" className="da-node-btn">
+                      <rect width="50" height="42" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="1.5" />
+                      <text x="25" y="18" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="25" y="32" fill="#166534" fontSize="7" textAnchor="middle">Results Storage</text>
+                    </g>
+
+                    <g transform="translate(130, 15)" className="da-node-btn">
+                      <rect width="80" height="50" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                      <text x="40" y="20" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🔍 ATHENA</text>
+                      <text x="40" y="36" fill="#1e40af" fontSize="7.5" textAnchor="middle">Federated Query</text>
+                      <text x="40" y="44" fill="#475569" fontSize="6.5" textAnchor="middle" fontWeight="bold">Distributor Engine</text>
+                    </g>
+
+                    <g transform="translate(145, 95)" className="da-node-btn">
+                      <circle cx="25" cy="25" r="22" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2" />
+                      <circle cx="25" cy="25" r="22" fill="none" stroke="#ea580c" strokeWidth="1.5" className={federatedState === 'fetching' ? 'pulse-circle' : ''} />
+                      <text x="25" y="29" fill="#ea580c" fontSize="15" fontWeight="bold" textAnchor="middle">λ</text>
+                      <text x="25" y="44" fill="#ea580c" fontSize="6" fontWeight="bold" textAnchor="middle">CONNECTOR</text>
+                    </g>
+
+                    <g transform="translate(5, 90)" className="da-node-btn">
+                      <rect width="55" height="30" rx="4" fill={federatedDb === 'dynamodb' ? '#ffedd5' : '#ffffff'} stroke={federatedDb === 'dynamodb' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">⚡ DynamoDB</text>
+                    </g>
+                    <g transform="translate(5, 140)" className="da-node-btn">
+                      <rect width="55" height="30" rx="4" fill={federatedDb === 'rds-aurora' ? '#dcfce7' : '#ffffff'} stroke={federatedDb === 'rds-aurora' ? '#16a34a' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">🛢️ RDS Aurora</text>
+                    </g>
+                    
+                    <g transform="translate(280, 110)" className="da-node-btn">
+                      <rect width="55" height="30" rx="4" fill={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#eff6ff' : '#ffffff'} stroke={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">
+                        {federatedDb === 'emr-hbase' ? '📦 HBase EMR' : '🔌 Redis Cache'}
+                      </text>
+                    </g>
+
+                    <g transform="translate(290, 145)" className="da-node-btn">
+                      <rect width="60" height="30" rx="4" fill={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#fdf4ff' : '#ffffff'} stroke={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="30" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">
+                        {federatedDb === 'on-prem' ? '🏢 On-Prem DB' : '🗄️ DocumentDB'}
+                      </text>
+                    </g>
+
+                    <g transform="translate(340, 95)" className="da-node-btn">
+                      <rect width="55" height="30" rx="4" fill={federatedDb === 'redshift' ? '#f0f9ff' : '#ffffff'} stroke={federatedDb === 'redshift' ? '#0ea5e9' : '#cbd5e1'} strokeWidth="1.5" />
+                      <text x="27.5" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">⚡ Redshift DW</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Federated trace console logs */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 h-[90px] font-mono text-[9px] text-slate-700 overflow-y-auto space-y-1 mt-3 shadow-inner">
+                {federatedLogs.length === 0 ? (
+                  <span className="text-slate-500 italic block text-center mt-5">Select a database source and click "Query Source" to simulate the Lambda SQL pipeline.</span>
+                ) : (
+                  federatedLogs.map((log, idx) => {
+                    let color = 'text-slate-650';
+                    if (log.includes('✅') || log.includes('SUCCESS')) color = 'text-emerald-700 font-semibold bg-emerald-50 px-1 rounded';
+                    if (log.includes('CONNECTOR') || log.includes('DISPATCH')) color = 'text-purple-700 font-semibold bg-purple-50 px-1 rounded';
+                    if (log.includes('S3 WRITE')) color = 'text-sky-700 font-semibold bg-sky-50 px-1 rounded';
+                    return <div key={idx} className={`${color} pb-0.5 border-b border-slate-100`}>{log}</div>;
+                  })
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1320,53 +1765,431 @@ export default function DatabasesAndAnalyticsVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'warehousing' && (
         <div className="space-y-6">
+          {/* Section Introduction */}
           <div className="da-card">
             <h2 className="da-card-title text-sky-700">
-              <TrendingUp className="w-5 h-5" /> Enterprise Warehousing: Amazon Redshift, Spectrum, &amp; Disaster Recovery
+              <TrendingUp className="w-5 h-5" /> Enterprise Warehousing: Amazon Redshift (OLAP) &amp; Disaster Recovery Coordinator
             </h2>
-            <p className="da-card-desc">
-              Amazon Redshift is a columnar MPP (Massively Parallel Processing) data warehouse separating compute and leader nodes. **Redshift Spectrum** runs queries directly over S3 data lakes without database ingestion, using automated snapshot logs for cross-region disaster recovery (DR).
+            <p className="da-card-desc text-slate-700">
+              Amazon Redshift is an enterprise-grade, PostgreSQL-compatible, column-oriented OLAP (Online Analytical Processing) data warehouse designed for petabyte-scale analytics. It employs a Leader Node for query plan compilation and parallel task distribution, executing scans across concurrent Compute Nodes. This console lets you simulate MPP Query optimization and coordinate automatic cross-region incremental disaster recovery (DR) snapshots.
             </p>
+            <div className="mt-3 bg-sky-50 border border-sky-150 rounded-xl p-3.5 flex gap-2.5 items-start shadow-sm">
+              <Info className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
+              <div className="text-[11.5px] leading-relaxed text-slate-700">
+                <span className="font-bold text-sky-900">💡 Exam Tip &amp; Notebook Reference:</span> Analyze raw files in S3 using serverless SQL with Athena. For PB-scale data warehousing, high-speed joins, and complex OLAP aggregations, use Redshift MPP. Compute nodes execute scans concurrently across columnar data blocks, bypassing 85% of standard row files. Automated snapshot policies copy incremental blocks to S3 every 5h/8h/schedule with customizable retention and cross-region replication for instant DR failover.
+              </div>
+            </div>
           </div>
 
+          {/* Interactive Sandboxes Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            {/* In-depth Redshift MPP architecture diagram */}
-            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-5 min-h-[460px] flex flex-col justify-between shadow-sm">
-              <div className="w-full flex items-center justify-between border-b border-slate-150 pb-3 mb-4">
-                <div>
-                  <h3 className="font-bold text-sm text-slate-800">Amazon Redshift MPP Columnar cluster Architecture</h3>
-                  <p className="text-[11px] text-slate-500">Trigger simulated Disaster Recovery failover and watch snapshots restore in us-west-2</p>
+            {/* Left Column: MPP Parallel Query Engine Simulator */}
+            <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-800 border-b border-slate-150 pb-2.5 mb-3 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-sky-850">🎛️ Leader-Compute MPP Parallel Query Sandbox</span>
+                  <span className="badge bg-sky-50 text-sky-700 text-[10px] font-extrabold uppercase">OLAP Engine</span>
+                </h3>
+                <p className="text-[11.5px] text-slate-600 mb-4 leading-relaxed">
+                  Select a heavy analytical query. Watch how the **Leader Node** compiles an execution plan, sends task slices to **Compute Nodes**, and scans <i>only the specific columnar index data blocks</i> instead of scanning the full tables.
+                </p>
+
+                {/* SQL Query Selection */}
+                <div className="space-y-3 mb-4">
+                  <div className="bg-slate-50 border border-slate-150 rounded-xl p-3">
+                    <label className="block text-[9px] font-bold uppercase text-slate-500 mb-1.5">Select Analytical OLAP Query:</label>
+                    <select
+                      value={redshiftQuery}
+                      onChange={(e) => {
+                        setRedshiftQuery(e.target.value);
+                        resetRedshiftMpp();
+                      }}
+                      disabled={redshiftMppState !== 'idle'}
+                      className="w-full bg-white border border-slate-250 rounded-lg p-1.5 text-xs outline-none font-bold text-slate-700"
+                    >
+                      <option value="sales-sum">📊 Category Revenue: SELECT category, SUM(revenue) FROM sales GROUP BY category;</option>
+                      <option value="user-join">🔗 Region Counts: SELECT u.region, COUNT(t.id) FROM users u JOIN transactions t ON u.id = t.user_id GROUP BY u.region;</option>
+                      <option value="window-agg">📈 Regional Sales Trend: SELECT year, region, SUM(amount) OVER (PARTITION BY region ORDER BY year) FROM orders WHERE year &gt;= 1991;</option>
+                    </select>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      disabled={redshiftMppState !== 'idle'}
+                      onClick={triggerRedshiftMppQuery}
+                      className="flex-1 py-2 bg-sky-600 hover:bg-sky-550 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 disabled:bg-slate-150 disabled:text-slate-400"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Execute MPP Query
+                    </button>
+                    <button
+                      onClick={resetRedshiftMpp}
+                      className="px-3.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center"
+                      title="Reset Simulator"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2">
+
+                {/* MPP Architecture SVG */}
+                <div className="w-full h-[220px] rounded-xl border border-slate-200 relative p-1.5 flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
+                  <svg className="w-full h-full da-svg-bg" viewBox="0 0 460 220">
+                    <defs>
+                      <marker id="rs-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                      </marker>
+                    </defs>
+
+                    {/* Client Link to Leader Node */}
+                    <path d="M 45 110 H 95" fill="none" stroke="#64748b" strokeWidth="2" markerEnd="url(#rs-arrow)" />
+                    {redshiftMppState === 'client-send' && (
+                      <path d="M 45 110 H 95" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-sky" />
+                    )}
+                    {redshiftMppState === 'client-receive' && (
+                      <path d="M 95 110 H 45" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                    )}
+
+                    {/* Leader Node to Compute Node 1 and 2 */}
+                    <path d="M 180 110 L 225 50" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#rs-arrow)" />
+                    <path d="M 180 110 L 225 170" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#rs-arrow)" />
+
+                    {redshiftMppState === 'leader-plan' && (
+                      <>
+                        <path d="M 180 110 L 225 50" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4 4" className="da-flow-blue" />
+                        <path d="M 180 110 L 225 170" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeDasharray="4 4" className="da-flow-blue" />
+                      </>
+                    )}
+                    {redshiftMppState === 'compute-scan' && (
+                      <>
+                        <path d="M 180 110 L 225 50" fill="none" stroke="#8b5cf6" strokeWidth="3" className="da-flow-purple" />
+                        <path d="M 180 110 L 225 170" fill="none" stroke="#8b5cf6" strokeWidth="3" className="da-flow-purple" />
+                      </>
+                    )}
+                    {redshiftMppState === 'leader-aggregate' && (
+                      <>
+                        <path d="M 225 50 L 180 110" fill="none" stroke="#eab308" strokeWidth="3" className="da-flow-orange" />
+                        <path d="M 225 170 L 180 110" fill="none" stroke="#eab308" strokeWidth="3" className="da-flow-orange" />
+                      </>
+                    )}
+
+                    {/* Spectrum direct query to S3 */}
+                    <path d="M 335 50 H 385" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2 3" markerEnd="url(#rs-arrow)" />
+                    <path d="M 335 170 H 385" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2 3" markerEnd="url(#rs-arrow)" />
+
+                    {/* Client Node */}
+                    <g transform="translate(5, 80)" className="da-node-btn">
+                      <rect width="40" height="60" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
+                      <rect x="3" y="3" width="34" height="18" rx="3" fill="#f1f5f9" />
+                      <text x="20" y="14" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                      <text x="20" y="35" fill="#64748b" fontSize="6.5" textAnchor="middle">BI Tool</text>
+                      <text x="20" y="45" fill="#0284c7" fontSize="6" fontWeight="bold" textAnchor="middle">JDBC/ODBC</text>
+                    </g>
+
+                    {/* Leader Node */}
+                    <g transform="translate(95, 65)" className="da-node-btn">
+                      <rect width="85" height="90" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                      {redshiftMppState === 'leader-plan' && (
+                        <rect width="85" height="90" rx="8" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="pulse-border" />
+                      )}
+                      
+                      <rect x="5" y="5" width="75" height="15" rx="3" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
+                      <text x="42.5" y="15" fill="#1d4ed8" fontSize="8" fontWeight="extrabold" textAnchor="middle">👑 LEADER NODE</text>
+                      
+                      <text x="42.5" y="35" fill="#1e40af" fontSize="6.5" textAnchor="middle" fontWeight="bold">Plan Compiler</text>
+                      <text x="42.5" y="47" fill="#0891b2" fontSize="6.5" textAnchor="middle">Task Optimizer</text>
+                      
+                      {/* Mini state visualization banner */}
+                      <rect x="8" y="58" width="69" height="24" rx="3" fill="#f8fafc" stroke="#e2e8f0" />
+                      <text x="42.5" y="67" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle">STAGE:</text>
+                      <text x="42.5" y="77" fill="#0369a1" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
+                        {redshiftMppState.toUpperCase()}
+                      </text>
+                    </g>
+
+                    {/* Compute Node #1 */}
+                    <g transform="translate(225, 10)" className="da-node-btn">
+                      <rect width="110" height="80" rx="6" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
+                      {redshiftMppState === 'compute-scan' && (
+                        <rect width="110" height="80" rx="6" fill="none" stroke="#a855f7" strokeWidth="2" className="pulse-border" />
+                      )}
+                      <rect x="4" y="4" width="102" height="13" rx="2" fill="#6b21a8" />
+                      <text x="55" y="13" fill="#ffffff" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #1</text>
+                      
+                      <text x="55" y="30" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Slice A: Columnar SSD</text>
+                      
+                      {/* Columnar Data Scanning blocks visual representation */}
+                      <g transform="translate(8, 38)">
+                        {/* Category column */}
+                        <rect x="5" y="2" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
+                        <rect x="5" y="12" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
+                        <rect x="5" y="22" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
+                        <text x="14" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Cat</text>
+
+                        {/* Revenue column */}
+                        <rect x="30" y="2" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="30" y="12" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="30" y="22" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <text x="40" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rev</text>
+
+                        {/* Unused column */}
+                        <rect x="58" y="2" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="58" y="12" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="58" y="22" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <text x="73" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">User/Reg</text>
+                      </g>
+                    </g>
+
+                    {/* Compute Node #2 */}
+                    <g transform="translate(225, 110)" className="da-node-btn">
+                      <rect width="110" height="80" rx="6" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
+                      {redshiftMppState === 'compute-scan' && (
+                        <rect width="110" height="80" rx="6" fill="none" stroke="#a855f7" strokeWidth="2" className="pulse-border" />
+                      )}
+                      <rect x="4" y="4" width="102" height="13" rx="2" fill="#6b21a8" />
+                      <text x="55" y="13" fill="#ffffff" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #2</text>
+                      
+                      <text x="55" y="30" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Slice B: Columnar SSD</text>
+                      
+                      {/* Columnar Data Scanning blocks visual representation */}
+                      <g transform="translate(8, 38)">
+                        {/* Category column */}
+                        <rect x="5" y="2" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
+                        <rect x="5" y="12" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
+                        <rect x="5" y="22" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
+                        <text x="14" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Cat</text>
+
+                        {/* Revenue column */}
+                        <rect x="30" y="2" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="30" y="12" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="30" y="22" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <text x="40" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rev</text>
+
+                        {/* Unused column */}
+                        <rect x="58" y="2" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="58" y="12" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <rect x="58" y="22" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
+                        <text x="73" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">User/Reg</text>
+                      </g>
+                    </g>
+
+                    {/* External S3 Data Lake (Redshift Spectrum) */}
+                    <g transform="translate(385, 60)" className="da-node-btn">
+                      <ellipse cx="30" cy="65" rx="25" ry="8" fill="rgba(22, 163, 74, 0.15)" />
+                      <path d="M 5 20 V 65 A 25 8 0 0 0 55 65 V 20 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
+                      <ellipse cx="30" cy="20" rx="25" ry="8" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
+                      <path d="M 5 32 A 25 6 0 0 0 55 32" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
+                      <path d="M 5 45 A 25 6 0 0 0 55 45" fill="none" stroke="#86efac" strokeWidth="1.5" />
+                      <text x="30" y="32" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="30" y="55" fill="#166534" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spectrum Lake</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Dynamic Console Output for MPP Query */}
+              <div className="mt-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">📟 MPP Query Execution Log:</span>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-[110px] font-mono text-[9.5px] text-slate-200 overflow-y-auto space-y-1 shadow-inner">
+                  {redshiftMppLogs.length === 0 ? (
+                    <span className="text-slate-500 italic block text-center mt-7">Select an OLAP SQL query and click "Execute MPP Query" to trigger parallel scans.</span>
+                  ) : (
+                    redshiftMppLogs.map((log, idx) => {
+                      let color = 'text-slate-350';
+                      if (log.includes('✅') || log.includes('SUCCESS')) color = 'text-emerald-400 font-semibold bg-emerald-950/40 px-1 rounded';
+                      if (log.includes('LEADER NODE:')) color = 'text-sky-300 font-semibold bg-sky-950/40 px-1 rounded';
+                      if (log.includes('COMPUTE NODES:')) color = 'text-purple-300 font-semibold bg-purple-950/40 px-1 rounded';
+                      if (log.includes('COLUMNAR STORAGE:')) color = 'text-amber-300 font-semibold bg-amber-950/40 px-1 rounded';
+                      return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/60`}>{log}</div>;
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Incremental Snapshots & Disaster Recovery Coordinator */}
+            <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-bold text-sm text-slate-800 border-b border-slate-150 pb-2.5 mb-3 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-sky-850">💾 Snapshot Registry &amp; Cross-Region DR</span>
+                  <span className="badge bg-purple-50 text-purple-700 text-[10px] font-extrabold uppercase">Encrypted Backups</span>
+                </h3>
+                <p className="text-[11.5px] text-slate-650 mb-3 leading-relaxed">
+                  Configure automated backup frequency, KMS encrypted Cross-Region copy, and retention. Take incremental manual snapshots or trigger instant recovery restoration into a brand new PostgreSQL cluster.
+                </p>
+
+                {/* Settings Panel */}
+                <div className="grid grid-cols-2 gap-3 bg-slate-50 border border-slate-150 rounded-xl p-3 mb-3 text-xs">
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase text-slate-500 mb-1">Backup Frequency:</label>
+                    <select
+                      value={rsSnapshotFreq}
+                      onChange={(e) => setRsSnapshotFreq(e.target.value as any)}
+                      className="w-full bg-white border border-slate-200 rounded-lg p-1 outline-none font-bold text-slate-700"
+                    >
+                      <option value="5h">⏱️ Every 5 Hours</option>
+                      <option value="8h">⏱️ Every 8 Hours</option>
+                      <option value="scheduled">📅 Custom Cron Schedule</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold uppercase text-slate-500 mb-1">Retention Policy:</label>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <input
+                        type="range"
+                        min="1"
+                        max="35"
+                        value={rsRetention}
+                        onChange={(e) => setRsRetention(parseInt(e.target.value))}
+                        className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-655"
+                      />
+                      <span className="font-mono font-bold text-sky-800 text-[11px] shrink-0">{rsRetention}d</span>
+                    </div>
+                  </div>
+                  <div className="col-span-2 flex items-center justify-between bg-white border border-slate-200 p-2 rounded-lg mt-0.5">
+                    <div>
+                      <span className="font-bold text-slate-700 block text-[10.5px]">Cross-Region Snapshot Copy (DR):</span>
+                      <span className="text-[9px] text-slate-500 leading-none">Auto copy newly taken snapshots to us-west-2</span>
+                    </div>
+                    <button
+                      onClick={() => setRsCrossRegion(!rsCrossRegion)}
+                      className={`px-3 py-1 rounded-lg font-bold text-[9.5px] border transition-all ${rsCrossRegion ? 'bg-purple-600 text-white border-purple-600 shadow-sm' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}
+                    >
+                      {rsCrossRegion ? '🟢 Auto Copy On' : '❌ Copy Off'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Snapshot Action Buttons */}
+                <div className="flex gap-2 mb-3">
                   <button
-                    disabled={redshiftState !== 'idle'}
-                    onClick={triggerRedshiftDR}
-                    className="px-3.5 py-1.5 bg-sky-600 text-white rounded-lg text-xs font-semibold hover:bg-sky-500 disabled:bg-slate-200 disabled:text-slate-400 transition-colors flex items-center gap-1.5"
+                    disabled={rsDRState !== 'idle'}
+                    onClick={triggerRsManualSnapshot}
+                    className="flex-1 py-1.5 bg-purple-600 hover:bg-purple-550 text-white rounded-lg text-xs font-bold transition-all disabled:bg-slate-150 disabled:text-slate-400 flex items-center justify-center gap-1"
                   >
-                    <Play className="w-3.5 h-3.5" /> Trigger DR Failover Recovery
+                    📸 Manual Snapshot
                   </button>
                   <button
-                    onClick={resetRedshiftDR}
-                    className="p-1.5 bg-slate-100 text-slate-605 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                    disabled={rsDRState !== 'idle'}
+                    onClick={triggerRsRestoreSnapshot}
+                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-555 text-white rounded-lg text-xs font-bold transition-all disabled:bg-slate-150 disabled:text-slate-400 flex items-center justify-center gap-1"
+                  >
+                    ⚙️ Restore Selected
+                  </button>
+                  <button
+                    onClick={resetRsDR}
+                    className="px-2.5 bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors flex items-center justify-center"
+                    title="Reset DR Log"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
                   </button>
                 </div>
+
+                {/* Snapshot List Table */}
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">📸 Available Cluster Snapshots (stored in S3):</span>
+                  <div className="max-h-[110px] overflow-y-auto border border-slate-200 rounded-xl bg-slate-50">
+                    <table className="w-full text-left border-collapse text-[10px]">
+                      <thead>
+                        <tr className="bg-slate-150 border-b border-slate-200 text-slate-700 font-bold text-[8.5px] uppercase">
+                          <th className="p-2 pl-3">Snapshot Identifier</th>
+                          <th className="p-2">Type</th>
+                          <th className="p-2">Timestamp</th>
+                          <th className="p-2 pr-3 text-right">Size</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rsSnapshotsList.map((snap) => {
+                          const isSelected = selectedSnapshot === snap.id;
+                          return (
+                            <tr
+                              key={snap.id}
+                              onClick={() => setSelectedSnapshot(snap.id)}
+                              className={`cursor-pointer hover:bg-sky-50 border-b border-slate-100 transition-colors ${isSelected ? 'bg-sky-100/70 border-sky-300 font-semibold text-sky-950' : 'text-slate-650'}`}
+                            >
+                              <td className="p-2 pl-3 flex items-center gap-1.5">
+                                <span className={isSelected ? 'text-sky-600' : 'text-slate-350'}>{isSelected ? '🔵' : '⚪'}</span>
+                                {snap.id}
+                              </td>
+                              <td className="p-2">
+                                <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${snap.type === 'Manual' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-750'}`}>
+                                  {snap.type}
+                                </span>
+                              </td>
+                              <td className="p-2">{snap.time}</td>
+                              <td className="p-2 pr-3 text-right font-mono font-bold">{snap.size}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
 
-              {/* Complex Redshift MPP SVG */}
-              <div className="w-full h-[280px] rounded-xl border border-slate-200 p-2 relative overflow-hidden flex items-center justify-center shadow-inner bg-slate-50">
+              {/* DR Trace Terminal */}
+              <div className="mt-3">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block mb-1">📡 DR Snapshot &amp; Replication Log:</span>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-[110px] font-mono text-[9.5px] text-slate-200 overflow-y-auto space-y-1 shadow-inner">
+                  {rsDRLogs.length === 0 ? (
+                    <span className="text-slate-500 italic block text-center mt-7">Click "Manual Snapshot" or "Restore Selected" to coordinate backups.</span>
+                  ) : (
+                    rsDRLogs.map((log, idx) => {
+                      let color = 'text-slate-355';
+                      if (log.includes('✅') || log.includes('SUCCESS')) color = 'text-emerald-400 font-semibold bg-emerald-950/40 px-1 rounded';
+                      if (log.includes('📸 SNAPSHOT:')) color = 'text-purple-300 font-semibold bg-purple-950/40 px-1 rounded';
+                      if (log.includes('📡 REPLICATION:')) color = 'text-fuchsia-300 font-semibold bg-fuchsia-950/40 px-1 rounded';
+                      if (log.includes('⚙️ RESTORE:') || log.includes('S3 PULL:')) color = 'text-cyan-300 font-semibold bg-cyan-950/40 px-1 rounded';
+                      return <div key={idx} className={`${color} pb-0.5 border-b border-slate-800/60`}>{log}</div>;
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Full Width Bottom Card: Reorganized Automated Multi-Region DR failover runbook */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-150 pb-3 mb-1">
+              <div>
+                <h3 className="font-bold text-sm text-slate-850 flex items-center gap-1.5">
+                  <span>🌐 Automated Cross-Region Disaster Recovery (DR) Failover Plan</span>
+                  <span className="badge bg-rose-50 text-rose-700 text-[10px] font-extrabold uppercase">Multi-Region Hot Standby</span>
+                </h3>
+                <p className="text-[11.5px] text-slate-500">Initiate automated replica failovers and watch active clusters switch dynamically from us-east-1 to us-west-2</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  disabled={redshiftState !== 'idle'}
+                  onClick={triggerRedshiftDR}
+                  className="px-3.5 py-1.5 bg-rose-605 hover:bg-rose-550 text-white rounded-lg text-xs font-bold transition-all disabled:bg-slate-150 disabled:text-slate-400 flex items-center gap-1.5 shadow-sm"
+                >
+                  <Play className="w-3.5 h-3.5" /> Trigger DR Failover Recovery
+                </button>
+                <button
+                  onClick={resetRedshiftDR}
+                  className="p-1.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Complex Redshift MPP DR Map SVG */}
+              <div className="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-xl p-2 h-[280px] flex items-center justify-center shadow-inner overflow-hidden relative">
                 <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 280">
                   {/* Client path */}
-                  <path d="M 70 140 H 130" fill="none" stroke="#64748b" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 70 140 H 130" fill="none" stroke="#64748b" strokeWidth="2.5" markerEnd="url(#rs-arrow)" />
                   {/* Leader to Compute slice paths */}
-                  <path d="M 215 140 L 280 62.5" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 215 140 L 280 197.5" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 215 140 L 280 62.5" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#rs-arrow)" />
+                  <path d="M 215 140 L 280 197.5" fill="none" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#rs-arrow)" />
                   
                   {/* Redshift Spectrum path to S3 */}
-                  <path d="M 400 62.5 H 455" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 400 197.5 H 455" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 400 62.5 H 455" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#rs-arrow)" />
+                  <path d="M 400 197.5 H 455" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#rs-arrow)" />
 
                   {/* Active flow animations during DR */}
                   {redshiftState === 'snapshotting' && (
@@ -1405,7 +2228,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     <rect x="4" y="4" width="85" height="90" rx="10" fill="rgba(59, 130, 246, 0.1)" />
                     <rect width="85" height="90" rx="10" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
                     <rect x="8" y="8" width="69" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                    <text x="42.5" y="21" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">🛢️ LEADER NODE</text>
+                    <text x="42.5" y="21" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">👑 LEADER NODE</text>
                     <text x="42.5" y="44" fill="#1e40af" fontSize="8" fontWeight="bold" textAnchor="middle">Client endpoint</text>
                     <text x="42.5" y="58" fill="#0d9488" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Query planner</text>
                     <rect x="12" y="68" width="61" height="14" rx="3" fill="#ccfbf1" />
@@ -1460,36 +2283,37 @@ export default function DatabasesAndAnalyticsVisualizer() {
                   </g>
                 </svg>
               </div>
-            </div>
 
-            {/* Redshift DR logs trace console */}
-            <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col h-[460px] shadow-inner">
-              <div className="flex items-center gap-2 text-slate-700 font-mono text-xs border-b border-slate-200 pb-2 mb-3">
-                <Terminal className="w-4 h-4 text-sky-600" />
-                <span>DW Snapshot Recovery Trace</span>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2.5 font-mono text-[10.5px] leading-relaxed text-slate-700 pr-1">
-                {redshiftLogs.length === 0 ? (
-                  <span className="text-slate-500 block text-center mt-32 italic">Click "Trigger DR Failover Recovery" to initiate encrypted cross-region cluster copy recovery playbooks.</span>
-                ) : (
-                  redshiftLogs.map((log, idx) => {
-                    let color = 'text-slate-650';
-                    if (log.includes('🚀') || log.includes('🚨')) color = 'text-rose-700 font-semibold bg-rose-50 px-1.5 py-0.5 rounded';
-                    if (log.includes('💾') || log.includes('⚙️')) color = 'text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded';
-                    if (log.includes('📡')) color = 'text-purple-700 font-semibold bg-purple-50 px-1.5 py-0.5 rounded';
-                    if (log.includes('✅') || log.includes('🌐')) color = 'text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded';
-                    return (
-                      <div key={idx} className={`${color} border-b border-slate-100 pb-1.5`}>
-                        {log}
-                      </div>
-                    );
-                  })
-                )}
+              {/* Redshift DR logs trace console */}
+              <div className="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col h-[280px] shadow-inner">
+                <div className="flex items-center gap-2 text-slate-700 font-mono text-xs border-b border-slate-200 pb-2 mb-3">
+                  <Terminal className="w-4 h-4 text-rose-600 animate-pulse" />
+                  <span className="font-bold text-slate-800">DR Automated Failover Console</span>
+                </div>
+                <div className="flex-1 overflow-y-auto space-y-2 font-mono text-[10px] leading-relaxed text-slate-700 pr-1">
+                  {redshiftLogs.length === 0 ? (
+                    <span className="text-slate-400 block text-center mt-20 italic">Click "Trigger DR Failover Recovery" to initiate the automated regional hot-standby switchover plan.</span>
+                  ) : (
+                    redshiftLogs.map((log, idx) => {
+                      let color = 'text-slate-650';
+                      if (log.includes('🚀') || log.includes('🚨')) color = 'text-rose-700 font-semibold bg-rose-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('💾') || log.includes('⚙️')) color = 'text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('📡')) color = 'text-purple-700 font-semibold bg-purple-50 px-1.5 py-0.5 rounded';
+                      if (log.includes('✅') || log.includes('🌐')) color = 'text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded';
+                      return (
+                        <div key={idx} className={`${color} border-b border-slate-100 pb-1.5`}>
+                          {log}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
 
       {/* ========================================================================= */}
       {/* TAB 6: STREAMING ANALYTICS (KAFKA MSK & FLINK)                            */}
