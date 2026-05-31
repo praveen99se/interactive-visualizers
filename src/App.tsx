@@ -16,6 +16,10 @@ import ElasticContainersVisualizer from './pages/visualizers/ElasticContainersVi
 import ServerlessVisualizer from './pages/visualizers/ServerlessVisualizer';
 import DatabasesAndAnalyticsVisualizer from './pages/visualizers/DatabasesAndAnalyticsVisualizer';
 import CloudWatchMAndEventsVisualizer from './pages/visualizers/CloudWatchMAndEventsVisualizer';
+import GovernanceAndIdentityVisualizer from './pages/visualizers/GovernanceAndIdentityVisualizer';
+import SecretsAndKMSEncryptionVisualizer from './pages/visualizers/SecretsAndKMSEncryptionVisualizer';
+import NetworkAndEdgeSecurityVisualizer from './pages/visualizers/NetworkAndEdgeSecurityVisualizer';
+import NetworkingVPCVisualizer from './pages/visualizers/NetworkingVPCVisualizer';
 import NotFound from './pages/NotFound';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -62,7 +66,7 @@ export default function App() {
               
               <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 rounded-xl px-3 py-1.5 text-[10px] font-mono text-slate-300 hover:border-amber-500/30 transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
                 <GitBranch className="w-3.5 h-3.5 text-amber-400" />
-                <span>SANDBOXES: <span className="text-amber-400 font-bold">14_LIVE</span></span>
+                <span>SANDBOXES: <span className="text-amber-400 font-bold">19_LIVE</span></span>
               </div>
               
               <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-[10px] font-mono text-emerald-300 font-bold shadow-[0_2px_10px_rgba(16,185,129,0.1)] hover:bg-emerald-950/60 transition-all duration-300">
@@ -96,6 +100,10 @@ export default function App() {
             <Route path="/visualizers/serverless" element={<ServerlessVisualizer />} />
             <Route path="/visualizers/databases-analytics" element={<DatabasesAndAnalyticsVisualizer />} />
             <Route path="/visualizers/cloudwatch-events" element={<CloudWatchMAndEventsVisualizer />} />
+            <Route path="/visualizers/governance-identity" element={<GovernanceAndIdentityVisualizer />} />
+            <Route path="/visualizers/secrets-kms" element={<SecretsAndKMSEncryptionVisualizer />} />
+            <Route path="/visualizers/network-security" element={<NetworkAndEdgeSecurityVisualizer />} />
+            <Route path="/visualizers/networking-vpc" element={<NetworkingVPCVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

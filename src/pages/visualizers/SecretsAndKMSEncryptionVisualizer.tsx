@@ -1,0 +1,1475 @@
+import { useState } from 'react';
+import {
+  Shield,
+  Key,
+  Play,
+  RefreshCw,
+  SlidersHorizontal,
+  BookOpen,
+  Terminal,
+  Network,
+  Server,
+  Lock,
+  Unlock,
+  AlertTriangle
+} from 'lucide-react';
+
+type TabType = 'intro' | 'kms' | 'envelope' | 'multiregion' | 'crossaccount';
+
+interface LogRow {
+  timestamp: string;
+  message: string;
+  type: 'info' | 'success' | 'warn' | 'error';
+}
+
+export default function SecretsAndKMSEncryptionVisualizer() {
+  const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  // ==========================================
+  // TAB 1 STATE: Topics & Compare Selection
+  // ==========================================
+  const [selectedTopic, setSelectedTopic] = useState<'kms' | 'ssm' | 'secretsmanager'>('kms');
+
+  // ==========================================
+  // TAB 2 STATE: KMS Key Management & Policies
+  // ==========================================
+  const [keyType, setKeyType] = useState<'symmetric' | 'asymmetric' | 'hmac'>('symmetric');
+  const [keyOrigin, setKeyOrigin] = useState<'aws' | 'customer' | 'external'>('customer');
+  const [policySetup, setPolicySetup] = useState<'delegated' | 'restricted' | 'lockout'>('delegated');
+  const [rotationActive, setRotationActive] = useState<boolean>(true);
+  const [kmsState, setKmsState] = useState<'idle' | 'rotating' | 'success' | 'failed'>('idle');
+  const [kmsLogs, setKmsLogs] = useState<LogRow[]>([]);
+
+  // ==========================================
+  // TAB 3 STATE: Envelope Encryption Client-Side
+  // ==========================================
+  const [plainPayload, setPlainPayload] = useState<string>('Confidential payload data - Top Secret Corporate Logs');
+  const [plaintextDataKey, setPlaintextDataKey] = useState<string>('');
+  const [encryptedDataKey, setEncryptedDataKey] = useState<string>('');
+  const [cipherPayload, setCipherPayload] = useState<string>('');
+  const [decryptedPayload, setDecryptedPayload] = useState<string>('');
+  const [envelopeState, setEnvelopeState] = useState<'idle' | 'generating' | 'encrypted' | 'decrypting' | 'decrypted'>('idle');
+  const [envelopeLogs, setEnvelopeLogs] = useState<LogRow[]>([]);
+
+  // ==========================================
+  // TAB 4 STATE: Multi-Region & Global Replication Scenarios
+  // ==========================================
+  const [globalScenario, setGlobalScenario] = useState<'dynamodb' | 'aurora' | 's3' | 'snapshot'>('dynamodb');
+  const [mrkPrimaryActive, setMrkPrimaryActive] = useState<boolean>(true);
+  const [replicationLogs, setReplicationLogs] = useState<LogRow[]>([]);
+  const [replicationState, setReplicationState] = useState<'idle' | 'running' | 'success' | 'failed'>('idle');
+
+  // ==========================================
+  // TAB 5 STATE: Cross-Account & Shared AMIs (KMS)
+  // ==========================================
+  const [crossAccountPolicy, setCrossAccountPolicy] = useState<'denied' | 'allowed'>('denied');
+  const [bootState, setBootState] = useState<'idle' | 'booting' | 'success' | 'failed'>('idle');
+  const [bootLogs, setBootLogs] = useState<LogRow[]>([]);
+
+  // ==========================================
+  // TAB 2 SIMULATOR: KMS Key Rotation & Policy Sandboxes
+  // ==========================================
+  const triggerRotation = async () => {
+    if (kmsState === 'rotating') return;
+    setKmsState('rotating');
+    setKmsLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+
+    setKmsLogs(prev => [...prev, { timestamp, message: `[KMS] Initiating key rotation sequence for Customer Managed Key (CMK) key-9b8a7c6...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 600));
+
+    if (keyOrigin === 'aws') {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `💡 [INFO] AWS Managed Key detected. Rotation occurs automatically every 3 years (1095 days). Material is rotated, older backing layers preserved.`, type: 'warn' },
+        { timestamp, message: `[COMPLETED] AWS Managed Key rotation validated cleanly.`, type: 'success' }
+      ]);
+      setKmsState('success');
+      return;
+    }
+
+    if (keyOrigin === 'external') {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `🚨 [BYOK EXCEPTION] External Imported Key Material cannot be automatically rotated by KMS. BYOK keys require manual rotation (material imported under a new key ID).`, type: 'error' },
+        { timestamp, message: `[FAILED] Key rotation sequence terminated.`, type: 'error' }
+      ]);
+      setKmsState('failed');
+      return;
+    }
+
+    // Customer Managed Key
+    setKmsLogs(prev => [...prev, { timestamp, message: `[CMK] Checking Customer Managed Key automatic 1-year rotation flag state...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 800));
+
+    if (rotationActive) {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [AUTOMATIC ACTIVE] Automatically generating a new active cryptographic backing key layer...`, type: 'info' },
+        { timestamp, message: `[CMK] Syncing Key Material: Encrypted data remains decryptable utilizing historic backing materials. New writes will adopt new layer.`, type: 'success' },
+        { timestamp, message: `[COMPLETED] Rotation success. Backing version 2 spawned seamlessly.`, type: 'success' }
+      ]);
+      setKmsState('success');
+    } else {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `⚠️ [MANUAL MODE] Automatic rotation is disabled. CMK will preserve original material indefinitely.`, type: 'warn' },
+        { timestamp, message: `💡 [MANUAL STEPS] Manual rotation requires launching a new CMK ID and remapping the Key Alias (e.g. alias/app-key ➔ key-v2-id).`, type: 'info' },
+        { timestamp, message: `[SUCCESS] Manual audit completed.`, type: 'success' }
+      ]);
+      setKmsState('success');
+    }
+  };
+
+  const evaluateKmsPolicy = () => {
+    setKmsLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+    
+    if (policySetup === 'delegated') {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [DELEGATED KEY POLICY] Statement "Enable IAM User Permissions" is active.`, type: 'info' },
+        { timestamp, message: `💡 [EVALUATION] Administrative access is delegated to the Account Root ("Principal": {"AWS": "arn:aws:iam::123456789012:root"}).`, type: 'info' },
+        { timestamp, message: `[PASSED] IAM Policies (AdministratorAccess, custom KMS policies) can grant access to users inside the account successfully.`, type: 'success' }
+      ]);
+    } else if (policySetup === 'restricted') {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `⚠️ [RESTRICTED KEY POLICY] Default IAM delegation is active, but a strict condition statement limits usage to specified roles.`, type: 'warn' },
+        { timestamp, message: `💡 [EVALUATION] Key policy restricts "kms:Decrypt" only to Principal "Role: app-ecs-task-role". All other internal account users are blocked.`, type: 'info' },
+        { timestamp, message: `[SUCCESS] Policy boundary verified.`, type: 'success' }
+      ]);
+    } else {
+      setKmsLogs(prev => [
+        ...prev,
+        { timestamp, message: `🚨 [CRITICAL ALERT] Key lockout state simulated! The IAM delegation statement ("Principal": {"AWS": "arn:aws:iam::123456789012:root"}) was DELETED.`, type: 'error' },
+        { timestamp, message: `💥 [LOCKED OUT] Key becomes completely UNMANAGEABLE. IAM users inside this account (including the Account Administrator/Root) cannot edit this policy or decrypt resources!`, type: 'error' },
+        { timestamp, message: `💡 [REMEDIATION] Remediation requires contacting AWS Support to submit a key policy override request, as root keys cannot edit direct KMS key policy locks.`, type: 'error' }
+      ]);
+    }
+  };
+
+  // ==========================================
+  // TAB 3 SIMULATOR: Envelope Client-Side Encryption
+  // ==========================================
+  const executeEnvelopeEncryption = async () => {
+    if (envelopeState === 'generating') return;
+    setEnvelopeState('generating');
+    setEnvelopeLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+
+    setEnvelopeLogs(prev => [...prev, { timestamp, message: `[CLIENT] Requesting GenerateDataKey API call from KMS CMK key-9b8a7c6...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 600));
+
+    // Spawn keys
+    const rawPlaintextKey = Math.random().toString(16).substring(2, 10).toUpperCase() + '-' + Math.random().toString(16).substring(2, 10).toUpperCase();
+    const rawCipherKey = 'CIPHER-' + Math.random().toString(16).substring(2, 12).toUpperCase() + '-' + Math.random().toString(16).substring(2, 12).toUpperCase();
+
+    setPlaintextDataKey(rawPlaintextKey);
+    setEncryptedDataKey(rawCipherKey);
+
+    setEnvelopeLogs(prev => [
+      ...prev,
+      { timestamp, message: `🟢 [KMS API SUCCESS] KMS returned PlaintextDataKey and EncryptedDataKey (wrapped by CMK).`, type: 'success' },
+      { timestamp, message: `🔑 [PLAINTEXT KEY DATA]: ${rawPlaintextKey}`, type: 'success' },
+      { timestamp, message: `🔒 [ENCRYPTED KEY DATA]: ${rawCipherKey}`, type: 'success' }
+    ]);
+    await new Promise(r => setTimeout(r, 800));
+
+    setEnvelopeLogs(prev => [...prev, { timestamp, message: `[CLIENT] Encrypting plaintext payload locally using PlaintextDataKey...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 600));
+
+    // Mock cipher payload
+    const mockCipher = Buffer.from(plainPayload).toString('base64').substring(0, 48) + '...==';
+    setCipherPayload(mockCipher);
+
+    setEnvelopeLogs(prev => [
+      ...prev,
+      { timestamp, message: `🔒 [LOCAL ENCRYPTION COMPLETE] Ciphertext Payload generated securely locally.`, type: 'success' },
+      { timestamp, message: `💥 [SECURITY PURGE] Destroying PlaintextDataKey from client memory space! (Zero-trust secure state)`, type: 'warn' }
+    ]);
+    
+    setPlaintextDataKey(''); // Securely wiped
+    setEnvelopeState('encrypted');
+  };
+
+  const executeEnvelopeDecryption = async () => {
+    if (envelopeState === 'decrypting') return;
+    setEnvelopeState('decrypting');
+    const timestamp = new Date().toLocaleTimeString();
+
+    setEnvelopeLogs(prev => [
+      ...prev,
+      { timestamp, message: `[CLIENT] Initiating local decryption. Client memory has: [Cipher Payload] + [Encrypted Data Key].`, type: 'info' },
+      { timestamp, message: `[CLIENT] Sending Encrypted Data Key to KMS Decrypt API...`, type: 'info' }
+    ]);
+    await new Promise(r => setTimeout(r, 1000));
+
+    // Regain key
+    const rawPlaintextKey = 'RECOVERED-' + Math.random().toString(16).substring(2, 10).toUpperCase();
+    setPlaintextDataKey(rawPlaintextKey);
+
+    setEnvelopeLogs(prev => [
+      ...prev,
+      { timestamp, message: `🟢 [KMS API SUCCESS] KMS Decrypted key package using CMK, returning Plaintext Data Key.`, type: 'success' },
+      { timestamp, message: `🔑 [RECOVERED PLAINTEXT KEY]: ${rawPlaintextKey}`, type: 'success' }
+    ]);
+    await new Promise(r => setTimeout(r, 800));
+
+    setEnvelopeLogs(prev => [...prev, { timestamp, message: `[CLIENT] Decrypting Base64 cipher local payload using recovered key...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 600));
+
+    setDecryptedPayload(plainPayload);
+    setEnvelopeLogs(prev => [
+      ...prev,
+      { timestamp, message: `🟢 [DECRYPTION COMPLETE] Plaintext Payload fully recovered inside local environment!`, type: 'success' },
+      { timestamp, message: `📄 [DECRYPTED PAYLOAD]: "${plainPayload}"`, type: 'success' }
+    ]);
+    setEnvelopeState('decrypted');
+  };
+
+  const resetEnvelopeSim = () => {
+    setPlaintextDataKey('');
+    setEncryptedDataKey('');
+    setCipherPayload('');
+    setDecryptedPayload('');
+    setEnvelopeState('idle');
+    setEnvelopeLogs([]);
+  };
+
+  // ==========================================
+  // TAB 4 SIMULATOR: Global Replication (DynamoDB, Aurora, S3)
+  // ==========================================
+  const triggerGlobalReplication = async () => {
+    if (replicationState === 'running') return;
+    setReplicationState('running');
+    setReplicationLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+
+    if (globalScenario === 'dynamodb') {
+      setReplicationLogs(prev => [...prev, { timestamp, message: `[DYNAMODB] Invoking DynamoDB PutItem in Region: us-east-1...`, type: 'info' }]);
+      await new Promise(r => setTimeout(r, 600));
+
+      setReplicationLogs(prev => [...prev, { timestamp, message: `[KMS] Calling us-east-1 Local primary KMS Key to encrypt table partition...`, type: 'info' }]);
+      await new Promise(r => setTimeout(r, 800));
+
+      setReplicationLogs(prev => [...prev, { timestamp, message: `[REPLICATION] DynamoDB Global Tables replicates record to Region: eu-west-1 (Active-Active)...`, type: 'info' }]);
+      await new Promise(r => setTimeout(r, 800));
+
+      if (mrkPrimaryActive) {
+        setReplicationLogs(prev => [
+          ...prev,
+          { timestamp, message: `🟢 [SUCCESS] eu-west-1 decrypts and re-encrypts the replica table local partition using Local Multi-Region Replica Key (mrk-9b8a7c6...).`, type: 'success' },
+          { timestamp, message: `💡 [PERFORMANCE] Bypassed cross-region KMS network hops! Decryption occurs locally within eu-west-1 network latency boundaries.`, type: 'success' }
+        ]);
+        setReplicationState('success');
+      } else {
+        setReplicationLogs(prev => [
+          ...prev,
+          { timestamp, message: `🚨 [REPLICATION ERROR] Replica Multi-Region Key in eu-west-1 has been disabled or is missing!`, type: 'error' },
+          { timestamp, message: `💥 [FAILED] DynamoDB Global Table replication stalled in eu-west-1 due to KMS key decryption failure.`, type: 'error' }
+        ]);
+        setReplicationState('failed');
+      }
+    } else if (globalScenario === 'aurora') {
+      setReplicationLogs(prev => [...prev, { timestamp, message: `[AURORA] Launching Aurora Global Database replication sequence...`, type: 'info' }]);
+      await new Promise(r => setTimeout(r, 600));
+
+      setReplicationLogs(prev => [
+        ...prev,
+        { timestamp, message: `[STORAGE] Replicating encrypted storage volumes from us-east-1 (Primary cluster encrypted with key-us) to eu-west-1 (Secondary cluster)...`, type: 'info' },
+        { timestamp, message: `💡 [INFO] Aurora Global Database uses region-specific KMS keys. Data is decrypted at primary boundary, replicated via AWS network, and re-encrypted in target region using eu-west-1 regional KMS key.`, type: 'info' },
+        ...accountsList().map(() => ({
+          timestamp,
+          message: `[STORAGE] Write synchronization successfully completed. Target Aurora node encrypted with regional KMS key-eu.`,
+          type: 'success' as const
+        }))
+      ]);
+      setReplicationState('success');
+    } else if (globalScenario === 's3') {
+      setReplicationLogs(prev => [...prev, { timestamp, message: `[S3 CRR] Writing object to source S3 Bucket (us-east-1)...`, type: 'info' }]);
+      await new Promise(r => setTimeout(r, 600));
+
+      setReplicationLogs(prev => [
+        ...prev,
+        { timestamp, message: `💡 [S3 BUCKET KEY] S3 Bucket Key is ACTIVE. Reduces KMS API cost overheads by up to 99% by utilizing S3 bucket-level encryption keys instead of repeating KMS API data key generations!`, type: 'warn' },
+        { timestamp, message: `[S3 CRR] Replicating encrypted object to destination S3 bucket (eu-west-1)...`, type: 'info' }
+      ]);
+      await new Promise(r => setTimeout(r, 800));
+
+      setReplicationLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [RE-ENCRYPT SUCCESS] CRR re-encrypts replicated object at destination bucket using eu-west-1 destination KMS key.`, type: 'success' },
+        { timestamp, message: `[COMPLETED] Object synchronized securely across regions. S3 Bucket Key active.`, type: 'success' }
+      ]);
+      setReplicationState('success');
+    } else {
+      // snapshot
+      setReplicationLogs(prev => [...prev, { timestamp, message: `[EBS SNAPSHOT] Copying EBS Snapshot encrypted with regional key-us to eu-west-1...`, type: 'info' }]);
+      await new Promise(r => setTimeout(r, 800));
+
+      setReplicationLogs(prev => [
+        ...prev,
+        { timestamp, message: `🚨 [IMPLICIT DENY] Cannot directly copy an encrypted snapshot using local keys, as eu-west-1 cannot access us-east-1 local KMS keys.`, type: 'error' },
+        { timestamp, message: `💡 [DECRYPTION PROCESS] Snapshot is decrypted inside source region, transferred securely, and re-encrypted in eu-west-1 using destination KMS key.`, type: 'warn' },
+        { timestamp, message: `🟢 [SUCCESS] Snapshot replication completed. Encrypted with target region's customer managed key.`, type: 'success' }
+      ]);
+      setReplicationState('success');
+    }
+  };
+
+  const accountsList = () => {
+    return [
+      { id: '1', name: 'Aurora Replica node 1' },
+      { id: '2', name: 'Aurora Replica node 2' }
+    ];
+  };
+
+  // ==========================================
+  // TAB 5 SIMULATOR: Cross-Account Shared AMIs & KMS
+  // ==========================================
+  const triggerBootInstance = async () => {
+    if (bootState === 'booting') return;
+    setBootState('booting');
+    setBootLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+
+    setBootLogs(prev => [...prev, { timestamp, message: `[ACCOUNT B] Requesting EC2:RunInstances utilizing Shared AMI (AMI-09876abc...) owned by Account A...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 600));
+
+    setBootLogs(prev => [...prev, { timestamp, message: `[EC2 BOOT] Shared AMI EBS root volume is encrypted with Account A custom KMS key-9b8a7c6...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 800));
+
+    setBootLogs(prev => [...prev, { timestamp, message: `[EC2 BOOT] EC2 service role in Account B attempts to decrypt EBS snapshots using Account A's KMS key...`, type: 'info' }]);
+    await new Promise(r => setTimeout(r, 800));
+
+    if (crossAccountPolicy === 'allowed') {
+      setBootLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [KEY POLICY MATCH] KMS Key Policy in Account A permits access to Account B! ("Principal": "arn:aws:iam::AccountB:root")`, type: 'success' },
+        { timestamp, message: `🔑 [KMS GRANT CREATED] Account B successfully created a KMS Grant for the EC2 service role to decrypt volume blocks.`, type: 'success' },
+        { timestamp, message: `🟢 [BOOT SUCCESS] Volume decrypted. EC2 instance booted cleanly in Account B. State: [RUNNING]`, type: 'success' }
+      ]);
+      setBootState('success');
+    } else {
+      setBootLogs(prev => [
+        ...prev,
+        { timestamp, message: `🚨 [KMS DECRYPT FAILURE] Blocked by KMS Key Policy in Account A! Account B is not listed in the key policy principals.`, type: 'error' },
+        { timestamp, message: `💥 [BOOT FAILED] 403 AccessDenied - EC2 service role cannot decrypt EBS volume. Instance transition state: [SHUTTING_DOWN]`, type: 'error' },
+        { timestamp, message: `💡 [REMEDIATION] Source Account A must update the Custom KMS Key Policy to explicitly allow kms:Decrypt and kms:CreateGrant to Account B.`, type: 'error' }
+      ]);
+      setBootState('failed');
+    }
+  };
+
+  const resetBootSim = () => {
+    setBootState('idle');
+    setBootLogs([]);
+  };
+
+  return (
+    <div className="da-container animate-fadeIn">
+      {/* Isolated visualizer styles */}
+      <style>{`
+        .da-container {
+          font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+          color: #1e293b;
+          background-color: #f8fafc;
+          padding: 20px;
+          border-radius: 16px;
+        }
+        .da-card {
+          background: rgba(255, 255, 255, 0.95);
+          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          border-radius: 16px;
+          padding: 24px;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+          transition: all 0.2s ease-in-out;
+        }
+        .da-card:hover {
+          border-color: #3b82f6;
+          box-shadow: 0 10px 20px -4px rgba(59, 130, 246, 0.04);
+        }
+        .da-card-title {
+          font-size: 17px;
+          font-weight: 800;
+          color: #0f172a;
+          margin-bottom: 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .da-card-desc {
+          font-size: 13px;
+          color: #475569;
+          line-height: 1.6;
+        }
+        .da-tabs {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          padding-bottom: 10px;
+        }
+        .da-tb {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 12px;
+          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          font-size: 12px;
+          font-weight: 600;
+          color: #475569;
+          background: rgba(255, 255, 255, 0.85);
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s ease-in-out;
+          outline: none;
+        }
+        .da-tb:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #1e293b;
+        }
+        .da-tb.da-on {
+          background: #2563eb;
+          color: #ffffff;
+          border-color: #2563eb;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        .da-svg-bg {
+          background-color: #ffffff;
+          background-image: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          background-size: 16px 16px;
+        }
+        
+        .da-flow-blue {
+          stroke: #2563eb;
+          stroke-dasharray: 6,4;
+          animation: flowDash 1s linear infinite;
+        }
+        .da-flow-green {
+          stroke: #10b981;
+          stroke-dasharray: 6,4;
+          animation: flowDash 0.8s linear infinite;
+        }
+        .da-flow-rose {
+          stroke: #f43f5e;
+          stroke-dasharray: 5,3;
+          animation: flowDash 0.4s linear infinite;
+        }
+        @keyframes flowDash {
+          to { stroke-dashoffset: -20; }
+        }
+
+        .da-node-btn {
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .da-node-btn:hover {
+          filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.15));
+        }
+        
+        .pulse-circle {
+          animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(2.2);
+            opacity: 0;
+          }
+        }
+      `}</style>
+
+      {/* Header bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
+        <div className="flex items-center gap-3">
+          <span className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20">
+            <Key className="w-6 h-6 stroke-[2]" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+              AWS Secrets &amp; KMS Cryptographic Encryption
+              <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200">
+                PRO WORKBENCH
+              </span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">Master AWS KMS keys, key policies, SSM Parameter Store standard/advanced secure parameters, envelope client-side encryption, and global multi-region replications.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab navigation bar */}
+      <div className="da-tabs">
+        <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
+          <BookOpen className="w-4 h-4" /> 1. KMS vs SSM vs Secrets Manager
+        </button>
+        <button className={`da-tb ${activeTab === 'kms' ? 'da-on' : ''}`} onClick={() => setActiveTab('kms')}>
+          <Shield className="w-4 h-4" /> 2. Key Architecture &amp; Rotations
+        </button>
+        <button className={`da-tb ${activeTab === 'envelope' ? 'da-on' : ''}`} onClick={() => setActiveTab('envelope')}>
+          <Terminal className="w-4 h-4" /> 3. Envelope Encryption Simulator
+        </button>
+        <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on' : ''}`} onClick={() => setActiveTab('multiregion')}>
+          <Network className="w-4 h-4" /> 4. Global Multi-Region Replication
+        </button>
+        <button className={`da-tb ${activeTab === 'crossaccount' ? 'da-on' : ''}`} onClick={() => setActiveTab('crossaccount')}>
+          <Server className="w-4 h-4" /> 5. Shared AMIs &amp; Key Policies
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 1: INTRO MATRIX & SCHEMES                                             */}
+      {/* ========================================================================= */}
+      {activeTab === 'intro' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left sidebar */}
+            <div className="lg:col-span-4 da-card text-left flex flex-col justify-between">
+              <div>
+                <h3 className="da-card-title text-blue-700">
+                  <SlidersHorizontal className="w-5 h-5" /> Comparative Matrix
+                </h3>
+                <p className="da-card-desc mb-5">
+                  AWS provides distinct services for configuration, dynamic secrets, and low-level cryptographic key material operations.
+                </p>
+
+                <div className="space-y-2 text-xs">
+                  <button
+                    onClick={() => setSelectedTopic('kms')}
+                    className={`w-full p-3 text-left border rounded-xl transition-all ${
+                      selectedTopic === 'kms'
+                        ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold ring-1 ring-blue-300'
+                        : 'border-slate-200 hover:bg-slate-55 text-slate-700 font-semibold'
+                    }`}
+                  >
+                    🔑 AWS Key Management Service (KMS)
+                    <span className="block text-[9px] text-slate-400 font-medium mt-0.5">Symmetric/Asymmetric keys, automatic rotations, imported BYOK keys</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedTopic('ssm')}
+                    className={`w-full p-3 text-left border rounded-xl transition-all ${
+                      selectedTopic === 'ssm'
+                        ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold ring-1 ring-blue-300'
+                        : 'border-slate-200 hover:bg-slate-55 text-slate-700 font-semibold'
+                    }`}
+                  >
+                    ⚙️ SSM Parameter Store
+                    <span className="block text-[9px] text-slate-400 font-medium mt-0.5">Standard vs Advanced, SecureString KMS parameters, config trees</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedTopic('secretsmanager')}
+                    className={`w-full p-3 text-left border rounded-xl transition-all ${
+                      selectedTopic === 'secretsmanager'
+                        ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold ring-1 ring-blue-300'
+                        : 'border-slate-200 hover:bg-slate-55 text-slate-700 font-semibold'
+                    }`}
+                  >
+                    🔒 AWS Secrets Manager
+                    <span className="block text-[9px] text-slate-400 font-medium mt-0.5">RDS dynamic rotations, multi-region replication, cross-account shares</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-150 rounded-xl p-3.5 text-[11px] leading-relaxed text-blue-900 mt-6 font-medium">
+                <span className="font-extrabold text-blue-950 block mb-1">Architect's Security Guideline:</span>
+                "SSM Parameter Store is ideal for configurations and cost-free secret parameters. Secrets Manager excels at RDS automated secret rotation. KMS handles standard data block encryption keys."
+              </div>
+            </div>
+
+            {/* Right details content */}
+            <div className="lg:col-span-8 space-y-6 text-left">
+              <div className="da-card space-y-4">
+                <h3 className="da-card-title text-slate-800">
+                  <BookOpen className="w-5 h-5 text-blue-500" /> System Deep-Dive: Secrets &amp; Keys
+                </h3>
+
+                {selectedTopic === 'kms' && (
+                  <div className="space-y-4 animate-fadeIn text-xs leading-relaxed text-slate-600">
+                    <div className="bg-white border border-slate-200 rounded-xl p-4">
+                      <span className="font-extrabold text-blue-700 block mb-1.5 text-[12.5px]">🔑 AWS Key Management Service (KMS)</span>
+                      <p className="mb-2">
+                        KMS makes it easy to create and manage cryptographic keys and control their use across a wide range of AWS services and in your applications:
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li><strong>Envelope Encryption:</strong> Encrypts payload local datasets using a plaintext data key, then wraps the data key inside the KMS customer managed root key (CMK).</li>
+                        <li><strong>Hardware Security Modules (HSMs):</strong> Backed by FIPS 140-2 Level 3 validated hardware modules. Root keys never leave KMS HSM borders.</li>
+                        <li><strong>Alias Maps:</strong> Friendly aliases (e.g. `alias/app-db-key`) that decouple direct Key IDs from developer deployment pipelines.</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {selectedTopic === 'ssm' && (
+                  <div className="space-y-4 animate-fadeIn text-xs leading-relaxed text-slate-600">
+                    <div className="bg-white border border-slate-200 rounded-xl p-4">
+                      <span className="font-extrabold text-blue-700 block mb-1.5 text-[12.5px]">⚙️ Systems Manager Parameter Store</span>
+                      <p className="mb-2">
+                        Provides centralized storage to manage configuration data, whether plain text data (like database URLs) or secrets (like passwords):
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li><strong>Parameter Tiers:</strong> Standard (up to 10k parameters, 4KB limit, free) vs Advanced (up to 100k parameters, 8KB limit, charges apply).</li>
+                        <li><strong>SecureString Parameter:</strong> Sensitive parameter values encrypted automatically using a specified KMS key. Decrypted automatically during API invocation.</li>
+                        <li><strong>Hierarchical Trees:</strong> Organizes values under folders (e.g., `/dev/database/url` vs `/prod/database/url`) for granular IAM boundary access.</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {selectedTopic === 'secretsmanager' && (
+                  <div className="space-y-4 animate-fadeIn text-xs leading-relaxed text-slate-600">
+                    <div className="bg-white border border-slate-200 rounded-xl p-4">
+                      <span className="font-extrabold text-blue-700 block mb-1.5 text-[12.5px]">🔒 AWS Secrets Manager</span>
+                      <p className="mb-2">
+                        Helps you protect secrets needed to access your applications, services, and IT resources. Easily rotate database passwords dynamically:
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li><strong>Automated Lambda Rotations:</strong> Integrates with RDS, Redshift, and DocumentDB to rotate credentials on a schedule using a managed Lambda runner.</li>
+                        <li><strong>Cross-Account secrets sharing:</strong> Permits secure access to secrets across distinct accounts using direct resource-based policies.</li>
+                        <li><strong>Multi-Region Secrets:</strong> Replicates active secrets to alternate regions for dynamic disaster recovery and global table workloads.</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Secrets Matrix Table */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <span className="text-xs font-extrabold text-slate-800 block mb-3">Service Capabilities Comparison Grid</span>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500 font-bold">
+                        <th className="pb-2">Feature Dimension</th>
+                        <th className="pb-2">AWS KMS</th>
+                        <th className="pb-2">SSM Parameter Store</th>
+                        <th className="pb-2">AWS Secrets Manager</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                      <tr>
+                        <td className="py-2.5 text-blue-600 font-bold">Primary Target</td>
+                        <td className="py-2.5">Cryptographic Key Material</td>
+                        <td className="py-2.5">Configuration &amp; Secure String parameters</td>
+                        <td className="py-2.5">API Secrets, DB Credentials</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 text-blue-600 font-bold">Dynamic Rotation</td>
+                        <td className="py-2.5">Auto 1-year (CMK) / 3-year (AWS)</td>
+                        <td className="py-2.5">Manual changes only</td>
+                        <td className="py-2.5">Automatic schedule (Lambda-driven)</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 text-blue-600 font-bold">Cross-Region Replication</td>
+                        <td className="py-2.5">Multi-Region keys (Identical ID)</td>
+                        <td className="py-2.5">Manual recreation</td>
+                        <td className="py-2.5">Built-in automated replication</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 text-blue-600 font-bold">Direct RDS Integration</td>
+                        <td className="py-2.5">Storage level only</td>
+                        <td className="py-2.5">None</td>
+                        <td className="py-2.5">Yes (updates active RDS database credentials)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 2: KMS KEY ARCHITECTURE & POLICY LOCKOUT                             */}
+      {/* ========================================================================= */}
+      {activeTab === 'kms' && (
+        <div className="space-y-6">
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-blue-700">
+              <Shield className="w-5 h-5" /> AWS KMS Key Management, Policies &amp; Rotations
+            </h2>
+            <p className="da-card-desc">
+              Customer Managed Keys (CMKs) support granular key policies. If the policy removes the standard IAM delegation statement, the key becomes completely unmanageable.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Sidebar Controls */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                
+                {/* Key Type selection */}
+                <div>
+                  <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Select Key Type:</span>
+                  <div className="flex bg-slate-100 p-0.5 rounded-lg text-xs">
+                    <button
+                      onClick={() => setKeyType('symmetric')}
+                      className={`flex-1 py-1 rounded-md font-bold transition-all ${keyType === 'symmetric' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                    >
+                      Symmetric (AES-256)
+                    </button>
+                    <button
+                      onClick={() => setKeyType('asymmetric')}
+                      className={`flex-1 py-1 rounded-md font-bold transition-all ${keyType === 'asymmetric' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                    >
+                      Asymmetric (RSA/ECC)
+                    </button>
+                    <button
+                      onClick={() => setKeyType('hmac')}
+                      className={`flex-1 py-1 rounded-md font-bold transition-all ${keyType === 'hmac' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                    >
+                      HMAC Sign
+                    </button>
+                  </div>
+                </div>
+
+                {/* Key Origin */}
+                <div>
+                  <span className="text-xs font-extrabold text-slate-800 block mb-2">2. Select Key Origin:</span>
+                  <div className="flex bg-slate-100 p-0.5 rounded-lg text-xs">
+                    <button
+                      onClick={() => setKeyOrigin('aws')}
+                      className={`flex-1 py-1 rounded-md font-bold transition-all ${keyOrigin === 'aws' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                    >
+                      AWS Managed
+                    </button>
+                    <button
+                      onClick={() => setKeyOrigin('customer')}
+                      className={`flex-1 py-1 rounded-md font-bold transition-all ${keyOrigin === 'customer' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                    >
+                      Customer Managed
+                    </button>
+                    <button
+                      onClick={() => setKeyOrigin('external')}
+                      className={`flex-1 py-1 rounded-md font-bold transition-all ${keyOrigin === 'external' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                    >
+                      Imported (BYOK)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Key Policy sandbox state */}
+                <div>
+                  <span className="text-xs font-extrabold text-slate-800 block mb-2">3. Key Policy Configuration:</span>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="policy"
+                        checked={policySetup === 'delegated'}
+                        onChange={() => setPolicySetup('delegated')}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🟢 Delegated (Allows IAM user policies delegation)
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="policy"
+                        checked={policySetup === 'restricted'}
+                        onChange={() => setPolicySetup('restricted')}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🟡 Restricted (Only App task role permitted to Decrypt)
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="policy"
+                        checked={policySetup === 'lockout'}
+                        onChange={() => setPolicySetup('lockout')}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🔴 lockout State (IAM root delegation deleted - UNMANAGEABLE)
+                    </label>
+                  </div>
+                </div>
+
+                {/* Automatic Rotation flag */}
+                {keyOrigin === 'customer' && (
+                  <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <span className="text-xs font-bold text-slate-700">Enable Automatic 1-Year Rotation</span>
+                    <input
+                      type="checkbox"
+                      checked={rotationActive}
+                      onChange={(e) => setRotationActive(e.target.checked)}
+                      className="accent-blue-600 cursor-pointer w-4 h-4"
+                    />
+                  </div>
+                )}
+
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={evaluateKmsPolicy}
+                  className="flex-1 py-2 border border-slate-250 hover:bg-slate-55 text-slate-650 rounded-xl text-xs font-extrabold active:scale-95 transition-all"
+                >
+                  Verify Key Policy
+                </button>
+                <button
+                  onClick={triggerRotation}
+                  disabled={kmsState === 'rotating'}
+                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${kmsState === 'rotating' ? 'animate-spin' : ''}`} /> Rotate Key Material
+                </button>
+              </div>
+
+            </div>
+
+            {/* Visualizer & Logs Terminal */}
+            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden da-svg-bg flex flex-col justify-between min-h-[420px]">
+              
+              {/* Alert notifications */}
+              {policySetup === 'lockout' && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 flex gap-2.5 text-left items-start animate-pulse">
+                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <span className="font-extrabold text-red-950 block">🔑 CRITICAL LOCKOUT DETECTED</span>
+                    <span className="text-red-900 leading-normal">
+                      The delegation statement allowing the AWS account root permissions has been deleted. IAM policies are now ignored. **The key material is frozen and policy cannot be recovered inside this account.**
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Graphic illustration */}
+              <div className="w-full flex-grow flex items-center justify-center">
+                <svg className="w-full h-full min-h-[140px]" viewBox="0 0 280 120">
+                  {/* Key policy check flow */}
+                  <path d="M 50 60 H 130" fill="none" stroke="#64748b" strokeWidth="1.5" className={kmsState === 'rotating' ? 'da-flow-blue' : ''} />
+                  <path d="M 190 60 H 260" fill="none" stroke="#64748b" strokeWidth="1.5" className={kmsState === 'rotating' ? 'da-flow-green' : ''} />
+
+                  {/* KMS CMK Ring Node */}
+                  <g transform="translate(10, 35)">
+                    <rect x="0" y="0" width="55" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
+                    <text x="27.5" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">KMS</text>
+                    <text x="27.5" y="27" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">HSM Ring</text>
+                    <text x="27.5" y="38" fill="#94a3b8" fontSize="5.5" textAnchor="middle">FIPS 140-2</text>
+                  </g>
+
+                  {/* Backing Key Material block */}
+                  <g transform="translate(130, 35)">
+                    <rect x="0" y="0" width="60" height="50" rx="6" 
+                      fill={policySetup === 'lockout' ? '#fef2f2' : '#f0fdf4'} 
+                      stroke={policySetup === 'lockout' ? '#ef4444' : '#10b981'} 
+                      strokeWidth="1.5" />
+                    <text x="30" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Backing Key</text>
+                    <text x="30" y="27" fill="#64748b" fontSize="5.5" textAnchor="middle">
+                      {keyOrigin === 'aws' ? 'Managed' : keyOrigin === 'customer' ? 'CMK Material' : 'Imported BYOK'}
+                    </text>
+                    <text x="30" y="38" fill={policySetup === 'lockout' ? '#dc2626' : '#16a34a'} fontSize="6.5" fontWeight="extrabold" textAnchor="middle">
+                      {policySetup === 'lockout' ? '🔒 LOCKED' : '🟢 ACTIVE'}
+                    </text>
+                  </g>
+
+                  {/* Data files target block */}
+                  <g transform="translate(210, 35)">
+                    <rect x="0" y="0" width="60" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="30" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Payload</text>
+                    <text x="30" y="27" fill="#64748b" fontSize="5" textAnchor="middle">Target Storage</text>
+                    <text x="30" y="38" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                      {keyType === 'symmetric' ? 'AES-GCM' : keyType === 'asymmetric' ? 'RSA/ECC' : 'HMAC'}
+                    </text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Logs terminal */}
+              <div className="bg-slate-900 text-slate-200 p-3.5 rounded-xl font-mono text-[9px] leading-relaxed max-h-36 overflow-y-auto border border-slate-800 shadow-inner mt-4">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 mb-1.5 text-slate-400">
+                  <span className="flex items-center gap-1"><Terminal className="w-3.5 h-3.5 text-blue-400" /> KMS Telemetry Console</span>
+                  <span>Region: global :: HSM Bound</span>
+                </div>
+                {kmsLogs.length === 0 ? (
+                  <div className="text-slate-500 italic">Select key metrics, configure policy restrictions, and execute simulations.</div>
+                ) : (
+                  kmsLogs.map((log, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <span className="text-slate-500 select-none">[{log.timestamp}]</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 3: ENVELOPE ENCRYPTION CLIENT-SIDE                                    */}
+      {/* ========================================================================= */}
+      {activeTab === 'envelope' && (
+        <div className="space-y-6">
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-blue-700">
+              <Key className="w-5 h-5" /> Envelope Encryption &amp; Client-Side Cryptographic Simulator
+            </h2>
+            <p className="da-card-desc">
+              Envelope encryption protects your local datasets by wrapping plaintext keys inside a KMS Master Key (CMK). To maintain zero-trust, the client destroys the Plaintext Data Key from local memory instantly after payload encryption.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Input payload form sidebar */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between space-y-4">
+              <div>
+                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Input Plaintext Payload Data:</span>
+                <textarea
+                  value={plainPayload}
+                  onChange={(e) => {
+                    setPlainPayload(e.target.value);
+                    resetEnvelopeSim();
+                  }}
+                  className="w-full h-24 p-3 border border-slate-250 rounded-xl text-xs outline-none focus:border-blue-500 font-semibold text-slate-700 bg-slate-50 leading-relaxed mb-4 resize-none"
+                  placeholder="Type sensitive parameters or database strings here..."
+                />
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] leading-relaxed text-slate-650 font-medium">
+                  <span className="font-extrabold text-slate-800 block mb-1">Envelope Cryptography Mnemonic:</span>
+                  "GenerateDataKey returns the plaintext key to encrypt local data, and the encrypted key to store alongside it. The Plaintext key is purged instantly!"
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={resetEnvelopeSim}
+                  className="flex-1 py-2 border border-slate-250 hover:bg-slate-55 text-slate-650 rounded-xl text-xs font-bold transition-all active:scale-95"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={executeEnvelopeEncryption}
+                  disabled={envelopeState === 'generating' || !plainPayload}
+                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 active:scale-95 transition-all shadow animate-fadeIn"
+                >
+                  <Lock className="w-3.5 h-3.5" /> Envelope Encrypt
+                </button>
+              </div>
+
+            </div>
+
+            {/* Interactive Flow visualizer */}
+            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden da-svg-bg flex flex-col justify-between min-h-[420px]">
+              
+              {envelopeState === 'generating' && (
+                <span className="absolute top-3 left-3 bg-blue-100 border border-blue-300 text-blue-700 font-extrabold text-[9px] px-2 py-0.5 rounded animate-pulse select-none z-10">
+                  🔑 GENERATING PLAINTEXT AND CIPHER DATA KEYS FROM KMS...
+                </span>
+              )}
+              {envelopeState === 'encrypted' && (
+                <span className="absolute top-3 left-3 bg-rose-100 border border-rose-300 text-rose-700 font-extrabold text-[9px] px-2 py-0.5 rounded select-none z-10 animate-pulse">
+                  🔒 PAYLOAD ENCRYPTED locally - PLAINTEXT KEY PURGED
+                </span>
+              )}
+              {envelopeState === 'decrypted' && (
+                <span className="absolute top-3 left-3 bg-emerald-100 border border-emerald-300 text-emerald-700 font-extrabold text-[9px] px-2 py-0.5 rounded select-none z-10 animate-bounce">
+                  🔓 PAYLOAD RECOVERED SUCCESSFULLY VIA KMS DECRYPT
+                </span>
+              )}
+
+              <div className="w-full flex-grow flex items-center justify-center">
+                <svg className="w-full h-full min-h-[160px]" viewBox="0 0 320 160">
+                  <defs>
+                    <marker id="arrow-sync" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                    </marker>
+                  </defs>
+
+                  {/* Flow lines */}
+                  {/* Client -> KMS */}
+                  <path d="M 60 40 Q 115 15 170 30" fill="none" stroke="#2563eb" strokeWidth="1.5" className={envelopeState === 'generating' ? 'da-flow-blue' : ''} markerEnd="url(#arrow-sync)" />
+                  {/* KMS -> Client */}
+                  <path d="M 170 50 Q 115 65 60 80" fill="none" stroke="#10b981" strokeWidth="1.5" className={envelopeState === 'generating' ? 'da-flow-green' : ''} markerEnd="url(#arrow-sync)" />
+
+                  {/* Client Local Node */}
+                  <g transform="translate(10, 45)">
+                    <rect x="0" y="0" width="55" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
+                    <text x="27.5" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Client App</text>
+                    <text x="27.5" y="27" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Environment</text>
+                    <text x="27.5" y="38" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">Local RAM</text>
+                  </g>
+
+                  {/* KMS HSM Core */}
+                  <g transform="translate(170, 15)">
+                    <rect x="0" y="0" width="70" height="40" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
+                    <text x="35" y="14" fill="#78350f" fontSize="7.5" fontWeight="bold" textAnchor="middle">KMS Service</text>
+                    <text x="35" y="23" fill="#b45309" fontSize="5.5" textAnchor="middle">HSM Core</text>
+                    <text x="35" y="31" fill="#d97706" fontSize="5.5" fontWeight="bold" textAnchor="middle">alias/master-key</text>
+                  </g>
+
+                  {/* Encryption workflow outputs */}
+                  {encryptedDataKey && (
+                    <g transform="translate(130, 95)" className="animate-fadeIn">
+                      <rect x="0" y="0" width="125" height="35" rx="4" fill="#fff5f5" stroke="#f87171" strokeWidth="1" />
+                      <text x="62.5" y="12" fill="#991b1b" fontSize="6" fontWeight="bold" textAnchor="middle">📄 METADATA PACKAGE STORE</text>
+                      <text x="6" y="20" fill="#7f1d1d" fontSize="5" className="font-mono">Cipher Key: {encryptedDataKey}</text>
+                      <text x="6" y="28" fill="#475569" fontSize="4.5">Stores locally alongside Base64 encrypted cipher</text>
+                    </g>
+                  )}
+                </svg>
+              </div>
+
+              {/* Decryption trigger button */}
+              {envelopeState === 'encrypted' && (
+                <div className="p-3 bg-rose-50 border border-rose-250 rounded-xl mb-4 flex justify-between items-center animate-fadeIn text-left">
+                  <div className="flex gap-2 items-center">
+                    <Unlock className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                    <div>
+                      <span className="font-extrabold text-[11.5px] text-rose-950 block">Ready to Decrypt Data?</span>
+                      <span className="text-[10px] text-rose-900 leading-normal">
+                        Decryption requires passing the Encrypted Data Key back to KMS. The KMS HSM Decrypt API will recover the Plaintext key.
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={executeEnvelopeDecryption}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold transition-all active:scale-95 shadow"
+                  >
+                    Decrypt Payload
+                  </button>
+                </div>
+              )}
+
+              {/* Client RAM Cryptographic Cache Dump */}
+              {(cipherPayload || decryptedPayload) && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-left text-[11px] leading-relaxed">
+                  <span className="font-extrabold text-slate-800 block mb-2">💾 Client RAM Cryptographic Cache Dump:</span>
+                  <div className="space-y-1.5 font-mono text-[10px]">
+                    {cipherPayload && (
+                      <div>
+                        <span className="text-slate-500 font-bold">🔒 Ciphertext Payload:</span>{" "}
+                        <span className="text-rose-600 bg-rose-50 px-1 py-0.5 rounded border border-rose-100 font-semibold break-all">{cipherPayload}</span>
+                      </div>
+                    )}
+                    {plaintextDataKey && (
+                      <div>
+                        <span className="text-slate-500 font-bold">🔑 Recovered Plaintext Data Key:</span>{" "}
+                        <span className="text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-100 font-bold">{plaintextDataKey}</span>
+                      </div>
+                    )}
+                    {decryptedPayload && (
+                      <div>
+                        <span className="text-slate-500 font-bold">📄 Recovered Decrypted Payload:</span>{" "}
+                        <span className="text-slate-700 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 font-semibold">{decryptedPayload}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Logs output console */}
+              <div className="bg-slate-950 text-slate-200 p-4 rounded-xl font-mono text-[9px] leading-relaxed max-h-36 overflow-y-auto border border-slate-900 shadow-inner">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 mb-1.5 text-slate-400">
+                  <span className="flex items-center gap-1.5"><Terminal className="w-4 h-4 text-emerald-400" /> Client-Side Encryption Console</span>
+                  <span>KMS Envelope Engine</span>
+                </div>
+                {envelopeLogs.length === 0 ? (
+                  <div className="text-slate-500 italic">Type plaintext data, run Envelope Encrypt to check GenerateDataKey APIs.</div>
+                ) : (
+                  envelopeLogs.map((log, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <span className="text-slate-500 select-none">[{log.timestamp}]</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: MULTI-REGION & GLOBAL REPLICATION (DynamoDB, Aurora, S3)           */}
+      {/* ========================================================================= */}
+      {activeTab === 'multiregion' && (
+        <div className="space-y-6">
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-blue-700">
+              <Network className="w-5 h-5" /> Multi-Region KMS Keys &amp; Global Database replication (DynamoDB, Aurora, S3)
+            </h2>
+            <p className="da-card-desc">
+              DynamoDB Global Tables and S3 replication encrypted with **KMS Multi-Region keys (identical key IDs)** execute decryptions locally inside secondary regions, avoiding slow cross-region WAN networks!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Replication selector sidebar */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                
+                {/* Scenario select */}
+                <div>
+                  <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Select Global Replication Scenario:</span>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="scenario"
+                        checked={globalScenario === 'dynamodb'}
+                        onChange={() => { setGlobalScenario('dynamodb'); setReplicationState('idle'); }}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🌐 DynamoDB Global Tables (Decrypt via local MRK replicas)
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="scenario"
+                        checked={globalScenario === 'aurora'}
+                        onChange={() => { setGlobalScenario('aurora'); setReplicationState('idle'); }}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🌌 Aurora Global Database (Region-specific KMS keys)
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="scenario"
+                        checked={globalScenario === 's3'}
+                        onChange={() => { setGlobalScenario('s3'); setReplicationState('idle'); }}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🪣 S3 Bucket Keys &amp; CRR Cross-Region Replication
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="scenario"
+                        checked={globalScenario === 'snapshot'}
+                        onChange={() => { setGlobalScenario('snapshot'); setReplicationState('idle'); }}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      💾 Copying Snapshot Cross-Region (Re-encrypt loop)
+                    </label>
+                  </div>
+                </div>
+
+                {/* DynamoDB Toggle options */}
+                {globalScenario === 'dynamodb' && (
+                  <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <span className="text-xs font-bold text-slate-700">Replica MRK Key Status in eu-west-1</span>
+                    <input
+                      type="checkbox"
+                      checked={mrkPrimaryActive}
+                      onChange={(e) => setMrkPrimaryActive(e.target.checked)}
+                      className="accent-blue-600 cursor-pointer w-4 h-4"
+                    />
+                  </div>
+                )}
+
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setReplicationState('idle')}
+                  className="flex-1 py-2 border border-slate-250 hover:bg-slate-55 text-slate-650 rounded-xl text-xs font-bold transition-all active:scale-95"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={triggerGlobalReplication}
+                  disabled={replicationState === 'running'}
+                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 active:scale-95 transition-all shadow"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" /> Trigger Replication
+                </button>
+              </div>
+
+            </div>
+
+            {/* SVG Visual Schema */}
+            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden da-svg-bg flex flex-col justify-between min-h-[420px]">
+              
+              {replicationState === 'running' && (
+                <span className="absolute top-3 left-3 bg-blue-100 border border-blue-300 text-blue-700 font-extrabold text-[9px] px-2 py-0.5 rounded animate-pulse select-none z-10">
+                  🔄 REPLICATING ENCRYPTED SYSTEM PARTITION ASYNCHRONOUSLY
+                </span>
+              )}
+              {replicationState === 'success' && (
+                <span className="absolute top-3 left-3 bg-emerald-100 border border-emerald-300 text-emerald-700 font-extrabold text-[9px] px-2 py-0.5 rounded select-none z-10 animate-bounce">
+                  ✅ GLOBAL REPLICATION &amp; DECRYPTION SUCCESSFUL
+                </span>
+              )}
+
+              {/* Diagrams */}
+              <div className="w-full flex-grow flex items-center justify-center overflow-x-auto">
+                <svg className="w-full min-w-[320px] h-[180px]" viewBox="0 0 320 180">
+                  <defs>
+                    <marker id="arrow-rep" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                    </marker>
+                  </defs>
+
+                  {/* Flow pipeline */}
+                  {/* us-east-1 -> eu-west-1 */}
+                  <path d="M 100 90 H 220" fill="none" stroke="#64748b" strokeWidth="2" className={replicationState === 'running' ? 'da-flow-blue' : ''} />
+
+                  {/* Regional Boundary Split */}
+                  <line x1="160" y1="10" x2="160" y2="170" stroke="#cbd5e1" strokeDasharray="3,3" />
+                  <text x="140" y="20" fill="#94a3b8" fontSize="7" fontWeight="bold" textAnchor="end">Region: us-east-1</text>
+                  <text x="180" y="20" fill="#94a3b8" fontSize="7" fontWeight="bold" textAnchor="start">Region: eu-west-1</text>
+
+                  {/* Primary Node (us-east-1) */}
+                  <g transform="translate(15, 60)">
+                    <rect x="0" y="0" width="80" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
+                    <text x="40" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary DB</text>
+                    <text x="40" y="27" fill="#a855f7" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                      {globalScenario === 'dynamodb' ? 'mrk-9b8a7c6...' : 'key-us-regional'}
+                    </text>
+                    <text x="40" y="38" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">🟢 Encrypted</text>
+                  </g>
+
+                  {/* Replica Node (eu-west-1) */}
+                  <g transform="translate(225, 60)">
+                    <rect x="0" y="0" width="80" height="50" rx="6" 
+                      fill={replicationState === 'failed' ? '#fff1f2' : '#f0fdf4'} 
+                      stroke={replicationState === 'failed' ? '#f43f5e' : '#10b981'} 
+                      strokeWidth="1.5" />
+                    <text x="40" y="16" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">Replica DB</text>
+                    <text x="40" y="27" fill="#a855f7" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                      {globalScenario === 'dynamodb' ? 'mrk-9b8a7c6...' : 'key-eu-regional'}
+                    </text>
+                    <text x="40" y="38" fill={replicationState === 'failed' ? '#e11d48' : '#16a34a'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                      {replicationState === 'failed' ? '❌ Key Denied' : '🟢 Decrypted Local'}
+                    </text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Logs terminal */}
+              <div className="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-[9px] leading-relaxed max-h-36 overflow-y-auto border border-slate-800 shadow-inner mt-4">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-800 mb-1 text-slate-400">
+                  <span className="flex items-center gap-1"><Terminal className="w-3 h-3 text-blue-400" /> Replication Console</span>
+                  <span>AWS Network WAN Pipeline</span>
+                </div>
+                {replicationLogs.length === 0 ? (
+                  <div className="text-slate-500 italic">Select a replication scenario and click "Trigger Replication" to verify multi-region KMS key decryptions.</div>
+                ) : (
+                  replicationLogs.map((log, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <span className="text-slate-500 select-none">[{log.timestamp}]</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 5: CROSS-ACCOUNT SHARING & SHARED AMIS (KMS)                          */}
+      {/* ========================================================================= */}
+      {activeTab === 'crossaccount' && (
+        <div className="space-y-6">
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-blue-700">
+              <Server className="w-5 h-5" /> Cross-Account Custom KMS Sharing &amp; Shared AMI boots
+            </h2>
+            <p className="da-card-desc">
+              Sharing AMIs encrypted with a Custom KMS Key requires **updating the key policy in Source Account A** to grant permissions to the Target Account B. Default AWS-managed keys cannot be shared cross-account.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Sidebar Controls */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between space-y-4">
+              <div className="space-y-4">
+                
+                {/* KMS Key Policy cross account toggle */}
+                <div>
+                  <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Custom Key Policy in Account A:</span>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="policycross"
+                        checked={crossAccountPolicy === 'denied'}
+                        onChange={() => { setCrossAccountPolicy('denied'); setBootState('idle'); }}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🛑 Denied Policy (Default - Account B has no access)
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 font-bold cursor-pointer select-none">
+                      <input
+                        type="radio"
+                        name="policycross"
+                        checked={crossAccountPolicy === 'allowed'}
+                        onChange={() => { setCrossAccountPolicy('allowed'); setBootState('idle'); }}
+                        className="text-blue-600 accent-blue-600"
+                      />
+                      🟢 Allowed Policy (Grants kms:Decrypt/CreateGrant to Account B)
+                    </label>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-[11px] leading-relaxed text-slate-650 font-medium">
+                  <span className="font-extrabold text-slate-800 block mb-1">AMI Sharing Rule:</span>
+                  "AWS Managed keys (e.g. `aws/ebs`) are locked to your account. To share an encrypted AMI/snapshot cross-account, you must use a **Custom Managed Key** and open the key policy gate."
+                </div>
+
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={resetBootSim}
+                  className="flex-1 py-2 border border-slate-250 hover:bg-slate-55 text-slate-650 rounded-xl text-xs font-bold transition-all active:scale-95"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={triggerBootInstance}
+                  disabled={bootState === 'booting'}
+                  className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1 active:scale-95 transition-all shadow"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" /> Launch Shared AMI
+                </button>
+              </div>
+
+            </div>
+
+            {/* Visualizer & Logs Terminal */}
+            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden da-svg-bg flex flex-col justify-between min-h-[420px]">
+              
+              {bootState === 'booting' && (
+                <span className="absolute top-3 left-3 bg-blue-100 border border-blue-300 text-blue-700 font-extrabold text-[9px] px-2 py-0.5 rounded animate-pulse select-none z-10">
+                  ⚡ ACCOUNT B REQUESTING ENCRYPTED VOLUME DECRYPTION...
+                </span>
+              )}
+              {bootState === 'success' && (
+                <span className="absolute top-3 left-3 bg-emerald-100 border border-emerald-300 text-emerald-700 font-extrabold text-[9px] px-2 py-0.5 rounded select-none z-10 animate-bounce">
+                  ✅ EC2 INSTANCE BOOTED CLEANLY IN ACCOUNT B (RUNNING)
+                </span>
+              )}
+              {bootState === 'failed' && (
+                <span className="absolute top-3 left-3 bg-rose-100 border border-rose-300 text-rose-700 font-extrabold text-[9px] px-2 py-0.5 rounded select-none z-10 animate-pulse">
+                  ❌ BOOT TERMINATED - 403 ACCESSDENIED KMS DECRYPT FAILURE
+                </span>
+              )}
+
+              {/* Graphic Flowchart */}
+              <div className="w-full flex-grow flex items-center justify-center overflow-x-auto">
+                <svg className="w-full min-w-[340px] h-[180px]" viewBox="0 0 340 180">
+                  {/* Account borders */}
+                  <rect x="5" y="10" width="155" height="160" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <text x="15" y="22" fill="#94a3b8" fontSize="6.5" fontWeight="bold">Source: Account A</text>
+
+                  <rect x="175" y="10" width="160" height="160" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <text x="185" y="22" fill="#94a3b8" fontSize="6.5" fontWeight="bold">Target: Account B</text>
+
+                  {/* Flow pipeline */}
+                  <path d="M 65 90 H 220" fill="none" stroke="#64748b" strokeWidth="2" className={bootState === 'booting' ? 'da-flow-blue' : ''} />
+
+                  {/* Account A KMS CMK Key */}
+                  <g transform="translate(15, 65)">
+                    <rect x="0" y="0" width="55" height="40" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                    <text x="27.5" y="14" fill="#1e3a8a" fontSize="7" fontWeight="bold" textAnchor="middle">Account A</text>
+                    <text x="27.5" y="23" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">Custom Key</text>
+                    <text x="27.5" y="32" fill="#1d4ed8" fontSize="5.5" textAnchor="middle">
+                      {crossAccountPolicy === 'allowed' ? '🔓 Shared Policy' : '🔒 Denied'}
+                    </text>
+                  </g>
+
+                  {/* Account A shared AMI */}
+                  <g transform="translate(95, 65)">
+                    <rect x="0" y="0" width="50" height="40" rx="4" fill="#ffffff" stroke="#64748b" strokeWidth="1" />
+                    <text x="25" y="14" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">Shared AMI</text>
+                    <text x="25" y="23" fill="#475569" fontSize="5.5" textAnchor="middle">EBS Snap</text>
+                    <text x="25" y="32" fill="#94a3b8" fontSize="5" textAnchor="middle">AMI-09876</text>
+                  </g>
+
+                  {/* Account B Target Instance */}
+                  <g transform="translate(225, 65)">
+                    <rect x="0" y="0" width="95" height="40" rx="4" 
+                      fill={bootState === 'failed' ? '#fff1f2' : bootState === 'success' ? '#f0fdf4' : '#ffffff'} 
+                      stroke={bootState === 'failed' ? '#f43f5e' : bootState === 'success' ? '#10b981' : '#94a3b8'} 
+                      strokeWidth="1.5" />
+                    <text x="47.5" y="14" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">Launched EC2</text>
+                    <text x="47.5" y="23" fill="#64748b" fontSize="5.5" textAnchor="middle">From Shared AMI</text>
+                    <text x="47.5" y="32" fill={bootState === 'failed' ? '#dc2626' : bootState === 'success' ? '#16a34a' : '#2563eb'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                      {bootState === 'idle' ? 'STANDBY' : bootState === 'booting' ? 'LAUNCHING...' : bootState === 'failed' ? '❌ CRASHED' : '🟢 RUNNING'}
+                    </text>
+                  </g>
+                </svg>
+              </div>
+
+              {/* Key policy code snippet View */}
+              {crossAccountPolicy === 'allowed' && (
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 text-left font-mono text-[9px] text-slate-350 leading-relaxed overflow-x-auto max-h-48 mb-4">
+                  <div className="text-slate-500 font-bold pb-2 border-b border-slate-800 mb-2 flex justify-between items-center">
+                    <span>📄 ACC_A_SHARED_KEY_POLICY.json</span>
+                    <span className="text-[8px] bg-green-950 text-green-400 px-1.5 py-0.5 rounded border border-green-900">CROSS_ACCOUNT_ALLOW</span>
+                  </div>
+                  <pre>{`{
+  "Sid": "Allow direct use of the key from Account B",
+  "Effect": "Allow",
+  "Principal": {
+    "AWS": "arn:aws:iam::AccountB-ID:root"
+  },
+  "Action": [
+    "kms:Decrypt",
+    "kms:DescribeKey",
+    "kms:CreateGrant"
+  ],
+  "Resource": "*"
+}`}</pre>
+                </div>
+              )}
+
+              {/* Logs output terminal */}
+              <div className="bg-slate-950 text-slate-200 p-4 rounded-xl font-mono text-[9px] leading-relaxed max-h-36 overflow-y-auto border border-slate-900 shadow-inner">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 mb-1.5 text-slate-400">
+                  <span className="flex items-center gap-1.5"><Terminal className="w-4 h-4 text-amber-400" /> EC2 Hypervisor Boot Console</span>
+                  <span>Target: Account B :: Xen/KVM hyper</span>
+                </div>
+                {bootLogs.length === 0 ? (
+                  <div className="text-slate-500 italic">Toggle the Custom Key Policy access in Account A and run the launcher to boot the instance in Account B.</div>
+                ) : (
+                  bootLogs.map((log, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <span className="text-slate-500 select-none">[{log.timestamp}]</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
