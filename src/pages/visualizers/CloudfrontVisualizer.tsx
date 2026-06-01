@@ -942,10 +942,11 @@ export default function CloudfrontVisualizer() {
                     <text x="90" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client ASIA (Tokyo)</text>
                   </g>
 
+                  {/* ==================== GLOBAL EDGE POP BOUNDARY ==================== */}
+                  <rect x="190" y="24" width="170" height="185" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="198" y="36" fill="#8b5cf6" fontSize="7.5" fontWeight="extrabold">Global Edge POP Boundary</text>
+
                   {/* Column 2: Edge Locations */}
-                  <rect x="195" y="25" width="160" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
-                  <text x="275" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">⚡ Edge POPs (caching)</text>
-                  
                   {/* New York Edge PoP */}
                   <g filter="url(#shadow)">
                     <rect x="205" y="58" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
@@ -967,10 +968,11 @@ export default function CloudfrontVisualizer() {
                     <text x="280" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">Tokyo Edge (POP)</text>
                   </g>
 
+                  {/* ==================== REGIONAL CACHING CLOUD BOUNDARY ==================== */}
+                  <rect x="375" y="24" width="180" height="185" rx="8" fill="none" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="383" y="36" fill="#ec4899" fontSize="7.5" fontWeight="extrabold">Regional Caching Boundary</text>
+
                   {/* Column 3: Regional Edge Cache (REC) */}
-                  <rect x="385" y="25" width="160" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
-                  <text x="465" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🛡️ Regional Edge Cache</text>
-                  
                   {/* US East REC */}
                   <g filter="url(#shadow)">
                     <rect x="395" y="58" width="140" height="50" rx="6" fill="#fdf2f8" stroke="#fbcfe8" strokeWidth="1.5" />
@@ -985,10 +987,11 @@ export default function CloudfrontVisualizer() {
                     <text x="465" y="164" textAnchor="middle" fontSize="8" fill="#db2777" fontWeight="600">(Primary Buffer)</text>
                   </g>
 
-                  {/* Column 4: Origin Servers */}
-                  <rect x="575" y="25" width="170" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
-                  <text x="660" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🗄️ Origins (Source)</text>
+                  {/* ==================== SECURE PRIVATE DATA VPC BOUNDARY ==================== */}
+                  <rect x="570" y="24" width="180" height="185" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="578" y="36" fill="#2563eb" fontSize="7.5" fontWeight="extrabold">Secure Private Data VPC Boundary</text>
 
+                  {/* Column 4: Origin Servers */}
                   {/* S3 Storage Cylinder */}
                   <g filter="url(#shadow)">
                     <path d="M 595 72 A 50 12 0 0 0 695 72 L 695 90 A 50 12 0 0 1 595 90 Z" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
@@ -1142,86 +1145,103 @@ export default function CloudfrontVisualizer() {
                       <stop offset="100%" stopColor="#6d28d9" />
                     </linearGradient>
                     <linearGradient id="grad-rose" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f43f5e" />
-                      <stop offset="100%" stopColor="#be185d" />
+                      <stop offset="0%" stopColor="#f472b6" />
+                      <stop offset="100%" stopColor="#db2777" />
                     </linearGradient>
                     <filter id="shadow-sec" x="-10%" y="-10%" width="120%" height="120%">
                       <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#94a3b8" floodOpacity="0.1" />
                     </filter>
                   </defs>
 
+                  {/* ==================== PUBLIC INGRESS BOUNDARY ==================== */}
+                  <rect x="10" y="100" width="125" height="120" rx="8" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="18" y="112" fill="#64748b" fontSize="7" fontWeight="bold">Public Ingress Boundary</text>
+
                   {/* Public Client Ingress Card */}
                   <g filter="url(#shadow-sec)">
-                    <rect x="15" y="115" width="115" height="90" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="72" y="138" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0f172a">Global Users</text>
-                    <text x="72" y="156" textAnchor="middle" fontSize="8.5" fill="#3b82f6" fontWeight="700">💻 Web Requests</text>
-                    <text x="72" y="172" textAnchor="middle" fontSize="7.5" fill="#64748b">HTTPS / HTTP/3</text>
-                    <rect x="25" y="181" width="94" height="15" rx="3" fill="#dcfce7" />
-                    <text x="72" y="191" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">CDN ACCELERATED</text>
+                    <rect x="15" y="122" width="115" height="90" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="72" y="145" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0f172a">Global Users</text>
+                    <text x="72" y="163" textAnchor="middle" fontSize="8.5" fill="#3b82f6" fontWeight="700">💻 Web Requests</text>
+                    <text x="72" y="179" textAnchor="middle" fontSize="7.5" fill="#64748b">HTTPS / HTTP/3</text>
+                    <rect x="25" y="188" width="94" height="15" rx="3" fill="#dcfce7" />
+                    <text x="72" y="198" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">CDN ACCELERATED</text>
                   </g>
+
+                  {/* ==================== CLOUDFRONT EDGE SECURITY GATEWAY ==================== */}
+                  <rect x="170" y="70" width="165" height="180" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" />
+                  <text x="178" y="82" fill="#8b5cf6" fontSize="7.5" fontWeight="extrabold">CloudFront Edge Security Gateway</text>
 
                   {/* CloudFront Edge Controller Card */}
                   <g filter="url(#shadow-sec)">
-                    <rect x="180" y="85" width="145" height="150" rx="8" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="2" />
-                    <text x="252" y="105" textAnchor="middle" fontSize="11" fontWeight="800" fill="#6d28d9">⚡ CloudFront Edge</text>
+                    <rect x="180" y="92" width="145" height="150" rx="8" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="2" />
+                    <text x="252" y="112" textAnchor="middle" fontSize="11" fontWeight="800" fill="#6d28d9">⚡ CloudFront Edge</text>
                     
                     <g filter="url(#shadow-sec)">
-                      <rect x="190" y="122" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
-                      <text x="252" y="133" textAnchor="middle" fontSize="8" fontWeight="700" fill="#6d28d9">SigV4 OAC Signer</text>
-                      <text x="252" y="144" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="600">(For S3 Bucket Origin)</text>
+                      <rect x="190" y="129" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
+                      <text x="252" y="140" textAnchor="middle" fontSize="8" fontWeight="700" fill="#6d28d9">SigV4 OAC Signer</text>
+                      <text x="252" y="151" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="600">(For S3 Bucket Origin)</text>
                     </g>
 
                     <g filter="url(#shadow-sec)">
-                      <rect x="190" y="158" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
-                      <text x="252" y="169" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0284c7">VPC Endpoint Link</text>
-                      <text x="252" y="180" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="600">(For Private ALB Subnet)</text>
+                      <rect x="190" y="165" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
+                      <text x="252" y="176" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0284c7">VPC Endpoint Link</text>
+                      <text x="252" y="187" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="600">(For Private ALB Subnet)</text>
                     </g>
 
                     <g filter="url(#shadow-sec)">
-                      <rect x="190" y="194" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
-                      <text x="252" y="205" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#be185d">X-Origin-Verify Header</text>
-                      <text x="252" y="216" textAnchor="middle" fontSize="6.5" fill="#db2777" fontWeight="600">(Shared Token Injection)</text>
+                      <rect x="190" y="201" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
+                      <text x="252" y="212" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#be185d">X-Origin-Verify Header</text>
+                      <text x="252" y="223" textAnchor="middle" fontSize="6.5" fill="#db2777" fontWeight="600">(Shared Token Injection)</text>
                     </g>
                   </g>
 
                   {/* Connectors from Client */}
-                  <path d="M 130 160 L 180 160" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="155" cy="160" r="3" fill="#1d4ed8" />
+                  <path d="M 130 167 L 180 167" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx="155" cy="167" r="3" fill="#1d4ed8" />
+
+                  {/* ==================== S3 SECURE STORAGE BOUNDARY ==================== */}
+                  <rect x="390" y="10" width="330" height="80" rx="6" fill="none" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="398" y="22" fill="#047857" fontSize="7" fontWeight="bold">S3 Secure Storage Boundary</text>
 
                   {/* Integration A: S3 Private Origin + OAC */}
-                  <path d="M 325 125 L 400 70" fill="none" stroke="#10b981" strokeWidth="1.5" />
-                  <text x="365" y="88" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="700">SigV4 Signed</text>
+                  <path d="M 325 132 L 400 70" fill="none" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="365" y="93" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="700">SigV4 Signed</text>
 
                   <g filter="url(#shadow-sec)">
-                    <rect x="400" y="15" width="310" height="70" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="415" y="32" textAnchor="start" fontSize="9" fontWeight="800" fill="#065f46">🪣 Option A: S3 Bucket Origin with OAC</text>
-                    <text x="415" y="44" textAnchor="start" fontSize="7.5" fill="#047857">S3 Bucket is 100% PRIVATE. Public WWW bypass attempts are rejected (HTTP 403) ❌</text>
-                    <text x="415" y="58" textAnchor="start" fontSize="8" fontWeight="700" fill="#15803d">✔ S3 accepts requests carrying verified CloudFront OAC credentials</text>
+                    <rect x="400" y="26" width="310" height="58" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="415" y="40" textAnchor="start" fontSize="9" fontWeight="800" fill="#065f46">🪣 Option A: S3 Bucket Origin with OAC</text>
+                    <text x="415" y="52" textAnchor="start" fontSize="7.5" fill="#047857">Reject WWW bypass attempts (403) ❌ | Accepts verified OAC SigV4</text>
                   </g>
+
+                  {/* ==================== PRIVATE VPC SUBNET GROUP ==================== */}
+                  <rect x="390" y="98" width="330" height="92" rx="6" fill="none" stroke="#0ea5e9" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="398" y="110" fill="#0369a1" fontSize="7" fontWeight="bold">Private VPC Subnet Group</text>
 
                   {/* Integration B: CloudFront VPC Private Origin */}
-                  <path d="M 325 160 L 400 160" fill="none" stroke="#0ea5e9" strokeWidth="1.5" />
-                  <text x="365" y="153" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="700">Private Link</text>
+                  <path d="M 325 167 L 400 160" fill="none" stroke="#0ea5e9" strokeWidth="1.5" />
+                  <text x="365" y="158" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="700">Private Link</text>
 
                   <g filter="url(#shadow-sec)">
-                    <rect x="400" y="100" width="310" height="85" rx="6" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="1.5" />
-                    <text x="415" y="118" textAnchor="start" fontSize="9" fontWeight="800" fill="#0369a1">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
-                    <text x="415" y="130" textAnchor="start" fontSize="7.5" fill="#0284c7">CloudFront establishes private VPC endpoint interfaces inside private backend subnets.</text>
-                    <text x="415" y="144" textAnchor="start" fontSize="7.5" fill="#0284c7">ALBs and EC2 nodes have NO public IPs and cannot be probed from public WWW.</text>
-                    <text x="415" y="160" textAnchor="start" fontSize="8" fontWeight="700" fill="#0284c7">✔ 100% private transit over dedicated internal network routes 🔒</text>
+                    <rect x="400" y="114" width="310" height="70" rx="6" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="1.5" />
+                    <text x="415" y="130" textAnchor="start" fontSize="9" fontWeight="800" fill="#0369a1">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
+                    <text x="415" y="142" textAnchor="start" fontSize="7.5" fill="#0284c7">Private VPC endpoints inside private backend subnets. No public IPs.</text>
+                    <text x="415" y="156" textAnchor="start" fontSize="8" fontWeight="700" fill="#0284c7">✔ 100% private transit over dedicated internal VPC routes 🔒</text>
                   </g>
 
+                  {/* ==================== DMZ / PUBLIC SUBNET GROUP ==================== */}
+                  <rect x="390" y="196" width="330" height="114" rx="6" fill="none" stroke="#e11d48" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="398" y="208" fill="#9f1239" fontSize="7" fontWeight="bold">DMZ / Public Subnet Group</text>
+
                   {/* Integration C: Public Custom Origin + Ingress Header Restriction */}
-                  <path d="M 325 195 L 400 245" fill="none" stroke="#8b5cf6" strokeWidth="1.5" />
-                  <text x="365" y="228" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="700">Secret Token</text>
+                  <path d="M 325 202 L 400 245" fill="none" stroke="#8b5cf6" strokeWidth="1.5" />
+                  <text x="365" y="233" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="700">Secret Token</text>
 
                   <g filter="url(#shadow-sec)">
-                    <rect x="400" y="200" width="310" height="105" rx="6" fill="#fff1f2" stroke="#ec4899" strokeWidth="1.5" />
-                    <text x="415" y="218" textAnchor="start" fontSize="9" fontWeight="800" fill="#9f1239">⚡ Option C: Custom Origin with Ingress Headers</text>
-                    <text x="415" y="230" textAnchor="start" fontSize="7.5" fill="#be185d">ALB is in a public subnet. Public hackers try to bypass CloudFront to attack ALB directly 👿</text>
-                    <text x="415" y="244" textAnchor="start" fontSize="8" fontWeight="700" fill="#9f1239">⚠ ALB validates request for headers: "X-Origin-Verify: shared-secret-key"</text>
-                    <text x="415" y="258" textAnchor="start" fontSize="7.5" fill="#be185d">If header matches: Accept write traffic ✅</text>
-                    <text x="415" y="270" textAnchor="start" fontSize="7.5" fill="#b91c1c">If header is missing/mismatched: REJECT request instantly with HTTP 403 ❌</text>
+                    <rect x="400" y="212" width="310" height="92" rx="6" fill="#fff1f2" stroke="#db2777" strokeWidth="1.5" />
+                    <text x="415" y="228" textAnchor="start" fontSize="9" fontWeight="800" fill="#9f1239">⚡ Option C: Custom Origin with Ingress Headers</text>
+                    <text x="415" y="240" textAnchor="start" fontSize="7.5" fill="#be185d">ALB is in public subnet. Direct attackers bypassed CDN? ALB blocks them!</text>
+                    <text x="415" y="254" textAnchor="start" fontSize="8" fontWeight="700" fill="#9f1239">⚠ ALB validates "X-Origin-Verify: shared-secret-key" header</text>
+                    <text x="415" y="268" textAnchor="start" fontSize="7.5" fill="#be185d">If header matches: Accept ✅ | Otherwise reject instantly (HTTP 403) ❌</text>
                   </g>
                 </svg>
               </div>
@@ -1645,10 +1665,11 @@ export default function CloudfrontVisualizer() {
                   <rect x="25" y="146" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
                   <text x="90" y="165" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">Asia Client ➔ Anycast</text>
 
-                  {/* Column 2: BGP Anycast POPs Ingestion */}
-                  <rect x="195" y="25" width="160" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow-aga)" />
-                  <text x="275" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">⚡ BGP Anycast POPs</text>
+                  {/* ==================== BGP ANYCAST POP BOUNDARY ==================== */}
+                  <rect x="190" y="24" width="170" height="185" rx="8" fill="none" stroke="#ea580c" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="198" y="36" fill="#ea580c" fontSize="7.5" fontWeight="extrabold">BGP Anycast POP Boundary</text>
 
+                  {/* Column 2: BGP Anycast POPs Ingestion */}
                   {/* Static IP Blocks */}
                   <g filter="url(#shadow-aga)">
                     <rect x="205" y="58" width="140" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
@@ -1662,33 +1683,38 @@ export default function CloudfrontVisualizer() {
                     <text x="275" y="162" textAnchor="middle" fontSize="9" fontWeight="700" fill="#ea580c">5.6.7.8 (Anycast)</text>
                   </g>
 
+                  {/* ==================== AWS GLOBAL BACKBONE SHIELD ==================== */}
+                  <rect x="375" y="24" width="170" height="185" rx="8" fill="none" stroke="#6366f1" strokeWidth="1.5" strokeDasharray="4,2" />
+                  <text x="383" y="36" fill="#6366f1" fontSize="7.5" fontWeight="extrabold">AWS Global Network Backbone Shield</text>
+
                   {/* Column 3: Private AWS Backbone */}
-                  <rect x="385" y="25" width="150" height="175" rx="10" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" filter="url(#shadow-aga)" />
-                  <text x="460" y="42" textAnchor="middle" fontSize="10" fontWeight="800" fill="#4f46e5">⚡ AWS Private Fiber</text>
-                  
                   {/* Thick glowing private fiber bus */}
                   <path d="M 460 55 L 460 180" id="aga-backbone" fill="none" stroke="url(#grad-aga-purple)" strokeWidth="6" strokeLinecap="round" />
                   <text x="470" y="118" textAnchor="start" fontSize="8.5" fill="#4f46e5" fontWeight="700">Congestion-Free</text>
                   <text x="470" y="130" textAnchor="start" fontSize="7.5" fill="#6366f1" fontWeight="600">Transit Backbone</text>
 
-                  {/* Column 4: Application Endpoint Groups */}
-                  <rect x="565" y="25" width="180" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow-aga)" />
-                  <text x="655" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🗄️ Application Endpoints</text>
+                  {/* ==================== US EAST REGION BOUNDARY ==================== */}
+                  <rect x="565" y="24" width="180" height="90" rx="6" fill="none" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="573" y="36" fill="#047857" fontSize="7" fontWeight="bold">US-East Region (us-east-1)</text>
 
                   {/* US East Endpoint Group */}
                   <g filter="url(#shadow-aga)">
-                    <rect x="575" y="58" width="160" height="50" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="655" y="78" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#047857">us-east-1 Endpoint</text>
-                    <rect x="585" y="86" width="140" height="15" rx="3" fill="#dcfce7" />
-                    <text x="655" y="96" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">ALB ACTIVE 🟢 DIAL 100%</text>
+                    <rect x="575" y="48" width="160" height="50" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="655" y="68" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#047857">us-east-1 Endpoint</text>
+                    <rect x="585" y="76" width="140" height="15" rx="3" fill="#dcfce7" />
+                    <text x="655" y="86" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">ALB ACTIVE 🟢 DIAL 100%</text>
                   </g>
+
+                  {/* ==================== EU CENTRAL REGION BOUNDARY ==================== */}
+                  <rect x="565" y="118" width="180" height="90" rx="6" fill="none" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="573" y="130" fill="#b91c1c" fontSize="7" fontWeight="bold">EU-Central Region (eu-central-1)</text>
 
                   {/* EU Central Endpoint Group (Unhealthy - Redirected) */}
                   <g filter="url(#shadow-aga)">
-                    <rect x="575" y="128" width="160" height="50" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                    <text x="655" y="148" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#b91c1c">eu-central-1 Endpoint</text>
-                    <rect x="585" y="156" width="140" height="15" rx="3" fill="#fee2e2" />
-                    <text x="655" y="166" textAnchor="middle" fontSize="7" fill="#dc2626" fontWeight="700">DEGRADED ❌ FAILOVER ACTIVE</text>
+                    <rect x="575" y="142" width="160" height="50" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                    <text x="655" y="162" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#b91c1c">eu-central-1 Endpoint</text>
+                    <rect x="585" y="170" width="140" height="15" rx="3" fill="#fee2e2" />
+                    <text x="655" y="180" textAnchor="middle" fontSize="7" fill="#dc2626" fontWeight="700">DEGRADED ❌ FAILOVER ACTIVE</text>
                   </g>
 
                   {/* Connectors */}
@@ -1703,11 +1729,11 @@ export default function CloudfrontVisualizer() {
 
                   {/* Backbone to Endpoints */}
                   {/* Normal routing from backbone to healthy US ALB */}
-                  <path d="M 530 90 L 575 83" fill="none" stroke="#10b981" strokeWidth="2" />
+                  <path d="M 530 90 L 575 73" fill="none" stroke="#10b981" strokeWidth="2" />
                   
                   {/* Rerouted path away from failed EU Central ALB to US ALB */}
-                  <path d="M 530 140 L 575 92" id="path-failover-aga" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <text x="552.5" y="122" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="800">Sub-10s Dynamic Shift</text>
+                  <path d="M 530 140 L 575 82" id="path-failover-aga" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="552.5" y="112" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="800">Sub-10s Dynamic Shift</text>
 
                   {/* Dynamic packets streaming along the backbone */}
                   <circle r="3.5" fill="#f59e0b">
@@ -1923,55 +1949,59 @@ export default function CloudfrontVisualizer() {
                       
                       {/* Brand New Interception Events SVG */}
                       <svg width="100%" height="60" viewBox="0 0 320 60" style={{ background: '#f8fafc', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '10px' }}>
+                        {/* ==================== EDGE COMPUTING EXECUTION BOUNDARY ==================== */}
+                        <rect x="5" y="5" width="310" height="50" rx="4" fill="none" stroke="#8b5cf6" strokeWidth="1" strokeDasharray="3,2" />
+                        <text x="12" y="14" fill="#8b5cf6" fontSize="5" fontWeight="bold">Edge Computing Execution Boundary</text>
+
                         {/* Flow Conduit */}
-                        <line x1="20" y1="30" x2="300" y2="30" stroke="#cbd5e1" strokeWidth="2.5" />
-                        <line x1="20" y1="30" x2="300" y2="30" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <line x1="20" y1="34" x2="300" y2="34" stroke="#cbd5e1" strokeWidth="2.5" />
+                        <line x1="20" y1="34" x2="300" y2="34" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,3" />
 
                         {/* Viewer Request Node (Stage 1) */}
-                        <circle cx="40" cy="30" r="7" 
+                        <circle cx="40" cy="34" r="7" 
                           fill={cfSelectedTemplate === 'rewrite' ? '#a855f7' : '#ffffff'} 
                           stroke={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#94a3b8'} 
                           strokeWidth="2" 
                         />
                         {cfSelectedTemplate === 'rewrite' && (
-                          <circle cx="40" cy="30" r="11" fill="none" stroke="#a855f7" strokeWidth="1.5">
+                          <circle cx="40" cy="34" r="11" fill="none" stroke="#a855f7" strokeWidth="1.5">
                             <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="40" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#64748b'}>Viewer Req</text>
+                        <text x="40" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#64748b'}>Viewer Req</text>
 
                         {/* Origin Request Node (Stage 2) */}
-                        <circle cx="120" cy="30" r="7" 
+                        <circle cx="120" cy="34" r="7" 
                           fill={cfSelectedTemplate === 'ab' ? '#3b82f6' : '#ffffff'} 
                           stroke={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#94a3b8'} 
                           strokeWidth="2" 
                         />
                         {cfSelectedTemplate === 'ab' && (
-                          <circle cx="120" cy="30" r="11" fill="none" stroke="#3b82f6" strokeWidth="1.5">
+                          <circle cx="120" cy="34" r="11" fill="none" stroke="#3b82f6" strokeWidth="1.5">
                             <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="120" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#64748b'}>Origin Req</text>
+                        <text x="120" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#64748b'}>Origin Req</text>
 
                         {/* Origin Response Node (Stage 3) */}
-                        <circle cx="200" cy="30" r="7" fill="#ffffff" stroke="#94a3b8" strokeWidth="2" />
-                        <text x="200" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#64748b">Origin Resp</text>
+                        <circle cx="200" cy="34" r="7" fill="#ffffff" stroke="#94a3b8" strokeWidth="2" />
+                        <text x="200" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#64748b">Origin Resp</text>
 
                         {/* Viewer Response Node (Stage 4) */}
-                        <circle cx="280" cy="30" r="7" 
+                        <circle cx="280" cy="34" r="7" 
                           fill={cfSelectedTemplate === 'hsts' ? '#10b981' : '#ffffff'} 
                           stroke={cfSelectedTemplate === 'hsts' ? '#059669' : '#94a3b8'} 
                           strokeWidth="2" 
                         />
                         {cfSelectedTemplate === 'hsts' && (
-                          <circle cx="280" cy="30" r="11" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <circle cx="280" cy="34" r="11" fill="none" stroke="#10b981" strokeWidth="1.5">
                             <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="280" y="18" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'hsts' ? '#059669' : '#64748b'}>Viewer Resp</text>
+                        <text x="280" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'hsts' ? '#059669' : '#64748b'}>Viewer Resp</text>
                       </svg>
 
                       <div style={{ fontWeight: 700, color: '#475569', marginBottom: '6px' }}>Pipeline Progress Stages:</div>
@@ -2227,11 +2257,15 @@ export default function CloudfrontVisualizer() {
                       </filter>
                     </defs>
 
+                    {/* ==================== PUBLIC INGRESS REGIONS BOUNDARY ==================== */}
+                    <rect x="8" y="12" width="64" height="176" rx="8" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="14" y="22" fill="#64748b" fontSize="5" fontWeight="bold">Ingress Regions</text>
+
                     {/* Node US Client Card */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="15" y="22" width="50" height="34" rx="4" fill={clientRegion === 'us' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'us' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'us' ? 1.5 : 1} />
-                      <text x="40" y="38" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'us' ? '#1d4ed8' : '#475569'}>US East</text>
-                      <text x="40" y="47" textAnchor="middle" fontSize="6" fill="#64748b">New York</text>
+                      <rect x="15" y="26" width="50" height="34" rx="4" fill={clientRegion === 'us' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'us' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'us' ? 1.5 : 1} />
+                      <text x="40" y="42" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'us' ? '#1d4ed8' : '#475569'}>US East</text>
+                      <text x="40" y="51" textAnchor="middle" fontSize="6" fill="#64748b">New York</text>
                     </g>
 
                     {/* Node EU Client Card */}
@@ -2243,9 +2277,9 @@ export default function CloudfrontVisualizer() {
 
                     {/* Node Asia Client Card */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="15" y="142" width="50" height="34" rx="4" fill={clientRegion === 'asia' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'asia' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'asia' ? 1.5 : 1} />
-                      <text x="40" y="158" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'asia' ? '#1d4ed8' : '#475569'}>AP East</text>
-                      <text x="40" y="167" textAnchor="middle" fontSize="6" fill="#64748b">Tokyo</text>
+                      <rect x="15" y="138" width="50" height="34" rx="4" fill={clientRegion === 'asia' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'asia' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'asia' ? 1.5 : 1} />
+                      <text x="40" y="154" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'asia' ? '#1d4ed8' : '#475569'}>AP East</text>
+                      <text x="40" y="163" textAnchor="middle" fontSize="6" fill="#64748b">Tokyo</text>
                     </g>
 
                     {/* Anycast DNS Gateway */}
@@ -2255,6 +2289,10 @@ export default function CloudfrontVisualizer() {
                       <text x="127.5" y="107" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#475569">DNS</text>
                       <circle cx="127.5" cy="115" r="2.5" fill="#3b82f6" />
                     </g>
+
+                    {/* ==================== CLOUDFRONT EDGE POP CACHING BOUNDARY ==================== */}
+                    <rect x="180" y="32" width="80" height="136" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" />
+                    <text x="188" y="44" fill="#8b5cf6" fontSize="5.5" fontWeight="extrabold">CloudFront Edge POP</text>
 
                     {/* Edge Server Location */}
                     <g filter="url(#shadow-sim)">
@@ -2279,6 +2317,10 @@ export default function CloudfrontVisualizer() {
                       </g>
                     </g>
 
+                    {/* ==================== REGIONAL CACHE SHIELD BOUNDARY ==================== */}
+                    <rect x="280" y="32" width="80" height="136" rx="8" fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="4,2" />
+                    <text x="288" y="44" fill="#ec4899" fontSize="5.5" fontWeight="extrabold">Regional Cache Shield</text>
+
                     {/* Regional Edge Cache (REC) */}
                     <g filter="url(#shadow-sim)">
                       <rect x="290" y="70" width="60" height="60" rx="8" fill={simStep >= 3.5 ? '#fdf2f8' : '#ffffff'} stroke={simStep >= 3.5 ? '#db2777' : '#cbd5e1'} strokeWidth={simStep >= 3.5 ? 1.5 : 1} strokeDasharray={useOriginShield ? '' : '3,3'} />
@@ -2298,6 +2340,10 @@ export default function CloudfrontVisualizer() {
                         )}
                       </g>
                     </g>
+
+                    {/* ==================== SECURE ORIGIN GROUP BOUNDARY ==================== */}
+                    <rect x="375" y="32" width="95" height="136" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
+                    <text x="383" y="44" fill="#2563eb" fontSize="5.5" fontWeight="extrabold">Secure Origin Group</text>
 
                     {/* Origin Server Cylinder */}
                     <g filter="url(#shadow-sim)">
@@ -2319,13 +2365,13 @@ export default function CloudfrontVisualizer() {
 
                     {/* Conduit Trace Lines */}
                     {/* US Client to DNS */}
-                    <path d={clientRegion === 'us' ? "M 65 39 L 105 100" : "M 65 39 L 105 100"} fill="none" stroke={clientRegion === 'us' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'us' && simStep >= 1 ? 2.5 : 1.5} />
+                    <path d={clientRegion === 'us' ? "M 65 42 L 105 100" : "M 65 42 L 105 100"} fill="none" stroke={clientRegion === 'us' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'us' && simStep >= 1 ? 2.5 : 1.5} />
                     
                     {/* EU Client to DNS */}
                     <path d="M 65 100 L 105 100" fill="none" stroke={clientRegion === 'eu' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'eu' && simStep >= 1 ? 2.5 : 1.5} />
                     
                     {/* ASIA Client to DNS */}
-                    <path d={clientRegion === 'asia' ? "M 65 159 L 105 100" : "M 65 159 L 105 100"} fill="none" stroke={clientRegion === 'asia' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'asia' && simStep >= 1 ? 2.5 : 1.5} />
+                    <path d={clientRegion === 'asia' ? "M 65 156 L 105 100" : "M 65 156 L 105 100"} fill="none" stroke={clientRegion === 'asia' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'asia' && simStep >= 1 ? 2.5 : 1.5} />
 
                     {/* DNS to Edge */}
                     <path d="M 150 100 L 190 100" fill="none" stroke={simStep >= 2 ? (simStep === 5 ? '#ef4444' : '#6366f1') : '#e2e8f0'} strokeWidth={2.5} />
@@ -2343,7 +2389,7 @@ export default function CloudfrontVisualizer() {
                           dur="1.4s" 
                           repeatCount="indefinite" 
                           path={
-                            simStep === 1 ? (clientRegion === 'us' ? 'M 65 39 L 105 100' : clientRegion === 'eu' ? 'M 65 100 L 105 100' : 'M 65 159 L 105 100') :
+                            simStep === 1 ? (clientRegion === 'us' ? 'M 65 42 L 105 100' : clientRegion === 'eu' ? 'M 65 100 L 105 100' : 'M 65 156 L 105 100') :
                             simStep === 2 ? 'M 150 100 L 190 100' :
                             simStep === 3 ? 'M 190 100 L 250 100' :
                             simStep === 3.5 ? 'M 250 100 L 290 100' :
@@ -2513,8 +2559,8 @@ export default function CloudfrontVisualizer() {
                     <div style={{ fontWeight: 700, fontSize: '12.5px', color: '#475569', marginBottom: '10px' }}>🌐 Active Edge Locations Visual Mapping:</div>
                     
                     <svg width="100%" height="150" viewBox="0 0 340 150" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1px solid #cbd5e1', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.01))' }}>
-                      {/* Continental Outline Shapes (Abstract Geometric Vectors) */}
-                      <g fill="rgba(203, 213, 225, 0.45)" stroke="#cbd5e1" strokeWidth="1">
+                      {/* Continental Outline Shapes (Premium Gradient Styling) */}
+                      <g fill="rgba(99, 102, 241, 0.08)" stroke="#c7d2fe" strokeWidth="1">
                         {/* North America */}
                         <path d="M 20,25 C 40,20 70,15 80,35 C 65,40 55,55 35,60 Z" />
                         {/* South America */}

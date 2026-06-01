@@ -1104,21 +1104,81 @@ export default function NetworkingVPCVisualizer() {
                 ))}
               </div>
 
-              {/* Graphical host representation map */}
-              <div className="bg-blue-50 border border-blue-150 rounded-2xl p-4 mt-4 relative overflow-hidden">
-                <span className="text-xs font-black text-blue-900 block mb-1">Visual Subnet Allocations Map</span>
-                <div className="flex gap-1.5 h-6 rounded-lg overflow-hidden border border-blue-200 p-0.5 bg-white">
-                  {/* Reserved Part */}
-                  <div className="w-[18%] bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center rounded">
-                    5 Reserved (18%)
-                  </div>
-                  {/* Usable Part */}
-                  <div className="flex-grow bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center rounded animate-pulse">
-                    {ipStats.usableIps} Usable Hosts (Remaining Space)
-                  </div>
+               {/* Graphical host representation map */}
+              <div className="bg-blue-50 border border-blue-150 rounded-2xl p-5 mt-4 relative overflow-hidden text-left">
+                <span className="text-xs font-black text-blue-900 block mb-2">Visual Subnet Allocations &amp; IP boundary Map</span>
+                
+                <div className="w-full flex justify-center py-2 bg-white rounded-xl border border-blue-200">
+                  <svg className="w-full max-w-[480px] h-[180px]" viewBox="0 0 480 180">
+                    {/* Subnet Bounding Box */}
+                    <rect x="15" y="10" width="450" height="160" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="4,2" />
+                    <text x="25" y="24" fill="#1e3a8a" fontSize="7.5" fontWeight="black">SUBNET BLOCK: {vpcCidr.split('/')[0].slice(0,-1)}1.0/{subnetMaskSize}</text>
+
+                    {/* Left: 5 AWS Reserved IPs Section */}
+                    <rect x="25" y="32" width="200" height="128" rx="6" fill="#fff5f5" stroke="#f43f5e" strokeWidth="1.2" strokeDasharray="2,2" />
+                    <text x="32" y="44" fill="#b91c1c" fontSize="7" fontWeight="bold">AWS Reserved IPs (5 Locked)</text>
+
+                    {/* Reserved IP nodes */}
+                    <g transform="translate(32, 50)">
+                      <rect x="0" y="0" width="85" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.0 (Network IP)</text>
+                    </g>
+                    <g transform="translate(122, 50)">
+                      <rect x="0" y="0" width="95" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.1 (Router Gateway)</text>
+                    </g>
+
+                    <g transform="translate(32, 75)">
+                      <rect x="0" y="0" width="85" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.2 (Route 53 DNS)</text>
+                    </g>
+                    <g transform="translate(122, 75)">
+                      <rect x="0" y="0" width="95" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.3 (AWS Reserved)</text>
+                    </g>
+
+                    <g transform="translate(32, 100)">
+                      <rect x="0" y="0" width="186" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.255 (Classic Broadcast Drop)</text>
+                    </g>
+
+                    <text x="32" y="145" fill="#e11d48" fontSize="6.5" fontWeight="bold">⚠️ Inactive: 100% Locked by VPC Router</text>
+
+
+                    {/* Right: Usable IP Pool Section */}
+                    <rect x="240" y="32" width="215" height="128" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="248" y="44" fill="#065f46" fontSize="7" fontWeight="bold">Usable IP Range ({ipStats.usableIps} Available)</text>
+
+                    {/* Active IP Instance 1 */}
+                    <g transform="translate(250, 52)">
+                      <rect x="0" y="0" width="90" height="42" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
+                      <text x="45" y="12" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">Prod EC2 Instance</text>
+                      <text x="45" y="24" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">IP: .4</text>
+                      <rect x="15" y="28" width="60" height="10" rx="1.5" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.6" />
+                      <text x="45" y="35" fill="#047857" fontSize="5" fontWeight="extrabold" textAnchor="middle">SG: PORT 443 OK</text>
+                    </g>
+
+                    {/* Active IP Instance 2 */}
+                    <g transform="translate(352, 52)">
+                      <rect x="0" y="0" width="90" height="42" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
+                      <text x="45" y="12" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">Application ALB</text>
+                      <text x="45" y="24" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">IP: .15</text>
+                      <rect x="15" y="28" width="60" height="10" rx="1.5" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.6" />
+                      <text x="45" y="35" fill="#047857" fontSize="5" fontWeight="extrabold" textAnchor="middle">SG: PORT 80 OK</text>
+                    </g>
+
+                    {/* Usable range summary */}
+                    <g transform="translate(250, 105)">
+                      <rect x="0" y="0" width="192" height="45" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="10" y="14" fill="#475569" fontSize="6.5" fontWeight="black">Allocated IP Block Range:</text>
+                      <text x="10" y="26" fill="#2563eb" fontSize="7.5" fontWeight="extrabold">.4  to  .{Math.pow(2, 32 - subnetMaskSize) - 2}</text>
+                      <text x="10" y="36" fill="#94a3b8" fontSize="5.5" fontWeight="bold">Dynamically allocated as servers request local leases.</text>
+                    </g>
+                  </svg>
                 </div>
+
                 <span className="text-[10px] text-slate-500 block mt-2 font-medium">
-                  💡 Note: Creating an ALB or ECS Cluster requires ample usable IP addresses to assign Elastic Network Interfaces.
+                  💡 Note: Creating an Application Load Balancer or ECS Fargate tasks requires ample usable IP addresses inside the private subnet boundary block to mount Elastic Network Interfaces cleanly.
                 </span>
               </div>
 
@@ -1261,28 +1321,32 @@ export default function NetworkingVPCVisualizer() {
 
               {/* Interactive SVG Routing Diagram */}
               <div className="w-full flex-grow flex items-center justify-center mt-6">
-                <svg className="w-full min-w-[500px] h-[250px]" viewBox="0 0 500 250">
+                <svg className="w-full min-w-[500px] h-[255px]" viewBox="0 0 500 255">
                   <defs>
                     <marker id="arrow-pipeline" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                       <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
                     </marker>
                   </defs>
 
+                  {/* ==================== VPC BOUNDARY ==================== */}
+                  <rect x="6" y="24" width="488" height="225" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="5,3" />
+                  <text x="16" y="34" fill="#2563eb" fontSize="7.5" fontWeight="black">VPC BOUNDARY (10.0.0.0/16)</text>
+
                   {/* Zones outlines */}
                   {/* Availability Zone 1 */}
-                  <rect x="15" y="35" width="220" height="205" rx="10" fill="none" stroke={pipelineFlowType === 'az_failover' ? '#f43f5e' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={pipelineFlowType === 'az_failover' ? '4,4' : 'none'} />
-                  <text x="25" y="48" fill={pipelineFlowType === 'az_failover' ? '#e11d48' : '#94a3b8'} fontSize="8" fontWeight="bold">
+                  <rect x="12" y="40" width="232" height="202" rx="6" fill="none" stroke={pipelineFlowType === 'az_failover' ? '#f43f5e' : '#cbd5e1'} strokeWidth="1.2" strokeDasharray={pipelineFlowType === 'az_failover' ? '4,4' : 'none'} />
+                  <text x="20" y="51" fill={pipelineFlowType === 'az_failover' ? '#e11d48' : '#64748b'} fontSize="7" fontWeight="bold">
                     Availability Zone 1 {pipelineFlowType === 'az_failover' && '⚠️ OUTAGE'}
                   </text>
 
                   {/* Availability Zone 2 */}
-                  <rect x="255" y="35" width="220" height="205" rx="10" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <text x="265" y="48" fill="#94a3b8" fontSize="8" fontWeight="bold">Availability Zone 2</text>
+                  <rect x="256" y="40" width="232" height="202" rx="6" fill="none" stroke="#cbd5e1" strokeWidth="1.2" />
+                  <text x="264" y="51" fill="#64748b" fontSize="7" fontWeight="bold">Availability Zone 2</text>
 
                   {/* Internet Gateway Gateway ENI Node */}
-                  <g transform="translate(210, 2)">
-                    <rect x="0" y="0" width="80" height="24" rx="4" fill={igwAttached ? '#e0f2fe' : '#fee2e2'} stroke={igwAttached ? '#0284c7' : '#ef4444'} strokeWidth="1.5" />
-                    <text x="40" y="15" fill={igwAttached ? '#0369a1' : '#991b1b'} fontSize="7.5" fontWeight="black" textAnchor="middle">
+                  <g transform="translate(210, 1)">
+                    <rect x="0" y="0" width="80" height="20" rx="4" fill={igwAttached ? '#e0f2fe' : '#fee2e2'} stroke={igwAttached ? '#0284c7' : '#ef4444'} strokeWidth="1.2" />
+                    <text x="40" y="13" fill={igwAttached ? '#0369a1' : '#991b1b'} fontSize="7" fontWeight="black" textAnchor="middle">
                       {igwAttached ? 'IGW Attached' : 'IGW Detached'}
                     </text>
                   </g>
@@ -1291,39 +1355,39 @@ export default function NetworkingVPCVisualizer() {
                   {/* SSH Flow path: IGW -> Bastion (AZ-1) -> Private EC2 (AZ-1) */}
                   {pipelineFlowType === 'ssh_bastion' && pipelineSimState === 'success' && (
                     <g>
-                      <path d="M 250 26 V 90 H 85 V 170" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                      <path d="M 250 22 V 90 H 85 V 170" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
                     </g>
                   )}
                   {pipelineFlowType === 'ssh_bastion' && pipelineSimState === 'failed' && !igwAttached && (
                     <g>
-                      <circle cx="250" cy="15" r="4" fill="#f43f5e" />
-                      <line x1="250" y1="15" x2="250" y2="26" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3,3" />
+                      <circle cx="250" cy="11" r="3" fill="#f43f5e" />
+                      <line x1="250" y1="11" x2="250" y2="22" stroke="#f43f5e" strokeWidth="1.8" strokeDasharray="2,2" />
                     </g>
                   )}
 
                   {/* EC2 Egress Flow path (AZ-1): Private EC2 -> NAT AZ-1 -> IGW */}
                   {pipelineFlowType === 'ec2_egress' && activeAz === 'az1' && pipelineSimState === 'success' && (
                     <g>
-                      <path d="M 85 170 V 90 H 130 V 26" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                      <path d="M 85 170 V 90 H 130 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
                     </g>
                   )}
 
                   {/* EC2 Egress Flow path (AZ-2): Private EC2 (AZ-2) -> NAT AZ-2 -> IGW */}
                   {pipelineFlowType === 'ec2_egress' && activeAz === 'az2' && pipelineSimState === 'success' && natHaMode === 'dual_ha' && (
                     <g>
-                      <path d="M 325 170 V 90 H 370 V 26" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                      <path d="M 325 170 V 90 H 370 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
                     </g>
                   )}
 
                   {/* AZ Failover path: Private EC2 (AZ-2) rerouting from AZ-1 single NAT down to AZ-2 if Multi-AZ */}
                   {pipelineFlowType === 'az_failover' && pipelineSimState === 'success' && (
                     <g>
-                      <path d="M 325 170 V 90 H 370 V 26" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                      <path d="M 325 170 V 90 H 370 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
                     </g>
                   )}
 
                   {/* AZ-1 Public Subnet Components */}
-                  <g transform="translate(25, 60)">
+                  <g transform="translate(20, 60)">
                     <rect x="0" y="0" width="200" height="42" rx="6" fill="#f8fafc" stroke="#3b82f6" strokeWidth="1" strokeDasharray="2,2" />
                     <text x="10" y="12" fill="#2563eb" fontSize="6.5" fontWeight="bold">Public Subnet (AZ-1)</text>
                     
@@ -1552,62 +1616,75 @@ export default function NetworkingVPCVisualizer() {
 
               {/* SVG Firewall Traversal Map */}
               <div className="w-full flex-grow flex items-center justify-center mt-8">
-                <svg className="w-full h-full min-h-[160px]" viewBox="0 0 340 160">
-                  
-                  {/* Flow pipeline */}
-                  {/* Path: Inbound -> NACL -> SG -> EC2 -> Outbound return */}
+                <svg className="w-full max-w-[480px] h-[190px]" viewBox="0 0 480 190">
+                  <defs>
+                    <marker id="arrow-sec" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                  </defs>
+
+                  {/* ==================== VPC BOUNDARY ==================== */}
+                  <rect x="15" y="10" width="450" height="170" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="5,3" />
+                  <text x="25" y="22" fill="#2563eb" fontSize="7.5" fontWeight="black">VPC BOUNDARY (10.0.0.0/16)</text>
+
+                  {/* Private Subnet Boundary Box */}
+                  <rect x="105" y="32" width="345" height="135" rx="6" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" />
+                  <text x="115" y="44" fill="#1e3a8a" fontSize="7" fontWeight="bold">Private Subnet (10.0.1.0/24)</text>
+
+                  {/* Inbound path lines */}
                   <g fill="none" strokeWidth="1.5">
-                    {/* Inbound path */}
-                    <path d="M 10 75 H 90" stroke={animStep >= 1 ? '#2563eb' : '#cbd5e1'} className={animStep === 1 ? 'packet-pulse' : ''} strokeDasharray={animStep === 1 ? '6,4' : 'none'} />
-                    {/* Subnet border path */}
-                    <path d="M 130 75 H 200" stroke={animStep >= 2 ? '#2563eb' : '#cbd5e1'} />
-                    {/* SG border path */}
-                    <path d="M 230 75 H 275" stroke={animStep >= 3 ? '#2563eb' : '#cbd5e1'} />
+                    {/* Public internet to subnet border */}
+                    <path d="M 5 95 H 105" stroke={animStep >= 1 ? '#2563eb' : '#cbd5e1'} className={animStep === 1 ? 'packet-pulse' : ''} strokeDasharray={animStep === 1 ? '6,4' : 'none'} />
+                    {/* Subnet border to SG border */}
+                    <path d="M 145 95 H 250" stroke={animStep >= 2 ? '#2563eb' : '#cbd5e1'} />
+                    {/* SG to EC2 Target */}
+                    <path d="M 290 95 H 355" stroke={animStep >= 3 ? '#2563eb' : '#cbd5e1'} />
+                    
                     {/* Return path (stateless return) */}
-                    <path d="M 275 85 H 200 Q 165 110 130 85" stroke={animStep >= 4 ? (securitySimState === 'blocked_ephemeral' ? '#f43f5e' : '#10b981') : '#cbd5e1'} strokeWidth="1.5" />
-                    <path d="M 90 85 H 10" stroke={securitySimState === 'passed' ? '#10b981' : '#cbd5e1'} />
+                    <path d="M 355 105 H 250 Q 197 135 145 105" stroke={animStep >= 4 ? (securitySimState === 'blocked_ephemeral' ? '#f43f5e' : '#10b981') : '#cbd5e1'} strokeWidth="1.8" />
+                    <path d="M 105 105 H 5" stroke={securitySimState === 'passed' ? '#10b981' : '#cbd5e1'} />
                   </g>
 
                   {/* Packet visualizer indicator (dot) */}
                   {securitySimState === 'animating' && (
                     <g>
                       <circle r="4" fill="#2563eb" className="animate-ping">
-                        {animStep === 1 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 10 75 H 90" />}
-                        {animStep === 2 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 130 75 H 200" />}
-                        {animStep === 3 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 230 75 H 275" />}
-                        {animStep === 4 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 275 85 H 200 Q 165 110 130 85" />}
+                        {animStep === 1 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 5 95 H 105" />}
+                        {animStep === 2 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 145 95 H 250" />}
+                        {animStep === 3 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 290 95 H 355" />}
+                        {animStep === 4 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 375 105 H 250 Q 197 135 145 105" />}
                       </circle>
-                      <text x="170" y="20" fill="#2563eb" fontSize="8" fontWeight="bold" textAnchor="middle">
+                      <text x="240" y="24" fill="#2563eb" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">
                         TCP Packet Port: {securityTestPort}
                       </text>
                     </g>
                   )}
 
-                  {/* Subnet border firewall (Stateless NACL) */}
-                  <g transform="translate(90, 45)">
-                    <rect x="0" y="0" width="40" height="60" rx="5" 
+                  {/* Stateless Subnet Border NACL */}
+                  <g transform="translate(90, 60)" className={securitySimState === 'blocked_nacl' || (animStep === 4 && securitySimState === 'blocked_ephemeral') ? 'da-sim-node-active' : ''}>
+                    <rect x="0" y="0" width="36" height="70" rx="4" 
                       fill={securitySimState === 'blocked_nacl' ? '#fee2e2' : '#eff6ff'} 
-                      stroke={securitySimState === 'blocked_nacl' ? '#ef4444' : '#3b82f6'} strokeWidth="1.5" />
-                    <text x="20" y="24" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">Stateless</text>
-                    <text x="20" y="36" fill="#2563eb" fontSize="8.5" fontWeight="black" textAnchor="middle">NACL</text>
-                    <text x="20" y="48" fill="#1e3a8a" fontSize="6" textAnchor="middle">Subnet</text>
+                      stroke={securitySimState === 'blocked_nacl' ? '#ef4444' : '#3b82f6'} strokeWidth="1.8" />
+                    <text x="18" y="20" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">Stateless</text>
+                    <text x="18" y="36" fill="#2563eb" fontSize="9" fontWeight="black" textAnchor="middle">NACL</text>
+                    <text x="18" y="52" fill="#1e3a8a" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rule 100</text>
                   </g>
 
-                  {/* Security Group firewall (Stateful SG) */}
-                  <g transform="translate(200, 45)">
-                    <rect x="0" y="0" width="40" height="60" rx="5" 
+                  {/* Stateful Security Group (SG) directly enclosing the ENI inside Subnet */}
+                  <g transform="translate(245, 60)" className={securitySimState === 'blocked_sg' ? 'da-sim-node-active' : ''}>
+                    <rect x="0" y="0" width="45" height="70" rx="5" 
                       fill={securitySimState === 'blocked_sg' ? '#fee2e2' : '#f0fdf4'} 
-                      stroke={securitySimState === 'blocked_sg' ? '#ef4444' : '#10b981'} strokeWidth="1.5" />
-                    <text x="20" y="24" fill="#065f46" fontSize="6.5" fontWeight="bold" textAnchor="middle">Stateful</text>
-                    <text x="20" y="36" fill="#10b981" fontSize="9" fontWeight="black" textAnchor="middle">SG</text>
-                    <text x="20" y="48" fill="#065f46" fontSize="6.5" textAnchor="middle">ENI</text>
+                      stroke={securitySimState === 'blocked_sg' ? '#ef4444' : '#10b981'} strokeWidth="1.8" />
+                    <text x="22.5" y="20" fill="#065f46" fontSize="6" fontWeight="bold" textAnchor="middle">Stateful</text>
+                    <text x="22.5" y="36" fill="#10b981" fontSize="9" fontWeight="black" textAnchor="middle">SG</text>
+                    <text x="22.5" y="52" fill="#065f46" fontSize="5.5" fontWeight="bold" textAnchor="middle">ENI Level</text>
                   </g>
 
-                  {/* Private EC2 Instance target */}
-                  <g transform="translate(275, 52)">
-                    <rect x="0" y="0" width="55" height="46" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="27.5" y="18" fill="#cbd5e1" fontSize="8" fontWeight="bold" textAnchor="middle">EC2</text>
-                    <text x="27.5" y="32" fill="#94a3b8" fontSize="6" textAnchor="middle">Private Host</text>
+                  {/* Private EC2 Instance inside SG */}
+                  <g transform="translate(355, 70)">
+                    <rect x="0" y="0" width="80" height="50" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
+                    <text x="40" y="20" fill="#cbd5e1" fontSize="8" fontWeight="black" textAnchor="middle">EC2 SERVER</text>
+                    <text x="40" y="34" fill="#94a3b8" fontSize="6.5" textAnchor="middle">IP: 10.0.1.15</text>
                   </g>
                 </svg>
               </div>

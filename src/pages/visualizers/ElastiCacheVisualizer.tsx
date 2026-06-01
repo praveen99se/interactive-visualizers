@@ -266,6 +266,52 @@ export default function ElastiCacheVisualizer() {
           border-radius: 12px;
           box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
         }
+        .ec-flow-blue {
+          stroke: #3b82f6;
+          stroke-dasharray: 6,4;
+          animation: ecFlowDash 1s linear infinite;
+        }
+        .ec-flow-green {
+          stroke: #10b981;
+          stroke-dasharray: 6,4;
+          animation: ecFlowDash 0.8s linear infinite;
+        }
+        .ec-flow-orange {
+          stroke: #f97316;
+          stroke-dasharray: 6,4;
+          animation: ecFlowDash 1s linear infinite;
+        }
+        .ec-flow-purple {
+          stroke: #8b5cf6;
+          stroke-dasharray: 6,4;
+          animation: ecFlowDash 1.2s linear infinite;
+        }
+        .ec-flow-red {
+          stroke: #ef4444;
+          stroke-dasharray: 5,3;
+          animation: ecFlowDash 0.5s linear infinite;
+        }
+        @keyframes ecFlowDash {
+          to { stroke-dashoffset: -20; }
+        }
+        .ec-node-btn {
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .ec-node-btn:hover {
+          filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.15));
+        }
+        .ec-pulse-active {
+          animation: ecPulseGlow 1.5s infinite alternate;
+        }
+        @keyframes ecPulseGlow {
+          from {
+            filter: drop-shadow(0 0 2px rgba(234, 179, 8, 0.4));
+          }
+          to {
+            filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.8));
+          }
+        }
       `}</style>
 
       <div className="mb-8">
@@ -288,51 +334,97 @@ export default function ElastiCacheVisualizer() {
             <div className="ec-g2" style={{ marginBottom: '10px' }}>
               <div>
                 <div className="ec-sec">What is ElastiCache?</div>
-                <svg width="100%" viewBox="0 0 340 420" className="ec-svg-bg" style={{ display: 'block' }}>
+                <svg width="100%" viewBox="0 0 520 220" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="ec1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b91c1c"/></marker>
-                    <marker id="ec2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857"/></marker>
-                    <marker id="ec3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#475569"/></marker>
+                    <marker id="ec-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                    <filter id="shadow-concept" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#94a3b8" floodOpacity="0.1" />
+                    </filter>
                   </defs>
-                  
-                  {/* Step 1: User Request */}
-                  <rect x="15" y="15" width="310" height="52" rx="10" fill="rgba(239, 68, 68, 0.05)" stroke="#f87171" strokeWidth="1.5"/>
-                  <text x="170" y="36" textAnchor="middle" fontSize="12" fill="#991b1b" fontWeight="600">🌐 User Request (Axios / App)</text>
-                  <text x="170" y="50" textAnchor="middle" fontSize="10.5" fill="#c2410c" fontFamily="monospace">GET /product/123 · GET /user/profile</text>
- 
-                  {/* Step 2: Application Server */}
-                  <rect x="15" y="93" width="310" height="52" rx="10" fill="rgba(249, 115, 22, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
-                  <text x="170" y="114" textAnchor="middle" fontSize="12" fill="#9a3412" fontWeight="600">🖥️ Application Server / Lambda</text>
-                  <text x="170" y="128" textAnchor="middle" fontSize="10.5" fill="#7c2d12">Checks cache first before hitting DB</text>
- 
-                  {/* Step 3a: ElastiCache */}
-                  <rect x="15" y="172" width="144" height="72" rx="10" fill="rgba(234, 179, 8, 0.05)" stroke="#facc15" strokeWidth="1.5"/>
-                  <text x="87" y="196" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="bold">⚡ ElastiCache</text>
-                  <text x="87" y="214" textAnchor="middle" fontSize="10.5" fill="#713f12" fontWeight="500">In-Memory Store</text>
-                  <text x="87" y="228" textAnchor="middle" fontSize="10" fill="#a16207" fontFamily="monospace">~0.1ms latency</text>
- 
-                  {/* Step 3b: Relational DB */}
-                  <rect x="181" y="172" width="144" height="72" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#60a5fa" strokeWidth="1.5"/>
-                  <text x="253" y="196" textAnchor="middle" fontSize="13" fill="#1e40af" fontWeight="bold">🗄️ RDS / Aurora</text>
-                  <text x="253" y="214" textAnchor="middle" fontSize="10.5" fill="#1e3a8a" fontWeight="500">Persistent DB</text>
-                  <text x="253" y="228" textAnchor="middle" fontSize="10" fill="#2563eb" fontFamily="monospace">~5–50ms latency</text>
- 
-                  {/* Step 4a: Cache Hit Path */}
-                  <rect x="15" y="270" width="310" height="52" rx="10" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1.5"/>
-                  <text x="170" y="291" textAnchor="middle" fontSize="12" fill="#065f46" fontWeight="600">✅ Cache HIT → Return instantly</text>
-                  <text x="170" y="305" textAnchor="middle" fontSize="10.5" fill="#047857">No DB query · ~0.1ms · Saves cost + CPU</text>
- 
-                  {/* Step 4b: Cache Miss Path */}
-                  <rect x="15" y="348" width="310" height="52" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#a78bfa" strokeWidth="1.5"/>
-                  <text x="170" y="369" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="600">❌ Cache MISS → Query DB → Write Cache</text>
-                  <text x="170" y="383" textAnchor="middle" fontSize="10.5" fill="#6d28d9">DB hit once · Cache for next N requests</text>
- 
-                  {/* Connectors */}
-                  <line x1="170" y1="67" x2="170" y2="93" stroke="#b91c1c" strokeWidth="1.5" markerEnd="url(#ec1)"/>
-                  <line x1="110" y1="145" x2="87" y2="172" stroke="#854d0e" strokeWidth="1.5" markerEnd="url(#ec1)"/>
-                  <line x1="230" y1="145" x2="253" y2="172" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ec3)"/>
-                  <line x1="87" y1="244" x2="87" y2="270" stroke="#047857" strokeWidth="1.5" markerEnd="url(#ec2)"/>
-                  <line x1="253" y1="244" x2="253" y2="348" stroke="#5b21b6" strokeWidth="1.5" markerEnd="url(#ec1)"/>
+
+                  {/* ==================== PUBLIC WEB INGRESS ZONE ==================== */}
+                  <rect x="10" y="24" width="105" height="175" rx="8" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="16" y="36" fill="#64748b" fontSize="7" fontWeight="bold">Public Web Ingress Zone</text>
+
+                  {/* Client Browser Node */}
+                  <g filter="url(#shadow-concept)" transform="translate(18, 55)">
+                    <rect width="88" height="125" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.2" />
+                    <text x="44" y="16" textAnchor="middle" fontSize="9" fontWeight="800" fill="#0f172a">💻 Client Browser</text>
+                    <circle cx="44" cy="48" r="16" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.2" />
+                    <text x="44" y="52" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">USER</text>
+                    <rect x="8" y="76" width="72" height="40" rx="3" fill="#f8fafc" stroke="#e2e8f0" />
+                    <text x="44" y="87" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="bold">GET /catalog</text>
+                    <text x="44" y="98" textAnchor="middle" fontSize="7" fill="#64748b">HTTP/3 API</text>
+                    <text x="44" y="108" textAnchor="middle" fontSize="7.5" fill="#16a34a" fontWeight="bold">Sub-ms Request</text>
+                  </g>
+
+                  {/* ==================== VPC APPLICATION SUBNET ==================== */}
+                  <rect x="130" y="24" width="120" height="175" rx="8" fill="none" stroke="#fb923c" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="136" y="36" fill="#fb923c" fontSize="7" fontWeight="bold">Application Subnet</text>
+
+                  {/* App Node */}
+                  <g filter="url(#shadow-concept)" transform="translate(138, 55)">
+                    <rect width="104" height="125" rx="6" fill="#fff7ed" stroke="#f97316" strokeWidth="1.5" />
+                    <text x="52" y="16" textAnchor="middle" fontSize="9" fontWeight="800" fill="#7c2d12">🖥️ Application Server</text>
+                    <rect x="8" y="26" width="88" height="24" rx="3" fill="#ffedd5" stroke="#fed7aa" />
+                    <text x="52" y="37" textAnchor="middle" fontSize="7.5" fill="#c2410c" fontWeight="bold">ECS / Lambda Tier</text>
+                    <rect x="8" y="58" width="88" height="58" rx="3" fill="#ffffff" stroke="#e2e8f0" />
+                    <text x="52" y="69" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">Cache-Aside Engine</text>
+                    <text x="52" y="82" textAnchor="middle" fontSize="7" fill="#7c2d12">1. Check Redis Cache</text>
+                    <text x="52" y="94" textAnchor="middle" fontSize="7" fill="#7c2d12">2. Fallback RDS Query</text>
+                    <text x="52" y="106" textAnchor="middle" fontSize="7" fill="#7c2d12">3. Set Cache on Miss</text>
+                  </g>
+
+                  {/* ==================== IN-MEMORY CACHING TIER ==================== */}
+                  <rect x="265" y="24" width="115" height="175" rx="8" fill="none" stroke="#eab308" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="271" y="36" fill="#854d0e" fontSize="7" fontWeight="bold">In-Memory Caching Tier</text>
+
+                  {/* ElastiCache Redis Node */}
+                  <g filter="url(#shadow-concept)" transform="translate(273, 55)">
+                    <rect width="98" height="125" rx="6" fill="#fef9c3" stroke="#eab308" strokeWidth="1.5" />
+                    <text x="49" y="16" textAnchor="middle" fontSize="9" fontWeight="800" fill="#713f12">⚡ ElastiCache Redis</text>
+                    
+                    <path d="M 19 32 L 19 50 A 30 7 0 0 0 79 50 L 79 32 Z" fill="#fffbeb" stroke="#facc15" strokeWidth="1" />
+                    <ellipse cx="49" cy="32" rx="30" ry="7" fill="#fffbeb" stroke="#facc15" strokeWidth="1" />
+                    <text x="49" y="44" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#854d0e">RAM DATA STORE</text>
+
+                    <rect x="8" y="65" width="82" height="50" rx="3" fill="#ffffff" stroke="#fef08a" />
+                    <text x="49" y="77" textAnchor="middle" fontSize="7.5" fill="#a16207" fontWeight="bold">In-Memory Index</text>
+                    <text x="49" y="89" textAnchor="middle" fontSize="7" fill="#854d0e">TTL Key Expiries</text>
+                    <text x="49" y="100" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold">Latency &lt;0.1ms ✅</text>
+                  </g>
+
+                  {/* ==================== AUTHORITATIVE DATABASE SUBNET ==================== */}
+                  <rect x="395" y="24" width="115" height="175" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="401" y="36" fill="#2563eb" fontSize="7" fontWeight="bold">Authoritative DB Subnet</text>
+
+                  {/* RDS / Aurora Database Node */}
+                  <g filter="url(#shadow-concept)" transform="translate(403, 55)">
+                    <rect width="98" height="125" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="49" y="16" textAnchor="middle" fontSize="9" fontWeight="800" fill="#1e3a8a">🗄️ RDS / Aurora DB</text>
+                    
+                    <path d="M 19 32 L 19 50 A 30 7 0 0 0 79 50 L 79 32 Z" fill="#dbeafe" stroke="#60a5fa" strokeWidth="1" />
+                    <ellipse cx="49" cy="32" rx="30" ry="7" fill="#dbeafe" stroke="#60a5fa" strokeWidth="1" />
+                    <text x="49" y="44" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e40af">SSD PERSISTENT</text>
+
+                    <rect x="8" y="65" width="82" height="50" rx="3" fill="#ffffff" stroke="#bfdbfe" />
+                    <text x="49" y="77" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontWeight="bold">Transactional DB</text>
+                    <text x="49" y="89" textAnchor="middle" fontSize="7" fill="#1e3a8a">SQL Relational</text>
+                    <text x="49" y="100" textAnchor="middle" fontSize="7" fill="#b91c1c" fontWeight="bold">Latency 5-50ms ❌</text>
+                  </g>
+
+                  {/* Conduit Routing Pipes */}
+                  {/* Client to App */}
+                  <path d="M 106 118 L 138 118" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#ec-arrow)" />
+
+                  {/* App to Cache (Hit test) */}
+                  <path d="M 242 98 L 273 98" fill="none" stroke="#eab308" strokeWidth="1.5" markerEnd="url(#ec-arrow)" />
+                  <path d="M 273 138 L 242 138" fill="none" stroke="#16a34a" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#ec-arrow)" />
+
+                  {/* App to DB (Miss query + set cache) */}
+                  <path d="M 190 180 V 205 H 452 V 180" fill="none" stroke="#93c5fd" strokeWidth="1.2" strokeDasharray="4,2" />
                 </svg>
               </div>
               <div>
@@ -455,8 +547,26 @@ export default function ElastiCacheVisualizer() {
             <div className="ec-sec">Redis Cluster Architecture (Multi-AZ)</div>
             <svg width="100%" viewBox="0 0 680 320" className="ec-svg-bg" style={{ display: 'block', marginBottom: '12px' }}>
               <defs>
-                <marker id="aa1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b91c1c"/></marker>
-                <marker id="aa2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#047857"/></marker>
+                <linearGradient id="primary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#fff7ed" />
+                  <stop offset="100%" stopColor="#ffedd5" />
+                </linearGradient>
+                <linearGradient id="replica-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f0fdf4" />
+                  <stop offset="100%" stopColor="#dcfce7" />
+                </linearGradient>
+                <filter id="shadow-premium" x="-10%" y="-10%" width="120%" height="120%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#0f172a" floodOpacity="0.06" />
+                </filter>
+                <marker id="ec-arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 2 L 8 5 L 0 8 z" fill="#f97316" />
+                </marker>
+                <marker id="ec-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 2 L 8 5 L 0 8 z" fill="#10b981" />
+                </marker>
+                <marker id="ec-arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 2 L 8 5 L 0 8 z" fill="#8b5cf6" />
+                </marker>
               </defs>
               
               {/* Outer VPC frame */}
@@ -464,49 +574,127 @@ export default function ElastiCacheVisualizer() {
               <text x="340" y="30" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="700">VPC — ElastiCache Redis Cluster (Cluster Mode Enabled)</text>
 
               {/* AZ-1 Subnet */}
-              <rect x="25" y="44" width="190" height="250" rx="12" fill="rgba(255, 255, 255, 0.7)" stroke="#cbd5e1" strokeWidth="1"/>
-              <text x="120" y="64" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="bold">AZ-1 (us-east-1a)</text>
-              <rect x="38" y="76" width="164" height="60" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
-              <text x="120" y="96" textAnchor="middle" fontSize="12" fill="#78350f" fontWeight="bold">Primary Node</text>
-              <text x="120" y="114" textAnchor="middle" fontSize="10.5" fill="#9a3412" fontFamily="monospace">Shard 1 · Slots 0–5460</text>
-              <rect x="38" y="152" width="164" height="60" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
-              <text x="120" y="172" textAnchor="middle" fontSize="12" fill="#78350f" fontWeight="bold">Primary Node</text>
-              <text x="120" y="190" textAnchor="middle" fontSize="10.5" fill="#9a3412" fontFamily="monospace">Shard 2 · Slots 5461–10922</text>
-              <rect x="38" y="228" width="164" height="52" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1"/>
-              <text x="120" y="248" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="600">Replica (from AZ-2)</text>
-              <text x="120" y="264" textAnchor="middle" fontSize="9.5" fill="#047857" fontFamily="monospace">Shard 3 replica</text>
+              <g transform="translate(20, 48)">
+                <rect width="200" height="246" rx="12" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="6,4" />
+                <rect x="5" y="5" width="190" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+                <text x="100" y="19" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">AZ-1 (us-east-1a)</text>
+                
+                <rect x="8" y="32" width="184" height="206" rx="8" fill="rgba(245, 158, 11, 0.01)" stroke="#fed7aa" strokeWidth="1.2" strokeDasharray="4,2" />
+                <text x="15" y="44" fontSize="7.5" fill="#c2410c" fontWeight="bold">Private Cache Subnet</text>
+
+                {/* Node 1: Primary Node (Shard 1) */}
+                <g transform="translate(18, 52)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#primary-grad)" stroke="#f97316" strokeWidth="1.5" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#7c2d12">Primary Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#c2410c" fontWeight="bold">Shard 1 • Slots 0-5460</text>
+                  <rect x="12" y="36" width="32" height="11" rx="2" fill="#ffedd5" stroke="#f97316" strokeWidth="0.5" />
+                  <text x="28" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c">ACTIVE</text>
+                </g>
+
+                {/* Node 2: Primary Node (Shard 2) */}
+                <g transform="translate(18, 112)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#primary-grad)" stroke="#f97316" strokeWidth="1.5" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#7c2d12">Primary Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#c2410c" fontWeight="bold">Shard 2 • Slots 5461-10922</text>
+                  <rect x="12" y="36" width="32" height="11" rx="2" fill="#ffedd5" stroke="#f97316" strokeWidth="0.5" />
+                  <text x="28" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c">ACTIVE</text>
+                </g>
+
+                {/* Node 3: Replica (Shard 3) */}
+                <g transform="translate(18, 172)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#replica-grad)" stroke="#10b981" strokeWidth="1.2" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#065f46">Replica Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#047857" fontWeight="bold">Shard 3 Replica (from AZ-2)</text>
+                  <rect x="12" y="36" width="44" height="11" rx="2" fill="#dcfce7" stroke="#10b981" strokeWidth="0.5" />
+                  <text x="34" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#15803d">READONLY</text>
+                </g>
+              </g>
 
               {/* AZ-2 Subnet */}
-              <rect x="245" y="44" width="190" height="250" rx="12" fill="rgba(255, 255, 255, 0.7)" stroke="#cbd5e1" strokeWidth="1"/>
-              <text x="340" y="64" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="bold">AZ-2 (us-east-1b)</text>
-              <rect x="258" y="76" width="164" height="60" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1"/>
-              <text x="340" y="96" textAnchor="middle" fontSize="12" fill="#065f46" fontWeight="bold">Replica Node</text>
-              <text x="340" y="114" textAnchor="middle" fontSize="10.5" fill="#047857" fontFamily="monospace">Shard 1 replica</text>
-              <rect x="258" y="152" width="164" height="60" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
-              <text x="340" y="172" textAnchor="middle" fontSize="12" fill="#78350f" fontWeight="bold">Primary Node</text>
-              <text x="340" y="190" textAnchor="middle" fontSize="10.5" fill="#9a3412" fontFamily="monospace">Shard 3 · Slots 10923–16383</text>
-              <rect x="258" y="228" width="164" height="52" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1"/>
-              <text x="340" y="248" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="600">Replica (from AZ-1)</text>
-              <text x="340" y="264" textAnchor="middle" fontSize="9.5" fill="#047857" fontFamily="monospace">Shard 2 replica</text>
+              <g transform="translate(240, 48)">
+                <rect width="200" height="246" rx="12" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="6,4" />
+                <rect x="5" y="5" width="190" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+                <text x="100" y="19" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">AZ-2 (us-east-1b)</text>
+                
+                <rect x="8" y="32" width="184" height="206" rx="8" fill="rgba(245, 158, 11, 0.01)" stroke="#fed7aa" strokeWidth="1.2" strokeDasharray="4,2" />
+                <text x="15" y="44" fontSize="7.5" fill="#c2410c" fontWeight="bold">Private Cache Subnet</text>
+
+                {/* Node 1: Replica Node (Shard 1) */}
+                <g transform="translate(18, 52)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#replica-grad)" stroke="#10b981" strokeWidth="1.2" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#065f46">Replica Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#047857" fontWeight="bold">Shard 1 Replica (from AZ-1)</text>
+                  <rect x="12" y="36" width="44" height="11" rx="2" fill="#dcfce7" stroke="#10b981" strokeWidth="0.5" />
+                  <text x="34" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#15803d">READONLY</text>
+                </g>
+
+                {/* Node 2: Primary Node (Shard 3) */}
+                <g transform="translate(18, 112)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#primary-grad)" stroke="#f97316" strokeWidth="1.5" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#7c2d12">Primary Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#c2410c" fontWeight="bold">Shard 3 • Slots 10923-16383</text>
+                  <rect x="12" y="36" width="32" height="11" rx="2" fill="#ffedd5" stroke="#f97316" strokeWidth="0.5" />
+                  <text x="28" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c">ACTIVE</text>
+                </g>
+
+                {/* Node 3: Replica Node (Shard 2) */}
+                <g transform="translate(18, 172)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#replica-grad)" stroke="#10b981" strokeWidth="1.2" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#065f46">Replica Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#047857" fontWeight="bold">Shard 2 Replica (from AZ-1)</text>
+                  <rect x="12" y="36" width="44" height="11" rx="2" fill="#dcfce7" stroke="#10b981" strokeWidth="0.5" />
+                  <text x="34" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#15803d">READONLY</text>
+                </g>
+              </g>
 
               {/* AZ-3 Subnet */}
-              <rect x="465" y="44" width="190" height="250" rx="12" fill="rgba(255, 255, 255, 0.7)" stroke="#cbd5e1" strokeWidth="1"/>
-              <text x="560" y="64" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="bold">AZ-3 (us-east-1c)</text>
-              <rect x="478" y="76" width="164" height="60" rx="8" fill="rgba(139, 92, 246, 0.05)" stroke="#a78bfa" strokeWidth="1"/>
-              <text x="560" y="96" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">Replica Node</text>
-              <text x="560" y="114" textAnchor="middle" fontSize="10.5" fill="#6d28d9" fontFamily="monospace">Shard 2 replica</text>
-              <rect x="478" y="152" width="164" height="60" rx="8" fill="rgba(139, 92, 246, 0.05)" stroke="#a78bfa" strokeWidth="1"/>
-              <text x="560" y="172" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">Replica Node</text>
-              <text x="560" y="190" textAnchor="middle" fontSize="10.5" fill="#6d28d9" fontFamily="monospace">Shard 3 replica</text>
-              <rect x="478" y="228" width="164" height="52" rx="8" fill="rgba(245, 158, 11, 0.05)" stroke="#fb923c" strokeWidth="1.5"/>
-              <text x="560" y="248" textAnchor="middle" fontSize="11" fill="#78350f" fontWeight="bold">Primary Node</text>
-              <text x="560" y="264" textAnchor="middle" fontSize="9.5" fill="#9a3412" fontFamily="monospace">Shard 1 replica</text>
+              <g transform="translate(460, 48)">
+                <rect width="200" height="246" rx="12" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="6,4" />
+                <rect x="5" y="5" width="190" height="22" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+                <text x="100" y="19" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">AZ-3 (us-east-1c)</text>
+                
+                <rect x="8" y="32" width="184" height="206" rx="8" fill="rgba(245, 158, 11, 0.01)" stroke="#fed7aa" strokeWidth="1.2" strokeDasharray="4,2" />
+                <text x="15" y="44" fontSize="7.5" fill="#c2410c" fontWeight="bold">Private Cache Subnet</text>
 
-              {/* Replication links */}
-              <line x1="202" y1="106" x2="258" y2="106" stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa1)"/>
-              <line x1="202" y1="182" x2="258" y2="182" stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa1)"/>
-              <line x1="422" y1="106" x2="478" y2="106" stroke="#047857" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa2)"/>
-              <line x1="422" y1="182" x2="478" y2="182" stroke="#047857" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#aa2)"/>
+                {/* Node 1: Replica Node (Shard 2) */}
+                <g transform="translate(18, 52)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#replica-grad)" stroke="#10b981" strokeWidth="1.2" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#065f46">Replica Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#047857" fontWeight="bold">Shard 2 Replica (from AZ-1)</text>
+                  <rect x="12" y="36" width="44" height="11" rx="2" fill="#dcfce7" stroke="#10b981" strokeWidth="0.5" />
+                  <text x="34" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#15803d">READONLY</text>
+                </g>
+
+                {/* Node 2: Replica Node (Shard 3) */}
+                <g transform="translate(18, 112)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#replica-grad)" stroke="#10b981" strokeWidth="1.2" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#065f46">Replica Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#047857" fontWeight="bold">Shard 3 Replica (from AZ-2)</text>
+                  <rect x="12" y="36" width="44" height="11" rx="2" fill="#dcfce7" stroke="#10b981" strokeWidth="0.5" />
+                  <text x="34" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#15803d">READONLY</text>
+                </g>
+
+                {/* Node 3: Replica Node (Shard 1) */}
+                <g transform="translate(18, 172)" filter="url(#shadow-premium)">
+                  <rect width="164" height="52" rx="6" fill="url(#replica-grad)" stroke="#10b981" strokeWidth="1.2" />
+                  <text x="12" y="18" fontSize="10.5" fontWeight="800" fill="#065f46">Replica Node</text>
+                  <text x="12" y="30" fontSize="8" fill="#047857" fontWeight="bold">Shard 1 Replica (from AZ-1)</text>
+                  <rect x="12" y="36" width="44" height="11" rx="2" fill="#dcfce7" stroke="#10b981" strokeWidth="0.5" />
+                  <text x="34" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#15803d">READONLY</text>
+                </g>
+              </g>
+
+              {/* Shard 1 Sync Conduit Channels */}
+              <path d="M 202 126 L 258 126" fill="none" className="ec-flow-orange" strokeWidth="1.5" markerEnd="url(#ec-arrow-orange)" />
+              <path d="M 202 126 C 230 126, 380 246, 478 246" fill="none" className="ec-flow-orange" strokeWidth="1.5" markerEnd="url(#ec-arrow-orange)" />
+
+              {/* Shard 2 Sync Conduit Channels */}
+              <path d="M 202 186 C 220 186, 230 246, 258 246" fill="none" className="ec-flow-purple" strokeWidth="1.5" markerEnd="url(#ec-arrow-purple)" />
+              <path d="M 202 186 C 230 186, 380 126, 478 126" fill="none" className="ec-flow-purple" strokeWidth="1.5" markerEnd="url(#ec-arrow-purple)" />
+
+              {/* Shard 3 Sync Conduit Channels */}
+              <path d="M 258 186 C 240 186, 230 246, 202 246" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#ec-arrow-green)" />
+              <path d="M 422 186 L 478 186" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#ec-arrow-green)" />
             </svg>
 
             <div className="ec-g2" style={{ marginBottom: '10px' }}>
@@ -514,51 +702,113 @@ export default function ElastiCacheVisualizer() {
                 <div className="ec-sec">Full Infrastructure Integration</div>
                 <svg width="100%" viewBox="0 0 340 460" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="ai1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#475569"/></marker>
+                    <marker id="ai-arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+                    </marker>
+                    <marker id="ai-arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f97316" />
+                    </marker>
+                    <marker id="ai-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                    </marker>
+                    <marker id="ai-arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#8b5cf6" />
+                    </marker>
+                    <filter id="ai-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.05" />
+                    </filter>
                   </defs>
                   
-                  {/* CloudFront */}
-                  <rect x="15" y="15" width="310" height="44" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#c4b5fd" strokeWidth="1.5"/>
-                  <text x="170" y="41" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">🌐 CloudFront CDN / Route 53</text>
-
-                  {/* ALB */}
-                  <rect x="15" y="85" width="310" height="44" rx="10" fill="rgba(249, 115, 22, 0.05)" stroke="#fed7aa" strokeWidth="1.5"/>
-                  <text x="170" y="111" textAnchor="middle" fontSize="12" fill="#9a3412" fontWeight="bold">⚖️ ALB (Application Load Balancer)</text>
-
-                  {/* Compute */}
-                  <rect x="15" y="155" width="144" height="44" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#93c5fd" strokeWidth="1.5"/>
-                  <text x="87" y="181" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">EC2 / ECS App</text>
-                  <rect x="181" y="155" width="144" height="44" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#93c5fd" strokeWidth="1.5"/>
-                  <text x="253" y="181" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">Lambda Functions</text>
-
-                  {/* ElastiCache */}
-                  <rect x="80" y="225" width="180" height="52" rx="10" fill="rgba(234, 179, 8, 0.05)" stroke="#fde047" strokeWidth="1.5"/>
-                  <text x="170" y="247" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="bold">⚡ ElastiCache</text>
-                  <text x="170" y="265" textAnchor="middle" fontSize="11" fill="#713f12" fontWeight="500">Redis / Memcached</text>
-
-                  {/* RDS Primary */}
-                  <rect x="15" y="305" width="144" height="52" rx="10" fill="rgba(16, 185, 129, 0.05)" stroke="#86efac" strokeWidth="1.5"/>
-                  <text x="87" y="327" textAnchor="middle" fontSize="12" fill="#15803d" fontWeight="bold">🗄️ RDS / Aurora</text>
-                  <text x="87" y="345" textAnchor="middle" fontSize="11" fill="#166534" fontWeight="500">Primary DB</text>
+                  {/* ==================== 1. DMZ / PUBLIC EDGE NETWORK ==================== */}
+                  <rect x="8" y="10" width="324" height="60" rx="8" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="21" fill="#64748b" fontSize="7" fontWeight="bold">Edge Network &amp; DNS Zone</text>
                   
-                  {/* S3 Storage */}
-                  <rect x="181" y="305" width="144" height="52" rx="10" fill="rgba(139, 92, 246, 0.05)" stroke="#c4b5fd" strokeWidth="1.5"/>
-                  <text x="253" y="327" textAnchor="middle" fontSize="12" fill="#6d28d9" fontWeight="bold">📦 S3 / DynamoDB</text>
-                  <text x="253" y="345" textAnchor="middle" fontSize="11" fill="#5b21b6" fontWeight="500">Object / NoSQL</text>
+                  {/* CloudFront Card */}
+                  <g filter="url(#ai-shadow)" transform="translate(15, 26)">
+                    <rect width="310" height="36" rx="6" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="1.2" />
+                    <text x="155" y="22" textAnchor="middle" fontSize="11" fill="#5b21b6" fontWeight="bold">🌐 Route 53 &amp; CloudFront CDN</text>
+                  </g>
 
-                  {/* CloudWatch Monitor */}
-                  <rect x="15" y="385" width="310" height="44" rx="10" fill="rgba(20, 184, 166, 0.05)" stroke="#5eead4" strokeWidth="1.5"/>
-                  <text x="170" y="411" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="bold">📊 CloudWatch · X-Ray · SNS Alerts</text>
+                  {/* ==================== 2. PUBLIC INGRESS SUBNET ==================== */}
+                  <rect x="8" y="78" width="324" height="60" rx="8" fill="none" stroke="#fb923c" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="89" fill="#c2410c" fontSize="7" fontWeight="bold">Public Ingress Subnet (ALB)</text>
+                  
+                  {/* ALB Card */}
+                  <g filter="url(#ai-shadow)" transform="translate(15, 94)">
+                    <rect width="310" height="36" rx="6" fill="#fff7ed" stroke="#f97316" strokeWidth="1.2" />
+                    <text x="155" y="22" textAnchor="middle" fontSize="11" fill="#9a3412" fontWeight="bold">⚖️ Application Load Balancer (ALB)</text>
+                  </g>
 
-                  {/* Conduits */}
-                  <line x1="170" y1="59" x2="170" y2="85" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="120" y1="129" x2="87" y2="155" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="220" y1="129" x2="253" y2="155" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="87" y1="199" x2="130" y2="225" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="253" y1="199" x2="210" y2="225" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="130" y1="277" x2="87" y2="305" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="210" y1="277" x2="253" y2="305" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
-                  <line x1="87" y1="357" x2="87" y2="385" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ai1)"/>
+                  {/* ==================== 3. PRIVATE APPLICATION SUBNET ==================== */}
+                  <rect x="8" y="146" width="324" height="64" rx="8" fill="none" stroke="#3b82f6" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="157" fill="#1d4ed8" fontSize="7" fontWeight="bold">Private Compute Subnet (ECS / Lambda)</text>
+
+                  {/* Compute Nodes */}
+                  <g filter="url(#ai-shadow)" transform="translate(15, 162)">
+                    <rect width="144" height="40" rx="6" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1.2" />
+                    <text x="72" y="24" textAnchor="middle" fontSize="10.5" fill="#1e40af" fontWeight="bold">🖥️ ECS App Servers</text>
+                  </g>
+                  <g filter="url(#ai-shadow)" transform="translate(181, 162)">
+                    <rect width="144" height="40" rx="6" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1.2" />
+                    <text x="72" y="24" textAnchor="middle" fontSize="10.5" fill="#1e40af" fontWeight="bold">⚙️ Lambda Functions</text>
+                  </g>
+
+                  {/* ==================== 4. PRIVATE CACHING SUBNET ==================== */}
+                  <rect x="8" y="218" width="324" height="68" rx="8" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="229" fill="#854d0e" fontSize="7" fontWeight="bold">Private Caching Subnet (ElastiCache)</text>
+
+                  {/* ElastiCache Card */}
+                  <g filter="url(#ai-shadow)" transform="translate(80, 233)">
+                    <rect width="180" height="46" rx="6" fill="#fef9c3" stroke="#eab308" strokeWidth="1.5" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="12" fill="#713f12" fontWeight="bold">⚡ ElastiCache Redis Cluster</text>
+                    <text x="90" y="34" textAnchor="middle" fontSize="9" fill="#a16207" fontWeight="bold">In-Memory Replication Group</text>
+                  </g>
+
+                  {/* ==================== 5. PRIVATE DATABASE SUBNET ==================== */}
+                  <rect x="8" y="294" width="324" height="72" rx="8" fill="none" stroke="#16a34a" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="305" fill="#15803d" fontSize="7" fontWeight="bold">Private Datastore Subnet (RDS / Aurora)</text>
+
+                  {/* Datastore Nodes */}
+                  <g filter="url(#ai-shadow)" transform="translate(15, 310)">
+                    <rect width="144" height="48" rx="6" fill="#f0fdf4" stroke="#86efac" strokeWidth="1.2" />
+                    <text x="72" y="22" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="bold">🗄️ Aurora Postgres</text>
+                    <text x="72" y="36" textAnchor="middle" fontSize="9" fill="#166534">Source of Truth</text>
+                  </g>
+                  <g filter="url(#ai-shadow)" transform="translate(181, 310)">
+                    <rect width="144" height="48" rx="6" fill="#faf5ff" stroke="#c4b5fd" strokeWidth="1.2" />
+                    <text x="72" y="22" textAnchor="middle" fontSize="11" fill="#6d28d9" fontWeight="bold">📦 S3 / DynamoDB</text>
+                    <text x="72" y="36" textAnchor="middle" fontSize="9" fill="#5b21b6">Object / NoSQL</text>
+                  </g>
+
+                  {/* ==================== 6. MANAGEMENT & SECURITY PLANE ==================== */}
+                  <rect x="8" y="374" width="324" height="62" rx="8" fill="none" stroke="#0d9488" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="385" fill="#0f766e" fontSize="7" fontWeight="bold">AWS CloudWatch &amp; Telemetry Subsystem</text>
+
+                  {/* Management Card */}
+                  <g filter="url(#ai-shadow)" transform="translate(15, 390)">
+                    <rect width="310" height="38" rx="6" fill="#f0fdfa" stroke="#5eead4" strokeWidth="1.2" />
+                    <text x="155" y="23" textAnchor="middle" fontSize="11" fill="#0f766e" fontWeight="bold">📊 CloudWatch metrics, X-Ray telemetry &amp; logs</text>
+                  </g>
+
+                  {/* Conduit Routing Connections */}
+                  {/* CDN to ALB */}
+                  <path d="M 170 62 L 170 94" fill="none" className="ec-flow-purple" strokeWidth="2" markerEnd="url(#ai-arrow-purple)" />
+
+                  {/* ALB to App (EC2 & Lambda) */}
+                  <path d="M 120 130 C 100 130, 87 142, 87 162" fill="none" className="ec-flow-blue" strokeWidth="1.5" markerEnd="url(#ai-arrow-blue)" />
+                  <path d="M 220 130 C 240 130, 253 142, 253 162" fill="none" className="ec-flow-blue" strokeWidth="1.5" markerEnd="url(#ai-arrow-blue)" />
+
+                  {/* App to Cache (High-speed Query path) */}
+                  <path d="M 87 202 C 87 218, 120 233, 140 233" fill="none" className="ec-flow-orange" strokeWidth="1.5" markerEnd="url(#ai-arrow-orange)" />
+                  <path d="M 253 202 C 253 218, 220 233, 200 233" fill="none" className="ec-flow-orange" strokeWidth="1.5" markerEnd="url(#ai-arrow-orange)" />
+
+                  {/* Cache DB Syncs (Cache Miss paths) */}
+                  <path d="M 130 279 C 110 279, 87 290, 87 310" fill="none" className="ec-flow-purple" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#ai-arrow-purple)" />
+                  <path d="M 210 279 C 230 279, 253 290, 253 310" fill="none" className="ec-flow-purple" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#ai-arrow-purple)" />
+
+                  {/* Datastore Telemetry Outlets */}
+                  <path d="M 87 358 L 87 390" fill="none" className="ec-flow-green" strokeWidth="1.2" markerEnd="url(#ai-arrow-green)" />
+                  <path d="M 253 358 L 253 390" fill="none" className="ec-flow-green" strokeWidth="1.2" markerEnd="url(#ai-arrow-green)" />
                 </svg>
               </div>
               <div>
@@ -621,42 +871,82 @@ export default function ElastiCacheVisualizer() {
               <div>
                 <svg width="100%" viewBox="0 0 340 300" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="ucarr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                      <path d="M0,0 L0,6 L6,3 z" fill="#475569" />
+                    <marker id="uc-arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
                     </marker>
+                    <marker id="uc-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                    </marker>
+                    <marker id="uc-arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f97316" />
+                    </marker>
+                    <marker id="uc-arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+                    </marker>
+                    <filter id="uc-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.05" />
+                    </filter>
                   </defs>
                   
-                  {/* App / Lambda */}
-                  <rect x="15" y="15" width="310" height="52" rx="10" fill="rgba(255, 255, 255, 0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <text x="170" y="36" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="bold">🌐 App / Lambda</text>
-                  <text x="170" y="50" textAnchor="middle" fontSize="10.5" fill="#475569">Client request</text>
+                  {/* ==================== 1. COMPUTE SUBNET TIER ==================== */}
+                  <rect x="8" y="10" width="324" height="62" rx="8" fill="rgba(59, 130, 246, 0.01)" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="21" fill="#64748b" fontSize="7" fontWeight="bold">VPC Private Application Subnet</text>
                   
-                  {/* ElastiCache Redis */}
-                  <rect x="80" y="93" width="180" height="52" rx="10" fill="rgba(234, 179, 8, 0.05)" stroke="#facc15" strokeWidth="1.5" />
-                  <text x="170" y="115" textAnchor="middle" fontSize="13" fill="#854d0e" fontWeight="bold">⚡ ElastiCache Redis</text>
-                  <text x="170" y="131" textAnchor="middle" fontSize="10.5" fill="#713f12" fontWeight="500">{ucData[activeUsecase].title}</text>
+                  {/* App Node */}
+                  <g filter="url(#uc-shadow)" transform="translate(15, 26)">
+                    <rect width="310" height="38" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="155" y="23" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">🖥️ Application Web Compute (ECS / Lambda)</text>
+                  </g>
                   
-                  {/* DB Relational */}
-                  <rect x="80" y="171" width="180" height="52" rx="10" fill="rgba(59, 130, 246, 0.05)" stroke="#60a5fa" strokeWidth="1.5" />
-                  <text x="170" y="193" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">🗄️ RDS / DynamoDB</text>
-                  <text x="170" y="209" textAnchor="middle" fontSize="10.5" fill="#2563eb" fontWeight="500">Source of truth (on miss)</text>
+                  {/* ==================== 2. CACHING SUBNET TIER ==================== */}
+                  <rect x="8" y="84" width="324" height="66" rx="8" fill="rgba(234, 179, 8, 0.01)" stroke="#fed7aa" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="95" fill="#c2410c" fontSize="7" fontWeight="bold">VPC Private In-Memory Caching Subnet</text>
                   
-                  {/* Connections */}
-                  <line x1="170" y1="67" x2="170" y2="93" stroke="#475569" strokeWidth="1.5" markerEnd="url(#ucarr)" />
-                  <line x1="170" y1="145" x2="170" y2="171" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#ucarr)" />
+                  {/* Cache Node - Styled dynamically by selected usecase colors */}
+                  <g filter="url(#uc-shadow)" transform="translate(80, 100)">
+                    <rect width="180" height="42" rx="6" fill={ucData[activeUsecase].svgFill} stroke={ucData[activeUsecase].svgColor} strokeWidth="1.5" style={{ transition: 'all 0.3s ease-in-out' }} />
+                    <text x="90" y="25" textAnchor="middle" fontSize="12" fill={ucData[activeUsecase].svgColor} fontWeight="bold" style={{ transition: 'all 0.3s ease' }}>⚡ ElastiCache Redis</text>
+                  </g>
                   
-                  {/* HIT */}
-                  <rect x="15" y="248" width="144" height="40" rx="8" fill="rgba(16, 185, 129, 0.05)" stroke="#34d399" strokeWidth="1.5" />
-                  <text x="87" y="273" textAnchor="middle" fontSize="11" fill="#065f46" fontWeight="bold">✅ HIT → &lt;1ms</text>
+                  {/* ==================== 3. DATASTORE SUBNET TIER ==================== */}
+                  <rect x="8" y="162" width="324" height="66" rx="8" fill="rgba(37, 99, 235, 0.01)" stroke="#bfdbfe" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="14" y="173" fill="#1d4ed8" fontSize="7" fontWeight="bold">VPC Private Authoritative DB Subnet</text>
+
+                  {/* Relational DB Node */}
+                  <g filter="url(#uc-shadow)" transform="translate(80, 178)">
+                    <rect width="180" height="42" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="90" y="25" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="bold">🗄️ Relational DB (RDS / Aurora)</text>
+                  </g>
                   
-                  {/* MISS */}
-                  <rect x="181" y="248" width="144" height="40" rx="8" fill="rgba(239, 68, 68, 0.05)" stroke="#f87171" strokeWidth="1.5" />
-                  <text x="253" y="273" textAnchor="middle" fontSize="11" fill="#991b1b" fontWeight="bold">❌ MISS → DB query</text>
+                  {/* Connections & Dynamic Flows */}
+                  {/* App -> Cache (Check query) */}
+                  <path d="M 162 64 L 162 100" fill="none" className="ec-flow-orange" strokeWidth="1.5" markerEnd="url(#uc-arrow-orange)" />
+                  
+                  {/* Cache -> App (Fast HIT - Return cache) */}
+                  <path d="M 178 100 L 178 64" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#uc-arrow-green)" />
+                  
+                  {/* Cache -> DB (MISS - Fetch source) */}
+                  <path d="M 162 142 L 162 178" fill="none" className="ec-flow-red" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#uc-arrow-red)" />
+                  
+                  {/* DB -> App (Write-back / populate app data) */}
+                  <path d="M 260 199 C 290 199, 290 45, 180 45" fill="none" className="ec-flow-blue" strokeWidth="1.2" strokeDasharray="4,2" markerEnd="url(#uc-arrow-blue)" />
+                  
+                  {/* HIT indicator badge */}
+                  <g filter="url(#uc-shadow)" transform="translate(15, 246)">
+                    <rect width="144" height="40" rx="8" fill="rgba(16, 185, 129, 0.04)" stroke="#34d399" strokeWidth="1.5" />
+                    <text x="72" y="24" textAnchor="middle" fontSize="11" fill="#15803d" fontWeight="bold">✅ HIT → Latency &lt;1ms</text>
+                  </g>
+                  
+                  {/* MISS indicator badge */}
+                  <g filter="url(#uc-shadow)" transform="translate(181, 246)">
+                    <rect width="144" height="40" rx="8" fill="rgba(239, 68, 68, 0.04)" stroke="#f87171" strokeWidth="1.5" />
+                    <text x="72" y="24" textAnchor="middle" fontSize="11" fill="#b91c1c" fontWeight="bold">❌ MISS → DB query 25ms</text>
+                  </g>
                 </svg>
               </div>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>{ucData[activeUsecase].title}</div>
-                <div className="ec-card" style={{ marginBottom: '8px', fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{ucData[activeUsecase].desc}</div>
+                  <div className="ec-card" style={{ marginBottom: '8px', fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{ucData[activeUsecase].desc}</div>
                 <div className="ec-sec">Code Pattern</div>
                 <div className="ec-log" style={{ whiteSpace: 'pre-wrap' }}>{ucData[activeUsecase].code}</div>
                 <div className="ec-sec">Key Redis Commands</div>
@@ -673,53 +963,80 @@ export default function ElastiCacheVisualizer() {
                 <div className="ec-sec">ElastiCache Security Architecture</div>
                 <svg width="100%" viewBox="0 0 340 460" className="ec-svg-bg" style={{ display: 'block' }}>
                   <defs>
-                    <marker id="as1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#475569"/></marker>
+                    <marker id="sec-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+                    </marker>
+                    <filter id="sec-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.05" />
+                    </filter>
                   </defs>
                   
                   {/* Outer boundary */}
                   <rect x="10" y="10" width="320" height="440" rx="16" fill="rgba(255, 255, 255, 0.4)" stroke="#cbd5e1" strokeWidth="1.5"/>
-                  <text x="170" y="30" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="700">VPC Security Boundary</text>
+                  <text x="170" y="28" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="800">VPC Security Architecture</text>
 
-                  {/* App Subnet */}
-                  <rect x="25" y="44" width="290" height="48" rx="10" fill="rgba(239, 68, 68, 0.05)" stroke="#fca5a5" strokeWidth="1.5"/>
-                  <text x="170" y="64" textAnchor="middle" fontSize="12" fill="#991b1b" fontWeight="bold">🌐 App / Lambda / EC2</text>
-                  <text x="170" y="80" textAnchor="middle" fontSize="10.5" fill="#c2410c">Client in same VPC (private subnet)</text>
+                  {/* ==================== 1. INGRESS FIREWALL BOUNDARY (App & SGs) ==================== */}
+                  <rect x="18" y="38" width="304" height="194" rx="8" fill="rgba(249, 115, 22, 0.01)" stroke="#fed7aa" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="24" y="48" fill="#c2410c" fontSize="7" fontWeight="bold">Ingress Access Firewall Domain</text>
 
-                  {/* TLS */}
-                  <rect x="25" y="110" width="290" height="48" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#c4b5fd" strokeWidth="1.5"/>
-                  <text x="170" y="130" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">🔒 TLS in Transit</text>
-                  <text x="170" y="146" textAnchor="middle" fontSize="10.5" fill="#6d28d9">Redis 6+ · TLS 1.2+ · in-transit encryption</text>
+                  {/* App Node */}
+                  <g filter="url(#sec-shadow)" transform="translate(25, 54)">
+                    <rect width="290" height="48" rx="6" fill="#fff7ed" stroke="#f97316" strokeWidth="1.5" />
+                    <text x="145" y="20" textAnchor="middle" fontSize="12" fill="#7c2d12" fontWeight="bold">🌐 App Server Subnet Group (ECS / EC2)</text>
+                    <text x="145" y="36" textAnchor="middle" fontSize="9.5" fill="#c2410c">Inbound Client Requests Initiated</text>
+                  </g>
 
                   {/* Security Groups */}
-                  <rect x="25" y="176" width="290" height="48" rx="10" fill="rgba(249, 115, 22, 0.05)" stroke="#fed7aa" strokeWidth="1.5"/>
-                  <text x="170" y="196" textAnchor="middle" fontSize="12" fill="#9a3412" fontWeight="bold">🛡️ Security Groups</text>
-                  <text x="170" y="212" textAnchor="middle" fontSize="10.5" fill="#c2410c">Port 6379 (Redis) / 11211 (Memcached) · App SG only</text>
+                  <g filter="url(#sec-shadow)" transform="translate(25, 120)">
+                    <rect width="290" height="48" rx="6" fill="#fff7ed" stroke="#f97316" strokeWidth="1.5" />
+                    <text x="145" y="20" textAnchor="middle" fontSize="12" fill="#7c2d12" fontWeight="bold">🛡️ Security Groups (Stateful SG)</text>
+                    <text x="145" y="36" textAnchor="middle" fontSize="9.5" fill="#c2410c">Inbound Port 6379 strictly limited to App SG</text>
+                  </g>
+
+                  {/* TLS Transit Encryption */}
+                  <g filter="url(#sec-shadow)" transform="translate(25, 176)">
+                    <rect width="290" height="48" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="145" y="20" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">🔒 TLS Transit Encryption (In-Transit)</text>
+                    <text x="145" y="36" textAnchor="middle" fontSize="9.5" fill="#2563eb">TLS 1.2+ Handshake • Secure Tunnel</text>
+                  </g>
+
+                  {/* ==================== 2. IDENTITY & CREDENTIAL BOUNDARY ==================== */}
+                  <rect x="18" y="238" width="304" height="154" rx="8" fill="rgba(124, 58, 237, 0.01)" stroke="#c4b5fd" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="24" y="248" fill="#5b21b6" fontSize="7" fontWeight="bold">Cryptographic Identity &amp; Key Gateways</text>
 
                   {/* Authentication */}
-                  <rect x="25" y="242" width="290" height="80" rx="10" fill="rgba(16, 185, 129, 0.05)" stroke="#86efac" strokeWidth="1.5"/>
-                  <text x="170" y="262" textAnchor="middle" fontSize="12" fill="#065f46" fontWeight="bold">🔑 Authentication</text>
-                  <rect x="38" y="274" width="120" height="34" rx="6" fill="#ffffff" stroke="#a7f3d0" strokeWidth="1"/>
-                  <text x="98" y="289" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="600">Redis AUTH</text>
-                  <text x="98" y="302" textAnchor="middle" fontSize="9.5" fill="#065f46">Token password</text>
-                  <rect x="172" y="274" width="128" height="34" rx="6" fill="#ffffff" stroke="#a7f3d0" strokeWidth="1"/>
-                  <text x="236" y="289" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="600">IAM Auth (Redis 7+)</text>
-                  <text x="236" y="302" textAnchor="middle" fontSize="9.5" fill="#065f46">Token-based</text>
+                  <g filter="url(#sec-shadow)" transform="translate(25, 254)">
+                    <rect width="290" height="74" rx="6" fill="#faf5ff" stroke="#8b5cf6" strokeWidth="1.5" />
+                    <text x="145" y="20" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">🔑 Authentication &amp; RBAC Access Control</text>
+                    
+                    <rect x="10" y="28" width="130" height="34" rx="4" fill="#ffffff" stroke="#c4b5fd" strokeWidth="1" />
+                    <text x="75" y="42" textAnchor="middle" fontSize="10.5" fill="#5b21b6" fontWeight="bold">Redis AUTH Token</text>
+                    <text x="75" y="53" textAnchor="middle" fontSize="8" fill="#6d28d9">Cluster Password</text>
+                    
+                    <rect x="150" y="28" width="130" height="34" rx="4" fill="#ffffff" stroke="#c4b5fd" strokeWidth="1" />
+                    <text x="215" y="42" textAnchor="middle" fontSize="10.5" fill="#5b21b6" fontWeight="bold">IAM Role Integration</text>
+                    <text x="215" y="53" textAnchor="middle" fontSize="8" fill="#6d28d9">Auto-rotating Token</text>
+                  </g>
 
                   {/* Encryption at Rest */}
-                  <rect x="25" y="340" width="290" height="48" rx="10" fill="rgba(20, 184, 166, 0.05)" stroke="#5eead4" strokeWidth="1.5"/>
-                  <text x="170" y="360" textAnchor="middle" fontSize="12" fill="#0f766e" fontWeight="bold">🔐 Encryption at Rest (KMS)</text>
-                  <text x="170" y="376" textAnchor="middle" fontSize="10.5" fill="#0d9488">Redis data on disk · Snapshots · aws/elasticache or CMK</text>
+                  <g filter="url(#sec-shadow)" transform="translate(25, 336)">
+                    <rect width="290" height="48" rx="6" fill="#faf5ff" stroke="#8b5cf6" strokeWidth="1.5" />
+                    <text x="145" y="20" textAnchor="middle" fontSize="12" fill="#5b21b6" fontWeight="bold">🔐 Data Protection at Rest (KMS Keys)</text>
+                    <text x="145" y="36" textAnchor="middle" fontSize="9.5" fill="#6d28d9">Snapshots &amp; RDB/AOF encrypted via AWS CMK</text>
+                  </g>
 
-                  {/* Private Subnets */}
-                  <rect x="25" y="406" width="290" height="36" rx="8" fill="rgba(59, 130, 246, 0.05)" stroke="#93c5fd" strokeWidth="1.5"/>
-                  <text x="170" y="428" textAnchor="middle" fontSize="11" fill="#1e40af" fontWeight="600">Subnet Groups · No public access · CloudTrail audit</text>
+                  {/* ==================== 3. NETWORK ISOLATION SUBNETS ==================== */}
+                  <g filter="url(#sec-shadow)" transform="translate(25, 400)">
+                    <rect width="290" height="40" rx="6" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" />
+                    <text x="145" y="24" textAnchor="middle" fontSize="11" fill="#0f766e" fontWeight="bold">🏝️ Isolated Subnets • No Public IP Address Allowed</text>
+                  </g>
 
-                  {/* Connectors */}
-                  <line x1="170" y1="92" x2="170" y2="110" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="158" x2="170" y2="176" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="224" x2="170" y2="242" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="322" x2="170" y2="340" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
-                  <line x1="170" y1="388" x2="170" y2="406" stroke="#475569" strokeWidth="1.5" markerEnd="url(#as1)"/>
+                  {/* Secure Active Emerald Conduits */}
+                  <path d="M 170 102 L 170 120" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#sec-arrow)" />
+                  <path d="M 170 168 L 170 176" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#sec-arrow)" />
+                  <path d="M 170 224 L 170 254" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#sec-arrow)" />
+                  <path d="M 170 328 L 170 336" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#sec-arrow)" />
+                  <path d="M 170 384 L 170 400" fill="none" className="ec-flow-green" strokeWidth="1.5" markerEnd="url(#sec-arrow)" />
                 </svg>
               </div>
               <div>
@@ -821,10 +1138,44 @@ export default function ElastiCacheVisualizer() {
                 <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>📊 Request Flow Visualizer</div>
                 
                 <svg width="100%" viewBox="0 0 320 180" className="ec-svg-bg" style={{ display: 'block', borderRadius: '12px' }}>
-                  {/* Static pipelines */}
-                  <path d="M 75 90 Q 135 60 195 40" fill="none" stroke={isRunning ? "#cbd5e1" : "#e2e8f0"} strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 75 90 Q 135 115 195 130" fill="none" stroke={isRunning ? "#cbd5e1" : "#e2e8f0"} strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 235 65 L 235 110" fill="none" stroke={isRunning ? "#cbd5e1" : "#e2e8f0"} strokeWidth="1.5" strokeDasharray="3,3" />
+                  <defs>
+                    <filter id="sim-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.04" />
+                    </filter>
+                  </defs>
+
+                  {/* ==================== VPC SUBNET BOUNDARIES ==================== */}
+                  {/* Client Subnet Group */}
+                  <rect x="6" y="58" width="76" height="64" rx="8" fill="rgba(59, 130, 246, 0.01)" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,2" />
+                  <text x="44" y="53" textAnchor="middle" fontSize="6.5" fill="#1e40af" fontWeight="bold">Private App Subnet</text>
+
+                  {/* Cache Subnet Group */}
+                  <rect x="185" y="10" width="100" height="72" rx="8" fill="rgba(234, 179, 8, 0.01)" stroke="#fde047" strokeWidth="1" strokeDasharray="3,2" />
+                  <text x="235" y="6" textAnchor="middle" fontSize="6.5" fill="#854d0e" fontWeight="bold">Private Cache Subnet</text>
+
+                  {/* Datastore Subnet Group */}
+                  <rect x="185" y="100" width="100" height="72" rx="8" fill="rgba(59, 130, 246, 0.01)" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,2" />
+                  <text x="235" y="96" textAnchor="middle" fontSize="6.5" fill="#1d4ed8" fontWeight="bold">Private DB Subnet</text>
+
+                  {/* Static pipelines behind flows */}
+                  <path d="M 75 90 Q 135 60 195 40" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2,2" />
+                  <path d="M 75 90 Q 135 115 195 130" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2,2" />
+                  <path d="M 235 65 L 235 110" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="2,2" />
+
+                  {/* Cache HIT active conduit */}
+                  {isRunning && hitRate > 0 && (
+                    <path d="M 75 90 Q 135 60 195 40" fill="none" className="ec-flow-green" strokeWidth="2" />
+                  )}
+
+                  {/* Cache MISS active conduit */}
+                  {isRunning && hitRate < 100 && (
+                    <path d="M 75 90 Q 135 115 195 130" fill="none" className="ec-flow-red" strokeWidth="2" />
+                  )}
+
+                  {/* Cache DB writeback active conduit */}
+                  {isRunning && hitRate < 100 && (
+                    <path d="M 235 110 L 235 65" fill="none" className="ec-flow-blue" strokeWidth="1.5" />
+                  )}
 
                   {/* Cache HIT particle motion */}
                   {isRunning && hitRate > 0 && (
@@ -843,37 +1194,37 @@ export default function ElastiCacheVisualizer() {
                       <animateMotion
                         dur={rps > 5000 ? "0.6s" : rps > 2000 ? "1.2s" : "2.0s"}
                         repeatCount="indefinite"
-                        path="M 75 90 Q 135 60 195 40 L 235 65 L 235 110 Q 135 115 75 90"
+                        path="M 75 90 Q 135 115 195 130"
                       />
                     </circle>
                   )}
 
                   {/* Client App */}
-                  <g transform="translate(15, 65)">
-                    <rect width="60" height="50" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="30" y="24" fontSize="9" fontWeight="bold" fill="#1e40af" textAnchor="middle">Client App</text>
-                    <text x="30" y="38" fontSize="7.5" fill="#2563eb" textAnchor="middle" fontFamily="monospace">Active</text>
+                  <g transform="translate(13, 65)" filter="url(#sim-shadow)">
+                    <rect width="62" height="50" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="31" y="24" fontSize="9.5" fontWeight="bold" fill="#1e40af" textAnchor="middle">Client App</text>
+                    <text x="31" y="38" fontSize="7.5" fill="#2563eb" textAnchor="middle" fontFamily="monospace">ACTIVE</text>
                   </g>
 
                   {/* ElastiCache Redis Cylinder */}
-                  <g transform="translate(195, 20)">
+                  <g transform="translate(195, 22)" filter="url(#sim-shadow)">
                     <path d="M 0 10 L 0 35 A 40 10 0 0 0 80 35 L 80 10 Z" fill="rgba(234, 179, 8, 0.05)" stroke="#fbbf24" strokeWidth="1.5" />
                     <ellipse cx="40" cy="10" rx="40" ry="10" fill="#fef9c3" stroke="#fbbf24" strokeWidth="1.5" />
-                    <text x="40" y="28" fontSize="9" fontWeight="bold" fill="#78350f" textAnchor="middle">⚡ Cache</text>
+                    <text x="40" y="28" fontSize="9.5" fontWeight="bold" fill="#78350f" textAnchor="middle">⚡ Cache</text>
                     <text x="40" y="38" fontSize="7.5" fill="#a16207" textAnchor="middle" fontFamily="monospace">RAM &lt;1ms</text>
                     {isRunning && (
-                      <circle cx="72" cy="10" r="2" fill="#10b981" className="led-blink" />
+                      <circle cx="72" cy="10" r="2.5" fill="#10b981" className="led-blink" />
                     )}
                   </g>
 
                   {/* DB cylinder */}
-                  <g transform="translate(195, 110)">
+                  <g transform="translate(195, 112)" filter="url(#sim-shadow)">
                     <path d="M 0 10 L 0 35 A 40 10 0 0 0 80 35 L 80 10 Z" fill="rgba(59, 130, 246, 0.05)" stroke="#60a5fa" strokeWidth="1.5" />
                     <ellipse cx="40" cy="10" rx="40" ry="10" fill="#dbeafe" stroke="#60a5fa" strokeWidth="1.5" />
-                    <text x="40" y="28" fontSize="9" fontWeight="bold" fill="#1e40af" textAnchor="middle">🗄️ DB</text>
+                    <text x="40" y="28" fontSize="9.5" fontWeight="bold" fill="#1e40af" textAnchor="middle">🗄️ DB</text>
                     <text x="40" y="38" fontSize="7.5" fill="#2563eb" textAnchor="middle" fontFamily="monospace">Disk 20ms</text>
                     {isRunning && (
-                      <circle cx="72" cy="10" r="2" fill="#3b82f6" />
+                      <circle cx="72" cy="10" r="2.5" fill="#3b82f6" />
                     )}
                   </g>
                 </svg>

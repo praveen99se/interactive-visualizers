@@ -1751,25 +1751,29 @@ export default function ServerlessVisualizer() {
                     </marker>
                   </defs>
 
+                  {/* ==================== AWS REGION BOUNDARY ==================== */}
+                  <rect x="110" y="24" width="575" height="245" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="5,3" />
+                  <text x="120" y="36" fill="#2563eb" fontSize="7.5" fontWeight="bold">AWS Region Cloud Boundary (us-east-1)</text>
+
                   {/* Flow Connection Lines */}
-                  <path d="M 50 140 H 130" fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
+                  <path d="M 90 140 H 130" fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 4" markerEnd="url(#arrow)" />
                   {pipelineState === 'uploading' && (
-                    <line x1="50" y1="140" x2="130" y2="140" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                    <line x1="90" y1="140" x2="130" y2="140" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
                   )}
 
-                  <path d="M 210 140 H 310" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path d="M 210 140 H 300" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
                   {pipelineState === 's3-event' && (
-                    <line x1="210" y1="140" x2="310" y2="140" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                    <line x1="210" y1="140" x2="300" y2="140" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
                   )}
 
-                  <path d="M 390 110 Q 420 50, 520 50" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path d="M 480 110 Q 500 50, 520 50" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
                   {(pipelineState === 's3-upload-thumb' || pipelineState === 'lambda-processing') && (
-                    <path d="M 390 110 Q 420 50, 520 50" fill="none" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
+                    <path d="M 480 110 Q 500 50, 520 50" fill="none" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
                   )}
 
-                  <path d="M 390 170 Q 420 230, 520 230" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path d="M 480 170 Q 500 230, 520 230" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
                   {pipelineState === 'db-metadata' && (
-                    <path d="M 390 170 Q 420 230, 520 230" fill="none" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                    <path d="M 480 170 Q 500 230, 520 230" fill="none" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
                   )}
 
                   {/* Node 1: Client Upload Trigger */}
@@ -1788,19 +1792,28 @@ export default function ServerlessVisualizer() {
                     <text x="40" y="70" fill="#c2410c" fontSize="8" textAnchor="middle" fontWeight="semibold">vacation_raw.jpg</text>
                   </g>
 
-                  {/* Node 3: AWS Lambda function */}
-                  <g transform="translate(310, 90)">
-                    <rect width="80" height="100" rx="12" fill="#faf5ff" stroke="#9333ea" strokeWidth="2" />
-                    <text x="40" y="22" fill="#7e22ce" fontSize="10" fontWeight="bold" textAnchor="middle">⚡ LAMBDA</text>
-                    <text x="40" y="38" fill="#581c87" fontSize="8" textAnchor="middle">createThumbnail</text>
-                    <circle cx="40" cy="65" r="14" fill="#f3e8ff" stroke={
-                      pipelineState === 'lambda-init' ? '#d97706' :
-                      pipelineState === 'lambda-processing' ? '#059669' : '#cbd5e1'
-                    } strokeWidth="2" />
-                    <text x="40" y="68" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="bold">
-                      {pipelineState === 'lambda-init' ? 'INIT' :
-                       pipelineState === 'lambda-processing' ? 'RUN' : 'IDLE'}
-                    </text>
+                  {/* ==================== FIRECRACKER MICROVM CONTAINMENT ==================== */}
+                  <g transform="translate(230, 55)">
+                    <rect width="250" height="170" rx="8" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="125" y="16" fill="#7e22ce" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ FIRECRACKER MICROVM SANDBOX</text>
+                    
+                    {/* Node 3: AWS Lambda function */}
+                    <g transform="translate(75, 30)">
+                      <rect width="100" height="110" rx="6" fill="#ffffff" stroke="#9333ea" strokeWidth="2" />
+                      <text x="50" y="22" fill="#7e22ce" fontSize="10" fontWeight="bold" textAnchor="middle">⚡ LAMBDA</text>
+                      <text x="50" y="38" fill="#581c87" fontSize="8" textAnchor="middle">createThumbnail</text>
+                      <circle cx="50" cy="68" r="14" fill="#f3e8ff" stroke={
+                        pipelineState === 'lambda-init' ? '#d97706' :
+                        pipelineState === 'lambda-processing' ? '#059669' : '#cbd5e1'
+                      } strokeWidth="2" />
+                      <text x="50" y="71" fill="#581c87" fontSize="8" textAnchor="middle" fontWeight="bold">
+                        {pipelineState === 'lambda-init' ? 'INIT' :
+                         pipelineState === 'lambda-processing' ? 'RUN' : 'IDLE'}
+                      </text>
+                      <text x="50" y="98" fill={coldStartActive ? '#ea580c' : '#059669'} fontSize="7" fontWeight="black" textAnchor="middle">
+                        {coldStartActive ? '⚡ COLD START' : '🟢 WARM REUSE'}
+                      </text>
+                    </g>
                   </g>
 
                   {/* Node 4: Optimized/Target S3 Bucket */}
@@ -2111,87 +2124,132 @@ export default function ServerlessVisualizer() {
                       </marker>
                     </defs>
 
-                    <path d="M 60 80 H 260" fill="none" stroke={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={selectedEdgeHook === 'viewer-request' ? 'flow-line-active' : ''} />
-                    <path d="M 340 80 H 540" fill="none" stroke={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-request' ? '#db2777' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-request' ? 'flow-line-active-blue' : ''} />
-                    <path d="M 540 140 H 340" fill="none" stroke={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-response' ? '#db2777' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-response' ? 'flow-line-active-blue' : ''} />
-                    <path d="M 260 140 H 60" fill="none" stroke={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={selectedEdgeHook === 'viewer-response' ? 'flow-line-active' : ''} />
+                    {/* ==================== CLOUDFRONT CDN EDGE NETWORK BOUNDARY ==================== */}
+                    <rect x="90" y="24" width="375" height="185" rx="8" fill="none" stroke="#db2777" strokeWidth="1.2" strokeDasharray="4,3" />
+                    <text x="96" y="36" fill="#db2777" fontSize="7.5" fontWeight="extrabold">CloudFront CDN Edge Network Boundary</text>
 
-                    <g transform="translate(10, 70)">
-                      <circle cx="25" cy="40" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="2" />
-                      <text x="25" y="44" fill="#475569" fontSize="10" textAnchor="middle" fontWeight="bold">USER</text>
+                    {/* ==================== AWS REGION ORIGIN BOUNDARY ==================== */}
+                    <rect x="490" y="24" width="195" height="185" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="5,3" />
+                    <text x="496" y="36" fill="#2563eb" fontSize="7.5" fontWeight="extrabold">AWS Region Origin (us-east-1)</text>
+
+                    {/* Dynamic Conduits */}
+                    <path d="M 72 105 H 245" fill="none" stroke={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={selectedEdgeHook === 'viewer-request' ? 'flow-line-active' : ''} />
+                    <path d="M 345 105 H 525" fill="none" stroke={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-request' ? '#db2777' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-request' ? 'flow-line-active-blue' : ''} />
+                    <path d="M 525 145 H 345" fill="none" stroke={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-response' ? '#db2777' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={edgeTechView === 'lambda-edge' && selectedEdgeHook === 'origin-response' ? 'flow-line-active-blue' : ''} />
+                    <path d="M 245 145 H 72" fill="none" stroke={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#edge-arrow)" className={selectedEdgeHook === 'viewer-response' ? 'flow-line-active' : ''} />
+
+                    {/* Node 1: User Device Zone */}
+                    <g transform="translate(10, 50)">
+                      <rect width="64" height="135" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+                      <text x="32" y="16" fill="#64748b" fontSize="7" fontWeight="bold" textAnchor="middle">CLIENT ZONE</text>
+                      <g transform="translate(7, 28)">
+                        <circle cx="25" cy="30" r="18" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.5" />
+                        <text x="25" y="33" fill="#475569" fontSize="9" textAnchor="middle" fontWeight="bold">💻 USER</text>
+                        <text x="25" y="66" fill="#64748b" fontSize="7" textAnchor="middle">Web Browser</text>
+                        <text x="25" y="78" fill="#94a3b8" fontSize="6" textAnchor="middle">Client App</text>
+                      </g>
                     </g>
 
-                    <g transform="translate(260, 60)">
-                      <rect width="80" height="100" rx="10" fill="#fdf2f8" stroke="#db2777" strokeWidth="2" />
-                      <text x="40" y="24" fill="#db2777" fontSize="10" textAnchor="middle" fontWeight="bold">CF EDGE</text>
-                      <text x="40" y="42" fill="#701a75" fontSize="8" textAnchor="middle">Cache / POP</text>
-                      <rect x="10" y="55" width="60" height="30" rx="4" fill="#fce7f3" stroke="#ec4899" strokeWidth="1" />
-                      <text x="40" y="73" fill="#831843" fontSize="8" textAnchor="middle" fontWeight="semibold">Viewer Zone</text>
+                    {/* Node 2: CF Edge POP Container */}
+                    <g transform="translate(245, 50)">
+                      <rect width="100" height="140" rx="8" fill="#fdf2f8" stroke="#db2777" strokeWidth="2" />
+                      <text x="50" y="18" fill="#db2777" fontSize="9" textAnchor="middle" fontWeight="extrabold">🛜 CF EDGE POP</text>
+                      <text x="50" y="30" fill="#701a75" fontSize="7" textAnchor="middle">Edge Caching Layer</text>
+                      
+                      {/* V8 engine vs Lambda sandbox depending on selected tech view */}
+                      <g transform="translate(8, 42)">
+                        <rect width="84" height="52" rx="6" fill="#ffffff" stroke="#ec4899" strokeWidth="1.2" />
+                        <text x="42" y="15" fill="#be185d" fontSize="7.5" textAnchor="middle" fontWeight="bold">
+                          {edgeTechView === 'cf-functions' ? '⚡ V8 ENGINE' : '📦 MICROVM'}
+                        </text>
+                        <text x="42" y="28" fill="#86198f" fontSize="7" textAnchor="middle">
+                          {edgeTechView === 'cf-functions' ? 'JS Runtime' : 'Lambda@Edge'}
+                        </text>
+                        <text x="42" y="42" fill="#9d174d" fontSize="6.5" textAnchor="middle" fontWeight="semibold">
+                          {edgeTechView === 'cf-functions' ? 'Viewer Event' : 'Regional POP'}
+                        </text>
+                      </g>
+                      
+                      {/* Local Edge Cache badge */}
+                      <g transform="translate(8, 104)">
+                        <rect width="84" height="26" rx="4" fill="#fce7f3" stroke="#f472b6" strokeWidth="1" />
+                        <text x="42" y="16" fill="#831843" fontSize="8.5" textAnchor="middle" fontWeight="bold">💾 LOCAL CACHE</text>
+                      </g>
                     </g>
 
-                    <g transform="translate(540, 70)">
-                      <rect width="80" height="80" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
-                      <text x="40" y="32" fill="#1d4ed8" fontSize="10" textAnchor="middle" fontWeight="bold">ORIGIN</text>
-                      <text x="40" y="50" fill="#1e40af" fontSize="8" textAnchor="middle">S3 / ALB Server</text>
+                    {/* Node 3: Origin Server Container */}
+                    <g transform="translate(525, 50)">
+                      <rect width="135" height="135" rx="8" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                      <text x="67.5" y="20" fill="#1d4ed8" fontSize="10" textAnchor="middle" fontWeight="extrabold">🎛️ ORIGIN SERVER</text>
+                      <text x="67.5" y="32" fill="#1e40af" fontSize="8" textAnchor="middle">S3 / Application Load Balancer</text>
+                      
+                      <rect x="12" y="48" width="111" height="66" rx="4" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                      <text x="67.5" y="64" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">PRIMARY DATASTORE</text>
+                      <text x="67.5" y="78" fill="#2563eb" fontSize="7.5" textAnchor="middle">App Backend</text>
+                      <text x="67.5" y="94" fill="#1d4ed8" fontSize="8" textAnchor="middle" fontWeight="semibold">Region (us-east-1)</text>
                     </g>
 
                     {edgeTechView === 'cf-functions' && (
                       <>
                         {/* Hook 1: Viewer Request */}
-                        <circle cx="160" cy="80" r="6" fill={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="2" />
-                        <line x1="160" y1="80" x2="160" y2="58" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <g transform="translate(115, 36)" onClick={() => setSelectedEdgeHook('viewer-request')} className="cursor-pointer select-none">
+                        <circle cx="160" cy="105" r="7" fill={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="2" />
+                        <line x1="160" y1="105" x2="160" y2="70" stroke="#c084fc" strokeWidth="1.2" strokeDasharray="3 3" />
+                        <g transform="translate(115, 48)" onClick={() => setSelectedEdgeHook('viewer-request')} className="cursor-pointer select-none">
                           <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-request' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
                           <text x="45" y="14" fill={selectedEdgeHook === 'viewer-request' ? '#ffffff' : '#6b21a8'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Req</text>
                         </g>
 
                         {/* Hook 2: Viewer Response */}
-                        <circle cx="160" cy="140" r="6" fill={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="2" />
-                        <line x1="160" y1="140" x2="160" y2="162" stroke="#c084fc" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <g transform="translate(115, 162)" onClick={() => setSelectedEdgeHook('viewer-response')} className="cursor-pointer select-none">
+                        <circle cx="160" cy="145" r="7" fill={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="2" />
+                        <line x1="160" y1="145" x2="160" y2="180" stroke="#c084fc" strokeWidth="1.2" strokeDasharray="3 3" />
+                        <g transform="translate(115, 180)" onClick={() => setSelectedEdgeHook('viewer-response')} className="cursor-pointer select-none">
                           <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-response' ? '#7e22ce' : '#ffffff'} stroke="#c084fc" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
                           <text x="45" y="14" fill={selectedEdgeHook === 'viewer-response' ? '#ffffff' : '#6b21a8'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Res</text>
                         </g>
 
                         {/* Disabled Hooks */}
-                        <circle cx="440" cy="80" r="5" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
-                        <text x="440" y="49" fill="#dc2626" fontSize="7.5" textAnchor="middle" fontWeight="bold">Origin Req (Blocked)</text>
+                        <circle cx="420" cy="105" r="6" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <text x="420" y="68" fill="#94a3b8" fontSize="7.5" textAnchor="middle" fontWeight="bold">Origin Req</text>
+                        <text x="420" y="77" fill="#ef4444" fontSize="6.5" textAnchor="middle" fontWeight="bold">(Blocked)</text>
+                        <line x1="405" y1="65" x2="435" y2="79" stroke="#ef4444" strokeWidth="1.2" />
 
-                        <circle cx="440" cy="140" r="5" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
-                        <text x="440" y="169" fill="#dc2626" fontSize="7.5" textAnchor="middle" fontWeight="bold">Origin Res (Blocked)</text>
+                        <circle cx="420" cy="145" r="6" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <text x="420" y="180" fill="#94a3b8" fontSize="7.5" textAnchor="middle" fontWeight="bold">Origin Res</text>
+                        <text x="420" y="189" fill="#ef4444" fontSize="6.5" textAnchor="middle" fontWeight="bold">(Blocked)</text>
+                        <line x1="405" y1="177" x2="435" y2="191" stroke="#ef4444" strokeWidth="1.2" />
                       </>
                     )}
 
                     {edgeTechView === 'lambda-edge' && (
                       <>
                         {/* Hook 1: Viewer Request */}
-                        <circle cx="160" cy="80" r="6" fill={selectedEdgeHook === 'viewer-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
-                        <line x1="160" y1="80" x2="160" y2="58" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <g transform="translate(115, 36)" onClick={() => setSelectedEdgeHook('viewer-request')} className="cursor-pointer select-none">
+                        <circle cx="160" cy="105" r="7" fill={selectedEdgeHook === 'viewer-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="160" y1="105" x2="160" y2="70" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3 3" />
+                        <g transform="translate(115, 48)" onClick={() => setSelectedEdgeHook('viewer-request')} className="cursor-pointer select-none">
                           <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
                           <text x="45" y="14" fill={selectedEdgeHook === 'viewer-request' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Req</text>
                         </g>
 
                         {/* Hook 2: Origin Request */}
-                        <circle cx="440" cy="80" r="6" fill={selectedEdgeHook === 'origin-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
-                        <line x1="440" y1="80" x2="440" y2="58" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <g transform="translate(395, 36)" onClick={() => setSelectedEdgeHook('origin-request')} className="cursor-pointer select-none">
+                        <circle cx="425" cy="105" r="7" fill={selectedEdgeHook === 'origin-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="425" y1="105" x2="425" y2="70" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3 3" />
+                        <g transform="translate(380, 48)" onClick={() => setSelectedEdgeHook('origin-request')} className="cursor-pointer select-none">
                           <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'origin-request' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
                           <text x="45" y="14" fill={selectedEdgeHook === 'origin-request' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Origin Req</text>
                         </g>
 
                         {/* Hook 3: Origin Response */}
-                        <circle cx="440" cy="140" r="6" fill={selectedEdgeHook === 'origin-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
-                        <line x1="440" y1="140" x2="440" y2="162" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <g transform="translate(395, 162)" onClick={() => setSelectedEdgeHook('origin-response')} className="cursor-pointer select-none">
+                        <circle cx="425" cy="145" r="7" fill={selectedEdgeHook === 'origin-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="425" y1="145" x2="425" y2="180" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3 3" />
+                        <g transform="translate(380, 180)" onClick={() => setSelectedEdgeHook('origin-response')} className="cursor-pointer select-none">
                           <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'origin-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
                           <text x="45" y="14" fill={selectedEdgeHook === 'origin-response' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Origin Res</text>
                         </g>
 
                         {/* Hook 4: Viewer Response */}
-                        <circle cx="160" cy="140" r="6" fill={selectedEdgeHook === 'viewer-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
-                        <line x1="160" y1="140" x2="160" y2="162" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <g transform="translate(115, 162)" onClick={() => setSelectedEdgeHook('viewer-response')} className="cursor-pointer select-none">
+                        <circle cx="160" cy="145" r="7" fill={selectedEdgeHook === 'viewer-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="2" />
+                        <line x1="160" y1="145" x2="160" y2="180" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3 3" />
+                        <g transform="translate(115, 180)" onClick={() => setSelectedEdgeHook('viewer-response')} className="cursor-pointer select-none">
                           <rect width="90" height="22" rx="11" fill={selectedEdgeHook === 'viewer-response' ? '#db2777' : '#ffffff'} stroke="#ec4899" strokeWidth="1.5" className="transition-all duration-200 shadow-sm" />
                           <text x="45" y="14" fill={selectedEdgeHook === 'viewer-response' ? '#ffffff' : '#9d174d'} fontSize="8.5" textAnchor="middle" fontWeight="bold">Viewer Res</text>
                         </g>
@@ -2947,61 +3005,95 @@ export default function ServerlessVisualizer() {
                     </marker>
                   </defs>
 
-                  {/* Flow Paths */}
-                  <path d="M 50 110 H 130" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#cog-arrow)" />
-                  {cognitoFlowStep >= 1 && (
-                    <line x1="50" y1="110" x2="130" y2="110" stroke="#7e22ce" strokeWidth="3.5" className="active-flow-line" />
-                  )}
+                  {/* ==================== AMAZON COGNITO GOVERNANCE BOUNDARY ==================== */}
+                  <rect x="110" y="24" width="280" height="185" rx="8" fill="none" stroke="#9333ea" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="118" y="36" fill="#9333ea" fontSize="7.5" fontWeight="extrabold">Amazon Cognito Governance Boundary</text>
 
-                  <path d="M 210 110 H 290" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#cog-arrow)" />
-                  {cognitoFlowStep >= 2 && (
-                    <line x1="210" y1="110" x2="290" y2="110" stroke="#2563eb" strokeWidth="3.5" className="active-flow-line-blue" strokeDasharray="3 3" />
-                  )}
+                  {/* ==================== SECURE PRIVATE DATASTORE BOUNDARY ==================== */}
+                  <rect x="410" y="24" width="280" height="185" rx="8" fill="none" stroke="#16a34a" strokeWidth="1.2" strokeDasharray="5,3" />
+                  <text x="418" y="36" fill="#16a34a" fontSize="7.5" fontWeight="extrabold">Secure Private Datastore Boundary</text>
 
-                  <path d="M 370 110 H 450" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#cog-arrow)" />
-                  {cognitoFlowStep >= 3 && (
-                    <line x1="370" y1="110" x2="450" y2="110" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
-                  )}
+                  {/* Dynamic Flow Paths */}
+                  {/* Path 1: Client -> CUP (Viewer Auth) */}
+                  <path d="M 90 90 H 130" fill="none" stroke={cognitoFlowStep >= 1 ? '#9333ea' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#cog-arrow)" className={cognitoFlowStep >= 1 ? 'active-flow-line' : ''} />
+                  
+                  {/* Path 2: CUP -> Client (JWT return) */}
+                  <path d="M 130 110 H 90" fill="none" stroke={cognitoFlowStep >= 1 ? '#059669' : '#cbd5e1'} strokeWidth="1.5" markerEnd="url(#cog-arrow)" />
+
+                  {/* Path 3: Client -> CIP (Federated exchange) */}
+                  <path d="M 90 130 H 280" fill="none" stroke={cognitoFlowStep >= 2 ? '#2563eb' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#cog-arrow)" className={cognitoFlowStep >= 2 ? 'active-flow-line-blue' : ''} />
+
+                  {/* Path 4: CIP -> STS (Credentials fetch request) */}
+                  <path d="M 370 100 H 430" fill="none" stroke={cognitoFlowStep >= 2 ? '#d97706' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#cog-arrow)" />
+
+                  {/* Path 5: CIP -> Client (Temp STS credentials returned) */}
+                  <path d="M 280 150 H 90" fill="none" stroke={cognitoFlowStep >= 2 ? '#059669' : '#cbd5e1'} strokeWidth="1.5" markerEnd="url(#cog-arrow)" />
+
+                  {/* Path 6: Client -> S3 (Curved SigV4 signed access) */}
+                  <path d="M 50 185 Q 330 225, 620 155" fill="none" stroke={cognitoFlowStep >= 3 ? '#059669' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#cog-arrow)" className={cognitoFlowStep >= 3 ? 'active-flow-line-green' : ''} />
 
                   {/* Node 1: Mobile Client */}
-                  <g transform="translate(10, 80)">
-                    <rect width="60" height="60" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                    <text x="30" y="28" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                    <text x="30" y="44" fill="#1e293b" fontSize="7" textAnchor="middle">Mobile Web</text>
+                  <g transform="translate(10, 50)">
+                    <rect width="80" height="135" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+                    <text x="40" y="16" fill="#64748b" fontSize="7" fontWeight="bold" textAnchor="middle">CLIENT CONTEXT</text>
+                    <g transform="translate(10, 28)">
+                      <circle cx="30" cy="30" r="18" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.5" />
+                      <text x="30" y="33" fill="#475569" fontSize="9" textAnchor="middle" fontWeight="bold">💻 USER</text>
+                      <text x="30" y="66" fill="#64748b" fontSize="7" textAnchor="middle">Mobile Web</text>
+                      <text x="30" y="78" fill="#94a3b8" fontSize="6.5" textAnchor="middle">Client App</text>
+                    </g>
                   </g>
 
                   {/* Node 2: Cognito User Pool */}
-                  <g transform="translate(130, 70)">
-                    <rect width="80" height="80" rx="10" fill={cognitoFlowStep === 1 ? 'rgba(168, 85, 247, 0.08)' : '#faf5ff'} stroke="#9333ea" strokeWidth="2.5" />
-                    <text x="40" y="24" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">COGNITO POOL</text>
-                    <text x="40" y="40" fill="#581c87" fontSize="7" textAnchor="middle">User Pool (CUP)</text>
-                    <rect x="8" y="52" width="64" height="18" rx="3" fill="#f3e8ff" stroke="#a855f7" strokeWidth="1" />
-                    <text x="40" y="64" fill="#7e22ce" fontSize="7" textAnchor="middle" fontWeight="bold">JWT Issued</text>
+                  <g transform="translate(130, 65)">
+                    <rect width="90" height="90" rx="10" fill={cognitoFlowStep === 1 ? 'rgba(168, 85, 247, 0.08)' : '#faf5ff'} stroke="#9333ea" strokeWidth="2.5" />
+                    <text x="45" y="22" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">USER POOL</text>
+                    <text x="45" y="36" fill="#581c87" fontSize="7" textAnchor="middle">User Directory</text>
+                    
+                    <rect x="8" y="48" width="74" height="32" rx="3" fill="#f3e8ff" stroke="#a855f7" strokeWidth="1" />
+                    <text x="45" y="62" fill="#7e22ce" fontSize="8" textAnchor="middle" fontWeight="bold">JWT ISSUED</text>
+                    <text x="45" y="74" fill="#a855f7" fontSize="6" textAnchor="middle">ID &amp; Access Token</text>
                   </g>
 
                   {/* Node 3: Cognito Identity Pool */}
-                  <g transform="translate(290, 70)">
-                    <rect width="80" height="80" rx="10" fill={cognitoFlowStep === 2 ? 'rgba(59, 130, 246, 0.08)' : '#eff6ff'} stroke="#2563eb" strokeWidth="2.5" />
-                    <text x="40" y="24" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">IDENTITY POOL</text>
-                    <text x="40" y="40" fill="#1e40af" fontSize="7" textAnchor="middle">Identity Pool (CIP)</text>
-                    <rect x="8" y="52" width="64" height="18" rx="3" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
-                    <text x="40" y="64" fill="#1e40af" fontSize="7" textAnchor="middle" fontWeight="bold">IAM Role Maps</text>
+                  <g transform="translate(280, 65)">
+                    <rect width="90" height="90" rx="10" fill={cognitoFlowStep === 2 ? 'rgba(59, 130, 246, 0.08)' : '#eff6ff'} stroke="#2563eb" strokeWidth="2.5" />
+                    <text x="45" y="22" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">IDENTITY POOL</text>
+                    <text x="45" y="36" fill="#1e40af" fontSize="7" textAnchor="middle">Federated Auth</text>
+                    
+                    <rect x="8" y="48" width="74" height="32" rx="3" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                    <text x="45" y="62" fill="#1e40af" fontSize="8" textAnchor="middle" fontWeight="bold">IAM MAPS</text>
+                    <text x="45" y="74" fill="#3b82f6" fontSize="6" textAnchor="middle">Role-Assumed Keys</text>
                   </g>
 
-                  {/* Node 4: Private Target Secure AWS S3 Object */}
-                  <g transform="translate(450, 70)">
-                    <rect width="130" height="80" rx="10" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2.5" />
-                    <text x="65" y="28" fill="#15803d" fontSize="10" fontWeight="bold" textAnchor="middle">🪣 SECURE AMAZON S3</text>
-                    <text x="65" y="46" fill="#166534" fontSize="8" textAnchor="middle">Direct Upload endpoint</text>
+                  {/* Node 4: AWS STS Gateway */}
+                  <g transform="translate(430, 65)">
+                    <rect width="90" height="90" rx="10" fill="#fffdfa" stroke="#d97706" strokeWidth="2" />
+                    <text x="45" y="22" fill="#b45309" fontSize="9.5" fontWeight="bold" textAnchor="middle">🔑 AWS STS</text>
+                    <text x="45" y="36" fill="#78350f" fontSize="7" textAnchor="middle">Security Token Svc</text>
+                    
+                    <rect x="8" y="48" width="74" height="32" rx="3" fill="#fef3c7" stroke="#fbbf24" strokeWidth="1" />
+                    <text x="45" y="62" fill="#b45309" fontSize="8.5" textAnchor="middle" fontWeight="bold">TEMP KEYS</text>
+                    <text x="45" y="74" fill="#fbbf24" fontSize="6" textAnchor="middle">Session Credentials</text>
+                  </g>
+
+                  {/* Node 5: Private S3 Bucket */}
+                  <g transform="translate(570, 65)">
+                    <rect width="100" height="90" rx="10" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2.5" />
+                    <text x="50" y="22" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 SECURE S3</text>
+                    <text x="50" y="36" fill="#166534" fontSize="7" textAnchor="middle">Private Uploads</text>
+                    
                     {cognitoFlowStep === 3 ? (
-                      <g transform="translate(10, 56)">
-                        <rect width="110" height="16" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1" />
-                        <text x="55" y="11" fill="#15803d" fontSize="7" textAnchor="middle" fontWeight="bold">🔓 Access Granted (STS)</text>
+                      <g transform="translate(8, 48)">
+                        <rect width="84" height="32" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1" />
+                        <text x="42" y="62" fill="#15803d" fontSize="8" textAnchor="middle" fontWeight="bold">🔓 ACCESS</text>
+                        <text x="42" y="74" fill="#166534" fontSize="6" textAnchor="middle">Signed SigV4 ok</text>
                       </g>
                     ) : (
-                      <g transform="translate(10, 56)">
-                        <rect width="110" height="16" rx="3" fill="#fde8eb" stroke="#f43f5e" strokeWidth="1" />
-                        <text x="55" y="11" fill="#dc2626" fontSize="7" textAnchor="middle" fontWeight="bold">🔒 Restricted Access</text>
+                      <g transform="translate(8, 48)">
+                        <rect width="84" height="32" rx="3" fill="#fde8eb" stroke="#f43f5e" strokeWidth="1" />
+                        <text x="42" y="62" fill="#dc2626" fontSize="8" textAnchor="middle" fontWeight="bold">🔒 BLOCKED</text>
+                        <text x="42" y="74" fill="#f43f5e" fontSize="6" textAnchor="middle">Unauthenticated</text>
                       </g>
                     )}
                   </g>
@@ -3204,113 +3296,132 @@ export default function ServerlessVisualizer() {
                 
                 {/* 1. Blog Web SVG Replica */}
                 {activeArchTab === 'blog-web' && (
-                  <svg className="w-full min-w-[760px] h-[300px]" viewBox="0 0 760 300">
+                  <svg className="w-full min-w-[760px] h-[300px] sv-svg-bg" viewBox="0 0 760 300">
                     <defs>
                       <marker id="arch-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                         <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
                       </marker>
                     </defs>
 
+                    {/* AWS Region Boundary */}
+                    <rect x="120" y="15" width="625" height="270" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="5,3" />
+                    <text x="130" y="28" fill="#2563eb" fontSize="7.5" fontWeight="bold">AWS Cloud Boundary (us-east-1)</text>
+
                     {/* PATHS */}
                     {/* Path 1: Static CDN Delivery */}
-                    <path d="M 50 140 L 140 50 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 340 50 H 460" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 70 140 L 140 50 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 380 50 H 470" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
                     {archFlowState === 'static-fetch' && (
                       <>
-                        <path d="M 50 140 L 140 50 H 260" fill="none" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
-                        <line x1="340" y1="50" x2="460" y2="50" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 70 140 L 140 50 H 260" fill="none" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                        <line x1="380" y1="50" x2="470" y2="50" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
                       </>
                     )}
 
                     {/* Path 2: Dynamic CRUD */}
-                    <path d="M 50 150 L 140 140 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 340 140 H 420" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 460 140 H 520" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 580 140 H 640" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 70 150 L 140 140 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 380 140 H 415" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 475 140 H 515" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 575 140 H 625" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
                     {/* Streams to background Lambda to SES */}
-                    <path d="M 600 160 V 210 H 500" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 440 230 H 380" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 680 170 V 220 H 570" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 510 220 H 380" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
                     {archFlowState === 'dynamic-crud' && (
                       <>
-                        <path d="M 50 150 L 140 140 H 260" fill="none" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
-                        <line x1="340" y1="140" x2="420" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
-                        <line x1="460" y1="140" x2="520" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
-                        <line x1="580" y1="140" x2="640" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
-                        <path d="M 600 160 V 210 H 500" fill="none" stroke="#2563eb" strokeWidth="2.5" className="active-flow-line-blue" />
-                        <line x1="440" y1="230" x2="380" y2="230" stroke="#2563eb" strokeWidth="2.5" className="active-flow-line-blue" />
+                        <path d="M 70 150 L 140 140 H 260" fill="none" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="380" y1="140" x2="415" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="475" y1="140" x2="515" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="575" y1="140" x2="625" y2="140" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <path d="M 680 170 V 220 H 570" fill="none" stroke="#2563eb" strokeWidth="2.5" className="active-flow-line-blue" />
+                        <line x1="510" y1="220" x2="380" y2="220" stroke="#2563eb" strokeWidth="2.5" className="active-flow-line-blue" />
                       </>
                     )}
 
                     {/* Path 3: Media Upload */}
-                    <path d="M 50 160 L 140 230 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 340 230 H 420" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 70 160 L 140 230 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 380 230 H 415" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
                     {/* Resizer Lambda splits optimized saved and fan-out */}
-                    <path d="M 460 215 Q 490 170, 620 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 460 245 Q 490 270, 620 270" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 475 215 Q 500 175, 625 175" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 475 245 Q 500 265, 625 265" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
                     {archFlowState === 'media-upload' && (
                       <>
-                        <path d="M 50 160 L 140 230 H 260" fill="none" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
-                        <line x1="340" y1="230" x2="420" y2="230" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
-                        <path d="M 460 215 Q 490 170, 620 170" fill="none" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
-                        <path d="M 460 245 Q 490 270, 620 270" fill="none" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
+                        <path d="M 70 160 L 140 230 H 260" fill="none" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
+                        <line x1="380" y1="230" x2="415" y2="230" stroke="#059669" strokeWidth="3" className="active-flow-line-green" />
+                        <path d="M 475 215 Q 500 175, 625 175" fill="none" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
+                        <path d="M 475 245 Q 500 265, 625 265" fill="none" stroke="#059669" strokeWidth="3.5" className="active-flow-line-green" />
                       </>
                     )}
 
-                    {/* NODES REPRESENTATION */}
-                    {/* Node 1: Client */}
-                    <g transform="translate(10, 120)">
-                      <rect width="40" height="50" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                      <text x="20" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                      <text x="20" y="38" fill="#1e293b" fontSize="6" textAnchor="middle">Web App</text>
+                    {/* CLIENT CONTEXT */}
+                    <g transform="translate(8, 100)">
+                      <rect width="64" height="95" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+                      <text x="32" y="14" fill="#64748b" fontSize="6.5" fontWeight="bold" textAnchor="middle">CLIENT ZONE</text>
+                      <g transform="translate(7, 24)">
+                        <circle cx="25" cy="20" r="14" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.2" />
+                        <text x="25" y="23" fill="#475569" fontSize="8" textAnchor="middle" fontWeight="bold">💻 USER</text>
+                        <text x="25" y="46" fill="#64748b" fontSize="6.5" textAnchor="middle">Web App</text>
+                        <text x="25" y="55" fill="#94a3b8" fontSize="5.5" textAnchor="middle">Client JS</text>
+                      </g>
                     </g>
 
                     {/* Static content distribution */}
                     <g transform="translate(140, 20)">
                       <rect width="120" height="55" rx="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
                       <text x="60" y="20" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">☁️ CLOUDFRONT CDN</text>
-                      <text x="60" y="34" fill="#701a75" fontSize="7" textAnchor="middle">Static distribution</text>
-                      <text x="60" y="44" fill="#701a75" fontSize="6.5" textAnchor="middle">Terminates TLS Handshakes</text>
+                      <text x="60" y="34" fill="#701a75" fontSize="7" textAnchor="middle">Static Web Distribution</text>
+                      <text x="60" y="44" fill="#831843" fontSize="6.5" textAnchor="middle" fontWeight="semibold">Terminates SSL Handshake</text>
                     </g>
-                    <g transform="translate(460, 20)">
-                      <rect width="110" height="55" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
-                      <text x="55" y="18" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 STATIC S3</text>
-                      <text x="55" y="32" fill="#7c2d12" fontSize="7" textAnchor="middle">static-bucket</text>
-                      <text x="55" y="44" fill="#0d9488" fontSize="7.5" textAnchor="middle" fontWeight="bold">🔑 OAC Protected</text>
+                    <g transform="translate(470, 20)">
+                      <rect width="120" height="55" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
+                      <text x="60" y="18" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 STATIC S3</text>
+                      <text x="60" y="32" fill="#7c2d12" fontSize="7" textAnchor="middle">static-assets-bucket</text>
+                      <text x="60" y="44" fill="#0d9488" fontSize="7.5" textAnchor="middle" fontWeight="bold">🔑 OAC Secured Gate</text>
                     </g>
 
                     {/* CRUD dynamic API pathway */}
                     <g transform="translate(140, 110)">
                       <rect width="120" height="55" rx="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
                       <text x="60" y="22" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">📡 API GATEWAY</text>
-                      <text x="60" y="38" fill="#701a75" fontSize="7.5" textAnchor="middle">REST HTTP API</text>
+                      <text x="60" y="38" fill="#701a75" fontSize="7.5" textAnchor="middle">RESTful CRUD API</text>
                     </g>
-                    <g transform="translate(420, 115)">
-                      <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
-                      <text x="20" y="23" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ λ</text>
-                      <text x="20" y="48" fill="#581c87" fontSize="7" textAnchor="middle">CRUD</text>
-                    </g>
-                    <g transform="translate(520, 120)">
-                      <rect width="60" height="35" rx="4" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" />
-                      <text x="30" y="16" fill="#0d9488" fontSize="8" fontWeight="bold" textAnchor="middle">🔌 DAX</text>
-                      <text x="30" y="26" fill="#115e59" fontSize="6.5" textAnchor="middle">Cache Layer</text>
-                    </g>
-                    <g transform="translate(640, 110)">
-                      <rect width="110" height="55" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
-                      <text x="55" y="20" fill="#1d4ed8" fontSize="8" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
-                      <text x="55" y="34" fill="#1e40af" fontSize="7.5" textAnchor="middle">Global SSD Tables</text>
-                      <text x="55" y="44" fill="#7e22ce" fontSize="7" textAnchor="middle">Streams Active</text>
+                    
+                    {/* CRUD Lambda inside Firecracker microVM sandbox */}
+                    <g transform="translate(415, 95)">
+                      <rect width="60" height="70" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" strokeDasharray="3,2" />
+                      <text x="30" y="11" fill="#7e22ce" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚡ MICROVM</text>
+                      <g transform="translate(10, 15)">
+                        <circle cx="20" cy="20" r="16" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                        <text x="20" y="23" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">λ</text>
+                        <text x="20" y="46" fill="#581c87" fontSize="7" textAnchor="middle" fontWeight="bold">CRUD</text>
+                      </g>
                     </g>
 
-                    {/* Stream triggers Background Lambda to SES */}
-                    <g transform="translate(440, 205)">
-                      <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
-                      <text x="20" y="23" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ λ</text>
-                      <text x="20" y="48" fill="#581c87" fontSize="6.5" textAnchor="middle">Notification</text>
+                    <g transform="translate(515, 120)">
+                      <rect width="60" height="35" rx="4" fill="#f0fdf4" stroke="#0d9488" strokeWidth="1.5" />
+                      <text x="30" y="16" fill="#0d9488" fontSize="8" fontWeight="bold" textAnchor="middle">🔌 DAX</text>
+                      <text x="30" y="26" fill="#115e59" fontSize="6.5" textAnchor="middle">Cache Pool</text>
                     </g>
-                    <g transform="translate(300, 210)">
-                      <rect width="80" height="35" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                      <text x="40" y="16" fill="#dc2626" fontSize="8" fontWeight="bold" textAnchor="middle">📨 SES EMAIL</text>
-                      <text x="40" y="26" fill="#991b1b" fontSize="6.5" textAnchor="middle">Send Notification</text>
+                    <g transform="translate(625, 110)">
+                      <rect width="115" height="55" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                      <text x="57.5" y="20" fill="#1d4ed8" fontSize="8" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                      <text x="57.5" y="34" fill="#1e40af" fontSize="7.5" textAnchor="middle">Global SSD Tables</text>
+                      <text x="57.5" y="44" fill="#7e22ce" fontSize="7" textAnchor="middle" fontWeight="bold">Streams Enabled</text>
+                    </g>
+
+                    {/* Notification Lambda inside Firecracker microVM sandbox */}
+                    <g transform="translate(510, 185)">
+                      <rect width="60" height="70" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" strokeDasharray="3,2" />
+                      <text x="30" y="11" fill="#7e22ce" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚡ MICROVM</text>
+                      <g transform="translate(10, 15)">
+                        <circle cx="20" cy="20" r="16" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                        <text x="20" y="23" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">λ</text>
+                        <text x="20" y="46" fill="#581c87" fontSize="7" textAnchor="middle" fontWeight="bold">Notify</text>
+                      </g>
+                    </g>
+                    <g transform="translate(260, 205)">
+                      <rect width="95" height="42" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
+                      <text x="47.5" y="18" fill="#dc2626" fontSize="8" fontWeight="bold" textAnchor="middle">📨 SES EMAIL</text>
+                      <text x="47.5" y="32" fill="#991b1b" fontSize="7" textAnchor="middle">Send Notification</text>
                     </g>
 
                     {/* Media Upload pathway */}
@@ -3318,162 +3429,241 @@ export default function ServerlessVisualizer() {
                       <rect width="120" height="55" rx="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1.5" />
                       <text x="60" y="20" fill="#db2777" fontSize="8" fontWeight="bold" textAnchor="middle">☁️ CLOUDFRONT CDN</text>
                       <text x="60" y="34" fill="#0d9488" fontSize="7" textAnchor="middle" fontWeight="bold">🚀 Transfer Accel</text>
-                      <text x="60" y="44" fill="#701a75" fontSize="6.5" textAnchor="middle">Terminates SSL early</text>
+                      <text x="60" y="44" fill="#831843" fontSize="6.5" textAnchor="middle">Edge Optimization</text>
                     </g>
-                    <g transform="translate(420, 205)">
-                      <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
-                      <text x="20" y="23" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ λ</text>
-                      <text x="20" y="48" fill="#581c87" fontSize="6.5" textAnchor="middle">Resizer</text>
+                    
+                    {/* Resizer Lambda inside Firecracker microVM sandbox */}
+                    <g transform="translate(415, 185)">
+                      <rect width="60" height="70" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" strokeDasharray="3,2" />
+                      <text x="30" y="11" fill="#7e22ce" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚡ MICROVM</text>
+                      <g transform="translate(10, 15)">
+                        <circle cx="20" cy="20" r="16" fill="#faf5ff" stroke="#9333ea" strokeWidth="1.5" />
+                        <text x="20" y="23" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">λ</text>
+                        <text x="20" y="46" fill="#581c87" fontSize="7.5" textAnchor="middle" fontWeight="bold">Resizer</text>
+                      </g>
                     </g>
-                    <g transform="translate(620, 160)">
-                      <rect width="130" height="40" rx="5" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.2" />
-                      <text x="65" y="16" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 TARGET S3 BUCKET</text>
-                      <text x="65" y="28" fill="#7c2d12" fontSize="7" textAnchor="middle">optimized-bucket</text>
+
+                    <g transform="translate(625, 175)">
+                      <rect width="115" height="40" rx="5" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.2" />
+                      <text x="57.5" y="16" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 TARGET S3 BUCKET</text>
+                      <text x="57.5" y="28" fill="#7c2d12" fontSize="7" textAnchor="middle">optimized-bucket</text>
                     </g>
-                    <g transform="translate(620, 250)">
-                      <rect width="130" height="40" rx="5" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" />
-                      <text x="65" y="16" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">✉️ SQS QUEUE &amp; SNS</text>
-                      <text x="65" y="28" fill="#78350f" fontSize="7" textAnchor="middle">Decoupled events fanout</text>
+                    <g transform="translate(625, 245)">
+                      <rect width="115" height="40" rx="5" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" />
+                      <text x="57.5" y="16" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">✉️ SQS / SNS</text>
+                      <text x="57.5" y="28" fill="#78350f" fontSize="7" textAnchor="middle">Decoupled Fanout</text>
                     </g>
                   </svg>
                 )}
 
                 {/* 2. IoT Data Streaming SVG */}
                 {activeArchTab === 'iot-pipeline' && (
-                  <svg className="w-full min-w-[760px] h-[300px]" viewBox="0 0 760 300">
-                    <path d="M 60 145 H 140" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 230 145 H 320" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 400 130 Q 430 80, 520 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 400 160 Q 430 210, 520 210" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
-                    <path d="M 610 210 H 660" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                  <svg className="w-full min-w-[760px] h-[300px] sv-svg-bg" viewBox="0 0 760 300">
+                    <defs>
+                      <marker id="arch-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                      </marker>
+                    </defs>
+
+                    {/* AWS Region Boundary */}
+                    <rect x="120" y="15" width="625" height="270" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="5,3" />
+                    <text x="130" y="28" fill="#2563eb" fontSize="7.5" fontWeight="bold">AWS Region (us-east-1)</text>
+
+                    {/* PATHS */}
+                    <path d="M 70 145 H 140" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 240 145 H 315" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 405 130 Q 435 80, 520 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 405 160 Q 435 210, 520 210" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
+                    <path d="M 620 210 H 655" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#arch-arrow)" />
                     
                     {archFlowState === 'iot-stream' && (
                       <>
-                        <line x1="60" y1="145" x2="140" y2="145" stroke="#d97706" strokeWidth="3" className="active-flow-line" />
-                        <line x1="230" y1="145" x2="320" y2="145" stroke="#d97706" strokeWidth="3" className="active-flow-line" />
-                        <path d="M 400 130 Q 430 80, 520 80" fill="none" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
-                        <path d="M 400 160 Q 430 210, 520 210" fill="none" stroke="#2563eb" strokeWidth="3.5" className="active-flow-line-blue" />
-                        <line x1="610" y1="210" x2="660" y2="210" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
+                        <line x1="70" y1="145" x2="140" y2="145" stroke="#d97706" strokeWidth="3" className="active-flow-line" />
+                        <line x1="240" y1="145" x2="315" y2="145" stroke="#d97706" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 405 130 Q 435 80, 520 80" fill="none" stroke="#7e22ce" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 405 160 Q 435 210, 520 210" fill="none" stroke="#2563eb" strokeWidth="3.5" className="active-flow-line-blue" />
+                        <line x1="620" y1="210" x2="655" y2="210" stroke="#2563eb" strokeWidth="3" className="active-flow-line-blue" />
                       </>
                     )}
 
-                    <g transform="translate(10, 110)">
-                      <rect width="50" height="70" rx="5" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                      <text x="25" y="30" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">📟 IoT</text>
-                      <text x="25" y="44" fill="#1e293b" fontSize="6.5" textAnchor="middle">Devices</text>
-                      <text x="25" y="54" fill="#64748b" fontSize="6.5" textAnchor="middle">MQTT</text>
-                    </g>
-                    <g transform="translate(140, 110)">
-                      <rect width="90" height="70" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="2" />
-                      <text x="45" y="30" fill="#b45309" fontSize="9" fontWeight="bold" textAnchor="middle">AWS IoT CORE</text>
-                      <text x="45" y="48" fill="#78350f" fontSize="7" textAnchor="middle">Rules engine</text>
-                    </g>
-                    <g transform="translate(320, 110)">
-                      <rect width="80" height="70" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="2" />
-                      <text x="40" y="26" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">🔥 KINESIS</text>
-                      <text x="40" y="40" fill="#581c87" fontSize="7.5" textAnchor="middle">Data Stream</text>
-                      <text x="40" y="52" fill="#581c87" fontSize="7" textAnchor="middle">Sharded Buffer</text>
-                    </g>
-                    
-                    <g transform="translate(520, 50)">
-                      <rect width="110" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
-                      <text x="55" y="24" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
-                      <text x="55" y="38" fill="#1e40af" fontSize="7" textAnchor="middle">State Telemetry</text>
-                      <text x="55" y="48" fill="#059669" fontSize="7" textAnchor="middle" fontWeight="bold">Latency: 1-5ms</text>
+                    {/* Node 1: IoT Devices Context */}
+                    <g transform="translate(8, 100)">
+                      <rect width="64" height="95" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+                      <text x="32" y="14" fill="#64748b" fontSize="6.5" fontWeight="bold" textAnchor="middle">FIELD ZONE</text>
+                      <g transform="translate(7, 22)">
+                        <rect width="50" height="60" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                        <text x="25" y="24" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">📟 IoT DEV</text>
+                        <text x="25" y="38" fill="#1e293b" fontSize="6.5" textAnchor="middle">MQTT Agent</text>
+                        <text x="25" y="48" fill="#d97706" fontSize="6" textAnchor="middle" fontWeight="semibold">Port: 8883 SSL</text>
+                      </g>
                     </g>
 
-                    <g transform="translate(520, 180)">
-                      <rect width="90" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
-                      <text x="45" y="24" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">🔥 FIREHOSE</text>
-                      <text x="45" y="38" fill="#1e40af" fontSize="7" textAnchor="middle">Buffer/Deliver</text>
+                    {/* Node 2: IoT Core */}
+                    <g transform="translate(140, 100)">
+                      <rect width="100" height="90" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="2.5" />
+                      <text x="50" y="22" fill="#b45309" fontSize="10" fontWeight="extrabold" textAnchor="middle">AWS IoT CORE</text>
+                      <text x="50" y="36" fill="#78350f" fontSize="7.5" textAnchor="middle">Device Gateway</text>
+                      
+                      <rect x="8" y="48" width="84" height="32" rx="3" fill="#fef3c7" stroke="#fbbf24" strokeWidth="1" />
+                      <text x="50" y="60" fill="#b45309" fontSize="8" textAnchor="middle" fontWeight="bold">RULES ENGINE</text>
+                      <text x="50" y="72" fill="#d97706" fontSize="6" textAnchor="middle">SQL Filters Active</text>
                     </g>
-                    <g transform="translate(660, 180)">
-                      <rect width="90" height="60" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
-                      <text x="45" y="22" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3 LAKE</text>
+
+                    {/* ==================== KINESIS INGESTION BUFFER BOUNDARY ==================== */}
+                    <rect x="255" y="45" width="235" height="215" rx="8" fill="none" stroke="#9333ea" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="265" y="58" fill="#9333ea" fontSize="7.5" fontWeight="bold">Real-time Sharded Stream Ingestion</text>
+
+                    {/* Node 3: Kinesis stream */}
+                    <g transform="translate(315, 95)">
+                      <rect width="90" height="100" rx="8" fill="#faf5ff" stroke="#9333ea" strokeWidth="2.5" />
+                      <text x="45" y="24" fill="#7e22ce" fontSize="11" fontWeight="extrabold" textAnchor="middle">🔥 KINESIS</text>
+                      <text x="45" y="38" fill="#581c87" fontSize="8" textAnchor="middle">Data Stream</text>
+                      
+                      {/* Virtual Shards visualization */}
+                      <g transform="translate(8, 48)">
+                        <rect width="74" height="42" rx="3" fill="#f3e8ff" stroke="#a855f7" strokeWidth="1" />
+                        <text x="37" y="12" fill="#7e22ce" fontSize="7" textAnchor="middle" fontWeight="bold">SHARDS BUFFER</text>
+                        <line x1="8" y1="20" x2="66" y2="20" stroke="#d8b4fe" strokeWidth="1" />
+                        <text x="37" y="30" fill="#9333ea" fontSize="7" textAnchor="middle">Shard-0001 (Active)</text>
+                        <text x="37" y="38" fill="#9333ea" fontSize="7" textAnchor="middle">Shard-0002 (Active)</text>
+                      </g>
+                    </g>
+                    
+                    {/* Node 4: DynamoDB State Telemetry */}
+                    <g transform="translate(520, 50)">
+                      <rect width="100" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                      <text x="50" y="20" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🗄️ DYNAMODB</text>
+                      <text x="50" y="34" fill="#1e40af" fontSize="7.5" textAnchor="middle">State Telemetry</text>
+                      <rect x="8" y="42" width="84" height="13" rx="2" fill="#dbeafe" stroke="#3b82f6" strokeWidth="0.5" />
+                      <text x="50" y="51" fill="#1d4ed8" fontSize="7.5" textAnchor="middle" fontWeight="bold">Latency: 1-5ms</text>
+                    </g>
+
+                    {/* Node 5: Firehose */}
+                    <g transform="translate(520, 180)">
+                      <rect width="100" height="60" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="2" />
+                      <text x="50" y="20" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🔥 FIREHOSE</text>
+                      <text x="50" y="34" fill="#1e40af" fontSize="7.5" textAnchor="middle">Stream Delivery</text>
+                      <rect x="8" y="42" width="84" height="13" rx="2" fill="#dbeafe" stroke="#3b82f6" strokeWidth="0.5" />
+                      <text x="50" y="51" fill="#0f766e" fontSize="7" textAnchor="middle" fontWeight="bold">Format Conversion</text>
+                    </g>
+
+                    {/* Node 6: S3 Datalake */}
+                    <g transform="translate(655, 180)">
+                      <rect width="90" height="60" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2.5" />
+                      <text x="45" y="22" fill="#15803d" fontSize="9.5" fontWeight="bold" textAnchor="middle">🪣 S3 LAKE</text>
                       <text x="45" y="36" fill="#166534" fontSize="7.5" textAnchor="middle">raw-datalake</text>
-                      <text x="45" y="46" fill="#0d9488" fontSize="7" textAnchor="middle">Athena SQL ready</text>
+                      <rect x="6" y="44" width="78" height="11" rx="2" fill="#dcfce7" stroke="#22c55e" strokeWidth="0.5" />
+                      <text x="45" y="52" fill="#15803d" fontSize="6.5" textAnchor="middle" fontWeight="bold">Athena SQL Ready</text>
                     </g>
                   </svg>
                 )}
 
                 {/* 3. Checkout SAGA step functions SVG */}
                 {activeArchTab === 'order-saga' && (
-                  <svg className="w-full min-w-[760px] h-[300px]" viewBox="0 0 760 300">
+                  <svg className="w-full min-w-[760px] h-[300px] sv-svg-bg" viewBox="0 0 760 300">
                     <defs>
                       <marker id="saga-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                         <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
                       </marker>
                     </defs>
 
-                    <path d="M 70 145 H 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
-                    <path d="M 290 145 H 390" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
-                    <path d="M 510 145 H 610" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+                    {/* AWS Step Functions Workflow Boundary */}
+                    <rect x="130" y="20" width="615" height="260" rx="8" fill="none" stroke="#d97706" strokeWidth="1.2" strokeDasharray="5,3" />
+                    <text x="140" y="34" fill="#d97706" fontSize="8" fontWeight="bold">AWS Step Functions SAGA State Machine (Checkout-Workflow)</text>
 
-                    <path d="M 450 170 V 220 H 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#saga-arrow)" />
+                    {/* Flow lines */}
+                    <path d="M 70 145 H 160" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+                    <path d="M 290 145 H 375" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+                    <path d="M 505 145 H 590" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#saga-arrow)" />
+                    
+                    {/* Compensation rollback path */}
+                    <path d="M 440 170 V 225 H 280" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" markerEnd="url(#saga-arrow)" />
 
                     {archFlowState === 'saga-run' && (
                       <>
-                        <line x1="70" y1="145" x2="170" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
-                        <line x1="290" y1="145" x2="390" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
-                        <line x1="510" y1="145" x2="610" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="70" y1="145" x2="160" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="290" y1="145" x2="375" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="505" y1="145" x2="590" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
                       </>
                     )}
 
                     {archFlowState === 'saga-fail' && (
                       <>
-                        <line x1="70" y1="145" x2="170" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
-                        <line x1="290" y1="145" x2="390" y2="145" stroke="#dc2626" strokeWidth="3" className="active-flow-line" />
-                        <path d="M 450 170 V 220 H 260" fill="none" stroke="#dc2626" strokeWidth="3" className="active-flow-line" strokeDasharray="3 3" />
+                        <line x1="70" y1="145" x2="160" y2="145" stroke="#059669" strokeWidth="3" className="active-flow-line" />
+                        <line x1="290" y1="145" x2="375" y2="145" stroke="#dc2626" strokeWidth="3" className="active-flow-line" />
+                        <path d="M 440 170 V 225 H 280" fill="none" stroke="#dc2626" strokeWidth="3" className="active-flow-line" strokeDasharray="3,3" />
                       </>
                     )}
 
-                    <g transform="translate(10, 110)">
-                      <circle cx="30" cy="35" r="22" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                      <text x="30" y="38" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                    {/* Client Node */}
+                    <g transform="translate(8, 100)">
+                      <rect width="64" height="95" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+                      <text x="32" y="14" fill="#64748b" fontSize="6.5" fontWeight="bold" textAnchor="middle">CLIENT ZONE</text>
+                      <g transform="translate(7, 22)">
+                        <circle cx="25" cy="20" r="14" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.2" />
+                        <text x="25" y="23" fill="#475569" fontSize="8" textAnchor="middle" fontWeight="bold">💻 USER</text>
+                        <text x="25" y="46" fill="#64748b" fontSize="6.5" textAnchor="middle">Checkout API</text>
+                      </g>
                     </g>
                     
-                    <g transform="translate(170, 110)">
-                      <rect width="120" height="70" rx="8" fill="#faf5ff" stroke={
+                    {/* Step 1: Validate Stock */}
+                    <g transform="translate(160, 105)">
+                      <rect width="130" height="80" rx="8" fill="#faf5ff" stroke={
                         archFlowState === 'saga-run' || archFlowState === 'saga-fail' ? '#059669' : '#cbd5e1'
-                      } strokeWidth="2" />
-                      <text x="60" y="26" fill="#1e293b" fontSize="9" fontWeight="bold" textAnchor="middle">1. VALIDATE STOCK</text>
-                      <text x="60" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Reserve laptop SKU</text>
-                      <text x="60" y="56" fill="#059669" fontSize="7" textAnchor="middle" fontWeight="bold">
-                        {archFlowState === 'saga-run' || archFlowState === 'saga-fail' ? 'Inventory Locked' : 'Status: Idle'}
+                      } strokeWidth="2.5" />
+                      <text x="65" y="20" fill="#1e293b" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">1. VALIDATE STOCK</text>
+                      <text x="65" y="34" fill="#475569" fontSize="7" textAnchor="middle">Reserve Item SKU</text>
+                      
+                      <rect x="8" y="46" width="114" height="24" rx="3" fill="#f3e8ff" stroke="#a855f7" strokeWidth="1" />
+                      <text x="65" y="60" fill="#7e22ce" fontSize="8" textAnchor="middle" fontWeight="bold">
+                        {archFlowState === 'saga-run' || archFlowState === 'saga-fail' ? 'SKU Hold Reserved' : 'Status: Idle'}
                       </text>
                     </g>
 
-                    <g transform="translate(390, 110)">
-                      <rect width="120" height="70" rx="8" fill="#eff6ff" stroke={
+                    {/* Step 2: Charge Payment */}
+                    <g transform="translate(375, 105)">
+                      <rect width="130" height="80" rx="8" fill="#eff6ff" stroke={
                         archFlowState === 'saga-run' ? '#059669' :
                         archFlowState === 'saga-fail' ? '#dc2626' : '#cbd5e1'
-                      } strokeWidth="2" />
-                      <text x="60" y="26" fill="#1e293b" fontSize="9" fontWeight="bold" textAnchor="middle">2. CHARGE Stripe</text>
-                      <text x="60" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Authorize Visa Card</text>
-                      <text x="60" y="56" fill={
-                        archFlowState === 'saga-run' ? '#059669' :
+                      } strokeWidth="2.5" />
+                      <text x="65" y="20" fill="#1e293b" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">2. CHARGE Stripe</text>
+                      <text x="65" y="34" fill="#475569" fontSize="7" textAnchor="middle">Process Visa Card</text>
+                      
+                      <rect x="8" y="46" width="114" height="24" rx="3" fill={
+                        archFlowState === 'saga-run' ? '#dcfce7' :
+                        archFlowState === 'saga-fail' ? '#fee2e2' : '#f8fafc'
+                      } stroke={
+                        archFlowState === 'saga-run' ? '#22c55e' :
+                        archFlowState === 'saga-fail' ? '#f43f5e' : '#cbd5e1'
+                      } strokeWidth="1" />
+                      <text x="65" y="60" fill={
+                        archFlowState === 'saga-run' ? '#15803d' :
                         archFlowState === 'saga-fail' ? '#dc2626' : '#64748b'
-                      } fontSize="7" textAnchor="middle" fontWeight="bold">
-                        {archFlowState === 'saga-run' ? 'Charged Successfully' :
-                         archFlowState === 'saga-fail' ? 'Visa Declined 402' : 'Status: Idle'}
+                      } fontSize="8" textAnchor="middle" fontWeight="bold">
+                        {archFlowState === 'saga-run' ? 'Payment Charged' :
+                         archFlowState === 'saga-fail' ? 'Visa Declined (402)' : 'Status: Idle'}
                       </text>
                     </g>
 
-                    <g transform="translate(610, 110)">
-                      <rect width="120" height="70" rx="8" fill="#f0fdf4" stroke={
+                    {/* Step 3: Post Delivery */}
+                    <g transform="translate(590, 105)">
+                      <rect width="130" height="80" rx="8" fill="#f0fdf4" stroke={
                         archFlowState === 'saga-run' ? '#059669' : '#cbd5e1'
-                      } strokeWidth="2" />
-                      <text x="60" y="26" fill="#1e293b" fontSize="9" fontWeight="bold" textAnchor="middle">3. POST DELIVERY</text>
-                      <text x="60" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Queue SQS dispatch</text>
-                      <text x="60" y="56" fill="#059669" fontSize="7" textAnchor="middle" fontWeight="bold">
+                      } strokeWidth="2.5" />
+                      <text x="65" y="20" fill="#1e293b" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">3. POST SHIPMENT</text>
+                      <text x="65" y="34" fill="#475569" fontSize="7" textAnchor="middle">Queue SQS dispatch</text>
+                      
+                      <rect x="8" y="46" width="114" height="24" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1" />
+                      <text x="65" y="60" fill="#15803d" fontSize="8" textAnchor="middle" fontWeight="bold">
                         {archFlowState === 'saga-run' ? 'Dispatched' : 'Status: Idle'}
                       </text>
                     </g>
 
-                    <g transform="translate(140, 205)">
-                      <rect width="120" height="40" rx="5" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.5" />
-                      <text x="60" y="16" fill="#dc2626" fontSize="8" fontWeight="bold" textAnchor="middle">↩️ COMPENSATE STOCK</text>
-                      <text x="60" y="28" fill="#991b1b" fontSize="7" textAnchor="middle">Release reserved SKU hold</text>
+                    {/* Compensation Rollback Node */}
+                    <g transform="translate(160, 215)">
+                      <rect width="130" height="45" rx="5" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.5" />
+                      <text x="65" y="18" fill="#dc2626" fontSize="8.5" fontWeight="bold" textAnchor="middle">↩️ COMPENSATE STOCK</text>
+                      <text x="65" y="32" fill="#991b1b" fontSize="7" textAnchor="middle">Release SKU Hold (Stripe Error)</text>
                     </g>
                   </svg>
                 )}
@@ -3570,46 +3760,74 @@ export default function ServerlessVisualizer() {
           {dbScenario === 'vpc-basic' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
               <div className="lg:col-span-8 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm bg-slate-50 sv-svg-bg shadow-inner">
-                <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
-                  <rect width="590" height="290" rx="12" fill="none" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="5 5" />
-                  <text x="30" y="30" fill="#475569" fontSize="10" fontWeight="bold">AWS VIRTUAL PRIVATE CLOUD (VPC)</text>
+                <svg className="w-full max-w-[620px] h-[300px] sv-svg-bg" viewBox="0 0 600 300">
+                  <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                  </defs>
 
-                  {/* Public Subnet */}
-                  <rect x="30" y="55" width="200" height="200" rx="8" fill="rgba(16, 185, 129, 0.04)" stroke="#10b981" strokeWidth="2" strokeDasharray="4" />
-                  <text x="45" y="75" fill="#047857" fontSize="9" fontWeight="bold">Public Subnet (DMZ)</text>
+                  {/* AWS VPC Cloud Boundary */}
+                  <rect x="15" y="15" width="570" height="270" rx="12" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="30" y="32" fill="#2563eb" fontSize="9.5" fontWeight="extrabold">AWS VIRTUAL PRIVATE CLOUD (VPC) - 10.0.0.0/16</text>
+
+                  {/* Public Subnet (DMZ) */}
+                  <rect x="30" y="50" width="220" height="220" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="2" strokeDasharray="4,2" />
+                  <text x="45" y="70" fill="#047857" fontSize="9" fontWeight="extrabold">🟢 Public Subnet (DMZ) - 10.0.1.0/24</text>
 
                   {/* NAT Gateway Node */}
-                  <g transform="translate(60, 110)">
-                    <rect width="140" height="50" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="70" y="24" fill="#047857" fontSize="10" fontWeight="bold" textAnchor="middle">🌐 NAT GATEWAY</text>
-                    <text x="70" y="38" fill="#475569" fontSize="8" textAnchor="middle">Outbound Internet route</text>
+                  <g transform="translate(50, 95)">
+                    <rect width="180" height="60" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="90" y="24" fill="#047857" fontSize="10" fontWeight="bold" textAnchor="middle">🌐 NAT GATEWAY</text>
+                    <text x="90" y="38" fill="#475569" fontSize="8" textAnchor="middle">Translates private IP requests</text>
+                    <text x="90" y="50" fill="#059669" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Elastic IP: 54.210.8.22</text>
                   </g>
 
-                  {/* Private Subnet */}
-                  <rect x="290" y="55" width="270" height="200" rx="8" fill="rgba(59, 130, 246, 0.04)" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4" />
-                  <text x="305" y="75" fill="#1d4ed8" fontSize="9" fontWeight="bold">Private VPC Subnet</text>
+                  {/* Internet Gateway (Outbound exit) */}
+                  <g transform="translate(50, 185)">
+                    <rect width="180" height="55" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1" />
+                    <text x="90" y="22" fill="#334155" fontSize="9.5" fontWeight="bold" textAnchor="middle">🚪 INTERNET GATEWAY</text>
+                    <text x="90" y="36" fill="#475569" fontSize="8" textAnchor="middle">External Web Access (egress)</text>
+                  </g>
+
+                  {/* Private VPC Subnet */}
+                  <rect x="275" y="50" width="295" height="220" rx="8" fill="rgba(59, 130, 246, 0.02)" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4,2" />
+                  <text x="290" y="70" fill="#1d4ed8" fontSize="9" fontWeight="extrabold">🔒 Private VPC Subnet - 10.0.2.0/24</text>
 
                   {/* Lambda ENI Node */}
-                  <g transform="translate(310, 100)">
-                    <rect width="100" height="60" rx="6" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.5" />
-                    <text x="50" y="22" fill="#7e22ce" fontSize="9" fontWeight="bold" textAnchor="middle">⚡ LAMBDA ENI</text>
-                    <text x="50" y="38" fill="#475569" fontSize="8" textAnchor="middle">Elastic Network</text>
-                    <text x="50" y="50" fill="#64748b" fontSize="8" textAnchor="middle">Interface</text>
+                  <g transform="translate(290, 95)">
+                    <rect width="115" height="75" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="2" />
+                    <text x="57.5" y="20" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ LAMBDA ENI</text>
+                    <text x="57.5" y="34" fill="#581c87" fontSize="8" textAnchor="middle">Elastic Network Interface</text>
+                    <rect x="10" y="44" width="95" height="22" rx="3" fill="#f3e8ff" stroke="#a855f7" strokeWidth="1" />
+                    <text x="57.5" y="57" fill="#7e22ce" fontSize="7.5" textAnchor="middle" fontWeight="bold">IP: 10.0.2.144</text>
                   </g>
 
-                  {/* RDS Postgres Node */}
-                  <g transform="translate(440, 100)">
-                    <rect width="100" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="50" y="25" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🛢️ RDS POSTGRES</text>
-                    <text x="50" y="42" fill="#475569" fontSize="8" textAnchor="middle">Private IP only</text>
+                  {/* Isolated Database Subnet Group */}
+                  <g transform="translate(425, 95)">
+                    <rect width="130" height="155" rx="8" fill="#fafafa" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="3,3" />
+                    <text x="65" y="16" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">DB SUBNET GROUP</text>
+                    
+                    {/* RDS Postgres Node */}
+                    <g transform="translate(10, 28)">
+                      <rect width="110" height="110" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" />
+                      <text x="55" y="24" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🛢️ RDS POSTGRES</text>
+                      <text x="55" y="40" fill="#1e40af" fontSize="8" textAnchor="middle">Primary DB Node</text>
+                      
+                      <rect x="8" y="56" width="94" height="42" rx="4" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                      <text x="55" y="70" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">IP: 10.0.2.87</text>
+                      <text x="55" y="82" fill="#2563eb" fontSize="7" textAnchor="middle">Port: 5432 (SSL)</text>
+                      <text x="55" y="92" fill="#1d4ed8" fontSize="6.5" textAnchor="middle" fontWeight="semibold">Security Group ok</text>
+                    </g>
                   </g>
 
-                  {/* Connection paths */}
-                  <path d="M 410 130 H 440" fill="none" stroke="#10b981" strokeWidth="2.5" strokeDasharray="4 4" markerEnd="url(#arrow)" />
-                  <path d="M 360 160 Q 200 230, 130 160" fill="none" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arrow)" />
+                  {/* Outbound connection routes */}
+                  <path d="M 405 130 H 435" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeDasharray="4,2" markerEnd="url(#arrow)" />
+                  <path d="M 347 170 Q 180 250, 140 160" fill="none" stroke="#ea580c" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path d="M 140 155 V 185" fill="none" stroke="#ea580c" strokeWidth="2" markerEnd="url(#arrow)" />
                   
-                  <text x="425" y="115" fill="#059669" fontSize="8" textAnchor="middle" fontWeight="bold">SQL IP route</text>
-                  <text x="210" y="235" fill="#d97706" fontSize="8" textAnchor="middle" fontWeight="bold">NAT Gateway routing for external APIs</text>
+                  <text x="420" y="118" fill="#1e40af" fontSize="8" textAnchor="middle" fontWeight="bold">SQL IP Route</text>
+                  <text x="210" y="245" fill="#c2410c" fontSize="8.5" textAnchor="middle" fontWeight="bold">NAT Gateway routing for external APIs</text>
                 </svg>
               </div>
               <div className="lg:col-span-4 sv-card">
@@ -3635,48 +3853,87 @@ export default function ServerlessVisualizer() {
           {dbScenario === 'rds-proxy' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
               <div className="lg:col-span-8 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm bg-slate-50 sv-svg-bg shadow-inner">
-                <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
-                  <rect x="20" y="45" width="100" height="210" rx="8" fill="rgba(241, 245, 249, 0.6)" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="70" y="32" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">SCALING LAMBDAS</text>
+                <svg className="w-full max-w-[620px] h-[300px] sv-svg-bg" viewBox="0 0 600 300">
+                  <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                  </defs>
 
-                  <g transform="translate(30, 60)">
-                    <rect width="80" height="35" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="40" y="22" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda 1</text>
-                  </g>
-                  <g transform="translate(30, 110)">
-                    <rect width="80" height="35" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="40" y="22" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda 2</text>
-                  </g>
-                  <g transform="translate(30, 160)">
-                    <rect width="80" height="35" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="40" y="22" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda 3</text>
-                  </g>
-                  <g transform="translate(30, 210)">
-                    <rect width="80" height="30" rx="4" fill="#fbf7ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="40" y="18" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Lambda N...</text>
-                  </g>
+                  {/* Scaling Lambda Execution Boundary */}
+                  <rect x="15" y="35" width="130" height="245" rx="8" fill="rgba(250, 245, 255, 0.6)" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="80" y="24" fill="#475569" fontSize="8.5" fontWeight="bold" textAnchor="middle">SCALING LAMBDAS</text>
 
-                  <path d="M 120 80 Q 200 110, 240 120" fill="none" stroke="#a855f7" strokeWidth="2" />
-                  <path d="M 120 130 H 240" fill="none" stroke="#a855f7" strokeWidth="2" />
-                  <path d="M 120 180 Q 200 150, 240 140" fill="none" stroke="#a855f7" strokeWidth="2" />
-
-                  <g transform="translate(240, 95)">
-                    <rect width="130" height="90" rx="8" fill="#f0fdf4" stroke="#0d9488" strokeWidth="2.5" />
-                    <text x="65" y="28" fill="#0f766e" fontSize="11" fontWeight="bold" textAnchor="middle">🔌 RDS PROXY</text>
-                    <text x="65" y="48" fill="#475569" fontSize="8" textAnchor="middle">Multiplexed Connection</text>
-                    <text x="65" y="65" fill="#0d9488" fontSize="9" textAnchor="middle" fontWeight="bold">Pool Size: 10 conns</text>
+                  {/* Lambda instances */}
+                  <g transform="translate(25, 45)">
+                    <rect width="110" height="42" rx="4" fill="#fff" stroke="#a855f7" strokeWidth="1.5" />
+                    <text x="55" y="20" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ Lambda-1</text>
+                    <text x="55" y="34" fill="#9333ea" fontSize="7.5" textAnchor="middle">Socket request</text>
                   </g>
-
-                  <g transform="translate(450, 90)">
-                    <rect width="120" height="100" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
-                    <text x="60" y="30" fill="#1d4ed8" fontSize="12" fontWeight="bold" textAnchor="middle">🛢️ RDS DB</text>
-                    <text x="60" y="52" fill="#475569" fontSize="8" textAnchor="middle">Sockets protected</text>
-                    <rect x="15" y="68" width="90" height="20" rx="4" fill="#dbeafe" stroke="#3b82f6" />
-                    <text x="60" y="80" fill="#1e40af" fontSize="8" textAnchor="middle" fontWeight="bold">Max Sockets: 100</text>
+                  <g transform="translate(25, 102)">
+                    <rect width="110" height="42" rx="4" fill="#fff" stroke="#a855f7" strokeWidth="1.5" />
+                    <text x="55" y="20" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ Lambda-2</text>
+                    <text x="55" y="34" fill="#9333ea" fontSize="7.5" textAnchor="middle">Socket request</text>
+                  </g>
+                  <g transform="translate(25, 159)">
+                    <rect width="110" height="42" rx="4" fill="#fff" stroke="#a855f7" strokeWidth="1.5" />
+                    <text x="55" y="20" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ Lambda-3</text>
+                    <text x="55" y="34" fill="#9333ea" fontSize="7.5" textAnchor="middle">Socket request</text>
+                  </g>
+                  <g transform="translate(25, 216)">
+                    <rect width="110" height="42" rx="4" fill="#fff" stroke="#a855f7" strokeWidth="1.5" />
+                    <text x="55" y="20" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ Lambda-N...</text>
+                    <text x="55" y="34" fill="#a855f7" fontSize="7" textAnchor="middle">1000+ Concurrencies</text>
                   </g>
 
-                  <path d="M 370 140 H 450" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arrow)" />
-                  <text x="410" y="125" fill="#0f766e" fontSize="8" textAnchor="middle" fontWeight="bold">Pooled Socket</text>
+                  {/* Flow lines pointing to RDS Proxy */}
+                  <path d="M 135 66 Q 200 90, 230 110" fill="none" stroke="#a855f7" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path d="M 135 123 H 230" fill="none" stroke="#a855f7" strokeWidth="2" markerEnd="url(#arrow)" />
+                  <path d="M 135 180 Q 200 150, 230 135" fill="none" stroke="#a855f7" strokeWidth="2" markerEnd="url(#arrow)" />
+
+                  {/* RDS Proxy Gateway Connection Pool Container */}
+                  <g transform="translate(230, 75)">
+                    <rect width="150" height="135" rx="8" fill="#f0fdf4" stroke="#0d9488" strokeWidth="2.5" />
+                    <text x="75" y="22" fill="#0f766e" fontSize="11" fontWeight="extrabold" textAnchor="middle">🔌 RDS PROXY</text>
+                    <text x="75" y="34" fill="#475569" fontSize="8" textAnchor="middle">Connection Multiplexer</text>
+                    
+                    {/* Visual Connection Pool Slots */}
+                    <g transform="translate(15, 45)">
+                      <rect width="120" height="75" rx="4" fill="#fff" stroke="#2dd4bf" strokeWidth="1" />
+                      <text x="60" y="14" fill="#0f766e" fontSize="8" textAnchor="middle" fontWeight="bold">ACTIVE CONNECTION POOL</text>
+                      
+                      {/* Connection dots representing shared pools */}
+                      <circle cx="20" cy="32" r="6" fill="#10b981" />
+                      <circle cx="40" cy="32" r="6" fill="#10b981" />
+                      <circle cx="60" cy="32" r="6" fill="#10b981" />
+                      <circle cx="80" cy="32" r="6" fill="#10b981" />
+                      <circle cx="100" cy="32" r="6" fill="#cbd5e1" />
+                      
+                      <circle cx="20" cy="50" r="6" fill="#10b981" />
+                      <circle cx="40" cy="50" r="6" fill="#cbd5e1" />
+                      <circle cx="60" cy="50" r="6" fill="#cbd5e1" />
+                      <circle cx="80" cy="50" r="6" fill="#cbd5e1" />
+                      <circle cx="100" cy="50" r="6" fill="#cbd5e1" />
+
+                      <text x="60" y="68" fill="#0f766e" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Shared Pool: 10 Sockets</text>
+                    </g>
+                  </g>
+
+                  {/* Private Database Subnet Group */}
+                  <g transform="translate(425, 75)">
+                    <rect width="140" height="135" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
+                    <text x="70" y="24" fill="#1d4ed8" fontSize="11" fontWeight="extrabold" textAnchor="middle">🛢️ RDS DATABASE</text>
+                    <text x="70" y="38" fill="#475569" fontSize="8" textAnchor="middle">Private DB Cluster</text>
+                    
+                    <rect x="12" y="52" width="116" height="66" rx="4" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                    <text x="70" y="66" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">SOCKET PROTECTION</text>
+                    <text x="70" y="80" fill="#2563eb" fontSize="7.5" textAnchor="middle">Max Connections: 100</text>
+                    <text x="70" y="94" fill="#1d4ed8" fontSize="8" textAnchor="middle" fontWeight="semibold">Protected by Proxy Gate</text>
+                  </g>
+
+                  {/* Active pooled link */}
+                  <path d="M 380 142 H 425" fill="none" stroke="#10b981" strokeWidth="3" strokeDasharray="4 2" markerEnd="url(#arrow)" />
+                  <text x="402" y="128" fill="#0f766e" fontSize="8.5" textAnchor="middle" fontWeight="bold">Multiplexed</text>
                 </svg>
               </div>
               <div className="lg:col-span-4 sv-card">
@@ -3697,28 +3954,53 @@ export default function ServerlessVisualizer() {
           {dbScenario === 'aurora-trigger' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
               <div className="lg:col-span-8 border border-slate-200 rounded-2xl p-5 min-h-[350px] flex items-center justify-center shadow-sm bg-slate-50 sv-svg-bg shadow-inner">
-                <svg className="w-full max-w-[620px] h-[300px]" viewBox="0 0 600 300">
-                  <g transform="translate(30, 80)">
-                    <rect width="160" height="130" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
-                    <text x="80" y="28" fill="#1d4ed8" fontSize="12" fontWeight="bold" textAnchor="middle">🛢️ AURORA DB</text>
-                    <text x="80" y="48" fill="#475569" fontSize="8" textAnchor="middle">Stored SQL Procedure</text>
+                <svg className="w-full max-w-[620px] h-[300px] sv-svg-bg" viewBox="0 0 600 300">
+                  <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+                    </marker>
+                  </defs>
 
-                    <rect x="15" y="65" width="130" height="50" rx="4" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="25" y="80" fill="#1e293b" fontSize="7" fontFamily="monospace">CALL mysql.lambda_async</text>
-                    <text x="25" y="92" fill="#1e293b" fontSize="7" fontFamily="monospace">(\'arn:aws:lambda:...\',</text>
-                    <text x="25" y="104" fill="#1e293b" fontSize="7" fontFamily="monospace">  \'"payload": 1022\');</text>
+                  {/* Aurora DB Cluster Boundary */}
+                  <rect x="15" y="45" width="220" height="215" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="25" y="60" fill="#1d4ed8" fontSize="8.5" fontWeight="bold">AWS Aurora DB Cluster Boundary</text>
+
+                  <g transform="translate(25, 75)">
+                    <rect width="200" height="170" rx="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
+                    <text x="100" y="26" fill="#1d4ed8" fontSize="12" fontWeight="extrabold" textAnchor="middle">🛢️ AURORA DB CLUSTER</text>
+                    <text x="100" y="42" fill="#475569" fontSize="8" textAnchor="middle">Stored SQL Native Procedure</text>
+
+                    <rect x="15" y="55" width="170" height="52" rx="4" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="25" y="70" fill="#1e293b" fontSize="7" fontFamily="monospace" fontWeight="semibold">CALL mysql.lambda_async</text>
+                    <text x="25" y="82" fill="#1e293b" fontSize="7" fontFamily="monospace">(\'arn:aws:lambda:...\',</text>
+                    <text x="25" y="94" fill="#1e293b" fontSize="7" fontFamily="monospace">  \'"payload": 1022\');</text>
+
+                    <rect x="15" y="115" width="170" height="42" rx="4" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                    <text x="100" y="128" fill="#1e40af" fontSize="8" textAnchor="middle" fontWeight="bold">NATIVE INTEGRATION</text>
+                    <text x="100" y="142" fill="#2563eb" fontSize="7.5" textAnchor="middle">Direct invoke via IAM Role permission</text>
                   </g>
 
-                  <path d="M 190 145 H 390" fill="none" stroke="#10b981" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arrow)" />
-                  <text x="290" y="128" fill="#059669" fontSize="8" textAnchor="middle" fontWeight="bold">Direct SQL Invocation (IAM Authorized)</text>
+                  {/* Flow line */}
+                  <path d="M 225 155 H 365" fill="none" stroke="#10b981" strokeWidth="2.5" strokeDasharray="3 3" markerEnd="url(#arrow)" />
+                  <text x="295" y="138" fill="#059669" fontSize="8" textAnchor="middle" fontWeight="bold">Direct SQL Invocation</text>
+                  <text x="295" y="148" fill="#047857" fontSize="7.5" textAnchor="middle" fontWeight="semibold">(IAM Authorized)</text>
 
-                  <g transform="translate(390, 95)">
-                    <rect width="160" height="100" rx="10" fill="#fbf7ff" stroke="#a855f7" strokeWidth="2.5" />
-                    <text x="80" y="28" fill="#7e22ce" fontSize="12" fontWeight="bold" textAnchor="middle">⚡ TARGET LAMBDA</text>
-                    <text x="80" y="48" fill="#475569" fontSize="8" textAnchor="middle">Sync/Async handler</text>
+                  {/* Target Lambda Sandbox */}
+                  <rect x="355" y="45" width="220" height="215" rx="8" fill="none" stroke="#9333ea" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="365" y="60" fill="#7e22ce" fontSize="8.5" fontWeight="bold">Target Firecracker MicroVM</text>
 
-                    <rect x="15" y="65" width="130" height="22" rx="4" fill="#fdf4ff" stroke="#e9d5ff" />
-                    <text x="80" y="78" fill="#a21caf" fontSize="8" textAnchor="middle" fontWeight="semibold">Send external webhook</text>
+                  <g transform="translate(365, 75)">
+                    <rect width="200" height="170" rx="10" fill="#fbf7ff" stroke="#a855f7" strokeWidth="2.5" />
+                    <text x="100" y="26" fill="#7e22ce" fontSize="11" fontWeight="extrabold" textAnchor="middle">⚡ TARGET LAMBDA</text>
+                    <text x="100" y="42" fill="#475569" fontSize="8" textAnchor="middle">Async event handler</text>
+
+                    <rect x="15" y="58" width="170" height="50" rx="4" fill="#fdf4ff" stroke="#e9d5ff" />
+                    <text x="100" y="76" fill="#a21caf" fontSize="9" textAnchor="middle" fontWeight="bold">EVENT HANDLER</text>
+                    <text x="100" y="92" fill="#c084fc" fontSize="8.5" textAnchor="middle">Processes incoming SQL payload</text>
+
+                    <rect x="15" y="115" width="170" height="42" rx="4" fill="#faf5ff" stroke="#d8b4fe" />
+                    <text x="100" y="128" fill="#7e22ce" fontSize="8" textAnchor="middle" fontWeight="bold">DOWNSTREAM TRIGGER</text>
+                    <text x="100" y="142" fill="#581c87" fontSize="7.5" textAnchor="middle">Dispatches external webhooks</text>
                   </g>
                 </svg>
               </div>

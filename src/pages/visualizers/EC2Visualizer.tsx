@@ -579,6 +579,37 @@ export default function EC2Visualizer() {
           height: 6px;
           border-radius: 3px;
         }
+
+        /* Premium Flowing Conduit animations */
+        .ec2-flow-blue { stroke: #3b82f6; stroke-dasharray: 8, 4; animation: ec2Flow 25s linear infinite; }
+        .ec2-flow-orange { stroke: #ea580c; stroke-dasharray: 8, 4; animation: ec2Flow 20s linear infinite; }
+        .ec2-flow-green { stroke: #10b981; stroke-dasharray: 8, 4; animation: ec2Flow 22s linear infinite; }
+        .ec2-flow-purple { stroke: #8b5cf6; stroke-dasharray: 8, 4; animation: ec2Flow 24s linear infinite; }
+        .ec2-flow-red { stroke: #ef4444; stroke-dasharray: 8, 4; animation: ec2Flow 18s linear infinite; }
+
+        @keyframes ec2Flow {
+          from { stroke-dashoffset: 360; }
+          to { stroke-dashoffset: 0; }
+        }
+
+        .ec2-pulse-active {
+          animation: ec2Pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes ec2Pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .4; }
+        }
+        
+        .ec2-card-interactive {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+        }
+        .ec2-card-interactive:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
+          border-color: #0284c7;
+        }
       `}</style>
 
       {/* Header */}
@@ -695,13 +726,29 @@ export default function EC2Visualizer() {
                         <stop offset="0%" stopColor="#10b981" />
                         <stop offset="100%" stopColor="#047857" />
                       </linearGradient>
+                      <filter id="ec2-shadow-net" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
+                      </filter>
                     </defs>
+
+                    {/* PREMIUM NESTED BOUNDARIES */}
+                    {/* Host Configuration Zone */}
+                    <rect x="5" y="10" width="105" height="140" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="57" y="20" textAnchor="middle" fontSize="6.5" fill="#2563eb" fontWeight="bold">📦 HOST CONFIG</text>
+
+                    {/* Baking & Blueprint Vault */}
+                    <rect x="120" y="10" width="220" height="140" rx="8" fill="rgba(234, 88, 12, 0.02)" stroke="#ea580c" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="230" y="20" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">💿 BAKING &amp; BLUEPRINT VAULT</text>
+
+                    {/* Auto-scaling Zone */}
+                    <rect x="350" y="10" width="115" height="140" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="407" y="20" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">🚀 AUTO-SCALING ZONE</text>
                     
                     {/* Paths with animatemotion */}
-                    <path id="path1" d="M 95, 75 L 135, 75" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
-                    <path id="path2" d="M 215, 75 L 255, 75" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
-                    <path id="path3" d="M 335, 75 L 375, 45" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
-                    <path id="path4" d="M 335, 75 L 375, 105" stroke="#cbd5e1" strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path1" d="M 95, 75 L 135, 75" className={isBootstrapping ? "ec2-flow-orange" : "ec2-flow-blue"} strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path2" d="M 215, 75 L 255, 75" className={isBootstrapping ? "ec2-flow-orange" : "ec2-flow-purple"} strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path3" d="M 335, 75 L 365, 45" className={isBootstrapping ? "ec2-flow-orange" : "ec2-flow-green"} strokeWidth="2" markerEnd="url(#arrow)" />
+                    <path id="path4" d="M 335, 75 L 365, 105" className={isBootstrapping ? "ec2-flow-orange" : "ec2-flow-green"} strokeWidth="2" markerEnd="url(#arrow)" />
 
                     {/* Active moving pulses */}
                     <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#3b82f6"}>
@@ -711,15 +758,15 @@ export default function EC2Visualizer() {
                       <animateMotion dur={isBootstrapping ? "1s" : "3s"} repeatCount="indefinite" path="M 215, 75 L 255, 75" />
                     </circle>
                     <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#10b981"}>
-                      <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 375, 45" />
+                      <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 365, 45" />
                     </circle>
                     <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#10b981"}>
-                      <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 375, 105" />
+                      <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 365, 105" />
                     </circle>
 
                     {/* Source EC2 3D Rack */}
-                    <g transform="translate(15, 40)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1.5" />
+                    <g transform="translate(15, 40)" filter="url(#ec2-shadow-net)">
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="#ffffff" stroke="#2563eb" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#blue-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Source EC2</text>
                       
@@ -740,8 +787,8 @@ export default function EC2Visualizer() {
                     </g>
 
                     {/* Snapshot Storage Cylinder */}
-                    <g transform="translate(135, 40)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.5" />
+                    <g transform="translate(130, 40)" filter="url(#ec2-shadow-net)">
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="#ffffff" stroke="#db2777" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#pink-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Snapshot</text>
                       
@@ -754,8 +801,8 @@ export default function EC2Visualizer() {
                     </g>
 
                     {/* Golden AMI (Baked disc) */}
-                    <g transform="translate(255, 40)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="rgba(255,255,255,0.95)" stroke="#ea580c" strokeWidth="1.5" />
+                    <g transform="translate(250, 40)" filter="url(#ec2-shadow-net)">
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="#ffffff" stroke="#ea580c" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#orange-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Golden AMI</text>
                       
@@ -769,8 +816,8 @@ export default function EC2Visualizer() {
 
                     {/* Replicas (Green Racks) */}
                     {/* Replica 1 */}
-                    <g transform="translate(375, 10)">
-                      <rect x="0" y="0" width="80" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                    <g transform="translate(370, 10)" filter="url(#ec2-shadow-net)">
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
                       <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 1</text>
                       
@@ -782,8 +829,8 @@ export default function EC2Visualizer() {
                     </g>
 
                     {/* Replica 2 */}
-                    <g transform="translate(375, 85)">
-                      <rect x="0" y="0" width="80" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                    <g transform="translate(370, 85)" filter="url(#ec2-shadow-net)">
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
                       <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 2</text>
                       
@@ -965,16 +1012,32 @@ export default function EC2Visualizer() {
                             <stop offset="0%" stopColor="#f87171" />
                             <stop offset="100%" stopColor="#dc2626" />
                           </linearGradient>
+                          <filter id="ec2-shadow-net2" x="-10%" y="-10%" width="120%" height="120%">
+                            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
+                          </filter>
                         </defs>
 
+                        {/* PREMIUM NESTED BOUNDARIES */}
+                        {/* Public Ingress Boundary */}
+                        <rect x="5" y="8" width="115" height="164" rx="8" fill="rgba(71, 85, 105, 0.02)" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="62" y="18" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">🌐 PUBLIC INGRESS NETS</text>
+
+                        {/* SG Gateway Shield Boundary */}
+                        <rect x="130" y="8" width="140" height="164" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="4,2" />
+                        <text x="200" y="18" textAnchor="middle" fontSize="6.5" fill="#1e40af" fontWeight="bold">🛡️ STATEFUL SG GATEWAY</text>
+
+                        {/* Secure Compute Subnet */}
+                        <rect x="280" y="8" width="165" height="164" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1.2" strokeDasharray="3,3" />
+                        <text x="362" y="18" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">💻 SECURE COMPUTE SUBNET</text>
+
                         {/* Connection Paths from Left Nodes to Firewall Center (200, 90) */}
-                        <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
-                        <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
-                        <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
-                        <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
+                        <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
+                        <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
+                        <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
+                        <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
 
                         {/* Connection Path from Firewall to EC2 (230, 90) to (315, 90) */}
-                        <path d="M 230, 90 L 315, 90" stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
+                        <path d="M 230, 90 L 290, 90" stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
 
                         {/* Animated Packets */}
                         {sendingPacket === 'internet' && (
@@ -1001,7 +1064,7 @@ export default function EC2Visualizer() {
                         {/* Green Allowed Flow through the Gate */}
                         {firewallTestResult?.status === 'ALLOW' && (
                           <circle r="5" fill="#10b981">
-                            <animateMotion dur="0.6s" repeatCount="indefinite" path="M 230, 90 L 315, 90" />
+                            <animateMotion dur="0.6s" repeatCount="indefinite" path="M 230, 90 L 290, 90" />
                           </circle>
                         )}
 
@@ -1018,31 +1081,31 @@ export default function EC2Visualizer() {
 
                         {/* Left Clients / Nodes */}
                         {/* 1. Public Client */}
-                        <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(10, 12)">
-                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#0284c7" strokeWidth="1" />
-                          <text x="50" y="18" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">🌐 Public (Port 80)</text>
+                        <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(12, 23)" filter="url(#ec2-shadow-net2)">
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#0284c7" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🌐 Public (Port 80)</text>
                         </g>
 
                         {/* 2. Bastion */}
-                        <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(10, 52)">
-                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#6366f1" strokeWidth="1" />
-                          <text x="50" y="18" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">🔒 Bastion (Port 22)</text>
+                        <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(12, 60)" filter="url(#ec2-shadow-net2)">
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#6366f1" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🔒 Bastion (Port 22)</text>
                         </g>
 
                         {/* 3. Corporate Intranet */}
-                        <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(10, 92)">
-                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#0d9488" strokeWidth="1" />
-                          <text x="50" y="18" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🏢 Corp App (Port 8080)</text>
+                        <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(12, 97)" filter="url(#ec2-shadow-net2)">
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#0d9488" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🏢 Corp App (Port 8080)</text>
                         </g>
 
                         {/* 4. Anonymous Hacker */}
-                        <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(10, 132)">
-                          <rect x="0" y="0" width="100" height="30" rx="6" fill="rgba(255,255,255,0.95)" stroke="#ef4444" strokeWidth="1" />
-                          <text x="50" y="18" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">🚨 Hacker (Port 22)</text>
+                        <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(12, 134)" filter="url(#ec2-shadow-net2)">
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#ef4444" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🚨 Hacker (Port 22)</text>
                         </g>
 
                         {/* Firewall Stateful Shield Gate */}
-                        <g transform="translate(180, 20)">
+                        <g transform="translate(145, 20)" filter="url(#ec2-shadow-net2)">
                           <rect x="0" y="0" width="40" height="140" rx="8" fill="#334155" stroke="#475569" strokeWidth="1" />
                           <text x="20" y="18" textAnchor="middle" fontSize="6.5" fill="#94a3b8" fontWeight="bold">FIREWALL</text>
                           
@@ -1068,15 +1131,15 @@ export default function EC2Visualizer() {
                         </g>
 
                         {/* Destination EC2 Host on Right */}
-                        <g transform="translate(325, 45)">
-                          <rect x="0" y="0" width="105" height="90" rx="8" fill="rgba(255,255,255,0.95)" 
+                        <g transform="translate(305, 45)" filter="url(#ec2-shadow-net2)">
+                          <rect x="0" y="0" width="115" height="90" rx="8" fill="#ffffff" 
                             stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#475569'} 
                             strokeWidth={firewallTestResult?.status === 'ALLOW' ? '2.5' : '1.5'} 
                           />
                           
                           {/* Server header */}
-                          <rect x="5" y="5" width="95" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? '#ecfdf5' : '#f1f5f9'} />
-                          <text x="52.5" y="17" textAnchor="middle" fontSize="8.5" fill="#1e293b" fontWeight="bold">EC2 Guest Host</text>
+                          <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? '#ecfdf5' : '#f1f5f9'} />
+                          <text x="57.5" y="17" textAnchor="middle" fontSize="8.5" fill="#1e293b" fontWeight="bold">EC2 Guest Host</text>
 
                           {/* Interactive status bulb */}
                           <circle cx="20" cy="40" r="4.5" 
@@ -1087,13 +1150,13 @@ export default function EC2Visualizer() {
                             } 
                           />
                           <text x="32" y="43" fontSize="7.5" fill="#475569" fontWeight="bold">
-                            {firewallTestResult ? `PORT MATCH: ${firewallTestResult.status}` : 'PORT IDLE'}
+                            {firewallTestResult ? `PORT: ${firewallTestResult.status}` : 'PORT IDLE'}
                           </text>
 
                           {/* Details mock */}
-                          <rect x="15" y="55" width="75" height="4" rx="2" fill="#e2e8f0" />
-                          <rect x="15" y="65" width="55" height="4" rx="2" fill="#e2e8f0" />
-                          <rect x="15" y="75" width="65" height="4" rx="2" fill="#e2e8f0" />
+                          <rect x="15" y="55" width="85" height="4" rx="2" fill="#e2e8f0" />
+                          <rect x="15" y="65" width="65" height="4" rx="2" fill="#e2e8f0" />
+                          <rect x="15" y="75" width="75" height="4" rx="2" fill="#e2e8f0" />
                         </g>
 
                       </svg>
@@ -1152,19 +1215,19 @@ export default function EC2Visualizer() {
                   {/* SVG Cluster */}
                   <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                     <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
-                      <rect x="5" y="5" width="190" height="110" rx="6" fill="none" stroke="#ea580c" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="100" y="16" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">Single AZ Rack Boundary</text>
+                      <rect x="5" y="5" width="190" height="110" rx="6" fill="rgba(234, 88, 12, 0.02)" stroke="#ea580c" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="100" y="15" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">📍 HIGH-PERFORMANCE RACK ZONE</text>
                       
                       {/* Top Switch */}
-                      <rect x="50" y="24" width="100" height="18" rx="4" fill="#fff" stroke="#ea580c" strokeWidth="1.2" />
+                      <rect x="50" y="24" width="100" height="18" rx="4" fill="#ffffff" stroke="#ea580c" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(234,88,12,0.15))' }} />
                       <text x="100" y="35" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c">⚡ 100Gbps Switch</text>
-
-                      {/* Connections */}
+ 
+                       {/* Connections */}
                       <path id="cluster-p1" d="M 45, 75 L 70, 42" stroke="#cbd5e1" strokeWidth="1" />
                       <path id="cluster-p2" d="M 100, 75 L 100, 42" stroke="#cbd5e1" strokeWidth="1" />
                       <path id="cluster-p3" d="M 155, 75 L 130, 42" stroke="#cbd5e1" strokeWidth="1" />
-
-                      {/* Packets */}
+ 
+                       {/* Packets */}
                       <circle r="2.5" fill="#ea580c">
                         <animateMotion dur="1s" repeatCount="indefinite" path="M 45, 75 L 70, 42" />
                       </circle>
@@ -1174,22 +1237,22 @@ export default function EC2Visualizer() {
                       <circle r="2.5" fill="#ea580c">
                         <animateMotion dur="1s" repeatCount="indefinite" path="M 155, 75 L 130, 42" />
                       </circle>
-
-                      {/* Clustered EC2 nodes */}
+ 
+                       {/* Clustered EC2 nodes */}
                       <g transform="translate(20, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1" />
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="#ffffff" stroke="#2563eb" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
                         <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-A</text>
                       </g>
                       
                       <g transform="translate(77, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1" />
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="#ffffff" stroke="#2563eb" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
                         <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-B</text>
                       </g>
-
-                      <g transform="translate(135, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="rgba(255,255,255,0.95)" stroke="#2563eb" strokeWidth="1" />
+ 
+                       <g transform="translate(135, 75)">
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="#ffffff" stroke="#2563eb" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
                         <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-C</text>
                       </g>
@@ -1212,12 +1275,14 @@ export default function EC2Visualizer() {
                     <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
                       {/* Rack 1 */}
                       <g transform="translate(10, 8)">
-                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(255,255,255,0.95)" stroke="#10b981" strokeWidth="1" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">Rack A</text>
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">RACK A DOMAIN</text>
                         
                         {/* 3D server */}
-                        <rect x="5" y="16" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
-                        <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-1</text>
+                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(16,185,129,0.1))' }}>
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-1</text>
+                        </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-A</text>
                         <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-A</text>
@@ -1227,11 +1292,13 @@ export default function EC2Visualizer() {
 
                       {/* Rack 2 */}
                       <g transform="translate(75, 8)">
-                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(255,255,255,0.95)" stroke="#10b981" strokeWidth="1" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">Rack B</text>
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">RACK B DOMAIN</text>
                         
-                        <rect x="5" y="16" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
-                        <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-2</text>
+                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(16,185,129,0.1))' }}>
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-2</text>
+                        </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-B</text>
                         <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-B</text>
@@ -1241,11 +1308,13 @@ export default function EC2Visualizer() {
 
                       {/* Rack 3 */}
                       <g transform="translate(140, 8)">
-                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(255,255,255,0.95)" stroke="#10b981" strokeWidth="1" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">Rack C</text>
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">RACK C DOMAIN</text>
                         
-                        <rect x="5" y="16" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
-                        <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-3</text>
+                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(16,185,129,0.1))' }}>
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-3</text>
+                        </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-C</text>
                         <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-C</text>
@@ -1271,17 +1340,23 @@ export default function EC2Visualizer() {
                     <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
                       {/* Partition 1 */}
                       <g transform="translate(6, 8)">
-                        <rect x="0" y="0" width="90" height="104" rx="4" fill="none" stroke="#0284c7" strokeWidth="1" />
-                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">Partition 1 (Rack A)</text>
+                        <rect x="0" y="0" width="90" height="104" rx="4" fill="rgba(2, 132, 199, 0.02)" stroke="#0284c7" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">🛡️ COMPUTE PARTITION 1</text>
                         
-                        <rect x="5" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
-                        <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-1</text>
+                        <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                          <rect x="5" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
+                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-1</text>
+                        </g>
 
-                        <rect x="49" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
-                        <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-2</text>
+                        <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                          <rect x="49" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
+                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-2</text>
+                        </g>
 
-                        <rect x="27" y="44" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
-                        <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-3</text>
+                        <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                          <rect x="27" y="44" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
+                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-3</text>
+                        </g>
                         
                         <path d="M 15, 85 L 75, 85" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
                         <circle r="3" fill="#0284c7">
@@ -1292,17 +1367,23 @@ export default function EC2Visualizer() {
 
                       {/* Partition 2 */}
                       <g transform="translate(104, 8)">
-                        <rect x="0" y="0" width="90" height="104" rx="4" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">Partition 2 (Rack B)</text>
+                        <rect x="0" y="0" width="90" height="104" rx="4" fill="rgba(2, 132, 199, 0.02)" stroke="#0284c7" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">🛡️ COMPUTE PARTITION 2</text>
                         
-                        <rect x="5" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
-                        <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-4</text>
+                        <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                          <rect x="5" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
+                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-4</text>
+                        </g>
 
-                        <rect x="49" y="16" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
-                        <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-5</text>
+                        <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                          <rect x="49" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
+                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-5</text>
+                        </g>
 
-                        <rect x="27" y="44" width="36" height="20" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
-                        <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-6</text>
+                        <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                          <rect x="27" y="44" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
+                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-6</text>
+                        </g>
                         
                         <path d="M 15, 85 L 75, 85" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
                         <circle r="3" fill="#0284c7">
@@ -1666,10 +1747,23 @@ export default function EC2Visualizer() {
                           <stop offset="100%" stopColor="#6d28d9" />
                         </linearGradient>
                       </defs>
+
+                      {/* PREMIUM BOUNDARY TIERS */}
+                      {/* Active Access Subnet */}
+                      <rect x="3" y="10" width="88" height="78" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="47" y="18" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">⚡ ACTIVE ZONE</text>
+
+                      {/* Infrequent Access Subnet */}
+                      <rect x="115" y="10" width="88" height="78" rx="8" fill="rgba(59, 130, 246, 0.02)" stroke="#3b82f6" strokeWidth="1.2" strokeDasharray="4,2" />
+                      <text x="159" y="18" textAnchor="middle" fontSize="6.5" fill="#1d4ed8" fontWeight="bold">💤 IA SUBNET</text>
+
+                      {/* Archive Cold Vault */}
+                      <rect x="227" y="10" width="90" height="78" rx="8" fill="rgba(139, 92, 246, 0.02)" stroke="#8b5cf6" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="272" y="18" textAnchor="middle" fontSize="6.5" fill="#6d28d9" fontWeight="bold">❄️ DEEP VAULT</text>
                       
                       {/* Connections with animatemotion */}
-                      <path d="M 90, 50 L 115, 50" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
-                      <path d="M 202, 50 L 227, 50" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+                      <path d="M 90, 50 L 115, 50" className="ec2-flow-green" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
+                      <path d="M 202, 50 L 227, 50" className="ec2-flow-blue" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
 
                       <circle r="3" fill="#10b981">
                         <animateMotion dur="2.5s" repeatCount="indefinite" path="M 90, 50 L 115, 50" />
@@ -1679,8 +1773,8 @@ export default function EC2Visualizer() {
                       </circle>
 
                       {/* EFS Standard */}
-                      <g transform="translate(6, 20)">
-                        <rect x="0" y="0" width="82" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.2" />
+                      <g transform="translate(6, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="#ffffff" stroke="#059669" strokeWidth="1.2" />
                         <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-std-grad)" />
                         <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">Standard</text>
                         <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Frequent Access)</text>
@@ -1689,8 +1783,8 @@ export default function EC2Visualizer() {
                       </g>
 
                       {/* EFS Infrequent Access */}
-                      <g transform="translate(118, 20)">
-                        <rect x="0" y="0" width="82" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="1.2" />
+                      <g transform="translate(118, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="#ffffff" stroke="#1d4ed8" strokeWidth="1.2" />
                         <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-ia-grad)" />
                         <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS IA</text>
                         <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Idle {efsLifecycleDays} Days)</text>
@@ -1699,8 +1793,8 @@ export default function EC2Visualizer() {
                       </g>
 
                       {/* EFS Archive */}
-                      <g transform="translate(230, 20)">
-                        <rect x="0" y="0" width="84" height="60" rx="6" fill="rgba(255,255,255,0.95)" stroke="#6d28d9" strokeWidth="1.2" />
+                      <g transform="translate(230, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
+                        <rect x="0" y="0" width="84" height="60" rx="6" fill="#ffffff" stroke="#6d28d9" strokeWidth="1.2" />
                         <rect x="4" y="4" width="76" height="12" rx="3" fill="url(#efs-arc-grad)" />
                         <text x="42" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS Archive</text>
                         <text x="42" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Idle 90+ Days)</text>
@@ -1708,8 +1802,8 @@ export default function EC2Visualizer() {
                         <text x="42" y="52" textAnchor="middle" fontSize="6" fill="#8b5cf6" fontWeight="bold">❄️ Save 97%</text>
                       </g>
 
-                      <rect x="20" y="94" width="280" height="24" rx="6" fill="rgba(240, 253, 244, 0.8)" stroke="#bbf7d0" strokeWidth="0.8" />
-                      <text x="160" y="110" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="bold">💰 Tiered Storage Audit: Automatic lifecycle savings applied concurrently</text>
+                      <rect x="20" y="96" width="280" height="24" rx="6" fill="rgba(240, 253, 244, 0.8)" stroke="#bbf7d0" strokeWidth="0.8" />
+                      <text x="160" y="111" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="bold">💰 Tiered Storage Audit: Automatic lifecycle savings applied concurrently</text>
                     </svg>
                   </div>
                 </div>
@@ -1732,44 +1826,53 @@ export default function EC2Visualizer() {
                         </linearGradient>
                       </defs>
 
+                      {/* PREMIUM BOUNDARY TIERS */}
+                      {/* Nitro Host Subnet Zone */}
+                      <rect x="3" y="5" width="140" height="110" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="73" y="14" textAnchor="middle" fontSize="6.5" fill="#2563eb" fontWeight="bold">💻 NITRO COMPUTE SUBNET</text>
+
+                      {/* Secured EBS SAN Storage Zone */}
+                      <rect x="150" y="5" width="166" height="110" rx="8" fill="rgba(239, 68, 68, 0.02)" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="4,2" />
+                      <text x="233" y="14" textAnchor="middle" fontSize="6.5" fill="#dc2626" fontWeight="bold">🔒 SECURED EBS SAN FABRIC</text>
+
                       {/* Connections pointing to shared volume */}
-                      <path d="M 70, 22 L 160, 50" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
-                      <path d="M 70, 60 L 160, 60" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
-                      <path d="M 70, 98 L 160, 70" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
+                      <path d="M 70, 32 L 160, 60" className="ec2-flow-blue" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <path d="M 70, 70 L 160, 70" className="ec2-flow-blue" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <path d="M 70, 108 L 160, 80" className="ec2-flow-blue" strokeWidth="1.5" strokeDasharray="3,2" />
 
                       {/* Active animated pulses */}
                       <circle r="2.5" fill="#ef4444">
-                        <animateMotion dur="1.5s" repeatCount="indefinite" path="M 70, 22 L 160, 50" />
+                        <animateMotion dur="1.5s" repeatCount="indefinite" path="M 70, 32 L 160, 60" />
                       </circle>
                       <circle r="2.5" fill="#ef4444">
-                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 70, 60 L 160, 60" />
+                        <animateMotion dur="1.2s" repeatCount="indefinite" path="M 70, 70 L 160, 70" />
                       </circle>
                       <circle r="2.5" fill="#ef4444">
-                        <animateMotion dur="1.7s" repeatCount="indefinite" path="M 70, 98 L 160, 70" />
+                        <animateMotion dur="1.7s" repeatCount="indefinite" path="M 70, 108 L 160, 80" />
                       </circle>
 
                       {/* EC2 instances (3D) */}
-                      <g transform="translate(10, 10)">
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="rgba(255,255,255,0.95)" stroke="#1e40af" strokeWidth="1" />
+                      <g transform="translate(10, 20)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#1e40af" strokeWidth="1" />
                         <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
                         <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host A</text>
                       </g>
 
-                      <g transform="translate(10, 48)">
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="rgba(255,255,255,0.95)" stroke="#1e40af" strokeWidth="1" />
+                      <g transform="translate(10, 58)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#1e40af" strokeWidth="1" />
                         <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
                         <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host B</text>
                       </g>
 
-                      <g transform="translate(10, 86)">
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="rgba(255,255,255,0.95)" stroke="#1e40af" strokeWidth="1" />
+                      <g transform="translate(10, 96)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#1e40af" strokeWidth="1" />
                         <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
                         <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host C</text>
                       </g>
 
                       {/* Shared KMS Encrypted EBS Cylinder */}
-                      <g transform="translate(160, 15)">
-                        <rect x="0" y="0" width="150" height="90" rx="6" fill="rgba(255,255,255,0.95)" stroke="#dc2626" strokeWidth="1.2" />
+                      <g transform="translate(158, 20)" style={{ filter: 'drop-shadow(0 2px 3px rgba(220,38,38,0.1))' }}>
+                        <rect x="0" y="0" width="150" height="90" rx="6" fill="#ffffff" stroke="#dc2626" strokeWidth="1.2" />
                         <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#multi-ebs-grad)" />
                         <text x="75" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Shared EBS io1/io2</text>
                         
@@ -1905,12 +2008,19 @@ export default function EC2Visualizer() {
                     const isNvmePresent = consoleStorageType === 'ephemeral' || consoleStorageType === 'both' || consoleInstanceType === 'i3.xlarge';
                     return (
                       <div style={{ margin: '6px 0', textAlign: 'center' }}>
-                        <svg viewBox="0 0 320 170" width="100%" style={{ background: '#0a0d16', borderRadius: '10px', border: '1.5px solid #1e293b' }}>
+                        <svg viewBox="0 0 320 170" width="100%" style={{ background: '#070a13', borderRadius: '10px', border: '1.5px solid #1e293b' }}>
                           {/* Grid background on board */}
                           <defs>
                             <pattern id="motherboard-grid" width="10" height="10" patternUnits="userSpaceOnUse">
                               <circle cx="2" cy="2" r="0.6" fill="#1e293b" />
                             </pattern>
+                            <linearGradient id="board-cpu-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#3b82f6" />
+                              <stop offset="100%" stopColor="#1e3a8a" />
+                            </linearGradient>
+                            <filter id="motherboard-glow" x="-10%" y="-10%" width="120%" height="120%">
+                              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#3b82f6" floodOpacity="0.4" />
+                            </filter>
                           </defs>
                           <rect width="320" height="170" fill="#070a13" />
                           <rect width="320" height="170" fill="url(#motherboard-grid)" />
@@ -1919,26 +2029,26 @@ export default function EC2Visualizer() {
                           <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
                           <path d="M 60,70 L 120,105" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
                           <path d="M 60,70 L 215,105" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
-
-                          {/* CPU Socket */}
-                          <g transform="translate(20, 40)">
+ 
+                           {/* CPU Socket */}
+                          <g transform="translate(20, 40)" style={vmState === 'Running' ? { filter: 'url(#motherboard-glow)' } : {}}>
                             <rect x="0" y="0" width="60" height="60" rx="6" fill="#111827" stroke="#1f2937" strokeWidth="1.5" />
-                            <rect x="10" y="10" width="40" height="40" rx="4" fill="#3b82f6" opacity={vmState === 'Running' ? '0.2' : '0.05'} />
+                            <rect x="10" y="10" width="40" height="40" rx="4" fill="url(#board-cpu-grad)" opacity={vmState === 'Running' ? '0.3' : '0.05'} />
                             <text x="30" y="32" textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="bold">CPU</text>
                             <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold">vCPU Cores</text>
                             
                             {/* Pulse paths if running */}
                             {vmState === 'Running' && (
                               <g>
-                                <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? '#f59e0b' : '#3b82f6'} strokeWidth="1.5">
+                                <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? '#ea580c' : '#3b82f6'} strokeWidth="1.5">
                                   <animate attributeName="r" values="10;25" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
                                   <animate attributeName="opacity" values="1;0" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
                                 </circle>
                               </g>
                             )}
                           </g>
-
-                          {/* RAM DIMMs */}
+ 
+                           {/* RAM DIMMs */}
                           <g transform="translate(120, 22)">
                             <rect x="0" y="0" width="80" height="34" rx="4" fill="#111827" stroke="#1f2937" strokeWidth="1" />
                             <text x="40" y="10" textAnchor="middle" fontSize="7" fill="#94a3b8" fontWeight="bold">RAM slots</text>
@@ -1946,8 +2056,8 @@ export default function EC2Visualizer() {
                             {/* DIMM sticks */}
                             <line x1="10" y1="16" x2="70" y2="16" stroke="#4b5563" strokeWidth="2" />
                             <line x1="10" y1="22" x2="70" y2="22" stroke="#4b5563" strokeWidth="2" />
-
-                            {/* RAM LEDs based on instance class */}
+ 
+                             {/* RAM LEDs based on instance class */}
                             <g transform="translate(15, 14)">
                               <circle cx="0" cy="0" r="1.5" fill={vmState === 'Running' ? '#10b981' : '#4b5563'} />
                               <circle cx="10" cy="0" r="1.5" fill={vmState === 'Running' && ['c6g.large', 'r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? '#10b981' : '#4b5563'} />
@@ -1961,13 +2071,13 @@ export default function EC2Visualizer() {
                                '16 GiB (Storage Opt)'}
                             </text>
                           </g>
-
-                          {/* Storage Mount Area */}
+ 
+                           {/* Storage Mount Area */}
                           {/* 1. EBS Volume */}
                           {isEbsRendered && (
-                            <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`}>
+                            <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`} style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
                               <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={isEbsDetached ? '#111827' : 'rgba(255,255,255,0.95)'} 
+                                fill={isEbsDetached ? '#111827' : '#ffffff'} 
                                 stroke={isEbsDetached ? '#ef4444' : vmState === 'Running' ? '#10b981' : '#cbd5e1'} 
                                 strokeWidth="1.2" 
                               />
@@ -1989,12 +2099,12 @@ export default function EC2Visualizer() {
                               <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="#64748b">(Terminated)</text>
                             </g>
                           )}
-
-                          {/* 2. NVMe Ephemeral SSD */}
+ 
+                           {/* 2. NVMe Ephemeral SSD */}
                           {isNvmePresent && (
-                            <g transform="translate(215, 90)">
+                            <g transform="translate(215, 90)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
                               <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={['Stopped', 'Terminated'].includes(vmState) ? '#1f1315' : 'rgba(255,255,255,0.95)'} 
+                                fill={['Stopped', 'Terminated'].includes(vmState) ? '#1f1315' : '#ffffff'} 
                                 stroke={['Stopped', 'Terminated'].includes(vmState) ? '#ef4444' : vmState === 'Running' ? '#10b981' : '#cbd5e1'} 
                                 strokeWidth="1.2" 
                               />
@@ -2017,8 +2127,8 @@ export default function EC2Visualizer() {
                               )}
                             </g>
                           )}
-
-                          {/* If NVMe is not present */}
+ 
+                           {/* If NVMe is not present */}
                           {!isNvmePresent && (
                             <g transform="translate(215, 90)">
                               <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="#1f2937" strokeWidth="1" />
@@ -2079,10 +2189,27 @@ export default function EC2Visualizer() {
                     </linearGradient>
                   </defs>
 
+                  {/* PREMIUM SUBNET GROUPS */}
+                  {/* Public Internet Client zone */}
+                  <rect x="5" y="8" width="110" height="164" rx="8" fill="rgba(16, 185, 129, 0.01)" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="60" y="166" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">PUBLIC EDGE PLANE</text>
+
+                  {/* Load Balancer zone */}
+                  <rect x="150" y="8" width="120" height="164" rx="8" fill="rgba(59, 130, 246, 0.01)" stroke="rgba(59, 130, 246, 0.2)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="210" y="166" textAnchor="middle" fontSize="6.5" fill="#1d4ed8" fontWeight="bold">BALANCE PLANE</text>
+
+                  {/* VPC Private Subnet Bounding Region */}
+                  <rect x="315" y="8" width="180" height="164" rx="8" fill="rgba(219, 39, 119, 0.02)" stroke="#db2777" strokeWidth="1" strokeDasharray="4,3" />
+                  <text x="405" y="166" textAnchor="middle" fontSize="6.5" fill="#db2777" fontWeight="bold">🔒 VPC SECURED PRIVATE SUBNETS</text>
+
+                  {/* Shared NAS storage zone */}
+                  <rect x="535" y="8" width="140" height="164" rx="8" fill="rgba(5, 150, 105, 0.01)" stroke="rgba(5, 150, 105, 0.2)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="605" y="166" textAnchor="middle" fontSize="6.5" fill="#059669" fontWeight="bold">STORAGE SAN PLANE</text>
+
                   {/* Connecting paths */}
-                  <path d="M 110, 90 L 160, 90" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3,3" />
-                  <path d="M 260, 75 L 330, 55" stroke="#cbd5e1" strokeWidth="2" />
-                  <path d="M 260, 105 L 330, 125" stroke="#cbd5e1" strokeWidth="2" />
+                  <path d="M 110, 90 L 160, 90" className="ec2-flow-green" strokeWidth="2" strokeDasharray="3,3" />
+                  <path d="M 260, 75 L 330, 55" className="ec2-flow-blue" strokeWidth="2" />
+                  <path d="M 260, 105 L 330, 125" className="ec2-flow-blue" strokeWidth="2" />
                   <path d="M 480, 50 L 550, 75" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
                   <path d="M 480, 130 L 550, 105" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
 
@@ -2104,8 +2231,8 @@ export default function EC2Visualizer() {
                   </circle>
 
                   {/* Public Internet */}
-                  <g transform="translate(10, 55)">
-                    <rect x="0" y="0" width="100" height="70" rx="8" fill="rgba(255,255,255,0.95)" stroke="#047857" strokeWidth="1.5" />
+                  <g transform="translate(10, 48)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.05))' }}>
+                    <rect x="0" y="0" width="100" height="70" rx="8" fill="#ffffff" stroke="#047857" strokeWidth="1.5" />
                     <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-green-grad)" />
                     <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🌐 Internet</text>
                     <text x="50" y="42" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="bold">Public Clients</text>
@@ -2113,8 +2240,8 @@ export default function EC2Visualizer() {
                   </g>
                   
                   {/* ALB */}
-                  <g transform="translate(160, 35)">
-                    <rect x="0" y="0" width="100" height="110" rx="8" fill="rgba(255,255,255,0.95)" stroke="#1d4ed8" strokeWidth="1.5" />
+                  <g transform="translate(160, 28)" style={{ filter: 'drop-shadow(0 2px 2px rgba(29,78,216,0.1))' }}>
+                    <rect x="0" y="0" width="100" height="110" rx="8" fill="#ffffff" stroke="#1d4ed8" strokeWidth="1.5" />
                     <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-blue-grad)" />
                     <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🍪 Application LB</text>
                     
@@ -2127,8 +2254,8 @@ export default function EC2Visualizer() {
                   </g>
 
                   {/* Private AZ-A */}
-                  <g transform="translate(330, 15)">
-                    <rect x="0" y="0" width="150" height="70" rx="8" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.2" />
+                  <g transform="translate(330, 15)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(219,39,119,0.05))' }}>
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="#ffffff" stroke="#db2777" strokeWidth="1.2" />
                     <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
                     <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-a (sg-app-fleet)</text>
                     
@@ -2138,8 +2265,8 @@ export default function EC2Visualizer() {
                   </g>
 
                   {/* Private AZ-B */}
-                  <g transform="translate(330, 95)">
-                    <rect x="0" y="0" width="150" height="70" rx="8" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.2" />
+                  <g transform="translate(330, 85)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(219,39,119,0.05))' }}>
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="#ffffff" stroke="#db2777" strokeWidth="1.2" />
                     <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
                     <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-b (sg-app-fleet)</text>
                     
@@ -2149,8 +2276,8 @@ export default function EC2Visualizer() {
                   </g>
 
                   {/* EFS Mount */}
-                  <g transform="translate(550, 50)">
-                    <rect x="0" y="0" width="120" height="80" rx="8" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                  <g transform="translate(545, 48)" style={{ filter: 'drop-shadow(0 2px 2px rgba(5,150,105,0.1))' }}>
+                    <rect x="0" y="0" width="120" height="80" rx="8" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
                     <rect x="4" y="4" width="112" height="15" rx="3" fill="url(#ha-green-grad)" />
                     <text x="60" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">📁 Shared NAS (EFS)</text>
                     
@@ -2192,11 +2319,20 @@ export default function EC2Visualizer() {
                       </linearGradient>
                     </defs>
 
+                    {/* PREMIUM SUBNET BOUNDARIES */}
+                    {/* Motherboard Host Subnet */}
+                    <rect x="5" y="5" width="230" height="150" rx="8" fill="rgba(219, 39, 119, 0.01)" stroke="#db2777" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="120" y="150" textAnchor="middle" fontSize="6" fill="#db2777" fontWeight="bold">💻 HYPERVISOR BLADE ZONE</text>
+
+                    {/* Storage SAN Subnet */}
+                    <rect x="250" y="5" width="195" height="150" rx="8" fill="rgba(5, 150, 105, 0.01)" stroke="#059669" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="347" y="150" textAnchor="middle" fontSize="6.5" fill="#059669" fontWeight="bold">🔒 SECURED EBS STORAGE SAN</text>
+
                     {/* Connection paths inside motherboard & outwards */}
                     {/* Local NVMe PCIe path */}
                     <path id="pcie-path" d="M 70, 70 L 70, 100" stroke="#ef4444" strokeWidth="2.5" />
                     {/* VPC Network Outward path */}
-                    <path id="vpc-path" d="M 150, 70 L 150, 115 L 280, 115" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3,2" />
+                    <path id="vpc-path" d="M 150, 70 L 150, 115 L 280, 115" className="ec2-flow-blue" strokeWidth="2" strokeDasharray="3,2" />
 
                     {/* Active moving pulses */}
                     <circle r="3" fill="#f43f5e">
@@ -2207,32 +2343,32 @@ export default function EC2Visualizer() {
                     </circle>
 
                     {/* Hypervisor Host Motherboard */}
-                    <g transform="translate(10, 10)">
-                      <rect x="0" y="0" width="200" height="140" rx="8" fill="rgba(255,255,255,0.95)" stroke="#db2777" strokeWidth="1.5" />
+                    <g transform="translate(15, 15)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.05))' }}>
+                      <rect x="0" y="0" width="200" height="120" rx="8" fill="#ffffff" stroke="#db2777" strokeWidth="1.5" />
                       <rect x="4" y="4" width="192" height="15" rx="3" fill="url(#host-grad)" />
                       <text x="100" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Physical Motherboard (Hypervisor Host)</text>
                     </g>
 
                     {/* CPU RAM Core */}
-                    <g transform="translate(25, 40)">
-                      <rect x="0" y="0" width="170" height="30" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.2" />
-                      <text x="85" y="18" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1d4ed8">Virtual Guest VM (vCPU &amp; RAM)</text>
+                    <g transform="translate(30, 45)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                      <rect x="0" y="0" width="170" height="28" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.2" />
+                      <text x="85" y="17" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1d4ed8">Virtual Guest VM (vCPU &amp; RAM)</text>
                     </g>
 
-                    <text x="76" y="88" fontSize="6.5" fill="#ef4444" fontWeight="extrabold">PCIe Bus</text>
+                    <text x="76" y="90" fontSize="6.5" fill="#ef4444" fontWeight="extrabold">PCIe Bus</text>
 
                     {/* Local Instance Store SSD */}
-                    <g transform="translate(30, 100)">
-                      <rect x="0" y="0" width="80" height="35" rx="4" fill="#fff1f2" stroke="#f43f5e" strokeWidth="1.2" />
-                      <text x="40" y="14" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#be123c">Instance Store</text>
-                      <text x="40" y="26" textAnchor="middle" fontSize="6" fill="#be123c" fontWeight="extrabold">💥 Ephemeral NVMe</text>
+                    <g transform="translate(35, 96)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
+                      <rect x="0" y="0" width="80" height="32" rx="4" fill="#fff1f2" stroke="#f43f5e" strokeWidth="1.2" />
+                      <text x="40" y="12" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#be123c">Instance Store</text>
+                      <text x="40" y="24" textAnchor="middle" fontSize="6" fill="#be123c" fontWeight="extrabold">💥 Ephemeral NVMe</text>
                     </g>
 
                     <text x="210" y="106" fontSize="7" fill="#2563eb" fontWeight="extrabold">Dedicated SAN Fiber link</text>
 
                     {/* Remote EBS SAN Cluster */}
-                    <g transform="translate(280, 20)">
-                      <rect x="0" y="0" width="160" height="120" rx="8" fill="rgba(255,255,255,0.95)" stroke="#059669" strokeWidth="1.5" />
+                    <g transform="translate(268, 15)" style={{ filter: 'drop-shadow(0 2px 2px rgba(5,150,105,0.1))' }}>
+                      <rect x="0" y="0" width="160" height="120" rx="8" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
                       <rect x="4" y="4" width="152" height="15" rx="3" fill="url(#san-grad)" />
                       <text x="80" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">EBS Storage SAN Cluster</text>
                       

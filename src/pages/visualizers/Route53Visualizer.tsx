@@ -968,6 +968,52 @@ export default function Route53Visualizer() {
         .alarm-indicator {
           animation: alarmLed 0.5s infinite steps(1);
         }
+        .r53-flow-blue {
+          stroke: #3b82f6;
+          stroke-dasharray: 6,4;
+          animation: r53FlowDash 1s linear infinite;
+        }
+        .r53-flow-green {
+          stroke: #10b981;
+          stroke-dasharray: 6,4;
+          animation: r53FlowDash 0.8s linear infinite;
+        }
+        .r53-flow-orange {
+          stroke: #f97316;
+          stroke-dasharray: 6,4;
+          animation: r53FlowDash 1s linear infinite;
+        }
+        .r53-flow-purple {
+          stroke: #8b5cf6;
+          stroke-dasharray: 6,4;
+          animation: r53FlowDash 1.2s linear infinite;
+        }
+        .r53-flow-red {
+          stroke: #ef4444;
+          stroke-dasharray: 5,3;
+          animation: r53FlowDash 0.5s linear infinite;
+        }
+        @keyframes r53FlowDash {
+          to { stroke-dashoffset: -20; }
+        }
+        .r53-node-btn {
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .r53-node-btn:hover {
+          filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.15));
+        }
+        .r53-pulse-active {
+          animation: r53PulseGlow 1.5s infinite alternate;
+        }
+        @keyframes r53PulseGlow {
+          from {
+            filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.4));
+          }
+          to {
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8));
+          }
+        }
       `}</style>
 
       {/* Header */}
@@ -1003,236 +1049,313 @@ export default function Route53Visualizer() {
             <div className="r53-card">
               <svg width="100%" viewBox="0 0 680 270" className="r53-svg-bg">
                 <defs>
-                  {/* Neon Glow Filters */}
+                  <linearGradient id="client-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#eff6ff" />
+                    <stop offset="100%" stopColor="#dbeafe" />
+                  </linearGradient>
+                  <linearGradient id="resolver-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fff7ed" />
+                    <stop offset="100%" stopColor="#ffedd5" />
+                  </linearGradient>
+                  <linearGradient id="root-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fff5f5" />
+                    <stop offset="100%" stopColor="#fee2e2" />
+                  </linearGradient>
+                  <linearGradient id="tld-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#eff6ff" />
+                    <stop offset="100%" stopColor="#dbeafe" />
+                  </linearGradient>
+                  <linearGradient id="r53-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#faf5ff" />
+                    <stop offset="100%" stopColor="#f3e8ff" />
+                  </linearGradient>
+                  <linearGradient id="server-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#f0f9ff" />
+                    <stop offset="100%" stopColor="#e0f2fe" />
+                  </linearGradient>
+                  <filter id="shadow-r53" x="-10%" y="-10%" width="120%" height="120%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#0f172a" floodOpacity="0.06" />
+                  </filter>
+                  <marker id="r53-arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#f97316" />
+                  </marker>
+                  <marker id="r53-arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#3b82f6" />
+                  </marker>
+                  <marker id="r53-arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#8b5cf6" />
+                  </marker>
+                  <marker id="r53-arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#ef4444" />
+                  </marker>
+                  <marker id="r53-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#10b981" />
+                  </marker>
                   <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="5" result="blur" />
+                    <feGaussianBlur stdDeviation="3.5" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                   </filter>
                   <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="6" result="blur" />
-                    <feComponentTransfer in="blur" result="glow1">
-                      <feFuncA type="linear" slope="0.8" />
-                    </feComponentTransfer>
-                    <feMerge>
-                      <feMergeNode in="glow1" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
+                    <feGaussianBlur stdDeviation="3.5" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
                   </filter>
-
-                  {/* Flow Markers */}
-                  <marker id="d1" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c084fc" /></marker>
-                  <marker id="d2" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#4ade80" /></marker>
-                  <marker id="d3" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#60a5fa" /></marker>
-                  <marker id="d4" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f97316" /></marker>
                 </defs>
 
-                {/* BACKGROUND CONNECTIVITY PIPES */}
+                {/* ==================== 1. USER LOCAL CLIENT SUBNET ==================== */}
+                <rect x="6" y="6" width="138" height="252" rx="10" fill="rgba(241, 245, 249, 0.3)" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="12" y="18" fill="#475569" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">User Local Client Subnet</text>
+
+                {/* ==================== 2. PUBLIC RESOLVER SUBNET NETWORK ==================== */}
+                <rect x="150" y="6" width="140" height="252" rx="10" fill="rgba(255, 247, 237, 0.3)" stroke="#fed7aa" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="156" y="18" fill="#c2410c" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">Public DNS Resolver Subnet</text>
+
+                {/* ==================== 3. AUTHORITATIVE DNS PLANE LAYER ==================== */}
+                <rect x="310" y="6" width="190" height="252" rx="10" fill="rgba(243, 232, 255, 0.3)" stroke="#e9d5ff" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="316" y="18" fill="#6d28d9" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">Authoritative DNS Plane</text>
+
+                {/* ==================== 4. APPLICATION ENDPOINT SUBNET ==================== */}
+                <rect x="526" y="6" width="148" height="252" rx="10" fill="rgba(240, 249, 255, 0.3)" stroke="#bae6fd" strokeWidth="1" strokeDasharray="4,2" />
+                <text x="532" y="18" fill="#0284c7" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">Target Application Subnet</text>
+
+                {/* BACKGROUND PIPELINES & ACTIVE GLOWING CONDUITS */}
+                {/* Browser to Cache */}
+                <path d="M 60 130 L 75 46" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2,2" />
+                {dnsStepIndex === 1 && !isCacheHit && (
+                  <path d="M 60 130 L 75 46" fill="none" className="r53-flow-orange" strokeWidth="1.8" />
+                )}
+                {dnsStepIndex === 1 && isCacheHit && (
+                  <path d="M 60 130 L 75 46" fill="none" className="r53-flow-green" strokeWidth="2" />
+                )}
+
                 {/* Browser to Resolver */}
-                <line x1="120" y1="130" x2="160" y2="130" stroke="#475569" strokeWidth="2" strokeDasharray="3,2" />
+                <path d="M 120 130 L 160 130" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                {dnsStepIndex === 1 && !isCacheHit && (
+                  <path d="M 120 130 L 160 130" fill="none" className="r53-flow-red" strokeWidth="1.8" markerEnd="url(#r53-arrow-red)" />
+                )}
+                {dnsStepIndex === 5 && (
+                  <path d="M 160 130 L 120 130" fill="none" className="r53-flow-green" strokeWidth="1.8" markerEnd="url(#r53-arrow-green)" />
+                )}
+
                 {/* Resolver to Root */}
-                <path d="M 280 130 Q 305 130 305 38 L 330 38" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                <path d="M 280 130 Q 305 130 305 38 L 330 38" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                {dnsStepIndex === 2 && (
+                  <path d="M 280 130 Q 305 130 305 38 L 330 38" fill="none" className="r53-flow-purple" strokeWidth="1.8" markerEnd="url(#r53-arrow-purple)" />
+                )}
+
                 {/* Resolver to TLD */}
-                <line x1="280" y1="130" x2="330" y2="130" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
-                {/* Resolver to Auth */}
-                <path d="M 280 130 Q 305 130 305 220 L 330 220" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,2" />
+                <path d="M 280 130 L 330 130" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                {dnsStepIndex === 3 && (
+                  <path d="M 280 130 L 330 130" fill="none" className="r53-flow-blue" strokeWidth="1.8" markerEnd="url(#r53-arrow-blue)" />
+                )}
+
+                {/* Resolver to Authoritative */}
+                <path d="M 280 130 Q 305 130 305 220 L 330 220" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                {dnsStepIndex === 4 && (
+                  <path d="M 280 130 Q 305 130 305 220 L 330 220" fill="none" className="r53-flow-purple" strokeWidth="1.8" markerEnd="url(#r53-arrow-purple)" />
+                )}
+
                 {/* Client direct to Web Server */}
-                <path
-                  d="M 65 160 Q 65 260 305 260 Q 610 260 610 160"
-                  fill="none"
-                  stroke={dnsStepIndex === 6 ? (isCacheHit ? "#10b981" : "#0ea5e9") : "#0ea5e9"}
-                  strokeWidth={dnsStepIndex === 6 ? (isCacheHit ? 3.0 : 2) : 2}
-                  strokeOpacity={dnsStepIndex === 6 ? 1 : 0.15}
-                  strokeDasharray={dnsStepIndex === 6 ? "5,3" : "none"}
-                  style={{ transition: 'all 0.3s' }}
-                >
-                  {dnsStepIndex === 6 && (
-                    <animate attributeName="stroke-dashoffset" values="50;0" dur={isCacheHit ? "1.2s" : "2s"} repeatCount="indefinite" />
-                  )}
-                </path>
+                <path d="M 65 160 Q 65 260 305 260 Q 610 260 610 160" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                {dnsStepIndex === 6 && (
+                  <path
+                    d="M 65 160 Q 65 260 305 260 Q 610 260 610 160"
+                    fill="none"
+                    className={isCacheHit ? "r53-flow-green" : "r53-flow-blue"}
+                    strokeWidth="2.5"
+                    markerEnd={isCacheHit ? "url(#r53-arrow-green)" : "url(#r53-arrow-blue)"}
+                  />
+                )}
 
                 {/* 1. LAPTOP BROWSER CLIENT */}
-                <g filter={(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "url(#glow)" : undefined}>
-                  <polygon points="15,152 105,152 115,160 5,160" fill="#64748b" stroke="#475569" strokeWidth="1" />
-                  <rect x="45" y="145" width="30" height="7" fill="#475569" rx="1" />
-                  <rect x="10" y="102" width="100" height="42" rx="4" fill="rgba(255, 255, 255, 0.95)" stroke={(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "#7c3aed" : "#cbd5e1"} strokeWidth="1.5" />
-                  <rect x="14" y="105" width="92" height="34" rx="2" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
-                  <rect x="18" y="109" width="84" height="4" rx="1.5" fill="#e2e8f0" />
-                  <circle cx="22" cy="117" r="1.5" fill="#ef4444" />
-                  <circle cx="27" cy="117" r="1.5" fill="#f59e0b" />
-                  <circle cx="32" cy="117" r="1.5" fill="#10b981" />
-                  <rect x="38" y="115" width="60" height="4" rx="1.5" fill="#ffffff" stroke="#e2e8f0" strokeWidth="0.5" />
-                  <text x="42" y="119" fontSize="4.5" fill="#475569" fontFamily="monospace" fontWeight="bold">example.com</text>
-                  <line x1="20" y1="126" x2="90" y2="126" stroke="#cbd5e1" strokeWidth="1" />
-                  <line x1="20" y1="131" x2="70" y2="131" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="60" y="156" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="700">💻 Browser</text>
+                <g filter="url(#shadow-r53)" transform="translate(15, 96)" className="r53-node-btn">
+                  <polygon points="10,48 90,48 98,54 2,54" fill="#64748b" stroke="#475569" strokeWidth="0.8" />
+                  <rect x="36" y="42" width="24" height="6" fill="#475569" rx="1" />
+                  <rect width="100" height="42" rx="6" fill="url(#client-grad)" stroke={(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "#3b82f6" : "#cbd5e1"} strokeWidth="1.5" />
+                  <rect x="4" y="4" width="92" height="34" rx="3" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1" />
+                  
+                  {/* Browser Bar */}
+                  <rect x="8" y="7" width="84" height="6" rx="2" fill="#eff6ff" stroke="#dbeafe" strokeWidth="0.5" />
+                  <circle cx="12" cy="10" r="1.2" fill="#ef4444" />
+                  <circle cx="16" cy="10" r="1.2" fill="#f59e0b" />
+                  <circle cx="20" cy="10" r="1.2" fill="#10b981" />
+                  <rect x="26" y="8.5" width="60" height="3" rx="1" fill="#ffffff" stroke="#dbeafe" strokeWidth="0.3" />
+                  <text x="28" y="11" fontSize="4.2" fill="#3b82f6" fontFamily="monospace" fontWeight="bold">www.example.com</text>
+                  
+                  {/* Browser page skeleton */}
+                  <line x1="10" y1="18" x2="80" y2="18" stroke="#cbd5e1" strokeWidth="1" />
+                  <line x1="10" y1="24" x2="90" y2="24" stroke="#cbd5e1" strokeWidth="0.8" />
+                  <line x1="10" y1="29" x2="70" y2="29" stroke="#cbd5e1" strokeWidth="0.8" />
+
+                  <text x="50" y="58" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="800">💻 Client Browser</text>
                 </g>
 
                 {/* 2. RECURSIVE RESOLVER (Server Rack) */}
-                <g filter={(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "url(#glow)" : undefined}>
-                  <rect x="160" y="100" width="120" height="60" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke={(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "#f97316" : "#cbd5e1"} strokeWidth="1.5" />
-                  <rect x="162" y="102" width="116" height="56" rx="6" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
-                  {/* Blinking LEDs */}
-                  <circle cx="256" cy="112" r="3" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
-                  <circle cx="268" cy="112" r="3" fill="#f59e0b"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
-                  <circle cx="256" cy="124" r="3" fill="#10b981"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.2s" repeatCount="indefinite" /></circle>
-                  <circle cx="268" cy="124" r="3" fill="#10b981"><animate attributeName="opacity" values="1;0.1;1" dur="1.0s" repeatCount="indefinite" /></circle>
-                  <circle cx="256" cy="136" r="3" fill="#ef4444"><animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.4s" repeatCount="indefinite" /></circle>
-                  <circle cx="268" cy="136" r="3" fill="#10b981"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.5s" repeatCount="indefinite" /></circle>
+                <g filter="url(#shadow-r53)" transform="translate(160, 96)" className="r53-node-btn">
+                  <rect width="120" height="60" rx="6" fill="url(#resolver-grad)" stroke={(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "#f97316" : "#cbd5e1"} strokeWidth="1.5" />
+                  <rect x="3" y="3" width="114" height="54" rx="4" fill="#ffffff" opacity="0.6" />
                   {/* Slots */}
-                  <line x1="170" y1="112" x2="240" y2="112" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="170" y1="124" x2="240" y2="124" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="170" y1="136" x2="240" y2="136" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="170" y1="148" x2="220" y2="148" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
-                  <text x="220" y="94" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="700">🔄 Recursive Resolver</text>
-                  <text x="220" y="172" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">(ISP / 8.8.8.8)</text>
+                  <line x1="10" y1="12" x2="80" y2="12" stroke="#fed7aa" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="10" y1="24" x2="80" y2="24" stroke="#fed7aa" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="10" y1="36" x2="80" y2="36" stroke="#fed7aa" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="10" y1="48" x2="60" y2="48" stroke="#fed7aa" strokeWidth="2" strokeLinecap="round" />
+                  
+                  {/* Blinking LEDs */}
+                  <circle cx="95" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="12" r="2.5" fill="#f59e0b"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <circle cx="95" cy="24" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.2s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="24" r="2.5" fill="#10b981"><animate attributeName="opacity" values="1;0.1;1" dur="1.0s" repeatCount="indefinite" /></circle>
+                  <circle cx="95" cy="36" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.4s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="36" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.5s" repeatCount="indefinite" /></circle>
+                  
+                  <text x="60" y="-8" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="800">🔄 Recursive Resolver</text>
+                  <text x="60" y="72" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="600">(ISP DNS / 8.8.8.8)</text>
                 </g>
 
                 {/* 3. ROOT NAMESERVER (Red Chassis Server) */}
-                <g filter={dnsStepIndex === 2 ? "url(#glow)" : undefined}>
-                  <rect x="330" y="10" width="120" height="56" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke={dnsStepIndex === 2 ? "#ef4444" : "#cbd5e1"} strokeWidth="1.5" />
-                  <rect x="332" y="12" width="116" height="52" rx="6" fill="#fef2f2" stroke="#fecaca" strokeWidth="1" />
+                <g filter="url(#shadow-r53)" transform="translate(345, 12)" className="r53-node-btn">
+                  <rect width="120" height="52" rx="6" fill="url(#root-grad)" stroke={dnsStepIndex === 2 ? "#ef4444" : "#cbd5e1"} strokeWidth="1.5" />
+                  <rect x="3" y="3" width="114" height="46" rx="4" fill="#ffffff" opacity="0.6" />
+                  {/* Slots / Vents */}
+                  <line x1="10" y1="12" x2="80" y2="12" stroke="#fca5a5" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="10" y1="24" x2="80" y2="24" stroke="#fca5a5" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="10" y1="36" x2="60" y2="36" stroke="#fca5a5" strokeWidth="2" strokeLinecap="round" />
+                  
                   {/* Blinking LEDs */}
-                  <circle cx="426" cy="22" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="1;0.2;1" dur="0.5s" repeatCount="indefinite" /></circle>
-                  <circle cx="438" cy="22" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.7s" repeatCount="indefinite" /></circle>
-                  <circle cx="426" cy="34" r="2.5" fill="#10b981"><animate attributeName="opacity" values="1;0.1;1" dur="1.1s" repeatCount="indefinite" /></circle>
-                  <circle cx="438" cy="34" r="2.5" fill="#f59e0b"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.9s" repeatCount="indefinite" /></circle>
-                  {/* Vents */}
-                  <line x1="340" y1="22" x2="410" y2="22" stroke="#fee2e2" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="340" y1="34" x2="410" y2="34" stroke="#fee2e2" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="340" y1="46" x2="390" y2="46" stroke="#fee2e2" strokeWidth="2" strokeLinecap="round" />
-                  <text x="390" y="6" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="700">🌍 Root NS (a.root-servers.net)</text>
+                  <circle cx="95" cy="12" r="2" fill="#ef4444"><animate attributeName="opacity" values="1;0.2;1" dur="0.5s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="12" r="2" fill="#10b981"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.7s" repeatCount="indefinite" /></circle>
+                  <circle cx="95" cy="24" r="2" fill="#10b981"><animate attributeName="opacity" values="1;0.1;1" dur="1.1s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="24" r="2" fill="#f59e0b"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.9s" repeatCount="indefinite" /></circle>
+
+                  <text x="60" y="-4" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="800">🌍 Root Nameserver</text>
                 </g>
 
                 {/* 4. TLD NAMESERVER (Blue Chassis Server) */}
-                <g filter={dnsStepIndex === 3 ? "url(#glow)" : undefined}>
-                  <rect x="330" y="100" width="120" height="60" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke={dnsStepIndex === 3 ? "#3b82f6" : "#cbd5e1"} strokeWidth="1.5" />
-                  <rect x="332" y="102" width="116" height="56" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
+                <g filter="url(#shadow-r53)" transform="translate(345, 100)" className="r53-node-btn">
+                  <rect width="120" height="52" rx="6" fill="url(#tld-grad)" stroke={dnsStepIndex === 3 ? "#3b82f6" : "#cbd5e1"} strokeWidth="1.5" />
+                  <rect x="3" y="3" width="114" height="46" rx="4" fill="#ffffff" opacity="0.6" />
+                  {/* Slots / Vents */}
+                  <line x1="10" y1="12" x2="80" y2="12" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="10" y1="24" x2="80" y2="24" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="10" y1="36" x2="60" y2="36" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" />
+                  
                   {/* Blinking LEDs */}
-                  <circle cx="426" cy="112" r="2.5" fill="#3b82f6"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
-                  <circle cx="438" cy="112" r="2.5" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
-                  <circle cx="426" cy="124" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.3s" repeatCount="indefinite" /></circle>
-                  <circle cx="438" cy="124" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.0s" repeatCount="indefinite" /></circle>
-                  {/* Vents */}
-                  <line x1="340" y1="112" x2="410" y2="112" stroke="#bfdbfe" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="340" y1="124" x2="410" y2="124" stroke="#bfdbfe" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="340" y1="136" x2="390" y2="136" stroke="#bfdbfe" strokeWidth="2.5" strokeLinecap="round" />
-                  <text x="390" y="94" textAnchor="middle" fontSize="9.5" fill="#1d4ed8" fontWeight="700">🏷️ TLD NS (.com / .net)</text>
+                  <circle cx="95" cy="12" r="2" fill="#3b82f6"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="12" r="2" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
+                  <circle cx="95" cy="24" r="2" fill="#10b981"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.3s" repeatCount="indefinite" /></circle>
+                  <circle cx="107" cy="24" r="2" fill="#ef4444"><animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.0s" repeatCount="indefinite" /></circle>
+
+                  <text x="60" y="-4" textAnchor="middle" fontSize="9.5" fill="#1d4ed8" fontWeight="800">🏷️ TLD (.com / .net)</text>
                 </g>
 
                 {/* 5. AUTHORITATIVE NAMESERVER (AWS Route 53 Golden Orbit Node) */}
-                <g filter={dnsStepIndex === 4 ? "url(#glow)" : undefined}>
-                  <rect x="330" y="190" width="120" height="60" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke={dnsStepIndex === 4 ? "#a855f7" : "#cbd5e1"} strokeWidth="1.5" />
-                  <rect x="332" y="192" width="116" height="56" rx="6" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
+                <g filter="url(#shadow-r53)" transform="translate(345, 188)" className="r53-node-btn">
+                  <rect width="120" height="56" rx="6" fill="url(#r53-grad)" stroke={dnsStepIndex === 4 ? "#a855f7" : "#cbd5e1"} strokeWidth="1.5" />
+                  <rect x="3" y="3" width="114" height="50" rx="4" fill="#ffffff" opacity="0.6" />
+                  
                   {/* Golden Rotating Orbit Circle */}
-                  <circle cx="360" cy="220" r="16" fill="#eab308" opacity="0.1" />
-                  <circle cx="360" cy="220" r="13" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3,2">
-                    <animateTransform attributeName="transform" type="rotate" from="0 360 220" to="360 360 220" dur="4s" repeatCount="indefinite" />
+                  <circle cx="28" cy="28" r="14" fill="#eab308" opacity="0.1" />
+                  <circle cx="28" cy="28" r="11" fill="none" stroke="#f59e0b" strokeWidth="1.2" strokeDasharray="3,2">
+                    <animateTransform attributeName="transform" type="rotate" from="0 28 28" to="360 28 28" dur="4s" repeatCount="indefinite" />
                   </circle>
-                  {/* Routing arrows */}
-                  <path d="M 354 220 A 6 6 0 0 1 366 220" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" />
-                  <path d="M 366 220 A 6 6 0 0 1 354 220" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" />
-                  <polygon points="364,218 367,221 370,218" fill="#f59e0b" />
-                  <polygon points="350,222 353,219 356,222" fill="#f59e0b" />
-                  {/* Signal Lines */}
-                  <line x1="385" y1="208" x2="435" y2="208" stroke="#f3e8ff" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="385" y1="220" x2="435" y2="220" stroke="#f3e8ff" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="385" y1="232" x2="425" y2="232" stroke="#f3e8ff" strokeWidth="2" strokeLinecap="round" />
+                  
+                  {/* Slots */}
+                  <line x1="50" y1="18" x2="110" y2="18" stroke="#d8b4fe" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="50" y1="28" x2="110" y2="28" stroke="#d8b4fe" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="50" y1="38" x2="100" y2="38" stroke="#d8b4fe" strokeWidth="2" strokeLinecap="round" />
+
                   {/* Blinking Dots */}
-                  <circle cx="395" cy="208" r="1.5" fill="#a855f7"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.4s" repeatCount="indefinite" /></circle>
-                  <circle cx="410" cy="220" r="1.5" fill="#10b981"><animate attributeName="opacity" values="1;0.1;1" dur="0.6s" repeatCount="indefinite" /></circle>
-                  <circle cx="420" cy="232" r="1.5" fill="#f59e0b"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.8s" repeatCount="indefinite" /></circle>
-                  <text x="390" y="184" textAnchor="middle" fontSize="9.5" fill="#7c3aed" fontWeight="700">📍 Route 53 (Authoritative)</text>
+                  <circle cx="106" cy="18" r="1.5" fill="#a855f7"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.4s" repeatCount="indefinite" /></circle>
+                  <circle cx="106" cy="28" r="1.5" fill="#10b981"><animate attributeName="opacity" values="1;0.1;1" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <circle cx="106" cy="38" r="1.5" fill="#f59e0b"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.8s" repeatCount="indefinite" /></circle>
+
+                  <text x="60" y="-4" textAnchor="middle" fontSize="9.5" fill="#7c3aed" fontWeight="800">📍 Authoritative (Route 53)</text>
                 </g>
 
                 {/* 6. WEB SERVER TARGET */}
-                <g filter={dnsStepIndex === 6 ? "url(#glow-orange)" : undefined}>
-                  <rect x="550" y="100" width="120" height="60" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke={dnsStepIndex === 6 ? "#0ea5e9" : "#cbd5e1"} strokeWidth="1.5" />
-                  <rect x="552" y="102" width="116" height="56" rx="6" fill="#f0f9ff" stroke="#bae6fd" strokeWidth="1" />
+                <g filter="url(#shadow-r53)" transform="translate(540, 96)" className="r53-node-btn">
+                  <rect width="120" height="60" rx="6" fill="url(#server-grad)" stroke={dnsStepIndex === 6 ? "#0284c7" : "#cbd5e1"} strokeWidth="1.5" />
+                  <rect x="3" y="3" width="114" height="54" rx="4" fill="#ffffff" opacity="0.6" />
                   {/* Disk drive shapes */}
-                  <rect x="560" y="112" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="0.5" />
-                  <circle cx="566" cy="117" r="2" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.3s" repeatCount="indefinite" /></circle>
-                  <line x1="576" y1="117" x2="594" y2="117" stroke="#94a3b8" strokeWidth="1.5" />
+                  <rect x="10" y="10" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <circle cx="16" cy="15" r="1.8" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.3s" repeatCount="indefinite" /></circle>
+                  <line x1="26" y1="15" x2="44" y2="15" stroke="#94a3b8" strokeWidth="1" />
 
-                  <rect x="560" y="126" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="0.5" />
-                  <circle cx="566" cy="131" r="2" fill="#10b981"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.6s" repeatCount="indefinite" /></circle>
-                  <line x1="576" y1="131" x2="594" y2="131" stroke="#94a3b8" strokeWidth="1.5" />
+                  <rect x="10" y="24" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <circle cx="16" cy="29" r="1.8" fill="#10b981"><animate attributeName="opacity" values="0.1;1;0.1" dur="0.6s" repeatCount="indefinite" /></circle>
+                  <line x1="26" y1="29" x2="44" y2="29" stroke="#94a3b8" strokeWidth="1" />
 
-                  <rect x="560" y="140" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="0.5" />
-                  <circle cx="566" cy="145" r="2" fill="#ef4444"><animate attributeName="opacity" values="0.8;0.2;0.8" dur="0.9s" repeatCount="indefinite" /></circle>
-                  <line x1="576" y1="145" x2="594" y2="145" stroke="#94a3b8" strokeWidth="1.5" />
+                  <rect x="10" y="38" width="40" height="10" rx="2" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <circle cx="16" cy="43" r="1.8" fill="#ef4444"><animate attributeName="opacity" values="0.8;0.2;0.8" dur="0.9s" repeatCount="indefinite" /></circle>
+                  <line x1="26" y1="43" x2="44" y2="43" stroke="#94a3b8" strokeWidth="1" />
 
                   {/* Server Grille slots */}
-                  <line x1="614" y1="114" x2="654" y2="114" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="614" y1="126" x2="654" y2="126" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="614" y1="138" x2="654" y2="138" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="614" y1="148" x2="644" y2="148" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="60" y1="14" x2="105" y2="14" stroke="#bae6fd" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="60" y1="26" x2="105" y2="26" stroke="#bae6fd" strokeWidth="2.5" strokeLinecap="round" />
+                  <line x1="60" y1="38" x2="95" y2="38" stroke="#bae6fd" strokeWidth="2" strokeLinecap="round" />
 
-                  <text x="610" y="93" textAnchor="middle" fontSize="9.5" fill="#0284c7" fontWeight="700">🖥️ Web Server</text>
-                  <text x="610" y="172" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">IP: 1.2.3.4 (Host)</text>
+                  <text x="60" y="-8" textAnchor="middle" fontSize="9.5" fill="#0284c7" fontWeight="800">🖥️ Web Host Server</text>
+                  <text x="60" y="72" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="600">IP: 1.2.3.4 (Host)</text>
                 </g>
 
-
                 {/* 7. PRIVATE CACHE CABINET */}
-                <g opacity="0.95">
+                <g opacity="0.95" transform="translate(10, 12)">
                   <rect
-                    x="10"
-                    y="10"
                     width="130"
-                    height="72"
-                    rx="10"
+                    height="66"
+                    rx="8"
                     fill="rgba(255, 255, 255, 0.95)"
                     stroke={cacheBoxStroke}
                     strokeWidth={cacheBoxStrokeWidth}
                     className={cacheBoxClass}
                     style={{ transition: 'all 0.3s ease' }}
                   />
-                  <text x="75" y="24" textAnchor="middle" fontSize="10" fill={hasCacheItems ? "#10b981" : "#475569"} fontWeight="bold">📦 DNS Caches</text>
+                  <text x="65" y="16" textAnchor="middle" fontSize="9" fill={hasCacheItems ? "#10b981" : "#475569"} fontWeight="bold">📦 Local DNS Caches</text>
                   {/* Small folders */}
                   <rect
-                    x="20"
-                    y="32"
-                    width="22"
+                    x="10"
+                    y="24"
+                    width="32"
                     height="14"
-                    rx="3.5"
+                    rx="3"
                     fill="#f8fafc"
                     stroke={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#10b981" : "#cbd5e1")}
                     strokeWidth="1"
                     strokeOpacity={dnsStepIndex === 1 ? 1 : (hasCacheItems ? 0.9 : 0.5)}
                     style={{ transition: 'all 0.3s' }}
                   />
-                  <text x="31" y="42" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Browser</text>
+                  <text x="26" y="33" textAnchor="middle" fontSize="6" fill="#475569" fontWeight="bold">Browser</text>
 
                   <rect
-                    x="54"
-                    y="32"
-                    width="22"
+                    x="48"
+                    y="24"
+                    width="32"
                     height="14"
-                    rx="3.5"
+                    rx="3"
                     fill="#f8fafc"
                     stroke={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#10b981" : "#cbd5e1")}
                     strokeWidth="1"
                     strokeOpacity={dnsStepIndex === 1 ? 1 : (hasCacheItems ? 0.9 : 0.5)}
                     style={{ transition: 'all 0.3s' }}
                   />
-                  <text x="65" y="42" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">OS</text>
+                  <text x="64" y="33" textAnchor="middle" fontSize="6" fill="#475569" fontWeight="bold">OS Cache</text>
 
                   <rect
-                    x="88"
-                    y="32"
-                    width="22"
+                    x="86"
+                    y="24"
+                    width="34"
                     height="14"
-                    rx="3.5"
+                    rx="3"
                     fill="#f8fafc"
                     stroke={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#10b981" : "#cbd5e1")}
                     strokeWidth="1"
                     strokeOpacity={dnsStepIndex === 1 ? 1 : (hasCacheItems ? 0.9 : 0.5)}
                     style={{ transition: 'all 0.3s' }}
                   />
-                  <text x="99" y="42" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Resolver</text>
+                  <text x="103" y="33" textAnchor="middle" fontSize="6" fill="#475569" fontWeight="bold">Gateway</text>
 
                   <text
-                    x="75"
-                    y="64"
+                    x="65"
+                    y="54"
                     textAnchor="middle"
                     fontSize="7.5"
                     fill={dnsStepIndex === 1 ? (isCacheHit ? "#10b981" : "#ef4444") : (hasCacheItems ? "#059669" : "#64748b")}
@@ -1251,12 +1374,10 @@ export default function Route53Visualizer() {
                   <>
                     {isCacheHit ? (
                       <>
-                        {/* Packet from Browser to Cache */}
                         <circle cx="60" cy="130" r="4.5" fill="#10b981" filter="url(#glow)">
                           <animate attributeName="cx" values="60;75" dur="0.8s" repeatCount="indefinite" />
                           <animate attributeName="cy" values="130;46" dur="0.8s" repeatCount="indefinite" />
                         </circle>
-                        {/* Packet returning from Cache to Browser */}
                         <circle cx="75" cy="46" r="4.5" fill="#34d399" filter="url(#glow)">
                           <animate attributeName="cx" values="75;60" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
                           <animate attributeName="cy" values="46;130" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
@@ -1264,12 +1385,10 @@ export default function Route53Visualizer() {
                       </>
                     ) : (
                       <>
-                        {/* Orange/Red Cache query showing Miss */}
                         <circle cx="60" cy="130" r="4.5" fill="#f97316" filter="url(#glow)">
                           <animate attributeName="cx" values="60;75" dur="0.8s" repeatCount="indefinite" />
                           <animate attributeName="cy" values="130;46" dur="0.8s" repeatCount="indefinite" />
                         </circle>
-                        {/* Original resolver packet trail starts on Cache Miss */}
                         <circle cx="145" cy="130" r="5.5" fill="#ef4444" filter="url(#glow)">
                           <animate attributeName="cx" values="75;215" dur="0.8s" repeatCount="indefinite" />
                         </circle>
@@ -1460,35 +1579,103 @@ export default function Route53Visualizer() {
                 <div className="r53-sec">DNS Hierarchy Visualized</div>
                 <div className="r53-card" style={{ display: 'flex', justifyContent: 'center', padding: '10px 14px' }}>
                   <svg width="100%" viewBox="0 0 320 250" style={{ display: 'block' }}>
-                    <rect x="120" y="5" width="80" height="34" rx="8" fill="#fef2f2" stroke="#fca5a5" strokeWidth="0.5" />
-                    <text x="160" y="26" textAnchor="middle" fontSize="12" fill="#dc2626" fontWeight="500">. (Root)</text>
+                    <defs>
+                      <filter id="tree-glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1.5" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                      <filter id="r53-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="root-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff5f5" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <linearGradient id="tld-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0f9ff" />
+                        <stop offset="100%" stopColor="#e0f2fe" />
+                      </linearGradient>
+                      <linearGradient id="apex-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#dcfce7" />
+                      </linearGradient>
+                      <linearGradient id="sub-card-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fefce8" />
+                        <stop offset="100%" stopColor="#fef9c3" />
+                      </linearGradient>
+                    </defs>
 
-                    <rect x="20" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
-                    <text x="60" y="91" textAnchor="middle" fontSize="11" fill="#1d4ed8">.com TLD</text>
-                    <rect x="120" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
-                    <text x="160" y="91" text-anchor="middle" fontSize="11" fill="#1d4ed8">.org TLD</text>
-                    <rect x="220" y="70" width="80" height="34" rx="8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
-                    <text x="260" y="91" text-anchor="middle" fontSize="11" fill="#1d4ed8">.io TLD</text>
+                    {/* TIER ZONE BOUNDARIES */}
+                    {/* Root Zone */}
+                    <rect x="4" y="4" width="312" height="42" rx="6" fill="#fef2f2" fillOpacity="0.45" stroke="#fca5a5" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="15" fontSize="7.5" fill="#dc2626" fontWeight="bold">ROOT ZONE (. - Dot)</text>
 
-                    <rect x="20" y="136" width="90" height="34" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
-                    <text x="65" y="157" text-anchor="middle" fontSize="11" fill="#15803d">example.com</text>
-                    <rect x="130" y="136" width="90" height="34" rx="8" fill="#dcfce7" stroke="#86efac" strokeWidth="0.5" />
-                    <text x="175" y="157" text-anchor="middle" fontSize="11" fill="#15803d">google.com</text>
+                    {/* TLD Zone */}
+                    <rect x="4" y="52" width="312" height="58" rx="6" fill="#eff6ff" fillOpacity="0.45" stroke="#bfdbfe" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="63" fontSize="7.5" fill="#1d4ed8" fontWeight="bold">TOP-LEVEL DOMAIN TIER (TLDs)</text>
 
-                    <rect x="20" y="202" width="90" height="34" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
-                    <text x="65" y="216" text-anchor="middle" fontSize="10" fill="#854d0e">www.</text>
-                    <text x="65" y="230" text-anchor="middle" fontSize="9" fill="#854d0e">example.com</text>
-                    <rect x="130" y="202" width="90" height="34" rx="8" fill="#fef9c3" stroke="#fde047" strokeWidth="0.5" />
-                    <text x="175" y="216" text-anchor="middle" fontSize="10" fill="#854d0e">api.</text>
-                    <text x="175" y="230" text-anchor="middle" fontSize="9" fill="#854d0e">example.com</text>
+                    {/* Apex Zone */}
+                    <rect x="4" y="116" width="312" height="60" rx="6" fill="#f0fdf4" fillOpacity="0.45" stroke="#bbf7d0" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="127" fontSize="7.5" fill="#15803d" fontWeight="bold">SECOND-LEVEL DOMAINS (Apex Zones)</text>
 
-                    <line x1="160" y1="39" x2="60" y2="70" stroke="#6b7280" strokeWidth="0.5" />
-                    <line x1="160" y1="39" x2="160" y2="70" stroke="#6b7280" strokeWidth="0.5" />
-                    <line x1="160" y1="39" x2="260" y2="70" stroke="#6b7280" strokeWidth="0.5" />
-                    <line x1="60" y1="104" x2="65" y2="136" stroke="#6b7280" strokeWidth="0.5" />
-                    <line x1="60" y1="104" x2="175" y2="136" stroke="#6b7280" strokeWidth="0.5" />
-                    <line x1="65" y1="170" x2="65" y2="202" stroke="#6b7280" strokeWidth="0.5" />
-                    <line x1="65" y1="170" x2="175" y2="202" stroke="#6b7280" strokeWidth="0.5" />
+                    {/* Subdomains Zone */}
+                    <rect x="4" y="182" width="312" height="64" rx="6" fill="#fefce8" fillOpacity="0.45" stroke="#fef08a" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="193" fontSize="7.5" fill="#854d0e" fontWeight="bold">SUBDOMAINS (Leaf Records)</text>
+
+                    {/* HIERARCHY PATHWAYS (CONDUITS) */}
+                    {/* Background Static Paths */}
+                    <line x1="160" y1="38" x2="160" y2="64" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="2,2" />
+                    <line x1="160" y1="38" x2="260" y2="64" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="2,2" />
+                    <line x1="60" y1="90" x2="165" y2="134" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="2,2" />
+                    <line x1="65" y1="162" x2="165" y2="204" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="2,2" />
+
+                    {/* Active Purple Resolution Path */}
+                    <line x1="160" y1="38" x2="60" y2="64" stroke="#8b5cf6" strokeWidth="2.5" className="r53-flow-purple" filter="url(#tree-glow)" />
+                    <line x1="60" y1="90" x2="65" y2="134" stroke="#8b5cf6" strokeWidth="2.5" className="r53-flow-purple" filter="url(#tree-glow)" />
+                    <line x1="65" y1="162" x2="65" y2="204" stroke="#8b5cf6" strokeWidth="2.5" className="r53-flow-purple" filter="url(#tree-glow)" />
+
+                    {/* NODE CARDS */}
+                    {/* Root Card */}
+                    <g transform="translate(120, 12)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="80" height="26" rx="6" fill="url(#root-card-grad)" stroke="#ef4444" strokeWidth="1" />
+                      <text x="40" y="16" textAnchor="middle" fontSize="10.5" fill="#dc2626" fontWeight="bold">. (Root)</text>
+                    </g>
+
+                    {/* TLD Cards */}
+                    <g transform="translate(20, 64)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="80" height="26" rx="6" fill="url(#tld-card-grad)" stroke="#3b82f6" strokeWidth="1" />
+                      <text x="40" y="16" textAnchor="middle" fontSize="10" fill="#1d4ed8" fontWeight="bold">.com TLD</text>
+                    </g>
+                    <g transform="translate(120, 64)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="80" height="26" rx="6" fill="url(#tld-card-grad)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="40" y="16" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">.org TLD</text>
+                    </g>
+                    <g transform="translate(220, 64)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="80" height="26" rx="6" fill="url(#tld-card-grad)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="40" y="16" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">.io TLD</text>
+                    </g>
+
+                    {/* Apex Cards */}
+                    <g transform="translate(20, 134)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="90" height="28" rx="6" fill="url(#apex-card-grad)" stroke="#10b981" strokeWidth="1.25" />
+                      <text x="45" y="17" textAnchor="middle" fontSize="9.5" fill="#047857" fontWeight="bold">example.com</text>
+                    </g>
+                    <g transform="translate(130, 134)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="90" height="28" rx="6" fill="url(#apex-card-grad)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="45" y="17" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="bold">google.com</text>
+                    </g>
+
+                    {/* Subdomain Cards */}
+                    <g transform="translate(20, 202)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="90" height="34" rx="6" fill="url(#sub-card-grad)" stroke="#eab308" strokeWidth="1.25" />
+                      <text x="45" y="15" textAnchor="middle" fontSize="9" fill="#a16207" fontWeight="bold">www.</text>
+                      <text x="45" y="27" textAnchor="middle" fontSize="8" fill="#a16207">example.com</text>
+                    </g>
+                    <g transform="translate(130, 202)" filter="url(#r53-shadow)">
+                      <rect x="0" y="0" width="90" height="34" rx="6" fill="url(#sub-card-grad)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="45" y="15" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold">api.</text>
+                      <text x="45" y="27" textAnchor="middle" fontSize="8" fill="#475569">example.com</text>
+                    </g>
                   </svg>
                 </div>
 
@@ -1538,55 +1725,134 @@ export default function Route53Visualizer() {
               <div>
                 <div className="r53-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Route 53 Operational Architecture</div>
-                  <svg width="100%" viewBox="0 0 340 420" className="r53-svg-bg">
+                  <svg width="100%" viewBox="0 0 340 420" className="r53-svg-bg" style={{ display: 'block' }}>
                     <defs>
-                      <marker id="r1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7c3aed" /></marker>
-                      <marker id="r2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#059669" /></marker>
+                      <filter id="r53-shadow-op" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-grad-op" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f8fafc" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <linearGradient id="resolver-grad-op" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff7ed" />
+                        <stop offset="100%" stopColor="#ffedd5" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-op" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="alb-grad-op" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <linearGradient id="cf-grad-op" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#dcfce7" />
+                      </linearGradient>
+                      <linearGradient id="host-grad-op" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f8fafc" />
+                      </linearGradient>
+                      <filter id="glow-op" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
                     </defs>
-                    <rect x="10" y="10" width="320" height="52" rx="10" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" strokeWidth="1" />
-                    <text x="170" y="30" textAnchor="middle" fontSize="12.5" fill="#1e293b" fontWeight="700">🌐 User requests domain.com</text>
-                    <text x="170" y="48" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="600">Browser / App / Client device</text>
 
-                    <rect x="10" y="86" width="320" height="52" rx="10" fill="rgba(255, 255, 255, 0.9)" stroke="#fed7aa" strokeWidth="1" />
-                    <text x="170" y="106" textAnchor="middle" fontSize="12.5" fill="#ea580c" fontWeight="700">🔄 DNS Resolver (8.8.8.8 / ISP)</text>
-                    <text x="170" y="124" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="600">Performs recursive checks → queries Route 53</text>
+                    {/* BOUNDARIES / SUBNET TIERS */}
+                    {/* User Ingress Zone */}
+                    <rect x="4" y="4" width="332" height="66" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#e2e8f0" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7.5" fill="#64748b" fontWeight="bold">CLIENT USER INGRESS ZONE</text>
 
-                    <rect x="10" y="162" width="320" height="72" rx="10" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" strokeWidth="1.5" />
-                    <text x="170" y="182" textAnchor="middle" fontSize="13.5" fill="#7c3aed" fontWeight="700">🚀 Route 53 DNS</text>
-                    <rect x="22" y="194" width="90" height="28" rx="6" fill="rgba(243, 232, 255, 0.8)" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="67" y="212" textAnchor="middle" fontSize="10" fill="#6d28d9" fontWeight="bold">Hosted Zone</text>
-                    <rect x="125" y="194" width="90" height="28" rx="6" fill="rgba(243, 232, 255, 0.8)" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="170" y="212" textAnchor="middle" fontSize="10" fill="#6d28d9" fontWeight="bold">Routing Rules</text>
-                    <rect x="228" y="194" width="90" height="28" rx="6" fill="rgba(243, 232, 255, 0.8)" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="273" y="212" textAnchor="middle" fontSize="10" fill="#6d28d9" fontWeight="bold">Health Status</text>
+                    {/* Recursive ISP Subnet */}
+                    <rect x="4" y="78" width="332" height="66" rx="8" fill="#fffaf2" fillOpacity="0.4" stroke="#fed7aa" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="88" fontSize="7.5" fill="#ea580c" fontWeight="bold">RECURSIVE ISP RESOLUTION SUBNET</text>
 
-                    <rect x="10" y="258" width="148" height="52" rx="10" fill="rgba(255, 255, 255, 0.9)" stroke="#93c5fd" strokeWidth="1" />
-                    <text x="84" y="278" textAnchor="middle" fontSize="11.5" fill="#1d4ed8" fontWeight="700">⚖️ ALB / NLB</text>
-                    <text x="84" y="296" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="600">Elastic Load Balancer</text>
+                    {/* Route 53 Global Anycast Edge */}
+                    <rect x="4" y="152" width="332" height="92" rx="8" fill="#faf5ff" fillOpacity="0.4" stroke="#e9d5ff" strokeWidth="1.25" strokeDasharray="3,3" />
+                    <text x="12" y="162" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 GLOBAL ANYCAST EDGE ZONE</text>
+
+                    {/* AWS Target Infrastructure Private VPC */}
+                    <rect x="4" y="252" width="332" height="162" rx="8" fill="#f0f9ff" fillOpacity="0.3" stroke="#bae6fd" strokeWidth="1.25" strokeDasharray="3,3" />
+                    <text x="12" y="262" fontSize="7.5" fill="#0369a1" fontWeight="bold">AWS INFRASTRUCTURE PLANE (PRIVATE VPC)</text>
+
+                    {/* FLOWING CONDUITS */}
+                    <line x1="170" y1="70" x2="170" y2="78" stroke="#8b5cf6" strokeWidth="2" className="r53-flow-purple" filter="url(#glow-op)" />
+                    <line x1="170" y1="144" x2="170" y2="152" stroke="#f97316" strokeWidth="2" className="r53-flow-orange" filter="url(#glow-op)" />
+
+                    <line x1="110" y1="244" x2="84" y2="268" stroke="#3b82f6" strokeWidth="2" className="r53-flow-blue" filter="url(#glow-op)" />
+                    <line x1="230" y1="244" x2="256" y2="268" stroke="#10b981" strokeWidth="2" className="r53-flow-green" filter="url(#glow-op)" />
+
+                    <line x1="84" y1="320" x2="55" y2="338" stroke="#3b82f6" strokeWidth="1.5" className="r53-flow-blue" />
+                    <line x1="84" y1="320" x2="160" y2="338" stroke="#3b82f6" strokeWidth="1.5" className="r53-flow-blue" />
+                    <line x1="256" y1="320" x2="275" y2="338" stroke="#10b981" strokeWidth="1.5" className="r53-flow-green" />
+
+                    {/* INTERACTIVE CARDS */}
+                    {/* User requests */}
+                    <g transform="translate(10, 18)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="320" height="46" rx="8" fill="url(#user-grad-op)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="160" y="20" textAnchor="middle" fontSize="12" fill="#1e293b" fontWeight="700">🌐 User requests domain.com</text>
+                      <text x="160" y="35" textAnchor="middle" fontSize="9.5" fill="#64748b">Browser / App / Client device</text>
+                    </g>
+
+                    {/* DNS Resolver */}
+                    <g transform="translate(10, 92)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="320" height="46" rx="8" fill="url(#resolver-grad-op)" stroke="#f97316" strokeWidth="1" />
+                      <text x="160" y="20" textAnchor="middle" fontSize="12" fill="#ea580c" fontWeight="700">🔄 DNS Resolver (8.8.8.8 / ISP)</text>
+                      <text x="160" y="34" textAnchor="middle" fontSize="9.5" fill="#7c2d12">Performs recursive checks → queries Route 53</text>
+                    </g>
+
+                    {/* Route 53 DNS */}
+                    <g transform="translate(10, 166)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="320" height="70" rx="8" fill="url(#r53-grad-op)" stroke="#7c3aed" strokeWidth="1.5" />
+                      <text x="160" y="20" textAnchor="middle" fontSize="13" fill="#6d28d9" fontWeight="700">🚀 Route 53 DNS Edge Plane</text>
+                      
+                      <g transform="translate(12, 32)">
+                        <rect x="0" y="0" width="90" height="26" rx="5" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="0.5" />
+                        <text x="45" y="16" textAnchor="middle" fontSize="9.5" fill="#6d28d9" fontWeight="bold">Hosted Zone</text>
+                      </g>
+                      <g transform="translate(115, 32)">
+                        <rect x="0" y="0" width="90" height="26" rx="5" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="0.5" />
+                        <text x="45" y="16" textAnchor="middle" fontSize="9.5" fill="#6d28d9" fontWeight="bold">Routing Rules</text>
+                      </g>
+                      <g transform="translate(218, 32)">
+                        <rect x="0" y="0" width="90" height="26" rx="5" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="0.5" />
+                        <text x="45" y="16" textAnchor="middle" fontSize="9.5" fill="#6d28d9" fontWeight="bold">Health Status</text>
+                      </g>
+                    </g>
+
+                    {/* ALB / CF targets */}
+                    <g transform="translate(10, 268)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="148" height="46" rx="8" fill="url(#alb-grad-op)" stroke="#3b82f6" strokeWidth="1.25" />
+                      <text x="74" y="20" textAnchor="middle" fontSize="11" fill="#1d4ed8" fontWeight="700">⚖️ ALB / NLB</text>
+                      <text x="74" y="34" textAnchor="middle" fontSize="9.5" fill="#475569">Elastic Load Balancer</text>
+                    </g>
                     
-                    <rect x="182" y="258" width="148" height="52" rx="10" fill="rgba(255, 255, 255, 0.9)" stroke="#86efac" strokeWidth="1" />
-                    <text x="256" y="278" textAnchor="middle" fontSize="11.5" fill="#059669" fontWeight="700">☁️ CloudFront</text>
-                    <text x="256" y="296" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="600">Global CDN Distribution</text>
+                    <g transform="translate(182, 268)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="148" height="46" rx="8" fill="url(#cf-grad-op)" stroke="#10b981" strokeWidth="1.25" />
+                      <text x="74" y="20" textAnchor="middle" fontSize="11.5" fill="#047857" fontWeight="700">☁️ CloudFront</text>
+                      <text x="74" y="34" textAnchor="middle" fontSize="9.5" fill="#475569">Global CDN Distribution</text>
+                    </g>
 
-                    <rect x="10" y="334" width="90" height="52" rx="10" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="55" y="354" textAnchor="middle" fontSize="11.5" fill="#1e293b" fontWeight="700">EC2</text>
-                    <text x="55" y="372" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="600">VM Instances</text>
+                    {/* Backends */}
+                    <g transform="translate(10, 338)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="90" height="46" rx="8" fill="url(#host-grad-op)" stroke="#cbd5e1" strokeWidth="0.75" />
+                      <text x="45" y="20" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">EC2</text>
+                      <text x="45" y="34" textAnchor="middle" fontSize="9" fill="#64748b">VM Instances</text>
+                    </g>
                     
-                    <rect x="115" y="334" width="90" height="52" rx="10" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="160" y="354" textAnchor="middle" fontSize="11.5" fill="#1e293b" fontWeight="700">ECS/EKS</text>
-                    <text x="160" y="372" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="600">Containers</text>
+                    <g transform="translate(115, 338)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="90" height="46" rx="8" fill="url(#host-grad-op)" stroke="#cbd5e1" strokeWidth="0.75" />
+                      <text x="45" y="20" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">ECS/EKS</text>
+                      <text x="45" y="34" textAnchor="middle" fontSize="9" fill="#64748b">Containers</text>
+                    </g>
                     
-                    <rect x="220" y="334" width="110" height="52" rx="10" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="275" y="354" textAnchor="middle" fontSize="11.5" fill="#1e293b" fontWeight="700">S3 / Lambda</text>
-                    <text x="275" y="372" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="600">Serverless Hosting</text>
-
-                    <line x1="170" y1="62" x2="170" y2="86" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#r1)" />
-                    <line x1="170" y1="138" x2="170" y2="162" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#r1)" />
-                    <line x1="110" y1="234" x2="84" y2="258" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#r1)" />
-                    <line x1="230" y1="234" x2="256" y2="258" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#r1)" />
-                    <line x1="84" y1="310" x2="55" y2="334" stroke="#059669" strokeWidth="1.5" markerEnd="url(#r2)" />
-                    <line x1="84" y1="310" x2="160" y2="334" stroke="#059669" strokeWidth="1.5" markerEnd="url(#r2)" />
-                    <line x1="256" y1="310" x2="275" y2="334" stroke="#059669" strokeWidth="1.5" markerEnd="url(#r2)" />
+                    <g transform="translate(220, 338)" filter="url(#r53-shadow-op)">
+                      <rect x="0" y="0" width="110" height="46" rx="8" fill="url(#host-grad-op)" stroke="#cbd5e1" strokeWidth="0.75" />
+                      <text x="55" y="20" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">S3 / Lambda</text>
+                      <text x="55" y="34" textAnchor="middle" fontSize="9" fill="#64748b">Serverless Hosting</text>
+                    </g>
                   </svg>
                 </div>
               </div>
@@ -1709,195 +1975,628 @@ export default function Route53Visualizer() {
                 </div>
 
                 {activePolicy === 'simple' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <circle cx="160" cy="30" r="18" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" />
-                    <text x="160" y="34" textAnchor="middle" fontSize="14">💻</text>
-                    <text x="160" y="60" textAnchor="middle" fontSize="10.5" fill="#7c3aed" fontWeight="bold">Global User</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-simple" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-grad-simple" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-simple" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="target-grad-simple" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <filter id="glow-simple" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <rect x="100" y="90" width="120" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="114" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (Simple)</text>
+                    {/* Zone Boundaries */}
+                    {/* Global User Zone */}
+                    <rect x="4" y="4" width="312" height="64" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7.5" fill="#64748b" fontWeight="bold">GLOBAL USER INGRESS ZONE</text>
 
-                    <rect x="40" y="170" width="100" height="36" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="90" y="192" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">IP: 1.2.3.4 (Static)</text>
-                    <rect x="180" y="170" width="100" height="36" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="230" y="192" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">IP: 1.2.3.5 (Static)</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="74" width="312" height="66" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="84" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <line x1="160" y1="65" x2="160" y2="88" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,2" />
-                    <line x1="140" y1="130" x2="90" y2="168" stroke="#7c3aed" strokeWidth="1.5" />
-                    <line x1="180" y1="130" x2="230" y2="168" stroke="#7c3aed" strokeWidth="1.5" />
+                    {/* AWS Infrastructure Target Plane */}
+                    <rect x="4" y="146" width="312" height="70" rx="6" fill="#f0f9ff" fillOpacity="0.3" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="156" fontSize="7.5" fill="#0369a1" fontWeight="bold">AWS INFRASTRUCTURE PLANE</text>
+
+                    {/* Flow pipelines */}
+                    <line x1="160" y1="58" x2="160" y2="82" stroke="#8b5cf6" strokeWidth="2" className="r53-flow-purple" filter="url(#glow-simple)" />
+                    <line x1="140" y1="126" x2="90" y2="158" stroke="#3b82f6" strokeWidth="2" className="r53-flow-blue" filter="url(#glow-simple)" />
+                    <line x1="180" y1="126" x2="230" y2="158" stroke="#3b82f6" strokeWidth="2" className="r53-flow-blue" filter="url(#glow-simple)" />
+
+                    {/* Cards */}
+                    <g transform="translate(110, 18)" filter="url(#r53-shadow-simple)">
+                      <rect x="0" y="0" width="100" height="34" rx="6" fill="url(#user-grad-simple)" stroke="#c4b5fd" strokeWidth="1" />
+                      <text x="50" y="15" textAnchor="middle" fontSize="12">💻</text>
+                      <text x="50" y="27" textAnchor="middle" fontSize="8" fill="#7c3aed" fontWeight="bold">Global User</text>
+                    </g>
+
+                    <g transform="translate(90, 86)" filter="url(#r53-shadow-simple)">
+                      <rect x="0" y="0" width="140" height="40" rx="6" fill="url(#r53-grad-simple)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="70" y="18" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53</text>
+                      <text x="70" y="32" textAnchor="middle" fontSize="8.5" fill="#6d28d9" fontWeight="bold">Simple Routing</text>
+                    </g>
+
+                    <g transform="translate(30, 162)" filter="url(#r53-shadow-simple)">
+                      <rect x="0" y="0" width="110" height="38" rx="6" fill="url(#target-grad-simple)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="55" y="16" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="700">Web Instance A</text>
+                      <text x="55" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="bold">IP: 1.2.3.4 (Static)</text>
+                    </g>
+                    
+                    <g transform="translate(180, 162)" filter="url(#r53-shadow-simple)">
+                      <rect x="0" y="0" width="110" height="38" rx="6" fill="url(#target-grad-simple)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="55" y="16" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="700">Web Instance B</text>
+                      <text x="55" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="bold">IP: 1.2.3.5 (Static)</text>
+                    </g>
                   </svg>
                 )}
 
                 {activePolicy === 'weighted' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <circle cx="160" cy="30" r="18" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" />
-                    <text x="160" y="34" textAnchor="middle" fontSize="14">💻</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-weighted" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-grad-weighted" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-weighted" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="target-grad-a" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff7ed" />
+                        <stop offset="100%" stopColor="#ffedd5" />
+                      </linearGradient>
+                      <linearGradient id="target-grad-b" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <filter id="glow-weighted" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (Weighted)</text>
+                    {/* Zone Boundaries */}
+                    {/* Global User Zone */}
+                    <rect x="4" y="4" width="312" height="60" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7.5" fill="#64748b" fontWeight="bold">GLOBAL USER INGRESS ZONE</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="80" y="178" textAnchor="middle" fontSize="10.5" fill="#dc2626" fontWeight="bold">Region A (70%)</text>
-                    <text x="80" y="194" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="600">us-east-1 ALB</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="68" width="312" height="64" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="78" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="240" y="178" textAnchor="middle" fontSize="10.5" fill="#1d4ed8" fontWeight="bold">Region B (30%)</text>
-                    <text x="240" y="194" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="600">eu-west-1 ALB</text>
+                    {/* AWS Target Infrastructure Plane with Regional Subnets */}
+                    <rect x="4" y="136" width="150" height="80" rx="6" fill="#fffaf2" fillOpacity="0.4" stroke="#fed7aa" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="147" fontSize="7" fill="#ea580c" fontWeight="bold">US-EAST-1 REGIONAL SUBNET</text>
 
-                    <line x1="160" y1="50" x2="160" y2="78" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <line x1="120" y1="120" x2="80" y2="158" stroke="#7c3aed" strokeWidth="1.8" />
-                    <text x="90" y="136" fontSize="9.5" fill="#7c3aed" fontWeight="bold">70% traffic</text>
-                    <line x1="200" y1="120" x2="240" y2="158" stroke="#7c3aed" strokeWidth="1.2" />
-                    <text x="220" y="136" fontSize="9.5" fill="#7c3aed" fontWeight="600">30% traffic</text>
+                    <rect x="166" y="136" width="150" height="80" rx="6" fill="#f0f9ff" fillOpacity="0.3" stroke="#bae6fd" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="174" y="147" fontSize="7" fill="#0369a1" fontWeight="bold">EU-WEST-1 REGIONAL SUBNET</text>
+
+                    {/* Flow pipelines */}
+                    <line x1="160" y1="52" x2="160" y2="76" stroke="#8b5cf6" strokeWidth="2" className="r53-flow-purple" filter="url(#glow-weighted)" />
+                    <line x1="120" y1="120" x2="70" y2="152" stroke="#ea580c" strokeWidth="3" className="r53-flow-orange" filter="url(#glow-weighted)" />
+                    <line x1="200" y1="120" x2="240" y2="152" stroke="#3b82f6" strokeWidth="1.5" className="r53-flow-blue" />
+
+                    {/* Cards */}
+                    <g transform="translate(120, 12)" filter="url(#r53-shadow-weighted)">
+                      <circle cx="40" cy="18" r="14" fill="url(#user-grad-weighted)" stroke="#cbd5e1" />
+                      <text x="40" y="22" textAnchor="middle" fontSize="12">💻</text>
+                    </g>
+
+                    <g transform="translate(90, 80)" filter="url(#r53-shadow-weighted)">
+                      <rect x="0" y="0" width="140" height="38" rx="6" fill="url(#r53-grad-weighted)" stroke="#7c3aed" strokeWidth="1.25" />
+                      <text x="70" y="16" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53 (Weighted)</text>
+                      <text x="70" y="28" textAnchor="middle" fontSize="8.5" fill="#6d28d9" fontWeight="bold">Split Ratio Load Balancing</text>
+                    </g>
+
+                    <g transform="translate(14, 156)" filter="url(#r53-shadow-weighted)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#target-grad-a)" stroke="#f97316" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="bold">Region A (70% Weight)</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">us-east-1 Primary ALB</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#f97316" fontWeight="bold">⚡ High-Flow Target</text>
+                    </g>
+
+                    <g transform="translate(176, 156)" filter="url(#r53-shadow-weighted)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#target-grad-b)" stroke="#bae6fd" strokeWidth="1" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#1d4ed8" fontWeight="bold">Region B (30% Weight)</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">eu-west-1 Standby ALB</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#3b82f6" fontWeight="bold">💧 Low-Flow Target</text>
+                    </g>
                   </svg>
                 )}
 
                 {activePolicy === 'latency' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <circle cx="60" cy="30" r="16" fill="rgba(255, 255, 255, 0.9)" stroke="#fca5a5" />
-                    <text x="60" y="34" textAnchor="middle" fontSize="12">🇺🇸</text>
-                    <circle cx="260" cy="30" r="16" fill="rgba(255, 255, 255, 0.9)" stroke="#86efac" />
-                    <text x="260" y="34" textAnchor="middle" fontSize="12">🇮🇳</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-latency" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-us-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff5f5" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <linearGradient id="user-apac-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#dcfce7" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-latency" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="latency-us" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff7ed" />
+                        <stop offset="100%" stopColor="#ffedd5" />
+                      </linearGradient>
+                      <linearGradient id="latency-apac" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#dcfce7" />
+                      </linearGradient>
+                      <filter id="glow-latency" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (Latency)</text>
+                    {/* Zone Boundaries */}
+                    {/* US User Zone */}
+                    <rect x="4" y="4" width="150" height="60" rx="6" fill="#fff5f5" fillOpacity="0.4" stroke="#fca5a5" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7" fill="#dc2626" fontWeight="bold">US CLIENT ZONE</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="80" y="178" textAnchor="middle" fontSize="10.5" fill="#ea580c" fontWeight="bold">us-east-1 (12ms)</text>
-                    <text x="80" y="192" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="600">Closest to USA</text>
+                    {/* APAC User Zone */}
+                    <rect x="166" y="4" width="150" height="60" rx="6" fill="#f0fdf4" fillOpacity="0.4" stroke="#86efac" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="174" y="14" fontSize="7" fill="#15803d" fontWeight="bold">APAC CLIENT ZONE</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="240" y="178" textAnchor="middle" fontSize="10.5" fill="#10b981" fontWeight="bold">ap-south-1 (18ms)</text>
-                    <text x="240" y="192" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="600">Closest to India</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="70" width="312" height="62" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="80" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <line x1="70" y1="46" x2="115" y2="80" stroke="#ef4444" strokeWidth="1.2" />
-                    <line x1="250" y1="46" x2="205" y2="80" stroke="#10b981" strokeWidth="1.2" />
-                    <line x1="120" y1="120" x2="80" y2="160" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="200" y1="120" x2="240" y2="160" stroke="#7c3aed" strokeWidth="1.2" />
+                    {/* AWS Target infrastructure regional subnets */}
+                    <rect x="4" y="136" width="150" height="80" rx="6" fill="#fffaf2" fillOpacity="0.4" stroke="#fed7aa" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="147" fontSize="7" fill="#ea580c" fontWeight="bold">US-EAST-1 REGIONAL SUBNET</text>
+
+                    <rect x="166" y="136" width="150" height="80" rx="6" fill="#f0fdf4" fillOpacity="0.3" stroke="#bbf7d0" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="174" y="147" fontSize="7" fill="#15803d" fontWeight="bold">AP-SOUTH-1 REGIONAL SUBNET</text>
+
+                    {/* Flow pipelines */}
+                    <line x1="70" y1="50" x2="120" y2="80" stroke="#ef4444" strokeWidth="2" className="r53-flow-red" filter="url(#glow-latency)" />
+                    <line x1="250" y1="50" x2="205" y2="80" stroke="#10b981" strokeWidth="2" className="r53-flow-green" filter="url(#glow-latency)" />
+                    <line x1="120" y1="116" x2="70" y2="150" stroke="#ea580c" strokeWidth="2" className="r53-flow-orange" filter="url(#glow-latency)" />
+                    <line x1="200" y1="116" x2="240" y2="150" stroke="#10b981" strokeWidth="2" className="r53-flow-green" filter="url(#glow-latency)" />
+
+                    {/* Cards */}
+                    <g transform="translate(50, 16)" filter="url(#r53-shadow-latency)">
+                      <circle cx="15" cy="15" r="13" fill="url(#user-us-grad)" stroke="#dc2626" />
+                      <text x="15" y="19" textAnchor="middle" fontSize="11">🇺🇸</text>
+                    </g>
+                    <g transform="translate(230, 16)" filter="url(#r53-shadow-latency)">
+                      <circle cx="15" cy="15" r="13" fill="url(#user-apac-grad)" stroke="#15803d" />
+                      <text x="15" y="19" textAnchor="middle" fontSize="11">🇮🇳</text>
+                    </g>
+
+                    <g transform="translate(90, 80)" filter="url(#r53-shadow-latency)">
+                      <rect x="0" y="0" width="140" height="38" rx="6" fill="url(#r53-grad-latency)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="70" y="16" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53 (Latency)</text>
+                      <text x="70" y="28" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Lowest Ping Routing</text>
+                    </g>
+
+                    <g transform="translate(14, 156)" filter="url(#r53-shadow-latency)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#latency-us)" stroke="#f97316" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="bold">us-east-1 (12ms)</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Closest to US client</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">⚡ Fast for US (12ms)</text>
+                    </g>
+
+                    <g transform="translate(176, 156)" filter="url(#r53-shadow-latency)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#latency-apac)" stroke="#10b981" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#15803d" fontWeight="bold">ap-south-1 (18ms)</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Closest to India client</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#10b981" fontWeight="bold">⚡ Fast for APAC (18ms)</text>
+                    </g>
                   </svg>
                 )}
 
                 {activePolicy === 'failover' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <circle cx="160" cy="25" r="16" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" />
-                    <text x="160" y="29" textAnchor="middle" fontSize="12">💻</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-failover" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-grad-failover" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-failover" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="failover-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#dcfce7" />
+                      </linearGradient>
+                      <linearGradient id="failover-standby" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f8fafc" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <filter id="glow-failover" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <rect x="90" y="70" width="140" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="94" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (Failover)</text>
+                    {/* Zone Boundaries */}
+                    {/* Global User Zone */}
+                    <rect x="4" y="4" width="312" height="56" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7.5" fill="#64748b" fontWeight="bold">GLOBAL USER INGRESS ZONE</text>
 
-                    <rect x="20" y="150" width="120" height="50" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="80" y="168" textAnchor="middle" fontSize="10.5" fill="#10b981" fontWeight="bold">Primary Writer</text>
-                    <text x="80" y="182" textAnchor="middle" fontSize="9.5" fill="#059669" fontWeight="bold">✅ HEALTHY</text>
-                    <text x="80" y="194" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">us-east-1</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="66" width="312" height="60" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="76" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <rect x="180" y="150" width="120" height="50" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="240" y="168" textAnchor="middle" fontSize="10.5" fill="#ef4444" fontWeight="bold">Secondary Standby</text>
-                    <text x="240" y="182" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="bold">💤 PASSIVE STANDBY</text>
-                    <text x="240" y="194" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">eu-west-1</text>
+                    {/* AWS Infrastructure Regional Subnets */}
+                    <rect x="4" y="132" width="150" height="84" rx="6" fill="#f0fdf4" fillOpacity="0.45" stroke="#bbf7d0" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="143" fontSize="7" fill="#15803d" fontWeight="bold">US-EAST-1 PRIMARY SUBNET</text>
 
-                    <line x1="160" y1="42" x2="160" y2="68" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <line x1="120" y1="110" x2="80" y2="150" stroke="#10b981" strokeWidth="2.5" />
-                    <line x1="200" y1="110" x2="240" y2="150" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <rect x="166" y="132" width="150" height="84" rx="6" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="174" y="143" fontSize="7" fill="#475569" fontWeight="bold">EU-WEST-1 STANDBY SUBNET</text>
+
+                    {/* Flow pipelines */}
+                    <line x1="160" y1="46" x2="160" y2="72" stroke="#8b5cf6" strokeWidth="2" className="r53-flow-purple" filter="url(#glow-failover)" />
+                    <line x1="120" y1="108" x2="70" y2="148" stroke="#10b981" strokeWidth="2.5" className="r53-flow-green" filter="url(#glow-failover)" />
+                    <line x1="200" y1="108" x2="240" y2="148" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,4" className="r53-flow-red" />
+
+                    {/* Cards */}
+                    <g transform="translate(136, 12)" filter="url(#r53-shadow-failover)">
+                      <circle cx="24" cy="15" r="13" fill="url(#user-grad-failover)" stroke="#cbd5e1" />
+                      <text x="24" y="19" textAnchor="middle" fontSize="11">💻</text>
+                    </g>
+
+                    <g transform="translate(90, 74)" filter="url(#r53-shadow-failover)">
+                      <rect x="0" y="0" width="140" height="38" rx="6" fill="url(#r53-grad-failover)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="70" y="16" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53 (Failover)</text>
+                      <text x="70" y="28" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Active-Passive Routing</text>
+                    </g>
+
+                    <g transform="translate(14, 150)" filter="url(#r53-shadow-failover)">
+                      <rect x="0" y="0" width="130" height="58" rx="6" fill="url(#failover-primary)" stroke="#10b981" strokeWidth="1.25" />
+                      <text x="65" y="14" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold">Primary (us-east-1)</text>
+                      <text x="65" y="27" textAnchor="middle" fontSize="9.5" fill="#059669" fontWeight="bold">🟢 HEALTHY</text>
+                      <text x="65" y="40" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">Active traffic node</text>
+                      <text x="65" y="50" textAnchor="middle" fontSize="7.5" fill="#10b981" fontWeight="bold">⚡ Routed 100%</text>
+                    </g>
+
+                    <g transform="translate(176, 150)" filter="url(#r53-shadow-failover)">
+                      <rect x="0" y="0" width="130" height="58" rx="6" fill="url(#failover-standby)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="65" y="14" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold">Standby (eu-west-1)</text>
+                      <text x="65" y="27" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="bold">💤 PASSIVE STANDBY</text>
+                      <text x="65" y="40" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">Bypassed until alarm</text>
+                      <text x="65" y="50" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">❌ 0% Traffic</text>
+                    </g>
                   </svg>
                 )}
 
                 {activePolicy === 'geo' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <circle cx="70" cy="30" r="16" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" />
-                    <text x="70" y="34" textAnchor="middle" fontSize="12">🇪🇺</text>
-                    <text x="70" y="54" textAnchor="middle" fontSize="9.5" fill="#6d28d9" fontWeight="bold">Europe User</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-geo" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-eu-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f5f3ff" />
+                        <stop offset="100%" stopColor="#ede9fe" />
+                      </linearGradient>
+                      <linearGradient id="user-jp-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff5f5" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-geo" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="geo-eu" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <linearGradient id="geo-jp" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fff5f5" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <filter id="glow-geo" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <circle cx="250" cy="30" r="16" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" />
-                    <text x="250" y="34" textAnchor="middle" fontSize="12">🇯🇵</text>
-                    <text x="250" y="54" textAnchor="middle" fontSize="9.5" fill="#6d28d9" fontWeight="bold">Japan User</text>
+                    {/* Zone Boundaries */}
+                    {/* Europe User Zone */}
+                    <rect x="4" y="4" width="150" height="60" rx="6" fill="#f5f3ff" fillOpacity="0.4" stroke="#c084fc" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7" fill="#6b21a8" fontWeight="bold">EUROPE CLIENT ZONE</text>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (Geo)</text>
+                    {/* Japan User Zone */}
+                    <rect x="166" y="4" width="150" height="60" rx="6" fill="#fff5f5" fillOpacity="0.4" stroke="#fca5a5" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="174" y="14" fontSize="7" fill="#dc2626" fontWeight="bold">JAPAN CLIENT ZONE</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="80" y="178" textAnchor="middle" fontSize="10.5" fill="#1d4ed8" fontWeight="bold">eu-west-1 ALB</text>
-                    <text x="80" y="192" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="600">Bound: Europe Continent</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="70" width="312" height="62" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="80" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="240" y="178" textAnchor="middle" fontSize="10.5" fill="#1d4ed8" fontWeight="bold">ap-northeast-1 ALB</text>
-                    <text x="240" y="192" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="600">Bound: Japan Country</text>
+                    {/* AWS Target infrastructure regional subnets */}
+                    <rect x="4" y="136" width="150" height="80" rx="6" fill="#f0f9ff" fillOpacity="0.3" stroke="#bae6fd" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="147" fontSize="7" fill="#0369a1" fontWeight="bold">EU-WEST-1 REGIONAL SUBNET</text>
 
-                    <line x1="85" y1="46" x2="120" y2="80" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="235" y1="46" x2="200" y2="80" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="120" y1="120" x2="80" y2="160" stroke="#1d4ed8" strokeWidth="1.5" />
-                    <line x1="200" y1="120" x2="240" y2="160" stroke="#1d4ed8" strokeWidth="1.5" />
+                    <rect x="166" y="136" width="150" height="80" rx="6" fill="#fff5f5" fillOpacity="0.3" stroke="#fecaca" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="174" y="147" fontSize="7" fill="#991b1b" fontWeight="bold">AP-NORTHEAST-1 SUBNET</text>
+
+                    {/* Flow pipelines */}
+                    <line x1="80" y1="46" x2="120" y2="80" stroke="#8b5cf6" strokeWidth="2" className="r53-flow-purple" filter="url(#glow-geo)" />
+                    <line x1="240" y1="46" x2="200" y2="80" stroke="#ef4444" strokeWidth="2" className="r53-flow-red" filter="url(#glow-geo)" />
+                    <line x1="120" y1="116" x2="70" y2="150" stroke="#3b82f6" strokeWidth="2" className="r53-flow-blue" filter="url(#glow-geo)" />
+                    <line x1="200" y1="116" x2="240" y2="150" stroke="#ef4444" strokeWidth="2" className="r53-flow-red" filter="url(#glow-geo)" />
+
+                    {/* Cards */}
+                    <g transform="translate(30, 16)" filter="url(#r53-shadow-geo)">
+                      <circle cx="15" cy="15" r="13" fill="url(#user-eu-grad)" stroke="#8b5cf6" />
+                      <text x="15" y="19" textAnchor="middle" fontSize="11">🇪🇺</text>
+                    </g>
+                    <g transform="translate(250, 16)" filter="url(#r53-shadow-geo)">
+                      <circle cx="15" cy="15" r="13" fill="url(#user-jp-grad)" stroke="#dc2626" />
+                      <text x="15" y="19" textAnchor="middle" fontSize="11">🇯🇵</text>
+                    </g>
+
+                    <g transform="translate(90, 80)" filter="url(#r53-shadow-geo)">
+                      <rect x="0" y="0" width="140" height="38" rx="6" fill="url(#r53-grad-geo)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="70" y="16" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53 (Geo)</text>
+                      <text x="70" y="28" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Location-Bound Routing</text>
+                    </g>
+
+                    <g transform="translate(14, 156)" filter="url(#r53-shadow-geo)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#geo-eu)" stroke="#3b82f6" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#1d4ed8" fontWeight="bold">eu-west-1 ALB</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Bound: Europe clients</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#3b82f6" fontWeight="bold">⚡ Routed to Ireland</text>
+                    </g>
+
+                    <g transform="translate(176, 156)" filter="url(#r53-shadow-geo)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#geo-jp)" stroke="#f87171" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="bold">ap-northeast-1 ALB</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Bound: Japan clients</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#dc2626" fontWeight="bold">⚡ Routed to Tokyo</text>
+                    </g>
                   </svg>
                 )}
 
                 {activePolicy === 'geoprox' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    {/* Region Circles */}
-                    <circle cx="90" cy="110" r="50" fill="rgba(239, 68, 68, 0.08)" stroke="#fca5a5" strokeWidth="1" strokeDasharray="3,2" />
-                    <circle cx="230" cy="110" r="70" fill="rgba(59, 130, 246, 0.08)" stroke="#93c5fd" strokeWidth="1" />
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-geoprox" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <radialGradient id="radial-red" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#fee2e2" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#fca5a5" stopOpacity="0.1" />
+                      </radialGradient>
+                      <radialGradient id="radial-blue" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#e0f2fe" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#bae6fd" stopOpacity="0.1" />
+                      </radialGradient>
+                    </defs>
 
-                    <circle cx="90" cy="110" r="4" fill="#dc2626" />
-                    <text x="90" y="125" textAnchor="middle" fontSize="9.5" fill="#dc2626" fontWeight="bold">US East (No Bias)</text>
+                    {/* Zone Boundary */}
+                    <rect x="4" y="4" width="312" height="212" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7.5" fill="#64748b" fontWeight="bold">GLOBAL GEOPROXIMITY DISTRIBUTION PLANE</text>
 
-                    <circle cx="230" cy="110" r="4" fill="#1d4ed8" />
-                    <text x="230" y="125" textAnchor="middle" fontSize="9.5" fill="#1d4ed8" fontWeight="bold">EU West (+30 Bias)</text>
+                    {/* Proximity range bias overlays */}
+                    <circle cx="90" cy="120" r="50" fill="url(#radial-red)" stroke="#dc2626" strokeWidth="1" strokeDasharray="3,2" />
+                    <circle cx="215" cy="120" r="75" fill="url(#radial-blue)" stroke="#0284c7" strokeWidth="1.25" />
 
-                    <text x="160" y="40" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">Geographic Proximity Map Bias</text>
-                    <text x="160" y="55" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Expanded bias shifts proximity borders</text>
+                    {/* Active nodes */}
+                    <g transform="translate(90, 120)" filter="url(#r53-shadow-geoprox)">
+                      <circle cx="0" cy="0" r="4.5" fill="#ef4444" />
+                    </g>
+                    <text x="90" y="138" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="bold">US East (No Bias)</text>
+                    <text x="90" y="148" textAnchor="middle" fontSize="8" fill="#7f1d1d">Standard Proximity Zone</text>
+
+                    <g transform="translate(215, 120)" filter="url(#r53-shadow-geoprox)">
+                      <circle cx="0" cy="0" r="4.5" fill="#0284c7" />
+                    </g>
+                    <text x="215" y="138" textAnchor="middle" fontSize="9.5" fill="#0369a1" fontWeight="bold">EU West (+30 Bias)</text>
+                    <text x="215" y="148" textAnchor="middle" fontSize="8" fill="#0f4c81">Expanded Bias Coverage</text>
+
+                    {/* Text labels */}
+                    <text x="160" y="38" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="bold">Geographic Proximity Map Bias</text>
+                    <text x="160" y="52" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Proximity bias shifts the routing border westwards</text>
+                    
+                    {/* Shift border representation */}
+                    <path d="M 148 70 L 138 175" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="2,2" />
+                    <text x="135" y="66" fontSize="7" fill="#64748b" textAnchor="middle">Shifted Border</text>
                   </svg>
                 )}
 
                 {activePolicy === 'multivalue' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <circle cx="160" cy="25" r="16" fill="rgba(255, 255, 255, 0.9)" stroke="#c4b5fd" />
-                    <text x="160" y="29" textAnchor="middle" fontSize="12">💻</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-multi" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-grad-multi" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-multi" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="multi-healthy" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdf4" />
+                        <stop offset="100%" stopColor="#dcfce7" />
+                      </linearGradient>
+                      <linearGradient id="multi-failed" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fef2f2" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <filter id="glow-multi" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <rect x="90" y="66" width="140" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="90" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (Multi-Value)</text>
+                    {/* Zone Boundaries */}
+                    {/* Global User Zone */}
+                    <rect x="4" y="4" width="312" height="54" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7.5" fill="#64748b" fontWeight="bold">GLOBAL USER INGRESS ZONE</text>
 
-                    {/* Returning healthy IPs */}
-                    <rect x="20" y="130" width="85" height="30" rx="4" fill="rgba(255, 255, 255, 0.95)" stroke="#10b981" strokeWidth="1.2" />
-                    <text x="62.5" y="148" textAnchor="middle" fontSize="9.5" fill="#059669" fontWeight="bold">10.0.1.10 ✅</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="64" width="312" height="58" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="74" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <rect x="117.5" y="130" width="85" height="30" rx="4" fill="rgba(255, 255, 255, 0.95)" stroke="#10b981" strokeWidth="1.2" />
-                    <text x="160" y="148" textAnchor="middle" fontSize="9.5" fill="#059669" fontWeight="bold">10.0.1.20 ✅</text>
+                    {/* AWS VPC Target subnet */}
+                    <rect x="4" y="128" width="312" height="88" rx="6" fill="#f0f9ff" fillOpacity="0.35" stroke="#bae6fd" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="139" fontSize="7" fill="#0369a1" fontWeight="bold">PRIVATE TARGET SUBNET (VPC)</text>
 
-                    <rect x="215" y="130" width="85" height="30" rx="4" fill="rgba(255, 255, 255, 0.95)" stroke="#ef4444" strokeWidth="1.2" />
-                    <text x="257.5" y="148" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="bold">10.0.1.30 ❌</text>
+                    {/* Flow pipelines */}
+                    <line x1="160" y1="44" x2="160" y2="70" stroke="#8b5cf6" strokeWidth="2" className="r53-flow-purple" filter="url(#glow-multi)" />
+                    <line x1="110" y1="104" x2="62" y2="142" stroke="#10b981" strokeWidth="2" className="r53-flow-green" filter="url(#glow-multi)" />
+                    <line x1="160" y1="104" x2="160" y2="142" stroke="#10b981" strokeWidth="2" className="r53-flow-green" filter="url(#glow-multi)" />
+                    <line x1="210" y1="104" x2="257" y2="142" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4,4" className="r53-flow-red" />
 
-                    <text x="160" y="195" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="600">Returns all healthy values (up to 8) to client</text>
+                    {/* Cards */}
+                    <g transform="translate(136, 12)" filter="url(#r53-shadow-multi)">
+                      <circle cx="24" cy="15" r="13" fill="url(#user-grad-multi)" stroke="#cbd5e1" />
+                      <text x="24" y="19" textAnchor="middle" fontSize="11">💻</text>
+                    </g>
 
-                    <line x1="160" y1="41" x2="160" y2="66" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <line x1="110" y1="106" x2="62" y2="130" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="160" y1="106" x2="160" y2="130" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="210" y1="106" x2="257" y2="130" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="3,2" />
+                    <g transform="translate(90, 70)" filter="url(#r53-shadow-multi)">
+                      <rect x="0" y="0" width="140" height="38" rx="6" fill="url(#r53-grad-multi)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="70" y="16" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53 (Multi-Value)</text>
+                      <text x="70" y="28" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Multiple Health-Checked IPs</text>
+                    </g>
+
+                    <g transform="translate(16, 146)" filter="url(#r53-shadow-multi)">
+                      <rect x="0" y="0" width="90" height="42" rx="6" fill="url(#multi-healthy)" stroke="#10b981" strokeWidth="1.25" />
+                      <text x="45" y="16" textAnchor="middle" fontSize="9.5" fill="#047857" fontWeight="bold">Host A</text>
+                      <text x="45" y="28" textAnchor="middle" fontSize="9" fill="#059669" fontWeight="bold">10.0.1.10 ✅</text>
+                      <text x="45" y="37" textAnchor="middle" fontSize="7" fill="#10b981" fontWeight="bold">HEALTHY</text>
+                    </g>
+
+                    <g transform="translate(115, 146)" filter="url(#r53-shadow-multi)">
+                      <rect x="0" y="0" width="90" height="42" rx="6" fill="url(#multi-healthy)" stroke="#10b981" strokeWidth="1.25" />
+                      <text x="45" y="16" textAnchor="middle" fontSize="9.5" fill="#047857" fontWeight="bold">Host B</text>
+                      <text x="45" y="28" textAnchor="middle" fontSize="9" fill="#059669" fontWeight="bold">10.0.1.20 ✅</text>
+                      <text x="45" y="37" textAnchor="middle" fontSize="7" fill="#10b981" fontWeight="bold">HEALTHY</text>
+                    </g>
+
+                    <g transform="translate(214, 146)" filter="url(#r53-shadow-multi)">
+                      <rect x="0" y="0" width="90" height="42" rx="6" fill="url(#multi-failed)" stroke="#ef4444" strokeWidth="1" />
+                      <text x="45" y="16" textAnchor="middle" fontSize="9.5" fill="#b91c1c" fontWeight="bold">Host C</text>
+                      <text x="45" y="28" textAnchor="middle" fontSize="9" fill="#dc2626" fontWeight="bold">10.0.1.30 ❌</text>
+                      <text x="45" y="37" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="bold">FAILED</text>
+                    </g>
                   </svg>
                 )}
 
                 {activePolicy === 'ipbased' && (
-                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg">
-                    <rect x="20" y="16" width="100" height="36" rx="6" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="70" y="32" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="bold">CIDR Collection A</text>
-                    <text x="70" y="44" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">192.168.1.0/24</text>
+                  <svg width="100%" viewBox="0 0 320 220" className="r53-svg-bg" style={{ display: 'block' }}>
+                    <defs>
+                      <filter id="r53-shadow-ipbased" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+                      <linearGradient id="user-corp-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <linearGradient id="user-pub-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fcfcfc" />
+                        <stop offset="100%" stopColor="#f1f5f9" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-ipbased" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="ip-corp" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <linearGradient id="ip-pub" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fffaf2" />
+                        <stop offset="100%" stopColor="#ffedd5" />
+                      </linearGradient>
+                      <filter id="glow-ipbased" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="1" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
 
-                    <rect x="200" y="16" width="100" height="36" rx="6" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="250" y="32" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="bold">Any Other Subnet</text>
-                    <text x="250" y="44" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">0.0.0.0/0 (Default)</text>
+                    {/* Zone Boundaries */}
+                    {/* Corp User Zone */}
+                    <rect x="4" y="4" width="150" height="60" rx="6" fill="#eff6ff" fillOpacity="0.4" stroke="#bfdbfe" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="14" fontSize="7" fill="#1d4ed8" fontWeight="bold">CORPORATE CLIENT ZONE (CIDR A)</text>
 
-                    <rect x="90" y="80" width="140" height="40" rx="8" fill="rgba(255, 255, 255, 0.9)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="160" y="104" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="700">🚀 Route 53 (IP-Based)</text>
+                    {/* Public User Zone */}
+                    <rect x="166" y="4" width="150" height="60" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="174" y="14" fontSize="7" fill="#475569" fontWeight="bold">PUBLIC DEFAULT CLIENT ZONE</text>
 
-                    <rect x="20" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="80" y="178" textAnchor="middle" fontSize="10.5" fill="#10b981" fontWeight="bold">Corporate Proxy</text>
-                    <text x="80" y="192" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="600">Target A (Internal)</text>
+                    {/* Route 53 DNS Plane */}
+                    <rect x="4" y="70" width="312" height="62" rx="6" fill="#faf5ff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                    <text x="12" y="80" fontSize="7.5" fill="#7c3aed" fontWeight="bold">ROUTE 53 DNS RESOLUTION PLANE</text>
 
-                    <rect x="180" y="160" width="120" height="44" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="240" y="178" textAnchor="middle" fontSize="10.5" fill="#1d4ed8" fontWeight="bold">Public ALB</text>
-                    <text x="240" y="192" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="600">Target B (Public)</text>
+                    {/* AWS Target infrastructure regional subnets */}
+                    <rect x="4" y="136" width="150" height="80" rx="6" fill="#eff6ff" fillOpacity="0.3" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="147" fontSize="7" fill="#1d4ed8" fontWeight="bold">INTERNAL VPC INFRASTRUCTURE</text>
 
-                    <line x1="70" y1="52" x2="120" y2="80" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="250" y1="52" x2="200" y2="80" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="120" y1="120" x2="80" y2="160" stroke="#7c3aed" strokeWidth="1.2" />
-                    <line x1="200" y1="120" x2="240" y2="160" stroke="#7c3aed" strokeWidth="1.2" />
+                    <rect x="166" y="136" width="150" height="80" rx="6" fill="#fffaf2" fillOpacity="0.3" stroke="#fed7aa" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="174" y="147" fontSize="7" fill="#ea580c" fontWeight="bold">PUBLIC INTERNET INFRASTRUCTURE</text>
+
+                    {/* Flow pipelines */}
+                    <line x1="80" y1="46" x2="120" y2="80" stroke="#3b82f6" strokeWidth="2" className="r53-flow-blue" filter="url(#glow-ipbased)" />
+                    <line x1="240" y1="46" x2="200" y2="80" stroke="#f97316" strokeWidth="2" className="r53-flow-orange" filter="url(#glow-ipbased)" />
+                    <line x1="120" y1="116" x2="70" y2="150" stroke="#3b82f6" strokeWidth="2" className="r53-flow-blue" filter="url(#glow-ipbased)" />
+                    <line x1="200" y1="116" x2="240" y2="150" stroke="#f97316" strokeWidth="2" className="r53-flow-orange" filter="url(#glow-ipbased)" />
+
+                    {/* Cards */}
+                    <g transform="translate(14, 16)" filter="url(#r53-shadow-ipbased)">
+                      <rect x="0" y="0" width="130" height="34" rx="5" fill="url(#user-corp-grad)" stroke="#93c5fd" strokeWidth="0.75" />
+                      <text x="65" y="14" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="bold">192.168.1.55 (CIDR A)</text>
+                      <text x="65" y="26" textAnchor="middle" fontSize="7.5" fill="#475569">Corp Network Proxy</text>
+                    </g>
+                    <g transform="translate(176, 16)" filter="url(#r53-shadow-ipbased)">
+                      <rect x="0" y="0" width="130" height="34" rx="5" fill="url(#user-pub-grad)" stroke="#cbd5e1" strokeWidth="0.75" />
+                      <text x="65" y="14" textAnchor="middle" fontSize="9" fill="#1e293b" fontWeight="bold">8.8.8.8 (Default)</text>
+                      <text x="65" y="26" textAnchor="middle" fontSize="7.5" fill="#475569">Standard Web client</text>
+                    </g>
+
+                    <g transform="translate(90, 80)" filter="url(#r53-shadow-ipbased)">
+                      <rect x="0" y="0" width="140" height="38" rx="6" fill="url(#r53-grad-ipbased)" stroke="#cbd5e1" strokeWidth="1" />
+                      <text x="70" y="16" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="700">🚀 Route 53 (IP-Based)</text>
+                      <text x="70" y="28" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Subnet-Specific Resolution</text>
+                    </g>
+
+                    <g transform="translate(14, 156)" filter="url(#r53-shadow-ipbased)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#ip-corp)" stroke="#3b82f6" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#1d4ed8" fontWeight="bold">Corporate Target A</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Direct Internal Proxy ALB</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontWeight="bold">🔒 Internal Route</text>
+                    </g>
+
+                    <g transform="translate(176, 156)" filter="url(#r53-shadow-ipbased)">
+                      <rect x="0" y="0" width="130" height="46" rx="6" fill="url(#ip-pub)" stroke="#f97316" strokeWidth="1.25" />
+                      <text x="65" y="16" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="bold">Public Target B</text>
+                      <text x="65" y="28" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="600">Standard Web ALB</text>
+                      <text x="65" y="38" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">🌐 Public Route</text>
+                    </g>
                   </svg>
                 )}
               </div>
@@ -2388,6 +3087,25 @@ export default function Route53Visualizer() {
                 <div style={{ alignSelf: 'flex-start', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Health Check Probe Flow Architecture</div>
                 <svg width="100%" viewBox="0 0 680 320" className="r53-svg-bg" style={{ display: 'block', margin: '0 auto' }}>
                   <defs>
+                    <filter id="r53-shadow-hc" x="-10%" y="-10%" width="120%" height="120%">
+                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    </filter>
+                    <linearGradient id="user-grad-hc" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ffffff" />
+                      <stop offset="100%" stopColor="#f1f5f9" />
+                    </linearGradient>
+                    <linearGradient id="r53-grad-hc" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#faf5ff" />
+                      <stop offset="100%" stopColor="#f3e8ff" />
+                    </linearGradient>
+                    <linearGradient id="server-grad-hc-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f0fdf4" />
+                      <stop offset="100%" stopColor="#dcfce7" />
+                    </linearGradient>
+                    <linearGradient id="server-grad-hc-err" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fef2f2" />
+                      <stop offset="100%" stopColor="#fee2e2" />
+                    </linearGradient>
                     {/* Glow Filters for Light Background */}
                     <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
                       <feGaussianBlur stdDeviation="3.5" result="blur" />
@@ -2406,6 +3124,27 @@ export default function Route53Visualizer() {
                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
                   </defs>
+
+                  {/* PREMIUM BOUNDARY ZONE PARTITIONS */}
+                  {/* Client Subnet boundary */}
+                  <rect x="2" y="110" width="126" height="100" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="10" y="122" fontSize="7.5" fill="#64748b" fontWeight="bold">LOCAL CLIENT ZONE</text>
+
+                  {/* Route 53 Core boundary */}
+                  <rect x="140" y="95" width="105" height="125" rx="8" fill="#faf5ff" fillOpacity="0.45" stroke="#e9d5ff" strokeWidth="1.25" strokeDasharray="3,3" />
+                  <text x="148" y="107" fontSize="7" fill="#7c3aed" fontWeight="bold">R53 CORE ENGINE</text>
+
+                  {/* Probers plane boundary */}
+                  <rect x="300" y="15" width="175" height="290" rx="8" fill="#fffbeb" fillOpacity="0.3" stroke="#fde68a" strokeWidth="1.25" strokeDasharray="3,3" />
+                  <text x="308" y="27" fontSize="7" fill="#d97706" fontWeight="bold">GLOBAL PROBING NETWORK</text>
+
+                  {/* us-east-1 subnet boundary */}
+                  <rect x="490" y="15" width="186" height="120" rx="8" fill="#f0fdf4" fillOpacity="0.4" stroke="#bbf7d0" strokeWidth="1.25" strokeDasharray="3,3" />
+                  <text x="498" y="27" fontSize="7" fill="#15803d" fontWeight="bold">US-EAST-1 (PRIMARY VPC SUBNET)</text>
+
+                  {/* eu-west-1 subnet boundary */}
+                  <rect x="490" y="175" width="186" height="120" rx="8" fill="#eff6ff" fillOpacity="0.3" stroke="#bae6fd" strokeWidth="1.25" strokeDasharray="3,3" />
+                  <text x="498" y="187" fontSize="7" fill="#1d4ed8" fontWeight="bold">EU-WEST-1 (SECONDARY VPC SUBNET)</text>
 
                   {/* 1. BACKGROUND PATHS & STREAMING DATA */}
                   {/* Client to Route 53 */}
@@ -2533,91 +3272,91 @@ export default function Route53Visualizer() {
                   <text x="285" y="210" transform="rotate(-90, 285, 210)" fontSize="7" fill="#b45309" fontWeight="bold" letterSpacing="0.1em">ROUTE 53 GLOBAL PROBERS</text>
 
                   {/* 5. PRIMARY ENDPOINT us-east-1 */}
-                  <g>
+                  <g filter="url(#r53-shadow-hc)">
                     <rect
-                      x="500"
-                      y="30"
+                      x="505"
+                      y="32"
                       width="155"
                       height="90"
                       rx="10"
-                      fill="rgba(255, 255, 255, 0.9)"
+                      fill={primHealthy ? "url(#server-grad-hc-ok)" : "url(#server-grad-hc-err)"}
                       stroke={primHealthy ? "#10b981" : "#ef4444"}
                       strokeWidth={primHealthy ? 1.5 : 2.5}
                       className={primHealthy ? "server-healthy-glow" : "server-unhealthy-glow"}
-                      style={{ transition: 'all 0.4s', filter: 'drop-shadow(0 4px 12px rgba(148, 163, 184, 0.1))' }}
+                      style={{ transition: 'all 0.4s' }}
                     />
 
                     {/* Server Rack ears & chassis */}
-                    <line x1="504" y1="36" x2="504" y2="114" stroke="#94a3b8" strokeWidth="3" />
-                    <line x1="651" y1="36" x2="651" y2="114" stroke="#94a3b8" strokeWidth="3" />
+                    <line x1="509" y1="38" x2="509" y2="116" stroke="#94a3b8" strokeWidth="3" />
+                    <line x1="656" y1="38" x2="656" y2="116" stroke="#94a3b8" strokeWidth="3" />
 
                     {/* Server Chassis details */}
-                    <rect x="510" y="40" width="135" height="24" rx="3" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="516" y="55" fontSize="8" fill="#1e293b" fontWeight="bold" fontFamily="monospace">us-east-1-alb</text>
+                    <rect x="515" y="42" width="135" height="24" rx="3" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="521" y="57" fontSize="8" fill="#1e293b" fontWeight="bold" fontFamily="monospace">us-east-1-alb</text>
 
                     {/* Indicator Panel */}
-                    <rect x="510" y="70" width="135" height="42" rx="3" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <rect x="515" y="72" width="135" height="42" rx="3" fill="#ffffff" fillOpacity="0.9" stroke="#cbd5e1" strokeWidth="1" />
 
                     {/* Blinking status LEDs */}
-                    <circle cx="522" cy="80" r="3.5" fill={primHealthy ? "#22c55e" : "#ef4444"} className={primHealthy ? undefined : "alarm-indicator"} />
-                    <circle cx="534" cy="80" r="3" fill={primHealthy ? "#22c55e" : "#7f1d1d"} opacity={primHealthy ? 0.7 : 0.3} />
-                    <circle cx="546" cy="80" r="3" fill={primHealthy ? "#eab308" : "#7f1d1d"} opacity={primHealthy ? 0.8 : 0.3} />
+                    <circle cx="527" cy="82" r="3.5" fill={primHealthy ? "#22c55e" : "#ef4444"} className={primHealthy ? undefined : "alarm-indicator"} />
+                    <circle cx="539" cy="82" r="3" fill={primHealthy ? "#22c55e" : "#7f1d1d"} opacity={primHealthy ? 0.7 : 0.3} />
+                    <circle cx="551" cy="82" r="3" fill={primHealthy ? "#eab308" : "#7f1d1d"} opacity={primHealthy ? 0.8 : 0.3} />
 
                     {/* Ventilation slot lines */}
-                    <line x1="562" y1="77" x2="602" y2="77" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                    <line x1="562" y1="83" x2="592" y2="83" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="567" y1="79" x2="607" y2="79" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="567" y1="85" x2="597" y2="85" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
 
                     {/* Dynamic health stats text */}
-                    <text x="518" y="100" fontSize="8" fill={primHealthy ? "#059669" : "#dc2626"} fontWeight="bold">
-                      {primHealthy ? "🟢 ACTIVE · 100% HEALTHY" : "🚨 OFFLINE (503 ERR)"}
+                    <text x="523" y="102" fontSize="8" fill={primHealthy ? "#059669" : "#dc2626"} fontWeight="bold">
+                      {primHealthy ? "🟢 ACTIVE · HEALTHY" : "🚨 OFFLINE (503 ERR)"}
                     </text>
 
-                    <text x="575" y="24" textAnchor="middle" fontSize="9.5" fill={primHealthy ? "#059669" : "#dc2626"} fontWeight="bold">
+                    <text x="580" y="24" textAnchor="middle" fontSize="9.5" fill={primHealthy ? "#059669" : "#dc2626"} fontWeight="bold">
                       Primary Target (ALB)
                     </text>
                   </g>
 
                   {/* 6. SECONDARY ENDPOINT eu-west-1 */}
-                  <g>
+                  <g filter="url(#r53-shadow-hc)">
                     <rect
-                      x="500"
-                      y="190"
+                      x="505"
+                      y="192"
                       width="155"
                       height="90"
                       rx="10"
-                      fill="rgba(255, 255, 255, 0.9)"
+                      fill={secHealthy ? (primHealthy ? "url(#user-grad-hc)" : "url(#server-grad-hc-ok)") : "url(#server-grad-hc-err)"}
                       stroke={secHealthy ? (primHealthy ? "#3b82f6" : "#10b981") : "#ef4444"}
                       strokeWidth={secHealthy ? 1.5 : 2.5}
                       className={secHealthy ? "server-healthy-glow" : "server-unhealthy-glow"}
-                      style={{ transition: 'all 0.4s', filter: 'drop-shadow(0 4px 12px rgba(148, 163, 184, 0.1))' }}
+                      style={{ transition: 'all 0.4s' }}
                     />
 
                     {/* Server Rack ears & chassis */}
-                    <line x1="504" y1="196" x2="504" y2="274" stroke="#94a3b8" strokeWidth="3" />
-                    <line x1="651" y1="196" x2="651" y2="274" stroke="#94a3b8" strokeWidth="3" />
+                    <line x1="509" y1="198" x2="509" y2="276" stroke="#94a3b8" strokeWidth="3" />
+                    <line x1="656" y1="198" x2="656" y2="276" stroke="#94a3b8" strokeWidth="3" />
 
                     {/* Server Chassis details */}
-                    <rect x="510" y="200" width="135" height="24" rx="3" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="516" y="215" fontSize="8" fill="#1e293b" fontWeight="bold" fontFamily="monospace">eu-west-1-alb</text>
+                    <rect x="515" y="202" width="135" height="24" rx="3" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="521" y="217" fontSize="8" fill="#1e293b" fontWeight="bold" fontFamily="monospace">eu-west-1-alb</text>
 
                     {/* Indicator Panel */}
-                    <rect x="510" y="230" width="135" height="42" rx="3" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                    <rect x="515" y="232" width="135" height="42" rx="3" fill="#ffffff" fillOpacity="0.9" stroke="#cbd5e1" strokeWidth="1" />
 
                     {/* Blinking status LEDs */}
-                    <circle cx="522" cy="240" r="3.5" fill={secHealthy ? (primHealthy ? "#3b82f6" : "#22c55e") : "#ef4444"} className={secHealthy ? undefined : "alarm-indicator"} />
-                    <circle cx="534" cy="240" r="3" fill={secHealthy ? "#22c55e" : "#7f1d1d"} opacity={secHealthy ? 0.7 : 0.3} />
-                    <circle cx="546" cy="240" r="3" fill={secHealthy ? "#eab308" : "#7f1d1d"} opacity={secHealthy ? 0.8 : 0.3} />
+                    <circle cx="527" cy="242" r="3.5" fill={secHealthy ? (primHealthy ? "#3b82f6" : "#22c55e") : "#ef4444"} className={secHealthy ? undefined : "alarm-indicator"} />
+                    <circle cx="539" cy="242" r="3" fill={secHealthy ? "#22c55e" : "#7f1d1d"} opacity={secHealthy ? 0.7 : 0.3} />
+                    <circle cx="551" cy="242" r="3" fill={secHealthy ? "#eab308" : "#7f1d1d"} opacity={secHealthy ? 0.8 : 0.3} />
 
                     {/* Ventilation slot lines */}
-                    <line x1="562" y1="237" x2="602" y2="237" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
-                    <line x1="562" y1="243" x2="592" y2="243" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="567" y1="239" x2="607" y2="239" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                    <line x1="567" y1="245" x2="597" y2="245" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
 
                     {/* Dynamic health stats text */}
-                    <text x="518" y="260" fontSize="8" fill={secHealthy ? (primHealthy ? "#2563eb" : "#059669") : "#dc2626"} fontWeight="bold">
+                    <text x="523" y="262" fontSize="8" fill={secHealthy ? (primHealthy ? "#2563eb" : "#059669") : "#dc2626"} fontWeight="bold">
                       {secHealthy ? (primHealthy ? "🔵 PASSIVE · STANDBY" : "🟢 PROMOTED · ACTIVE") : "🚨 OFFLINE (CON OUT)"}
                     </text>
 
-                    <text x="575" y="184" textAnchor="middle" fontSize="9.5" fill={secHealthy ? (primHealthy ? "#2563eb" : "#059669") : "#dc2626"} fontWeight="bold">
+                    <text x="580" y="184" textAnchor="middle" fontSize="9.5" fill={secHealthy ? (primHealthy ? "#2563eb" : "#059669") : "#dc2626"} fontWeight="bold">
                       Secondary Target (ALB)
                     </text>
                   </g>
@@ -2817,146 +3556,177 @@ export default function Route53Visualizer() {
                   <div style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '12px', border: '0.5px solid var(--color-border-tertiary)' }}>
                     <svg width="100%" viewBox="0 0 680 290" className="r53-svg-bg" style={{ display: 'block', margin: '0 auto' }}>
                       <defs>
+                        <filter id="r53-shadow-hybrid" x="-10%" y="-10%" width="120%" height="120%">
+                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                        </filter>
+                        <linearGradient id="onprem-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#f8fafc" />
+                          <stop offset="100%" stopColor="#f1f5f9" />
+                        </linearGradient>
+                        <linearGradient id="vpn-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#fffbeb" />
+                          <stop offset="100%" stopColor="#fef3c7" />
+                        </linearGradient>
+                        <linearGradient id="vpc-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#f0f9ff" />
+                          <stop offset="100%" stopColor="#e0f2fe" />
+                        </linearGradient>
                         <filter id="glow-hybrid" x="-20%" y="-20%" width="140%" height="140%">
                           <feGaussianBlur stdDeviation="3.5" result="blur" />
                           <feComposite in="SourceGraphic" in2="blur" operator="over" />
                         </filter>
                       </defs>
 
-                      {/* Boundaries */}
-                      {/* Left Box: On-Premises */}
-                      <rect x="10" y="10" width="220" height="270" rx="12" fill="rgba(241, 245, 249, 0.5)" stroke="#cbd5e1" strokeWidth="1.5" />
-                      <text x="120" y="26" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold" letterSpacing="0.05em">🏢 ON-PREMISES DATA CENTER</text>
+                      {/* PREMIUM SUBNET BOUNDARIES & TIERS */}
+                      {/* Left Box: On-Premises Data Center */}
+                      <rect x="10" y="10" width="220" height="270" rx="12" fill="url(#onprem-bg-grad)" stroke="#cbd5e1" strokeWidth="1.5" />
+                      <text x="120" y="24" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="bold" letterSpacing="0.05em">🏢 ON-PREMISES DATA CENTER</text>
+
+                      {/* On-Prem Client Subnet boundary */}
+                      <rect x="16" y="174" width="208" height="96" rx="6" fill="#ffffff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                      <text x="22" y="184" fontSize="6.5" fill="#64748b" fontWeight="bold">On-Prem Client Subnet</text>
+
+                      {/* On-Prem DNS Server Subnet boundary */}
+                      <rect x="16" y="44" width="208" height="122" rx="6" fill="#ffffff" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="0.75" strokeDasharray="3,3" />
+                      <text x="22" y="54" fontSize="6.5" fill="#64748b" fontWeight="bold">On-Prem Directory Subnet</text>
 
                       {/* Middle Box: Security Tunnel Boundary */}
-                      <rect x="250" y="120" width="180" height="50" rx="8" fill="rgba(254, 243, 199, 0.6)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="4,3" />
-                      <text x="340" y="112" textAnchor="middle" fontSize="9.5" fill="#b45309" fontWeight="bold">🔐 Site-to-Site VPN / Direct Connect</text>
-                      <text x="340" y="162" textAnchor="middle" fontSize="8" fill="#d97706">IPSec Tunnel Path</text>
+                      <rect x="242" y="105" width="196" height="80" rx="8" fill="url(#vpn-bg-grad)" stroke="#f59e0b" strokeWidth="1.25" strokeDasharray="4,3" />
+                      <text x="340" y="98" textAnchor="middle" fontSize="8.5" fill="#b45309" fontWeight="bold">🔐 IPSec Cryptographic VPN Tunnel</text>
+                      <text x="340" y="176" textAnchor="middle" fontSize="7.5" fill="#d97706" fontWeight="bold">Secure Hybrid Transit Gateways</text>
 
                       {/* Right Box: Amazon VPC */}
-                      <rect x="450" y="10" width="220" height="270" rx="12" fill="rgba(240, 249, 255, 0.5)" stroke="#bee3f8" strokeWidth="1.5" />
-                      <text x="560" y="26" textAnchor="middle" fontSize="10.5" fill="#0284c7" fontWeight="bold" letterSpacing="0.05em">☁️ AMAZON VPC (10.0.0.0/16)</text>
+                      <rect x="450" y="10" width="220" height="270" rx="12" fill="url(#vpc-bg-grad)" stroke="#bee3f8" strokeWidth="1.5" />
+                      <text x="560" y="24" textAnchor="middle" fontSize="9.5" fill="#0284c7" fontWeight="bold" letterSpacing="0.05em">☁️ AMAZON PRIVATE VPC (10.0.0.0/16)</text>
+
+                      {/* AWS Private DNS Subnet boundary */}
+                      <rect x="456" y="44" width="208" height="84" rx="6" fill="#ffffff" fillOpacity="0.4" stroke="#93c5fd" strokeWidth="0.75" strokeDasharray="3,3" />
+                      <text x="462" y="54" fontSize="6.5" fill="#0369a1" fontWeight="bold">Private DNS Resolution Plane</text>
+
+                      {/* AWS Workload private subnet boundary */}
+                      <rect x="456" y="132" width="208" height="138" rx="6" fill="#ffffff" fillOpacity="0.4" stroke="#93c5fd" strokeWidth="0.75" strokeDasharray="3,3" />
+                      <text x="462" y="142" fontSize="6.5" fill="#0369a1" fontWeight="bold">AWS Workload Private Subnets</text>
 
                       {/* ON-PREMISES INFRASTRUCTURE */}
                       {/* On-Prem Client Laptop */}
-                      <g filter={(hybridMode === 'inbound' && hybridStep === 0) || (hybridMode === 'outbound' && hybridStep === 6) ? "url(#glow-hybrid)" : undefined}>
-                        <rect x="20" y="180" width="40" height="25" rx="3" fill="#ffffff" stroke="#94a3b8" strokeWidth="1.5" />
-                        <rect x="24" y="183" width="32" height="15" fill="#f8fafc" />
-                        <line x1="15" y1="205" x2="65" y2="205" stroke="#94a3b8" strokeWidth="2.5" />
-                        <text x="40" y="220" textAnchor="middle" fontSize="8" fill="#1e293b" fontWeight="bold">Laptop Client</text>
+                      <g filter={(hybridMode === 'inbound' && hybridStep === 0) || (hybridMode === 'outbound' && hybridStep === 6) ? "url(#glow-hybrid)" : undefined} transform="translate(10, 0)">
+                        <rect x="20" y="196" width="50" height="28" rx="4" fill="#ffffff" stroke="#94a3b8" strokeWidth="1.5" />
+                        <rect x="25" y="200" width="40" height="16" fill="#f8fafc" />
+                        <line x1="15" y1="224" x2="75" y2="224" stroke="#94a3b8" strokeWidth="2.5" />
+                        <text x="45" y="238" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">Laptop Client</text>
                       </g>
 
                       {/* On-Prem DNS Active Directory Server */}
-                      <g filter={(hybridStep === 1 && hybridMode === 'inbound') || (hybridStep === 4 && hybridMode === 'outbound') ? "url(#glow-hybrid)" : undefined}>
-                        <rect x="110" y="80" width="100" height="110" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(148, 163, 184, 0.08))' }} />
-                        <rect x="114" y="84" width="92" height="102" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+                      <g filter={(hybridStep === 1 && hybridMode === 'inbound') || (hybridStep === 4 && hybridMode === 'outbound') ? "url(#glow-hybrid)" : undefined} transform="translate(10, 0)">
+                        <rect x="110" y="80" width="90" height="74" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(148, 163, 184, 0.08))' }} />
+                        <rect x="114" y="84" width="82" height="66" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
                         {/* Blinking dots */}
-                        <circle cx="125" cy="98" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
-                        <circle cx="135" cy="98" r="2.5" fill="#eab308"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.5s" repeatCount="indefinite" /></circle>
-                        <line x1="145" y1="98" x2="195" y2="98" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="125" cy="95" r="2" fill="#22c55e"><animate attributeName="opacity" values="1;0.2;1" dur="0.8s" repeatCount="indefinite" /></circle>
+                        <circle cx="133" cy="95" r="2" fill="#eab308"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.5s" repeatCount="indefinite" /></circle>
+                        <line x1="141" y1="95" x2="189" y2="95" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" />
 
-                        <circle cx="125" cy="118" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.2s" repeatCount="indefinite" /></circle>
-                        <circle cx="135" cy="118" r="2.5" fill="#ef4444"><animate attributeName="opacity" values="1;0.1;1" dur="0.7s" repeatCount="indefinite" /></circle>
-                        <line x1="145" y1="118" x2="195" y2="118" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="125" cy="107" r="2" fill="#22c55e"><animate attributeName="opacity" values="0.1;1;0.1" dur="1.2s" repeatCount="indefinite" /></circle>
+                        <circle cx="133" cy="107" r="2" fill="#ef4444"><animate attributeName="opacity" values="1;0.1;1" dur="0.7s" repeatCount="indefinite" /></circle>
+                        <line x1="141" y1="107" x2="189" y2="107" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" />
 
-                        <circle cx="125" cy="138" r="2.5" fill="#22c55e"><animate attributeName="opacity" values="0.3;1;0.3" dur="0.9s" repeatCount="indefinite" /></circle>
-                        <line x1="145" y1="138" x2="195" y2="138" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="125" cy="119" r="2" fill="#22c55e"><animate attributeName="opacity" values="0.3;1;0.3" dur="0.9s" repeatCount="indefinite" /></circle>
+                        <line x1="141" y1="119" x2="189" y2="119" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" />
 
-                        <text x="160" y="166" textAnchor="middle" fontSize="8.5" fill="#6b21a8" fontWeight="bold">On-Prem DNS</text>
-                        <text x="160" y="178" textAnchor="middle" fontSize="7.5" fill="#475569">192.168.1.10</text>
+                        <text x="155" y="138" textAnchor="middle" fontSize="8" fill="#6b21a8" fontWeight="bold">On-Prem DNS</text>
+                        <text x="155" y="146" textAnchor="middle" fontSize="7.2" fill="#475569">192.168.1.10</text>
                       </g>
 
                       {/* AWS INFRASTRUCTURE */}
                       {/* Route 53 Resolver Node */}
                       <g filter={(hybridStep === 4 && hybridMode === 'inbound') || (hybridStep === 1 && hybridMode === 'outbound') ? "url(#glow-hybrid)" : undefined}>
-                        <circle cx="560" cy="80" r="24" fill="rgba(243, 232, 255, 0.9)" stroke="#9333ea" strokeWidth="1.5" />
-                        <circle cx="560" cy="80" r="16" fill="none" stroke="#d97706" strokeWidth="1.5" strokeDasharray="3,2">
+                        <circle cx="560" cy="80" r="22" fill="rgba(243, 232, 255, 0.9)" stroke="#9333ea" strokeWidth="1.5" />
+                        <circle cx="560" cy="80" r="15" fill="none" stroke="#d97706" strokeWidth="1.5" strokeDasharray="3,2">
                           <animateTransform attributeName="transform" type="rotate" from="0 560 80" to="360 560 80" dur="5s" repeatCount="indefinite" />
                         </circle>
                         <path d="M 554 80 A 6 6 0 0 1 566 80" fill="none" stroke="#d97706" strokeWidth="1.5" strokeLinecap="round" />
                         <path d="M 566 80 A 6 6 0 0 1 554 80" fill="none" stroke="#d97706" strokeWidth="1.5" strokeLinecap="round" />
-                        <text x="560" y="116" textAnchor="middle" fontSize="8" fill="#6b21a8" fontWeight="bold">Route 53 Resolver</text>
-                        <text x="560" y="125" textAnchor="middle" fontSize="7" fill="#7e22ce">(10.0.0.2)</text>
+                        <text x="560" y="114" textAnchor="middle" fontSize="8" fill="#6b21a8" fontWeight="bold">Route 53 Resolver</text>
+                        <text x="560" y="122" textAnchor="middle" fontSize="7" fill="#7e22ce">(10.0.0.2)</text>
                       </g>
 
                       {/* Inbound resolver endpoint ENI */}
-                      <g filter={hybridStep === 3 && hybridMode === 'inbound' ? "url(#glow-hybrid)" : undefined}>
-                        <rect x="470" y="140" width="70" height="34" rx="4" fill="#ffffff" stroke={hybridStep === 3 && hybridMode === 'inbound' ? "#10b981" : "#cbd5e1"} strokeWidth="1.5" />
-                        <text x="505" y="152" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="bold">📥 Inbound ENI</text>
-                        <text x="505" y="164" textAnchor="middle" fontSize="7" fill="#475569">10.0.1.53</text>
+                      <g filter={hybridStep === 3 && hybridMode === 'inbound' ? "url(#glow-hybrid)" : undefined} transform="translate(0, 4)">
+                        <rect x="466" y="140" width="76" height="34" rx="5" fill="#ffffff" stroke={hybridStep === 3 && hybridMode === 'inbound' ? "#10b981" : "#cbd5e1"} strokeWidth="1.5" filter="url(#r53-shadow-hybrid)" />
+                        <text x="504" y="152" textAnchor="middle" fontSize="7.5" fill="#059669" fontWeight="bold">📥 Inbound ENI</text>
+                        <text x="504" y="164" textAnchor="middle" fontSize="7" fill="#475569">10.0.1.53</text>
                       </g>
 
                       {/* Outbound resolver endpoint ENI */}
-                      <g filter={hybridStep === 2 && hybridMode === 'outbound' ? "url(#glow-hybrid)" : undefined}>
-                        <rect x="580" y="140" width="70" height="34" rx="4" fill="#ffffff" stroke={hybridStep === 2 && hybridMode === 'outbound' ? "#2563eb" : "#cbd5e1"} strokeWidth="1.5" />
-                        <text x="615" y="152" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontWeight="bold">📤 Outbound ENI</text>
-                        <text x="615" y="164" textAnchor="middle" fontSize="7" fill="#475569">10.0.1.250</text>
+                      <g filter={hybridStep === 2 && hybridMode === 'outbound' ? "url(#glow-hybrid)" : undefined} transform="translate(0, 4)">
+                        <rect x="578" y="140" width="76" height="34" rx="5" fill="#ffffff" stroke={hybridStep === 2 && hybridMode === 'outbound' ? "#2563eb" : "#cbd5e1"} strokeWidth="1.5" filter="url(#r53-shadow-hybrid)" />
+                        <text x="616" y="152" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontWeight="bold">📤 Outbound ENI</text>
+                        <text x="616" y="164" textAnchor="middle" fontSize="7" fill="#475569">10.0.1.250</text>
                       </g>
 
                       {/* Target resource / RDS Private DB */}
-                      <g filter={(hybridMode === 'inbound' && hybridStep === 6) ? "url(#glow-hybrid)" : undefined}>
-                        <rect x="470" y="200" width="70" height="42" rx="4" fill="rgba(239, 246, 255, 0.9)" stroke="#3b82f6" strokeWidth="1.5" />
-                        <ellipse cx="505" cy="210" rx="15" ry="4" fill="#93c5fd" stroke="#3b82f6" />
-                        <text x="505" y="234" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">db.internal</text>
-                        <text x="505" y="242" textAnchor="middle" fontSize="6.5" fill="#1d4ed8">RDS (10.0.2.99)</text>
+                      <g filter={(hybridMode === 'inbound' && hybridStep === 6) ? "url(#glow-hybrid)" : undefined} transform="translate(0, 6)">
+                        <rect x="466" y="196" width="76" height="42" rx="6" fill="rgba(239, 246, 255, 0.9)" stroke="#3b82f6" strokeWidth="1.5" filter="url(#r53-shadow-hybrid)" />
+                        <ellipse cx="504" cy="206" rx="14" ry="4" fill="#93c5fd" stroke="#3b82f6" />
+                        <text x="504" y="226" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">db.internal</text>
+                        <text x="504" y="234" textAnchor="middle" fontSize="6.5" fill="#1d4ed8">RDS (10.0.2.99)</text>
                       </g>
 
                       {/* Target EC2 Instance (outbound initiator) */}
-                      <g filter={(hybridMode === 'outbound' && hybridStep === 0) ? "url(#glow-hybrid)" : undefined}>
-                        <rect x="580" y="200" width="70" height="42" rx="4" fill="rgba(240, 253, 250, 0.9)" stroke="#0d9488" strokeWidth="1.5" />
-                        <text x="615" y="215" textAnchor="middle" fontSize="8" fill="#0f172a" fontWeight="bold">💻 EC2 Node</text>
-                        <text x="615" y="234" textAnchor="middle" fontSize="7" fill="#0d9488">VPC Client</text>
-                        <text x="615" y="242" textAnchor="middle" fontSize="6.5" fill="#115e59">10.0.3.14</text>
+                      <g filter={(hybridMode === 'outbound' && hybridStep === 0) ? "url(#glow-hybrid)" : undefined} transform="translate(0, 6)">
+                        <rect x="578" y="196" width="76" height="42" rx="6" fill="rgba(240, 253, 250, 0.9)" stroke="#0d9488" strokeWidth="1.5" filter="url(#r53-shadow-hybrid)" />
+                        <text x="616" y="210" textAnchor="middle" fontSize="8" fill="#0f172a" fontWeight="bold">💻 EC2 Node</text>
+                        <text x="616" y="226" textAnchor="middle" fontSize="7" fill="#0d9488">VPC Client</text>
+                        <text x="616" y="234" textAnchor="middle" fontSize="6.5" fill="#115e59">10.0.3.14</text>
                       </g>
 
                       {/* CONNECTING LINES AND LABELS */}
                       {/* On-Prem Client to On-Prem Server */}
-                      <path d="M 40 180 L 40 120 L 110 120" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <path d="M 50 196 L 50 117 L 120 117" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" />
                       {/* On-Prem Server to VPN Tunnel */}
-                      <path d="M 210 135 L 250 135" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="3,2" />
+                      <path d="M 210 117 L 242 117" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="3,2" />
                       {/* VPN Tunnel to Subnet ENIs */}
-                      <path d="M 430 145 L 470 145" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="3,2" />
+                      <path d="M 438 148 L 466 148" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="3,2" />
                       {/* Subnet ENI to Resolver */}
-                      <path d="M 505 140 L 505 80 L 536 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" />
-                      <path d="M 615 140 L 615 80 L 584 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <path d="M 504 144 L 504 80 L 538 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" />
+                      <path d="M 616 144 L 616 80 L 582 80" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" />
 
                       {/* FLOW ANIMATED PACKETS */}
                       {/* Inbound query flow animation */}
                       {hybridIsRunning && hybridMode === 'inbound' && (
                         <>
                           {hybridStep === 0 && (
-                            <circle cx="40" cy="180" r="4.5" fill="#d97706" filter="url(#glow-hybrid)">
-                              <animate attributeName="cy" values="180;120" dur="0.8s" repeatCount="indefinite" />
+                            <circle cx="50" cy="196" r="4.5" fill="#d97706" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="196;117" dur="0.8s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 1 && (
-                            <circle cx="75" cy="120" r="4.5" fill="#8b5cf6" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="40;110" dur="0.8s" repeatCount="indefinite" />
+                            <circle cx="85" cy="117" r="4.5" fill="#8b5cf6" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="50;120" dur="0.8s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 2 && (
-                            <circle cx="230" cy="135" r="4.5" fill="#ea580c" filter="url(#glow-hybrid)">
+                            <circle cx="226" cy="117" r="4.5" fill="#ea580c" filter="url(#glow-hybrid)">
                               <animate attributeName="cx" values="210;450" dur="1s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 3 && (
-                            <circle cx="490" cy="145" r="4.5" fill="#059669" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="470;505" dur="0.5s" repeatCount="indefinite" />
+                            <circle cx="452" cy="148" r="4.5" fill="#059669" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="438;504" dur="0.5s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 4 && (
-                            <circle cx="505" cy="110" r="4.5" fill="#7c3aed" filter="url(#glow-hybrid)">
-                              <animate attributeName="cy" values="140;80" dur="0.6s" repeatCount="indefinite" />
+                            <circle cx="504" cy="112" r="4.5" fill="#7c3aed" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="144;80" dur="0.6s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 5 && (
-                            <circle cx="330" cy="135" r="4.5" fill="#d97706" filter="url(#glow-hybrid)">
+                            <circle cx="330" cy="117" r="4.5" fill="#d97706" filter="url(#glow-hybrid)">
                               <animate attributeName="cx" values="450;210" dur="1s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 6 && (
-                            <circle cx="330" cy="220" r="5" fill="#10b981" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="40;505" dur="1.5s" repeatCount="indefinite" />
+                            <circle cx="330" cy="212" r="5" fill="#10b981" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="50;504" dur="1.5s" repeatCount="indefinite" />
                             </circle>
                           )}
                         </>
@@ -2966,38 +3736,38 @@ export default function Route53Visualizer() {
                       {hybridIsRunning && hybridMode === 'outbound' && (
                         <>
                           {hybridStep === 0 && (
-                            <circle cx="615" cy="200" r="4.5" fill="#0891b2" filter="url(#glow-hybrid)">
-                              <animate attributeName="cy" values="200;140" dur="0.8s" repeatCount="indefinite" />
+                            <circle cx="616" cy="196" r="4.5" fill="#0891b2" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="196;144" dur="0.8s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 1 && (
-                            <circle cx="590" cy="80" r="4.5" fill="#7c3aed" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="615;560" dur="0.6s" repeatCount="indefinite" />
+                            <circle cx="599" cy="80" r="4.5" fill="#7c3aed" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="616;582" dur="0.6s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 2 && (
-                            <circle cx="585" cy="110" r="4.5" fill="#2563eb" filter="url(#glow-hybrid)">
-                              <animate attributeName="cy" values="80;140" dur="0.6s" repeatCount="indefinite" />
+                            <circle cx="582" cy="112" r="4.5" fill="#2563eb" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="80;144" dur="0.6s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 3 && (
-                            <circle cx="330" cy="135" r="4.5" fill="#ea580c" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="580;210" dur="1.2s" repeatCount="indefinite" />
+                            <circle cx="330" cy="117" r="4.5" fill="#ea580c" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="582;210" dur="1.2s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 4 && (
-                            <circle cx="160" cy="110" r="4.5" fill="#dc2626" filter="url(#glow-hybrid)">
-                              <animate attributeName="cy" values="80;190" dur="0.8s" repeatCount="indefinite" />
+                            <circle cx="165" cy="117" r="4.5" fill="#dc2626" filter="url(#glow-hybrid)">
+                              <animate attributeName="cy" values="80;117" dur="0.8s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 5 && (
-                            <circle cx="330" cy="135" r="4.5" fill="#10b981" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="210;580" dur="1.2s" repeatCount="indefinite" />
+                            <circle cx="330" cy="117" r="4.5" fill="#10b981" filter="url(#glow-hybrid)">
+                              <animate attributeName="cx" values="210;578" dur="1.2s" repeatCount="indefinite" />
                             </circle>
                           )}
                           {hybridStep === 6 && (
                             <circle cx="380" cy="170" r="5" fill="#10b981" filter="url(#glow-hybrid)">
-                              <animate attributeName="cx" values="580;40" dur="1.5s" repeatCount="indefinite" />
+                              <animate attributeName="cx" values="578;50" dur="1.5s" repeatCount="indefinite" />
                             </circle>
                           )}
                         </>
@@ -3129,6 +3899,48 @@ export default function Route53Visualizer() {
 
                   <svg width="100%" viewBox="0 0 660 360" className="r53-svg-bg" style={{ display: 'block', margin: '0 auto' }}>
                     <defs>
+                      <filter id="r53-shadow-arch" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      </filter>
+
+                      {/* Node Gradients */}
+                      <linearGradient id="client-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffffff" />
+                        <stop offset="100%" stopColor="#f8fafc" />
+                      </linearGradient>
+                      <linearGradient id="r53-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+                      <linearGradient id="waf-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#f0fdfa" />
+                        <stop offset="100%" stopColor="#ccfbf1" />
+                      </linearGradient>
+                      <linearGradient id="cf-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fffbeb" />
+                        <stop offset="100%" stopColor="#fef3c7" />
+                      </linearGradient>
+                      <linearGradient id="alb-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#dbeafe" />
+                      </linearGradient>
+                      <linearGradient id="compute-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ecfdf5" />
+                        <stop offset="100%" stopColor="#d1fae5" />
+                      </linearGradient>
+                      <linearGradient id="db-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fffbeb" />
+                        <stop offset="100%" stopColor="#fef3c7" />
+                      </linearGradient>
+                      <linearGradient id="cache-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#fef2f2" />
+                        <stop offset="100%" stopColor="#fee2e2" />
+                      </linearGradient>
+                      <linearGradient id="vpn-grad-arch" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#faf5ff" />
+                        <stop offset="100%" stopColor="#f3e8ff" />
+                      </linearGradient>
+
                       {/* Glowing line filters */}
                       <filter id="glow-green-line" x="-20%" y="-20%" width="140%" height="140%">
                         <feGaussianBlur stdDeviation="3.5" result="blur" />
@@ -3158,12 +3970,25 @@ export default function Route53Visualizer() {
                       </marker>
                     </defs>
 
+                    {/* PREMIUM PARTITION PERIMETERS */}
+                    {/* Public Internet boundary */}
+                    <rect x="5" y="10" width="150" height="235" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="22" fontSize="7" fill="#64748b" fontWeight="bold">PUBLIC USER NETWORK</text>
+
+                    {/* Corporate office boundary */}
+                    <rect x="5" y="255" width="150" height="98" rx="8" fill="#f1f5f9" fillOpacity="0.45" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="12" y="267" fontSize="7" fill="#475569" fontWeight="bold">ON-PREM CORP HQ</text>
+
+                    {/* AWS Global Edge Network boundary */}
+                    <rect x="165" y="10" width="485" height="105" rx="8" fill="#faf5ff" fillOpacity="0.3" stroke="#d8b4fe" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="172" y="22" fontSize="7" fill="#701a75" fontWeight="bold">AWS EDGE NETWORK ZONE (DNS, CDN, WAF)</text>
+
                     {/* VPC Bubble boundary */}
                     <rect 
-                      x="160" y="125" 
-                      width="485" height="225" 
+                      x="165" y="125" 
+                      width="485" height="228" 
                       rx="16" 
-                      fill="rgba(240, 249, 255, 0.4)" 
+                      fill="rgba(240, 249, 255, 0.45)" 
                       stroke={archScenario === 'private_vpc' ? '#3b82f6' : archScenario === 'hybrid_corp' ? '#a855f7' : '#94a3b8'} 
                       strokeWidth="1.5" 
                       strokeDasharray="6,4" 
@@ -3171,14 +3996,14 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.5s ease' }}
                     />
                     <text 
-                      x="175" y="142" 
+                      x="180" y="142" 
                       fontSize="9px" 
                       fontWeight="bold" 
                       fill={archScenario === 'private_vpc' ? '#2563eb' : archScenario === 'hybrid_corp' ? '#7e22ce' : '#475569'} 
                       opacity={archScenario === 'public_web' ? 0.5 : 1}
                       style={{ transition: 'all 0.5s ease', fontFamily: 'monospace' }}
                     >
-                      ☁️ Amazon VPC (us-east-1)
+                      ☁️ Amazon VPC Core (us-east-1)
                     </text>
 
                     {/* PATHS / CONNECTIONS */}
@@ -3383,7 +4208,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('client_public') ? 'url(#glow-green-line)' : undefined}
                     >
-                      <rect x="20" y="55" width="120" height="44" rx="8" fill="#ffffff" stroke={isNodeActive('client_public') ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(148, 163, 184, 0.08))' }} />
+                      <rect x="20" y="55" width="120" height="44" rx="8" fill="url(#client-grad-arch)" stroke={isNodeActive('client_public') ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(148, 163, 184, 0.08))' }} />
                       <text x="32" y="82" fontSize="16">💻</text>
                       <text x="56" y="79" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">Global User</text>
                       <text x="56" y="90" fontSize="7.5" fill="#475569" fontFamily="system-ui">Public Internet</text>
@@ -3395,7 +4220,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('r53_global') ? 'url(#glow-green-line)' : undefined}
                     >
-                      <rect x="185" y="55" width="120" height="44" rx="8" fill="rgba(243, 232, 255, 0.85)" stroke={isNodeActive('r53_global') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(168, 85, 247, 0.08))' }} />
+                      <rect x="185" y="55" width="120" height="44" rx="8" fill="url(#r53-grad-arch)" stroke={isNodeActive('r53_global') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(168, 85, 247, 0.08))' }} />
                       <text x="197" y="82" fontSize="16">🚀</text>
                       <text x="221" y="79" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">Route 53 DNS</text>
                       <text x="221" y="90" fontSize="7.5" fill="#6b21a8" fontFamily="system-ui">Authoritative Edge</text>
@@ -3407,7 +4232,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('waf') ? 'url(#glow-green-line)' : undefined}
                     >
-                      <rect x="350" y="55" width="120" height="44" rx="8" fill="rgba(204, 251, 241, 0.85)" stroke={isNodeActive('waf') ? '#0d9488' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(13, 148, 136, 0.08))' }} />
+                      <rect x="350" y="55" width="120" height="44" rx="8" fill="url(#waf-grad-arch)" stroke={isNodeActive('waf') ? '#0d9488' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(13, 148, 136, 0.08))' }} />
                       <text x="362" y="82" fontSize="16">🛡️</text>
                       <text x="386" y="79" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">AWS WAF Gate</text>
                       <text x="386" y="90" fontSize="7.5" fill="#0f766e" fontFamily="system-ui">Exploit Shield</text>
@@ -3419,7 +4244,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('cloudfront') ? 'url(#glow-green-line)' : undefined}
                     >
-                      <rect x="515" y="55" width="120" height="44" rx="8" fill="rgba(254, 243, 199, 0.85)" stroke={isNodeActive('cloudfront') ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(245, 158, 11, 0.08))' }} />
+                      <rect x="515" y="55" width="120" height="44" rx="8" fill="url(#cf-grad-arch)" stroke={isNodeActive('cloudfront') ? '#f59e0b' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(245, 158, 11, 0.08))' }} />
                       <text x="527" y="82" fontSize="16">☁️</text>
                       <text x="551" y="79" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">CloudFront</text>
                       <text x="551" y="90" fontSize="7.5" fill="#b45309" fontFamily="system-ui">Edge Cache CDN</text>
@@ -3431,7 +4256,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('s3') ? 'url(#glow-green-line)' : undefined}
                     >
-                      <rect x="20" y="180" width="120" height="44" rx="8" fill="rgba(255, 237, 213, 0.85)" stroke={isNodeActive('s3') ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(234, 88, 12, 0.08))' }} />
+                      <rect x="20" y="180" width="120" height="44" rx="8" fill="url(#cf-grad-arch)" stroke={isNodeActive('s3') ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(234, 88, 12, 0.08))' }} />
                       <text x="32" y="207" fontSize="16">🪣</text>
                       <text x="56" y="204" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">Amazon S3</text>
                       <text x="56" y="215" fontSize="7.5" fill="#c2410c" fontFamily="system-ui">Static Site SPA</text>
@@ -3443,7 +4268,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('alb') ? 'url(#glow-green-line)' : undefined}
                     >
-                      <rect x="515" y="145" width="120" height="44" rx="8" fill="rgba(219, 234, 254, 0.85)" stroke={isNodeActive('alb') ? '#2563eb' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(37, 99, 235, 0.08))' }} />
+                      <rect x="515" y="145" width="120" height="44" rx="8" fill="url(#alb-grad-arch)" stroke={isNodeActive('alb') ? '#2563eb' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(37, 99, 235, 0.08))' }} />
                       <text x="527" y="172" fontSize="16">⚖️</text>
                       <text x="551" y="169" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">Public ALB</text>
                       <text x="551" y="180" fontSize="7.5" fill="#1d4ed8" fontFamily="system-ui">Traffic Balancer</text>
@@ -3455,7 +4280,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('compute') ? `url(#glow-${archScenario === 'public_web' ? 'green' : archScenario === 'private_vpc' ? 'blue' : 'purple'}-line)` : undefined}
                     >
-                      <rect x="185" y="190" width="120" height="44" rx="8" fill="rgba(209, 250, 229, 0.85)" stroke={isNodeActive('compute') ? activeColor : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(16, 185, 129, 0.08))' }} />
+                      <rect x="185" y="190" width="120" height="44" rx="8" fill="url(#compute-grad-arch)" stroke={isNodeActive('compute') ? activeColor : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(16, 185, 129, 0.08))' }} />
                       <text x="197" y="217" fontSize="16">🖥️</text>
                       <text x="221" y="214" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">Compute (ECS)</text>
                       <text x="221" y="225" fontSize="7.5" fill="#047857" fontFamily="system-ui">App microservice</text>
@@ -3467,7 +4292,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('rds') ? `url(#glow-${archScenario === 'public_web' ? 'green' : archScenario === 'private_vpc' ? 'blue' : 'purple'}-line)` : undefined}
                     >
-                      <rect x="350" y="190" width="120" height="44" rx="8" fill="rgba(254, 243, 199, 0.85)" stroke={isNodeActive('rds') ? activeColor : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(245, 158, 11, 0.08))' }} />
+                      <rect x="350" y="190" width="120" height="44" rx="8" fill="url(#db-grad-arch)" stroke={isNodeActive('rds') ? activeColor : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(245, 158, 11, 0.08))' }} />
                       <text x="362" y="217" fontSize="16">🗄️</text>
                       <text x="386" y="214" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">RDS Postgres</text>
                       <text x="386" y="225" fontSize="7.5" fill="#b45309" fontFamily="system-ui">Isolated Database</text>
@@ -3479,7 +4304,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('elasticache') ? 'url(#glow-blue-line)' : undefined}
                     >
-                      <rect x="515" y="190" width="120" height="44" rx="8" fill="rgba(254, 226, 226, 0.85)" stroke={isNodeActive('elasticache') ? '#ef4444' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(239, 68, 68, 0.08))' }} />
+                      <rect x="515" y="190" width="120" height="44" rx="8" fill="url(#cache-grad-arch)" stroke={isNodeActive('elasticache') ? '#ef4444' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(239, 68, 68, 0.08))' }} />
                       <text x="527" y="217" fontSize="16">⚡</text>
                       <text x="551" y="214" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">ElastiCache</text>
                       <text x="551" y="225" fontSize="7.5" fill="#b91c1c" fontFamily="system-ui">In-Memory Redis</text>
@@ -3491,7 +4316,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('vpn') ? 'url(#glow-purple-line)' : undefined}
                     >
-                      <rect x="185" y="290" width="120" height="44" rx="8" fill="rgba(237, 233, 254, 0.85)" stroke={isNodeActive('vpn') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(168, 85, 247, 0.08))' }} />
+                      <rect x="185" y="290" width="120" height="44" rx="8" fill="url(#vpn-grad-arch)" stroke={isNodeActive('vpn') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(168, 85, 247, 0.08))' }} />
                       <text x="197" y="317" fontSize="16">🔌</text>
                       <text x="221" y="314" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">VPN Gateway</text>
                       <text x="221" y="325" fontSize="7.5" fill="#6b21a8" fontFamily="system-ui">Direct Connection</text>
@@ -3503,7 +4328,7 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('r53_private') ? `url(#glow-${archScenario === 'private_vpc' ? 'blue' : 'purple'}-line)` : undefined}
                     >
-                      <rect x="350" y="290" width="120" height="44" rx="8" fill="rgba(243, 232, 255, 0.85)" stroke={isNodeActive('r53_private') ? activeColor : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(168, 85, 247, 0.08))' }} />
+                      <rect x="350" y="290" width="120" height="44" rx="8" fill="url(#r53-grad-arch)" stroke={isNodeActive('r53_private') ? activeColor : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(168, 85, 247, 0.08))' }} />
                       <text x="362" y="317" fontSize="16">🚀</text>
                       <text x="386" y="314" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">R53 Private Zone</text>
                       <text x="386" y="325" fontSize="7.5" fill="#7e22ce" fontFamily="system-ui">VPC Resolver</text>
@@ -3515,12 +4340,11 @@ export default function Route53Visualizer() {
                       style={{ transition: 'all 0.4s' }}
                       filter={isNodeActive('client_onprem') ? 'url(#glow-purple-line)' : undefined}
                     >
-                      <rect x="20" y="300" width="120" height="44" rx="8" fill="rgba(241, 245, 249, 0.85)" stroke={isNodeActive('client_onprem') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(148, 163, 184, 0.08))' }} />
+                      <rect x="20" y="300" width="120" height="44" rx="8" fill="url(#client-grad-arch)" stroke={isNodeActive('client_onprem') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 6px rgba(148, 163, 184, 0.08))' }} />
                       <text x="32" y="327" fontSize="16">🏢</text>
                       <text x="56" y="324" fontSize="9.5" fill="#1e293b" fontWeight="bold" fontFamily="system-ui">Corporate HQ</text>
                       <text x="56" y="335" fontSize="7.5" fill="#7e22ce" fontFamily="system-ui">On-Prem Network</text>
                     </g>
-
                   </svg>
                   
                   <div style={{ marginTop: '12px', display: 'flex', gap: '20px', justifyContent: 'center' }}>

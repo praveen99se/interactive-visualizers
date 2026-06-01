@@ -901,59 +901,114 @@ export default function GovernanceAndIdentityVisualizer() {
                   </div>
 
                   {/* SVG diagram for EventBridge Security Mode */}
-                  <div className="w-full md:w-1/2 h-36 bg-slate-50 border border-slate-200 rounded-xl relative overflow-hidden flex items-center justify-center p-2">
-                    <svg className="w-full h-full" viewBox="0 0 240 120">
-                      {/* Left: EventBridge Rule Node */}
-                      <g transform="translate(10, 45)">
-                        <rect x="0" y="0" width="60" height="30" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                        <text x="30" y="14" fill="#1e3a8a" fontSize="7.5" fontWeight="black" textAnchor="middle">EventBridge</text>
-                        <text x="30" y="23" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">Rule</text>
+                  <div className="w-full md:w-1/2 h-56 bg-slate-50 border border-slate-200 rounded-xl relative overflow-hidden flex items-center justify-center p-2">
+                    <svg className="w-full h-full" viewBox="0 0 500 220">
+                      <defs>
+                        <marker id="arrow-eb" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                        </marker>
+                        <marker id="arrow-eb-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 2 L 8 5 L 0 8 z" fill="#10b981" />
+                        </marker>
+                        <marker id="arrow-eb-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                          <path d="M 0 2 L 8 5 L 0 8 z" fill="#2563eb" />
+                        </marker>
+                      </defs>
+
+                      {/* AWS Cloud Boundary */}
+                      <rect x="10" y="25" width="480" height="185" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="4,3" />
+                      <text x="20" y="38" fill="#64748b" fontSize="7.5" fontWeight="bold">AWS Cloud Boundary</text>
+
+                      {/* Left: Event Source */}
+                      <g transform="translate(25, 80)">
+                        <rect x="0" y="0" width="75" height="50" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1.2" />
+                        <text x="37.5" y="16" fill="#334155" fontSize="7.5" fontWeight="black" textAnchor="middle">Event Source</text>
+                        <text x="37.5" y="27" fill="#64748b" fontSize="6.5" fontWeight="bold" textAnchor="middle">S3 API / EC2</text>
+                        <rect x="10" y="32" width="55" height="12" rx="2" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.6" />
+                        <text x="37.5" y="40" fill="#2563eb" fontSize="5.5" fontWeight="black" textAnchor="middle">State Change</text>
                       </g>
 
-                      {/* Right: Target Node */}
+                      {/* Source -> EventBridge Bus connection */}
+                      <path d="M 100 105 H 155" fill="none" stroke="#2563eb" strokeWidth="1.5" className="da-flow-blue" markerEnd="url(#arrow-eb-blue)" />
+
+                      {/* Center: EventBridge Rule & Bus */}
+                      <g transform="translate(160, 75)">
+                        <rect x="0" y="0" width="90" height="60" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                        <text x="45" y="18" fill="#1e3a8a" fontSize="8" fontWeight="black" textAnchor="middle">Amazon EventBridge</text>
+                        <text x="45" y="30" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">Event Bus</text>
+                        <rect x="10" y="38" width="70" height="15" rx="3" fill="#ffffff" stroke="#3b82f6" strokeWidth="1" />
+                        <text x="45" y="48" fill="#1e40af" fontSize="6" fontWeight="extrabold" textAnchor="middle">Rules Evaluator</text>
+                      </g>
+
                       {eventBridgeMode === 'resource_policy' ? (
                         <>
-                          {/* Flow line */}
-                          <path d="M 70 60 L 160 60" fill="none" stroke="#10b981" strokeWidth="2" className="da-flow-green" />
-                          <text x="115" y="52" fill="#047857" fontSize="6.5" fontWeight="bold" textAnchor="middle">Direct invoke</text>
+                          {/* Flow line directly to Lambda */}
+                          <path d="M 250 105 H 375" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-green" markerEnd="url(#arrow-eb-green)" />
+                          <text x="312" y="96" fill="#047857" fontSize="6.5" fontWeight="black" textAnchor="middle">Direct Invocation Path</text>
 
-                          {/* Lambda Target */}
-                          <g transform="translate(165, 45)">
-                            <rect x="0" y="0" width="65" height="30" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                            <text x="32.5" y="14" fill="#065f46" fontSize="7.5" fontWeight="black" textAnchor="middle">Lambda</text>
-                            <text x="32.5" y="23" fill="#047857" fontSize="5.5" fontWeight="bold" textAnchor="middle">Resource Policy</text>
+                          {/* Right: Lambda Target with Resource Policy Boundary */}
+                          <g transform="translate(380, 60)">
+                            {/* Subnet / Resource boundary */}
+                            <rect x="-8" y="-12" width="105" height="110" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1" strokeDasharray="3,2" />
+                            <text x="45" y="-3" fill="#047857" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">RESOURCE ZONE</text>
+
+                            {/* Resource-based Policy shield border */}
+                            <rect x="0" y="10" width="90" height="75" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.5" />
+                            <text x="45" y="24" fill="#065f46" fontSize="7.5" fontWeight="black" textAnchor="middle">AWS Lambda</text>
+                            <text x="45" y="34" fill="#047857" fontSize="6" textAnchor="middle">Target Function</text>
+                            
+                            {/* Shield lock gate badge representing the resource policy */}
+                            <rect x="10" y="44" width="70" height="32" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
+                            <text x="45" y="53" fill="#065f46" fontSize="5.5" fontWeight="black" textAnchor="middle">🔒 Resource Policy</text>
+                            <text x="45" y="62" fill="#047857" fontSize="5" textAnchor="middle">events.amazonaws.com</text>
+                            <text x="45" y="70" fill="#047857" fontSize="5.5" fontWeight="black" textAnchor="middle">ALLOW: lambda:Invoke</text>
                           </g>
 
-                          {/* Info overlay */}
-                          <rect x="10" y="90" width="220" height="22" rx="4" fill="#f0fdf4" stroke="#d1fae5" strokeWidth="0.5" />
-                          <text x="120" y="103" fill="#065f46" fontSize="6.5" fontWeight="semibold" textAnchor="middle">
-                            💡 Target allows events.amazonaws.com in its Resource-Based Policy.
+                          {/* Info overlay inside SVG */}
+                          <rect x="25" y="180" width="450" height="20" rx="4" fill="#f0fdf4" stroke="#d1fae5" strokeWidth="0.6" />
+                          <text x="250" y="192" fill="#065f46" fontSize="7" fontWeight="bold" textAnchor="middle">
+                            🟢 Mode A: Lambda target allows EventBridge service principal in its own Resource-Based Policy. No IAM Role needed.
                           </text>
                         </>
                       ) : (
                         <>
                           {/* Flow lines passing through IAM role */}
-                          <path d="M 70 60 L 105 60" fill="none" stroke="#2563eb" strokeWidth="1.5" className="da-flow-blue" />
-                          <path d="M 135 60 L 160 60" fill="none" stroke="#2563eb" strokeWidth="1.5" className="da-flow-blue" />
-                          
+                          <path d="M 250 105 L 300 105" fill="none" stroke="#2563eb" strokeWidth="1.8" className="da-flow-blue" markerEnd="url(#arrow-eb-blue)" />
+
                           {/* IAM Role node */}
-                          <g transform="translate(100, 48)">
-                            <rect x="0" y="0" width="38" height="24" rx="4" fill="#fffbeb" stroke="#d97706" strokeWidth="1" />
-                            <text x="19" y="11" fill="#78350f" fontSize="6" fontWeight="bold" textAnchor="middle">IAM</text>
-                            <text x="19" y="18" fill="#b45309" fontSize="5.5" fontWeight="bold" textAnchor="middle">Role</text>
+                          <g transform="translate(305, 80)">
+                            <rect x="0" y="0" width="60" height="48" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" />
+                            <text x="30" y="15" fill="#78350f" fontSize="7.5" fontWeight="black" textAnchor="middle">IAM Role</text>
+                            <text x="30" y="25" fill="#d97706" fontSize="6" fontWeight="bold" textAnchor="middle">Execution Role</text>
+                            <rect x="6" y="30" width="48" height="12" rx="1.5" fill="#ffffff" stroke="#f59e0b" strokeWidth="0.6" />
+                            <text x="30" y="38" fill="#b45309" fontSize="5.5" fontWeight="black" textAnchor="middle">STS:Assume</text>
                           </g>
 
-                          {/* Kinesis Target */}
-                          <g transform="translate(165, 45)">
-                            <rect x="0" y="0" width="65" height="30" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                            <text x="32.5" y="14" fill="#334155" fontSize="7.5" fontWeight="black" textAnchor="middle">Kinesis / SQS</text>
-                            <text x="32.5" y="23" fill="#64748b" fontSize="5.5" fontWeight="bold" textAnchor="middle">Service role</text>
+                          {/* Connect from IAM Role to Target */}
+                          <path d="M 365 105 H 375" fill="none" stroke="#2563eb" strokeWidth="1.8" className="da-flow-blue" markerEnd="url(#arrow-eb-blue)" />
+
+                          {/* Right: Kinesis / SQS Target (No resource policies) */}
+                          <g transform="translate(380, 60)">
+                            {/* Subnet / Resource boundary */}
+                            <rect x="-8" y="-12" width="105" height="110" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,2" />
+                            <text x="45" y="-3" fill="#475569" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">RESOURCE ZONE</text>
+
+                            {/* Target Box */}
+                            <rect x="0" y="10" width="90" height="75" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                            <text x="45" y="26" fill="#334155" fontSize="7.5" fontWeight="black" textAnchor="middle">Kinesis / SQS</text>
+                            <text x="45" y="38" fill="#64748b" fontSize="6" textAnchor="middle">Stream / Queue</text>
+                            
+                            {/* Red Lock Gate indicating No Resource Policies exist for target */}
+                            <rect x="8" y="46" width="74" height="30" rx="3" fill="#fee2e2" stroke="#f43f5e" strokeWidth="0.8" />
+                            <text x="45" y="55" fill="#991b1b" fontSize="5" fontWeight="black" textAnchor="middle">⚠️ Target Limit</text>
+                            <text x="45" y="63" fill="#dc2626" fontSize="5" textAnchor="middle">No Resource Policy</text>
+                            <text x="45" y="71" fill="#991b1b" fontSize="4.5" fontWeight="extrabold" textAnchor="middle">Requires Execution Role</text>
                           </g>
 
-                          {/* Info overlay */}
-                          <rect x="10" y="90" width="220" height="22" rx="4" fill="#fffdf5" stroke="#fef3c7" strokeWidth="0.5" />
-                          <text x="120" y="103" fill="#78350f" fontSize="6.5" fontWeight="semibold" textAnchor="middle">
-                            💡 EventBridge Rule assumes the Service Role to write data downstream.
+                          {/* Info overlay inside SVG */}
+                          <rect x="25" y="180" width="450" height="20" rx="4" fill="#fffdf5" stroke="#fef3c7" strokeWidth="0.6" />
+                          <text x="250" y="192" fill="#78350f" fontSize="7" fontWeight="bold" textAnchor="middle">
+                            💡 Mode B: Kinesis/SQS does not support Resource Policies. EventBridge must assume the IAM Execution Role to write data.
                           </text>
                         </>
                       )}
@@ -1156,7 +1211,7 @@ export default function GovernanceAndIdentityVisualizer() {
 
               {/* End-to-End Holistic diagram representing the exact SCP notebook tree structure */}
               <div className="w-full flex-grow relative overflow-x-auto">
-                <svg className="w-full min-w-[580px] h-[340px]" viewBox="0 0 600 340">
+                <svg className="w-full min-w-[580px] h-[350px]" viewBox="0 0 600 350">
                   <defs>
                     <marker id="arrow-org" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                       <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
@@ -1169,169 +1224,190 @@ export default function GovernanceAndIdentityVisualizer() {
                     </marker>
                   </defs>
 
+                  {/* ==================== AWS ORGANIZATION BOUNDARY ==================== */}
+                  <rect x="8" y="5" width="584" height="340" rx="8" fill="none" stroke="#6b21a8" strokeWidth="1.5" strokeDasharray="5,4" />
+                  <text x="18" y="16" fill="#6b21a8" fontSize="8" fontWeight="black">🏢 AWS ORGANIZATION BOUNDARY</text>
+
+                  {/* ==================== OU NESTED CONTAINERS ==================== */}
+                  {/* Management OU Box */}
+                  <rect x="115" y="24" width="130" height="65" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" strokeDasharray="3,2" />
+                  <text x="122" y="34" fill="#7e22ce" fontSize="6.5" fontWeight="bold">Management OU</text>
+
+                  {/* Sandbox OU Box */}
+                  <rect x="115" y="185" width="468" height="152" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" strokeDasharray="4,3" />
+                  <text x="125" y="196" fill="#b45309" fontSize="7.5" fontWeight="extrabold">Sandbox OU (Parent SCP: DenyS3 Applied)</text>
+
+                  {/* Workload OU Box */}
+                  <rect x="256" y="24" width="327" height="150" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,3" />
+                  <text x="266" y="35" fill="#047857" fontSize="7.5" fontWeight="extrabold">Workload OU (Default: FullAWSAccess)</text>
+
+                  {/* Whitelist Test OU Box (inside Workload) */}
+                  <rect x="428" y="44" width="145" height="122" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3,2" />
+                  <text x="435" y="54" fill="#1d4ed8" fontSize="6.5" fontWeight="bold">Test OU (Whitelist Filter)</text>
+
+                  {/* Prod OU Box (inside Workload) */}
+                  <rect x="266" y="44" width="150" height="122" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1" strokeDasharray="3,2" />
+                  <text x="274" y="54" fill="#15803d" fontSize="6.5" fontWeight="bold">Prod OU (Full Access)</text>
+
                   {/* Connectors & Pipelines */}
-                  {/* Root -> Management */}
-                  <path d="M 85 90 H 125" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                  {/* Root -> Management OU */}
+                  <path d="M 85 160 Q 100 55 115 55" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
                   
                   {/* Root -> Sandbox OU */}
-                  <path d="M 85 100 Q 140 180 180 180" fill="none" 
+                  <path d="M 85 170 Q 100 240 115 240" fill="none" 
                     className={scpSimState === 'running' && (selectedNodeId === 'acct-a' || selectedNodeId === 'acct-b' || selectedNodeId === 'acct-c') ? 'da-flow-blue' : ''} 
                     stroke={scpSimState === 'blocked' && (selectedNodeId === 'acct-a' || selectedNodeId === 'acct-b' || selectedNodeId === 'acct-c') && simAccountAction.startsWith('s3:') ? '#f43f5e' : '#cbd5e1'} 
                     strokeWidth="1.5" markerEnd="url(#arrow-org)" />
                   
                   {/* Root -> Workload OU */}
-                  <path d="M 85 100 Q 140 30 185 30" fill="none" 
+                  <path d="M 85 160 Q 150 95 256 95" fill="none" 
                     className={scpSimState === 'running' && (selectedNodeId === 'acct-d' || selectedNodeId === 'acct-e' || selectedNodeId === 'acct-f') ? 'da-flow-blue' : ''} 
                     stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
-                  {/* Sandbox OU -> Account A */}
-                  <path d="M 255 180 H 335" fill="none" 
+                  {/* Sandbox OU -> Sandbox OU Node */}
+                  <path d="M 175 240 H 220" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+
+                  {/* Sandbox OU Node -> Account A */}
+                  <path d="M 295 240 Q 320 220 335 220" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-a' ? 'da-flow-blue' : ''} 
                     stroke={scpSimState === 'blocked' && selectedNodeId === 'acct-a' && (simAccountAction.startsWith('s3:') || simAccountAction.startsWith('ec2:')) ? '#f43f5e' : '#cbd5e1'} 
                     strokeWidth="1.5" markerEnd="url(#arrow-org)" />
                   
-                  {/* Sandbox OU -> Account B */}
-                  <path d="M 255 180 Q 300 230 335 230" fill="none" 
+                  {/* Sandbox OU Node -> Account B */}
+                  <path d="M 295 240 H 335" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-b' ? 'da-flow-blue' : ''} 
                     stroke={scpSimState === 'blocked' && selectedNodeId === 'acct-b' && simAccountAction.startsWith('s3:') ? '#f43f5e' : '#cbd5e1'} 
                     strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
-                  {/* Sandbox OU -> Account C */}
-                  <path d="M 255 180 Q 300 280 335 280" fill="none" 
+                  {/* Sandbox OU Node -> Account C */}
+                  <path d="M 295 240 Q 320 260 335 260" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-c' ? 'da-flow-blue' : ''} 
                     stroke={scpSimState === 'blocked' && selectedNodeId === 'acct-c' && simAccountAction.startsWith('s3:') ? '#f43f5e' : '#cbd5e1'} 
                     strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
-                  {/* Workload OU -> Test OU */}
-                  <path d="M 255 30 Q 300 75 335 75" fill="none" 
+                  {/* Workload OU -> Prod OU Node */}
+                  <path d="M 320 95 H 335" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+
+                  {/* Workload OU -> Test OU Node */}
+                  <path d="M 320 95 Q 400 95 435 95" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-d' ? 'da-flow-blue' : ''} 
                     stroke={scpSimState === 'blocked' && selectedNodeId === 'acct-d' && !simAccountAction.startsWith('ec2:') ? '#f43f5e' : '#cbd5e1'} 
                     strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
-                  {/* Workload OU -> Prod OU */}
-                  <path d="M 255 30 H 335" fill="none" 
-                    className={scpSimState === 'running' && (selectedNodeId === 'acct-e' || selectedNodeId === 'acct-f') ? 'da-flow-blue' : ''} 
-                    stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arrow-org)" />
-
-                  {/* Test OU -> Account D */}
-                  <path d="M 405 75 H 445" fill="none" 
+                  {/* Test OU Node -> Account D */}
+                  <path d="M 505 95 H 515" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-d' ? 'da-flow-blue' : ''} 
                     stroke={scpSimState === 'blocked' && selectedNodeId === 'acct-d' && !simAccountAction.startsWith('ec2:') ? '#f43f5e' : '#cbd5e1'} 
                     strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
-                  {/* Prod OU -> Account E */}
-                  <path d="M 405 30 Q 430 15 445 15" fill="none" 
+                  {/* Prod OU Node -> Account E */}
+                  <path d="M 390 85 Q 410 70 420 70" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-e' ? 'da-flow-blue' : ''} 
                     stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
-                  {/* Prod OU -> Account F */}
-                  <path d="M 405 30 Q 430 45 445 45" fill="none" 
+                  {/* Prod OU Node -> Account F */}
+                  <path d="M 390 85 Q 410 100 420 100" fill="none" 
                     className={scpSimState === 'running' && selectedNodeId === 'acct-f' ? 'da-flow-blue' : ''} 
                     stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#arrow-org)" />
 
                   {/* ==================== NODES LAYOUT ==================== */}
                   {/* Root Node */}
-                  <g transform="translate(10, 75)" className="da-node-btn" onClick={() => setSelectedNodeId('root')}>
-                    <rect x="0" y="0" width="75" height="36" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="37.5" y="16" fill="#f8fafc" fontSize="8" fontWeight="black" textAnchor="middle">🏢 OU (root)</text>
+                  <g transform="translate(15, 140)" className="da-node-btn" onClick={() => setSelectedNodeId('root')}>
+                    <rect x="0" y="0" width="75" height="38" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
+                    <text x="37.5" y="16" fill="#f8fafc" fontSize="8" fontWeight="black" textAnchor="middle">🏢 Root OU</text>
                     <text x="37.5" y="27" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">FullAWSAccess</text>
                   </g>
 
                   {/* Management Account */}
-                  <g transform="translate(135, 78)" className="da-node-btn" onClick={() => setSelectedNodeId('management')}>
-                    <rect x="0" y="0" width="105" height="30" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1" />
-                    <text x="52.5" y="13" fill="#6b21a8" fontSize="7" fontWeight="black" textAnchor="middle">Management Account</text>
-                    <text x="52.5" y="22" fill="#a855f7" fontSize="5.5" fontWeight="bold" textAnchor="middle">⛔ NO SCP APPLIED</text>
+                  <g transform="translate(125, 42)" className="da-node-btn" onClick={() => setSelectedNodeId('management')}>
+                    <rect x="0" y="0" width="105" height="32" rx="4" 
+                      fill={selectedNodeId === 'management' ? '#faf5ff' : '#ffffff'} 
+                      stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="52.5" y="14" fill="#6b21a8" fontSize="7" fontWeight="black" textAnchor="middle">🔑 Mgmt Account</text>
+                    <text x="52.5" y="24" fill="#a855f7" fontSize="5.5" fontWeight="bold" textAnchor="middle">⛔ NO SCP FILTER</text>
                   </g>
 
-                  {/* Sandbox OU */}
-                  <g transform="translate(180, 162)" className="da-node-btn" onClick={() => setSelectedNodeId('sandbox-ou')}>
+                  {/* Sandbox OU Node */}
+                  <g transform="translate(125, 222)" className="da-node-btn" onClick={() => setSelectedNodeId('sandbox-ou')}>
                     <rect x="0" y="0" width="75" height="36" rx="6" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1.5" />
-                    <text x="37.5" y="16" fill="#78350f" fontSize="8" fontWeight="black" textAnchor="middle">📦 OU (Sandbox)</text>
-                    <text x="37.5" y="27" fill="#ef4444" fontSize="6" fontWeight="bold" textAnchor="middle">Deny S3</text>
+                    <text x="37.5" y="15" fill="#78350f" fontSize="8" fontWeight="black" textAnchor="middle">📦 Sandbox OU</text>
+                    <text x="37.5" y="26" fill="#ef4444" fontSize="6" fontWeight="bold" textAnchor="middle">Deny S3</text>
                   </g>
 
-                  {/* Workload OU */}
-                  <g transform="translate(180, 12)" className="da-node-btn" onClick={() => setSelectedNodeId('workload-ou')}>
-                    <rect x="0" y="0" width="75" height="36" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="37.5" y="16" fill="#065f46" fontSize="8" fontWeight="black" textAnchor="middle">⚙️ OU (Workload)</text>
-                    <text x="37.5" y="27" fill="#059669" fontSize="6" fontWeight="bold" textAnchor="middle">FullAWSAccess</text>
+                  {/* Test OU Node */}
+                  <g transform="translate(435, 77)" className="da-node-btn" onClick={() => setSelectedNodeId('test-ou')}>
+                    <rect x="0" y="0" width="70" height="36" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                    <text x="35" y="15" fill="#1e3a8a" fontSize="8" fontWeight="black" textAnchor="middle">🧪 Test OU</text>
+                    <text x="35" y="26" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">Allow EC2 Only</text>
                   </g>
 
-                  {/* Test OU */}
-                  <g transform="translate(330, 57)" className="da-node-btn" onClick={() => setSelectedNodeId('test-ou')}>
-                    <rect x="0" y="0" width="75" height="36" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="37.5" y="16" fill="#1e3a8a" fontSize="8" fontWeight="black" textAnchor="middle">🧪 OU (Test)</text>
-                    <text x="37.5" y="27" fill="#2563eb" fontSize="6" fontWeight="bold" textAnchor="middle">Allow EC2 only</text>
-                  </g>
-
-                  {/* Prod OU */}
-                  <g transform="translate(330, 12)" className="da-node-btn" onClick={() => setSelectedNodeId('prod-ou')}>
-                    <rect x="0" y="0" width="75" height="36" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
-                    <text x="37.5" y="16" fill="#14532d" fontSize="8" fontWeight="black" textAnchor="middle">🚀 OU (Prod)</text>
-                    <text x="37.5" y="27" fill="#16a34a" fontSize="6" fontWeight="bold" textAnchor="middle">FullAWSAccess</text>
+                  {/* Prod OU Node */}
+                  <g transform="translate(275, 67)" className="da-node-btn" onClick={() => setSelectedNodeId('prod-ou')}>
+                    <rect x="0" y="0" width="70" height="36" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
+                    <text x="35" y="15" fill="#14532d" fontSize="8" fontWeight="black" textAnchor="middle">🚀 Prod OU</text>
+                    <text x="35" y="26" fill="#16a34a" fontSize="6" fontWeight="bold" textAnchor="middle">Full Access</text>
                   </g>
 
                   {/* Account A (Sandbox) */}
-                  <g transform="translate(345, 162)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-a')}>
-                    <rect x="0" y="0" width="95" height="36" rx="4" 
+                  <g transform="translate(235, 202)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-a')}>
+                    <rect x="0" y="0" width="90" height="36" rx="4" 
                       fill={selectedNodeId === 'acct-a' ? '#eff6ff' : '#ffffff'} 
                       stroke={selectedNodeId === 'acct-a' ? '#2563eb' : '#94a3b8'} 
                       strokeWidth={selectedNodeId === 'acct-a' ? '2' : '1'} />
-                    <text x="47.5" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account A</text>
-                    <text x="47.5" y="22" fill="#ef4444" fontSize="5.5" fontWeight="bold" textAnchor="middle">Deny EC2 | Deny S3</text>
-                    <text x="47.5" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 222222222222</text>
+                    <text x="45" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account A</text>
+                    <text x="45" y="22" fill="#ef4444" fontSize="5.5" fontWeight="bold" textAnchor="middle">Deny EC2 | Deny S3</text>
+                    <text x="45" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 222222222222</text>
                   </g>
 
                   {/* Account B (Sandbox) */}
-                  <g transform="translate(345, 212)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-b')}>
-                    <rect x="0" y="0" width="95" height="36" rx="4" 
+                  <g transform="translate(340, 202)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-b')}>
+                    <rect x="0" y="0" width="90" height="36" rx="4" 
                       fill={selectedNodeId === 'acct-b' ? '#eff6ff' : '#ffffff'} 
                       stroke={selectedNodeId === 'acct-b' ? '#2563eb' : '#94a3b8'} 
                       strokeWidth={selectedNodeId === 'acct-b' ? '2' : '1'} />
-                    <text x="47.5" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account B</text>
-                    <text x="47.5" y="22" fill="#dc2626" fontSize="5.5" fontWeight="bold" textAnchor="middle">Inherited Deny S3</text>
-                    <text x="47.5" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 333333333333</text>
+                    <text x="45" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account B</text>
+                    <text x="45" y="22" fill="#dc2626" fontSize="5.5" fontWeight="bold" textAnchor="middle">Inherited Deny S3</text>
+                    <text x="45" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 333333333333</text>
                   </g>
 
                   {/* Account C (Sandbox) */}
-                  <g transform="translate(345, 262)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-c')}>
-                    <rect x="0" y="0" width="95" height="36" rx="4" 
+                  <g transform="translate(445, 202)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-c')}>
+                    <rect x="0" y="0" width="90" height="36" rx="4" 
                       fill={selectedNodeId === 'acct-c' ? '#eff6ff' : '#ffffff'} 
                       stroke={selectedNodeId === 'acct-c' ? '#2563eb' : '#94a3b8'} 
                       strokeWidth={selectedNodeId === 'acct-c' ? '2' : '1'} />
-                    <text x="47.5" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account C</text>
-                    <text x="47.5" y="22" fill="#dc2626" fontSize="5.5" fontWeight="bold" textAnchor="middle">Inherited Deny S3</text>
-                    <text x="47.5" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 444444444444</text>
+                    <text x="45" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account C</text>
+                    <text x="45" y="22" fill="#dc2626" fontSize="5.5" fontWeight="bold" textAnchor="middle">Inherited Deny S3</text>
+                    <text x="45" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 444444444444</text>
                   </g>
 
                   {/* Account D (Test) */}
-                  <g transform="translate(455, 57)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-d')}>
-                    <rect x="0" y="0" width="95" height="36" rx="4" 
+                  <g transform="translate(445, 122)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-d')}>
+                    <rect x="0" y="0" width="90" height="36" rx="4" 
                       fill={selectedNodeId === 'acct-d' ? '#eff6ff' : '#ffffff'} 
                       stroke={selectedNodeId === 'acct-d' ? '#2563eb' : '#94a3b8'} 
                       strokeWidth={selectedNodeId === 'acct-d' ? '2' : '1'} />
-                    <text x="47.5" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account D</text>
-                    <text x="47.5" y="22" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">Whitelist ONLY EC2</text>
-                    <text x="47.5" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 555555555555</text>
+                    <text x="45" y="13" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">🖥️ Account D</text>
+                    <text x="45" y="22" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">Whitelist: EC2 OK</text>
+                    <text x="45" y="30" fill="#64748b" fontSize="5" textAnchor="middle">ID: 555555555555</text>
                   </g>
 
                   {/* Account E (Prod) */}
-                  <g transform="translate(455, 2)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-e')}>
-                    <rect x="0" y="0" width="95" height="18" rx="3" 
+                  <g transform="translate(355, 62)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-e')}>
+                    <rect x="0" y="0" width="60" height="20" rx="3" 
                       fill={selectedNodeId === 'acct-e' ? '#eff6ff' : '#ffffff'} 
-                      stroke={selectedNodeId === 'acct-e' ? '#2563eb' : '#94a3b8'} 
+                      stroke={selectedNodeId === 'acct-e' ? '#2563eb' : '#cbd5e1'} 
                       strokeWidth={selectedNodeId === 'acct-e' ? '1.5' : '1'} />
-                    <text x="47.5" y="11" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">🖥️ Account E (Prod)</text>
+                    <text x="30" y="12" fill="#1e293b" fontSize="6.5" fontWeight="black" textAnchor="middle">🖥️ Acct E (Prod)</text>
                   </g>
 
                   {/* Account F (Prod) */}
-                  <g transform="translate(455, 32)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-f')}>
-                    <rect x="0" y="0" width="95" height="18" rx="3" 
+                  <g transform="translate(355, 92)" className="da-node-btn" onClick={() => setSelectedNodeId('acct-f')}>
+                    <rect x="0" y="0" width="60" height="20" rx="3" 
                       fill={selectedNodeId === 'acct-f' ? '#eff6ff' : '#ffffff'} 
-                      stroke={selectedNodeId === 'acct-f' ? '#2563eb' : '#94a3b8'} 
+                      stroke={selectedNodeId === 'acct-f' ? '#2563eb' : '#cbd5e1'} 
                       strokeWidth={selectedNodeId === 'acct-f' ? '1.5' : '1'} />
-                    <text x="47.5" y="11" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">🖥️ Account F (Prod)</text>
+                    <text x="30" y="12" fill="#1e293b" fontSize="6.5" fontWeight="black" textAnchor="middle">🖥️ Acct F (Prod)</text>
                   </g>
                 </svg>
               </div>
@@ -1508,89 +1584,141 @@ export default function GovernanceAndIdentityVisualizer() {
             <div className="lg:col-span-8 space-y-6 text-left">
               
               {/* SVG Tree mapping */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden da-svg-bg h-48">
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden da-svg-bg h-64">
                 {iamSimState === 'allowed' && (
                   <div className="absolute inset-0 bg-emerald-500/5 backdrop-blur-[1px] flex items-center justify-center z-10 animate-fadeIn">
-                    <div className="bg-white border-2 border-emerald-500 px-4 py-2 rounded-2xl shadow-xl text-center">
+                    <div className="bg-white border-2 border-emerald-500 px-5 py-2.5 rounded-2xl shadow-xl text-center">
                       <span className="text-emerald-700 font-black text-xs block">🟢 STS API TRANSACTION GRANTED</span>
-                      <span className="text-[10px] text-slate-550 font-bold">Bob is authorized to execute {targetAction}!</span>
+                      <span className="text-[10px] text-slate-650 font-bold">Principal authorized to execute {targetAction}!</span>
                     </div>
                   </div>
                 )}
                 {iamSimState === 'blocked' && (
                   <div className="absolute inset-0 bg-rose-500/5 backdrop-blur-[1px] flex items-center justify-center z-10 animate-fadeIn">
-                    <div className="bg-white border-2 border-rose-500 px-4 py-2 rounded-2xl shadow-xl text-center">
+                    <div className="bg-white border-2 border-rose-500 px-5 py-2.5 rounded-2xl shadow-xl text-center">
                       <span className="text-rose-700 font-black text-xs block">❌ 403 API TRANSACTION HALTED</span>
-                      <span className="text-[10px] text-slate-550 font-bold">Explicit deny or implicit mismatch halted transaction.</span>
+                      <span className="text-[10px] text-slate-650 font-bold">Explicit deny or implicit attribute mismatch halted downstream execution.</span>
                     </div>
                   </div>
                 )}
 
-                <svg className="w-full h-full" viewBox="0 0 450 160">
-                  {/* Lines representing sequential flow */}
-                  <line x1="45" y1="80" x2="115" y2="80" stroke={iamEvalStep >= 1 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 1 ? '2.5' : '1.5'} />
-                  <line x1="115" y1="80" x2="185" y2="80" stroke={iamEvalStep >= 2 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 2 ? '2.5' : '1.5'} />
-                  <line x1="185" y1="80" x2="255" y2="80" stroke={iamEvalStep >= 3 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 3 ? '2.5' : '1.5'} />
-                  <line x1="255" y1="80" x2="325" y2="80" stroke={iamEvalStep >= 4 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 4 ? '2.5' : '1.5'} />
-                  <line x1="325" y1="80" x2="395" y2="80" stroke={iamEvalStep >= 5 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 5 ? '2.5' : '1.5'} />
+                <svg className="w-full h-full" viewBox="0 0 520 200">
+                  <defs>
+                    <marker id="arrow-iam" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                    </marker>
+                    <marker id="arrow-iam-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#2563eb" />
+                    </marker>
+                  </defs>
 
-                  {/* Flow pulses */}
-                  {iamSimState === 'running' && (
-                    <circle cx={45 + iamEvalStep * 70} cy="80" r="4.5" fill="#2563eb" className="animate-ping" />
-                  )}
+                  {/* Left: Origin Client Network Box */}
+                  <g transform="translate(10, 30)">
+                    <rect x="0" y="0" width="95" height="135" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+                    <text x="47.5" y="14" fill="#475569" fontSize="7.5" fontWeight="black" textAnchor="middle">REQUEST ORIGIN</text>
+                    
+                    {/* IP status indicator inside source */}
+                    <rect x="8" y="24" width="79" height="24" rx="3" fill={clientIp === 'corporate' ? '#ecfdf5' : '#fee2e2'} stroke={clientIp === 'corporate' ? '#10b981' : '#ef4444'} strokeWidth="0.8" />
+                    <text x="47.5" y="34" fill="#334155" fontSize="6" fontWeight="bold" textAnchor="middle">IP Address</text>
+                    <text x="47.5" y="42" fill={clientIp === 'corporate' ? '#047857' : '#991b1b'} fontSize="5.5" fontWeight="black" textAnchor="middle">
+                      {clientIp === 'corporate' ? '🏢 Corporate IP' : '🌐 Public Internet'}
+                    </text>
 
-                  {/* Step 1: IP & Explicit Deny Node */}
-                  <g transform="translate(10, 55)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" 
+                    {/* MFA session status inside source */}
+                    <rect x="8" y="54" width="79" height="24" rx="3" fill={mfaStatus ? '#ecfdf5' : '#fff7ed'} stroke={mfaStatus ? '#10b981' : '#f97316'} strokeWidth="0.8" />
+                    <text x="47.5" y="64" fill="#334155" fontSize="6" fontWeight="bold" textAnchor="middle">MFA Status</text>
+                    <text x="47.5" y="72" fill={mfaStatus ? '#047857' : '#c2410c'} fontSize="5.5" fontWeight="black" textAnchor="middle">
+                      {mfaStatus ? '🛡️ MFA Verified' : '⚠️ No MFA'}
+                    </text>
+
+                    {/* ABAC dynamic principal tag key/value */}
+                    <rect x="8" y="84" width="79" height="42" rx="3" fill="#eff6ff" stroke="#3b82f6" strokeWidth="0.8" />
+                    <text x="47.5" y="93" fill="#1e40af" fontSize="6" fontWeight="black" textAnchor="middle">PrincipalTag/Dept</text>
+                    <text x="47.5" y="103" fill="#2563eb" fontSize="7" fontWeight="extrabold" textAnchor="middle">"{principalDept}"</text>
+                    <text x="47.5" y="112" fill="#64748b" fontSize="4.5" textAnchor="middle">Target Project:</text>
+                    <text x="47.5" y="120" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">"{resourceProject}"</text>
+                  </g>
+
+                  {/* Flow conduits connecting sequential gates */}
+                  <path d="M 105 95 H 145" fill="none" stroke={iamEvalStep >= 1 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 1 ? '2.5' : '1.2'} className={iamEvalStep >= 1 && iamSimState === 'running' ? 'da-flow-blue' : ''} />
+                  <path d="M 215 95 H 225" fill="none" stroke={iamEvalStep >= 2 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 2 ? '2.5' : '1.2'} className={iamEvalStep >= 2 && iamSimState === 'running' ? 'da-flow-blue' : ''} />
+                  <path d="M 295 95 H 305" fill="none" stroke={iamEvalStep >= 3 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 3 ? '2.5' : '1.2'} className={iamEvalStep >= 3 && iamSimState === 'running' ? 'da-flow-blue' : ''} />
+                  <path d="M 375 95 H 385" fill="none" stroke={iamEvalStep >= 4 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 4 ? '2.5' : '1.2'} className={iamEvalStep >= 4 && iamSimState === 'running' ? 'da-flow-blue' : ''} />
+                  <path d="M 455 95 H 480" fill="none" stroke={iamEvalStep >= 5 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep >= 5 ? '2.5' : '1.2'} className={iamEvalStep >= 5 && iamSimState === 'running' ? 'da-flow-blue' : ''} />
+
+                  {/* Sequential Gate 1: Explicit Deny */}
+                  <g transform="translate(145, 55)">
+                    <rect x="0" y="0" width="70" height="75" rx="6" 
                       fill={iamEvalStep === 1 ? '#eff6ff' : '#ffffff'} 
                       stroke={iamEvalStep === 1 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep === 1 ? '2' : '1'} />
-                    <text x="35" y="15" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">1. Explicit Deny</text>
-                    <text x="35" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">IP/MFA Check</text>
-                    <text x="35" y="38" fill={clientIp === 'public' || (targetAction === 'ec2:StopInstances' && !mfaStatus) ? '#ef4444' : '#10b981'} fontSize="6" fontWeight="extrabold" textAnchor="middle">
-                      {clientIp === 'public' || (targetAction === 'ec2:StopInstances' && !mfaStatus) ? '🚨 Deny' : '🟢 Pass'}
+                    <text x="35" y="14" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">Gate 1</text>
+                    <text x="35" y="24" fill="#3b82f6" fontSize="6.5" fontWeight="bold" textAnchor="middle">Explicit Deny</text>
+                    <text x="35" y="36" fill="#64748b" fontSize="5.5" textAnchor="middle">IP/MFA Session</text>
+                    <rect x="8" y="44" width="54" height="24" rx="2" 
+                      fill={clientIp === 'public' || (targetAction === 'ec2:StopInstances' && !mfaStatus) || (targetAction === 'rds:CreateDB' && requestedRegion !== 'eu-central-1') ? '#fee2e2' : '#ecfdf4'} 
+                      stroke={clientIp === 'public' || (targetAction === 'ec2:StopInstances' && !mfaStatus) || (targetAction === 'rds:CreateDB' && requestedRegion !== 'eu-central-1') ? '#f43f5e' : '#10b981'} 
+                      strokeWidth="0.8" />
+                    <text x="35" y="53" fill="#334155" fontSize="5" textAnchor="middle">Evaluation:</text>
+                    <text x="35" y="62" fill={clientIp === 'public' || (targetAction === 'ec2:StopInstances' && !mfaStatus) || (targetAction === 'rds:CreateDB' && requestedRegion !== 'eu-central-1') ? '#e11d48' : '#047857'} fontSize="6" fontWeight="black" textAnchor="middle">
+                      {clientIp === 'public' || (targetAction === 'ec2:StopInstances' && !mfaStatus) || (targetAction === 'rds:CreateDB' && requestedRegion !== 'eu-central-1') ? '⛔ DENY' : '🟢 PASS'}
                     </text>
                   </g>
 
-                  {/* Step 2: Org SCP filter */}
-                  <g transform="translate(90, 55)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" 
+                  {/* Sequential Gate 2: SCP Filter */}
+                  <g transform="translate(225, 55)">
+                    <rect x="0" y="0" width="70" height="75" rx="6" 
                       fill={iamEvalStep === 2 ? '#eff6ff' : '#ffffff'} 
                       stroke={iamEvalStep === 2 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep === 2 ? '2' : '1'} />
-                    <text x="35" y="15" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">2. SCP Filter</text>
-                    <text x="35" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">Org Boundary</text>
-                    <text x="35" y="38" fill="#10b981" fontSize="6" fontWeight="extrabold" textAnchor="middle">🟢 Pass</text>
+                    <text x="35" y="14" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">Gate 2</text>
+                    <text x="35" y="24" fill="#3b82f6" fontSize="6.5" fontWeight="bold" textAnchor="middle">SCP Filter</text>
+                    <text x="35" y="36" fill="#64748b" fontSize="5.5" textAnchor="middle">Org Boundary</text>
+                    <rect x="8" y="44" width="54" height="24" rx="2" fill="#ecfdf4" stroke="#10b981" strokeWidth="0.8" />
+                    <text x="35" y="53" fill="#334155" fontSize="5" textAnchor="middle">Evaluation:</text>
+                    <text x="35" y="62" fill="#047857" fontSize="6" fontWeight="black" textAnchor="middle">🟢 PASS</text>
                   </g>
 
-                  {/* Step 3: Permission Boundary */}
-                  <g transform="translate(170, 55)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" 
+                  {/* Sequential Gate 3: Permission Boundary */}
+                  <g transform="translate(305, 55)">
+                    <rect x="0" y="0" width="70" height="75" rx="6" 
                       fill={iamEvalStep === 3 ? '#eff6ff' : '#ffffff'} 
                       stroke={iamEvalStep === 3 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep === 3 ? '2' : '1'} />
-                    <text x="35" y="15" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">3. Perm Boundary</text>
-                    <text x="35" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">Principal Max</text>
-                    <text x="35" y="38" fill="#10b981" fontSize="6" fontWeight="extrabold" textAnchor="middle">🟢 Pass</text>
+                    <text x="35" y="14" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">Gate 3</text>
+                    <text x="35" y="24" fill="#3b82f6" fontSize="6.5" fontWeight="bold" textAnchor="middle">Perm Bounds</text>
+                    <text x="35" y="36" fill="#64748b" fontSize="5.5" textAnchor="middle">Principal Cap</text>
+                    <rect x="8" y="44" width="54" height="24" rx="2" fill="#ecfdf4" stroke="#10b981" strokeWidth="0.8" />
+                    <text x="35" y="53" fill="#334155" fontSize="5" textAnchor="middle">Evaluation:</text>
+                    <text x="35" y="62" fill="#047857" fontSize="6" fontWeight="black" textAnchor="middle">🟢 PASS</text>
                   </g>
 
-                  {/* Step 4: Identity & Resource policies */}
-                  <g transform="translate(250, 55)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" 
+                  {/* Sequential Gate 4: Identity & ABAC Tags Policies */}
+                  <g transform="translate(385, 55)">
+                    <rect x="0" y="0" width="70" height="75" rx="6" 
                       fill={iamEvalStep === 4 ? '#eff6ff' : '#ffffff'} 
                       stroke={iamEvalStep === 4 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep === 4 ? '2' : '1'} />
-                    <text x="35" y="15" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">4. Identity Policy</text>
-                    <text x="35" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">ABAC Tags</text>
-                    <text x="35" y="38" fill={targetAction === 'ec2:StartInstances' && principalDept !== 'Data' ? '#ef4444' : '#10b981'} fontSize="6" fontWeight="extrabold" textAnchor="middle">
-                      {targetAction === 'ec2:StartInstances' && principalDept !== 'Data' ? '🚨 Mismatch' : '🟢 Allow'}
+                    <text x="35" y="14" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">Gate 4</text>
+                    <text x="35" y="24" fill="#3b82f6" fontSize="6.5" fontWeight="bold" textAnchor="middle">Identity/ABAC</text>
+                    <text x="35" y="36" fill="#64748b" fontSize="5.5" textAnchor="middle">Principal inline</text>
+                    <rect x="8" y="44" width="54" height="24" rx="2" 
+                      fill={targetAction === 'ec2:StartInstances' && principalDept !== 'Data' ? '#fee2e2' : '#ecfdf4'} 
+                      stroke={targetAction === 'ec2:StartInstances' && principalDept !== 'Data' ? '#f43f5e' : '#10b981'} 
+                      strokeWidth="0.8" />
+                    <text x="35" y="53" fill="#334155" fontSize="5" textAnchor="middle">Evaluation:</text>
+                    <text x="35" y="62" fill={targetAction === 'ec2:StartInstances' && principalDept !== 'Data' ? '#e11d48' : '#047857'} fontSize="6" fontWeight="black" textAnchor="middle">
+                      {targetAction === 'ec2:StartInstances' && principalDept !== 'Data' ? '⛔ DENY' : '🟢 ALLOW'}
                     </text>
                   </g>
 
-                  {/* Step 5: Implicit Deny fallback */}
-                  <g transform="translate(330, 55)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" 
+                  {/* Sequential Gate 5: Implicit Deny Default */}
+                  <g transform="translate(465, 55)">
+                    <rect x="0" y="0" width="50" height="75" rx="6" 
                       fill={iamEvalStep === 5 ? '#eff6ff' : '#ffffff'} 
                       stroke={iamEvalStep === 5 ? '#2563eb' : '#cbd5e1'} strokeWidth={iamEvalStep === 5 ? '2' : '1'} />
-                    <text x="35" y="15" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">5. Implicit Deny</text>
-                    <text x="35" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">Fallback block</text>
-                    <text x="35" y="38" fill="#ef4444" fontSize="6" fontWeight="extrabold" textAnchor="middle">⛔ Blocked</text>
+                    <text x="25" y="14" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">Gate 5</text>
+                    <text x="25" y="24" fill="#3b82f6" fontSize="6.5" fontWeight="bold" textAnchor="middle">Fallback</text>
+                    <text x="25" y="36" fill="#64748b" fontSize="5.5" textAnchor="middle">Closed bounds</text>
+                    <rect x="6" y="44" width="38" height="24" rx="2" fill="#fee2e2" stroke="#f43f5e" strokeWidth="0.8" />
+                    <text x="25" y="53" fill="#334155" fontSize="5" textAnchor="middle">Default:</text>
+                    <text x="25" y="62" fill="#e11d48" fontSize="6" fontWeight="black" textAnchor="middle">⛔ DENY</text>
                   </g>
                 </svg>
               </div>
@@ -1817,45 +1945,109 @@ export default function GovernanceAndIdentityVisualizer() {
               )}
 
               <div className="w-full flex-grow flex items-center justify-center">
-                <svg className="w-full h-full" viewBox="0 0 280 180">
+                <svg className="w-full h-full" viewBox="0 0 500 220">
                   <defs>
                     <marker id="arrow-sync" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                       <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
                     </marker>
+                    <marker id="arrow-sync-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#2563eb" />
+                    </marker>
+                    <marker id="arrow-sync-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#10b981" />
+                    </marker>
                   </defs>
 
-                  {/* Flow lines */}
-                  <path d="M 70 80 L 140 80" fill="none" stroke="#2563eb" strokeWidth="2" className={syncState === 'running' ? 'da-flow-blue' : ''} />
-                  <path d="M 210 80 L 265 80" fill="none" stroke="#10b981" strokeWidth="2" className={syncState === 'running' ? 'da-flow-green' : ''} />
+                  {/* ==================== ON-PREMISES BOUNDARY ==================== */}
+                  <rect x="8" y="25" width="135" height="180" rx="8" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4,3" />
+                  <text x="16" y="36" fill="#475569" fontSize="7.5" fontWeight="black">🏢 ON-PREM CORPORATE NET</text>
 
-                  {/* Left: Active Directory Domain Controller */}
-                  <g transform="translate(10, 50)">
-                    <rect x="0" y="0" width="60" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="30" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active</text>
-                    <text x="30" y="27" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Directory</text>
-                    <text x="30" y="38" fill="#94a3b8" fontSize="5.5" textAnchor="middle">Domain Controller</text>
+                  {/* Active Directory Domain Controller Node */}
+                  <g transform="translate(18, 45)">
+                    <rect x="0" y="0" width="115" height="38" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1.2" />
+                    <text x="57.5" y="14" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active Directory</text>
+                    <text x="57.5" y="24" fill="#94a3b8" fontSize="6" textAnchor="middle">Windows Domain Controller</text>
+                    <text x="57.5" y="32" fill="#38bdf8" fontSize="5" fontWeight="black" textAnchor="middle">LDAP Catalog Active</text>
                   </g>
 
-                  {/* Center: AD Connector proxy or Managed AD Node */}
-                  <g transform="translate(140, 50)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                    <text x="35" y="16" fill="#78350f" fontSize="7" fontWeight="bold" textAnchor="middle">
+                  {/* AD Security Groups List */}
+                  <g transform="translate(18, 92)">
+                    <rect x="0" y="0" width="115" height="102" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                    <text x="57.5" y="10" fill="#475569" fontSize="6.5" fontWeight="black" textAnchor="middle">AD Security Groups</text>
+                    
+                    {/* Admins group */}
+                    <rect x="6" y="16" width="103" height="24" rx="2" fill={mappedGroup === 'admins' ? '#eff6ff' : '#f8fafc'} stroke={mappedGroup === 'admins' ? '#2563eb' : '#e2e8f0'} strokeWidth={mappedGroup === 'admins' ? '1.2' : '0.8'} />
+                    <text x="12" y="26" fill="#334155" fontSize="6.5" fontWeight="bold">👥 AWS-Domain-Admins</text>
+                    <text x="12" y="34" fill={mappedGroup === 'admins' ? '#2563eb' : '#94a3b8'} fontSize="5.5" fontWeight="black">➔ AdminAccess</text>
+
+                    {/* Analysts group */}
+                    <rect x="6" y="44" width="103" height="24" rx="2" fill={mappedGroup === 'analysts' ? '#ecfdf5' : '#f8fafc'} stroke={mappedGroup === 'analysts' ? '#10b981' : '#e2e8f0'} strokeWidth={mappedGroup === 'analysts' ? '1.2' : '0.8'} />
+                    <text x="12" y="54" fill="#334155" fontSize="6.5" fontWeight="bold">👥 AWS-Sec-Analysts</text>
+                    <text x="12" y="62" fill={mappedGroup === 'analysts' ? '#047857' : '#94a3b8'} fontSize="5.5" fontWeight="black">➔ ReadOnlyAccess</text>
+
+                    {/* Billing group */}
+                    <rect x="6" y="72" width="103" height="24" rx="2" fill={mappedGroup === 'billing' ? '#fffbeb' : '#f8fafc'} stroke={mappedGroup === 'billing' ? '#d97706' : '#e2e8f0'} strokeWidth={mappedGroup === 'billing' ? '1.2' : '0.8'} />
+                    <text x="12" y="82" fill="#334155" fontSize="6.5" fontWeight="bold">👥 AWS-Finance-Ops</text>
+                    <text x="12" y="90" fill={mappedGroup === 'billing' ? '#b45309' : '#94a3b8'} fontSize="5.5" fontWeight="black">➔ BillingReadOnly</text>
+                  </g>
+
+                  {/* Connectors between On-Prem and AWS */}
+                  <path d="M 143 64 H 195" fill="none" stroke="#2563eb" strokeWidth="1.5" className={syncState === 'running' ? 'da-flow-blue' : ''} markerEnd="url(#arrow-sync-blue)" />
+                  <text x="169" y="58" fill="#1d4ed8" fontSize="6" fontWeight="bold" textAnchor="middle">LDAP Tunnel</text>
+
+                  {/* ==================== AWS CLOUD BOUNDARY ==================== */}
+                  <rect x="188" y="25" width="304" height="180" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="4,3" />
+                  <text x="198" y="36" fill="#2563eb" fontSize="7.5" fontWeight="black">☁️ AWS CLOUD ENVIRONMENT</text>
+
+                  {/* AWS Directory Relay */}
+                  <g transform="translate(195, 45)">
+                    <rect x="0" y="0" width="85" height="42" rx="4" fill="#fffbeb" stroke="#d97706" strokeWidth="1.2" />
+                    <text x="42.5" y="14" fill="#78350f" fontSize="7.5" fontWeight="black" textAnchor="middle">
                       {selectedDirectory === 'managed_ad' ? 'Managed AD' : selectedDirectory === 'ad_connector' ? 'AD Connector' : 'Simple AD'}
                     </text>
-                    <text x="35" y="27" fill="#b45309" fontSize="5.5" textAnchor="middle">Proxy Bind</text>
-                    <text x="35" y="38" fill="#d97706" fontSize="5.5" fontWeight="bold" textAnchor="middle">
-                      {syncState === 'running' ? 'Active Tunel' : 'LDAP Port 389'}
+                    <text x="42.5" y="24" fill="#92400e" fontSize="6" textAnchor="middle">Directory Relay</text>
+                    <text x="42.5" y="34" fill="#b45309" fontSize="5.5" fontWeight="bold" textAnchor="middle">
+                      {syncState === 'running' ? '🔄 Active LDAP' : 'Port 389 Bound'}
                     </text>
                   </g>
 
-                  {/* Right: SSO Portal target accounts */}
-                  <g transform="translate(210, 50)">
-                    <rect x="0" y="0" width="60" height="50" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="30" y="16" fill="#065f46" fontSize="7" fontWeight="bold" textAnchor="middle">SSO Portal</text>
-                    <text x="30" y="27" fill="#047857" fontSize="5" textAnchor="middle">IAM Portal</text>
-                    <text x="30" y="38" fill="#10b981" fontSize="5.5" fontWeight="bold" textAnchor="middle">
-                      {syncState === 'success' ? 'Active Portal' : 'Standby Sync'}
+                  {/* SCIM Connector sync path */}
+                  <path d="M 280 66 H 315" fill="none" stroke="#10b981" strokeWidth="1.5" className={syncState === 'running' ? 'da-flow-green' : ''} markerEnd="url(#arrow-sync-green)" />
+                  <text x="298" y="58" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">SCIM Sync</text>
+
+                  {/* AWS IAM Identity Center */}
+                  <g transform="translate(320, 45)">
+                    <rect x="0" y="0" width="85" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="42.5" y="14" fill="#065f46" fontSize="7.5" fontWeight="black" textAnchor="middle">Identity Center</text>
+                    <text x="42.5" y="24" fill="#047857" fontSize="6" textAnchor="middle">SSO Portal</text>
+                    <text x="42.5" y="34" fill="#10b981" fontSize="5.5" fontWeight="bold" textAnchor="middle">
+                      {syncState === 'success' ? '🟢 Synchronized' : '🔄 Standby'}
                     </text>
+                  </g>
+
+                  {/* STS Federated Token Assume role path */}
+                  <path d="M 362 87 Q 362 132 405 132" fill="none" stroke="#10b981" strokeWidth="1.5" className={syncState === 'success' ? 'da-flow-green' : ''} markerEnd="url(#arrow-sync-green)" />
+                  <text x="345" y="115" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">STS:Assume</text>
+
+                  {/* Right Column inside AWS: TARGET ACCOUNTS ZONE */}
+                  <g transform="translate(410, 95)">
+                    <rect x="-5" y="-12" width="77" height="92" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,2" />
+                    <text x="33.5" y="-4" fill="#475569" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">TARGET OUs</text>
+
+                    {/* consolidated master account */}
+                    <rect x="0" y="5" width="67" height="22" rx="2" fill={mappedGroup === 'billing' && syncState === 'success' ? '#fffbeb' : '#ffffff'} stroke={mappedGroup === 'billing' && syncState === 'success' ? '#d97706' : '#cbd5e1'} strokeWidth="0.8" />
+                    <text x="33.5" y="14" fill="#334155" fontSize="6" fontWeight="black" textAnchor="middle">Master Billing</text>
+                    <text x="33.5" y="20" fill="#94a3b8" fontSize="4.5" textAnchor="middle">Account A</text>
+
+                    {/* dev sandbox accounts */}
+                    <rect x="0" y="32" width="67" height="22" rx="2" fill={mappedGroup === 'analysts' && syncState === 'success' ? '#ecfdf5' : '#ffffff'} stroke={mappedGroup === 'analysts' && syncState === 'success' ? '#10b981' : '#cbd5e1'} strokeWidth="0.8" />
+                    <text x="33.5" y="41" fill="#334155" fontSize="6" fontWeight="black" textAnchor="middle">Dev Sandbox</text>
+                    <text x="33.5" y="48" fill="#94a3b8" fontSize="4.5" textAnchor="middle">Account B / C</text>
+
+                    {/* production accounts */}
+                    <rect x="0" y="59" width="67" height="22" rx="2" fill={mappedGroup === 'admins' && syncState === 'success' ? '#eff6ff' : '#ffffff'} stroke={mappedGroup === 'admins' && syncState === 'success' ? '#2563eb' : '#cbd5e1'} strokeWidth="0.8" />
+                    <text x="33.5" y="68" fill="#334155" fontSize="6" fontWeight="black" textAnchor="middle">Production OU</text>
+                    <text x="33.5" y="75" fill="#94a3b8" fontSize="4.5" textAnchor="middle">Account E / F</text>
                   </g>
                 </svg>
               </div>
@@ -2016,42 +2208,111 @@ export default function GovernanceAndIdentityVisualizer() {
               </div>
 
               <div className="w-full flex-grow flex items-center justify-center">
-                <svg className="w-full h-full" viewBox="0 0 280 120">
-                  {/* Flow pipeline */}
-                  <path d="M 70 60 H 140" fill="none" stroke="#64748b" strokeWidth="1.5" className={complianceState === 'deploying' ? 'da-flow-blue' : ''} />
-                  <path d="M 210 60 H 265" fill="none" stroke="#64748b" strokeWidth="1.5" className={complianceState === 'remediated' ? 'da-flow-green' : ''} />
+                <svg className="w-full h-full" viewBox="0 0 500 240">
+                  <defs>
+                    <marker id="arrow-ct" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                    </marker>
+                    <marker id="arrow-ct-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#2563eb" />
+                    </marker>
+                    <marker id="arrow-ct-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#10b981" />
+                    </marker>
+                    <marker id="arrow-ct-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#f43f5e" />
+                    </marker>
+                  </defs>
 
-                  {/* Left: Dispatch resource */}
-                  <g transform="translate(10, 35)">
-                    <rect x="0" y="0" width="60" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="30" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Resource</text>
-                    <text x="30" y="27" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Deployment</text>
-                    <text x="30" y="38" fill="#94a3b8" fontSize="5.5" textAnchor="middle">API Dispatch</text>
+                  {/* ==================== LANDING ZONE CLOUD ==================== */}
+                  <rect x="8" y="5" width="484" height="230" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="5,4" />
+                  <text x="18" y="16" fill="#2563eb" fontSize="8" fontWeight="black">☁️ AWS CONTROL TOWER GOVERNED LANDING ZONE</text>
+
+                  {/* Left: Dispatcher Node */}
+                  <g transform="translate(15, 90)">
+                    <rect x="0" y="0" width="75" height="55" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
+                    <text x="37.5" y="16" fill="#f8fafc" fontSize="7.5" fontWeight="black" textAnchor="middle">Resource</text>
+                    <text x="37.5" y="27" fill="#f8fafc" fontSize="7.5" fontWeight="black" textAnchor="middle">Deployment</text>
+                    <text x="37.5" y="38" fill="#94a3b8" fontSize="6" textAnchor="middle">API Dispatcher</text>
+                    <rect x="10" y="43" width="55" height="6" rx="1.5" fill="#38bdf8" />
                   </g>
 
-                  {/* Center: Control Tower config rule recorder */}
-                  <g transform="translate(140, 35)">
-                    <rect x="0" y="0" width="70" height="50" rx="6" 
-                      fill={complianceState === 'idle' ? '#ffffff' : complianceState === 'remediated' ? '#ecfdf5' : nonCompliantCount > 0 ? '#fef2f2' : '#ecfdf5'} 
-                      stroke={complianceState === 'idle' ? '#94a3b8' : complianceState === 'remediated' ? '#10b981' : nonCompliantCount > 0 ? '#ef4444' : '#10b981'} 
-                      strokeWidth="1.5" />
-                    <text x="35" y="15" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">AWS Config</text>
-                    <text x="35" y="24" fill="#64748b" fontSize="5.5" textAnchor="middle">Audit Recorder</text>
-                    <text x="30" y="34" fill={nonCompliantCount > 0 ? '#991b1b' : '#047857'} fontSize="6.5" fontWeight="extrabold" textAnchor="middle">
-                      {complianceState === 'idle' ? 'STANDBY' : complianceState === 'remediated' ? 'REMEDIATED' : nonCompliantCount > 0 ? '❌ BREACHED' : '🟢 ALLOWED'}
+                  {/* -------------------- TRACK 1: PREVENTIVE SCP -------------------- */}
+                  <path d="M 90 105 Q 110 50 145 50" fill="none" stroke="#64748b" strokeWidth="1.5" className={complianceState === 'deploying' && (auditAction === 'deploy_public_s3' || auditAction === 'invoke_root_api') ? 'da-flow-blue' : ''} markerEnd="url(#arrow-ct)" />
+                  <text x="110" y="70" fill="#475569" fontSize="5.5" fontWeight="bold" textAnchor="middle">Preventive Check</text>
+
+                  <g transform="translate(150, 20)">
+                    <rect x="0" y="0" width="105" height="50" rx="6" 
+                      fill={selectedGuardrail === 'deny_public_s3' || selectedGuardrail === 'block_root_api' ? '#fef2f2' : '#f8fafc'} 
+                      stroke={selectedGuardrail === 'deny_public_s3' || selectedGuardrail === 'block_root_api' ? '#ef4444' : '#cbd5e1'} strokeWidth="1.2" />
+                    <text x="52.5" y="13" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">1. Preventive Control</text>
+                    <text x="52.5" y="23" fill="#3b82f6" fontSize="6" fontWeight="bold" textAnchor="middle">Landing Zone SCP</text>
+                    
+                    {/* Evaluation status inside SCP gate */}
+                    <rect x="8" y="28" width="89" height="16" rx="2" 
+                      fill={complianceState === 'evaluated' && ((selectedGuardrail === 'deny_public_s3' && auditAction === 'deploy_public_s3') || (selectedGuardrail === 'block_root_api' && auditAction === 'invoke_root_api')) ? '#fee2e2' : '#ecfdf4'} 
+                      stroke={complianceState === 'evaluated' && ((selectedGuardrail === 'deny_public_s3' && auditAction === 'deploy_public_s3') || (selectedGuardrail === 'block_root_api' && auditAction === 'invoke_root_api')) ? '#ef4444' : '#10b981'} strokeWidth="0.8" />
+                    <text x="52.5" y="38" fill={complianceState === 'evaluated' && ((selectedGuardrail === 'deny_public_s3' && auditAction === 'deploy_public_s3') || (selectedGuardrail === 'block_root_api' && auditAction === 'invoke_root_api')) ? '#e11d48' : '#047857'} fontSize="6" fontWeight="black" textAnchor="middle">
+                      {complianceState === 'evaluated' && ((selectedGuardrail === 'deny_public_s3' && auditAction === 'deploy_public_s3') || (selectedGuardrail === 'block_root_api' && auditAction === 'invoke_root_api')) ? '🛑 SCP BLOCKED' : '🟢 ALLOWED'}
                     </text>
                   </g>
 
-                  {/* Right: SSM automated runbook baseline */}
-                  <g transform="translate(220, 35)">
-                    <rect x="0" y="0" width="50" height="50" rx="6" 
-                      fill={complianceState === 'idle' ? '#e2e8f0' : complianceState === 'remediated' ? '#d1fae5' : nonCompliantCount > 0 ? '#fee2e2' : '#d1fae5'} 
-                      stroke={complianceState === 'idle' ? '#cbd5e1' : complianceState === 'remediated' ? '#10b981' : nonCompliantCount > 0 ? '#ef4444' : '#10b981'} 
-                      strokeWidth="1.5" />
-                    <text x="25" y="16" fill="#334155" fontSize="6.5" fontWeight="bold" textAnchor="middle">SSM</text>
-                    <text x="25" y="27" fill="#64748b" fontSize="5.5" textAnchor="middle">Runbook</text>
-                    <text x="25" y="38" fill="#475569" fontSize="6" fontWeight="bold" textAnchor="middle">
-                      {complianceState === 'idle' ? 'BASELINE' : complianceState === 'remediated' ? 'SECURED' : nonCompliantCount > 0 ? 'BREACHED' : 'COMPLIANT'}
+                  {/* -------------------- TRACK 2: DETECTIVE CONFIG AUDITOR -------------------- */}
+                  <path d="M 90 125 Q 110 160 145 160" fill="none" stroke="#64748b" strokeWidth="1.5" className={complianceState === 'deploying' && auditAction === 'deploy_unencrypted_ebs' ? 'da-flow-blue' : ''} markerEnd="url(#arrow-ct)" />
+                  <text x="110" y="152" fill="#475569" fontSize="5.5" fontWeight="bold" textAnchor="middle">Detective Path</text>
+
+                  {/* Deployed Resource Node */}
+                  <g transform="translate(150, 135)">
+                    <rect x="0" y="0" width="85" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.2" />
+                    <text x="42.5" y="13" fill="#334155" fontSize="7" fontWeight="extrabold" textAnchor="middle">Deployed Drive</text>
+                    <text x="42.5" y="23" fill="#64748b" fontSize="5.5" textAnchor="middle">EBS / S3 Bucket</text>
+                    
+                    {/* Status Badge */}
+                    <rect x="6" y="28" width="73" height="16" rx="1.5" 
+                      fill={nonCompliantCount > 0 ? '#fee2e2' : complianceState === 'remediated' ? '#ecfdf4' : '#f1f5f9'} 
+                      stroke={nonCompliantCount > 0 ? '#ef4444' : complianceState === 'remediated' ? '#10b981' : '#cbd5e1'} strokeWidth="0.8" />
+                    <text x="42.5" y="38" fill={nonCompliantCount > 0 ? '#991b1b' : complianceState === 'remediated' ? '#047857' : '#475569'} fontSize="5.5" fontWeight="extrabold" textAnchor="middle">
+                      {nonCompliantCount > 0 ? '⚠️ UNENCRYPTED' : complianceState === 'remediated' ? '🔒 SECURE' : 'STANDBY'}
+                    </text>
+                  </g>
+
+                  {/* Flow from Deployed Resource to AWS Config Auditor */}
+                  <path d="M 235 160 H 265" fill="none" stroke="#64748b" strokeWidth="1.5" className={complianceState === 'deploying' ? 'da-flow-blue' : ''} markerEnd="url(#arrow-ct)" />
+
+                  {/* AWS Config Auditor Node */}
+                  <g transform="translate(270, 135)">
+                    <rect x="0" y="0" width="90" height="50" rx="6" 
+                      fill={nonCompliantCount > 0 ? '#fff5f5' : '#f8fafc'} 
+                      stroke={nonCompliantCount > 0 ? '#ef4444' : '#cbd5e1'} strokeWidth="1.5" />
+                    <text x="45" y="13" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">2. AWS Config</text>
+                    <text x="45" y="23" fill="#64748b" fontSize="5.5" textAnchor="middle">Continuous Audit</text>
+                    
+                    {/* Evaluation status inside AWS Config */}
+                    <rect x="6" y="28" width="78" height="16" rx="2" 
+                      fill={nonCompliantCount > 0 ? '#fee2e2' : complianceState === 'remediated' ? '#ecfdf4' : '#f1f5f9'} 
+                      stroke={nonCompliantCount > 0 ? '#f43f5e' : complianceState === 'remediated' ? '#10b981' : '#cbd5e1'} strokeWidth="0.8" />
+                    <text x="45" y="38" fill={nonCompliantCount > 0 ? '#e11d48' : complianceState === 'remediated' ? '#047857' : '#475569'} fontSize="5.5" fontWeight="black" textAnchor="middle">
+                      {nonCompliantCount > 0 ? '🚨 NON-COMPLIANT' : complianceState === 'remediated' ? '🟢 COMPLIANT' : 'NO CHANGE'}
+                    </text>
+                  </g>
+
+                  {/* Flow from Config Auditor to Systems Manager Runbook */}
+                  <path d="M 360 160 H 380" fill="none" stroke="#10b981" strokeWidth="1.5" className={complianceState === 'remediated' ? 'da-flow-green' : ''} markerEnd="url(#arrow-ct-green)" />
+
+                  {/* Systems Manager (SSM) Auto Remediator Node */}
+                  <g transform="translate(385, 135)">
+                    <rect x="0" y="0" width="95" height="50" rx="6" 
+                      fill={complianceState === 'remediated' ? '#ecfdf5' : '#f8fafc'} 
+                      stroke={complianceState === 'remediated' ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
+                    <text x="47.5" y="13" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">3. SSM Runbook</text>
+                    <text x="47.5" y="23" fill="#64748b" fontSize="5.5" textAnchor="middle">Auto-Remediation</text>
+                    
+                    {/* Status check */}
+                    <rect x="6" y="28" width="83" height="16" rx="2" 
+                      fill={complianceState === 'remediated' ? '#d1fae5' : '#f1f5f9'} 
+                      stroke={complianceState === 'remediated' ? '#10b981' : '#cbd5e1'} strokeWidth="0.8" />
+                    <text x="47.5" y="38" fill={complianceState === 'remediated' ? '#065f46' : '#475569'} fontSize="5" fontWeight="black" textAnchor="middle" className="font-mono">
+                      {complianceState === 'remediated' ? '⚡ RUNBOOK COMPLETE' : 'STANDBY IDLE'}
                     </text>
                   </g>
                 </svg>
