@@ -202,6 +202,15 @@ const visualizers: VisualizerItem[] = [
     path: '/visualizers/networking-vpc',
     icon: '🌐',
   },
+  {
+    id: 'disaster-recovery',
+    title: '🔄 AWS Disaster Recovery & Migration',
+    description: 'Master AWS Disaster Recovery strategies (Backup/Restore, Pilot Light, Warm Standby, Multi-Site/Hot Site), multi-region active failovers, DMS continuous replication, RDS & Aurora MySQL migrations, and AWS Backup Vault Lock.',
+    tags: ['Disaster Recovery', 'DMS', 'AWS Backup', 'Vault Lock', 'Multi-Region', 'Failover'],
+    category: 'integration',
+    path: '/visualizers/disaster-recovery',
+    icon: '🔄',
+  },
   // Upcoming Roadmap Items
   {
     id: 'sorting-algorithms',
@@ -322,6 +331,17 @@ const scenarios: Scenario[] = [
     links: [
       { name: '🗄️ AWS Databases & Analytics Pipelines', path: '/visualizers/databases-analytics' },
       { name: '🪣 AWS S3 Object Data Lake Storage', path: '/visualizers/s3' }
+    ]
+  },
+  {
+    id: 'disaster-resilience',
+    icon: '🔄',
+    title: 'I need a secure database migration strategy and multi-region disaster recovery plan resilient to ransomware',
+    problem: 'Catastrophic failures in a single region disrupt user sessions and take databases offline. Furthermore, malicious agents compromising root credentials can execute irreversible backups deletions, leaving data completely unrecoverable.',
+    solution: 'Implement Database Migration Service (DMS) with continuous replication (CDC) to move databases to Amazon Aurora MySQL with zero-downtime, design a Route 53 multi-region DNS active failover architecture, and configure AWS Backup Vault Lock in rigid Compliance Mode to prevent unauthorized recovery point deletions.',
+    links: [
+      { name: '🔄 AWS Disaster Recovery & Migration Workbench', path: '/visualizers/disaster-recovery' },
+      { name: '🌐 AWS Route 53 Multi-Region Failover Architecture', path: '/visualizers/route53' }
     ]
   }
 ];

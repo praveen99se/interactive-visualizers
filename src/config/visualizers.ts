@@ -172,7 +172,16 @@ export const visualizerRegistry: VisualizerConfig[] = [
     icon: '🌐',
     lastUpdated: '2026-05-31',
   },
-  // Add more visualizers here as you create them
+  {
+    id: 'disaster-recovery',
+    title: 'AWS Disaster Recovery & Migration Workbench',
+    description: 'Master AWS Disaster Recovery strategies (Backup/Restore, Pilot Light, Warm Standby, Multi-Site/Hot Site), multi-region active failovers, DMS continuous replication, RDS & Aurora MySQL migrations, and AWS Backup Vault Lock.',
+    category: 'cloud',
+    tags: ['Disaster Recovery', 'DMS', 'AWS Backup', 'Vault Lock', 'Multi-Region', 'Failover'],
+    path: '/visualizers/disaster-recovery',
+    icon: '🔄',
+    lastUpdated: '2026-06-01',
+  },
 ];
 
 export const getVisualizerById = (id: string) => {

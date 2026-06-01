@@ -20,6 +20,7 @@ import GovernanceAndIdentityVisualizer from './pages/visualizers/GovernanceAndId
 import SecretsAndKMSEncryptionVisualizer from './pages/visualizers/SecretsAndKMSEncryptionVisualizer';
 import NetworkAndEdgeSecurityVisualizer from './pages/visualizers/NetworkAndEdgeSecurityVisualizer';
 import NetworkingVPCVisualizer from './pages/visualizers/NetworkingVPCVisualizer';
+import DisasterRecoveryVisualizer from './pages/visualizers/DisasterRecoveryVisualizer';
 import NotFound from './pages/NotFound';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -104,6 +105,7 @@ export default function App() {
             <Route path="/visualizers/secrets-kms" element={<SecretsAndKMSEncryptionVisualizer />} />
             <Route path="/visualizers/network-security" element={<NetworkAndEdgeSecurityVisualizer />} />
             <Route path="/visualizers/networking-vpc" element={<NetworkingVPCVisualizer />} />
+            <Route path="/visualizers/disaster-recovery" element={<DisasterRecoveryVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

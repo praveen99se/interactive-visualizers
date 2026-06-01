@@ -1,0 +1,2313 @@
+import { useState, useEffect } from 'react';
+import {
+  RefreshCw,
+  Activity,
+  Play,
+  Shield,
+  Zap,
+  Database,
+  Globe,
+  Lock,
+  Unlock,
+  AlertTriangle,
+  BookOpen,
+  Sliders,
+  Trash2,
+  ChevronRight,
+  ChevronDown,
+  Info
+} from 'lucide-react';
+
+type TabType = 'strategies' | 'multiregion' | 'dms' | 'backup' | 'playbook' | 'notebook';
+
+interface LogRow {
+  timestamp: string;
+  message: string;
+  type: 'info' | 'success' | 'warn' | 'error';
+}
+
+export default function DisasterRecoveryVisualizer() {
+  const [activeTab, setActiveTab] = useState<TabType>('strategies');
+  const [selectedNote, setSelectedNote] = useState<string>('rto_rpo');
+  const [expandedCategory, setExpandedCategory] = useState<string>('fundamentals');
+
+  // ==========================================
+  // TAB 1 STATE: RPO/RTO & Cost Calculator
+  // ==========================================
+  const [selectedStrategy, setSelectedStrategy] = useState<'backup' | 'pilot' | 'warm' | 'hot'>('pilot');
+  const [rpoMinutes, setRpoMinutes] = useState<number>(60);
+  const [rtoHours, setRtoHours] = useState<number>(4);
+  const [hourlyDowntimeCost, setHourlyDowntimeCost] = useState<number>(5000);
+
+  // Auto-sync strategy type based on user RPO/RTO sliders
+  useEffect(() => {
+    if (rpoMinutes <= 1 && rtoHours <= 0.1) {
+      setSelectedStrategy('hot');
+    } else if (rpoMinutes <= 15 && rtoHours <= 1) {
+      setSelectedStrategy('warm');
+    } else if (rpoMinutes <= 60 && rtoHours <= 4) {
+      setSelectedStrategy('pilot');
+    } else {
+      setSelectedStrategy('backup');
+    }
+  }, [rpoMinutes, rtoHours]);
+
+  const updateStrategyParameters = (strat: 'backup' | 'pilot' | 'warm' | 'hot') => {
+    setSelectedStrategy(strat);
+    if (strat === 'hot') {
+      setRpoMinutes(0.5); // < 1 min
+      setRtoHours(0.05);  // Real-time failover
+    } else if (strat === 'warm') {
+      setRpoMinutes(10);
+      setRtoHours(0.5);
+    } else if (strat === 'pilot') {
+      setRpoMinutes(60);
+      setRtoHours(4);
+    } else {
+      setRpoMinutes(1440); // 24 hours
+      setRtoHours(24);     // 24 hours
+    }
+  };
+
+  // Cost Equations
+  const getMonthlyInfraCost = () => {
+    if (selectedStrategy === 'hot') return 9500;
+    if (selectedStrategy === 'warm') return 2800;
+    if (selectedStrategy === 'pilot') return 750;
+    return 95; // Backup & Restore
+  };
+
+  const getEstimatedDowntimeCost = () => {
+    return rtoHours * hourlyDowntimeCost;
+  };
+
+  // ==========================================
+  // TAB 2 STATE: AWS Multi-Region Failover
+  // ==========================================
+  const [failoverScenario, setFailoverScenario] = useState<'pilot' | 'warm' | 'hot'>('pilot');
+  const [regionAStatus, setRegionAStatus] = useState<'healthy' | 'degraded' | 'offline'>('healthy');
+  const [failoverState, setFailoverState] = useState<'idle' | 'running' | 'success' | 'failed'>('idle');
+  const [failoverLogs, setFailoverLogs] = useState<LogRow[]>([]);
+  const [trafficSplit, setTrafficSplit] = useState<number>(100); // 100% to Region A, 0% to B (or 50/50 in Active-Active)
+
+  useEffect(() => {
+    if (failoverScenario === 'hot') {
+      setTrafficSplit(50); // Active-Active
+    } else {
+      setTrafficSplit(100); // Primary gets 100%
+    }
+  }, [failoverScenario]);
+
+  const triggerDisasterOutage = () => {
+    setRegionAStatus('offline');
+    setFailoverState('running');
+    setFailoverLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+
+    setFailoverLogs(prev => [
+      ...prev,
+      { timestamp, message: `🚨 [ALERT] CloudWatch Alarm "ALB-RegionA-UnhealthyHostCount" triggered CRITICAL state in us-east-1!`, type: 'error' },
+      { timestamp, message: `💥 [OUTAGE] Direct outage detected. Region us-east-1 ALB is returning 504 Gateway Timeouts.`, type: 'error' }
+    ]);
+  };
+
+  const executeFailoverSwitchover = async () => {
+    if (failoverState !== 'running') return;
+    const timestamp = new Date().toLocaleTimeString();
+
+    if (failoverScenario === 'pilot') {
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🔄 [FAILOVER] Initiating Pilot Light DR Switchover Plan to eu-west-1...`, type: 'info' },
+        { timestamp, message: `📦 [ROUTE 53] Route 53 Active-Passive Health Check fails. Edge pop redirects public queries to eu-west-1 failover ALB.`, type: 'warn' },
+        { timestamp, message: `⚡ [COMPUTE] Launching Auto Scaling Group trigger to expand from 0 standby nodes to 4 production-size EC2 instances...`, type: 'info' }
+      ]);
+      await new Promise(r => setTimeout(r, 1200));
+
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `💻 [EC2 PROVISIONING] Standby instances launched and booting from pre-baked AMIs...`, type: 'info' },
+        { timestamp, message: `🛢️ [AURORA] Promoting regional Aurora secondary cluster in eu-west-1 to standalone WRITER role...`, type: 'warn' }
+      ]);
+      await new Promise(r => setTimeout(r, 1000));
+
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [SUCCESS] Aurora promoted in 18 seconds. DB connection string endpoint remapped to local cluster.`, type: 'success' },
+        { timestamp, message: `✅ [SUCCESS] 4 EC2 compute instances successfully register with Target Group. Health checks PASSED.`, type: 'success' },
+        { timestamp, message: `🏆 [COMPLETE] Switchover fully complete in 3.5 minutes. Traffic split updated to 0% us-east-1, 100% eu-west-1.`, type: 'success' }
+      ]);
+      setTrafficSplit(0);
+      setFailoverState('success');
+
+    } else if (failoverScenario === 'warm') {
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🔄 [FAILOVER] Initiating Warm Standby DR Promotion sequence in eu-west-1...`, type: 'info' },
+        { timestamp, message: `📦 [ROUTE 53] Traffic re-routing via Latency-Based Dynamic Failover mapping...`, type: 'info' },
+        { timestamp, message: `⚡ [COMPUTE] Warm Standby currently has 1 active minimal compute instance. Scaling up ASG to 4 nodes immediate hot target...`, type: 'warn' }
+      ]);
+      await new Promise(r => setTimeout(r, 800));
+
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🛢️ [AURORA GLOBAL DB] Promoting Aurora PostgreSQL replica instance in eu-west-1 to PRIMARY...`, type: 'info' },
+        { timestamp, message: `💻 [ASG SCALE] Hot-standby instances ready. Target group scaling completed in 45 seconds.`, type: 'success' }
+      ]);
+      await new Promise(r => setTimeout(r, 800));
+
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [SUCCESS] Primary promoted, write operations re-routed to eu-west-1 local endpoint.`, type: 'success' },
+        { timestamp, message: `🏆 [COMPLETE] Warm Standby DR switchover completed in 72 seconds. RTO target surpassed!`, type: 'success' }
+      ]);
+      setTrafficSplit(0);
+      setFailoverState('success');
+
+    } else {
+      // Hot Site (Active-Active)
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🔄 [FAILOVER] Active-Active Hot Site failure detection processing...`, type: 'info' },
+        { timestamp, message: `📦 [ROUTE 53] Route 53 Anycast immediately senses us-east-1 health probe fail. DNS failover occurred instantly!`, type: 'success' },
+        { timestamp, message: `💡 [INFO] eu-west-1 was already running at 100% capacity and routing 50% of global traffic actively.`, type: 'info' }
+      ]);
+      await new Promise(r => setTimeout(r, 500));
+
+      setFailoverLogs(prev => [
+        ...prev,
+        { timestamp, message: `🛢️ [AURORA DATASTORE] Aurora Global Database multi-region write endpoint auto-failover completed instantly.`, type: 'success' },
+        { timestamp, message: `🏆 [COMPLETE] Failover switchover completed in less than 2 seconds (Near Zero-RTO / Zero-RPO!). Traffic fully consolidated to eu-west-1.`, type: 'success' }
+      ]);
+      setTrafficSplit(0);
+      setFailoverState('success');
+    }
+  };
+
+  const resetFailoverSim = () => {
+    setRegionAStatus('healthy');
+    setFailoverState('idle');
+    setFailoverLogs([]);
+    if (failoverScenario === 'hot') {
+      setTrafficSplit(50);
+    } else {
+      setTrafficSplit(100);
+    }
+  };
+
+  // ==========================================
+  // TAB 3 STATE: Database Migration Service (DMS)
+  // ==========================================
+  const [dmsMode, setDmsMode] = useState<'full_load' | 'cdc' | 'multi_az'>('full_load');
+  const [dmsStatus, setDmsStatus] = useState<'idle' | 'migrating' | 'replicating' | 'failed' | 'promoted'>('idle');
+  const [dmsProgress, setDmsProgress] = useState<number>(0);
+  const [dmsLogs, setDmsLogs] = useState<LogRow[]>([]);
+  const [migrationDowntime, setMigrationDowntime] = useState<string>('0 minutes');
+
+  // Multi-AZ status trigger
+  const [dmsNodeActive, setDmsNodeActive] = useState<'primary' | 'standby' | 'recovering'>('primary');
+
+  const triggerDmsMigration = async () => {
+    if (dmsStatus === 'migrating' || dmsStatus === 'replicating') return;
+    setDmsStatus('migrating');
+    setDmsProgress(0);
+    setDmsLogs([]);
+    setDmsNodeActive('primary');
+    const timestamp = new Date().toLocaleTimeString();
+
+    setDmsLogs(prev => [
+      ...prev,
+      { timestamp, message: `🔌 [DMS CONNECT] Connecting to Source: On-Premises Oracle Enterprise Database (Port 1521)...`, type: 'info' },
+      { timestamp, message: `🔌 [DMS CONNECT] Connecting to Target: AWS Aurora MySQL-Compatible Instance (Port 3306)...`, type: 'info' },
+      { timestamp, message: `🛡️ [REPLICATION] Spawning AWS DMS Replication Instance (dms-repl-node-large)...`, type: 'info' }
+    ]);
+    await new Promise(r => setTimeout(r, 600));
+
+    setDmsLogs(prev => [
+      ...prev,
+      { timestamp, message: `⚙️ [MAPPING] Schema conversion validated. Remapping oracle schema HR_PROD to mysql schema aws_hr_prod...`, type: 'success' },
+      { timestamp, message: `🚀 [START] Starting Full-Load Phase: Migrating static table indexes and data blocks...`, type: 'success' }
+    ]);
+
+    // Simulate progress bar
+    for (let p = 10; p <= 100; p += 15) {
+      const currentProgress = Math.min(p, 100);
+      setDmsProgress(currentProgress);
+      setDmsLogs(prev => [
+        ...prev,
+        { timestamp: new Date().toLocaleTimeString(), message: `📦 [FULL LOAD] Replicating data tables blocks: ${currentProgress}% complete...`, type: 'info' }
+      ]);
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    const completeTime = new Date().toLocaleTimeString();
+    if (dmsMode === 'full_load') {
+      setDmsLogs(prev => [
+        ...prev,
+        { timestamp: completeTime, message: `🟢 [SUCCESS] Full Load migration completed successfully. All schemas and rows loaded.`, type: 'success' },
+        { timestamp: completeTime, message: `⚠️ [DOWNTIME WARNING] Database offline since migration start. Total downtime: 45 minutes for final sync switchover.`, type: 'warn' }
+      ]);
+      setDmsStatus('promoted');
+      setMigrationDowntime('45 minutes');
+    } else {
+      // Continuous Replication (CDC)
+      setDmsLogs(prev => [
+        ...prev,
+        { timestamp: completeTime, message: `🟢 [SUCCESS] Full Load completed. Transitioning seamlessly to Continuous Replication (CDC) Mode...`, type: 'success' },
+        { timestamp: completeTime, message: `⚡ [CDC REPLICATING] Listening to Source Engine transaction redo-logs / binlogs...`, type: 'info' },
+        { timestamp: completeTime, message: `💡 [INFO] Live updates on premises will replicate automatically to Aurora within milliseconds. Downtime for cutover is near zero (<10s).`, type: 'success' }
+      ]);
+      setDmsStatus('replicating');
+      setMigrationDowntime('<10 seconds');
+    }
+  };
+
+  const triggerLiveUpdate = () => {
+    if (dmsStatus !== 'replicating') return;
+    const timestamp = new Date().toLocaleTimeString();
+    setDmsLogs(prev => [
+      ...prev,
+      { timestamp, message: `⚡ [SOURCE INGEST] Dynamic transaction on-premises: UPDATE employee SET salary = 125000 WHERE id = 102;`, type: 'info' },
+      { timestamp, message: `🔍 [CDC STREAM] DMS Replication instance captured redo-log buffer insert. Replicating packet...`, type: 'warn' },
+      { timestamp, message: `🟢 [TARGET APPLY] Target Aurora MySQL successfully updated (1 row affected). Replication Lag: 42ms.`, type: 'success' }
+    ]);
+  };
+
+  const simulateDmsFailover = async () => {
+    if (dmsMode !== 'multi_az' || dmsStatus === 'idle') return;
+    const timestamp = new Date().toLocaleTimeString();
+
+    setDmsNodeActive('recovering');
+    setDmsLogs(prev => [
+      ...prev,
+      { timestamp, message: `🚨 [FAILOVER ALERT] Primary DMS Replication Node in AZ us-east-1a experienced a physical hypervisor crash!`, type: 'error' },
+      { timestamp, message: `🔄 [HEALTH AUDIT] Automated recovery triggered. Promoting synchronous Hot Standby Node in us-east-1b...`, type: 'warn' }
+    ]);
+    await new Promise(r => setTimeout(r, 1200));
+
+    setDmsNodeActive('standby');
+    setDmsLogs(prev => [
+      ...prev,
+      { timestamp, message: `🟢 [PROMOTED] Standby DMS node promoted to PRIMARY. Routing endpoint remapped seamlessly.`, type: 'success' },
+      { timestamp, message: `✅ [CDC RESUME] Replication tasks resumed without data loss. Continuous CDC pipeline is ACTIVE.`, type: 'success' }
+    ]);
+  };
+
+  const resetDmsSim = () => {
+    setDmsStatus('idle');
+    setDmsProgress(0);
+    setDmsLogs([]);
+    setDmsNodeActive('primary');
+    setMigrationDowntime('0 minutes');
+  };
+
+  // ==========================================
+  // TAB 4 STATE: AWS Backup & Vault Lock
+  // ==========================================
+  const [vaultLockMode, setVaultLockMode] = useState<'none' | 'governance' | 'compliance'>('none');
+  const [backupStatus, setBackupStatus] = useState<'idle' | 'backing_up' | 'backed_up'>('idle');
+  const [attackStatus, setAttackStatus] = useState<'none' | 'evaluating' | 'breached' | 'prevented'>('none');
+  const [backupLogs, setBackupLogs] = useState<LogRow[]>([]);
+
+  const triggerBackupJob = async () => {
+    setBackupStatus('backing_up');
+    setAttackStatus('none');
+    setBackupLogs([]);
+    const timestamp = new Date().toLocaleTimeString();
+
+    setBackupLogs(prev => [
+      ...prev,
+      { timestamp, message: `🔄 [BACKUP TASK] Initiating global backup schedule for EBS volumes, EFS shares, and RDS instances...`, type: 'info' },
+      { timestamp, message: `🔒 [ENCRYPTION] Encrypting backups at rest with KMS Customer Managed Key key-backup-root...`, type: 'info' }
+    ]);
+    await new Promise(r => setTimeout(r, 1000));
+
+    setBackupLogs(prev => [
+      ...prev,
+      { timestamp, message: `📦 [VAULT WRITE] Writing Recovery Points: ebs-snap-8b21c, rds-snapshot-98ca1, efs-backup-29cae...`, type: 'success' },
+      { timestamp, message: `🟢 [SUCCESS] All target backup recovery points successfully aggregated inside "secured-production-vault".`, type: 'success' }
+    ]);
+    setBackupStatus('backed_up');
+  };
+
+  const triggerRansomwareAttack = async () => {
+    if (backupStatus !== 'backed_up') return;
+    setAttackStatus('evaluating');
+    const timestamp = new Date().toLocaleTimeString();
+
+    setBackupLogs(prev => [
+      ...prev,
+      { timestamp, message: `🚨 [ATTACK SIMULATION] Malicious actor / Compromised Administrator credentials compromised Account Root login!`, type: 'error' },
+      { timestamp, message: `💥 [RANSOMWARE] Hacker deploys ransomware to wipe local production databases...`, type: 'error' },
+      { timestamp, message: `💣 [DELETION ATTEMPT] Hacker attempts immediate deletion of all AWS Backup vault Recovery Points to prevent recovery...`, type: 'error' }
+    ]);
+    await new Promise(r => setTimeout(r, 1200));
+
+    if (vaultLockMode === 'none') {
+      setAttackStatus('breached');
+      setBackupLogs(prev => [
+        ...prev,
+        { timestamp, message: `💀 [BREACHED] Vault Lock is disabled! API call backup:DeleteRecoveryPoint executed with 200 OK.`, type: 'error' },
+        { timestamp, message: `💥 [OUTAGE COMPLETE] All backups successfully deleted. Ransomware attack succeeded. Data is UNRECOVERABLE!`, type: 'error' }
+      ]);
+    } else if (vaultLockMode === 'governance') {
+      setAttackStatus('prevented');
+      setBackupLogs(prev => [
+        ...prev,
+        { timestamp, message: `🛡️ [VAULT LOCK WARNING] Governance Vault Lock is ACTIVE. Blocked standard root user deletion!`, type: 'warn' },
+        { timestamp, message: `💡 [INFO] Vault can only be altered by users having a specific IAM override permission (e.g. backup:DeleteVaultLockConfiguration).`, type: 'info' },
+        { timestamp, message: `🟢 [PREVENTED] Recovery points preserved. Admin overrides can still delete if authorized, but standard hackers blocked.`, type: 'success' }
+      ]);
+    } else {
+      // Compliance Mode
+      setAttackStatus('prevented');
+      setBackupLogs(prev => [
+        ...prev,
+        { timestamp, message: `🔒 [COMPLIANCE LOCK SHIELD] AWS Backup Vault Lock is in strictly enforced COMPLIANCE MODE!`, type: 'success' },
+        { timestamp, message: `🚫 [CRITICAL BLOCKED] Vault lock is absolute. Modification or deletion of recovery points is completely disabled by AWS hardware enforcement.`, type: 'success' },
+        { timestamp, message: `💡 [HARD ENFORCEMENT] Even AWS Root Account login or AWS Support cannot bypass, reduce, or delete recovery points until the retention window expires!`, type: 'success' },
+        { timestamp, message: `🏆 [COMPLETE RESILIENCE] Backup recovery points intact. Hacker completely blocked. Ransomware failure!`, type: 'success' }
+      ]);
+    }
+  };
+
+  const resetBackupSim = () => {
+    setBackupStatus('idle');
+    setAttackStatus('none');
+    setBackupLogs([]);
+  };
+
+  return (
+    <div className="dr-container animate-fadeIn">
+      {styleBlock()}
+
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
+        <div className="flex items-center gap-3">
+          <span className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-500/20 animate-pulse">
+            <RefreshCw className="w-6 h-6 stroke-[2]" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+              AWS Disaster Recovery &amp; Migration Workbench
+              <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200 uppercase tracking-widest font-mono">
+                SaaS Academy
+              </span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">Covering DR strategy planning, DMS database continuous replication, Multi-Region Active failovers, and AWS Backup Vault Lock ransomware resilience.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab navigation bar */}
+      <div className="da-tabs">
+        <button className={`da-tb ${activeTab === 'strategies' ? 'da-on' : ''}`} onClick={() => setActiveTab('strategies')}>
+          <Sliders className="w-4 h-4" /> 1. DR Strategies &amp; Cost Optimizer
+        </button>
+        <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on' : ''}`} onClick={() => setActiveTab('multiregion')}>
+          <Globe className="w-4 h-4" /> 2. Multi-Region Failover Simulator
+        </button>
+        <button className={`da-tb ${activeTab === 'dms' ? 'da-on' : ''}`} onClick={() => setActiveTab('dms')}>
+          <Database className="w-4 h-4" /> 3. Database Migration Service (DMS)
+        </button>
+        <button className={`da-tb ${activeTab === 'backup' ? 'da-on' : ''}`} onClick={() => setActiveTab('backup')}>
+          <Shield className="w-4 h-4" /> 4. AWS Backup &amp; Vault Lock
+        </button>
+        <button className={`da-tb ${activeTab === 'playbook' ? 'da-on' : ''}`} onClick={() => setActiveTab('playbook')}>
+          <BookOpen className="w-4 h-4" /> 5. Recovery Playbook
+        </button>
+        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+          <BookOpen className="w-4 h-4" /> 6. Visual Architect Notes
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 1: DISASTER RECOVERY STRATEGIES & COST OPTIMIZER                       */}
+      {/* ========================================================================= */}
+      {activeTab === 'strategies' && (
+        <div className="space-y-6 text-left">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Sidebar Controls */}
+            <div className="lg:col-span-5 da-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between text-left">
+              <div>
+                <h3 className="da-card-title text-indigo-700">
+                  <Sliders className="w-5 h-5 text-indigo-500" /> RTO / RPO Target Calibration
+                </h3>
+                <p className="da-card-desc mb-6">
+                  Adjust the Recovery Time Objective (RTO) and Recovery Point Objective (RPO) sliders to immediately map the matching AWS architectural blueprint, estimating backup infrastructure monthly hosting overhead vs estimated downtime losses.
+                </p>
+
+                {/* RPO Slider */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      Recovery Point Objective (RPO)
+                    </label>
+                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded">
+                      {rpoMinutes >= 60 ? `${(rpoMinutes / 60).toFixed(1)} Hours` : `${rpoMinutes} Minutes`}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1440"
+                    step="10"
+                    value={rpoMinutes}
+                    onChange={(e) => setRpoMinutes(Number(e.target.value))}
+                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                    <span>Active-Active (&lt;1m)</span>
+                    <span>1 Hour (Pilot Light)</span>
+                    <span>24 Hours (Backup)</span>
+                  </div>
+                </div>
+
+                {/* RTO Slider */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      Recovery Time Objective (RTO)
+                    </label>
+                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded">
+                      {rtoHours >= 1 ? `${rtoHours.toFixed(1)} Hours` : `${(rtoHours * 60).toFixed(0)} Minutes`}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.05"
+                    max="48"
+                    step="0.5"
+                    value={rtoHours}
+                    onChange={(e) => setRtoHours(Number(e.target.value))}
+                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                    <span>Instant Failover</span>
+                    <span>4 Hours (Pilot Light)</span>
+                    <span>48 Hours (Backup)</span>
+                  </div>
+                </div>
+
+                {/* Downtime Cost Per Hour */}
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      Business Downtime Cost / Hour
+                    </label>
+                    <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-xs font-bold rounded">
+                      ${hourlyDowntimeCost.toLocaleString()} / Hour
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="500"
+                    max="20000"
+                    step="500"
+                    value={hourlyDowntimeCost}
+                    onChange={(e) => setHourlyDowntimeCost(Number(e.target.value))}
+                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-rose-600"
+                  />
+                </div>
+              </div>
+
+              {/* Direct Strategy buttons selection */}
+              <div className="border-t border-slate-100 pt-4 mt-4">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-2">Or select preset blueprint:</span>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <button
+                    onClick={() => updateStrategyParameters('backup')}
+                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'backup' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    💾 Backup &amp; Restore
+                  </button>
+                  <button
+                    onClick={() => updateStrategyParameters('pilot')}
+                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'pilot' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    🕯️ Pilot Light
+                  </button>
+                  <button
+                    onClick={() => updateStrategyParameters('warm')}
+                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'warm' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    🔥 Warm Standby
+                  </button>
+                  <button
+                    onClick={() => updateStrategyParameters('hot')}
+                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'hot' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                  >
+                    🌐 Multi-Site (Active-Active)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Detailed Output Card */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              <div className="da-card bg-gradient-to-tr from-slate-900 to-indigo-950 text-white border-none p-6 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+                <h4 className="text-xs uppercase font-extrabold tracking-wider text-indigo-300 mb-2">AWS Architectural Blueprint</h4>
+                
+                {selectedStrategy === 'backup' && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      💾 Option 1: Backup &amp; Restore
+                    </h3>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      Saves database dump recovery points and compute images (AMIs) in cold storage vaults. During a disaster, database backups are fetched from S3, compute machines are built from scratch, and application routes are updated.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-xs pt-2">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
+                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost()} / mo</span>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
+                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedStrategy === 'pilot' && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      🕯️ Option 2: Pilot Light Approach
+                    </h3>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      Data (databases, files) is replicated continuously in synchronous or asynchronous replication states to the alternate region. Standby compute systems are provisioned but kept completely powered off or scaled to absolute zero (active database, dormant compute).
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-xs pt-2">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
+                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost()} / mo</span>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
+                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedStrategy === 'warm' && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      🔥 Option 3: Warm Standby (Scaled Down Hot)
+                    </h3>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      Maintains a functionally minimal active replica version of the production environment always running in Region B (e.g. 1 EC2 instance instead of 10, database replica online). During failover, the Auto Scaling group quickly scales up to production volume.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-xs pt-2">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
+                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost()} / mo</span>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
+                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedStrategy === 'hot' && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      🌐 Option 4: Multi-Site Active-Active (Hot Site)
+                    </h3>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      Full-scale replica systems run continuously in active-active split traffic modes in both Region A and Region B. Route 53 utilizes Anycast or Latency routing to partition active workloads. Zero data loss and near zero-RTO.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-xs pt-2">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
+                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost().toLocaleString()} / mo</span>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
+                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Dynamic Interactive Cost Comparison Bars */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4 text-xs">
+                <span className="font-extrabold text-slate-800 block">Financial Tradeoff Analysis (Monthly Budget Breakdown)</span>
+                
+                {/* Cost Bar 1 */}
+                <div className="space-y-1">
+                  <div className="flex justify-between font-semibold">
+                    <span className="text-slate-600">AWS Infrastructure Running Costs:</span>
+                    <span className="text-indigo-600 font-mono font-bold">${getMonthlyInfraCost().toLocaleString()} / mo</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div 
+                      className="bg-indigo-600 h-full rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${Math.min((getMonthlyInfraCost() / 9500) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Cost Bar 2 */}
+                <div className="space-y-1">
+                  <div className="flex justify-between font-semibold">
+                    <span className="text-slate-600">Disaster Exposure Cost Risk (Based on RTO):</span>
+                    <span className="text-rose-600 font-mono font-bold">${getEstimatedDowntimeCost().toLocaleString()} / incident</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                    <div 
+                      className="bg-rose-500 h-full rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${Math.min((getEstimatedDowntimeCost() / 240000) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl leading-relaxed text-slate-500 text-[11px]">
+                  <strong>💡 Architectural Rule of Thumb:</strong> As RPO and RTO approach zero, your monthly infrastructure running costs increase exponentially because you replicate full-scale active database and application clusters in the standby region.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 2: MULTI-REGION ACTIVE FAILOVER SIMULATOR                             */}
+      {/* ========================================================================= */}
+      {activeTab === 'multiregion' && (
+        <div className="space-y-6 text-left animate-fadeIn">
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+            <h2 className="da-card-title text-indigo-700">
+              <Globe className="w-5 h-5 text-indigo-500" /> AWS Multi-Region Failover Architecture Simulator
+            </h2>
+            <p className="da-card-desc">
+              Trigger a simulated primary region failure inside <strong>us-east-1</strong>. Witness Route 53 redirection telemetry, automated database promotions, and scaled-down EC2 scaling operations inside <strong>eu-west-1</strong>.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            {/* Sidebar Controller */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+              <div>
+                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Select Failover Strategy:</span>
+                <select 
+                  value={failoverScenario} 
+                  onChange={(e) => setFailoverScenario(e.target.value as any)}
+                  className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium mb-4 cursor-pointer"
+                >
+                  <option value="pilot">🕯️ Pilot Light (Dormant EC2 Standby, Active DB)</option>
+                  <option value="warm">🔥 Warm Standby (Scaled-Down Active Standby)</option>
+                  <option value="hot">🌐 Multi-Site (Active-Active 50/50 Split)</option>
+                </select>
+
+                <div className="space-y-3 pt-2">
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-slate-600">Region A (us-east-1) Health:</span>
+                    <span className={`px-2 py-0.5 rounded font-bold uppercase ${regionAStatus === 'healthy' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                      {regionAStatus}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-xs font-semibold">
+                    <span className="text-slate-600">Active Routing Traffic Split:</span>
+                    <span className="text-indigo-600 font-bold font-mono">
+                      {trafficSplit}% us-east-1 / {100 - trafficSplit}% eu-west-1
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulation Action buttons */}
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                {regionAStatus === 'healthy' ? (
+                  <button
+                    onClick={triggerDisasterOutage}
+                    className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-rose-500/10 flex items-center justify-center gap-1.5"
+                  >
+                    <AlertTriangle className="w-4 h-4 animate-bounce" /> Trigger Region A Failure
+                  </button>
+                ) : (
+                  <button
+                    onClick={executeFailoverSwitchover}
+                    disabled={failoverState !== 'running'}
+                    className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${failoverState === 'running' ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                  >
+                    <Play className="w-4 h-4" /> Trigger Switchover Failover
+                  </button>
+                )}
+
+                <button
+                  onClick={resetFailoverSim}
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw className="w-4 h-4" /> Reset Environment
+                </button>
+              </div>
+            </div>
+
+            {/* High-Fidelity SVG Diagram */}
+            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
+              <div className="absolute right-3 top-3 flex items-center gap-2">
+                <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-indigo-400 rounded-md font-mono flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-indigo-500 animate-pulse" /> TELEMETRY ACTIVE
+                </span>
+              </div>
+
+              {/* Render high-contrast architectural diagram */}
+              <div className="flex-grow flex items-center justify-center">
+                <svg viewBox="0 0 700 240" className="w-full h-auto">
+                  {/* Outer Frame Grid Gradients */}
+                  <defs>
+                    <linearGradient id="regionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#1e1b4b" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#0f172a" stopOpacity="0.9" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Route 53 Core Global Endpoint */}
+                  <g transform="translate(350, 25)">
+                    <rect x="-60" y="-12" width="120" height="24" rx="6" fill="#4f46e5" stroke="#818cf8" strokeWidth="1" />
+                    <text x="0" y="4" fill="#ffffff" fontSize="9" fontWeight="900" textAnchor="middle" letterSpacing="0.5">🌐 Route 53 DNS</text>
+                  </g>
+
+                  {/* Region 1 Frame (us-east-1) */}
+                  <g transform="translate(40, 60)">
+                    <rect x="0" y="0" width="280" height="150" rx="8" fill="url(#regionGradient)" stroke={regionAStatus === 'offline' ? '#f43f5e' : '#4f46e5'} strokeWidth="1.5" strokeDasharray={regionAStatus === 'offline' ? '6,4' : 'none'} />
+                    <text x="12" y="18" fill={regionAStatus === 'offline' ? '#f43f5e' : '#818cf8'} fontSize="9" fontWeight="bold">🇺🇸 us-east-1 (Primary Region)</text>
+                    
+                    {/* ALB Ingress Card */}
+                    <g transform="translate(20, 30)">
+                      <rect x="0" y="0" width="240" height="30" rx="6" fill="#1e293b" stroke={regionAStatus === 'offline' ? '#f43f5e' : '#334155'} strokeWidth="1" />
+                      <text x="12" y="18" fill="#e2e8f0" fontSize="9" fontWeight="bold">ALB Ingress Gateway</text>
+                      <circle cx="220" cy="15" r="4" fill={regionAStatus === 'healthy' ? '#10b981' : '#f43f5e'} className={regionAStatus === 'healthy' ? 'pulse-circle' : ''} />
+                    </g>
+
+                    {/* EC2 Instance cluster cards */}
+                    <g transform="translate(20, 70)">
+                      <rect x="0" y="0" width="110" height="32" rx="6" fill="#0f172a" stroke={regionAStatus === 'offline' ? '#f43f5e' : '#10b981'} strokeWidth="1" />
+                      <text x="8" y="14" fill="#e2e8f0" fontSize="8" fontWeight="bold">EC2 Web Servers</text>
+                      <text x="8" y="24" fill="#64748b" fontSize="7">Status: {regionAStatus === 'healthy' ? '4 Nodes Active' : 'Offline'}</text>
+                    </g>
+
+                    {/* RDS/Aurora writer database */}
+                    <g transform="translate(150, 70)">
+                      <rect x="0" y="0" width="110" height="32" rx="6" fill="#0f172a" stroke={regionAStatus === 'offline' ? '#f43f5e' : '#4f46e5'} strokeWidth="1" />
+                      <text x="8" y="14" fill="#e2e8f0" fontSize="8" fontWeight="bold">🛢️ Aurora MySQL</text>
+                      <text x="8" y="24" fill="#818cf8" fontSize="7" fontWeight="bold">Role: WRITER</text>
+                    </g>
+                  </g>
+
+                  {/* Region 2 Frame (eu-west-1 Standby) */}
+                  <g transform="translate(380, 60)">
+                    <rect x="0" y="0" width="280" height="150" rx="8" fill="url(#regionGradient)" stroke={failoverState === 'success' ? '#10b981' : '#4f46e5'} strokeWidth="1.5" />
+                    <text x="12" y="18" fill={failoverState === 'success' ? '#10b981' : '#818cf8'} fontSize="9" fontWeight="bold">🇪🇺 eu-west-1 (Secondary Region)</text>
+                    
+                    {/* ALB Ingress Card */}
+                    <g transform="translate(20, 30)">
+                      <rect x="0" y="0" width="240" height="30" rx="6" fill="#1e293b" stroke="#334155" strokeWidth="1" />
+                      <text x="12" y="18" fill="#e2e8f0" fontSize="9" fontWeight="bold">ALB Ingress Gateway</text>
+                      <circle cx="220" cy="15" r="4" fill={failoverState === 'success' || failoverScenario === 'hot' ? '#10b981' : '#e2e8f0'} />
+                    </g>
+
+                    {/* EC2 Instance cluster cards */}
+                    <g transform="translate(20, 70)">
+                      <rect x="0" y="0" width="110" height="32" rx="6" fill="#0f172a" stroke="#4f46e5" strokeWidth="1" />
+                      <text x="8" y="14" fill="#e2e8f0" fontSize="8" fontWeight="bold">EC2 Web Servers</text>
+                      <text x="8" y="24" fill="#818cf8" fontSize="7" fontWeight="bold">
+                        {failoverState === 'success' ? '4 Nodes Active' : failoverScenario === 'warm' ? '1 Node Active' : '0 Nodes (Dormant)'}
+                      </text>
+                    </g>
+
+                    {/* RDS/Aurora replica reader database */}
+                    <g transform="translate(150, 70)">
+                      <rect x="0" y="0" width="110" height="32" rx="6" fill="#0f172a" stroke="#818cf8" strokeWidth="1" />
+                      <text x="8" y="14" fill="#e2e8f0" fontSize="8" fontWeight="bold">🛢️ Aurora MySQL</text>
+                      <text x="8" y="24" fill={failoverState === 'success' ? '#10b981' : '#fb923c'} fontSize="7" fontWeight="bold">
+                        {failoverState === 'success' ? 'Role: WRITER' : 'Role: REPLICA'}
+                      </text>
+                    </g>
+                  </g>
+
+                  {/* Flow Conduits (Route 53 to Region A) */}
+                  <path d="M 330 37 L 180 90" fill="none" strokeWidth="1.5" className={regionAStatus === 'healthy' ? 'dr-flow-blue' : 'dr-flow-red'} />
+                  {/* Flow Conduits (Route 53 to Region B) */}
+                  <path d="M 370 37 L 520 90" fill="none" strokeWidth="1.5" className={failoverState === 'success' || failoverScenario === 'hot' ? 'dr-flow-green' : 'dr-flow-blue'} />
+
+                  {/* Database Replication Conduit connecting Region A Writer to Region B Reader */}
+                  <path d="M 235 147 L 465 147" fill="none" strokeWidth="2" strokeDasharray="5,4" stroke={failoverState === 'success' ? '#64748b' : '#fb923c'} />
+                </svg>
+              </div>
+
+              {/* Telemetry live logs */}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-400">
+                {failoverLogs.length === 0 ? (
+                  <div className="text-slate-500 italic text-center py-4">Environment idle. Click "Trigger Region A Failure" to execute failover plan scenarios.</div>
+                ) : (
+                  failoverLogs.map((log, index) => (
+                    <div key={index} className="flex gap-2">
+                      <span className="text-indigo-400">{log.timestamp}</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 3: DATABASE MIGRATION SERVICE (DMS) & REPLICATION HUB                 */}
+      {/* ========================================================================= */}
+      {activeTab === 'dms' && (
+        <div className="space-y-6 text-left animate-fadeIn">
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+            <h2 className="da-card-title text-indigo-700">
+              <Database className="w-5 h-5 text-indigo-500" /> Database Migration Service (DMS) &amp; Replication Engine
+            </h2>
+            <p className="da-card-desc">
+              AWS DMS migrates relational databases (Oracle, MySQL, SQL Server) to AWS securely. Replicate databases dynamically with <strong>Continuous Replication (CDC)</strong> and simulate **Multi-AZ Replication Failover** parameters.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            {/* Sidebar Controls */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+              <div>
+                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Migration Mode Selection:</span>
+                <div className="flex bg-slate-100 p-0.5 rounded-lg text-xs mb-4">
+                  <button
+                    onClick={() => setDmsMode('full_load')}
+                    className={`flex-1 py-1 rounded-md font-bold transition-all ${dmsMode === 'full_load' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
+                  >
+                    Full Load
+                  </button>
+                  <button
+                    onClick={() => setDmsMode('cdc')}
+                    className={`flex-1 py-1 rounded-md font-bold transition-all ${dmsMode === 'cdc' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
+                  >
+                    Load &amp; CDC
+                  </button>
+                  <button
+                    onClick={() => setDmsMode('multi_az')}
+                    className={`flex-1 py-1 rounded-md font-bold transition-all ${dmsMode === 'multi_az' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
+                  >
+                    Multi-AZ Task
+                  </button>
+                </div>
+
+                <div className="space-y-3 pt-2 text-xs">
+                  <div className="flex justify-between font-semibold">
+                    <span className="text-slate-600">Replication Task State:</span>
+                    <span className="text-indigo-600 font-bold uppercase">{dmsStatus}</span>
+                  </div>
+
+                  <div className="flex justify-between font-semibold">
+                    <span className="text-slate-600">Estimated Migration Downtime:</span>
+                    <span className={`font-bold ${migrationDowntime.includes('45') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {migrationDowntime}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Control Action Buttons */}
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                <button
+                  onClick={triggerDmsMigration}
+                  disabled={dmsStatus === 'migrating'}
+                  className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${dmsStatus === 'migrating' ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md'}`}
+                >
+                  <Play className="w-4 h-4" /> Start DMS Task
+                </button>
+
+                {dmsMode === 'cdc' && dmsStatus === 'replicating' && (
+                  <button
+                    onClick={triggerLiveUpdate}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Zap className="w-4 h-4 animate-pulse" /> Simulate Live Source Update
+                  </button>
+                )}
+
+                {dmsMode === 'multi_az' && dmsStatus !== 'idle' && (
+                  <button
+                    onClick={simulateDmsFailover}
+                    disabled={dmsNodeActive !== 'primary'}
+                    className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${dmsNodeActive === 'primary' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                  >
+                    <AlertTriangle className="w-4 h-4" /> Trigger DMS Multi-AZ Failover
+                  </button>
+                )}
+
+                <button
+                  onClick={resetDmsSim}
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw className="w-4 h-4" /> Reset Migration
+                </button>
+              </div>
+            </div>
+
+            {/* Interactive SVG Diagram */}
+            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
+              
+              {/* Progress bar overlay for Full Load */}
+              {dmsStatus === 'migrating' && (
+                <div className="absolute top-3 left-6 right-6 bg-slate-900 border border-indigo-500/20 rounded-xl p-3 text-xs text-white z-10 flex items-center justify-between gap-4">
+                  <div className="flex-grow">
+                    <div className="flex justify-between font-bold text-[10px] text-slate-400 uppercase mb-1">
+                      <span>Database Full Load Status</span>
+                      <span>{dmsProgress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-300" style={{ width: `${dmsProgress}%` }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-grow flex items-center justify-center">
+                <svg viewBox="0 0 700 220" className="w-full h-auto">
+                  {/* Source On Premises DB */}
+                  <g transform="translate(60, 100)">
+                    <rect x="-40" y="-30" width="80" height="60" rx="8" fill="#1e293b" stroke="#64748b" strokeWidth="1.5" />
+                    <text x="0" y="-6" fill="#ffffff" fontSize="9" fontWeight="900" textAnchor="middle">🏠 On-Premise</text>
+                    <text x="0" y="8" fill="#cbd5e1" fontSize="8" textAnchor="middle">Oracle DB</text>
+                    <text x="0" y="18" fill="#64748b" fontSize="7" textAnchor="middle" className="font-mono">Port: 1521</text>
+                  </g>
+
+                  {/* DMS Replication Engine Box */}
+                  <g transform="translate(350, 100)">
+                    {dmsMode === 'multi_az' ? (
+                      <g>
+                        {/* Synchronous Boundary */}
+                        <rect x="-105" y="-55" width="210" height="110" rx="12" fill="none" stroke="#4f46e5" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="0" y="-42" fill="#818cf8" fontSize="8" fontWeight="bold" textAnchor="middle">DMS Task Multi-AZ Boundary</text>
+
+                        {/* Primary Node */}
+                        <g transform="translate(-50, 0)">
+                          <rect x="-40" y="-25" width="80" height="50" rx="6" fill="#0f172a" stroke={dmsNodeActive === 'primary' ? '#10b981' : dmsNodeActive === 'recovering' ? '#f43f5e' : '#64748b'} strokeWidth="1.5" />
+                          <text x="0" y="-6" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">Primary Node</text>
+                          <text x="0" y="6" fill="#cbd5e1" fontSize="7" textAnchor="middle">AZ: us-east-1a</text>
+                          <text x="0" y="16" fill={dmsNodeActive === 'primary' ? '#10b981' : '#f43f5e'} fontSize="7" fontWeight="bold" textAnchor="middle">
+                            {dmsNodeActive === 'primary' ? 'ONLINE' : 'CRASHED'}
+                          </text>
+                        </g>
+
+                        {/* Standby Node */}
+                        <g transform="translate(50, 0)">
+                          <rect x="-40" y="-25" width="80" height="50" rx="6" fill="#0f172a" stroke={dmsNodeActive === 'standby' ? '#10b981' : '#4f46e5'} strokeWidth="1.5" />
+                          <text x="0" y="-6" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">Standby Node</text>
+                          <text x="0" y="6" fill="#cbd5e1" fontSize="7" textAnchor="middle">AZ: us-east-1b</text>
+                          <text x="0" y="16" fill={dmsNodeActive === 'standby' ? '#10b981' : '#818cf8'} fontSize="7" fontWeight="bold" textAnchor="middle">
+                            {dmsNodeActive === 'standby' ? 'ACTIVE PRIMARY' : 'STANDBY'}
+                          </text>
+                        </g>
+                      </g>
+                    ) : (
+                      <g>
+                        <rect x="-80" y="-35" width="160" height="70" rx="8" fill="#1e1b4b" stroke="#4f46e5" strokeWidth="1.5" />
+                        <text x="0" y="-12" fill="#ffffff" fontSize="9" fontWeight="900" textAnchor="middle">⚡ DMS Repl Task</text>
+                        <text x="0" y="4" fill="#cbd5e1" fontSize="8" textAnchor="middle">Instance: node-large</text>
+                        <text x="0" y="16" fill="#818cf8" fontSize="7" textAnchor="middle">Auto-Scale Task Active</text>
+                      </g>
+                    )}
+                  </g>
+
+                  {/* Target AWS RDS Aurora DB */}
+                  <g transform="translate(630, 100)">
+                    <rect x="-40" y="-30" width="80" height="60" rx="8" fill="#1e293b" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="0" y="-6" fill="#ffffff" fontSize="9" fontWeight="900" textAnchor="middle">☁️ AWS Cloud</text>
+                    <text x="0" y="8" fill="#cbd5e1" fontSize="8" textAnchor="middle">Aurora MySQL</text>
+                    <text x="0" y="18" fill="#10b981" fontSize="7" textAnchor="middle" className="font-mono">Port: 3306</text>
+                  </g>
+
+                  {/* Flow conduits: Source -> Replication instance */}
+                  <path d="M 105 100 L 240 100" fill="none" strokeWidth="2.5" className={dmsStatus === 'migrating' || dmsStatus === 'replicating' ? 'dr-flow-blue' : 'dr-flow-gray'} />
+                  {/* Flow conduits: Replication instance -> Target */}
+                  <path d="M 460 100 L 585 100" fill="none" strokeWidth="2.5" className={dmsStatus === 'migrating' || dmsStatus === 'replicating' ? 'dr-flow-green' : 'dr-flow-gray'} />
+                </svg>
+              </div>
+
+              {/* Logs output console */}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-400">
+                {dmsLogs.length === 0 ? (
+                  <div className="text-slate-500 italic text-center py-4">DMS migration environment idle. Click "Start DMS Task" to begin database schema copy.</div>
+                ) : (
+                  dmsLogs.map((log, index) => (
+                    <div key={index} className="flex gap-2">
+                      <span className="text-indigo-400">{log.timestamp}</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: AWS BACKUP & VAULT LOCK RANSOMWARE SANDBOX                        */}
+      {/* ========================================================================= */}
+      {activeTab === 'backup' && (
+        <div className="space-y-6 text-left animate-fadeIn">
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+            <h2 className="da-card-title text-indigo-700">
+              <Shield className="w-5 h-5 text-indigo-500" /> AWS Backup Vault Lock Ransomware Sandbox
+            </h2>
+            <p className="da-card-desc">
+              Understand how AWS Backup Vault Lock guards backups. Toggle between <strong>Governance Mode</strong> and <strong>Compliance Mode (Enforced Lock)</strong>, then trigger a simulated ransomware attack to evaluate resilience.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            
+            {/* Sidebar Controls */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+              <div>
+                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Backup Vault Lock Strategy:</span>
+                <div className="space-y-2 mb-4">
+                  <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                    <input
+                      type="radio"
+                      name="vaultLock"
+                      checked={vaultLockMode === 'none'}
+                      onChange={() => setVaultLockMode('none')}
+                      className="text-indigo-600 accent-indigo-600"
+                    />
+                    🔓 No Lock (Standard Unprotected Vault)
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                    <input
+                      type="radio"
+                      name="vaultLock"
+                      checked={vaultLockMode === 'governance'}
+                      onChange={() => setVaultLockMode('governance')}
+                      className="text-indigo-600 accent-indigo-600"
+                    />
+                    🛡️ Governance Mode (Administrator can bypass)
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                    <input
+                      type="radio"
+                      name="vaultLock"
+                      checked={vaultLockMode === 'compliance'}
+                      onChange={() => setVaultLockMode('compliance')}
+                      className="text-indigo-600 accent-indigo-600"
+                    />
+                    🔒 Compliance Mode (Zero-trust enforce Lock)
+                  </label>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl text-[10px] text-slate-500 leading-relaxed border border-slate-200">
+                  {vaultLockMode === 'none' && '⚠️ BACKUPS AT RISK: A compromised root key or malicious hacker can delete recovery points immediately, leading to total data loss.'}
+                  {vaultLockMode === 'governance' && 'ℹ️ GOVERNANCE: Deletions are blocked for standard users, but authorized administrators with explicit credentials can delete recovery points or remove lock.'}
+                  {vaultLockMode === 'compliance' && '🚀 ZERO-TRUST: Compliance mode locks the vault hardware. No user (including the Account Creator or AWS Support) can delete recovery points until retention windows expire!'}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                <button
+                  onClick={triggerBackupJob}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md"
+                >
+                  <RefreshCw className="w-4 h-4" /> Run Backup Job
+                </button>
+
+                <button
+                  onClick={triggerRansomwareAttack}
+                  disabled={backupStatus !== 'backed_up'}
+                  className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${backupStatus === 'backed_up' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-500/10' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                >
+                  <AlertTriangle className="w-4 h-4" /> Simulate Ransomware Attack
+                </button>
+
+                <button
+                  onClick={resetBackupSim}
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 className="w-4 h-4" /> Reset Sandbox
+                </button>
+              </div>
+            </div>
+
+            {/* High-Fidelity SVG Simulator */}
+            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
+              
+              {/* Attack assessment popup alerts */}
+              {attackStatus !== 'none' && (
+                <div className={`absolute top-3 left-6 right-6 border rounded-xl p-3 text-xs z-10 flex items-center gap-3 animate-fadeIn ${attackStatus === 'breached' ? 'bg-rose-950/80 border-rose-500 text-rose-200' : 'bg-emerald-950/80 border-emerald-500 text-emerald-200'}`}>
+                  <span className="p-1.5 rounded-lg bg-black/40 text-lg">
+                    {attackStatus === 'breached' ? '💀' : '🛡️'}
+                  </span>
+                  <div>
+                    <span className="font-extrabold block">
+                      {attackStatus === 'breached' ? 'VAULT BREACHED - DATA LOSS!' : 'ATTACK BLOCKED SUCCESSFULLY'}
+                    </span>
+                    <span className="text-[10px] text-slate-300">
+                      {attackStatus === 'breached' ? 'All backups have been deleted by the hacker. Vault had no protection locks active.' : 'AWS Backup Vault Lock successfully blocked delete recovery points commands.'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-grow flex items-center justify-center">
+                <svg viewBox="0 0 700 220" className="w-full h-auto">
+                  {/* AWS Workloads (EBS, RDS, EFS) */}
+                  <g transform="translate(80, 110)">
+                    {/* EBS */}
+                    <g transform="translate(0, -40)">
+                      <rect x="-35" y="-12" width="70" height="24" rx="4" fill="#1e293b" stroke="#4f46e5" strokeWidth="1" />
+                      <text x="0" y="4" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">💻 EBS Volume</text>
+                    </g>
+                    {/* RDS */}
+                    <g transform="translate(0, 0)">
+                      <rect x="-35" y="-12" width="70" height="24" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1" />
+                      <text x="0" y="4" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">🛢️ RDS MySQL</text>
+                    </g>
+                    {/* EFS */}
+                    <g transform="translate(0, 40)">
+                      <rect x="-35" y="-12" width="70" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="1" />
+                      <text x="0" y="4" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">📂 EFS Share</text>
+                    </g>
+                  </g>
+
+                  {/* AWS Backup Controller Engine */}
+                  <g transform="translate(280, 110)">
+                    <circle cx="0" cy="0" r="30" fill="#1e1b4b" stroke="#4f46e5" strokeWidth="2" />
+                    <text x="0" y="3" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">🛡️ Backup</text>
+                    <text x="0" y="12" fill="#818cf8" fontSize="7" textAnchor="middle">Engine</text>
+
+                    {/* Flow markers */}
+                    <circle cx="0" cy="0" r="33" fill="none" stroke="#818cf8" strokeWidth="1" strokeDasharray="4,4" className="pulse-circle" />
+                  </g>
+
+                  {/* Secure Vault with Vault Lock status */}
+                  <g transform="translate(540, 110)">
+                    {/* Vault Body */}
+                    <rect x="-60" y="-50" width="120" height="100" rx="10" fill="#0f172a" stroke={vaultLockMode === 'compliance' ? '#10b981' : vaultLockMode === 'governance' ? '#fb923c' : '#64748b'} strokeWidth="2" />
+                    <text x="0" y="-32" fill="#ffffff" fontSize="9" fontWeight="900" textAnchor="middle">🔒 Backup Vault</text>
+                    
+                    {/* Vault Locks state graphics */}
+                    <g transform="translate(0, 10)">
+                      <circle cx="0" cy="0" r="16" fill={vaultLockMode === 'compliance' ? '#065f46' : vaultLockMode === 'governance' ? '#9a3412' : '#1e293b'} />
+                      {vaultLockMode === 'none' ? (
+                        <g>
+                          <Unlock className="w-5 h-5 text-slate-400" x="-10" y="-10" />
+                          <text x="0" y="26" fill="#cbd5e1" fontSize="8" textAnchor="middle">NO LOCK</text>
+                        </g>
+                      ) : vaultLockMode === 'governance' ? (
+                        <g>
+                          <Shield className="w-5 h-5 text-orange-400" x="-10" y="-10" />
+                          <text x="0" y="26" fill="#fb923c" fontSize="8" textAnchor="middle" fontWeight="bold">GOVERNANCE</text>
+                        </g>
+                      ) : (
+                        <g>
+                          <Lock className="w-5 h-5 text-emerald-400" x="-10" y="-10" />
+                          <text x="0" y="26" fill="#10b981" fontSize="8" textAnchor="middle" fontWeight="bold">COMPLIANCE</text>
+                        </g>
+                      )}
+                    </g>
+                  </g>
+
+                  {/* Flow links: Workloads -> Backup Engine */}
+                  <path d="M 120 70 L 250 110" fill="none" strokeWidth="1.5" className={backupStatus === 'backing_up' ? 'dr-flow-blue' : 'dr-flow-gray'} />
+                  <path d="M 120 110 L 250 110" fill="none" strokeWidth="1.5" className={backupStatus === 'backing_up' ? 'dr-flow-blue' : 'dr-flow-gray'} />
+                  <path d="M 120 150 L 250 110" fill="none" strokeWidth="1.5" className={backupStatus === 'backing_up' ? 'dr-flow-blue' : 'dr-flow-gray'} />
+
+                  {/* Flow link: Backup Engine -> Vault */}
+                  <path d="M 310 110 L 480 110" fill="none" strokeWidth="2.5" className={backupStatus === 'backing_up' ? 'dr-flow-green' : 'dr-flow-gray'} />
+                </svg>
+              </div>
+
+              {/* Console log output */}
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-400">
+                {backupLogs.length === 0 ? (
+                  <div className="text-slate-500 italic text-center py-4">Vault sandbox idle. Click "Run Backup Job" to capture system state.</div>
+                ) : (
+                  backupLogs.map((log, index) => (
+                    <div key={index} className="flex gap-2">
+                      <span className="text-indigo-400">{log.timestamp}</span>
+                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 5: ARCHITECT'S RECOVERY PLAYBOOK & TIPS                               */}
+      {/* ========================================================================= */}
+      {activeTab === 'playbook' && (
+        <div className="space-y-6 text-left animate-fadeIn">
+          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
+            <h2 className="da-card-title text-indigo-700">
+              <BookOpen className="w-5 h-5 text-indigo-500" /> Architect's Disaster Recovery Playbook &amp; Strategy Tips
+            </h2>
+            <p className="da-card-desc">
+              Master disaster recovery governance, database migration schemas conversions, and cost optimization trade-offs under AWS best practices.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-700 leading-relaxed">
+            
+            {/* Box 1 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+                📂 1. Schema Migration &amp; AWS SCT
+              </h4>
+              <p>
+                When migrating databases across different database engines (e.g. Oracle or SQL Server to AWS Aurora MySQL/PostgreSQL), schema structures are incompatible. You must use the **AWS Schema Conversion Tool (SCT)**:
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>SCT analyzes your source database schemas, functions, stored procedures, and triggers, converting them to equivalent target MySQL/PostgreSQL statements.</li>
+                <li>Identifies statements that cannot be automatically converted, outputting detailed remediation steps.</li>
+                <li>Once the schema is loaded via SCT, **AWS DMS** is started to execute the data load migration.</li>
+              </ul>
+            </div>
+
+            {/* Box 2 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+                🛢️ 2. RDS &amp; Aurora Global Database DR
+              </h4>
+              <p>
+                To achieve low multi-region recovery objectives (near zero RPO/RTO) for mission-critical databases, configure **Amazon Aurora Global Databases**:
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Aurora Global Database replicates data physical blocks directly from the storage layer (bypassing SQL engine overheads), reducing multi-region replication lag to under 1 second.</li>
+                <li>During a disaster in Region A, promoting the secondary database in Region B takes less than 1 minute, with zero data loss options.</li>
+                <li>Enables regional read scaling, allowing eu-west-1 clients to run local queries against read replicas with minimal latency.</li>
+              </ul>
+            </div>
+
+            {/* Box 3 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+                🔒 3. AWS Backup Vault Lock Best Practices
+              </h4>
+              <p>
+                Safeguard backup recovery points from accidental deletions, insider threats, or malicious ransomware:
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Use **Compliance Mode** to enforce write-once-read-many (WORM) storage. Compliance lock holds even if administrator credentials or root logins are compromised.</li>
+                <li>Set a custom cooling-off period (1 to 7 days) during which you can still disable or delete Compliance Lock before it becomes permanently locked.</li>
+                <li>Combine with **AWS Backup Audit Manager** to continuously audit backup compliance scores.</li>
+              </ul>
+            </div>
+
+            {/* Box 4 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+                🌐 4. Hybrid On-Premise Migration Strategy
+              </h4>
+              <p>
+                Seamlessly bridge on-premises data centers with the AWS Cloud during long-term migrations:
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>Connect locations using **AWS Direct Connect** or redundant IPSec VPN tunnels to guarantee reliable bandwidth and secure data transfers.</li>
+                <li>Deploy a DMS replication node inside AWS VPC private subnets, mapping it to target databases via private security groups.</li>
+                <li>Use **AWS Storage Gateway** (File, Volume, or Tape gateways) to replicate legacy files directly to Amazon S3 buckets.</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 6: VISUAL ARCHITECT NOTES & THEORY                                   */}
+      {/* ========================================================================= */}
+      {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left">
+          
+          {/* SaaS Academy Header Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-2xl border border-indigo-500/20">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_50%)]"></div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                  Interactive Architect Academy
+                </span>
+                <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2 font-display">
+                  <BookOpen className="w-6 h-6 stroke-[2] text-indigo-400" /> AWS Disaster Recovery Workspace
+                </h2>
+                <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed font-sans">
+                  A high-fidelity developer learning console detailing DR strategies, multi-region routing failure boundaries, database continuous migrations, and immutable WORM governance controls.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 bg-indigo-950/80 border border-indigo-850 px-4 py-2 rounded-xl">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-[10px] font-black text-emerald-300 tracking-wider uppercase">Telemetry Engine Online</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">VPC Directory Tree:</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  <span>Module Explorer</span>
+                </div>
+
+                {/* CATEGORY 1: DISASTER RECOVERY FUNDAMENTALS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'fundamentals' ? '' : 'fundamentals')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                      1. DR Fundamentals
+                    </span>
+                    {expandedCategory === 'fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'fundamentals' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('rto_rpo')}
+                        className={`acad-dir-item-btn ${selectedNote === 'rto_rpo' ? 'acad-active' : ''}`}
+                      >
+                        RTO &amp; RPO Taxonomy
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('dr_strategies')}
+                        className={`acad-dir-item-btn ${selectedNote === 'dr_strategies' ? 'acad-active' : ''}`}
+                      >
+                        DR Strategy Blueprints
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* CATEGORY 2: MULTI-REGION FAILOVER */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'failover' ? '' : 'failover')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                      2. Multi-Region Failover
+                    </span>
+                    {expandedCategory === 'failover' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'failover' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('failover_routing')}
+                        className={`acad-dir-item-btn ${selectedNote === 'failover_routing' ? 'acad-active' : ''}`}
+                      >
+                        Route 53 Failover Routing
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('aurora_global_db')}
+                        className={`acad-dir-item-btn ${selectedNote === 'aurora_global_db' ? 'acad-active' : ''}`}
+                      >
+                        Aurora Global Databases
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* CATEGORY 3: GOVERNANCE & MIGRATIONS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'governance' ? '' : 'governance')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-indigo-500" />
+                      3. DB &amp; Backup Governance
+                    </span>
+                    {expandedCategory === 'governance' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'governance' && (
+                    <div className="bg-slate-50/50 py-1">
+                      <button 
+                        onClick={() => setSelectedNote('dms_replication')}
+                        className={`acad-dir-item-btn ${selectedNote === 'dms_replication' ? 'acad-active' : ''}`}
+                      >
+                        AWS DMS CDC Continuous Sync
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('backup_vault_lock')}
+                        className={`acad-dir-item-btn ${selectedNote === 'backup_vault_lock' ? 'acad-active' : ''}`}
+                      >
+                        AWS Backup Vault Lock &amp; WORM
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-400 font-semibold space-y-1">
+                <span className="text-white font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                  <Info className="w-3.5 h-3.5 text-indigo-400" /> Academy Advice
+                </span>
+                "Choose any module from the tree above. Each view includes an architectural diagram, custom telemetry engine, and standard feature matrix."
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 1: RTO & RPO TAXONOMY                                             */}
+              {/* ========================================================================= */}
+              {selectedNote === 'rto_rpo' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Disaster Recovery Metrics</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">RTO &amp; RPO Technical Taxonomy</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 1 of 6</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Recovery Point Objective (RPO) and Recovery Time Objective (RTO) are the critical architectural pillars that dictate the engineering complexity, system redundancy, and cost requirements of a Disaster Recovery framework.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Core Architecture Characteristics:</span>
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Recovery Point (RPO)</th>
+                            <th>Recovery Time (RTO)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">Definition</td>
+                            <td className="text-slate-600">Maximum tolerable data loss margin</td>
+                            <td className="text-slate-600">Maximum tolerable downtime duration</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Focus Area</td>
+                            <td className="text-blue-700 font-semibold">Databases &amp; Backups frequency</td>
+                            <td className="text-indigo-700 font-semibold">Infrastructure spin-up &amp; routing</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Measured In</td>
+                            <td>Seconds, Minutes, or Hours</td>
+                            <td>Minutes, Hours, or Days</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Cost Dependency</td>
+                            <td className="text-emerald-700 font-bold">Continuous replication cost</td>
+                            <td className="text-emerald-700 font-bold">Standby resources provisioning cost</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Professional Architect Takeaway:</strong><br />
+                        Achieving near-zero RTO and RPO requires a Multi-Site Active-Active configuration, which forces you to run identical, fully operational production infrastructure in both regions. This doubles your baseline computing and licensing costs. Ensure stakeholders align business value with these budgets!
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Disaster Timeline Visualizer</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Understand where RPO and RTO apply relative to a disaster event</p>
+                      </div>
+
+                      <div className="w-full py-4 bg-white rounded-xl border border-slate-100 flex items-center justify-center">
+                        <svg className="w-full max-w-[360px] h-[180px]" viewBox="0 0 360 180">
+                          {/* Timeline horizontal line */}
+                          <line x1="20" y1="90" x2="340" y2="90" stroke="#cbd5e1" strokeWidth="3" />
+                          
+                          {/* Events nodes */}
+                          {/* 1. Last Backup Commit */}
+                          <circle cx="60" cy="90" r="6" fill="#3b82f6" />
+                          <text x="60" y="65" fill="#1e3a8a" fontSize="7.5" fontWeight="bold" textAnchor="middle">Last Backup Commit</text>
+                          <text x="60" y="75" fill="#64748b" fontSize="6.5" textAnchor="middle">12:00 PM</text>
+
+                          {/* 2. Disaster Event */}
+                          <circle cx="180" cy="90" r="8" fill="#ef4444" className="dr-node-glow" />
+                          <text x="180" y="65" fill="#991b1b" fontSize="8" fontWeight="black" textAnchor="middle">💥 DISASTER EVENT</text>
+                          <text x="180" y="75" fill="#ef4444" fontSize="7" fontWeight="bold" textAnchor="middle">1:00 PM</text>
+
+                          {/* 3. Restoration Point */}
+                          <circle cx="300" cy="90" r="6" fill="#10b981" />
+                          <text x="300" y="65" fill="#065f46" fontSize="7.5" fontWeight="bold" textAnchor="middle">System Restored</text>
+                          <text x="300" y="75" fill="#64748b" fontSize="6.5" textAnchor="middle">5:00 PM</text>
+
+                          {/* RPO Bracket line */}
+                          <path d="M 60 110 H 180" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <path d="M 60 106 V 114" stroke="#3b82f6" strokeWidth="1.5" />
+                          <path d="M 180 106 V 114" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="120" y="125" fill="#1d4ed8" fontSize="8" fontWeight="black" textAnchor="middle">RPO (Data Loss)</text>
+                          <text x="120" y="135" fill="#4b5563" fontSize="6.5" textAnchor="middle">Margin: 60 Minutes</text>
+
+                          {/* RTO Bracket line */}
+                          <path d="M 180 110 H 300" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <path d="M 180 106 V 114" stroke="#10b981" strokeWidth="1.5" />
+                          <path d="M 300 106 V 114" stroke="#10b981" strokeWidth="1.5" />
+                          <text x="240" y="125" fill="#047857" fontSize="8" fontWeight="black" textAnchor="middle">RTO (Downtime)</text>
+                          <text x="240" y="135" fill="#4b5563" fontSize="6.5" textAnchor="middle">Duration: 4 Hours</text>
+                        </svg>
+                      </div>
+
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        📊 Note: RPO limits are strictly dictated by data persistence strategies (backups frequency vs continuous replication), whereas RTO is capped by deployment orchestration speed.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 2: DR STRATEGY BLUEPRINTS                                         */}
+              {/* ========================================================================= */}
+              {selectedNote === 'dr_strategies' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Architecture Blueprint</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DR Strategy Blueprints</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 2 of 6</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS categorizes disaster recovery strategies into four distinct archetypes. Selecting a strategy is a trade-off between the Cost of Infrastructure and the Cost of Downtime.
+                  </p>
+
+                  <div className="space-y-4">
+                    <span className="text-xs font-black text-slate-800 block">Complete Blueprint Matrix Comparison:</span>
+                    
+                    <div className="overflow-x-auto">
+                      <table className="acad-table text-left">
+                        <thead>
+                          <tr>
+                            <th>DR Strategy</th>
+                            <th>Target RPO</th>
+                            <th>Target RTO</th>
+                            <th>Cost Scale</th>
+                            <th>Standby DB State</th>
+                            <th>Standby Compute State</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="hover:bg-slate-50/50">
+                            <td className="font-extrabold text-blue-700">1. Backup &amp; Restore</td>
+                            <td>&lt; 24 Hours</td>
+                            <td>&lt; 24 Hours</td>
+                            <td className="text-slate-500 font-bold">$ (Minimal)</td>
+                            <td>Cold Backups in S3</td>
+                            <td>Zero Standby (Created on fail)</td>
+                          </tr>
+                          <tr className="hover:bg-slate-50/50">
+                            <td className="font-extrabold text-indigo-700">2. Pilot Light</td>
+                            <td>&lt; 60 Minutes</td>
+                            <td>&lt; 4 Hours</td>
+                            <td className="text-indigo-600 font-bold">$$ (Low)</td>
+                            <td className="text-emerald-700 font-bold">Active Replica (Standby)</td>
+                            <td>Zero Compute (AMIs ready in ASG)</td>
+                          </tr>
+                          <tr className="hover:bg-slate-50/50">
+                            <td className="font-extrabold text-purple-700">3. Warm Standby</td>
+                            <td>&lt; 15 Minutes</td>
+                            <td>&lt; 1 Hour</td>
+                            <td className="text-purple-600 font-bold">$$$ (Medium)</td>
+                            <td className="text-emerald-700 font-bold">Active Replica (Standby)</td>
+                            <td className="text-indigo-600 font-semibold">Minimal Running Nodes (Scaled down)</td>
+                          </tr>
+                          <tr className="hover:bg-slate-50/50">
+                            <td className="font-extrabold text-rose-700">4. Multi-Site Active-Active</td>
+                            <td className="text-emerald-700 font-bold">Near-Zero</td>
+                            <td className="text-emerald-700 font-bold">Real-time</td>
+                            <td className="text-rose-600 font-bold">$$$$ (Extreme)</td>
+                            <td className="text-emerald-700 font-bold">Aurora Global Active-Active</td>
+                            <td className="text-emerald-700 font-bold">Fully Operational Parallel Fleet</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="acad-takeaway-box text-xs">
+                      <strong>🛠️ Actionable Architectural Guidelines:</strong>
+                      <ul className="list-disc pl-4 mt-2 space-y-1 leading-normal font-medium">
+                        <li><strong>For Non-Critical Dev/Test:</strong> Deploy basic Backup &amp; Restore. Automate cross-region copy of EBS snapshots and RDS daily backups.</li>
+                        <li><strong>For Standard Corporate Apps:</strong> Deploy **Pilot Light**. Keep database replica online; keep web nodes dormant to avoid EC2 hourly charges.</li>
+                        <li><strong>For Enterprise Critical Core:</strong> Deploy **Warm Standby** or **Multi-Site**. Multi-Site uses Route 53 Anycast Latency routing to direct users to the geographically nearest healthy cloud region.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 3: ROUTE 53 FAILOVER ROUTING                                      */}
+              {/* ========================================================================= */}
+              {selectedNote === 'failover_routing' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">DNS Orchestration</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Route 53 Failover Routing Mechanics</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 3 of 6</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Amazon Route 53 routes globally distributed users to active resources. During a region-wide outage, Route 53 automatically shifts DNS resolutions to the disaster recovery region using health probe status feeds.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Technical Failover Pillars:</span>
+                      
+                      <div className="space-y-3 text-xs leading-relaxed text-slate-655">
+                        <div>
+                          <strong className="text-slate-850 block">1. Anycast Routing Plane</strong>
+                          Users connect to any of the dozens of Route 53 Edge Locations worldwide. Requests are processed at the nearest POP, optimizing latency and resilience against Layer-3/4 DDoS attacks.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">2. Route 53 Health Checks</strong>
+                          Route 53 probes endpoints every 10 or 30 seconds. If an endpoint fails consecutive checks, it is flagged as Unhealthy, removing its A/CNAME record from DNS answers.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">3. DNS TTL (Time To Live) Limits</strong>
+                          Browsers and local ISP recursive resolvers cache DNS answers. To ensure immediate failover re-routing, set the TTL for failover records to <strong>60 seconds or lower</strong> (e.g. 10s or 30s) to minimize cached stale routes.
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🛡️ Active-Passive vs Active-Active:</strong><br />
+                        Active-Passive routes 100% of traffic to Primary, sending traffic to standby only if Primary fails. Active-Active utilizes Latency or Weighted records to split traffic between both regions concurrently, facilitating immediate near-zero RTO failover.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">DNS Routing Topology</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Route 53 re-routing active traffic around degraded Region A</p>
+                      </div>
+
+                      <div className="w-full bg-slate-900 rounded-xl p-4 flex items-center justify-center">
+                        <svg className="w-full max-w-[340px] h-[190px]" viewBox="0 0 340 190">
+                          {/* Client node */}
+                          <g transform="translate(140, 10)">
+                            <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.2" />
+                            <text x="30" y="15" fill="#0f172a" fontSize="7" fontWeight="bold" textAnchor="middle">Global Clients</text>
+                          </g>
+
+                          {/* Route 53 Edge Node */}
+                          <g transform="translate(125, 60)">
+                            <rect x="0" y="0" width="90" height="30" rx="4" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.5" />
+                            <text x="45" y="18" fill="#0369a1" fontSize="8" fontWeight="black" textAnchor="middle">Route 53 Edge</text>
+                            <text x="45" y="26" fill="#0369a1" fontSize="5.5" fontWeight="bold" textAnchor="middle">TTL: 10s Active</text>
+                          </g>
+
+                          {/* Client to Route 53 Conduit */}
+                          <path d="M 170 34 V 60" fill="none" className="dr-flow-blue" strokeWidth="2" />
+
+                          {/* Region A Node (DEGRADED) */}
+                          <g transform="translate(15, 130)">
+                            <rect x="0" y="0" width="110" height="45" rx="4" fill="#fee2e2" stroke="#f87171" strokeWidth="1.2" />
+                            <text x="55" y="15" fill="#991b1b" fontSize="7.5" fontWeight="black" textAnchor="middle">Region A (us-east-1)</text>
+                            <rect x="25" y="24" width="60" height="12" rx="2" fill="#ef4444" />
+                            <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚠️ UNHEALTHY</text>
+                          </g>
+
+                          {/* Region B Node (HEALTHY STANDBY) */}
+                          <g transform="translate(215, 130)">
+                            <rect x="0" y="0" width="110" height="45" rx="4" fill="#d1fae5" stroke="#34d399" strokeWidth="1.2" />
+                            <text x="55" y="15" fill="#065f46" fontSize="7.5" fontWeight="black" textAnchor="middle">Region B (eu-west-1)</text>
+                            <rect x="25" y="24" width="60" height="12" rx="2" fill="#10b981" />
+                            <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 ACTIVE STANDBY</text>
+                          </g>
+
+                          {/* Conduit paths */}
+                          {/* Route 53 to Region A (Blocked) */}
+                          <path d="M 145 90 H 70 V 130" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="3,3" />
+                          <g transform="translate(95, 95)">
+                            <circle cx="8" cy="8" r="8" fill="#ef4444" />
+                            <text x="8" y="11" fill="#ffffff" fontSize="9.5" fontWeight="black" textAnchor="middle">×</text>
+                          </g>
+
+                          {/* Route 53 to Region B (Active) */}
+                          <path d="M 195 90 H 270 V 130" fill="none" className="dr-flow-green" strokeWidth="2.5" />
+                        </svg>
+                      </div>
+
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        💡 Health probes measure latency and TCP/HTTP return status. Unhealthy nodes are removed automatically without administrator intervention.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 4: AURORA GLOBAL DATABASES                                        */}
+              {/* ========================================================================= */}
+              {selectedNote === 'aurora_global_db' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Database Synchronization</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon Aurora Global Databases</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 4 of 6</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Amazon Aurora Global Databases enable low-latency cross-region replication by executing physical replication directly within the storage volume cluster layer, completely bypassing the compute database engines.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Aurora Storage Layer Mechanics:</span>
+                      
+                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-655">
+                        <div>
+                          <strong className="text-slate-850 block">1. Physical Block Replication</strong>
+                          Standard database replication streams SQL statements or logical binlogs, which must be executed by the target DB node. Aurora Global Databases stream raw physical blocks directly between NVMe storage systems, minimizing lag.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">2. Sub-Second Cross-Region Latency</strong>
+                          Replication lag between us-east-1 and eu-west-1 is typically <strong>under 1 second (1000ms)</strong>. This guarantees a near-zero RPO boundary, ensuring that database commits are copied to the DR region almost immediately.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">3. Multi-Region Write Forwarding</strong>
+                          Normally replica endpoints are strictly read-only. Aurora write-forwarding allows secondary clusters to accept write requests from local apps, automatically forwarding them to the Primary Writer region under the hood.
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🔄 Database Promotion Failover:</strong><br />
+                        During a regional outage, promoting the secondary Aurora replica in eu-west-1 to Primary Writer role takes less than 30 seconds. The local engine is converted to standalone mode with zero reboots required.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Physical Storage Replication</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Continuous block transfers bypass SQL execution overheads</p>
+                      </div>
+
+                      <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center">
+                        <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
+                          {/* Region 1 Storage Node */}
+                          <g transform="translate(10, 45)">
+                            <rect x="0" y="0" width="110" height="70" rx="6" fill="#eef2ff" stroke="#4f46e5" strokeWidth="1.5" />
+                            <text x="55" y="15" fill="#312e81" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary Cluster</text>
+                            <text x="55" y="25" fill="#4338ca" fontSize="6.5" fontWeight="bold" textAnchor="middle">us-east-1</text>
+                            
+                            <rect x="10" y="34" width="90" height="28" rx="2" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                            <text x="55" y="44" fill="#0f172a" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
+                            <text x="55" y="54" fill="#2563eb" fontSize="6" fontWeight="bold" textAnchor="middle">Active Writes OK</text>
+                          </g>
+
+                          {/* Region 2 Storage Node */}
+                          <g transform="translate(220, 45)">
+                            <rect x="0" y="0" width="110" height="70" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+                            <text x="55" y="15" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">Standby Cluster</text>
+                            <text x="55" y="25" fill="#64748b" fontSize="6.5" fontWeight="bold" textAnchor="middle">eu-west-1</text>
+                            
+                            <rect x="10" y="34" width="90" height="28" rx="2" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1" />
+                            <text x="55" y="44" fill="#64748b" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
+                            <text x="55" y="54" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">Replica Read OK</text>
+                          </g>
+
+                          {/* Replication Conduit arrow */}
+                          <path d="M 120 80 H 220" fill="none" className="dr-flow-green" strokeWidth="3.5" />
+                          
+                          <text x="170" y="65" fill="#059669" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync</text>
+                          <text x="170" y="73" fill="#64748b" fontSize="6" fontWeight="bold" textAnchor="middle">Lag &lt; 900ms</text>
+                        </svg>
+                      </div>
+
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        💡 Since storage replication is handled asynchronously, there is no performance penalty or writing latency impact on the Primary DB cluster.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 5: AWS DMS CONTINUOUS SYNC                                        */}
+              {/* ========================================================================= */}
+              {selectedNote === 'dms_replication' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Data Migration Workbench</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DMS &amp; Change Data Capture (CDC)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 5 of 6</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS Database Migration Service (DMS) enables rapid cloud migrations and continuous replications. By attaching **Change Data Capture (CDC)** engines, DMS captures real-time data adjustments without system downtime.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Technical Migration Phases:</span>
+                      
+                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-655">
+                        <div>
+                          <strong className="text-slate-850 block">1. Full Load Phase</strong>
+                          DMS reads complete records from the source database, writing them as custom files to the target databases. This establishes the initial database baseline snapshot.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">2. Change Data Capture (CDC) Phase</strong>
+                          Once the baseline is loaded, DMS monitors the source database transaction logs (e.g. Oracle Redo Logs or MySQL Binlogs). Every insert, update, or delete is immediately parsed and replicated to the target.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">3. AWS Schema Conversion Tool (SCT)</strong>
+                          DMS does not convert complex schemas (triggers, stored procedures). When migrating across different database engines (e.g. SQL Server to PostgreSQL), you must first run SCT to translate tables and schemas cleanly.
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Professional Architect Tip:</strong><br />
+                        Keep your DMS Replication Instance inside private subnets and configure Multi-AZ. In the event of a physical host failure, DMS automatically triggers failover to a standby host in another availability zone, protecting the sync path.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">DMS CDC Replication Engine</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Streaming transaction log inserts into the target database</p>
+                      </div>
+
+                      <div className="w-full bg-slate-900 rounded-xl p-4 flex items-center justify-center">
+                        <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 340 170">
+                          {/* Source Database */}
+                          <g transform="translate(10, 50)">
+                            <rect x="0" y="0" width="80" height="50" rx="4" fill="#1e293b" stroke="#475569" strokeWidth="1.2" />
+                            <text x="40" y="18" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
+                            <text x="40" y="28" fill="#94a3b8" fontSize="6" fontWeight="bold" textAnchor="middle">On-Premises</text>
+                            <rect x="10" y="34" width="60" height="10" rx="1.5" fill="#f1f5f9" />
+                            <text x="40" y="41" fill="#0f172a" fontSize="5.5" fontWeight="bold" textAnchor="middle">Redo Logs</text>
+                          </g>
+
+                          {/* DMS Replication Node */}
+                          <g transform="translate(125, 45)">
+                            <rect x="0" y="0" width="90" height="60" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                            <text x="45" y="16" fill="#1e3a8a" fontSize="7.5" fontWeight="black" textAnchor="middle">AWS DMS</text>
+                            <text x="45" y="26" fill="#2563eb" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Host</text>
+                            <rect x="15" y="34" width="60" height="18" rx="2" fill="#3b82f6" />
+                            <text x="45" y="42" fill="#ffffff" fontSize="6.5" fontWeight="black" textAnchor="middle">CDC Parser</text>
+                            <text x="45" y="49" fill="#dbeafe" fontSize="5.5" fontWeight="bold" textAnchor="middle">Active Engine</text>
+                          </g>
+
+                          {/* Target Aurora DB */}
+                          <g transform="translate(250, 50)">
+                            <rect x="0" y="0" width="80" height="50" rx="4" fill="#064e3b" stroke="#047857" strokeWidth="1.2" />
+                            <text x="40" y="18" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Target Aurora</text>
+                            <text x="40" y="28" fill="#a7f3d0" fontSize="6" fontWeight="bold" textAnchor="middle">AWS Cloud</text>
+                            <rect x="15" y="34" width="50" height="10" rx="1.5" fill="#d1fae5" />
+                            <text x="40" y="41" fill="#065f46" fontSize="5.5" fontWeight="bold" textAnchor="middle">MySQL/PgSQL</text>
+                          </g>
+
+                          {/* Flow lines */}
+                          <path d="M 90 75 H 125" fill="none" className="dr-flow-blue" strokeWidth="2" />
+                          <path d="M 215 75 H 250" fill="none" className="dr-flow-green" strokeWidth="2" />
+                        </svg>
+                      </div>
+
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        📊 Note: Continuous replication helps minimize downtime during cutover to a few seconds, as the databases remain fully synchronized up to the switchover event.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 6: AWS BACKUP VAULT LOCK & WORM                                    */}
+              {/* ========================================================================= */}
+              {selectedNote === 'backup_vault_lock' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Immutable Backups</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Backup Vault Lock &amp; WORM Controls</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 6 of 6</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS Backup Vault Lock enforces write-once-read-many (WORM) storage controls on backup recovery points. By lock-securing vaults, you prevent accidental deletions, rogue administrator adjustments, or ransomware backup sabotage.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Vault Lock Technical Modes:</span>
+                      
+                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-655">
+                        <div>
+                          <strong className="text-slate-850 block">1. Governance Mode</strong>
+                          Enforces block permissions that prevent backup deletions by standard users. However, authorized administrators with explicit, highly guarded IAM roles can override restrictions and delete backups if required.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">2. Compliance Mode (Immutable WORM)</strong>
+                          Locks the vault permanently. Once the cooling-off period expires, **no user—not even the AWS root account or AWS support—can delete the vault lock or remove backup recovery points** until their retention expiration date.
+                        </div>
+                        <div>
+                          <strong className="text-slate-850 block">3. Cooling-Off Grace Period</strong>
+                          Compliance Mode provides a custom cooling-off window (1 to 7 days). During this grace period, you can still test, adjust, or disable the compliance lock. Once the window closes, the lock is irreversible.
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🛡️ Ransomware Prevention Strategy:</strong><br />
+                        Hackers compromising credentials frequently target backups first, deleting all recovery points to force ransom payouts. Vault Lock in Compliance Mode makes backups completely immune to deletions, ensuring recovery points remain secure and available.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Ransomware Sabotage Attack Test</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Attempt to delete immutable backups under Vault Compliance Lock</p>
+                      </div>
+
+                      <div className="w-full bg-slate-900 rounded-xl p-4 flex flex-col items-center justify-center space-y-4">
+                        <div className="flex items-center gap-3 bg-red-950/80 border border-red-800/40 p-3 rounded-lg w-full">
+                          <span className="p-1.5 bg-red-900 rounded text-red-200">
+                            <AlertTriangle className="w-4 h-4 stroke-[2]" />
+                          </span>
+                          <div>
+                            <span className="text-[9px] font-black text-red-300 block uppercase tracking-wider">Unauthorized Hacker Terminal</span>
+                            <span className="font-mono text-[10.5px] text-red-100 block mt-0.5">aws backup delete-recovery-point --vault-name SecVault</span>
+                          </div>
+                        </div>
+
+                        <div className="w-12 h-12 bg-emerald-950 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center dr-node-glow">
+                          <Lock className="w-6 h-6 stroke-[2.5]" />
+                        </div>
+
+                        <div className="bg-slate-950 border border-slate-800 p-2.5 rounded-md w-full text-center">
+                          <span className="font-mono text-[10px] text-rose-500 font-extrabold block">🚨 ACCESS DENIED: delete-recovery-point failed</span>
+                          <span className="text-[9px] text-slate-400 block mt-0.5">Reason: Vault Lock in Compliance Mode forbids manual deletions.</span>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        💡 Combining Compliance Lock with cross-account backup vault copies protects your enterprise data against root account compromises.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+function styleBlock() {
+  return (
+    <style>{`
+      .dr-container {
+        font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+        color: #1e293b;
+        background-color: #f8fafc;
+        padding: 20px;
+        border-radius: 16px;
+      }
+      .da-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1.5px solid rgba(226, 232, 240, 0.9);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+        transition: all 0.2s ease-in-out;
+      }
+      .da-card:hover {
+        border-color: #4f46e5;
+        box-shadow: 0 10px 20px -4px rgba(79, 70, 229, 0.04);
+      }
+      .da-card-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .da-card-desc {
+        font-size: 13px;
+        color: #475569;
+        line-height: 1.6;
+      }
+      .da-tabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+        padding-bottom: 10px;
+      }
+      .da-tb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        border: 1.5px solid rgba(226, 232, 240, 0.85);
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+        background: rgba(255, 255, 255, 0.85);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s ease-in-out;
+        outline: none;
+      }
+      .da-tb:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #1e293b;
+      }
+      .da-tb.da-on {
+        background: #4f46e5;
+        color: #ffffff;
+        border-color: #4f46e5;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+      }
+
+      .dr-flow-blue {
+        stroke: #3b82f6;
+        stroke-dasharray: 6,4;
+        animation: flowDash 0.8s linear infinite;
+      }
+      .dr-flow-green {
+        stroke: #10b981;
+        stroke-dasharray: 6,4;
+        animation: flowDash 0.6s linear infinite;
+      }
+      .dr-flow-red {
+        stroke: #ef4444;
+        stroke-dasharray: 5,4;
+        animation: flowDash 0.4s linear infinite;
+      }
+      .dr-flow-gray {
+        stroke: #334155;
+        stroke-dasharray: 4,4;
+      }
+      
+      @keyframes flowDash {
+        to { stroke-dashoffset: -20; }
+      }
+
+      .pulse-circle {
+        animation: pingCircle 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        transform-origin: center;
+      }
+      @keyframes pingCircle {
+        75%, 100% {
+          transform: scale(1.4);
+          opacity: 0;
+        }
+      }
+
+      /* Modern Architect Learning Center styles */
+      .da-edu-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .da-edu-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -8px rgba(79, 70, 229, 0.12);
+        border-color: #c7d2fe;
+      }
+      
+      /* Premium Academy Directory Styles */
+      .acad-dir-container {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      .acad-dir-header {
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 16px;
+        font-weight: 800;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .acad-dir-folder-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 10px;
+        font-weight: 850;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: all 0.2s ease;
+      }
+      .acad-dir-folder-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+      }
+      .acad-dir-item-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        border-left: 3px solid transparent;
+        background: #ffffff;
+        transition: all 0.15s ease;
+        text-align: left;
+      }
+      .acad-dir-item-btn:hover {
+        background: #f8fafc;
+        color: #4f46e5;
+        border-left-color: #cbd5e1;
+      }
+      .acad-dir-item-btn.acad-active {
+        background: #eef2ff;
+        color: #4338ca;
+        border-left-color: #4f46e5;
+        font-weight: 800;
+      }
+      .acad-detail-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+      }
+      .acad-hero-badge {
+        background: #ecfdf5;
+        border: 1.5px solid #a7f3d0;
+        color: #065f46;
+        font-size: 9.5px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3.5px 10px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .acad-takeaway-box {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-left: 4px solid #4f46e5;
+        border-radius: 12px;
+        padding: 18px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #475569;
+        font-weight: 600;
+      }
+      .acad-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+      }
+      .acad-table th {
+        background: #f8fafc;
+        color: #334155;
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1.5px solid #e2e8f0;
+        text-align: left;
+      }
+      .acad-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+      }
+      .acad-table tr:last-child td {
+        border-bottom: none;
+      }
+      .acad-sim-diagram {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+        position: relative;
+      }
+      .acad-terminal {
+        background: #090d16;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 14px;
+        font-family: 'Fira Code', 'Courier New', Courier, monospace;
+        color: #cbd5e1;
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+      }
+      
+      /* Active custom nodes glow classes */
+      .dr-node-glow {
+        animation: drNodeGlow 1.5s infinite alternate;
+      }
+      @keyframes drNodeGlow {
+        from { filter: drop-shadow(0 0 2px rgba(79, 70, 229, 0.3)); }
+        to { filter: drop-shadow(0 0 10px rgba(79, 70, 229, 0.7)); }
+      }
+    `}</style>
+  );
+}
