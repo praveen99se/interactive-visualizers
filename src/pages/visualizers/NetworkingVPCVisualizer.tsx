@@ -8,10 +8,11 @@ import {
   Info,
   Layers,
   Wifi,
-  AlertTriangle
+  AlertTriangle,
+  BookOpen
 } from 'lucide-react';
 
-type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid';
+type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid' | 'notebook';
 
 interface LogRow {
   timestamp: string;
@@ -21,6 +22,7 @@ interface LogRow {
 
 export default function NetworkingVPCVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('cidr');
+  const [selectedNote, setSelectedNote] = useState<'bastion' | 'nat' | 'nacl'>('bastion');
 
   // ==========================================
   // TAB 1 STATE: CIDR & SUBNET CALCULATOR
@@ -575,6 +577,44 @@ export default function NetworkingVPCVisualizer() {
           0% { stroke-dashoffset: 0; }
           100% { stroke-dashoffset: -40; }
         }
+
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Comic+Neue:wght@400;700&display=swap');
+        
+        .da-notebook-paper {
+          background-color: #faf9f6;
+          background-image: 
+            linear-gradient(rgba(59, 130, 246, 0.04) 1.5px, transparent 1.5px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1.5px, transparent 1.5px);
+          background-size: 20px 20px;
+          border: 2px solid #e2e8f0;
+          box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.02), 0 4px 15px rgba(0, 0, 0, 0.04);
+          position: relative;
+          border-radius: 12px;
+        }
+        .da-notebook-redline {
+          position: absolute;
+          left: 45px;
+          top: 0;
+          bottom: 0;
+          width: 2px;
+          background-color: rgba(239, 68, 68, 0.2);
+        }
+        .da-handwritten {
+          font-family: 'Caveat', 'Comic Neue', cursive, sans-serif;
+          letter-spacing: 0.5px;
+        }
+        .da-handwritten-title {
+          font-family: 'Caveat', cursive, sans-serif;
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e3a8a;
+          text-decoration: underline;
+          text-underline-offset: 4px;
+        }
+        .da-sketch-element {
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
       `}</style>
 
       {/* Header bar */}
@@ -611,6 +651,9 @@ export default function NetworkingVPCVisualizer() {
         </button>
         <button className={`da-tb ${activeTab === 'hybrid' ? 'da-on' : ''}`} onClick={() => setActiveTab('hybrid')}>
           <Wifi className="w-4 h-4" /> 5. Redundant VPN &amp; Flow Logs
+        </button>
+        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+          <BookOpen className="w-4 h-4" /> 6. Visual Architect Notes
         </button>
       </div>
 
@@ -1661,6 +1704,285 @@ export default function NetworkingVPCVisualizer() {
 
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 6: ARCHITECT'S NOTEBOOK BLUEPRINTS                                    */}
+      {/* ========================================================================= */}
+      {activeTab === 'notebook' && (
+        <div className="space-y-6">
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-blue-700">
+              <BookOpen className="w-5 h-5" /> Visual Architect Notebook: VPC Core Blueprint Sketches
+            </h2>
+            <p className="da-card-desc">
+              Review Amazon Web Services (AWS) networking structures with direct transcriptions and hand-drawn style blueprints mapped from operational engineering notes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Note Selector Sidebar */}
+            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left flex flex-col justify-between space-y-4 font-semibold">
+              <div className="space-y-2">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-wider block mb-2">Notebook Blueprint Select:</span>
+                
+                <button
+                  onClick={() => setSelectedNote('bastion')}
+                  className={`w-full p-3 text-left border rounded-xl transition-all ${
+                    selectedNote === 'bastion' ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold ring-1 ring-blue-300' : 'border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold'
+                  }`}
+                >
+                  📝 Notes Page 1: Bastion Hosts
+                  <span className="block text-[9.5px] text-slate-400 font-medium mt-0.5">Secure SSH hops and restricted Security Groups</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedNote('nat')}
+                  className={`w-full p-3 text-left border rounded-xl transition-all ${
+                    selectedNote === 'nat' ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold ring-1 ring-blue-300' : 'border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold'
+                  }`}
+                >
+                  📝 Notes Page 2: NAT Gateways
+                  <span className="block text-[9.5px] text-slate-400 font-medium mt-0.5">Unidirectional egress and route table translations</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedNote('nacl')}
+                  className={`w-full p-3 text-left border rounded-xl transition-all ${
+                    selectedNote === 'nacl' ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold ring-1 ring-blue-300' : 'border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold'
+                  }`}
+                >
+                  📝 Notes Page 3: Subnet NACLs
+                  <span className="block text-[9.5px] text-slate-400 font-medium mt-0.5">Stateless subnet boundaries vs stateful SGs</span>
+                </button>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-150 rounded-xl p-3 text-[11px] leading-relaxed text-blue-900 mt-4 font-medium text-left">
+                <span className="font-extrabold text-blue-950 block mb-1">Architectural Core Note:</span>
+                "Always map out security boundaries using nested firewalls—Stateless NACLs at the Subnet border, and Stateful Security Groups at the ENI instance boundary."
+              </div>
+            </div>
+
+            {/* Hand-drawn Blueprint Page */}
+            <div className="lg:col-span-8 da-notebook-paper p-6 relative min-h-[460px] flex flex-col justify-between text-left">
+              <div className="da-notebook-redline"></div>
+              
+              <div className="pl-10 space-y-4">
+                
+                <h3 className="da-handwritten-title text-2xl font-black mb-3">
+                  {selectedNote === 'bastion' && 'Topic: Bastion Host Architecture & Security Hops'}
+                  {selectedNote === 'nat' && 'Topic: NAT Gateway Routing & Security Exclusivity'}
+                  {selectedNote === 'nacl' && 'Topic: Network ACL (NACL) Subnet Boundaries'}
+                </h3>
+
+                {/* Hand-drawn SVG rendering */}
+                <div className="w-full flex justify-center py-2 bg-white/40 border border-slate-100 rounded-xl p-2 shadow-inner">
+                  {selectedNote === 'bastion' && (
+                    <svg className="w-full max-w-[460px] h-[210px]" viewBox="0 0 460 210">
+                      {/* VPC border */}
+                      <rect x="25" y="35" width="410" height="160" rx="6" fill="none" stroke="#1e3a8a" strokeWidth="2" className="da-sketch-element" />
+                      <text x="40" y="48" fill="#1e3a8a" fontSize="8.5" fontWeight="bold" className="da-handwritten">VPC Boundary</text>
+
+                      {/* Public Subnet box */}
+                      <rect x="220" y="60" width="200" height="120" rx="6" fill="none" stroke="#10b981" strokeWidth="1.5" className="da-sketch-element" strokeDasharray="4,2" />
+                      <text x="230" y="72" fill="#10b981" fontSize="8" fontWeight="bold" className="da-handwritten">Public Subnet</text>
+
+                      {/* Private Subnet box */}
+                      <rect x="35" y="60" width="170" height="120" rx="6" fill="none" stroke="#dc2626" strokeWidth="1.5" className="da-sketch-element" strokeDasharray="4,2" />
+                      <text x="45" y="72" fill="#dc2626" fontSize="8" fontWeight="bold" className="da-handwritten">Private Subnet</text>
+
+                      {/* Internet Gateway */}
+                      <g transform="translate(200, 10)">
+                        <rect x="0" y="0" width="60" height="18" rx="3" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.5" />
+                        <text x="30" y="12" fill="#0369a1" fontSize="7" fontWeight="bold" textAnchor="middle" className="da-handwritten">Internet Gateway</text>
+                      </g>
+
+                      {/* Route Table */}
+                      <g transform="translate(195, 110)">
+                        <rect x="0" y="0" width="45" height="22" rx="3" fill="#f8fafc" stroke="#64748b" strokeWidth="1" />
+                        <text x="22.5" y="14" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle" className="da-handwritten">Route Table</text>
+                      </g>
+
+                      {/* Bastion Host ENI/SG in Public Subnet */}
+                      <g transform="translate(250, 100)">
+                        <rect x="0" y="0" width="80" height="40" rx="4" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" className="da-sketch-element" />
+                        <text x="40" y="16" fill="#1e293b" fontSize="8" fontWeight="black" textAnchor="middle" className="da-handwritten">Bastion Host</text>
+                        <text x="40" y="28" fill="#047857" fontSize="7" fontWeight="bold" textAnchor="middle" className="da-handwritten">SG: Inbound 22</text>
+                      </g>
+
+                      {/* Private EC2 SG in Private Subnet */}
+                      <g transform="translate(50, 100)">
+                        <rect x="0" y="0" width="80" height="40" rx="4" fill="#fef2f2" stroke="#dc2626" strokeWidth="1.5" className="da-sketch-element" />
+                        <text x="40" y="16" fill="#1e293b" fontSize="8" fontWeight="black" textAnchor="middle" className="da-handwritten">Private EC2</text>
+                        <text x="40" y="28" fill="#b91c1c" fontSize="7" fontWeight="bold" textAnchor="middle" className="da-handwritten">SG: Allow Bastion</text>
+                      </g>
+
+                      {/* SSH Handshake Arrow paths */}
+                      <path d="M 230 28 L 290 100" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" strokeDasharray="3,3" />
+                      <text x="268" y="60" fill="#2563eb" fontSize="7" fontWeight="bold" className="da-handwritten">SSH (Port 22)</text>
+
+                      <path d="M 250 120 H 130" fill="none" stroke="#10b981" strokeWidth="1.8" markerEnd="url(#arrow-endpoint)" />
+                      <text x="190" y="115" fill="#047857" fontSize="7.5" fontWeight="bold" textAnchor="middle" className="da-handwritten">Hop (Private SSH)</text>
+                    </svg>
+                  )}
+
+                  {selectedNote === 'nat' && (
+                    <svg className="w-full max-w-[460px] h-[210px]" viewBox="0 0 460 210">
+                      {/* VPC border */}
+                      <rect x="25" y="35" width="410" height="160" rx="6" fill="none" stroke="#1e3a8a" strokeWidth="2" className="da-sketch-element" />
+                      <text x="40" y="48" fill="#1e3a8a" fontSize="8.5" fontWeight="bold" className="da-handwritten">VPC</text>
+
+                      {/* Public Subnet */}
+                      <rect x="225" y="60" width="195" height="120" rx="6" fill="none" stroke="#10b981" strokeWidth="1.5" className="da-sketch-element" strokeDasharray="4,2" />
+                      <text x="235" y="72" fill="#10b981" fontSize="8" fontWeight="bold" className="da-handwritten">Public Subnet</text>
+
+                      {/* Private Subnet */}
+                      <rect x="40" y="60" width="165" height="120" rx="6" fill="none" stroke="#dc2626" strokeWidth="1.5" className="da-sketch-element" strokeDasharray="4,2" />
+                      <text x="50" y="72" fill="#dc2626" fontSize="8" fontWeight="bold" className="da-handwritten">Private Subnet</text>
+
+                      {/* Internet Gateway */}
+                      <g transform="translate(200, 10)">
+                        <rect x="0" y="0" width="60" height="18" rx="3" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.5" />
+                        <text x="30" y="12" fill="#0369a1" fontSize="7" fontWeight="bold" textAnchor="middle" className="da-handwritten">Internet Gateway</text>
+                      </g>
+
+                      {/* Route Table in Private Subnet */}
+                      <g transform="translate(50, 140)">
+                        <rect x="0" y="0" width="45" height="22" rx="3" fill="#f8fafc" stroke="#64748b" strokeWidth="1" />
+                        <text x="22.5" y="14" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle" className="da-handwritten">Route Table</text>
+                      </g>
+
+                      {/* NAT Gateway in Public Subnet */}
+                      <g transform="translate(250, 100)">
+                        <rect x="0" y="0" width="80" height="40" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" className="da-sketch-element" />
+                        <text x="40" y="16" fill="#1e293b" fontSize="8" fontWeight="black" textAnchor="middle" className="da-handwritten">NAT Gateway</text>
+                        <text x="40" y="28" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle" className="da-handwritten">No Inbound SG needed!</text>
+                      </g>
+
+                      {/* Private EC2 with SG in Private Subnet */}
+                      <g transform="translate(100, 100)">
+                        <rect x="0" y="0" width="80" height="40" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" className="da-sketch-element" />
+                        <text x="40" y="16" fill="#1e293b" fontSize="8" fontWeight="black" textAnchor="middle" className="da-handwritten">Private EC2</text>
+                        <text x="40" y="28" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle" className="da-handwritten">SG Active</text>
+                      </g>
+
+                      {/* Egress flow arrows */}
+                      <path d="M 140 100 L 180 52" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" strokeDasharray="3,3" />
+                      <path d="M 180 52 H 250" fill="none" stroke="#2563eb" strokeWidth="1.5" />
+                      <path d="M 290 100 Q 230 40 230 28" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" />
+                      
+                      <text x="340" y="150" fill="#b91c1c" fontSize="8.5" fontWeight="black" className="da-handwritten">"No Security Group to manage/required"</text>
+                    </svg>
+                  )}
+
+                  {selectedNote === 'nacl' && (
+                    <svg className="w-full max-w-[460px] h-[210px]" viewBox="0 0 460 210">
+                      {/* Subnet border representing stateless NACL */}
+                      <rect x="40" y="30" width="380" height="150" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" className="da-sketch-element" strokeDasharray="4,4" />
+                      <text x="50" y="42" fill="#2563eb" fontSize="8.5" fontWeight="bold" className="da-handwritten">Subnet Boundary</text>
+
+                      {/* Subnet boundary firewall (NACL) */}
+                      <g transform="translate(60, 55)">
+                        <rect x="0" y="0" width="80" height="90" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.8" className="da-sketch-element" />
+                        <text x="40" y="20" fill="#1e3a8a" fontSize="8.5" fontWeight="black" textAnchor="middle" className="da-handwritten">Network ACL</text>
+                        <text x="40" y="36" fill="#2563eb" fontSize="9.5" fontWeight="black" textAnchor="middle" className="da-handwritten">(NACL)</text>
+                        <text x="40" y="60" fill="#b91c1c" fontSize="7.5" fontWeight="bold" textAnchor="middle" className="da-handwritten">● Stateless</text>
+                        <text x="40" y="75" fill="#475569" fontSize="6.5" textAnchor="middle" className="da-handwritten">Traffic guard</text>
+                      </g>
+
+                      {/* Instance ENI boundary representing stateful SG */}
+                      <g transform="translate(260, 55)">
+                        <rect x="0" y="0" width="80" height="90" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.8" className="da-sketch-element" />
+                        <text x="40" y="20" fill="#065f46" fontSize="8" fontWeight="black" textAnchor="middle" className="da-handwritten">Security Group</text>
+                        <text x="40" y="36" fill="#10b981" fontSize="9.5" fontWeight="black" textAnchor="middle" className="da-handwritten">(SG)</text>
+                        <text x="40" y="60" fill="#047857" fontSize="7.5" fontWeight="bold" textAnchor="middle" className="da-handwritten">● Stateful</text>
+                        <text x="40" y="75" fill="#475569" fontSize="6.5" textAnchor="middle" className="da-handwritten">Inbound approves out</text>
+                      </g>
+
+                      {/* Routing flow lines */}
+                      <path d="M 10 100 H 60" fill="none" stroke="#3b82f6" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" />
+                      <path d="M 140 100 H 260" fill="none" stroke="#3b82f6" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" />
+                      <path d="M 260 120 H 140" fill="none" stroke="#10b981" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" />
+                      <text x="200" y="132" fill="#047857" fontSize="7.5" fontWeight="bold" textAnchor="middle" className="da-handwritten">Stateful Outbound</text>
+                      <path d="M 60 120 H 10" fill="none" stroke="#3b82f6" strokeWidth="1.5" markerEnd="url(#arrow-endpoint)" />
+                    </svg>
+                  )}
+                </div>
+
+                {/* Hand-written styled explanation bullet points */}
+                <div className="bg-[#fffdf6] border border-amber-100 rounded-xl p-4 shadow-sm space-y-2.5 da-handwritten text-sm text-slate-800 leading-relaxed font-bold">
+                  {selectedNote === 'bastion' && (
+                    <>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>We can use a <strong className="text-blue-900 font-extrabold text-[14.5px]">Bastion Host</strong> to SSH securely into our private EC2 instances.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>The Bastion host is located in the <strong className="text-emerald-700">Public Subnet</strong> which is then connected to all other private subnets inside the VPC.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>The Bastion host's Security Group <strong className="text-blue-900">must allow inbound Port 22 SSH</strong> from the public internet, restricted strictly to corporate CIDR ranges to prevent unauthorized public scanning.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>The Security Group of the target Private EC2 instances <strong className="text-rose-700">must exclusively allow SSH inbound traffic</strong> from the Security Group ID of the Bastion Host itself, or the Bastion's private IP.</span>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedNote === 'nat' && (
+                    <>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>A <strong className="text-blue-900 font-extrabold text-[14.5px]">NAT Gateway</strong> provides unidirectional internet egress for instances located in private subnets, letting them retrieve software updates safely.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>Unlike standard EC2 hosts, <strong className="text-rose-700 font-black text-[14px]">No Security Group is managed or required</strong> for the AWS NAT Gateway resource. It acts as an automated network routing appliance.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>The NAT Gateway operates entirely at the routing layer—mapping private instance IPs to its dedicated Elastic IP (EIP) and routing egress out through the Internet Gateway (IGW).</span>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedNote === 'nacl' && (
+                    <>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>A <strong className="text-blue-900 font-extrabold text-[14.5px]">Network Access Control List (NACL)</strong> acts as a stateless traffic guard at the subnet boundary level.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>Because <strong className="text-blue-800">Security Groups are stateful</strong>, if inbound ingress is allowed, return outbound egress responses are <strong className="text-emerald-700 font-extrabold">automatically allowed by default</strong>.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>Because <strong className="text-rose-700">NACLs are stateless</strong>, both inbound traffic rules and outbound response traffic rules must be explicitly configured and matched.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-blue-600 select-none">✏️</span>
+                        <span>To allow client responses, custom stateless NACLs must permit outbound traffic through the **Ephemeral Port Range** (`1024-65535`).</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Hand-sketched notebook footer */}
+              <div className="pl-10 text-[10px] text-slate-400 font-mono flex justify-between border-t border-dashed border-slate-200 pt-4 mt-6 select-none">
+                <span>Subject: AWS Networking VPC notes</span>
+                <span>Page: {selectedNote === 'bastion' ? '01' : selectedNote === 'nat' ? '02' : '03'}</span>
+              </div>
+
+            </div>
           </div>
         </div>
       )}
