@@ -15,10 +15,15 @@ import {
   ChevronDown,
   ChevronRight,
   Server,
-  Network
+  Network,
+  DollarSign,
+  Zap,
+  Check,
+  TrendingDown,
+  ArrowRight
 } from 'lucide-react';
 
-type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid' | 'notebook';
+type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid' | 'notebook' | 'pricing';
 
 interface LogRow {
   timestamp: string;
@@ -96,6 +101,57 @@ export default function NetworkingVPCVisualizer() {
   const [vpnSimState, setVpnSimState] = useState<'idle' | 'tunneling_a' | 'tunneling_b' | 'outage'>('idle');
   const [flowLogsEnabled, setFlowLogsEnabled] = useState<boolean>(false);
   const [vpnLogs, setVpnLogs] = useState<LogRow[]>([]);
+
+  // ==========================================
+  // TAB 7 STATE: COSTS, EGRESS, NAT vs ENDPOINT & FIREWALL
+  // ==========================================
+  const [costSource, setCostSource] = useState<'az1'>('az1');
+  const [costDest, setCostDest] = useState<'az1_private' | 'az2_private' | 'az2_public' | 'region_diff' | 'internet'>('az2_private');
+  const [costDataGb, setCostDataGb] = useState<number>(500);
+
+  const [s3EgressRoute, setS3EgressRoute] = useState<'direct' | 'cloudfront' | 'accelerator' | 'crr'>('direct');
+  const [s3DataGb, setS3DataGb] = useState<number>(1000);
+  const [s3SimState, setS3SimState] = useState<'idle' | 'running' | 'done'>('idle');
+  const [s3Logs, setS3Logs] = useState<LogRow[]>([]);
+
+  const [natHours, setNatHours] = useState<number>(720);
+  const [natDataGb, setNatDataGb] = useState<number>(2000);
+  const [natChallengeSimState, setNatChallengeSimState] = useState<'idle' | 'running' | 'done'>('idle');
+  const [natChallengeLogs, setNatChallengeLogs] = useState<LogRow[]>([]);
+
+  const [firewallActive, setFirewallActive] = useState<boolean>(true);
+  const [firewallRuleAction, setFirewallRuleAction] = useState<'allow' | 'drop' | 'alert'>('drop');
+  const [firewallTrafficSource, setFirewallTrafficSource] = useState<'internet' | 'peering' | 'vpn' | 'directconnect'>('internet');
+  const [firewallSimState, setFirewallSimState] = useState<'idle' | 'running' | 'done'>('idle');
+  const [firewallLogs, setFirewallLogs] = useState<LogRow[]>([]);
+  const [pricingSubTab, setPricingSubTab] = useState<'overview' | 'per_gb' | 's3_egress' | 'nat_vs_vpce' | 'firewall'>('overview');
+  const [globalEgressVolume, setGlobalEgressVolume] = useState<number>(3000);
+  const [overviewSimType, setOverviewSimType] = useState<'s3' | 'untrusted' | null>(null);
+  const [overviewSimStep, setOverviewSimStep] = useState<number>(0);
+  const [overviewSimStatus, setOverviewSimStatus] = useState<string>('idle');
+
+  const startOverviewSimulation = (type: 's3' | 'untrusted') => {
+    setOverviewSimType(type);
+    setOverviewSimStep(1);
+    setOverviewSimStatus('running');
+    
+    setTimeout(() => {
+      setOverviewSimStep(2);
+      setTimeout(() => {
+        setOverviewSimStep(3);
+        setTimeout(() => {
+          setOverviewSimStep(4);
+          setOverviewSimStatus('completed');
+        }, 1000);
+      }, 1000);
+    }, 1000);
+  };
+
+  const resetOverviewSimulation = () => {
+    setOverviewSimType(null);
+    setOverviewSimStep(0);
+    setOverviewSimStatus('idle');
+  };
 
   // ==========================================
   // TAB 1 LOGIC: CALCULATE IPS
@@ -595,6 +651,150 @@ export default function NetworkingVPCVisualizer() {
     setCloudHubSimStep(0);
   };
 
+  // ==========================================
+  // TAB 7 ACTIONS: COSTS, EGRESS, NAT vs ENDPOINT & FIREWALL
+  // ==========================================
+
+  const runS3EgressSim = async () => {
+    if (s3SimState === 'running') return;
+    setS3SimState('running');
+    setS3Logs([]);
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    const timestamp = new Date().toLocaleTimeString();
+
+    setS3Logs(prev => [...prev, { timestamp, message: `🪣 [S3 INGRESS check] Testing Ingress flow of ${s3DataGb} GB...`, type: 'info' }]);
+    await sleep(500);
+    setS3Logs(prev => [...prev, { timestamp, message: `🟢 [FREE INGRESS] S3 Data Ingress (upload) is completely FREE ($0.00/GB)!`, type: 'success' }]);
+    await sleep(500);
+
+    setS3Logs(prev => [...prev, { timestamp, message: `📡 [EVALUATING ROUTE] Testing S3 Egress flow route: ${s3EgressRoute.toUpperCase()}...`, type: 'info' }]);
+    await sleep(600);
+
+    let rate = 0;
+    let routeDesc = '';
+
+    if (s3EgressRoute === 'direct') {
+      rate = 0.09;
+      routeDesc = 'S3 Direct Egress to Public Internet';
+      setS3Logs(prev => [
+        ...prev,
+        { timestamp, message: `🚨 [HIGH EGRESS BILL] Traffic exits S3 directly through IGW to public client. Cost is $0.09 per GB.`, type: 'error' }
+      ]);
+    } else if (s3EgressRoute === 'cloudfront') {
+      rate = 0.085;
+      routeDesc = 'S3 to CloudFront (Free) -> CloudFront to Internet';
+      setS3Logs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [OPTIMIZED] S3 to CloudFront transfer is $0.00/GB. CloudFront to Internet is only $0.085/GB.`, type: 'success' },
+        { timestamp, message: `💡 [ARCHITECT SECRET] Using CloudFront caches files at Edge PoPs, lowering latency and providing request pricing that is up to 7x cheaper!`, type: 'success' }
+      ]);
+    } else if (s3EgressRoute === 'accelerator') {
+      rate = 0.09 + 0.04; // standard egress + premium acceleration
+      routeDesc = 'S3 Transfer Acceleration (Ingress/Egress Optimized)';
+      setS3Logs(prev => [
+        ...prev,
+        { timestamp, message: `⚡ [PREMIUM ACCELERATION] Speed improved by 50% to 500% via regional Edge PoPs. Premium surcharge of +$0.04/GB applies on top of standard egress.`, type: 'warn' }
+      ]);
+    } else {
+      rate = 0.02;
+      routeDesc = 'S3 Cross-Region Replication (CRR) to secondary region';
+      setS3Logs(prev => [
+        ...prev,
+        { timestamp, message: `🔄 [DISASTER RECOVERY] Replicating objects cross-region for multi-region resilience. Priced at $0.02 per GB.`, type: 'warn' }
+      ]);
+    }
+
+    const totalCost = s3DataGb * rate;
+    await sleep(600);
+
+    setS3Logs(prev => [
+      ...prev,
+      { timestamp, message: `🟢 [COMPLETED] Route: ${routeDesc}. Total Egress cost: $${totalCost.toFixed(2)} USD for ${s3DataGb} GB.`, type: 'success' }
+    ]);
+
+    setS3SimState('done');
+  };
+
+  const runNatChallengeSim = async () => {
+    if (natChallengeSimState === 'running') return;
+    setNatChallengeSimState('running');
+    setNatChallengeLogs([]);
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    const timestamp = new Date().toLocaleTimeString();
+
+    setNatChallengeLogs(prev => [...prev, { timestamp, message: `🔍 [CALCULATING SCENARIO] Daily egress data volume to S3: ${natDataGb} GB. Running hours: ${natHours} hours/month.`, type: 'info' }]);
+    await sleep(600);
+
+    // NAT path
+    const natHourlyCharge = natHours * 0.045; // $0.045/hour
+    const natProcessingCharge = natDataGb * 0.045; // $0.045/GB data processed
+    const totalNatCost = natHourlyCharge + natProcessingCharge;
+
+    // VPC Endpoint path
+    const vpceHourlyCharge = 0.00; // 100% free
+    const vpceProcessingCharge = 0.00; // 100% free
+    const totalVpceCost = 0.00;
+
+    const netSavings = totalNatCost - totalVpceCost;
+
+    setNatChallengeLogs(prev => [
+      ...prev,
+      { timestamp, message: `💻 [PATH 1: NAT GATEWAY] Hourly: $${natHourlyCharge.toFixed(2)} ($0.045/hr) | Processing: $${natProcessingCharge.toFixed(2)} ($0.045/GB) -> Total Monthly: $${totalNatCost.toFixed(2)} USD.`, type: 'error' },
+      { timestamp, message: `🟢 [PATH 2: S3 GATEWAY ENDPOINT] Hourly: $${vpceHourlyCharge.toFixed(2)} (FREE) | Processing: $${vpceProcessingCharge.toFixed(2)} (FREE) -> Total Monthly: $${totalVpceCost.toFixed(2)} USD!`, type: 'success' }
+    ]);
+    await sleep(800);
+
+    setNatChallengeLogs(prev => [
+      ...prev,
+      { timestamp, message: `🏆 [CHALLENGE WINNER] Gateway VPC Endpoint saves you $${netSavings.toFixed(2)} USD/month! 100% private route with zero internet exposure.`, type: 'success' },
+      { timestamp, message: `💡 [ROUTE TABLE AUDIT] Routing rules modify local route tables (pl-id) to send S3 queries directly through vpce-id rather than nat-gw-id.`, type: 'info' }
+    ]);
+
+    setNatChallengeSimState('done');
+  };
+
+  const runFirewallSim = async () => {
+    if (firewallSimState === 'running') return;
+    setFirewallSimState('running');
+    setFirewallLogs([]);
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    const timestamp = new Date().toLocaleTimeString();
+
+    setFirewallLogs(prev => [...prev, { timestamp, message: `🛡️ [FIREWALL ACTIVE] VPC wrapped inside AWS Network Firewall Shield boundary.`, type: 'success' }]);
+    await sleep(500);
+
+    setFirewallLogs(prev => [...prev, { timestamp, message: `📡 [INCOMING FLOW] Intercepting traffic from ${firewallTrafficSource.toUpperCase()} source...`, type: 'info' }]);
+    await sleep(600);
+
+    setFirewallLogs(prev => [
+      ...prev,
+      { timestamp, message: `🔍 [DEEP PACKET INSPECTION] Evaluating threat signatures L3 to L7. Running protocol validation filters...`, type: 'info' }
+    ]);
+    await sleep(800);
+
+    if (firewallRuleAction === 'allow') {
+      setFirewallLogs(prev => [
+        ...prev,
+        { timestamp, message: `🟢 [PASSED] Traffic matched explicit ALLOW rule. Header signature verified. Packet routed to target subnet.`, type: 'success' },
+        { timestamp, message: `📊 [LOGGING SUCCESS] Sent flow record ACCEPT to destination S3/CloudWatch group logs.`, type: 'info' }
+      ]);
+    } else if (firewallRuleAction === 'drop') {
+      setFirewallLogs(prev => [
+        ...prev,
+        { timestamp, message: `🚨 [BLOCKED & DROPPED] Network Firewall matched signature DROP rule! Blocked malicious protocol payload immediately at VPC boundary.`, type: 'error' },
+        { timestamp, message: `📊 [LOGGING ALARM] Alert dispatched to SOC team. Event log stored securely in S3 audit vault.`, type: 'warn' }
+      ]);
+    } else {
+      setFirewallLogs(prev => [
+        ...prev,
+        { timestamp, message: `⚠️ [ALERT TRIGGERED] Packet allowed through but flagged. Suspected TCP port scanning signature detected.`, type: 'warn' },
+        { timestamp, message: `📊 [LOGGING INCIDENT] Captured threat PCAP metadata. Dispatched to Kinesis Firehose analytics stream.`, type: 'info' }
+      ]);
+    }
+
+    setFirewallSimState('done');
+  };
+
   return (
     <div className="da-container animate-fadeIn">
       {/* Isolated visualizer styles */}
@@ -689,6 +889,11 @@ export default function NetworkingVPCVisualizer() {
           stroke: #f43f5e;
           stroke-dasharray: 5,3;
           animation: flowDash 0.4s linear infinite;
+        }
+        .da-flow-orange {
+          stroke: #f59e0b;
+          stroke-dasharray: 6,4;
+          animation: flowDash 0.8s linear infinite;
         }
         @keyframes flowDash {
           to { stroke-dashoffset: -20; }
@@ -938,6 +1143,20 @@ export default function NetworkingVPCVisualizer() {
           color: #cbd5e1;
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
+        .animate-dash {
+          stroke-dasharray: 6, 6;
+          animation: overviewDash 1s linear infinite;
+        }
+        @keyframes overviewDash {
+          to { stroke-dashoffset: -20; }
+        }
+        .animate-fade-in {
+          animation: overviewFadeIn 0.3s ease-out forwards;
+        }
+        @keyframes overviewFadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
 
       {/* Header bar */}
@@ -977,6 +1196,9 @@ export default function NetworkingVPCVisualizer() {
         </button>
         <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
           <BookOpen className="w-4 h-4" /> 6. Visual Architect Notes
+        </button>
+        <button className={`da-tb ${activeTab === 'pricing' ? 'da-on' : ''}`} onClick={() => setActiveTab('pricing')}>
+          <DollarSign className="w-4 h-4" /> 7. Egress &amp; Firewall Optimizer
         </button>
       </div>
 
@@ -4221,6 +4443,1266 @@ export default function NetworkingVPCVisualizer() {
 
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 7: EGRESS & FIREWALL OPTIMIZER                                         */}
+      {/* ========================================================================= */}
+      {activeTab === 'pricing' && (
+        <div className="space-y-6 animate-fadeIn text-left">
+          {/* Main header block */}
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-emerald-700">
+              <DollarSign className="w-5 h-5 text-emerald-500 animate-pulse" /> Egress &amp; Firewall Optimizer (AWS Cloud Architecture Cost &amp; Shield Dashboard)
+            </h2>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              Explore interactively the real-world network routing cost optimizations, S3 data egress pathways, NAT Gateway pricing calculators, and stateful security boundary rules of AWS Network Firewall. Make data-driven architectural decisions that can save over 90% in egress bills.
+            </p>
+          </div>
+
+          {/* Dynamic sub-tab buttons navigation */}
+          <div className="da-tabs">
+            <button 
+              onClick={() => setPricingSubTab('overview')} 
+              className={`da-tb ${pricingSubTab === 'overview' ? 'da-on' : ''}`}
+            >
+              <Layers className="w-4 h-4" /> Overview Dashboard
+            </button>
+            <button 
+              onClick={() => setPricingSubTab('per_gb')} 
+              className={`da-tb ${pricingSubTab === 'per_gb' ? 'da-on' : ''}`}
+            >
+              <DollarSign className="w-4 h-4" /> Network Cost Calculator (Per GB)
+            </button>
+            <button 
+              onClick={() => setPricingSubTab('s3_egress')} 
+              className={`da-tb ${pricingSubTab === 's3_egress' ? 'da-on' : ''}`}
+            >
+              <Zap className="w-4 h-4" /> S3 Egress Pathways
+            </button>
+            <button 
+              onClick={() => setPricingSubTab('nat_vs_vpce')} 
+              className={`da-tb ${pricingSubTab === 'nat_vs_vpce' ? 'da-on' : ''}`}
+            >
+              <Network className="w-4 h-4" /> NAT vs VPC Endpoints
+            </button>
+            <button 
+              onClick={() => setPricingSubTab('firewall')} 
+              className={`da-tb ${pricingSubTab === 'firewall' ? 'da-on' : ''}`}
+            >
+              <Shield className="w-4 h-4" /> Network Firewall Security
+            </button>
+          </div>
+
+          {pricingSubTab === 'overview' && (
+            <div className="space-y-6">
+              {/* Introduction Card */}
+              <div className="bg-gradient-to-r from-emerald-500/10 via-cyan-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-6 text-left relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 rounded-xl">
+                    <Zap className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      VPC Architecture Optimization: Standard vs High-Savings
+                    </h3>
+                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+                      AWS default setups (using multi-AZ NAT Gateways, standard Internet Egress routes, and full-volume stateful deep packet inspection) are easy to set up but highly inefficient. Below, we compare this <strong>Standard Architecture</strong> against a production-grade <strong>High-Savings Architecture</strong> that leverages Gateway Endpoints, split-horizon routing, and stateless bypass rules to slash costs by over 80%.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shared Sliders for Real-Time Cost Calculations */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm text-left">
+                <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-indigo-500" /> Interactive Traffic &amp; Duration Sliders
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        Global Egress &amp; Processing Volume
+                      </label>
+                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded">
+                        {globalEgressVolume.toLocaleString()} GB / month
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="500"
+                      max="20000"
+                      step="500"
+                      value={globalEgressVolume}
+                      onChange={(e) => setGlobalEgressVolume(Number(e.target.value))}
+                      className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                      <span>500 GB</span>
+                      <span>10,000 GB</span>
+                      <span>20,000 GB</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        NAT Gateway Multi-AZ Hours
+                      </label>
+                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded">
+                        {natHours} Hours / month
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="100"
+                      max="720"
+                      step="20"
+                      value={natHours}
+                      onChange={(e) => setNatHours(Number(e.target.value))}
+                      className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                      <span>100 Hrs</span>
+                      <span>400 Hrs</span>
+                      <span>720 Hrs (Full Month)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Side-by-side Cards & Live Comparison */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* Standard Architecture */}
+                <div className="lg:col-span-5 bg-white border border-rose-100 hover:border-rose-300 rounded-2xl p-6 shadow-sm flex flex-col text-left transition-all duration-300 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl pointer-events-none" />
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-[10px] font-bold tracking-wider uppercase rounded-full border border-rose-200">
+                      Standard Costly Setup
+                    </span>
+                    <span className="text-rose-500 font-semibold text-xs flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Highly Unoptimized
+                    </span>
+                  </div>
+                  <h4 className="text-base font-bold text-slate-800 mb-2">Multi-AZ Endpoint &amp; NAT Egress</h4>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    Runs all traffic (including S3 backups, private data transfers, and benign local queries) through expensive multi-AZ NAT Gateways and stateful deep packet inspectors.
+                  </p>
+
+                  <div className="space-y-4 flex-grow">
+                    <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600 font-medium">S3 Egress + Processing:</span>
+                        <span className="text-slate-800 font-bold font-mono">
+                          ${(globalEgressVolume * 0.135).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        ({globalEgressVolume} GB @ $0.09/GB egress + $0.045/GB NAT processing)
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600 font-medium">Multi-AZ NAT Hours (3 AZs):</span>
+                        <span className="text-slate-800 font-bold font-mono">
+                          ${(3 * natHours * 0.045).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        (3 NAT GWs * {natHours} hrs @ $0.045/hr)
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600 font-medium">Firewall Hours &amp; Processing:</span>
+                        <span className="text-slate-800 font-bold font-mono">
+                          ${((3 * 720 * 0.395) + (globalEgressVolume * 0.065)).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        (3 endpoints * 720 hrs @ $0.395/hr + {globalEgressVolume} GB @ $0.065/GB stateful inspect)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-baseline">
+                    <span className="text-xs font-semibold text-slate-600">Total Monthly Cost:</span>
+                    <span className="text-xl font-bold text-rose-600 font-mono">
+                      ${(
+                        (globalEgressVolume * 0.135) + 
+                        (3 * natHours * 0.045) + 
+                        (3 * 720 * 0.395) + 
+                        (globalEgressVolume * 0.065)
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Savings and Cost Comparison Badge (Middle 2 cols on large screen) */}
+                <div className="lg:col-span-2 flex flex-col justify-center items-center py-6 lg:py-0">
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-full mb-3 flex items-center justify-center animate-bounce">
+                    <TrendingDown className="w-8 h-8 text-emerald-600" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider text-center">Net Savings</h3>
+                  <div className="text-3xl font-extrabold text-emerald-600 font-mono tracking-tight mt-1">
+                    {Math.max(0, Math.round((
+                      (
+                        (globalEgressVolume * 0.135) + 
+                        (3 * natHours * 0.045) + 
+                        (3 * 720 * 0.395) + 
+                        (globalEgressVolume * 0.065)
+                      ) - (
+                        (0) + 
+                        (3 * 720 * 0.014 + (globalEgressVolume * 0.1 * 0.01)) + 
+                        (1 * 720 * 0.395) + 
+                        (globalEgressVolume * 0.2 * 0.065)
+                      )
+                    ) / (
+                      (globalEgressVolume * 0.135) + 
+                      (3 * natHours * 0.045) + 
+                      (3 * 720 * 0.395) + 
+                      (globalEgressVolume * 0.065)
+                    ) * 100))}%
+                  </div>
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full mt-2">
+                    Architectural Bypass
+                  </span>
+                  <div className="w-full flex justify-center items-center my-4">
+                    <div className="h-0.5 w-12 bg-slate-200 relative">
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 bg-emerald-500 text-white p-0.5 rounded-full text-[8px] font-bold">
+                        <ArrowRight className="w-2.5 h-2.5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optimized Architecture */}
+                <div className="lg:col-span-5 bg-gradient-to-br from-emerald-50/30 to-teal-50/10 border-2 border-emerald-500 hover:border-emerald-600 rounded-2xl p-6 shadow-md flex flex-col text-left transition-all duration-300 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-bold tracking-wider uppercase rounded-full shadow-sm">
+                      High-Savings Setup
+                    </span>
+                    <span className="text-emerald-600 font-semibold text-xs flex items-center gap-1 animate-pulse">
+                      <Check className="w-3.5 h-3.5" /> Production Optimized
+                    </span>
+                  </div>
+                  <h4 className="text-base font-bold text-slate-800 mb-2">Split-Horizon &amp; Gateway Endpoints</h4>
+                  <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                    Directly routes S3 traffic through free Gateway Endpoints. Leverages fast-path stateless rules to bypass stateful deep packet inspection for trusted internal and AWS endpoints.
+                  </p>
+
+                  <div className="space-y-4 flex-grow">
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600 font-medium">S3 Gateway Endpoint:</span>
+                        <span className="text-emerald-700 font-bold font-mono">
+                          $0.00
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Bypasses NAT processing completely ($0/GB)
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600 font-medium">VPC Endpoints (Internal):</span>
+                        <span className="text-slate-800 font-bold font-mono">
+                          ${(3 * 720 * 0.014 + (globalEgressVolume * 0.1 * 0.01)).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        (3 endpoints * 720 hrs @ $0.014/hr + 10% egress volume @ $0.01/GB processing)
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-600 font-medium">Optimized Firewall Coverage:</span>
+                        <span className="text-slate-800 font-bold font-mono">
+                          ${((1 * 720 * 0.395) + (globalEgressVolume * 0.2 * 0.065)).toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400">
+                        (1 firewall * 720 hrs @ $0.395/hr + 20% untrusted egress @ $0.065/GB stateful inspect)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-baseline">
+                    <span className="text-xs font-semibold text-slate-600">Total Monthly Cost:</span>
+                    <span className="text-xl font-bold text-emerald-600 font-mono">
+                      ${(
+                        (0) + 
+                        (3 * 720 * 0.014 + (globalEgressVolume * 0.1 * 0.01)) + 
+                        (1 * 720 * 0.395) + 
+                        (globalEgressVolume * 0.2 * 0.065)
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Packet Flow Simulator Panel */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm text-left">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-emerald-500" /> Interactive Packet Flow Simulator: Bypass Logic
+                    </h4>
+                    <p className="text-slate-500 text-xs mt-1">
+                      Simulate packet routing under the High-Savings architecture. Observe how stateless filters fast-path safe connections to eliminate stateful inspection fees.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startOverviewSimulation('s3')}
+                      disabled={overviewSimStatus === 'running'}
+                      className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-50 border border-emerald-200"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> S3 Packet (Bypass)
+                    </button>
+                    <button
+                      onClick={() => startOverviewSimulation('untrusted')}
+                      disabled={overviewSimStatus === 'running'}
+                      className="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-50 border border-rose-200"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5" /> Untrusted Egress
+                    </button>
+                    <button
+                      onClick={() => resetOverviewSimulation()}
+                      className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-bold transition-all"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center bg-slate-50 p-6 rounded-xl border border-slate-100">
+                  {/* Visualizer canvas */}
+                  <div className="lg:col-span-2 relative h-48 bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-inner flex items-center justify-around px-4">
+                    
+                    {/* Node 1: client */}
+                    <div className={`flex flex-col items-center z-10 transition-all ${overviewSimStep >= 1 ? 'scale-105' : 'opacity-70'}`}>
+                      <div className={`p-3 rounded-full border shadow-sm ${
+                        overviewSimStep >= 1 ? 'bg-indigo-50 border-indigo-300 text-indigo-600 animate-pulse' : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        <Server className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-600 mt-2">App Server</span>
+                    </div>
+
+                    {/* Channel 1 */}
+                    <div className="flex-grow h-0.5 bg-slate-200 relative max-w-[80px]">
+                      {overviewSimType && overviewSimStep >= 1 && (
+                        <div className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full shadow ${
+                          overviewSimType === 's3' ? 'bg-emerald-500' : 'bg-rose-500'
+                        } ${overviewSimStep === 1 ? 'left-0 animate-ping' : 'left-full transition-all duration-1000'}`} />
+                      )}
+                    </div>
+
+                    {/* Node 2: Stateless Engine */}
+                    <div className={`flex flex-col items-center z-10 transition-all ${overviewSimStep >= 2 ? 'scale-105' : 'opacity-70'}`}>
+                      <div className={`p-3 rounded-full border shadow-sm relative ${
+                        overviewSimStep >= 2 
+                          ? 'bg-amber-50 border-amber-300 text-amber-600 font-bold' 
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        <Cpu className="w-6 h-6" />
+                        {overviewSimStep === 2 && (
+                          <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-amber-600 text-white text-[8px] px-1.5 py-0.5 rounded font-mono uppercase tracking-wider whitespace-nowrap animate-bounce">
+                            Stateless Filter
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-600 mt-2">Stateless Filter</span>
+                    </div>
+
+                    {/* Channel 2 Split */}
+                    <div className="relative w-16 h-24 flex items-center justify-center">
+                      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 64 96">
+                        <path d="M0,48 C20,48 40,16 64,16" fill="none" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="3,3" />
+                        <path d="M0,48 C20,48 40,80 64,80" fill="none" stroke="#e2e8f0" strokeWidth="2" strokeDasharray="3,3" />
+                        {overviewSimType === 's3' && overviewSimStep >= 2 && (
+                          <path d="M0,48 C20,48 40,16 64,16" fill="none" stroke="#10b981" strokeWidth="3" className="animate-dash" strokeDasharray="6,6" />
+                        )}
+                        {overviewSimType === 'untrusted' && overviewSimStep >= 2 && (
+                          <path d="M0,48 C20,48 40,80 64,80" fill="none" stroke="#f43f5e" strokeWidth="3" className="animate-dash" strokeDasharray="6,6" />
+                        )}
+                      </svg>
+                      {/* Animated dot moving */}
+                      {overviewSimType === 's3' && overviewSimStep === 2 && (
+                        <div className="absolute w-3 h-3 bg-emerald-500 rounded-full shadow animate-pulse" style={{ left: '50%', top: '30%' }} />
+                      )}
+                      {overviewSimType === 'untrusted' && overviewSimStep === 2 && (
+                        <div className="absolute w-3 h-3 bg-rose-500 rounded-full shadow animate-pulse" style={{ left: '50%', top: '70%' }} />
+                      )}
+                    </div>
+
+                    {/* Top Node (Direct S3 / Bypass Endpoint) */}
+                    <div className={`flex flex-col items-center z-10 transition-all ${
+                      overviewSimType === 's3' && overviewSimStep >= 3 ? 'scale-105' : 'opacity-40'
+                    }`}>
+                      <div className={`p-3 rounded-full border shadow-sm ${
+                        overviewSimType === 's3' && overviewSimStep >= 3 
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-600' 
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        <Network className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-600 mt-2">S3 Gateway Endpoint</span>
+                    </div>
+
+                    {/* Bottom Node (Stateful Inspection Engine) */}
+                    <div className={`flex flex-col items-center z-10 transition-all ${
+                      overviewSimType === 'untrusted' && overviewSimStep >= 3 ? 'scale-105' : 'opacity-40'
+                    }`}>
+                      <div className={`p-3 rounded-full border shadow-sm ${
+                        overviewSimType === 'untrusted' && overviewSimStep >= 3 
+                          ? 'bg-rose-50 border-rose-300 text-rose-600' 
+                          : 'bg-slate-50 border-slate-200 text-slate-400'
+                      }`}>
+                        <Shield className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-600 mt-2">Stateful Inspect ($0.065/GB)</span>
+                    </div>
+
+                  </div>
+
+                  {/* Logs/Terminal section */}
+                  <div className="h-48 bg-slate-900 rounded-xl p-4 font-mono text-xs text-left text-slate-300 flex flex-col justify-between shadow-inner">
+                    <div className="space-y-2 overflow-y-auto max-h-[120px] pr-2">
+                      <div className="text-emerald-500 font-bold border-b border-slate-800 pb-1 flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5" /> SIMULATOR CONSOLE
+                      </div>
+                      {overviewSimStep === 0 && (
+                        <div className="text-slate-500 italic">Select S3 Packet or Untrusted Egress to start simulated packet run...</div>
+                      )}
+                      {overviewSimStep >= 1 && (
+                        <div className="text-indigo-400 animate-fade-in">
+                          &gt; [App Server] Packet initialized from internal subnet (CIDR 10.0.1.45)
+                        </div>
+                      )}
+                      {overviewSimStep >= 2 && (
+                        <div className="text-amber-400 animate-fade-in">
+                          &gt; [Stateless Filter] Evaluating header destination... 
+                          {overviewSimType === 's3' 
+                            ? ' Destination matches AWS S3 prefix list!' 
+                            : ' Destination matches untrusted external CIDR!'}
+                        </div>
+                      )}
+                      {overviewSimStep >= 3 && (
+                        <div className={`${overviewSimType === 's3' ? 'text-emerald-400' : 'text-rose-400'} font-semibold animate-fade-in`}>
+                          {overviewSimType === 's3' 
+                            ? '> [Gateway Endpoint] Fast-pathed bypassing Stateful inspections. Processing cost: $0.00!' 
+                            : '> [Stateful Engine] Forwarded to Stateful deep inspection endpoint. Processing fee charged ($0.065/GB).'}
+                        </div>
+                      )}
+                      {overviewSimStep >= 4 && (
+                        <div className="text-emerald-500 font-bold flex items-center gap-1.5 animate-fade-in border-t border-slate-800 pt-1 mt-1">
+                          <Check className="w-3.5 h-3.5" /> ROUTING SUCCESSFUL
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-slate-500 border-t border-slate-800 pt-2 flex justify-between items-center">
+                      <span>Status: <strong className="text-indigo-400">{overviewSimStatus.toUpperCase()}</strong></span>
+                      {overviewSimType && (
+                        <span className="font-semibold text-slate-400">
+                          Mode: {overviewSimType === 's3' ? 'AWS S3 (Free Bypass)' : 'Untrusted Egress (Inspect)'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-tab 1: AWS Network Cost Calculator */}
+          {pricingSubTab === 'per_gb' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Sidebar Settings */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="da-card text-left bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Traffic Configuration</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Traffic Source:</label>
+                      <select 
+                        value={costSource} 
+                        onChange={(e) => setCostSource(e.target.value as any)}
+                        className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium"
+                      >
+                        <option value="az1">EC2 Instance Cluster (Availability Zone 1)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Destination Node / Pathway:</label>
+                      <select 
+                        value={costDest} 
+                        onChange={(e) => setCostDest(e.target.value as any)}
+                        className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium"
+                      >
+                        <option value="az1_private">Same AZ (AZ-1) - Private IP ($0.00/GB)</option>
+                        <option value="az2_private">Cross AZ (AZ-1 ➡️ AZ-2) - Private IP ($0.01/GB)</option>
+                        <option value="az2_public">Cross AZ (AZ-1 ➡️ AZ-2) - Public IP ($0.02/GB)</option>
+                        <option value="region_diff">Cross Region (us-east-1 ➡️ us-west-2) ($0.02/GB)</option>
+                        <option value="internet">Public Internet Egress via IGW ($0.09/GB)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-bold text-slate-600">Monthly Volume (GB):</label>
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{costDataGb} GB</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="10" 
+                        max="5000" 
+                        step="10"
+                        value={costDataGb} 
+                        onChange={(e) => setCostDataGb(Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 text-left">
+                  <h4 className="text-xs font-extrabold text-emerald-800 flex items-center gap-1.5">
+                    <Info className="w-4 h-4" /> Cost Matrix Rules Checklist
+                  </h4>
+                  <ul className="text-[11px] text-slate-600 mt-2 space-y-1.5 leading-relaxed">
+                    <li>🟢 <strong>Same AZ, Private IP</strong>: Completely Free ($0.00/GB). Hypervisor bypass.</li>
+                    <li>⚠️ <strong>Same AZ, Public/Elastic IP</strong>: $0.01 per GB ingress + $0.01 per GB egress ($0.02 total).</li>
+                    <li>🚨 <strong>Inter-AZ (AZ-1 to AZ-2)</strong>: $0.01 per GB across logical AZ limits.</li>
+                    <li>📡 <strong>Inter-Region Transit</strong>: $0.02 per GB over high-speed AWS Global Backbone.</li>
+                    <li>🌐 <strong>Internet Egress</strong>: $0.09 per GB (standard first 10TB tier).</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Simplified Compact Cost Chart & Recommendations */}
+              <div className="lg:col-span-8 space-y-6">
+                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase">Live Cost engine</span>
+                  </div>
+
+                  <h3 className="text-sm font-extrabold text-slate-200 mb-2">Interactive Pathway Cost Comparison</h3>
+                  <p className="text-xs text-slate-400 mb-6">
+                    See how your monthly data volume of <span className="text-sky-400 font-bold">{costDataGb} GB</span> is billed across different network paths. Click on any route below to set it as your target destination path.
+                  </p>
+                  
+                  {/* Dynamic cost bars list */}
+                  <div className="space-y-4">
+                    {[
+                      {
+                        key: 'az1_private',
+                        name: 'Same AZ (AZ-1) - Private IP Route',
+                        rate: 0.00,
+                        desc: 'Intra-AZ traffic stays on the local hypervisor backplane. Highly optimized.',
+                        color: 'from-emerald-500 to-teal-500',
+                        badge: 'FREE',
+                        textColor: 'text-emerald-400'
+                      },
+                      {
+                        key: 'az2_private',
+                        name: 'Cross AZ (AZ-1 ➡️ AZ-2) - Private IP Route',
+                        rate: 0.01,
+                        desc: 'Traverses logical availability zone boundaries. Standard replication path.',
+                        color: 'from-amber-400 to-orange-500',
+                        badge: '$0.01/GB',
+                        textColor: 'text-amber-400'
+                      },
+                      {
+                        key: 'az2_public',
+                        name: 'Cross AZ (AZ-1 ➡️ AZ-2) - Public / Elastic IP',
+                        rate: 0.02,
+                        desc: 'EIP penalty. Loops traffic out to regional public routers, doubling cost.',
+                        color: 'from-rose-400 to-pink-500',
+                        badge: '$0.02/GB',
+                        textColor: 'text-rose-400'
+                      },
+                      {
+                        key: 'region_diff',
+                        name: 'Cross Region (us-east-1 ➡️ us-west-2)',
+                        rate: 0.02,
+                        desc: 'Traverses the AWS high-speed global fiber backbone network.',
+                        color: 'from-blue-500 to-indigo-500',
+                        badge: '$0.02/GB',
+                        textColor: 'text-blue-400'
+                      },
+                      {
+                        key: 'internet',
+                        name: 'Public Internet Egress via IGW',
+                        rate: 0.09,
+                        desc: 'Traffic exits the AWS network entirely to the public internet.',
+                        color: 'from-rose-600 to-red-700',
+                        badge: '$0.09/GB',
+                        textColor: 'text-red-400'
+                      }
+                    ].map((route) => {
+                      const total = costDataGb * route.rate;
+                      const isSelected = costDest === route.key;
+                      const percentage = route.rate === 0 ? 3 : (route.rate / 0.09) * 100;
+
+                      return (
+                        <div 
+                          key={route.key}
+                          onClick={() => setCostDest(route.key as any)}
+                          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                            isSelected 
+                              ? 'bg-slate-800/80 border-emerald-500/60 shadow-lg shadow-emerald-950/20' 
+                              : 'bg-slate-950/40 border-slate-800/60 hover:bg-slate-900/40 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs font-bold ${isSelected ? 'text-emerald-400' : 'text-slate-200'}`}>
+                                  {route.name}
+                                </span>
+                                {isSelected && (
+                                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0.2 rounded font-black tracking-wider uppercase">
+                                    Selected
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-400 block mt-0.5 leading-tight">{route.desc}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs font-extrabold text-white block">
+                                ${total.toFixed(2)} <span className="text-[9px] text-slate-500 font-normal">/mo</span>
+                              </span>
+                              <span className="text-[9px] text-slate-400">{route.badge}</span>
+                            </div>
+                          </div>
+
+                          {/* Cost Bar */}
+                          <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full bg-gradient-to-r ${route.color} transition-all duration-500`}
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Compact Cost Takeaway Bullet Points */}
+                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-3 border-b border-slate-800 pb-2">
+                    <Info className="w-4 h-4 text-emerald-400" />
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">
+                      Architect's Cost Optimization Rules
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <span className="text-emerald-400 font-bold">1.</span>
+                        <p><strong>Keep traffic within the same AZ</strong>: If instances communicate over Private IPs in the same Availability Zone, transit is <strong>100% free</strong>.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-emerald-400 font-bold">2.</span>
+                        <p><strong>Avoid Elastic IPs for local traffic</strong>: Routing via Public/Elastic IPs loops traffic to public AWS edge routers, charging you <strong>$0.02/GB</strong> even in the same AZ!</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <span className="text-emerald-400 font-bold">3.</span>
+                        <p><strong>Optimize cross-AZ routes</strong>: If you must cross AZs, stick to <strong>Private IPs</strong> to reduce fees to the minimum <strong>$0.01/GB</strong> standard transfer rate.</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-emerald-400 font-bold">4.</span>
+                        <p><strong>Limit Internet Egress</strong>: Direct egress to the internet carries a premium rate of <strong>$0.09/GB</strong>. Use caching networks or VPC Endpoint routes where possible.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-tab 2: S3 Egress Optimizer */}
+          {pricingSubTab === 's3_egress' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Sidebar Configuration */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="da-card text-left bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">S3 Data Transfer Route</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Egress Pathway Optimization:</label>
+                      <div className="space-y-2">
+                        <label className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs font-medium">
+                          <input 
+                            type="radio" 
+                            name="s3Route" 
+                            checked={s3EgressRoute === 'direct'} 
+                            onChange={() => setS3EgressRoute('direct')} 
+                            className="mt-0.5 accent-emerald-600"
+                          />
+                          <div>
+                            <span className="font-bold text-slate-800 block">S3 Direct Internet ($0.09/GB)</span>
+                            <span className="text-[10px] text-slate-500">Standard direct download to public clients. High pricing.</span>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-2.5 p-2.5 rounded-lg border border-emerald-250 bg-emerald-50/20 hover:bg-emerald-50/30 cursor-pointer text-xs font-medium">
+                          <input 
+                            type="radio" 
+                            name="s3Route" 
+                            checked={s3EgressRoute === 'cloudfront'} 
+                            onChange={() => setS3EgressRoute('cloudfront')} 
+                            className="mt-0.5 accent-emerald-600"
+                          />
+                          <div>
+                            <span className="font-bold text-emerald-800 block flex items-center gap-1">
+                              CloudFront Caching ($0.085/GB) <span className="bg-emerald-100 text-emerald-800 text-[9px] px-1.5 py-0.2 rounded font-black">RECOMMENDED</span>
+                            </span>
+                            <span className="text-[10px] text-slate-500">S3 to CloudFront is FREE. Cache edge transfers to client with ~7x cost reductions at scale.</span>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs font-medium">
+                          <input 
+                            type="radio" 
+                            name="s3Route" 
+                            checked={s3EgressRoute === 'accelerator'} 
+                            onChange={() => setS3EgressRoute('accelerator')} 
+                            className="mt-0.5 accent-emerald-600"
+                          />
+                          <div>
+                            <span className="font-bold text-slate-800 block">Transfer Accelerator ($0.13/GB)</span>
+                            <span className="text-[10px] text-slate-500">Optimizes globally using AWS Edge locations. +$0.04/GB premium fee.</span>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs font-medium">
+                          <input 
+                            type="radio" 
+                            name="s3Route" 
+                            checked={s3EgressRoute === 'crr'} 
+                            onChange={() => setS3EgressRoute('crr')} 
+                            className="mt-0.5 accent-emerald-600"
+                          />
+                          <div>
+                            <span className="font-bold text-slate-800 block">S3 Cross-Region Replication ($0.02/GB)</span>
+                            <span className="text-[10px] text-slate-500">Auto-copy S3 objects cross-region for multi-site high availability.</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-bold text-slate-600">Monthly Egress Volume:</label>
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{s3DataGb} GB</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="10" 
+                        max="10000" 
+                        step="50"
+                        value={s3DataGb} 
+                        onChange={(e) => setS3DataGb(Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                    </div>
+
+                    <button
+                      onClick={runS3EgressSim}
+                      disabled={s3SimState === 'running'}
+                      className="w-full py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2"
+                    >
+                      <Activity className={`w-4 h-4 ${s3SimState === 'running' ? 'animate-spin' : ''}`} />
+                      {s3SimState === 'running' ? 'Running Egress Trace...' : 'Simulate Egress & Validate'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
+                  <h4 className="text-xs font-extrabold text-blue-800 flex items-center gap-1.5">
+                    <Info className="w-4 h-4" /> Edge Acceleration Insights
+                  </h4>
+                  <p className="text-[11px] text-slate-600 mt-1.5 leading-relaxed">
+                    By routing S3 asset downloads through **Amazon CloudFront**, S3 to CloudFront data transfer is billed at **$0.00/GB**. You only pay for CloudFront egress, which has lower regional tiers than S3, saving thousands of dollars monthly on high-traffic static websites, dynamic REST API assets, and media archives.
+                  </p>
+                </div>
+              </div>
+
+              {/* Results dashboard & Logs */}
+              <div className="lg:col-span-8 space-y-6">
+                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">S3 Egress Topology Route</h3>
+
+                  <div className="h-44 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-center p-4 relative">
+                    {/* Render custom S3 egress pipeline */}
+                    <svg viewBox="0 0 700 200" className="w-full h-full font-semibold">
+                      {/* Left: Amazon S3 Bucket */}
+                      <g transform="translate(100, 100)">
+                        <rect x="-35" y="-35" width="70" height="70" rx="10" fill="#2563eb" stroke="#3b82f6" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold">Amazon S3</text>
+                      </g>
+
+                      {/* Middle: Optional CloudFront Edge */}
+                      {s3EgressRoute === 'cloudfront' ? (
+                        <g transform="translate(350, 100)">
+                          <polygon points="0,-40 40,0 0,40 -40,0" fill="#7c3aed" stroke="#8b5cf6" strokeWidth="2" className="animate-pulse" />
+                          <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">CloudFront Edge</text>
+                        </g>
+                      ) : s3EgressRoute === 'accelerator' ? (
+                        <g transform="translate(350, 100)">
+                          <polygon points="0,-40 40,0 0,40 -40,0" fill="#e11d48" stroke="#f43f5e" strokeWidth="2" />
+                          <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">Transfer Accel</text>
+                        </g>
+                      ) : (
+                        <g transform="translate(350, 100)">
+                          <circle r="10" fill="#475569" />
+                          <text y="25" textAnchor="middle" fill="#94a3b8" fontSize="9" fontWeight="bold">Direct Transit</text>
+                        </g>
+                      )}
+
+                      {/* Connectors */}
+                      <path d="M 135 100 L 310 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      {s3SimState === 'running' && (
+                        <path d="M 135 100 L 310 100" fill="none" stroke="#2563eb" strokeWidth="3" className="r53-flow-blue" />
+                      )}
+
+                      <path d="M 390 100 L 565 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      {s3SimState === 'running' && (
+                        <path d="M 390 100 L 565 100" fill="none" stroke="#10b981" strokeWidth="3" className="r53-flow-orange" />
+                      )}
+
+                      {/* Right: Client / Destination */}
+                      <g transform="translate(600, 100)">
+                        <circle r="35" fill="#111827" stroke="#10b981" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold">Public Client</text>
+                      </g>
+                    </svg>
+                  </div>
+
+                  {/* Calculations breakdown cards */}
+                  <div className="grid grid-cols-3 gap-4 mt-6">
+                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-400 block uppercase">Route Chosen</span>
+                      <span className="text-xs font-bold text-sky-400 mt-2.5 block uppercase tracking-wider">
+                        {s3EgressRoute === 'direct' && 'Direct Egress'}
+                        {s3EgressRoute === 'cloudfront' && 'CloudFront Caching'}
+                        {s3EgressRoute === 'accelerator' && 'Edge Acceleration'}
+                        {s3EgressRoute === 'crr' && 'Disaster Recovery'}
+                      </span>
+                    </div>
+                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-400 block uppercase">Egress Surcharge Rate</span>
+                      <span className="text-xl font-bold text-amber-400 mt-1 block">
+                        ${s3EgressRoute === 'direct' ? '0.090' : s3EgressRoute === 'cloudfront' ? '0.085' : s3EgressRoute === 'accelerator' ? '0.130' : '0.020'}/GB
+                      </span>
+                    </div>
+                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-400 block uppercase">Estimated Charge</span>
+                      <span className="text-xl font-bold text-emerald-400 mt-1 block">
+                        ${(s3DataGb * (s3EgressRoute === 'direct' ? 0.09 : s3EgressRoute === 'cloudfront' ? 0.085 : s3EgressRoute === 'accelerator' ? 0.13 : 0.02)).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* S3 logs console */}
+                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
+                  <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-500" /> S3 Dynamic Routing Console Trace
+                    </h3>
+                    <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">STDOUT</span>
+                  </div>
+
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-2 bg-slate-950/80 rounded-lg">
+                    {s3Logs.length === 0 ? (
+                      <div className="text-slate-500 italic text-center pt-16">
+                        Console traces idle. Choose a routing strategy and click "Simulate Egress &amp; Validate" to watch pipeline logic live.
+                      </div>
+                    ) : (
+                      s3Logs.map((log, idx) => (
+                        <div key={idx} className="flex gap-2 leading-relaxed">
+                          <span className="text-slate-500">[{log.timestamp}]</span>
+                          <span className={
+                            log.type === 'success' ? 'text-emerald-400 font-bold' :
+                            log.type === 'error' ? 'text-rose-400 font-bold' :
+                            log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-sky-300'
+                          }>
+                            {log.message}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-tab 3: NAT vs S3 Gateway Endpoint */}
+          {pricingSubTab === 'nat_vs_vpce' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Sidebar Configuration */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="da-card text-left bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">S3 Data Transfer Context</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Running Hours per Month:</label>
+                      <select 
+                        value={natHours} 
+                        onChange={(e) => setNatHours(Number(e.target.value))}
+                        className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium"
+                      >
+                        <option value="720">Full Month (720 Hours)</option>
+                        <option value="360">Half Month (360 Hours)</option>
+                        <option value="168">One Week (168 Hours)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-xs font-bold text-slate-600">S3 Egress volume (GB/month):</label>
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{natDataGb} GB</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="10" 
+                        max="10000" 
+                        step="100"
+                        value={natDataGb} 
+                        onChange={(e) => setNatDataGb(Number(e.target.value))}
+                        className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                      />
+                    </div>
+
+                    <button
+                      onClick={runNatChallengeSim}
+                      disabled={natChallengeSimState === 'running'}
+                      className="w-full py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2"
+                    >
+                      <Activity className={`w-4 h-4 ${natChallengeSimState === 'running' ? 'animate-spin' : ''}`} />
+                      {natChallengeSimState === 'running' ? 'Evaluating Route savings...' : 'Compare Paths & Compute Savings'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-left">
+                  <h4 className="text-xs font-extrabold text-emerald-800 flex items-center gap-1.5">
+                    <Info className="w-4 h-4" /> Why are Gateway Endpoints Free?
+                  </h4>
+                  <p className="text-[11px] text-slate-600 mt-1.5 leading-relaxed">
+                    S3 Gateway Endpoints operate by altering the subnet route table to direct S3 requests through a special prefix list pointing to the AWS private S3 interface. Because they require no running proxy hosts, AWS charges exactly **$0.00 for both hourly running costs and data processing**.
+                  </p>
+                </div>
+              </div>
+
+              {/* Visual Breakdown comparison */}
+              <div className="lg:col-span-8 space-y-6">
+                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">Interactive Architecture Cost Comparison</h3>
+
+                  {/* Architecture comparison box */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Path A: NAT Gateway */}
+                    <div className="border border-rose-950 bg-rose-950/20 p-4 rounded-xl space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] bg-rose-900 text-rose-200 px-2 py-0.5 rounded font-black">PATH A: NAT GATEWAY</span>
+                        <span className="text-xs font-bold text-rose-400">Expensive Path</span>
+                      </div>
+
+                      <div className="space-y-1 mt-2 text-xs">
+                        <div className="flex justify-between text-slate-400">
+                          <span>Hourly NAT Fee:</span>
+                          <span className="font-bold text-white">${(natHours * 0.045).toFixed(2)} USD</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 leading-none">({natHours} hrs @ $0.045/hr)</div>
+
+                        <div className="flex justify-between text-slate-400 mt-1">
+                          <span>Data Processing Fee:</span>
+                          <span className="font-bold text-white">${(natDataGb * 0.045).toFixed(2)} USD</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 leading-none">({natDataGb} GB processed @ $0.045/GB)</div>
+
+                        <div className="border-t border-rose-900 mt-3 pt-2 flex justify-between text-sm font-extrabold">
+                          <span className="text-slate-300">Total Month:</span>
+                          <span className="text-rose-400">${(natHours * 0.045 + natDataGb * 0.045).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Path B: S3 Gateway Endpoint */}
+                    <div className="border border-emerald-950 bg-emerald-950/20 p-4 rounded-xl space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded font-black">PATH B: S3 GATEWAY ENDPOINT</span>
+                        <span className="text-xs font-bold text-emerald-400 font-extrabold flex items-center gap-1">🟢 100% FREE</span>
+                      </div>
+
+                      <div className="space-y-1 mt-2 text-xs">
+                        <div className="flex justify-between text-slate-400">
+                          <span>Hourly VPCE Fee:</span>
+                          <span className="font-bold text-emerald-400">$0.00 USD</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 leading-none">(No hourly charges)</div>
+
+                        <div className="flex justify-between text-slate-400 mt-1">
+                          <span>Data Processing Fee:</span>
+                          <span className="font-bold text-emerald-400">$0.00 USD</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 leading-none">(No GB processing fees)</div>
+
+                        <div className="border-t border-emerald-900 mt-3 pt-2 flex justify-between text-sm font-extrabold">
+                          <span className="text-slate-300">Total Month:</span>
+                          <span className="text-emerald-400">$0.00</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Savings summary */}
+                  <div className="bg-emerald-950/40 border border-emerald-800 rounded-xl p-4 mt-6 text-center">
+                    <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-widest block">Potential Monthly Cost Savings</span>
+                    <span className="text-3xl font-black text-emerald-300 block mt-1">
+                      ${(natHours * 0.045 + natDataGb * 0.045).toFixed(2)} USD
+                    </span>
+                    <span className="text-[10px] text-slate-400 mt-1 block">Based on S3 routing modifications. 100% zero-cost networking.</span>
+                  </div>
+                </div>
+
+                {/* NAT logs console */}
+                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
+                  <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-500" /> Route Table savings simulator trace
+                    </h3>
+                    <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">STDOUT</span>
+                  </div>
+
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-2 bg-slate-950/80 rounded-lg">
+                    {natChallengeLogs.length === 0 ? (
+                      <div className="text-slate-500 italic text-center pt-16">
+                        Savings calculations idle. Adjust configurations and click "Compare Paths &amp; Compute Savings" to initiate comparative cost telemetry.
+                      </div>
+                    ) : (
+                      natChallengeLogs.map((log, idx) => (
+                        <div key={idx} className="flex gap-2 leading-relaxed">
+                          <span className="text-slate-500">[{log.timestamp}]</span>
+                          <span className={
+                            log.type === 'success' ? 'text-emerald-400 font-bold' :
+                            log.type === 'error' ? 'text-rose-400 font-bold' :
+                            log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-sky-300'
+                          }>
+                            {log.message}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-tab 4: AWS Network Firewall Shield */}
+          {pricingSubTab === 'firewall' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Sidebar Configuration */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="da-card text-left bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Firewall Configuration</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Network Firewall Shield status:</label>
+                      <button 
+                        onClick={() => setFirewallActive(!firewallActive)}
+                        className={`w-full py-1.5 px-3 rounded-lg text-xs font-bold text-center border transition ${
+                          firewallActive 
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100' 
+                            : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100'
+                        }`}
+                      >
+                        {firewallActive ? '🟢 Network Firewall Active' : '🔴 Firewall Bypass (Risk Warning)'}
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Matching Traffic Signature Rule Action:</label>
+                      <select 
+                        value={firewallRuleAction} 
+                        onChange={(e) => setFirewallRuleAction(e.target.value as any)}
+                        className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium"
+                      >
+                        <option value="allow">ALLOW - Forward packet to destinations</option>
+                        <option value="drop">DROP - Immediately block &amp; drop packet</option>
+                        <option value="alert">ALERT - Log intrusion trigger, pass packet</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 block mb-1.5">Incoming Traffic Source Node:</label>
+                      <select 
+                        value={firewallTrafficSource} 
+                        onChange={(e) => setFirewallTrafficSource(e.target.value as any)}
+                        className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium"
+                      >
+                        <option value="internet">Public Internet Ingress Node</option>
+                        <option value="peering">VPC Peering Connection Node</option>
+                        <option value="vpn">IPSec Transit VPN Tunnel Node</option>
+                        <option value="directconnect">AWS Direct Connect Trunk Link</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={runFirewallSim}
+                      disabled={firewallSimState === 'running'}
+                      className="w-full py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2"
+                    >
+                      <Shield className={`w-4 h-4 ${firewallSimState === 'running' ? 'animate-spin animate-pulse' : ''}`} />
+                      {firewallSimState === 'running' ? 'Analyzing Protocol headers...' : 'Simulate Packet Ingress'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-left">
+                  <h4 className="text-xs font-extrabold text-violet-800 flex items-center gap-1.5">
+                    <Shield className="w-4 h-4 text-violet-600" /> Stateful Deep L7 Inspection
+                  </h4>
+                  <p className="text-[11px] text-slate-600 mt-1.5 leading-relaxed">
+                    AWS Network Firewall sits in its own dedicated firewall subnets in each AZ. By updating local routing tables, all ingress traffic coming from the Internet Gateway (IGW) or Transit Gateway (TGW) must transit through the **Network Firewall Endpoint (VPCE)** before it reaches target subnets, ensuring complete protection.
+                  </p>
+                </div>
+              </div>
+
+              {/* Firewall Security Shield Visual Dashboard */}
+              <div className="lg:col-span-8 space-y-6">
+                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">AWS Network Firewall Security Shield</h3>
+
+                  <div className="h-44 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-center p-4 relative">
+                    <svg viewBox="0 0 700 200" className="w-full h-full font-semibold">
+                      {/* Left: Traffic Source */}
+                      <g transform="translate(100, 100)">
+                        <circle r="30" fill="#475569" stroke="#94a3b8" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">
+                          {firewallTrafficSource.toUpperCase()}
+                        </text>
+                      </g>
+
+                      {/* Path to Shield */}
+                      <path d="M 130 100 L 310 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      {firewallSimState === 'running' && (
+                        <path d="M 130 100 L 310 100" fill="none" stroke="#e11d48" strokeWidth="3" className="r53-flow-orange" />
+                      )}
+
+                      {/* Middle: Network Firewall Shield */}
+                      <g transform="translate(350, 100)">
+                        {firewallActive ? (
+                          <>
+                            <polygon points="0,-45 40,-15 40,30 0,55 -40,30 -40,-15" fill="#581c87" stroke="#a855f7" strokeWidth="3" className="animate-pulse" />
+                            <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">AWS Firewall</text>
+                          </>
+                        ) : (
+                          <>
+                            <polygon points="0,-45 40,-15 40,30 0,55 -40,30 -40,-15" fill="#450a0a" stroke="#f43f5e" strokeWidth="1" />
+                            <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">Bypassed (Risk)</text>
+                          </>
+                        )}
+                      </g>
+
+                      {/* Path to destination subnets */}
+                      <path d="M 390 100 L 570 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      {firewallSimState === 'running' && firewallActive && firewallRuleAction === 'allow' && (
+                        <path d="M 390 100 L 570 100" fill="none" stroke="#10b981" strokeWidth="3" className="r53-flow-green" />
+                      )}
+                      {firewallSimState === 'running' && firewallActive && firewallRuleAction === 'alert' && (
+                        <path d="M 390 100 L 570 100" fill="none" stroke="#f59e0b" strokeWidth="3" className="r53-flow-purple" />
+                      )}
+
+                      {/* Right: Protected subnet instances */}
+                      <g transform="translate(600, 100)">
+                        <rect x="-35" y="-35" width="70" height="70" rx="8" fill="#1e293b" stroke="#10b981" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">EC2 Instances</text>
+                      </g>
+                    </svg>
+                  </div>
+
+                  {/* Operational status indicators */}
+                  <div className="grid grid-cols-3 gap-4 mt-6">
+                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-400 block uppercase">IPS Threat Engine</span>
+                      <span className={`text-xs font-bold mt-2.5 block uppercase tracking-wider ${firewallActive ? 'text-emerald-400' : 'text-rose-500 font-extrabold'}`}>
+                        {firewallActive ? '🛡️ Stateful Shield' : '⚠️ Disabled'}
+                      </span>
+                    </div>
+                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-400 block uppercase">Assigned Rule</span>
+                      <span className="text-xs font-bold text-amber-400 mt-2.5 block uppercase tracking-wider">
+                        {firewallRuleAction.toUpperCase()} Action
+                      </span>
+                    </div>
+                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-400 block uppercase">Packet Verdict</span>
+                      <span className={`text-xs font-bold mt-2.5 block uppercase tracking-wider ${
+                        !firewallActive ? 'text-rose-500' :
+                        firewallRuleAction === 'allow' ? 'text-emerald-400' :
+                        firewallRuleAction === 'drop' ? 'text-rose-400 font-black' : 'text-amber-400'
+                      }`}>
+                        {!firewallActive ? 'PASSED (UNCHECKED)' : firewallRuleAction === 'allow' ? 'ACCEPT (ROUTED)' : firewallRuleAction === 'drop' ? 'DROP (BLOCKED)' : 'ALERT (ROUTED)'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Firewall logs console */}
+                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
+                  <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-emerald-500" /> Stateful Firewall Policy logs
+                    </h3>
+                    <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">FIREWALL_ALERT</span>
+                  </div>
+
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-2 bg-slate-950/80 rounded-lg">
+                    {firewallLogs.length === 0 ? (
+                      <div className="text-slate-500 italic text-center pt-16">
+                        Policy traces idle. Adjust source packet triggers and click "Simulate Packet Ingress" to test deep security filters.
+                      </div>
+                    ) : (
+                      firewallLogs.map((log, idx) => (
+                        <div key={idx} className="flex gap-2 leading-relaxed">
+                          <span className="text-slate-500">[{log.timestamp}]</span>
+                          <span className={
+                            log.type === 'success' ? 'text-emerald-400 font-bold' :
+                            log.type === 'error' ? 'text-rose-400 font-bold' :
+                            log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-sky-300'
+                          }>
+                            {log.message}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       )}
 
