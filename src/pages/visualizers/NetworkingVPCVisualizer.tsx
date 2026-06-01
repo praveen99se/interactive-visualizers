@@ -10,9 +10,12 @@ import {
   Wifi,
   AlertTriangle,
   BookOpen,
-  Lock,
   Cpu,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronRight,
+  Server,
+  Network
 } from 'lucide-react';
 
 type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid' | 'notebook';
@@ -25,7 +28,8 @@ interface LogRow {
 
 export default function NetworkingVPCVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('cidr');
-  const [selectedNote, setSelectedNote] = useState<'bastion' | 'nat' | 'nacl' | 'cheat_sheet'>('bastion');
+  const [selectedNote, setSelectedNote] = useState<string>('public_private_ip');
+  const [expandedCategory, setExpandedCategory] = useState<string>('core');
 
   // Interactive Learning center states
   const [bastionTargetMode, setBastionTargetMode] = useState<'single' | 'multi'>('single');
@@ -39,6 +43,12 @@ export default function NetworkingVPCVisualizer() {
   const [naclSimStep, setNaclSimStep] = useState<number>(0);
   const [naclReturnAllowed, setNaclReturnAllowed] = useState<boolean>(true);
   const [naclLogs, setNaclLogs] = useState<string[]>([]);
+
+  // Category 5 Hybrid Interconnect Sim states
+  const [tgwMeshMode, setTgwMeshMode] = useState<boolean>(true);
+  const [cloudHubSimStep, setCloudHubSimStep] = useState<number>(0);
+  const [mirrorEnabled, setMirrorEnabled] = useState<boolean>(false);
+  const [dxLineActive, setDxLineActive] = useState<boolean>(true);
 
   // ==========================================
   // TAB 1 STATE: CIDR & SUBNET CALCULATOR
@@ -573,6 +583,18 @@ export default function NetworkingVPCVisualizer() {
     }
   };
 
+  const runCloudHubStepSim = async () => {
+    setCloudHubSimStep(0);
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    setCloudHubSimStep(1); // packet from Branch A to VGW Hub
+    await sleep(800);
+    setCloudHubSimStep(2); // VGW Hub routes packet to Branch B & Branch C spokes
+    await sleep(800);
+    setCloudHubSimStep(3); // complete
+    await sleep(800);
+    setCloudHubSimStep(0);
+  };
+
   return (
     <div className="da-container animate-fadeIn">
       {/* Isolated visualizer styles */}
@@ -778,6 +800,143 @@ export default function NetworkingVPCVisualizer() {
         .da-flow-fast {
           stroke-dasharray: 6,4;
           animation: flowDash 0.5s linear infinite !important;
+        }
+        
+        /* Premium Academy Directory Styles */
+        .acad-dir-container {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          background: #0f172a;
+          color: #f8fafc;
+          padding: 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 10px;
+          font-weight: 850;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #64748b;
+          border-left: 3px solid transparent;
+          background: #ffffff;
+          transition: all 0.15s ease;
+          text-align: left;
+        }
+        .acad-dir-item-btn:hover {
+          background: #f8fafc;
+          color: #2563eb;
+          border-left-color: #cbd5e1;
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eff6ff;
+          color: #1d4ed8;
+          border-left-color: #2563eb;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        }
+        .acad-hero-badge {
+          background: #ecfdf5;
+          border: 1.5px solid #a7f3d0;
+          color: #065f46;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-left: 4px solid #2563eb;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 12px;
+          line-height: 1.6;
+          color: #475569;
+          font-weight: 600;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+        }
+        .acad-table th {
+          background: #f8fafc;
+          color: #334155;
+          font-weight: 800;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid #e2e8f0;
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          color: #475569;
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-sim-diagram {
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 18px;
+          box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+          position: relative;
+        }
+        .acad-terminal {
+          background: #090d16;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
       `}</style>
 
@@ -1878,762 +2037,2022 @@ export default function NetworkingVPCVisualizer() {
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
           
-          {/* Dashboard Header Banner */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg border border-blue-500/20">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_60%)]"></div>
+          {/* SaaS Academy Header Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-2xl border border-indigo-500/20">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_50%)]"></div>
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="bg-blue-500/30 border border-blue-400/20 text-blue-100 font-extrabold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full">
-                  Advanced Study Sandbox
+                <span className="bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                  Interactive Architect Academy
                 </span>
-                <h2 className="text-2xl font-black tracking-tight mt-1.5 flex items-center gap-2">
-                  <BookOpen className="w-6 h-6 stroke-[2]" /> Cloud Architect Interactive Learning Hub
+                <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 stroke-[2] text-indigo-400" /> AWS Cloud Networking Workspace
                 </h2>
-                <p className="text-xs text-blue-100/90 mt-1 max-w-2xl leading-relaxed">
-                  Interactive step-by-step simulations, comparative audits, and comprehensive cheat-sheets mapped directly from professional AWS networking architectural blueprints.
+                <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  A high-fidelity developer learning console detailing VPC structures, transit controls, stateless perimeter security, hybrid interconnects, and real-time network telemetry.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span className="text-xs font-bold text-emerald-300">Live Simulator Engine Ready</span>
+              <div className="flex items-center gap-2 bg-indigo-950/80 border border-indigo-850 px-4 py-2 rounded-xl">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-[10px] font-black text-emerald-300 tracking-wider uppercase">Telemetry Engine Online</span>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            {/* Left selector sidebar - Modern card buttons */}
-            <div className="lg:col-span-3 space-y-3">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">Select Study Module:</span>
+            {/* Left: Collapsible Categories Directory Sidebar */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">VPC Directory Tree:</span>
               
-              <button
-                onClick={() => setSelectedNote('bastion')}
-                className={`w-full p-4 text-left rounded-xl transition-all duration-200 border flex flex-col justify-between min-h-[76px] ${
-                  selectedNote === 'bastion'
-                    ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-md shadow-blue-500/5 ring-1 ring-blue-400'
-                    : 'bg-white border-slate-200 hover:border-slate-350 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-600" />
-                  <span className="font-extrabold text-xs">1. Bastion SSH Hops</span>
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <Network className="w-4 h-4 text-indigo-400" />
+                  <span>Module Explorer</span>
                 </div>
-                <span className="text-[10px] text-slate-500 mt-2 font-semibold">Single &amp; multi-target SSH tunnels</span>
-              </button>
 
-              <button
-                onClick={() => setSelectedNote('nat')}
-                className={`w-full p-4 text-left rounded-xl transition-all duration-200 border flex flex-col justify-between min-h-[76px] ${
-                  selectedNote === 'nat'
-                    ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-md shadow-blue-500/5 ring-1 ring-blue-400'
-                    : 'bg-white border-slate-200 hover:border-slate-350 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-blue-600" />
-                  <span className="font-extrabold text-xs">2. NAT GW vs NAT Instance</span>
+                {/* CATEGORY 1: VPC CORE ARCHITECTURE */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'core' ? '' : 'core')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                      1. VPC Core &amp; Subnets
+                    </span>
+                    {expandedCategory === 'core' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'core' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('public_private_ip')}
+                        className={`acad-dir-item-btn ${selectedNote === 'public_private_ip' ? 'acad-active' : ''}`}
+                      >
+                        Public vs Private IP
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('default_vpc')}
+                        className={`acad-dir-item-btn ${selectedNote === 'default_vpc' ? 'acad-active' : ''}`}
+                      >
+                        Default VPC Architecture
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('vpc_subnet')}
+                        className={`acad-dir-item-btn ${selectedNote === 'vpc_subnet' ? 'acad-active' : ''}`}
+                      >
+                        VPC Subnet Details
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('internet_gateway')}
+                        className={`acad-dir-item-btn ${selectedNote === 'internet_gateway' ? 'acad-active' : ''}`}
+                      >
+                        Internet Gateway (IGW)
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <span className="text-[10px] text-slate-500 mt-2 font-semibold">AWS Managed vs Outdated EC2 NAT</span>
-              </button>
 
-              <button
-                onClick={() => setSelectedNote('nacl')}
-                className={`w-full p-4 text-left rounded-xl transition-all duration-200 border flex flex-col justify-between min-h-[76px] ${
-                  selectedNote === 'nacl'
-                    ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-md shadow-blue-500/5 ring-1 ring-blue-400'
-                    : 'bg-white border-slate-200 hover:border-slate-350 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-blue-600" />
-                  <span className="font-extrabold text-xs">3. Stateless Subnet NACL</span>
+                {/* CATEGORY 2: EGRESS & ACCESS PIPELINES */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'egress' ? '' : 'egress')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Cpu className="w-3.5 h-3.5 text-indigo-500" />
+                      2. Egress &amp; Bastions
+                    </span>
+                    {expandedCategory === 'egress' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'egress' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('bastion_host')}
+                        className={`acad-dir-item-btn ${selectedNote === 'bastion_host' ? 'acad-active' : ''}`}
+                      >
+                        Bastion SSH Tunnels
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('nat_instance')}
+                        className={`acad-dir-item-btn ${selectedNote === 'nat_instance' ? 'acad-active' : ''}`}
+                      >
+                        NAT Instances (Outdated)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('nat_gateway')}
+                        className={`acad-dir-item-btn ${selectedNote === 'nat_gateway' ? 'acad-active' : ''}`}
+                      >
+                        AWS NAT Gateway
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <span className="text-[10px] text-slate-500 mt-2 font-semibold">Stateless filters vs stateful SG ENIs</span>
-              </button>
 
-              <button
-                onClick={() => setSelectedNote('cheat_sheet')}
-                className={`w-full p-4 text-left rounded-xl transition-all duration-200 border flex flex-col justify-between min-h-[76px] ${
-                  selectedNote === 'cheat_sheet'
-                    ? 'bg-blue-50 border-blue-500 text-blue-900 shadow-md shadow-blue-500/5 ring-1 ring-blue-400'
-                    : 'bg-white border-slate-200 hover:border-slate-350 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-blue-600" />
-                  <span className="font-extrabold text-xs">4. Hybrid Cheat-Sheet</span>
+                {/* CATEGORY 3: PERIMETER SECURITY */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'security' ? '' : 'security')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-indigo-500" />
+                      3. Subnet Security
+                    </span>
+                    {expandedCategory === 'security' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'security' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('network_acl')}
+                        className={`acad-dir-item-btn ${selectedNote === 'network_acl' ? 'acad-active' : ''}`}
+                      >
+                        Network ACL (NACL)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('default_nacl')}
+                        className={`acad-dir-item-btn ${selectedNote === 'default_nacl' ? 'acad-active' : ''}`}
+                      >
+                        Default vs Custom NACL
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('ephemeral_ports')}
+                        className={`acad-dir-item-btn ${selectedNote === 'ephemeral_ports' ? 'acad-active' : ''}`}
+                      >
+                        Ephemeral Ports Range
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <span className="text-[10px] text-slate-500 mt-2 font-semibold">VGW redundant VPNs &amp; Flow Logs</span>
-              </button>
 
-              <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
-                <span className="text-slate-800 font-black block mb-0.5">💡 Expert Pro Tip:</span>
-                "Always place a stateless NACL at the subnet border as a coarse ingress firewall, and a stateful SG directly on the instance ENI for fine-grained application-level control."
+                {/* CATEGORY 4: INTRA-AWS PEERING */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'peering' ? '' : 'peering')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-indigo-500" />
+                      4. Peering &amp; Endpoints
+                    </span>
+                    {expandedCategory === 'peering' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'peering' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('vpc_peering')}
+                        className={`acad-dir-item-btn ${selectedNote === 'vpc_peering' ? 'acad-active' : ''}`}
+                      >
+                        VPC Peering Paths
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('vpc_endpoints')}
+                        className={`acad-dir-item-btn ${selectedNote === 'vpc_endpoints' ? 'acad-active' : ''}`}
+                      >
+                        VPC Endpoints &amp; Link
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('traffic_mirroring')}
+                        className={`acad-dir-item-btn ${selectedNote === 'traffic_mirroring' ? 'acad-active' : ''}`}
+                      >
+                        VPC Traffic Mirroring
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* CATEGORY 5: HYBRID NETWORKING */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'hybrid' ? '' : 'hybrid')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Wifi className="w-3.5 h-3.5 text-indigo-500" />
+                      5. Hybrid &amp; Gateways
+                    </span>
+                    {expandedCategory === 'hybrid' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'hybrid' && (
+                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <button 
+                        onClick={() => setSelectedNote('site_to_site_vpn')}
+                        className={`acad-dir-item-btn ${selectedNote === 'site_to_site_vpn' ? 'acad-active' : ''}`}
+                      >
+                        Site-to-Site VPN
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('vpn_cloudhub')}
+                        className={`acad-dir-item-btn ${selectedNote === 'vpn_cloudhub' ? 'acad-active' : ''}`}
+                      >
+                        AWS VPN CloudHub
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('direct_connect')}
+                        className={`acad-dir-item-btn ${selectedNote === 'direct_connect' ? 'acad-active' : ''}`}
+                      >
+                        AWS Direct Connect
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('transit_gateway')}
+                        className={`acad-dir-item-btn ${selectedNote === 'transit_gateway' ? 'acad-active' : ''}`}
+                      >
+                        AWS Transit Gateway
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* CATEGORY 6: TELEMETRY & LOGS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'logging' ? '' : 'logging')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Terminal className="w-3.5 h-3.5 text-indigo-500" />
+                      6. Telemetry &amp; Logs
+                    </span>
+                    {expandedCategory === 'logging' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'logging' && (
+                    <div className="bg-slate-50/50 py-1">
+                      <button 
+                        onClick={() => setSelectedNote('flow_logs')}
+                        className={`acad-dir-item-btn ${selectedNote === 'flow_logs' ? 'acad-active' : ''}`}
+                      >
+                        VPC Flow Logs Ingestion
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('flow_logs_arch')}
+                        className={`acad-dir-item-btn ${selectedNote === 'flow_logs_arch' ? 'acad-active' : ''}`}
+                      >
+                        Flow Logs Architecture
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-400 font-semibold space-y-1">
+                <span className="text-white font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                  <Info className="w-3.5 h-3.5 text-indigo-400" /> Academy Advice
+                </span>
+                "Choose any module from the tree above. Each view includes an architectural diagram, custom telemetry engine, and standard feature matrix."
               </div>
             </div>
 
-            {/* Right main body details grid */}
-            <div className="lg:col-span-9 space-y-6">
-              
-              {/* ========================================================================= */}
-              {/* MODULE 1: BASTION HOST SH Hops                                            */}
-              {/* ========================================================================= */}
-              {selectedNote === 'bastion' && (
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                  
-                  {/* Left Column: Theory & Cheat sheets */}
-                  <div className="xl:col-span-6 space-y-4">
-                    <div className="da-edu-card text-left">
-                      <span className="da-badge-cyan">SECURITY INGRESS ARCHITECTURE</span>
-                      <h3 className="text-lg font-black text-slate-900 mt-2 flex items-center gap-1.5">
-                        Bastion Host Multi-Hop Tunneling
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        To manage assets located inside isolated private subnets, network architects place a hardened **Bastion Host** (jumpbox) inside a public subnet. Security rules are strictly layered to disallow unauthorized ingress scanning.
-                      </p>
+            {/* Right: Active Academy Workspaces */}
+            <div className="lg:col-span-9 space-y-6 text-left">
 
-                      <div className="border-t border-slate-100 my-4 pt-4 space-y-3">
-                        <span className="text-xs font-black text-slate-800 block">Security Group Configuration Best Practices:</span>
-                        <table className="da-modern-table">
-                          <thead>
-                            <tr>
-                              <th>Component ENI</th>
-                              <th>Inbound Port / Protocol</th>
-                              <th>Allowed Inbound Source</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td className="font-extrabold text-blue-600">Bastion Host SG</td>
-                              <td className="font-mono text-slate-500">22 (TCP SSH)</td>
-                              <td className="text-xs font-extrabold text-slate-800">Restricted Corp IP CIDR Only</td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold text-rose-600">Private EC2 SG</td>
-                              <td className="font-mono text-slate-500">22 (TCP SSH)</td>
-                              <td className="text-xs font-extrabold text-emerald-600">Bastion's Security Group ID</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mt-4 space-y-2">
-                        <span className="text-xs font-black text-slate-800 block">Operational Protocols:</span>
-                        <ul className="list-disc pl-4 text-[11px] text-slate-500 font-semibold space-y-1.5 leading-normal">
-                          <li>Bastion hosts must never hold static private SSH credentials in their local disk volumes.</li>
-                          <li>Swapping public keys dynamic caching using <strong className="text-blue-900">AWS Instance Connect</strong> or Session Manager is highly recommended.</li>
-                          <li>Restricting ingress to specific Corporate gateway IP blocks completely blocks public port 22 scan sweeps.</li>
-                        </ul>
-                      </div>
+              {/* ========================================================================= */}
+              {/* CONCEPT 1: PUBLIC VS PRIVATE IP                                           */}
+              {/* ========================================================================= */}
+              {selectedNote === 'public_private_ip' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Core IP Addressing</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Public vs Private IP Routing</h3>
                     </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 1 of 19</span>
                   </div>
 
-                  {/* Right Column: Live Simulator Terminal */}
-                  <div className="xl:col-span-6 flex flex-col justify-between bg-white border border-slate-200 rounded-2xl p-5 shadow-sm min-h-[460px] relative overflow-hidden da-svg-bg">
-                    
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    IP Addressing is the absolute foundation of VPC systems. AWS implements standard IPv4 segmentation separating globally routable public destinations from RFC 1918 private networking blocks.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Core Architecture Characteristics:</span>
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Public IPv4 Address</th>
+                            <th>Private IPv4 Address</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">Internet Routability</td>
+                            <td className="text-emerald-700 font-bold">Directly over public web</td>
+                            <td className="text-slate-500">Subnet local boundary only</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">RFC Range mapping</td>
+                            <td>Dynamic AWS pools</td>
+                            <td className="font-mono text-[11px] text-blue-700">10.0.0.0/8, 172.16.0.0/12</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Billing &amp; Cost</td>
+                            <td className="text-rose-600 font-extrabold">$0.005/hr (Since Feb 2024)</td>
+                            <td className="text-emerald-600 font-extrabold">100% Free inside VPC</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Professional Architect Takeaway:</strong><br />
+                        As of February 1, 2024, AWS bills for all public IPv4 addresses (including active Elastic IPs) to encourage migration to IPv6. Always release idle public IPs to avoid unexpected recurring operational charges!
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-xs font-black text-slate-800 block">Interactive Jumpbox Simulation</span>
-                        <span className="text-[10px] text-slate-400 block font-semibold">Select target topology to trigger session tracing</span>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Address Space Mapping Simulator</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Toggle between Public and Private network mapping paths</p>
                       </div>
-                      
-                      <div className="flex bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold">
-                        <button 
-                          onClick={() => { setBastionTargetMode('single'); setBastionSimStep(0); }}
-                          className={`px-2 py-1 rounded transition-all ${bastionTargetMode === 'single' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
-                        >
-                          Single Target
-                        </button>
-                        <button
-                          onClick={() => { setBastionTargetMode('multi'); setBastionSimStep(0); }}
-                          className={`px-2 py-1 rounded transition-all ${bastionTargetMode === 'multi' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
-                        >
-                          Multi-Target Hop
-                        </button>
+
+                      <div className="flex justify-center my-4">
+                        <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
+                          {/* Internet edge */}
+                          <rect x="10" y="35" width="50" height="50" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                          <Globe className="w-4 h-4 text-slate-500" x="27" y="44" />
+                          <text x="35" y="78" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle">Public Web</text>
+
+                          {/* IGW Bridge */}
+                          <line x1="60" y1="60" x2="110" y2="60" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <circle cx="110" cy="60" r="14" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" />
+                          <Network className="w-3.5 h-3.5 text-blue-600" x="103" y="53" />
+                          <text x="110" y="86" fill="#1e3a8a" fontSize="6" fontWeight="extrabold" textAnchor="middle">1:1 NAT (IGW)</text>
+
+                          {/* Private EC2 */}
+                          <line x1="124" y1="60" x2="200" y2="60" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <rect x="200" y="30" width="70" height="60" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="2.5" />
+                          <Server className="w-4 h-4 text-emerald-600" x="227" y="40" />
+                          <text x="235" y="72" fill="#065f46" fontSize="7" fontWeight="bold" textAnchor="middle">EC2 Instance</text>
+                          <text x="235" y="82" fill="#047857" fontSize="5.5" fontWeight="black" textAnchor="middle">10.0.1.15 (Private)</text>
+
+                          {/* Route overlays */}
+                          <line x1="60" y1="60" x2="200" y2="60" stroke="#10b981" strokeWidth="3" className="da-flow-fast" />
+                        </svg>
                       </div>
-                    </div>
 
-                    {/* Sim SVG */}
-                    <div className="w-full flex-grow flex items-center justify-center py-2">
-                      <svg className="w-full max-w-[340px] h-[190px]" viewBox="0 0 340 190">
-                        {/* Client Node */}
-                        <g transform="translate(10, 80)">
-                          <rect x="0" y="0" width="40" height="28" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                          <text x="20" y="17" fill="#cbd5e1" fontSize="7" fontWeight="bold" textAnchor="middle">Dev Terminal</text>
-                        </g>
-
-                        {/* Public subnet boundaries */}
-                        <rect x="75" y="20" width="90" height="150" rx="8" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,2" />
-                        <text x="85" y="32" fill="#047857" fontSize="7" fontWeight="bold">Public Subnet</text>
-
-                        {/* Private Subnet boundaries */}
-                        <rect x="180" y="20" width="150" height="150" rx="8" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" />
-                        <text x="190" y="32" fill="#b91c1c" fontSize="7" fontWeight="bold">Private Subnet</text>
-
-                        {/* Bastion Node */}
-                        <g transform="translate(90, 75)" className={bastionSimStep === 3 || bastionSimStep === 4 ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="60" height="36" rx="6" fill={bastionSimStep >= 3 ? '#ecfdf5' : '#ffffff'} stroke={bastionSimStep >= 3 ? '#10b981' : '#94a3b8'} strokeWidth="2" />
-                          <text x="30" y="16" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">Bastion Host</text>
-                          <text x="30" y="27" fill={bastionSimStep >= 4 ? '#059669' : '#64748b'} fontSize="6.5" fontWeight="bold" textAnchor="middle">SG: Port 22</text>
-                        </g>
-
-                        {/* Target Node A */}
-                        <g transform="translate(200, 75)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="55" height="36" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="2" />
-                          <text x="27.5" y="16" fill="#1e293b" fontSize="7.5" fontWeight="black" textAnchor="middle">Private EC2-A</text>
-                          <text x="27.5" y="27" fill={bastionSimStep >= 6 ? '#b91c1c' : '#64748b'} fontSize="5.5" fontWeight="black" textAnchor="middle">SG: Bastion OK</text>
-                        </g>
-
-                        {/* Multi targets */}
-                        {bastionTargetMode === 'multi' && (
-                          <>
-                            <g transform="translate(270, 45)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
-                              <rect x="0" y="0" width="55" height="36" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="2" />
-                              <text x="27.5" y="16" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">Private EC2-B</text>
-                              <text x="27.5" y="27" fill="#64748b" fontSize="5" fontWeight="bold" textAnchor="middle">SG: Bastion OK</text>
-                            </g>
-                            <g transform="translate(270, 110)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
-                              <rect x="0" y="0" width="55" height="36" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="2" />
-                              <text x="27.5" y="16" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">Private EC2-C</text>
-                              <text x="27.5" y="27" fill="#64748b" fontSize="5" fontWeight="bold" textAnchor="middle">SG: Bastion OK</text>
-                            </g>
-                          </>
-                        )}
-
-                        {/* Active packet flow overlays */}
-                        {bastionSimStep === 1 && (
-                          <line x1="50" y1="94" x2="85" y2="94" stroke="#3b82f6" strokeWidth="3" className="da-flow-fast" />
-                        )}
-                        {bastionSimStep === 2 && (
-                          <line x1="50" y1="94" x2="85" y2="94" stroke="#10b981" strokeWidth="3" className="da-flow-fast" />
-                        )}
-                        {bastionSimStep === 3 && (
-                          <circle cx="120" cy="93" r="5" fill="#10b981" className="animate-ping" />
-                        )}
-                        {bastionSimStep === 4 && (
-                          <circle cx="120" cy="93" r="5" fill="#3b82f6" className="animate-pulse" />
-                        )}
-                        {bastionSimStep === 5 && (
-                          <>
-                            <path d="M 150 93 L 200 93" fill="none" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />
-                            {bastionTargetMode === 'multi' && (
-                              <>
-                                <path d="M 150 93 Q 190 55 270 63" fill="none" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />
-                                <path d="M 150 93 Q 190 135 270 128" fill="none" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />
-                              </>
-                            )}
-                          </>
-                        )}
-                        {bastionSimStep === 6 && (
-                          <g>
-                            <circle cx="227" cy="93" r="4" fill="#ef4444" className="animate-ping" />
-                            {bastionTargetMode === 'multi' && (
-                              <>
-                                <circle cx="297" cy="63" r="4" fill="#ef4444" className="animate-ping" />
-                                <circle cx="297" cy="128" r="4" fill="#ef4444" className="animate-ping" />
-                              </>
-                            )}
-                          </g>
-                        )}
-                      </svg>
-                    </div>
-
-                    {/* Sim controls and logs terminal */}
-                    <div className="space-y-3">
-                      <button
-                        onClick={runBastionStepSim}
-                        disabled={bastionSimStep > 0 && bastionSimStep < 6}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow"
-                      >
-                        {bastionSimStep > 0 && bastionSimStep < 6 ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Tracing SSH handshake steps...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" /> Trigger Step-by-Step SSH Flow
-                          </>
-                        )}
-                      </button>
-
-                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 font-mono text-[9px] text-slate-300 min-h-[90px] max-h-[90px] overflow-y-auto leading-normal shadow-inner">
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-1 mb-1.5">
-                          📟 SSH tunnel active telemetry
-                        </span>
-                        {bastionLogs.length === 0 ? (
-                          <span className="text-slate-500 italic">Click the trigger button above to capture active route tracing...</span>
-                        ) : (
-                          bastionLogs.map((log, idx) => (
-                            <div key={idx} className="flex gap-1.5">
-                              <span className="text-blue-500 select-none">&gt;&gt;</span>
-                              <span>{log}</span>
-                            </div>
-                          ))
-                        )}
+                      <div className="p-3 bg-slate-900 rounded-xl font-mono text-[9px] text-slate-400">
+                        <span className="text-emerald-400 block font-bold mb-1">&gt; IP Telemetry status:</span>
+                        Host resolves incoming public lookup at Internet Gateway. Gateway translates header to local VPC Private subnet node (10.0.1.15) statefully.
                       </div>
                     </div>
-
                   </div>
-
                 </div>
               )}
 
               {/* ========================================================================= */}
-              {/* MODULE 2: NAT GATEWAY VS NAT INSTANCE                                    */}
+              {/* CONCEPT 2: DEFAULT VPC                                                    */}
               {/* ========================================================================= */}
-              {selectedNote === 'nat' && (
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                  
-                  {/* Left Column: Theory & Comparison */}
-                  <div className="xl:col-span-6 space-y-4">
-                    <div className="da-edu-card text-left">
-                      <span className="da-badge-cyan">SECURE UNIDIRECTIONAL EGRESS</span>
-                      <h3 className="text-lg font-black text-slate-900 mt-2">
-                        NAT Gateway vs NAT Instances (Outdated)
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        To fetch software patches securely from external repositories, private instances require NAT translators. AWS offers fully managed **NAT Gateways**, which replace the outdated **NAT Instances** which were deployed on standard EC2 instances.
-                      </p>
-
-                      <div className="border-t border-slate-100 my-4 pt-4">
-                        <span className="text-xs font-black text-slate-800 block mb-3">Architectural Feature Comparison:</span>
-                        <table className="da-modern-table">
-                          <thead>
-                            <tr>
-                              <th>Feature metric</th>
-                              <th>AWS NAT Gateway</th>
-                              <th>NAT Instance (Outdated)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td className="font-extrabold">Resiliency / HA</td>
-                              <td><span className="da-badge-emerald">Built-in (Multi-AZ Ready)</span></td>
-                              <td><span className="da-badge-rose">Manual setup (Single EC2 bottleneck)</span></td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold">Security Groups</td>
-                              <td><span className="da-badge-emerald">None to manage/required!</span></td>
-                              <td><span className="da-badge-amber">Requires custom SG attachments</span></td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold">Src/Dest Check</td>
-                              <td><span className="da-badge-emerald">Not required</span></td>
-                              <td><span className="da-badge-amber">Must be disabled manually!</span></td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold">Performance scaling</td>
-                              <td><span className="da-badge-emerald">Auto-scales up to 45 Gbps</span></td>
-                              <td><span className="da-badge-rose">Limited by EC2 bandwidth limits</span></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-[11px] leading-relaxed text-slate-500 font-semibold mt-4">
-                        <span className="text-xs font-black text-slate-800 block mb-1">Architectural Core takeaway:</span>
-                        "NAT Gateways operate entirely as transparent network appliances—meaning they translate the source IPs cleanly at the routing layer. Consequently, <strong className="text-rose-700 font-extrabold">no security groups are required or attached to NAT Gateways</strong>. This completely simplifies subnet security auditing."
-                      </div>
+              {selectedNote === 'default_vpc' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Core IP Addressing</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Default VPC Architecture</h3>
                     </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 2 of 19</span>
                   </div>
 
-                  {/* Right Column: Interactive Diagram */}
-                  <div className="xl:col-span-6 flex flex-col justify-between bg-white border border-slate-200 rounded-2xl p-5 shadow-sm min-h-[460px] relative overflow-hidden da-svg-bg">
-                    
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    A Default VPC is automatically created in every region for new AWS accounts. It ensures developers can deploy workloads (such as RDS or EC2 clusters) immediately without manual routing and subnet calculations.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Structural Comparison Table:</span>
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Metric</th>
+                            <th>Default VPC</th>
+                            <th>Custom VPC</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">IPv4 Range block</td>
+                            <td className="font-mono">172.31.0.0/16</td>
+                            <td>User Defined (e.g. 10.0.0.0/16)</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Subnets creation</td>
+                            <td className="text-emerald-700 font-bold">1 per AZ (with public routes)</td>
+                            <td className="text-rose-700 font-bold">Zero created at start</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">IGW state</td>
+                            <td>Pre-attached and active</td>
+                            <td>Must create &amp; attach manually</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">DNS resolution</td>
+                            <td>Hostnames enabled by default</td>
+                            <td>Disabled by default (needs config)</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🛡️ Security Warning:</strong><br />
+                        Because Default VPC subnets assign public IP addresses to EC2 instances by default, they pose a serious security risk for corporate enterprise platforms. Always provision custom VPCs to ensure isolated private network tiers!
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between">
                       <div>
-                        <span className="text-xs font-black text-slate-800 block">Outbound Egress Routing simulator</span>
-                        <span className="text-[10px] text-slate-400 block font-semibold">Animate private updates exit path</span>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Default VPC Node Architecture Map</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Pre-provisioned network topologies in every AWS region</p>
                       </div>
-                      
-                      <div className="flex bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold">
-                        <button 
-                          onClick={() => { setNatEgressMode('gateway'); setNatSimStep(0); }}
-                          className={`px-2.5 py-1 rounded transition-all ${natEgressMode === 'gateway' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
-                        >
-                          NAT Gateway
-                        </button>
-                        <button
-                          onClick={() => { setNatEgressMode('instance'); setNatSimStep(0); }}
-                          className={`px-2.5 py-1 rounded transition-all ${natEgressMode === 'instance' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
-                        >
-                          NAT Instance (EC2)
-                        </button>
-                      </div>
-                    </div>
 
-                    {/* SVG NAT */}
-                    <div className="w-full flex-grow flex items-center justify-center py-2">
-                      <svg className="w-full max-w-[340px] h-[190px]" viewBox="0 0 340 190">
-                        {/* Private EC2 Node */}
-                        <g transform="translate(15, 75)" className={natSimStep === 1 ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="55" height="36" rx="4" fill={natSimStep >= 1 ? '#eff6ff' : '#ffffff'} stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="27.5" y="16" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
-                          <text x="27.5" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">IP: 10.0.2.80</text>
-                        </g>
-
-                        {/* Managed NAT Gateway */}
-                        {natEgressMode === 'gateway' ? (
-                          <g transform="translate(135, 70)" className={natSimStep === 3 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="70" height="46" rx="6" fill={natSimStep >= 3 ? '#ecfdf5' : '#f8fafc'} stroke="#10b981" strokeWidth="2.5" />
-                            <text x="35" y="16" fill="#047857" fontSize="8" fontWeight="black" textAnchor="middle">NAT Gateway</text>
-                            <text x="35" y="27" fill="#065f46" fontSize="6" fontWeight="bold" textAnchor="middle">Managed Appliance</text>
-                            <text x="35" y="38" fill="#4b5563" fontSize="6" fontStyle="italic" textAnchor="middle">No SG managed!</text>
-                          </g>
-                        ) : (
-                          <g transform="translate(135, 70)" className={natSimStep === 3 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="70" height="46" rx="6" fill={natSimStep >= 3 ? '#fffbeb' : '#f8fafc'} stroke="#f59e0b" strokeWidth="2" />
-                            <text x="35" y="16" fill="#b45309" fontSize="8" fontWeight="black" textAnchor="middle">NAT Instance</text>
-                            <text x="35" y="27" fill="#d97706" fontSize="6.5" fontWeight="bold" textAnchor="middle">EC2 AMI Node</text>
-                            <text x="35" y="38" fill="#7f1d1d" fontSize="6.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
-                          </g>
-                        )}
-
-                        {/* Internet Gateway */}
-                        <g transform="translate(265, 75)" className={natSimStep === 4 ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="60" height="36" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
-                          <text x="30" y="16" fill="#1e3a8a" fontSize="7.5" fontWeight="black" textAnchor="middle">IGW Router</text>
-                          <text x="30" y="27" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">0.0.0.0/0 OK</text>
-                        </g>
-
-                        {/* Dynamic route flow path lines */}
-                        {natSimStep === 1 && (
-                          <line x1="70" y1="93" x2="135" y2="93" stroke="#2563eb" strokeWidth="3" className="da-flow-fast" />
-                        )}
-                        {natSimStep === 2 && (
-                          <line x1="70" y1="93" x2="135" y2="93" stroke="#d97706" strokeWidth="3" className="da-flow-fast" />
-                        )}
-                        {natSimStep === 3 && (
-                          <line x1="205" y1="93" x2="265" y2="93" stroke="#10b981" strokeWidth="3" className="da-flow-fast" />
-                        )}
-                        {natSimStep === 4 && (
-                          <circle cx="295" cy="93" r="5" fill="#10b981" className="animate-ping" />
-                        )}
-                      </svg>
-                    </div>
-
-                    {/* Controller terminal logs */}
-                    <div className="space-y-3">
-                      <button
-                        onClick={runNatStepSim}
-                        disabled={natSimStep > 0 && natSimStep < 4}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow"
-                      >
-                        {natSimStep > 0 && natSimStep < 4 ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Querying route translators...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" /> Trigger Egress software patch download
-                          </>
-                        )}
-                      </button>
-
-                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 font-mono text-[9px] text-slate-300 min-h-[90px] max-h-[90px] overflow-y-auto leading-normal shadow-inner">
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-1 mb-1.5">
-                          📟 Egress route logs
-                        </span>
-                        {natLogs.length === 0 ? (
-                          <span className="text-slate-500 italic">Click the trigger button to evaluate public update pathways...</span>
-                        ) : (
-                          natLogs.map((log, idx) => (
-                            <div key={idx} className="flex gap-1.5">
-                              <span className="text-amber-500 select-none">&gt;&gt;</span>
-                              <span>{log}</span>
-                            </div>
-                          ))
-                        )}
+                      <div className="border border-indigo-200/50 rounded-xl p-4 bg-indigo-50/20 space-y-3 mt-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-blue-100 border border-blue-200 text-blue-800 text-[9px] font-bold rounded">172.31.0.0/16</span>
+                          <span className="text-[10px] text-slate-500 font-bold">Base CIDR Allocation</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center text-[9px] font-extrabold text-slate-700">
+                          <div className="bg-white border border-slate-200 rounded p-2 shadow-sm">
+                            <span className="text-blue-600 block mb-0.5">AZ-A Subnet</span>
+                            172.31.0.0/20
+                          </div>
+                          <div className="bg-white border border-slate-200 rounded p-2 shadow-sm">
+                            <span className="text-blue-600 block mb-0.5">AZ-B Subnet</span>
+                            172.31.16.0/20
+                          </div>
+                          <div className="bg-white border border-slate-200 rounded p-2 shadow-sm">
+                            <span className="text-blue-600 block mb-0.5">AZ-C Subnet</span>
+                            172.31.32.0/20
+                          </div>
+                        </div>
+                        <div className="p-3 bg-white border border-slate-200 rounded-xl text-[10px] text-slate-500 leading-normal">
+                          🌳 <strong>Pre-attached Assets:</strong> Internet Gateway is attached to 172.31.0.0/16, with a default Route entry mapping 0.0.0.0/0 to the IGW router.
+                        </div>
                       </div>
                     </div>
-
                   </div>
-
                 </div>
               )}
 
               {/* ========================================================================= */}
-              {/* MODULE 3: STATELESS SUBNET NACL VS STATEFUL SECURITY GROUP                 */}
+              {/* CONCEPT 3: VPC SUBNET & RESERVED IPS                                      */}
               {/* ========================================================================= */}
-              {selectedNote === 'nacl' && (
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                  
-                  {/* Left Column: Theory & comparative table */}
-                  <div className="xl:col-span-6 space-y-4">
-                    <div className="da-edu-card text-left">
-                      <span className="da-badge-cyan">LAYERED BOUNDARY SECURITY</span>
-                      <h3 className="text-lg font-black text-slate-900 mt-2">
-                        Stateless NACL vs Stateful Security Group
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                        AWS provides security boundaries at two independent layers: stateless Network Access Control Lists (NACL) matching subnet entries sequentially, and stateful Security Groups attaching directly to Elastic Network Interfaces (ENIs).
-                      </p>
+              {selectedNote === 'vpc_subnet' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Core IP Addressing</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">VPC Subnet IP Allocations &amp; AWS Reserved IPs</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 3 of 19</span>
+                  </div>
 
-                      <div className="border-t border-slate-100 my-4 pt-4">
-                        <span className="text-xs font-black text-slate-800 block mb-3">Key Contrast Summary:</span>
-                        <table className="da-modern-table">
-                          <thead>
-                            <tr>
-                              <th>Audit metric</th>
-                              <th>Subnet Network ACL (NACL)</th>
-                              <th>Security Group (SG)</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td className="font-extrabold">Boundary attachment</td>
-                              <td className="text-blue-700 font-bold">Subnet Level</td>
-                              <td className="text-emerald-700 font-bold">Instance ENI Level</td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold">State tracking</td>
-                              <td><span className="da-badge-rose">Stateless (Must allow return path)</span></td>
-                              <td><span className="da-badge-emerald">Stateful (Auto-approves returns)</span></td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold">Ruleset matching</td>
-                              <td>Sequential rule indices (Rule 100, 200...)</td>
-                              <td>Evaluates all rules collectively before permit</td>
-                            </tr>
-                            <tr>
-                              <td className="font-extrabold">Explicit DENY</td>
-                              <td><span className="da-badge-emerald">Supported</span></td>
-                              <td><span className="da-badge-rose">No Deny rules (Allow only)</span></td>
-                            </tr>
-                          </tbody>
-                        </table>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    A Subnet is a sub-division of a VPC's IP CIDR block locked to a single Availability Zone (AZ). AWS explicitly reserves **exactly five (5) IP addresses** in every subnet block for core platform services.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 text-left">
+                      <span className="text-xs font-black text-slate-800 block">The 5 AWS Reserved IPs (Example Subnet: 10.0.1.0/24):</span>
+                      
+                      <div className="space-y-2 text-xs">
+                        {ipStats.reserved.map((res, i) => (
+                          <div key={i} className="flex flex-col md:flex-row justify-between gap-1 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all">
+                            <div>
+                              <span className="font-mono text-indigo-700 font-extrabold block text-xs">{res.ip}</span>
+                              <span className="text-[10px] text-slate-500 font-bold">{res.type}</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-medium md:max-w-xs md:text-right">{res.reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Subnet Capacity Interactive Evaluator</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Toggle prefix mask size to watch usable vs reserved IP allocations</p>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 mt-4 space-y-1.5 leading-normal">
-                        <span className="text-xs font-black text-slate-800 block">The stateless return Ephemeral port trap:</span>
-                        <p className="text-[11px] text-slate-500 font-semibold">
-                          Because Security Groups track states, return outbound HTTP response flows are automatically permitted. However, **NACLs are stateless**. Even if ingress Port 80 is allowed, response packets flowing back to a client must be explicitly allowed outwards!
-                        </p>
-                        <p className="text-[11px] text-slate-500 font-semibold">
-                          Since client ports are assigned dynamically, custom outbound NACL rules **MUST permit return traffic to the Ephemeral Port Range** (`1024-65535`). If blocked, transaction handshakes time out at the subnet boundary!
-                        </p>
+                      <div className="space-y-3 my-4">
+                        <div className="flex gap-2">
+                          {[24, 25, 26, 27, 28].map((mask) => (
+                            <button
+                              key={mask}
+                              onClick={() => setSubnetMaskSize(mask)}
+                              className={`flex-grow py-2 rounded-xl text-xs font-black transition-all ${
+                                subnetMaskSize === mask
+                                  ? 'bg-blue-600 text-white shadow-md'
+                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                              }`}
+                            >
+                              /{mask}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                            <span className="text-[10px] text-slate-400 block font-bold">Total IPs</span>
+                            <strong className="text-lg font-black text-slate-800">{Math.pow(2, 32 - subnetMaskSize)}</strong>
+                          </div>
+                          <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl">
+                            <span className="text-[10px] text-rose-400 block font-bold">AWS Reserved</span>
+                            <strong className="text-lg font-black text-rose-800">5</strong>
+                          </div>
+                          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl animate-pulse">
+                            <span className="text-[10px] text-emerald-400 block font-bold">Usable IPs</span>
+                            <strong className="text-lg font-black text-emerald-800">{Math.pow(2, 32 - subnetMaskSize) - 5}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Expert Pro Tip:</strong><br />
+                        AWS does not support classical local network broadcasts. The final IP in any subnet block (e.g. `.255` in a `/24` subnet) is reserved internally and cannot be assigned to hosts.
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Right Column: Live step-by-step controller */}
-                  <div className="xl:col-span-6 flex flex-col justify-between bg-white border border-slate-200 rounded-2xl p-5 shadow-sm min-h-[460px] relative overflow-hidden da-svg-bg">
-                    
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
-                      <div>
-                        <span className="text-xs font-black text-slate-800 block">Stateful vs Stateless telemetry Sandbox</span>
-                        <span className="text-[10px] text-slate-400 block font-semibold">Configure rules to watch return path drops</span>
+              {/* ========================================================================= */}
+              {/* CONCEPT 4: INTERNET GATEWAY (IGW)                                         */}
+              {/* ========================================================================= */}
+              {selectedNote === 'internet_gateway' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Core IP Addressing</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Internet Gateway (IGW)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 4 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    An Internet Gateway (IGW) is a horizontally scaled, highly available, redundant VPC component that enables communication between public subnets in your VPC and the internet. It does not introduce availability bottlenecks or bandwidth limits.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Critical Architectural Constraints:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li>A VPC can be attached to **exactly one (1) Internet Gateway** at any given time.</li>
+                        <li>An IGW maps public Elastic IP addresses directly to instances using a **1:1 static Network Address Translation (NAT)** layer.</li>
+                        <li>To allow external traffic, target subnets must have a route table entry pointing `0.0.0.0/0` directly to the attached `igw-xxxxxxxx` identifier.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Professional Audit Tip:</strong><br />
+                        If instances inside a public subnet lack internet access, verify that: (1) public DNS hostnames are enabled, (2) the default route table directs 0.0.0.0/0 to the IGW, and (3) a public IP address is assigned to the instance ENI.
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-400 font-bold">Outbound Ephemeral:</span>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">IGW Bidirectional Translation Diagram</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Packet routing through the Internet Gateway</p>
+                      </div>
+
+                      <div className="flex justify-center py-4 bg-slate-50/50 rounded-2xl border border-slate-100 my-3">
+                        <svg className="w-full max-w-[280px] h-[90px]" viewBox="0 0 280 90">
+                          {/* IGW Router */}
+                          <rect x="110" y="20" width="60" height="50" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
+                          <Network className="w-5 h-5 text-blue-600" x="128" y="28" />
+                          <text x="140" y="60" fill="#1e3a8a" fontSize="7.5" fontWeight="black" textAnchor="middle">IGW Router</text>
+
+                          {/* Flow lines */}
+                          <path d="M 20 45 H 105" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="4,2" />
+                          <path d="M 175 45 H 260" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4,2" />
+                          
+                          <text x="50" y="38" fill="#475569" fontSize="6.5" fontWeight="bold">Outbound Request</text>
+                          <text x="215" y="38" fill="#047857" fontSize="6.5" fontWeight="bold">Stateful Translation</text>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 5: BASTION HOST                                                   */}
+              {/* ========================================================================= */}
+              {selectedNote === 'bastion_host' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Egress &amp; Ingress Access</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Bastion Host Secure SSH Hops</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 5 of 19</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div className="md:col-span-6 space-y-4">
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        To manage servers located inside isolated private subnets, security architects place a hardened **Bastion Host** inside a public subnet. Access rules are strictly limited to corporate IP CIDRs.
+                      </p>
+
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Security Group ENI</th>
+                            <th>Port / Protocol</th>
+                            <th>Allowed Source</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold text-blue-600">Bastion SG</td>
+                            <td className="font-mono text-slate-500">22 (TCP SSH)</td>
+                            <td className="font-extrabold text-slate-800">Restricted Corp CIDR Only</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold text-emerald-600">Private EC2 SG</td>
+                            <td className="font-mono text-slate-500">22 (TCP SSH)</td>
+                            <td className="font-extrabold text-indigo-700">Bastion's Security Group ID</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🛡️ Bastion Security Best Practice:</strong><br />
+                        Bastion hosts should never hold static private SSH credentials in local volumes. Swapping credentials dynamically using AWS Systems Manager Session Manager or EC2 Instance Connect blocks public scan sweeps.
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-6 flex flex-col justify-between bg-slate-50/50 border border-slate-200 rounded-2xl p-5 min-h-[380px] relative overflow-hidden">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-250 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Multi-Hop SSH Tunnel Simulator</span>
+                          <span className="text-[9px] text-slate-500 block">Select target mode and initiate tracing</span>
+                        </div>
+                        <div className="flex bg-slate-200 p-0.5 rounded-lg text-[9px] font-bold">
+                          <button
+                            onClick={() => { setBastionTargetMode('single'); setBastionSimStep(0); }}
+                            className={`px-2 py-1 rounded transition-all ${bastionTargetMode === 'single' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                          >
+                            Single
+                          </button>
+                          <button
+                            onClick={() => { setBastionTargetMode('multi'); setBastionSimStep(0); }}
+                            className={`px-2 py-1 rounded transition-all ${bastionTargetMode === 'multi' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                          >
+                            Multi-Hop
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Simulator SVG */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[140px]" viewBox="0 0 280 140">
+                          {/* Client Node */}
+                          <g transform="translate(10, 55)">
+                            <rect x="0" y="0" width="30" height="24" rx="4" fill="#1e293b" />
+                            <Terminal className="w-3 h-3 text-slate-300" x="9" y="5" />
+                          </g>
+
+                          {/* Public Subnet Box */}
+                          <rect x="55" y="15" width="80" height="110" rx="8" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,2" />
+                          <text x="60" y="25" fill="#047857" fontSize="5.5" fontWeight="bold">Public Subnet</text>
+
+                          {/* Bastion Node */}
+                          <g transform="translate(70, 50)" className={bastionSimStep === 3 || bastionSimStep === 4 ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="50" height="30" rx="6" fill={bastionSimStep >= 3 ? '#ecfdf5' : '#ffffff'} stroke={bastionSimStep >= 3 ? '#10b981' : '#94a3b8'} strokeWidth="1.8" />
+                            <text x="25" y="14" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Bastion</text>
+                            <text x="25" y="24" fill="#047857" fontSize="5" fontWeight="black" textAnchor="middle">Port 22</text>
+                          </g>
+
+                          {/* Private Subnet Box */}
+                          <rect x="150" y="15" width="120" height="110" rx="8" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" />
+                          <text x="155" y="25" fill="#b91c1c" fontSize="5.5" fontWeight="bold">Private Subnet</text>
+
+                          {/* Private EC2 */}
+                          <g transform="translate(165, 50)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="45" height="30" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="1.8" />
+                            <text x="22.5" y="14" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
+                            <text x="22.5" y="24" fill="#b91c1c" fontSize="5.5" textAnchor="middle">SG: Allow Hop</text>
+                          </g>
+
+                          {/* Multi target node if applicable */}
+                          {bastionTargetMode === 'multi' && (
+                            <g transform="translate(220, 50)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
+                              <rect x="0" y="0" width="45" height="30" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="1.8" />
+                              <text x="22.5" y="14" fill="#1e293b" fontSize="6" fontWeight="bold" textAnchor="middle">Database</text>
+                              <text x="22.5" y="24" fill="#b91c1c" fontSize="5" textAnchor="middle">Port 3306</text>
+                            </g>
+                          )}
+
+                          {/* Sim Flow lines */}
+                          {bastionSimStep === 1 && <line x1="40" y1="67" x2="68" y2="67" stroke="#3b82f6" strokeWidth="2.5" className="da-flow-fast" />}
+                          {bastionSimStep === 2 && <line x1="40" y1="67" x2="68" y2="67" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />}
+                          {bastionSimStep === 5 && (
+                            <>
+                              <path d="M 120 67 H 165" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="da-flow-fast" />
+                              {bastionTargetMode === 'multi' && <path d="M 210 67 H 220" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="da-flow-fast" />}
+                            </>
+                          )}
+                        </svg>
+                      </div>
+
+                      {/* Terminal Logs */}
+                      <div className="space-y-2 mt-2">
+                        <button
+                          onClick={runBastionStepSim}
+                          disabled={bastionSimStep > 0 && bastionSimStep < 6}
+                          className="w-full py-1.5 bg-blue-600 hover:bg-blue-750 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          {bastionSimStep > 0 && bastionSimStep < 6 ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Launch SSH Multi-Hop Trace'}
+                        </button>
+
+                        <div className="acad-terminal text-[9px] min-h-[70px] max-h-[70px] overflow-y-auto leading-normal">
+                          {bastionLogs.length === 0 ? (
+                            <span className="text-slate-500 italic">Logs terminal ready. Initiate SSH trace...</span>
+                          ) : (
+                            bastionLogs.map((log, idx) => (
+                              <div key={idx} className="flex gap-1.5">
+                                <span className="text-blue-500 select-none">&gt;&gt;</span>
+                                <span>{log}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 6: NAT INSTANCES (OUTDATED)                                       */}
+              {/* ========================================================================= */}
+              {selectedNote === 'nat_instance' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Egress &amp; Access Pipelines</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">NAT Instances (Outdated Legacy EC2)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 6 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    NAT Instances are standard Amazon EC2 instances running custom NAT Linux AMIs. They represent a legacy self-managed routing option before managed NAT Gateways were introduced.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Legacy Architectural Hurdles:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong className="text-rose-700">Source/Destination Check Trap:</strong> By default, EC2 instances drop packets that are not destined for their own MAC/IP. To route outbound NAT flows, you must manually **disable the Source/Destination check** on the NAT EC2 ENI!</li>
+                        <li><strong>Single Point of Failure:</strong> Unlike managed NAT Gateways, NAT Instances do not scale dynamically or recover from hardware host failures without complex custom script integrations.</li>
+                        <li><strong>Custom Security Groups:</strong> They require active security group configurations to permit inbound subnets and outbound targets.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Professional Exam Gotcha:</strong><br />
+                        If a legacy NAT Instance stops routing, always verify if the "Source/Destination Check" is disabled on the instance properties. If enabled, it will act as a black hole drop router!
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">NAT Instance Outbound Flow Diagram</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Visualizing self-managed EC2 translation layers</p>
+                      </div>
+
+                      <div className="flex justify-center my-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <svg className="w-full max-w-[280px] h-[100px]" viewBox="0 0 280 100">
+                          {/* Private instance */}
+                          <rect x="10" y="30" width="55" height="40" rx="6" fill="#f8fafc" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="37.5" y="55" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
+
+                          {/* NAT EC2 */}
+                          <line x1="65" y1="50" x2="110" y2="50" stroke="#f59e0b" strokeWidth="2.5" className="da-flow-fast" />
+                          <rect x="110" y="25" width="60" height="50" rx="8" fill="#fffbeb" stroke="#f59e0b" strokeWidth="2" />
+                          <text x="140" y="48" fill="#b45309" fontSize="7" fontWeight="black" textAnchor="middle">NAT Instance</text>
+                          <text x="140" y="60" fill="#7f1d1d" fontSize="5.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
+
+                          {/* IGW */}
+                          <line x1="170" y1="50" x2="220" y2="50" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <rect x="220" y="30" width="50" height="40" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="245" y="55" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">IGW Router</text>
+                        </svg>
+                      </div>
+
+                      <div className="p-3 bg-rose-950/80 rounded-xl font-mono text-[9px] text-rose-300">
+                        ⚠️ [NAT INSTANCE TELEMETRY] Throughput limited by EC2 instance CPU caps and manual configuration of NAT masquerade routes.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 7: AWS NAT GATEWAY                                                */}
+              {/* ========================================================================= */}
+              {selectedNote === 'nat_gateway' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Egress &amp; Access Pipelines</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">AWS Managed NAT Gateway</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 7 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    The AWS NAT Gateway is a fully managed, redundant egress routing appliance that translates private IPs to public Elastic IPs. It auto-scales dynamically up to 45 Gbps and handles stateful returns automatically.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">SaaS Managed Comparison Matrix:</span>
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>AWS Managed NAT Gateway</th>
+                            <th>Legacy NAT Instance EC2</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">Auto-Scaling caps</td>
+                            <td className="text-emerald-700 font-bold">Auto up to 45 Gbps</td>
+                            <td>Limited by EC2 instance limits</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Security Groups</td>
+                            <td className="text-emerald-700 font-bold">None allowed or required!</td>
+                            <td>Requires manual SG configuration</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">High Availability</td>
+                            <td className="text-emerald-700 font-bold">Built-in (Multi-AZ AZ-local)</td>
+                            <td>Manual script configuration needed</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Source/Dest Check</td>
+                            <td className="text-emerald-700 font-bold">Not applicable / automatic</td>
+                            <td className="text-rose-700 font-bold">Must be disabled manually!</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Highly Critical Egress Rule:</strong><br />
+                        NAT Gateways reside entirely inside **Public Subnets** and are tied to a static public **Elastic IP Address**. Private subnet route tables map `0.0.0.0/0` outbound traffic to target the NAT Gateway, which statefully translates and routes requests to the Internet Gateway.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Outbound Egress Routing Simulator</span>
+                          <span className="text-[9px] text-slate-500 block">Animate private server update exit pathing</span>
+                        </div>
+                        <div className="flex bg-slate-100 p-0.5 rounded-lg text-[9px] font-bold">
+                          <button
+                            onClick={() => { setNatEgressMode('gateway'); setNatSimStep(0); }}
+                            className={`px-2.5 py-1 rounded transition-all ${natEgressMode === 'gateway' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                          >
+                            NAT Gateway
+                          </button>
+                          <button
+                            onClick={() => { setNatEgressMode('instance'); setNatSimStep(0); }}
+                            className={`px-2.5 py-1 rounded transition-all ${natEgressMode === 'instance' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                          >
+                            EC2 NAT
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* SVG NAT */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
+                          {/* Private EC2 Node */}
+                          <g transform="translate(10, 45)" className={natSimStep === 1 ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="50" height="30" rx="4" fill={natSimStep >= 1 ? '#eff6ff' : '#ffffff'} stroke="#3b82f6" strokeWidth="1.5" />
+                            <text x="25" y="14" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
+                            <text x="25" y="24" fill="#64748b" fontSize="5.5" textAnchor="middle">10.0.2.80</text>
+                          </g>
+
+                          {/* Managed NAT Gateway */}
+                          {natEgressMode === 'gateway' ? (
+                            <g transform="translate(100, 40)" className={natSimStep === 3 ? 'da-sim-node-active' : ''}>
+                              <rect x="0" y="0" width="70" height="40" rx="6" fill={natSimStep >= 3 ? '#ecfdf5' : '#f8fafc'} stroke="#10b981" strokeWidth="2" />
+                              <text x="35" y="16" fill="#047857" fontSize="7" fontWeight="black" textAnchor="middle">NAT Gateway</text>
+                              <text x="35" y="26" fill="#065f46" fontSize="5" fontWeight="bold" textAnchor="middle">Managed Appliance</text>
+                              <text x="35" y="34" fill="#4b5563" fontSize="5" fontStyle="italic" textAnchor="middle">EIP Attached</text>
+                            </g>
+                          ) : (
+                            <g transform="translate(100, 40)" className={natSimStep === 3 ? 'da-sim-node-active' : ''}>
+                              <rect x="0" y="0" width="70" height="40" rx="6" fill={natSimStep >= 3 ? '#fffbeb' : '#f8fafc'} stroke="#f59e0b" strokeWidth="1.8" />
+                              <text x="35" y="16" fill="#b45309" fontSize="7.5" fontWeight="black" textAnchor="middle">NAT Instance</text>
+                              <text x="35" y="26" fill="#d97706" fontSize="5.5" fontWeight="bold" textAnchor="middle">EC2 AMI Node</text>
+                              <text x="35" y="34" fill="#7f1d1d" fontSize="5.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
+                            </g>
+                          )}
+
+                          {/* Internet Gateway */}
+                          <g transform="translate(210, 45)" className={natSimStep === 4 ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="60" height="30" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
+                            <text x="30" y="14" fill="#1e3a8a" fontSize="7" fontWeight="black" textAnchor="middle">IGW Router</text>
+                            <text x="30" y="24" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">0.0.0.0/0 OK</text>
+                          </g>
+
+                          {/* Dynamic route flow path lines */}
+                          {natSimStep === 1 && <line x1="60" y1="60" x2="100" y2="60" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />}
+                          {natSimStep === 2 && <line x1="60" y1="60" x2="100" y2="60" stroke="#d97706" strokeWidth="2.5" className="da-flow-fast" />}
+                          {natSimStep === 3 && <line x1="170" y1="60" x2="210" y2="60" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />}
+                        </svg>
+                      </div>
+
+                      {/* Controller Terminal Logs */}
+                      <div className="space-y-2">
+                        <button
+                          onClick={runNatStepSim}
+                          disabled={natSimStep > 0 && natSimStep < 4}
+                          className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          {natSimStep > 0 && natSimStep < 4 ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Trigger Software Patch Update'}
+                        </button>
+
+                        <div className="acad-terminal text-[9px] min-h-[70px] max-h-[70px] overflow-y-auto leading-normal">
+                          {natLogs.length === 0 ? (
+                            <span className="text-slate-500 italic">Egress route logs ready. Click trigger button...</span>
+                          ) : (
+                            natLogs.map((log, idx) => (
+                              <div key={idx} className="flex gap-1.5">
+                                <span className="text-amber-500 select-none">&gt;&gt;</span>
+                                <span>{log}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 8: NETWORK ACL (NACL)                                             */}
+              {/* ========================================================================= */}
+              {selectedNote === 'network_acl' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Perimeter &amp; Subnet Security</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Network ACL (NACL - Stateless Perimeter Firewall)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 8 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    A Network Access Control List (NACL) acts as a stateless security boundary firewall at the VPC subnet boundary. It filters all inbound and outbound traffic based on strict sequential rule mappings.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 text-left">
+                      <span className="text-xs font-black text-slate-800 block">Critical NACL Attributes:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong>Stateless Behavior:</strong> NACLs do not keep track of TCP connection states. Inbound packets and outbound response packets must be explicitly allowed by separate rules!</li>
+                        <li><strong>Sequential Rule Processing:</strong> Rules are matched sequentially starting at the lowest rule number. If a match is found (e.g. Rule 100), the packet is allowed or blocked immediately, and subsequent rules are ignored.</li>
+                        <li><strong>Explicit Denies:</strong> Unlike Security Groups, NACLs allow you to define explicit **DENY** rules to block malicious scanner IP ranges at the subnet border.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🔒 Stateful SG vs Stateless NACL:</strong><br />
+                        Always place stateless NACLs at the subnet border as coarse egress/ingress blockers, and stateful Security Groups directly on instance ENIs for application-level ports mapping.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Stateless return Ephemeral port simulator</span>
+                          <span className="text-[9px] text-slate-500 block">Toggle Ephemeral ports and watch traffic drop</span>
+                        </div>
                         <button
                           onClick={() => { setNaclReturnAllowed(!naclReturnAllowed); setNaclSimStep(0); }}
-                          className={`px-2 py-0.5 rounded text-[10px] font-black border transition-all ${
+                          className={`px-2 py-1 rounded text-[10px] font-black border transition-all ${
                             naclReturnAllowed ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-rose-100 border-rose-300 text-rose-800'
                           }`}
                         >
-                          {naclReturnAllowed ? 'ALLOWED' : 'BLOCKED'}
+                          Outbound Ephemeral: {naclReturnAllowed ? 'ALLOWED' : 'BLOCKED'}
                         </button>
                       </div>
-                    </div>
 
-                    {/* SVG NACL */}
-                    <div className="w-full flex-grow flex items-center justify-center py-2">
-                      <svg className="w-full max-w-[340px] h-[190px]" viewBox="0 0 340 190">
-                        {/* Subnet boundary Box representing stateless NACL */}
-                        <rect x="75" y="15" width="250" height="160" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="4,2" />
-                        <text x="85" y="27" fill="#2563eb" fontSize="7" fontWeight="bold">Subnet Border (Stateless NACL)</text>
+                      {/* SVG NACL */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
+                          {/* Subnet border Box */}
+                          <rect x="65" y="10" width="200" height="100" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="4,2" />
+                          
+                          {/* Client Node */}
+                          <g transform="translate(10, 45)">
+                            <rect x="0" y="0" width="35" height="24" rx="4" fill="#1e293b" />
+                            <text x="17.5" y="15" fill="#cbd5e1" fontSize="5.5" fontWeight="bold" textAnchor="middle">Client Terminal</text>
+                          </g>
 
-                        {/* Client Node */}
-                        <g transform="translate(10, 75)" className={naclSimStep === 1 ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="45" height="30" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1" />
-                          <text x="22.5" y="14" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">External client</text>
-                          <text x="22.5" y="24" fill="#94a3b8" fontSize="5.5" textAnchor="middle">Port: 52331</text>
-                        </g>
+                          {/* NACL Gate Node */}
+                          <g transform="translate(75, 40)" className={naclSimStep === 2 || (naclSimStep === 5 && !naclReturnAllowed) ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="50" height="35" rx="4" fill={naclSimStep >= 2 ? '#ecfdf5' : '#f8fafc'} stroke="#3b82f6" strokeWidth="1.8" />
+                            <text x="25" y="14" fill="#1e3a8a" fontSize="6.5" fontWeight="black" textAnchor="middle">Stateless NACL</text>
+                            <text x="25" y="24" fill="#b91c1c" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rule 100</text>
+                          </g>
 
-                        {/* NACL Gate Node */}
-                        <g transform="translate(90, 70)" className={naclSimStep === 2 || (naclSimStep === 5 && !naclReturnAllowed) ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="55" height="40" rx="4" fill={naclSimStep >= 2 ? '#ecfdf5' : '#f8fafc'} stroke="#3b82f6" strokeWidth="2" />
-                          <text x="27.5" y="15" fill="#1e3a8a" fontSize="8" fontWeight="black" textAnchor="middle">NACL In/Out</text>
-                          <text x="27.5" y="25" fill="#475569" fontSize="6.5" textAnchor="middle">Rule 100</text>
-                          <text x="27.5" y="34" fill="#b91c1c" fontSize="5.5" fontWeight="bold" textAnchor="middle">Stateless</text>
-                        </g>
+                          {/* Security Group */}
+                          <g transform="translate(180, 40)" className={naclSimStep === 3 || naclSimStep === 4 ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="60" height="35" rx="6" fill={naclSimStep >= 3 ? '#f0fdf4' : '#ffffff'} stroke="#10b981" strokeWidth="1.8" />
+                            <text x="30" y="14" fill="#065f46" fontSize="6.5" fontWeight="black" textAnchor="middle">Stateful SG</text>
+                            <text x="30" y="24" fill="#1e293b" fontSize="5.5" textAnchor="middle">EC2 Port 80</text>
+                          </g>
 
-                        {/* EC2 Instance representing stateful SG */}
-                        <g transform="translate(220, 70)" className={naclSimStep === 3 || naclSimStep === 4 ? 'da-sim-node-active' : ''}>
-                          <rect x="0" y="0" width="70" height="40" rx="6" fill={naclSimStep >= 3 ? '#f0fdf4' : '#ffffff'} stroke="#10b981" strokeWidth="2" />
-                          <text x="35" y="15" fill="#065f46" fontSize="8" fontWeight="black" textAnchor="middle">Security Group</text>
-                          <text x="35" y="25" fill="#047857" fontSize="7" fontWeight="bold" textAnchor="middle">(Stateful SG)</text>
-                          <text x="35" y="34" fill="#1e293b" fontSize="6" textAnchor="middle">EC2: Port 80</text>
-                        </g>
+                          {/* Outbound path lines */}
+                          {naclSimStep === 1 && <path d="M 45 57 H 75" fill="none" stroke="#2563eb" strokeWidth="2" className="da-flow-fast" />}
+                          {naclSimStep === 2 && <path d="M 125 57 H 180" fill="none" stroke="#2563eb" strokeWidth="2" className="da-flow-fast" />}
+                          {naclSimStep === 4 && <path d="M 180 65 H 125" fill="none" stroke="#10b981" strokeWidth="2" className="da-flow-fast" />}
+                          {naclSimStep === 5 && (
+                            <>
+                              {naclReturnAllowed ? (
+                                <path d="M 75 65 H 45" fill="none" stroke="#10b981" strokeWidth="2" className="da-flow-fast" />
+                              ) : (
+                                <g>
+                                  <line x1="100" y1="52" x2="100" y2="70" stroke="#f43f5e" strokeWidth="3.5" />
+                                  <text x="100" y="85" fill="#e11d48" fontSize="6.5" fontWeight="black" textAnchor="middle" className="animate-bounce">Dropped!</text>
+                                </g>
+                              )}
+                            </>
+                          )}
+                        </svg>
+                      </div>
 
-                        {/* Active flow overlays */}
-                        {naclSimStep === 1 && (
-                          <path d="M 55 90 H 90" fill="none" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />
-                        )}
-                        {naclSimStep === 2 && (
-                          <path d="M 145 90 H 220" fill="none" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />
-                        )}
-                        {naclSimStep === 3 && (
-                          <circle cx="255" cy="90" r="5" fill="#10b981" className="animate-ping" />
-                        )}
-                        {naclSimStep === 4 && (
-                          <path d="M 220 102 H 145" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />
-                        )}
-                        {naclSimStep === 5 && (
-                          <>
-                            {naclReturnAllowed ? (
-                              <path d="M 90 102 H 55" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />
-                            ) : (
-                              <g>
-                                <line x1="117" y1="85" x2="117" y2="110" stroke="#f43f5e" strokeWidth="3" />
-                                <text x="117" y="125" fill="#e11d48" fontSize="8" fontWeight="black" textAnchor="middle" className="animate-bounce">Dropped Statelessly</text>
-                              </g>
-                            )}
-                          </>
-                        )}
-                      </svg>
-                    </div>
+                      {/* Controller buttons */}
+                      <div className="space-y-2">
+                        <button
+                          onClick={runNaclStepSim}
+                          disabled={naclSimStep > 0 && naclSimStep < 5}
+                          className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-all animate-pulse"
+                        >
+                          {naclSimStep > 0 && naclSimStep < 5 ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Launch Stateless Packet Flow Check'}
+                        </button>
 
-                    {/* Simulation Controller terminal */}
-                    <div className="space-y-3">
-                      <button
-                        onClick={runNaclStepSim}
-                        disabled={naclSimStep > 0 && naclSimStep < 5}
-                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow"
-                      >
-                        {naclSimStep > 0 && naclSimStep < 5 ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Tracing stateless packet return...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" /> Trigger Stateless/Stateful packet trace
-                          </>
-                        )}
-                      </button>
-
-                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 font-mono text-[9px] text-slate-300 min-h-[90px] max-h-[90px] overflow-y-auto leading-normal shadow-inner">
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-1 mb-1.5">
-                          📟 Stateless firewall audits
-                        </span>
-                        {naclLogs.length === 0 ? (
-                          <span className="text-slate-500 italic">Click the trigger button to evaluate ephemeral return path packet traces...</span>
-                        ) : (
-                          naclLogs.map((log, idx) => (
-                            <div key={idx} className="flex gap-1.5">
-                              <span className="text-emerald-500 select-none">&gt;&gt;</span>
-                              <span>{log}</span>
-                            </div>
-                          ))
-                        )}
+                        <div className="acad-terminal text-[9px] min-h-[70px] max-h-[70px] overflow-y-auto leading-normal">
+                          {naclLogs.length === 0 ? (
+                            <span className="text-slate-500 italic">Stateless firewall telemetry log console ready...</span>
+                          ) : (
+                            naclLogs.map((log, idx) => (
+                              <div key={idx} className="flex gap-1.5">
+                                <span className="text-emerald-500 select-none">&gt;&gt;</span>
+                                <span>{log}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
                     </div>
-
                   </div>
-
                 </div>
               )}
 
               {/* ========================================================================= */}
-              {/* MODULE 4: ARCHITECT STUDY REFERENCE CHEAT SHEET                            */}
+              {/* CONCEPT 9: DEFAULT NACL                                                   */}
               {/* ========================================================================= */}
-              {selectedNote === 'cheat_sheet' && (
-                <div className="space-y-6">
-                  
-                  {/* Hybrid Connectivity grid */}
+              {selectedNote === 'default_nacl' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Perimeter &amp; Subnet Security</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Default Subnet NACL vs Custom Subnet NACL</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 9 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Subnets are always associated with exactly one NACL. If you do not assign a custom ruleset, subnets attach to the VPC's Default NACL automatically.
+                  </p>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <div className="da-edu-card text-left">
-                      <span className="da-badge-cyan">REDUNDANT HYBRID PIPELINES</span>
-                      <h4 className="text-sm font-black text-slate-900 mt-2">
-                        Site-to-Site VPN REDUNDANCY CHEAT SHEET
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1 leading-normal">
-                        To link corporate physical offices to AWS VPCs, standard practices require establishing dual IPsec tunnels terminated at a **Virtual Private Gateway (VGW)** and a customer-end **Customer Gateway (CGW)**.
-                      </p>
-                      
-                      <div className="border-t border-slate-100 mt-4 pt-3.5 space-y-2 text-xs">
-                        <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
-                          <span className="font-extrabold text-slate-700">Tunnel Allocation</span>
-                          <span className="text-slate-500 font-semibold">AWS provides 2 redundant active tunnels</span>
-                        </div>
-                        <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
-                          <span className="font-extrabold text-slate-700">Route Propagation</span>
-                          <span className="text-slate-500 font-semibold">BGP dynamically advertises routes</span>
-                        </div>
-                        <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
-                          <span className="font-extrabold text-slate-700">Active-Passive prepending</span>
-                          <span className="text-slate-500 font-semibold">AS_PATH prepending selects primary path</span>
-                        </div>
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Critical Architectural Variations:</span>
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Default Subnet NACL</th>
+                            <th>Custom Subnet NACL</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">Inbound Rule 100</td>
+                            <td className="text-emerald-700 font-bold">ALLOW ALL (0.0.0.0/0)</td>
+                            <td className="text-rose-700 font-bold">DENY ALL (0.0.0.0/0)</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Outbound Rule 100</td>
+                            <td className="text-emerald-700 font-bold">ALLOW ALL (0.0.0.0/0)</td>
+                            <td className="text-rose-700 font-bold">DENY ALL (0.0.0.0/0)</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Implicit Star Rule (*)</td>
+                            <td className="text-rose-600 font-extrabold">DENY ALL (Catch-All block)</td>
+                            <td className="text-rose-600 font-extrabold">DENY ALL (Catch-All block)</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Core Rule of Custom NACLs:</strong><br />
+                        When you create a *Custom NACL*, it contains *only* the catch-all star `(*: DENY)` rule by default. Consequently, **all ingress and egress traffic is blocked** until you explicitly write allow rules.
                       </div>
                     </div>
 
-                    <div className="da-edu-card text-left">
-                      <span className="da-badge-rose">VPC TELEMETRY AUDITING</span>
-                      <h4 className="text-sm font-black text-slate-900 mt-2">
-                        VPC Flow Logs Log Format reference
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1 leading-normal">
-                        VPC Flow logs record all raw IP metadata flowing through Elastic Network Interfaces (ENIs). Let security engineers audit allowed and blocked requests.
-                      </p>
+                    <div className="acad-sim-diagram flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Default NACL Rules Configuration Map</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Understanding rule priorities and indices</p>
+                      </div>
 
-                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 font-mono text-[9px] text-slate-300 space-y-2 mt-4 shadow-inner">
-                        <span className="text-[7.5px] font-black text-slate-500 block uppercase tracking-wider border-b border-slate-800 pb-1 mb-1.5">
-                          Standard AWS flow log structure
+                      <div className="border border-indigo-200/50 bg-indigo-50/20 rounded-xl p-4 space-y-2.5 mt-3 text-xs">
+                        <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                          <span className="font-extrabold text-blue-900">Rule 100:</span>
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-black text-[9px]">ALLOW ALL</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-200 opacity-60">
+                          <span className="font-extrabold text-slate-700">Rule 200:</span>
+                          <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-black text-[9px]">DENY Scan block</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-white p-2 rounded border border-rose-300 bg-rose-50/20">
+                          <span className="font-extrabold text-rose-800">Rule * :</span>
+                          <span className="px-2 py-0.5 bg-rose-600 text-white rounded font-black text-[9px]">DENY CATCH-ALL</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          ⚠️ Rule 200 will never match because Rule 100 resolves everything first! Always write blocks at smaller rule indices than broad allows.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 10: EPHEMERAL PORTS RANGE                                         */}
+              {/* ========================================================================= */}
+              {selectedNote === 'ephemeral_ports' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Perimeter &amp; Subnet Security</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">Ephemeral Ports Range (Return Client Ports)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 10 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    An Ephemeral Port is a short-lived transport protocol port allocated automatically from a predefined range for the return path of outbound connections.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">The Stateless Ephemeral Port Trap:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li>Because Security Groups are **stateful**, return outbound response traffic is automatically allowed.</li>
+                        <li>However, because Subnet Network ACLs are **stateless**, the outbound subnet ruleset **MUST explicitly allow traffic** returning to the client's ephemeral ports range!</li>
+                        <li>If blocked, the client initiates the TCP handshake, the server responds, but the return packets are silently dropped at the stateless subnet boundary.</li>
+                      </ul>
+
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Operating System</th>
+                            <th>Ephemeral Port Range Allocation</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">Linux kernel / AWS AL2023</td>
+                            <td className="font-mono text-blue-700 text-xs">32768 - 60999</td>
+                            <td>Modern default</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Windows Server / Clients</td>
+                            <td className="font-mono text-blue-700 text-xs">49152 - 65535</td>
+                            <td>Microsoft dynamic allocation</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">IANA Standard range</td>
+                            <td className="font-mono text-blue-700 text-xs">1024 - 65535</td>
+                            <td>Broadest recommended NACL allow</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Stateless Return Flow Block Diagram</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Return pathway packet evaluation</p>
+                      </div>
+
+                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 font-mono text-[9.5px] text-slate-400 space-y-2 my-3">
+                        <div className="text-slate-200">
+                          <span className="text-rose-500 font-extrabold">&gt;&gt; PACKET CAPTURE OUTBOUND OUTAGE:</span>
+                        </div>
+                        <div>
+                          SRCPrivate: <span className="text-cyan-400">10.0.1.15:80</span><br />
+                          DSTPublic: <span className="text-purple-400">198.51.100.44:52331</span> (Client Ephemeral)<br />
+                          EVALUATION: <span className="text-rose-500 font-bold">REJECT NACL_DROP</span><br />
+                          REASON: Stateless subnet rules block outbound flow to client's temporary ephemeral port 52331.
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Expert Architecture Best Practice:</strong><br />
+                        Always configure your outbound Subnet NACLs to allow return TCP/UDP traffic to the full ephemeral port range **1024-65535** to accommodate both Linux and Windows API endpoints seamlessly.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 11: VPC PEERING                                                   */}
+              {/* ========================================================================= */}
+              {selectedNote === 'vpc_peering' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Peering &amp; Endpoints</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">VPC Peering Connections</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 11 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    VPC Peering links two VPCs securely through private IPv4/IPv6 addresses, making them behave as if they reside inside the exact same physical computer backplane.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Critical Architectural Constraints:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong className="text-rose-700">No Overlapping CIDRs:</strong> You cannot peer VPCs that share identical or overlapping IP address blocks (e.g. attempting to peer two VPCs that both use `10.0.0.0/16`).</li>
+                        <li><strong className="text-rose-700">Non-Transitive Routing:</strong> Peering connections are strictly point-to-point. If VPC-A is peered with VPC-B, and VPC-B is peered with VPC-C, VPC-A **cannot** route packets to VPC-C through VPC-B!</li>
+                        <li><strong>Inter-Region Support:</strong> Peering operates across different AWS accounts and regions seamlessly. Data is encrypted natively over AWS's internal private fiber networks.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Enterprise Architectural Core tip:</strong><br />
+                        As your cloud ecosystem scales, managing a mesh of point-to-point peering connections becomes extremely complex. If you have more than 10 VPCs, migrate to a centralized hub-and-spoke router using AWS Transit Gateway (TGW).
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Non-Transitive Routing Trap Simulation</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Attempting transit routing through a middle peer VPC hub</p>
+                      </div>
+
+                      <div className="flex justify-center my-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                        <svg className="w-full max-w-[280px] h-[100px]" viewBox="0 0 280 100">
+                          {/* VPC-A */}
+                          <rect x="10" y="30" width="45" height="40" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="32.5" y="55" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">VPC A</text>
+
+                          {/* VPC-B */}
+                          <line x1="55" y1="50" x2="110" y2="50" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />
+                          <rect x="110" y="25" width="55" height="50" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="2" />
+                          <text x="137.5" y="55" fill="#065f46" fontSize="6.5" fontWeight="black" textAnchor="middle">VPC B</text>
+
+                          {/* VPC-C */}
+                          <line x1="165" y1="50" x2="220" y2="50" stroke="#f43f5e" strokeWidth="2.5" />
+                          <rect x="220" y="30" width="45" height="40" rx="6" fill="#fff5f5" stroke="#f43f5e" strokeWidth="1.5" />
+                          <text x="242.5" y="55" fill="#e53e3e" fontSize="6.5" fontWeight="bold" textAnchor="middle">VPC C</text>
+
+                          {/* Drop Icon */}
+                          <line x1="190" y1="40" x2="197" y2="60" stroke="#ef4444" strokeWidth="3" />
+                          <line x1="197" y1="40" x2="190" y2="60" stroke="#ef4444" strokeWidth="3" />
+                        </svg>
+                      </div>
+
+                      <div className="p-3 bg-rose-950/80 rounded-xl font-mono text-[9px] text-rose-300">
+                        🚨 [ROUTE DENIED] VPC A to VPC C packets dropped inside VPC B. Direct peer link or central Transit Gateway is required!
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 12: VPC ENDPOINTS                                                 */}
+              {/* ========================================================================= */}
+              {selectedNote === 'vpc_endpoints' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Peering &amp; Endpoints</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">VPC Gateway Endpoints vs PrivateLink Interface Endpoints</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 12 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    VPC Endpoints allow private connections from your VPC to supported AWS services, bypassing the public internet without requiring an Internet Gateway or NAT Gateway.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Endpoints Comparison Table:</span>
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Gateway Endpoints</th>
+                            <th>Interface Endpoints (PrivateLink)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-extrabold">Supported AWS services</td>
+                            <td className="text-blue-700 font-bold">S3 &amp; DynamoDB ONLY</td>
+                            <td>Dozens of services (KMS, EC2, CloudWatch, etc.)</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Implementation Method</td>
+                            <td>Route Table Target entry</td>
+                            <td className="text-emerald-700 font-bold">Elastic Network Interface (ENI)</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Hourly &amp; Data Cost</td>
+                            <td className="text-emerald-700 font-bold">100% Free</td>
+                            <td className="text-rose-700 font-bold">Paid hourly/gigabyte rate</td>
+                          </tr>
+                          <tr>
+                            <td className="font-extrabold">Security Groups</td>
+                            <td>Not supported</td>
+                            <td className="text-emerald-700 font-bold">Supported (direct ENI attachments)</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Professional Architect Pro Tip:</strong><br />
+                        Always target Amazon S3 and DynamoDB using **Gateway Endpoints**—they are fully redundant, require zero ENI overhead, and are 100% free of charge!
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">PrivateLink Interface Architecture Map</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Private link queries routed directly to subnet local ENIs</p>
+                      </div>
+
+                      <div className="border border-emerald-250 bg-emerald-50/10 rounded-xl p-4 space-y-3 mt-3 text-xs">
+                        <div className="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                          <span className="font-extrabold text-slate-700 flex items-center gap-1.5">
+                            <Server className="w-3.5 h-3.5 text-blue-600" /> Private Subnet EC2
+                          </span>
+                          <span className="text-slate-500 font-mono">10.0.2.80</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-white p-2 rounded border border-emerald-300">
+                          <span className="font-extrabold text-emerald-800 flex items-center gap-1.5 animate-pulse">
+                            <Network className="w-3.5 h-3.5 text-emerald-500" /> PrivateLink local ENI
+                          </span>
+                          <span className="text-emerald-600 font-mono">10.0.2.144</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                          🌳 <strong>Secure API Traversal:</strong> Outgoing KMS API queries target the local subnet IP (10.0.2.144) instead of traversing public HTTP endpoints over public web gateways.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 13: VPC TRAFFIC MIRRORING                                         */}
+              {/* ========================================================================= */}
+              {selectedNote === 'traffic_mirroring' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">VPC Peering &amp; Endpoints</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">VPC Traffic Mirroring</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 13 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    VPC Traffic Mirroring copies raw packet headers and payloads from an EC2 instance's Elastic Network Interface (ENI) and sends them to deep packet monitoring appliances for threat detection and compliance.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Security Ingestion Attributes:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong>Out-of-band Inspection:</strong> Mirrored packets do not impact the live latency, bandwidth, or performance of the primary production workload pipeline.</li>
+                        <li><strong>VXLAN Encapsulation:</strong> Captured traffic is packaged inside standard **VXLAN headers (UDP Port 4789)**.</li>
+                        <li><strong>IDS/IPS Routing:</strong> Mirrored packets route to Network Load Balancers or specific EC2 ENIs running packet sniffers (like Zeek, Suricata, or Wireshark).</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>🛡️ Network Threat Hunting:</strong><br />
+                        Traffic Mirroring is highly useful for corporate compliance audits and real-time malicious payload sweeps without deploying heavy operating system agent daemons inside application servers.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Traffic Mirrored Clone Simulator</span>
+                          <span className="text-[9px] text-slate-500 block">Activate mirroring to copy ENI traffic</span>
+                        </div>
+                        <button
+                          onClick={() => setMirrorEnabled(!mirrorEnabled)}
+                          className={`px-3 py-1 rounded text-[10px] font-black border transition-all ${
+                            mirrorEnabled ? 'bg-indigo-100 border-indigo-300 text-indigo-800' : 'bg-slate-100 border-slate-300 text-slate-800'
+                          }`}
+                        >
+                          Mirror Stream: {mirrorEnabled ? 'ENABLED (VXLAN UDP 4789)' : 'DISABLED'}
+                        </button>
+                      </div>
+
+                      {/* Mirror SVG */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[110px]" viewBox="0 0 280 110">
+                          {/* EC2 Target */}
+                          <g transform="translate(10, 40)">
+                            <rect x="0" y="0" width="55" height="30" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.8" />
+                            <text x="27.5" y="14" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">Prod EC2</text>
+                            <text x="27.5" y="24" fill="#2563eb" fontSize="5.5" textAnchor="middle">ENI Target</text>
+                          </g>
+
+                          {/* Primary Egress Router */}
+                          <g transform="translate(110, 10)">
+                            <rect x="0" y="0" width="50" height="24" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
+                            <text x="25" y="14" fill="#475569" fontSize="6" fontWeight="bold" textAnchor="middle">Internet IGW</text>
+                          </g>
+
+                          {/* Mirrored packet collector */}
+                          <g transform="translate(195, 65)" className={mirrorEnabled ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="70" height="35" rx="6" fill={mirrorEnabled ? '#e0e7ff' : '#ffffff'} stroke={mirrorEnabled ? '#6366f1' : '#94a3b8'} strokeWidth="2" />
+                            <text x="35" y="14" fill="#1e293b" fontSize="6" fontWeight="black" textAnchor="middle">IDS Collector</text>
+                            <text x="35" y="24" fill="#4f46e5" fontSize="5" fontWeight="bold" textAnchor="middle">UDP Port 4789</text>
+                          </g>
+
+                          {/* Connection paths */}
+                          <line x1="65" y1="55" x2="110" y2="22" stroke="#2563eb" strokeWidth="2" className="da-flow-fast" />
+                          
+                          {mirrorEnabled && (
+                            <line x1="65" y1="55" x2="195" y2="82" stroke="#6366f1" strokeWidth="2.5" className="da-flow-fast" />
+                          )}
+                        </svg>
+                      </div>
+
+                      <div className="p-3 bg-slate-900 rounded-xl font-mono text-[9px] text-slate-400">
+                        {mirrorEnabled ? (
+                          <span className="text-indigo-400 font-bold block mb-1">Mirrored live clone packet active:</span>
+                        ) : (
+                          <span className="text-slate-500 italic block mb-1">Inactive:</span>
+                        )}
+                        Traffic clones are wrapped inside VXLAN protocols and streamed out-of-band to target security analyzers.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 14: AWS SITE-TO-SITE VPN                                          */}
+              {/* ========================================================================= */}
+              {selectedNote === 'site_to_site_vpn' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Hybrid Connectivity</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">AWS Site-to-Site IPSec VPN Redundancy</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 14 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS Site-to-Site VPN creates a secure, encrypted IPSec tunnel over the public internet connecting physical corporate data centers with AWS VPC Virtual Private Gateways.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Redundancy Best Practices:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong>Tunnel Allocation:</strong> Every Site-to-Site VPN connection provisions **exactly two (2) active-active tunnels** terminating on different AWS endpoints for absolute high availability.</li>
+                        <li><strong>Route Propagation:</strong> Enable BGP dynamic routing so paths fail over automatically if Tunnel A drops.</li>
+                        <li><strong>AS_PATH Prepending:</strong> To route primary traffic to Tunnel A, prepend your customer gateway autonomous system numbers on Tunnel B routes dynamically.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Virtual Private Gateway (VGW) limit:</strong><br />
+                        A standard Virtual Private Gateway (VGW) can only attach to **exactly one (1) VPC** at a time. If you need to scale hybrid tunnels across multiple VPCs, attach to an **AWS Transit Gateway (TGW)** instead.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Active-Active Tunnel Resiliency Tester</span>
+                          <span className="text-[9px] text-slate-500 block">Simulate link failure state mapping</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setTunnelAActive(!tunnelAActive)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                              tunnelAActive ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-rose-100 border-rose-300 text-rose-800'
+                            }`}
+                          >
+                            Tunnel A: {tunnelAActive ? 'ACTIVE' : 'FAILED'}
+                          </button>
+                          <button
+                            onClick={() => setTunnelBActive(!tunnelBActive)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                              tunnelBActive ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-rose-100 border-rose-300 text-rose-800'
+                            }`}
+                          >
+                            Tunnel B: {tunnelBActive ? 'ACTIVE' : 'FAILED'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* VPN SVG */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
+                          {/* Corporate CGW */}
+                          <g transform="translate(10, 45)">
+                            <rect x="0" y="0" width="45" height="30" rx="4" fill="#1e293b" />
+                            <text x="22.5" y="18" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Corp CGW</text>
+                          </g>
+
+                          {/* Virtual Private Gateway */}
+                          <g transform="translate(225, 45)">
+                            <rect x="0" y="0" width="45" height="30" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                            <text x="22.5" y="18" fill="#1e3a8a" fontSize="7.5" fontWeight="bold" textAnchor="middle">VPC VGW</text>
+                          </g>
+
+                          {/* Tunnel A */}
+                          <path
+                            d="M 55 52 Q 140 20 225 52"
+                            fill="none"
+                            stroke={tunnelAActive ? '#10b981' : '#ef4444'}
+                            strokeWidth="2.5"
+                            className={tunnelAActive ? 'da-flow-fast' : ''}
+                          />
+                          <text x="140" y="26" fill={tunnelAActive ? '#047857' : '#b91c1c'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                            IPSec Tunnel A
+                          </text>
+
+                          {/* Tunnel B */}
+                          <path
+                            d="M 55 68 Q 140 100 225 68"
+                            fill="none"
+                            stroke={tunnelBActive ? '#10b981' : '#ef4444'}
+                            strokeWidth="2.5"
+                            className={!tunnelAActive && tunnelBActive ? 'da-flow-fast' : ''}
+                          />
+                          <text x="140" y="104" fill={tunnelBActive ? '#047857' : '#b91c1c'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                            IPSec Tunnel B
+                          </text>
+                        </svg>
+                      </div>
+
+                      <div className="p-3 bg-slate-900 rounded-xl font-mono text-[9px] text-slate-400">
+                        {tunnelAActive ? (
+                          <span className="text-emerald-400 block font-bold mb-1">Tunnel A Primary Active Route:</span>
+                        ) : tunnelBActive ? (
+                          <span className="text-amber-400 block font-bold mb-1">Tunnel A down. BGP failover to Tunnel B active:</span>
+                        ) : (
+                          <span className="text-rose-500 block font-bold mb-1">OUTAGE: All VPN pathways disconnected:</span>
+                        )}
+                        Dynamically exchanges network paths over corporate premises and AWS gateways statefully.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 15: AWS VPN CLOUDHUB                                              */}
+              {/* ========================================================================= */}
+              {selectedNote === 'vpn_cloudhub' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Hybrid Connectivity</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">AWS VPN CloudHub (Spoke-to-Spoke Tunneling)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 15 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS VPN CloudHub operates on a hub-and-spoke model, allowing multiple remote sites (such as regional warehouses, offices, and central headquarters) to route traffic securely to each other via a Virtual Private Gateway (VGW).
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">CloudHub Attributes &amp; Patterns:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong>Low-Cost Spoke Interconnection:</strong> Connect branches together directly over IPSec without traversing costly dedicated lines back to a single central headquarters.</li>
+                        <li><strong>BGP Autonomous Exchange:</strong> Remote routers run dynamic BGP peerings with the central AWS VGW to swap subnets dynamically.</li>
+                        <li><strong>Overlapping CIDR Warning:</strong> Like peering, spokes must have unique, non-overlapping IP address segments.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Spoke-to-Spoke Routing Path:</strong><br />
+                        Traffic flowing between spoke A and spoke B is mapped entirely inside the central AWS Virtual Private Gateway routing layers, meaning packets never traverse public IP spaces unencrypted.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Spoke-to-Spoke Central VGW Router Simulator</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Animate packet routing through CloudHub Spoke pathways</p>
+                      </div>
+
+                      {/* CloudHub SVG */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[130px]" viewBox="0 0 280 130">
+                          {/* Branch Spoke A */}
+                          <g transform="translate(10, 20)">
+                            <rect x="0" y="0" width="45" height="24" rx="4" fill="#1e293b" />
+                            <text x="22.5" y="15" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spoke A</text>
+                          </g>
+
+                          {/* Branch Spoke B */}
+                          <g transform="translate(10, 85)">
+                            <rect x="0" y="0" width="45" height="24" rx="4" fill="#1e293b" />
+                            <text x="22.5" y="15" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spoke B</text>
+                          </g>
+
+                          {/* Central VGW Hub */}
+                          <g transform="translate(180, 50)" className={cloudHubSimStep > 0 ? 'da-sim-node-active' : ''}>
+                            <rect x="0" y="0" width="65" height="35" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
+                            <text x="32.5" y="16" fill="#1e3a8a" fontSize="7" fontWeight="black" textAnchor="middle">VGW Hub</text>
+                            <text x="32.5" y="26" fill="#2563eb" fontSize="5" fontWeight="black" textAnchor="middle">AWS CloudHub</text>
+                          </g>
+
+                          {/* Tunnel paths */}
+                          <line x1="55" y1="32" x2="180" y2="60" stroke="#cbd5e1" strokeWidth="2.2" strokeDasharray="3,3" />
+                          <line x1="55" y1="97" x2="180" y2="75" stroke="#cbd5e1" strokeWidth="2.2" strokeDasharray="3,3" />
+
+                          {/* Active trace overrides */}
+                          {cloudHubSimStep === 1 && (
+                            <path d="M 55 32 L 180 60" fill="none" stroke="#2563eb" strokeWidth="3.5" className="da-flow-fast" />
+                          )}
+                          {cloudHubSimStep === 2 && (
+                            <path d="M 180 75 L 55 97" fill="none" stroke="#10b981" strokeWidth="3.5" className="da-flow-fast" />
+                          )}
+                        </svg>
+                      </div>
+
+                      <div className="space-y-2">
+                        <button
+                          onClick={runCloudHubStepSim}
+                          disabled={cloudHubSimStep > 0}
+                          className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          {cloudHubSimStep > 0 ? 'Routing Spoke Data...' : 'Route Spoke A to Spoke B Packet'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 16: AWS DIRECT CONNECT                                            */}
+              {/* ========================================================================= */}
+              {selectedNote === 'direct_connect' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Hybrid Connectivity</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">AWS Direct Connect (DX) Dedicated Resiliency</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 16 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS Direct Connect (DX) bypasses the public internet completely, providing a dedicated physical fiber-optic connection between corporate networks and AWS for consistent performance, ultra-low latency, and massive data volume pipelines.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 text-left">
+                      <span className="text-xs font-black text-slate-800 block">Critical DX Port Architectures:</span>
+                      <ul className="list-disc pl-4 text-xs text-slate-500 space-y-2 leading-relaxed">
+                        <li><strong>Physical Ports:</strong> AWS offers dedicated physical fiber ports with standard bandwidth capabilities of **1 Gbps, 10 Gbps, or 100 Gbps**.</li>
+                        <li><strong>Consistent Latency:</strong> Because traffic completely bypasses public ISPs, network packet latencies remain highly consistent, avoiding typical VPN internet spikes.</li>
+                        <li><strong>Resiliency Redundancy:</strong> AWS recommends establishing redundant links terminated at independent Direct Connect colocation facilities to block physical fiber outage events.</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Hybrid Connectivity Comparison:</strong><br />
+                        Standard Site-to-Site VPN is fast to set up but uses the public internet (higher latency fluctuations). Direct Connect is secure and consistent but takes weeks to establish physically and is much more expensive.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Dynamic DX Latency Live Analyzer</span>
+                          <span className="text-[9px] text-slate-500 block">Compare latency stability against internet VPN routes</span>
+                        </div>
+                        <button
+                          onClick={() => setDxLineActive(!dxLineActive)}
+                          className={`px-3 py-1 rounded text-[10px] font-black border transition-all ${
+                            dxLineActive ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-blue-100 border-blue-300 text-blue-800'
+                          }`}
+                        >
+                          DX Fiber Link: {dxLineActive ? 'ACTIVE (Fiber)' : 'FAILED (VPN Backup)'}
+                        </button>
+                      </div>
+
+                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 font-mono text-[9px] text-slate-300 space-y-2 my-2">
+                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-1">
+                          📊 Connection Latency Graph Analysis
                         </span>
-                        <div className="text-slate-400">
-                          <span className="text-blue-400">v5</span> <span className="text-emerald-400">eni-01a2b3c4</span> <span className="text-cyan-400">10.0.2.80</span> <span className="text-purple-400">198.51.100.44</span> <span className="text-amber-400">80 52331 6 15 960</span> <span className="text-emerald-400">ACCEPT</span> <span className="text-slate-400">OK</span>
+                        {dxLineActive ? (
+                          <div className="space-y-1">
+                            <div className="text-emerald-400 font-bold">14ms [================] STABLE DIRECT CONNECT (0% Jitter)</div>
+                            <div className="text-slate-500">14ms [================] STABLE DIRECT CONNECT (0% Jitter)</div>
+                            <div className="text-emerald-400 font-bold">14ms [================] STABLE DIRECT CONNECT (0% Jitter)</div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="text-amber-400 font-bold">85ms [====================================] FLUTTERING PUBLIC VPN</div>
+                            <div className="text-rose-400 font-bold">110ms [==============================================] SPIKE INTERNET CONGESTION</div>
+                            <div className="text-amber-400 font-bold">90ms [======================================] JITTER FLUTTER</div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-3 bg-slate-900 rounded-xl font-mono text-[9px] text-slate-400">
+                        ⚡ <strong>Egress Telemetry:</strong> Traffic routed over dedicated DX cross-connections bypasses public ISP routes completely, ensuring stable transit for massive SQL database sync runs.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 17: AWS TRANSIT GATEWAY                                           */}
+              {/* ========================================================================= */}
+              {selectedNote === 'transit_gateway' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Hybrid Connectivity</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">AWS Transit Gateway (Central Cloud Router)</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 17 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    AWS Transit Gateway (TGW) acts as a centralized cloud router, connecting thousands of VPCs and corporate physical networks through a unified hub, replacing the complexity of mesh networks.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Mesh vs Hub-and-Spoke Topology:</span>
+                      <div className="grid grid-cols-2 gap-3 text-center text-[10px] font-extrabold">
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                          <span className="text-rose-700 block mb-1 text-[11px] font-black">N-Peering Mesh Chaos</span>
+                          VPC A to VPC B peers scale quadratically:<br />
+                          <strong className="text-rose-800 font-black block mt-2 text-xs">N * (N - 1) / 2 Links</strong>
                         </div>
-                        <div className="border-t border-slate-800 pt-2 text-[8px] text-slate-500 font-semibold leading-relaxed space-y-1">
-                          <div>• <span className="text-blue-400 font-bold">v5</span>: Flow log version index format</div>
-                          <div>• <span className="text-cyan-400 font-bold">10.0.2.80</span>: Source Private IP address</div>
-                          <div>• <span className="text-purple-400 font-bold">198.51.100.44</span>: Destination Public address</div>
-                          <div>• <span className="text-amber-400 font-bold">80 52331 6</span>: Target port (80), Client port (52331), Protocol (6=TCP)</div>
-                          <div>• <span className="text-emerald-400 font-bold">ACCEPT</span>: Security Group &amp; NACL evaluated and permitted request</div>
+                        <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                          <span className="text-emerald-700 block mb-1 text-[11px] font-black">Central Transit Hub</span>
+                          Unified central TGW connection scaling cleanly:<br />
+                          <strong className="text-emerald-800 font-black block mt-2 text-xs">N Linear Attachments</strong>
+                        </div>
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Transitive Route Support:</strong><br />
+                        Unlike VPC Peering connections, **Transit Gateway supports transitive routing**. A spoke VPC-A can route traffic to VPC-B or back to corporate data centers directly through the TGW central hub.
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Transit Routing Structure Mode</span>
+                          <span className="text-[9px] text-slate-500 block">Compare transit router connectivity styles</span>
+                        </div>
+                        <div className="flex bg-slate-100 p-0.5 rounded-lg text-[9px] font-bold">
+                          <button
+                            onClick={() => setTgwMeshMode(true)}
+                            className={`px-3 py-1 rounded transition-all ${tgwMeshMode ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                          >
+                            TGW Hub Router
+                          </button>
+                          <button
+                            onClick={() => setTgwMeshMode(false)}
+                            className={`px-3 py-1 rounded transition-all ${!tgwMeshMode ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                          >
+                            Mesh Peering Chaos
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* TGW SVG */}
+                      <div className="w-full flex-grow flex items-center justify-center py-2">
+                        <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
+                          {/* Spokes */}
+                          <rect x="10" y="15" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="30" y="29" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPC A</text>
+
+                          <rect x="10" y="80" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="30" y="94" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPC B</text>
+
+                          <rect x="230" y="15" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="250" y="29" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPC C</text>
+
+                          <rect x="230" y="80" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
+                          <text x="250" y="94" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPN Spoke</text>
+
+                          {tgwMeshMode ? (
+                            <>
+                              {/* Transit Hub */}
+                              <circle cx="140" cy="60" r="18" fill="#eff6ff" stroke="#6366f1" strokeWidth="2.5" className="da-sim-node-active" />
+                              <text x="140" y="63" fill="#4f46e5" fontSize="7.5" fontWeight="black" textAnchor="middle">TGW Hub</text>
+
+                              {/* Connections */}
+                              <line x1="50" y1="27" x2="122" y2="60" stroke="#6366f1" strokeWidth="1.5" className="da-flow-fast" />
+                              <line x1="50" y1="92" x2="122" y2="60" stroke="#6366f1" strokeWidth="1.5" />
+                              <line x1="230" y1="27" x2="158" y2="60" stroke="#6366f1" strokeWidth="1.5" />
+                              <line x1="230" y1="92" x2="158" y2="60" stroke="#6366f1" strokeWidth="1.5" />
+                            </>
+                          ) : (
+                            <>
+                              {/* Peering Mesh chaos */}
+                              <line x1="50" y1="27" x2="230" y2="27" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="50" y1="92" x2="230" y2="92" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="30" y1="39" x2="30" y2="80" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="250" y1="39" x2="250" y2="80" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="50" y1="27" x2="230" y2="92" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="50" y1="92" x2="230" y2="27" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <text x="140" y="63" fill="#e11d48" fontSize="8" fontWeight="black" textAnchor="middle">Complexity Chaos</text>
+                            </>
+                          )}
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 18: VPC FLOW LOGS                                                 */}
+              {/* ========================================================================= */}
+              {selectedNote === 'flow_logs' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Telemetry &amp; Logs</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">VPC Flow Logs Ingestion</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 18 of 19</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    VPC Flow Logs capture raw IP address metadata flowing through subnets and network interfaces (ENIs), delivering valuable telemetry datasets straight to CloudWatch Logs or S3.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">Telemetry Log Field Map:</span>
+                      
+                      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-[9px] text-slate-300 space-y-2 shadow-inner">
+                        <div className="text-blue-400">
+                          v5 eni-05a8b7c6 10.0.1.15 198.51.100.44 80 52331 6 15 960 ACCEPT OK
+                        </div>
+                        <div className="border-t border-slate-850 pt-2 text-[8px] text-slate-500 font-semibold leading-relaxed space-y-0.5">
+                          <div>• <span className="text-blue-400 font-bold">v5:</span> Ingestion format layout version</div>
+                          <div>• <span className="text-slate-300 font-bold">10.0.1.15:</span> Private IP address source</div>
+                          <div>• <span className="text-slate-300 font-bold">198.51.100.44:</span> Target destination address</div>
+                          <div>• <span className="text-blue-400 font-bold">80 52331:</span> Target port (80), Client port (52331)</div>
+                          <div>• <span className="text-cyan-400 font-bold">6:</span> Transport protocol (6 = TCP, 17 = UDP)</div>
+                          <div>• <span className="text-emerald-400 font-bold">ACCEPT:</span> Security boundary allow status</div>
                         </div>
                       </div>
                     </div>
 
+                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-150 mb-3">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Live Subnet Telemetry Log Streamer</span>
+                          <span className="text-[9px] text-slate-500 block">Observe simulated incoming packet flow audits</span>
+                        </div>
+                        <button
+                          onClick={() => setFlowLogsEnabled(!flowLogsEnabled)}
+                          className={`px-3 py-1 rounded text-[10px] font-black border transition-all ${
+                            flowLogsEnabled ? 'bg-emerald-100 border-emerald-300 text-emerald-800 animate-pulse' : 'bg-slate-100 border-slate-300 text-slate-800'
+                          }`}
+                        >
+                          Flow Telemetry: {flowLogsEnabled ? 'STREAMING ACTIVE' : 'PAUSED'}
+                        </button>
+                      </div>
+
+                      <div className="acad-terminal text-[8.5px] min-h-[140px] max-h-[140px] overflow-y-auto leading-normal">
+                        {vpnLogs.length === 0 ? (
+                          <span className="text-slate-500 italic">Telemetry stream paused. Turn on streaming above to listen to eni-05a8b7c6 interfaces...</span>
+                        ) : (
+                          vpnLogs.map((log, idx) => (
+                            <div key={idx} className="flex gap-2 border-b border-slate-900 pb-1">
+                              <span className="text-slate-500 select-none">[{log.timestamp}]</span>
+                              <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warn' ? 'text-amber-400 font-bold' : 'text-slate-300'}>
+                                {log.message}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      <div className="acad-takeaway-box">
+                        <strong>💡 Telemetry Takeaway:</strong><br />
+                        Flow logs do not capture raw packet contents (payloads)—only packet metrics. This prevents exposure of sensitive business data during security transport audits.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ========================================================================= */}
+              {/* CONCEPT 19: VPC FLOW LOG ARCHITECTURE                                     */}
+              {/* ========================================================================= */}
+              {selectedNote === 'flow_logs_arch' && (
+                <div className="acad-detail-card space-y-6 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">Telemetry &amp; Logs</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2">VPC Flow Logs &amp; SIEM Pipelines Architecture</h3>
+                    </div>
+                    <span className="text-xs font-bold text-slate-400">Concept 19 of 19</span>
                   </div>
 
-                  {/* Complete study cheat-sheet reference tables */}
-                  <div className="da-edu-card text-left">
-                    <h3 className="text-sm font-black text-slate-900 mb-3">VPC Core Security Cheat-Sheet</h3>
-                    <table className="da-modern-table">
-                      <thead>
-                        <tr>
-                          <th>AWS VPC Concept</th>
-                          <th>Primary Architectural Target</th>
-                          <th>Core Implementation Trap / Constraint</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="font-extrabold text-blue-900">Bastion Jumpbox</td>
-                          <td>Secures SSH ingress hops to isolated private subnets.</td>
-                          <td>Must never hold static private keys. Restricted SGs strictly permit only corporate CIDRs.</td>
-                        </tr>
-                        <tr>
-                          <td className="font-extrabold text-blue-900">NAT Gateway</td>
-                          <td>Transparent egress routing with no security groups to manage.</td>
-                          <td>Must reside in a Public Subnet with a route map pointing egress to the IGW.</td>
-                        </tr>
-                        <tr>
-                          <td className="font-extrabold text-blue-900">NACL (Stateless)</td>
-                          <td>Subnet border security coarse filtering. Supporting explicit denies.</td>
-                          <td>Stateless nature **requires outbound Ephemeral port ranges** (`1024-65535`) allowed.</td>
-                        </tr>
-                        <tr>
-                          <td className="font-extrabold text-blue-900">Security Group (Stateful)</td>
-                          <td>Granular per-ENI security filters. State tracked automatically.</td>
-                          <td>Does not support explicit DENY rules. All filters are ALLOW only.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    VPC Flow Logs feed into larger cloud architectures for automated threat analysis, compliance dashboards, and visual metric monitoring.
+                  </p>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <span className="text-xs font-black text-slate-800 block">End-to-End Log Analytics Pipeline:</span>
+                      
+                      <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-indigo-200">
+                        <div className="relative">
+                          <span className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></span>
+                          <strong className="text-xs text-slate-800 block">Step 1: ENI Interface Telemetry capture</strong>
+                          <p className="text-[11px] text-slate-500 leading-normal">VPC Flow log agent clones transport headers directly at the network card level.</p>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></span>
+                          <strong className="text-xs text-slate-800 block">Step 2: Stream Ingestion</strong>
+                          <p className="text-[11px] text-slate-500 leading-normal">Logs are published directly to Amazon S3 buckets or streamed live to CloudWatch Log groups.</p>
+                        </div>
+                        <div className="relative">
+                          <span className="absolute -left-6 top-1 w-3 h-3 rounded-full bg-blue-600 border-2 border-white"></span>
+                          <strong className="text-xs text-slate-800 block">Step 3: SIEM &amp; Athena Queries</strong>
+                          <p className="text-[11px] text-slate-500 leading-normal">Amazon Athena runs SQL queries against S3 log structures directly, while third-party SIEM platforms capture alerts for immediate network security assessments.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-sim-diagram flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Visual Analytics Pipeline Flowchart</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">End-to-end packet telemetry paths</p>
+                      </div>
+
+                      <div className="border border-indigo-250 bg-indigo-50/10 rounded-xl p-4 space-y-2 mt-3 text-center text-[10px] font-bold">
+                        <div className="bg-white border border-slate-200 rounded p-1.5 shadow-sm text-blue-700">
+                          1. EC2 Elastic Interface (ENI)
+                        </div>
+                        <div className="text-slate-400">⬇️ Flow Capture</div>
+                        <div className="bg-white border border-slate-200 rounded p-1.5 shadow-sm text-indigo-700">
+                          2. VPC Flow Logs Engine
+                        </div>
+                        <div className="text-slate-400">⬇️ Stream to</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white border border-slate-200 rounded p-1.5 shadow-sm">
+                            S3 Storage
+                          </div>
+                          <div className="bg-white border border-slate-200 rounded p-1.5 shadow-sm">
+                            CloudWatch
+                          </div>
+                        </div>
+                        <div className="text-slate-400">⬇️ Audit via</div>
+                        <div className="bg-slate-900 border border-slate-800 rounded p-1.5 text-white font-extrabold shadow">
+                          SIEM / Amazon Athena Dashboard
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
