@@ -1958,51 +1958,137 @@ export default function NetworkingVPCVisualizer() {
               )}
 
               {/* SVG redundant VPN tunnels */}
-              <div className="w-full flex-grow flex items-center justify-center mt-6">
-                <svg className="w-full min-w-[480px] h-[200px]" viewBox="0 0 480 200">
+              <div className="w-full flex-grow flex flex-col items-center justify-center mt-6">
+                <svg className="w-full max-w-[580px] h-[290px]" viewBox="0 0 580 290">
                   <defs>
                     <marker id="arrow-vpn" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                       <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
                     </marker>
+                    <marker id="arrow-dual" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#64748b" />
+                    </marker>
                   </defs>
 
-                  {/* Flow Conduits */}
-                  {/* Tunnel A flow */}
-                  <path d="M 125 75 Q 235 30 345 75" fill="none" 
-                    className={vpnSimState === 'tunneling_a' ? 'da-flow-green' : ''} 
-                    stroke={!tunnelAActive ? '#f43f5e' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#arrow-vpn)" />
+                  {/* ==================== AWS SIDE (TOP) ==================== */}
+                  {/* VPC Bounding Box */}
+                  <rect x="20" y="10" width="540" height="98" rx="8" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4,2" />
+                  <text x="30" y="22" fill="#2563eb" fontSize="8" fontWeight="black">AWS VPC BOUNDARY</text>
 
-                  {/* Tunnel B flow */}
-                  <path d="M 125 115 Q 235 160 345 115" fill="none" 
-                    className={vpnSimState === 'tunneling_b' ? 'da-flow-green' : ''} 
-                    stroke={!tunnelBActive ? '#f43f5e' : '#cbd5e1'} strokeWidth="2.5" markerEnd="url(#arrow-vpn)" />
+                  {/* Private Subnet */}
+                  <rect x="80" y="25" width="220" height="70" rx="6" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" />
+                  <text x="88" y="34" fill="#1e3a8a" fontSize="7" fontWeight="bold">Private Subnet</text>
 
-                  {/* AWS VPC boundary node */}
-                  <g transform="translate(15, 55)">
-                    <rect x="0" y="0" width="110" height="80" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="55" y="22" fill="#1d4ed8" fontSize="8" fontWeight="black" textAnchor="middle">AWS VPC Subnet</text>
-                    <text x="55" y="38" fill="#1d4ed8" fontSize="7" fontWeight="bold" textAnchor="middle">Virtual Gateway</text>
-                    <text x="55" y="52" fill="#2563eb" fontSize="6.5" textAnchor="middle">IP: 10.0.0.0/16</text>
-                    <text x="55" y="66" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">(VGW)</text>
+                  {/* Security Group (SG) */}
+                  <rect x="135" y="42" width="105" height="46" rx="4" fill="none" stroke="#10b981" strokeWidth="1.5" />
+                  <text x="141" y="52" fill="#047857" fontSize="6.5" fontWeight="bold">SG (Stateful)</text>
+
+                  {/* Private Server Chip inside SG */}
+                  <g transform="translate(172, 57)">
+                    <rect x="0" y="0" width="30" height="24" rx="2" fill="#f0fdf4" stroke="#10b981" strokeWidth="1" />
+                    <line x1="5" y1="6" x2="25" y2="6" stroke="#10b981" strokeWidth="1.5" />
+                    <line x1="5" y1="12" x2="25" y2="12" stroke="#10b981" strokeWidth="1.5" />
+                    <line x1="5" y1="18" x2="25" y2="18" stroke="#10b981" strokeWidth="1.5" />
+                    <circle cx="25" cy="6" r="1" fill="#10b981" />
+                    <circle cx="25" cy="12" r="1" fill="#10b981" />
+                    <circle cx="25" cy="18" r="1" fill="#10b981" />
                   </g>
 
-                  {/* Corporate Data Center boundary node */}
-                  <g transform="translate(345, 55)">
-                    <rect x="0" y="0" width="110" height="80" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" />
-                    <text x="55" y="22" fill="#6b21a8" fontSize="8" fontWeight="black" textAnchor="middle">On-Premises HQ</text>
-                    <text x="55" y="38" fill="#6b21a8" fontSize="7" fontWeight="bold" textAnchor="middle">Customer Gateway</text>
-                    <text x="55" y="52" fill="#7c3aed" fontSize="6.5" textAnchor="middle">IP: 192.168.10.0/24</text>
-                    <text x="55" y="66" fill="#4c1d95" fontSize="6.5" fontWeight="bold" textAnchor="middle">(CGW)</text>
+                  {/* Route Table (route propagation enabled) */}
+                  <g transform="translate(320, 28)">
+                    <rect x="0" y="0" width="125" height="44" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
+                    <rect x="6" y="6" width="12" height="10" rx="1" fill="#3b82f6" />
+                    <line x1="10" y1="11" x2="24" y2="11" stroke="#3b82f6" strokeWidth="1" />
+                    <text x="24" y="14" fill="#f8fafc" fontSize="6.5" fontWeight="black">Route Table</text>
+                    <text x="24" y="24" fill="#38bdf8" fontSize="5.5" fontWeight="bold">Propagation: ENABLED</text>
+                    <line x1="24" y1="32" x2="115" y2="32" stroke="#38bdf8" strokeWidth="1.2" strokeDasharray="2,2" />
                   </g>
 
-                  {/* Tunnel annotations */}
-                  <text x="240" y="42" fill={tunnelAActive ? '#047857' : '#e11d48'} fontSize="7" fontWeight="black" textAnchor="middle">
-                    IPsec Tunnel A {tunnelAActive ? '🟢 Up' : '🚨 Down'}
-                  </text>
-                  <text x="240" y="152" fill={tunnelBActive ? '#047857' : '#e11d48'} fontSize="7" fontWeight="black" textAnchor="middle">
-                    IPsec Tunnel B {tunnelBActive ? '🟢 Up' : '🚨 Down'}
-                  </text>
+                  {/* Virtual Private Gateway (VGW) at the bottom of the VPC box */}
+                  <g transform="translate(290, 102)" className={vpnSimState !== 'idle' && vpnSimState !== 'outage' ? 'da-sim-node-active' : ''}>
+                    <circle cx="0" cy="0" r="14" fill="#eff6ff" stroke="#2563eb" strokeWidth="2.5" />
+                    {/* Lock vector */}
+                    <rect x="-5" y="-2" width="10" height="8" rx="1" fill="#2563eb" />
+                    <path d="M -3 -2 V -5 A 3 3 0 0 1 3 -5 V -2" fill="none" stroke="#2563eb" strokeWidth="1.2" />
+                    <text x="0" y="19" fill="#1e3a8a" fontSize="6.5" fontWeight="black" textAnchor="middle">VGW Gateway</text>
+                  </g>
+
+
+                  {/* ==================== IPSec TUNNELS (MIDDLE) ==================== */}
+                  {/* Left Tunnel to NAT Device */}
+                  <line x1="276" y1="108" x2="165" y2="202" 
+                    stroke={!tunnelAActive ? '#f43f5e' : vpnSimState === 'tunneling_a' ? '#10b981' : '#94a3b8'} 
+                    strokeWidth={vpnSimState === 'tunneling_a' ? '3' : '1.8'} 
+                    strokeDasharray={vpnSimState === 'tunneling_a' ? 'none' : '3,3'}
+                    className={vpnSimState === 'tunneling_a' ? 'da-flow-green' : ''}
+                  />
+                  {/* Left Encrypted Lock badge */}
+                  <g transform="translate(205, 145)">
+                    <circle cx="0" cy="0" r="7" fill={!tunnelAActive ? '#fff1f2' : '#ecfdf5'} stroke={!tunnelAActive ? '#f43f5e' : '#10b981'} strokeWidth="1.2" />
+                    <rect x="-3" y="-1.5" width="6" height="5" rx="0.5" fill={!tunnelAActive ? '#f43f5e' : '#10b981'} />
+                    <path d="M -2 -1.5 V -3.5 A 2 2 0 0 1 2 -3.5 V -1.5" fill="none" stroke={!tunnelAActive ? '#f43f5e' : '#10b981'} strokeWidth="0.8" />
+                    <text x="10" y="2" fill="#475569" fontSize="6" fontWeight="bold">IPSec A (encrypted)</text>
+                  </g>
+
+                  {/* Center "or" conditional */}
+                  <circle cx="290" cy="148" r="9" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <text x="290" y="150.5" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">or</text>
+
+                  {/* Right Tunnel to CGW */}
+                  <line x1="304" y1="108" x2="415" y2="202" 
+                    stroke={!tunnelBActive ? '#f43f5e' : vpnSimState === 'tunneling_b' ? '#10b981' : '#94a3b8'} 
+                    strokeWidth={vpnSimState === 'tunneling_b' ? '3' : '1.8'} 
+                    strokeDasharray={vpnSimState === 'tunneling_b' ? 'none' : '3,3'}
+                    className={vpnSimState === 'tunneling_b' ? 'da-flow-green' : ''}
+                  />
+                  {/* Right Encrypted Lock badge */}
+                  <g transform="translate(345, 145)">
+                    <circle cx="0" cy="0" r="7" fill={!tunnelBActive ? '#fff1f2' : '#ecfdf5'} stroke={!tunnelBActive ? '#f43f5e' : '#10b981'} strokeWidth="1.2" />
+                    <rect x="-3" y="-1.5" width="6" height="5" rx="0.5" fill={!tunnelBActive ? '#f43f5e' : '#10b981'} />
+                    <path d="M -2 -1.5 V -3.5 A 2 2 0 0 1 2 -3.5 V -1.5" fill="none" stroke={!tunnelBActive ? '#f43f5e' : '#10b981'} strokeWidth="0.8" />
+                    <text x="10" y="2" fill="#475569" fontSize="6" fontWeight="bold">IPSec B (encrypted)</text>
+                  </g>
+
+
+                  {/* ==================== ON-PREMISES DC (BOTTOM) ==================== */}
+                  {/* Corporate DC boundary box */}
+                  <rect x="20" y="202" width="540" height="84" rx="8" fill="none" stroke="#a855f7" strokeWidth="2" strokeDasharray="4,2" />
+                  <text x="30" y="213" fill="#a855f7" fontSize="8" fontWeight="black">CORPORATE DATA CENTER BOUNDARY</text>
+
+                  {/* Left Egress Point: NAT Device (Public IP) */}
+                  <g transform="translate(110, 218)">
+                    <rect x="0" y="0" width="110" height="26" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="55" y="11" fill="#6b21a8" fontSize="6.5" fontWeight="black" textAnchor="middle">NAT Device</text>
+                    <text x="55" y="20" fill="#7c3aed" fontSize="5.5" fontWeight="bold" textAnchor="middle">Public IP: 198.51.100.10</text>
+                  </g>
+
+                  {/* Right Egress Point: Customer Gateway (Public IP) */}
+                  <g transform="translate(350, 218)">
+                    <rect x="0" y="0" width="125" height="26" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.2" />
+                    <text x="62.5" y="11" fill="#6b21a8" fontSize="6.5" fontWeight="black" textAnchor="middle">Customer Gateway (CGW)</text>
+                    <text x="62.5" y="20" fill="#7c3aed" fontSize="5.5" fontWeight="bold" textAnchor="middle">Public IP: 198.51.100.22</text>
+                  </g>
+
+                  {/* CGW Private IP (Internal Customer Gateway) */}
+                  <g transform="translate(70, 252)">
+                    <rect x="0" y="0" width="180" height="22" rx="4" fill="#ffffff" stroke="#a855f7" strokeWidth="1.2" />
+                    <circle cx="12" cy="11" r="5" fill="#faf5ff" stroke="#a855f7" strokeWidth="0.8" />
+                    <path d="M 9 11 H 15 M 12 8 V 14" stroke="#6b21a8" strokeWidth="0.8" />
+                    <text x="24" y="14" fill="#4c1d95" fontSize="6.5" fontWeight="black">Customer Gateway (Private IP)</text>
+                  </g>
+
+                  {/* Double-sided arrow between NAT Device and Private CGW */}
+                  <path d="M 165 245 V 251" fill="none" stroke="#64748b" strokeWidth="1.2" markerStart="url(#arrow-dual)" markerEnd="url(#arrow-dual)" />
+
+                  {/* Corporate Internal Server Node */}
+                  <g transform="translate(290, 248)">
+                    <rect x="0" y="0" width="80" height="26" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.2" />
+                    <text x="40" y="11" fill="#334155" fontSize="7" fontWeight="black" textAnchor="middle">Internal Server</text>
+                    <text x="40" y="20" fill="#475569" fontSize="5.5" fontWeight="bold" textAnchor="middle">IP: 192.168.10.15</text>
+                  </g>
                 </svg>
+                <span className="text-[9px] text-slate-400 font-bold mt-2 text-center max-w-lg">
+                  💡 <i>NAT device allows many private on-premise internal servers to securely share one public EIP to route encrypted payload tunnels back to the VPC Virtual Gateway.</i>
+                </span>
               </div>
 
               {/* Logs output terminal */}
