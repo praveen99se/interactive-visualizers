@@ -71,7 +71,7 @@ WHERE product_category = 'ComputeNodes'
 LIMIT 10;`;
 
 export default function AuroraVisualizer() {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
 
   // Visual Architect Academy Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('shared_storage');
@@ -946,6 +946,7 @@ export default function AuroraVisualizer() {
 
       {/* Navigation tabs */}
       <div className="aurora-tabs">
+        <button className={`aurora-tb ${activeTab === 'notebook' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
         <button className={`aurora-tb ${activeTab === 'overview' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('overview')}>💾 1. Shared Storage Quorum</button>
         <button className={`aurora-tb ${activeTab === 'endpoints' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('endpoints')}>🔌 2. Endpoints &amp; Routing</button>
         <button className={`aurora-tb ${activeTab === 'failover' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('failover')}>💥 3. Failover Playbook Stepper</button>
@@ -953,7 +954,6 @@ export default function AuroraVisualizer() {
         <button className={`aurora-tb ${activeTab === 'serverless' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('serverless')}>⚡ 5. Serverless v2 Scaling</button>
         <button className={`aurora-tb ${activeTab === 'cloning' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('cloning')}>🧬 6. Copy-on-Write Clones</button>
         <button className={`aurora-tb ${activeTab === 'hardening' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('hardening')}>🔒 7. Hardening HUD &amp; Analytics</button>
-        <button className={`aurora-tb ${activeTab === 'notebook' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
       </div>
 
       {/* Primary Display Card */}
@@ -2207,7 +2207,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Cloud-Native Storage</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Shared Storage 6-Way Quorum</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('overview')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Storage Quorum
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2263,7 +2271,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Replication Engine</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">"The Log is the Database" Architecture</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('overview')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Storage Quorum
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2308,7 +2324,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Routing Ingress</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Aurora DNS Endpoint Mappings</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('endpoints')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Endpoints
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2362,7 +2386,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Cluster High Availability</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Failover Priorities &amp; Promotion Mechanics</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('failover')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Failover Stepper
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2464,7 +2496,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Zero-Copy Clones</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Copy-on-Write Database Cloning</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('cloning')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Clones Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2543,7 +2583,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Disaster recovery</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Backtrack vs Point-in-Time Recovery</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('failover')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Recovery Playbook
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2600,7 +2648,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">Analytical Ingress</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Aurora Zero-ETL Redshift Sync</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => { setActiveTab('hardening'); setActiveFeatureTab('zeroetl'); }}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Zero-ETL Sync
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2651,7 +2707,15 @@ export default function AuroraVisualizer() {
                         <span className="acad-hero-badge">AI Integration</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">In-Database SQL Machine Learning</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 8</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => { setActiveTab('hardening'); setActiveFeatureTab('ml'); }}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to SQL ML Inference
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 8</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">

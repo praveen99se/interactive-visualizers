@@ -123,7 +123,7 @@ def run_boot_orchestration(instance_id):
     return True`;
 
 export default function ASGVisualizer() {
-  const [activeSection, setActiveSection] = useState<TabType>('concept');
+  const [activeSection, setActiveSection] = useState<TabType>('notebook');
 
   // Simulation parameters
   const [rps, setRps] = useState(300);
@@ -640,12 +640,12 @@ export default function ASGVisualizer() {
 
         {/* Tab Navigation */}
         <div className="asg-tabs">
+          <button className={`asg-tb ${activeSection === 'notebook' ? 'asg-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
           <button className={`asg-tb ${activeSection === 'concept' ? 'asg-on' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concept &amp; Capacity</button>
           <button className={`asg-tb ${activeSection === 'arch' ? 'asg-on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ VPC Architecture</button>
           <button className={`asg-tb ${activeSection === 'policies' ? 'asg-on' : ''}`} onClick={() => setActiveSection('policies')}>📈 Scaling Policies</button>
           <button className={`asg-tb ${activeSection === 'health' ? 'asg-on' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health &amp; Lifecycles</button>
           <button className={`asg-tb ${activeSection === 'sim' ? 'asg-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Live Scaling Simulator</button>
-          <button className={`asg-tb ${activeSection === 'notebook' ? 'asg-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
         </div>
       </div>
 
@@ -1744,7 +1744,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Fleet blueprint</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Launch Templates vs Launch Configurations</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('concept')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -1810,7 +1818,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Fleet Limits</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ASG Capacity Boundaries Clamp</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('concept')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -1915,7 +1931,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Dynamic scaling math</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Target Tracking Scaling Mathematics</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2012,7 +2036,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Policy Comparison</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Step Scaling vs Simple Scaling</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2060,7 +2092,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Predictable loads</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Scheduled Chron-Driven Scaling</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2108,7 +2148,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Fleet diagnostics</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">EC2 vs ELB Active Target Group Health Checks</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('health')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Health &amp; Lifecycles
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2162,7 +2210,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Instance Transition Hooks</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Lifecycle Hooks &amp; State Interrupts</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('health')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Health &amp; Lifecycles
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2218,7 +2274,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Fleet stabilization</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cooldown Periods vs Instance Warmup</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('sim')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Fleet Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2275,7 +2339,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">zonal distribution</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Zonal Rebalancing Mechanics</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('arch')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Cpu className="w-3.5 h-3.5" /> Go to VPC Architecture
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">
@@ -2333,7 +2405,15 @@ export default function ASGVisualizer() {
                         <span className="acad-hero-badge">Ingress Integration</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB/NLB Target Group Integration</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('sim')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Fleet Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-605 leading-relaxed">

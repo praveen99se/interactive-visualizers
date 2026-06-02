@@ -38,7 +38,7 @@ const tfRuleCode = `resource "aws_lb_listener_rule" "host_path_routing" {
 }`;
 
 export default function ALBNLBVisualizer() {
-  const [activeSection, setActiveSection] = useState<TabType>('concept');
+  const [activeSection, setActiveSection] = useState<TabType>('notebook');
   const [selectedNote, setSelectedNote] = useState<string>('alb_headers_routing');
   const [expandedCategory, setExpandedCategory] = useState<string>('l7_routing');
 
@@ -884,13 +884,13 @@ export default function ALBNLBVisualizer() {
 
         {/* Tab Navigation */}
         <div className="anl-tabs">
+          <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
           <button className={`anl-tb ${activeSection === 'concept' ? 'anl-on' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concepts &amp; Comparison</button>
           <button className={`anl-tb ${activeSection === 'alb' ? 'anl-on' : ''}`} onClick={() => setActiveSection('alb')}>🍔 Application Load Balancer</button>
           <button className={`anl-tb ${activeSection === 'nlb' ? 'anl-on' : ''}`} onClick={() => setActiveSection('nlb')}>🔢 Network Load Balancer</button>
           <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
           <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
           <button className={`anl-tb ${activeSection === 'config' ? 'anl-on' : ''}`} onClick={() => setActiveSection('config')}>⚙️ Config &amp; Terraform</button>
-          <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
         </div>
       </div>
 
@@ -2657,7 +2657,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">L7 Smart Delivery</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB HTTP Host &amp; Path Rules</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('alb')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to ALB Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed">
@@ -2723,7 +2731,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">Session Persistence</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB Session Stickiness &amp; Cookies</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('alb')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to ALB Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed">
@@ -2781,7 +2797,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">TLS Terminations</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSL/TLS Offloading &amp; SNI</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('alb')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to ALB Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed">
@@ -2836,7 +2860,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">L4 Flow Mechanics</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">L4 5-Tuple Connection Hashing</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('nlb')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Network className="w-3.5 h-3.5" /> Go to NLB Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
@@ -2928,7 +2960,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">IP Architecture</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Static Zonal IPs &amp; Whitelisting</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('nlb')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Network className="w-3.5 h-3.5" /> Go to NLB Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
@@ -2977,7 +3017,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">Network Performance</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Direct Server Return (DSR) Pathing</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('nlb')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Network className="w-3.5 h-3.5" /> Go to NLB Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
@@ -3074,7 +3122,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">Layer 3 Ingress</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GWLB Inline Firewall Topologies</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('integrations')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Cpu className="w-3.5 h-3.5" /> Go to Integrations
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
@@ -3126,7 +3182,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">Tunneling Protocol</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GENEVE Tunneling Protocol</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('integrations')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Cpu className="w-3.5 h-3.5" /> Go to Integrations
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
@@ -3196,7 +3260,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">Traffic Equalization</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cross-Zone Load Equalizer</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('simulation')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Traffic Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
@@ -3279,7 +3351,15 @@ resource "aws_lb_target_group" "tcp_tg" {
                         <span className="acad-hero-badge">Compute Governance</span>
                         <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Deregistration Delay &amp; Draining</h3>
                       </div>
-                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('simulation')}
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Traffic Simulator
+                        </button>
+                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-650 leading-relaxed">
