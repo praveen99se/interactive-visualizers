@@ -27,7 +27,7 @@ interface LogRow {
 }
 
 export default function DisasterRecoveryVisualizer() {
-  const [activeTab, setActiveTab] = useState<TabType>('strategies');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
   const [selectedNote, setSelectedNote] = useState<string>('rto_rpo');
   const [expandedCategory, setExpandedCategory] = useState<string>('fundamentals');
 
@@ -481,6 +481,9 @@ export default function DisasterRecoveryVisualizer() {
 
       {/* Tab navigation bar */}
       <div className="da-tabs">
+        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+          <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+        </button>
         <button className={`da-tb ${activeTab === 'strategies' ? 'da-on' : ''}`} onClick={() => setActiveTab('strategies')}>
           <Sliders className="w-4 h-4" /> 1. DR Strategies &amp; Cost Optimizer
         </button>
@@ -495,9 +498,6 @@ export default function DisasterRecoveryVisualizer() {
         </button>
         <button className={`da-tb ${activeTab === 'playbook' ? 'da-on' : ''}`} onClick={() => setActiveTab('playbook')}>
           <BookOpen className="w-4 h-4" /> 5. Recovery Playbook
-        </button>
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-          <BookOpen className="w-4 h-4" /> 6. Visual Architect Notes
         </button>
       </div>
 
@@ -1613,7 +1613,15 @@ export default function DisasterRecoveryVisualizer() {
                       <span className="acad-hero-badge">Disaster Recovery Metrics</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2 font-display">RTO &amp; RPO Technical Taxonomy</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 1 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('strategies')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Info className="w-3 h-3" /> Go to DR Strategies
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 1 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -1722,7 +1730,15 @@ export default function DisasterRecoveryVisualizer() {
                       <span className="acad-hero-badge">Architecture Blueprints</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DR Strategy Blueprints &amp; Redundancies</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 2 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('strategies')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Info className="w-3 h-3" /> Go to DR Strategies
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 2 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -1975,7 +1991,15 @@ export default function DisasterRecoveryVisualizer() {
                       <span className="acad-hero-badge">Resilience &amp; Testing</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2 font-display">High Availability &amp; Chaos Engineering</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 3 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('multiregion')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Zap className="w-3 h-3" /> Go to Failover Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 3 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2074,10 +2098,18 @@ export default function DisasterRecoveryVisualizer() {
                 <div className="acad-detail-card space-y-6 animate-fadeIn">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
-                      <span className="acad-hero-badge">DNS Orchestration</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Route 53 Failover Routing Mechanics</h3>
+                      <span className="acad-hero-badge">Multi-Region &amp; Hybrid</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Route 53 Active-Passive DNS Failover</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 4 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('multiregion')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Activity className="w-3 h-3" /> Go to Failover Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 4 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2141,7 +2173,7 @@ export default function DisasterRecoveryVisualizer() {
                             <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚠️ UNHEALTHY</text>
                           </g>
 
-                          {/* Region B Node (HEALTHY STANDBY) */}
+                          {/* Region B (HEALTHY STANDBY) */}
                           <g transform="translate(215, 130)">
                             <rect x="0" y="0" width="110" height="45" rx="4" fill="#d1fae5" stroke="#34d399" strokeWidth="1.2" />
                             <text x="55" y="15" fill="#065f46" fontSize="7.5" fontWeight="black" textAnchor="middle">Region B (eu-west-1)</text>
@@ -2341,16 +2373,24 @@ export default function DisasterRecoveryVisualizer() {
               )}
 
               {/* ========================================================================= */}
-              {/* CONCEPT 7: AWS DMS CDC CONTINUOUS SYNC                                     */}
+              {/* CONCEPT 7: AWS DMS CDC CONTINUOUS SYNC                                    */}
               {/* ========================================================================= */}
               {selectedNote === 'dms_replication' && (
                 <div className="acad-detail-card space-y-6 animate-fadeIn">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
-                      <span className="acad-hero-badge">Data Migration Workbench</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DMS &amp; Change Data Capture (CDC)</h3>
+                      <span className="acad-hero-badge">Database &amp; Backup Governance</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DMS CDC Continuous Sync</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 7 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('dms')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Database className="w-3 h-3" /> Go to DMS Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 7 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2496,10 +2536,18 @@ export default function DisasterRecoveryVisualizer() {
                 <div className="acad-detail-card space-y-6 animate-fadeIn">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
-                      <span className="acad-hero-badge">Structural Translation</span>
+                      <span className="acad-hero-badge">Database &amp; Backup Governance</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Schema Conversion Tool (SCT)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 8 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('dms')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Database className="w-3 h-3" /> Go to DMS Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 8 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2593,10 +2641,18 @@ export default function DisasterRecoveryVisualizer() {
                 <div className="acad-detail-card space-y-6 animate-fadeIn">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
-                      <span className="acad-hero-badge">Immutable Backups</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Backup Vault Lock &amp; WORM Controls</h3>
+                      <span className="acad-hero-badge">Database &amp; Backup Governance</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Backup Vault Lock &amp; WORM</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 9 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('backup')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Shield className="w-3 h-3" /> Go to Backup &amp; Vault
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 9 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2670,10 +2726,18 @@ export default function DisasterRecoveryVisualizer() {
                 <div className="acad-detail-card space-y-6 animate-fadeIn">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
-                      <span className="acad-hero-badge">Cloud Migrations</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Application Discovery &amp; Application Migration</h3>
+                      <span className="acad-hero-badge">Enterprise Migration Suite</span>
+                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Application Discovery Service &amp; MGN Orchestration</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 10 of 10</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('playbook')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <BookOpen className="w-3 h-3" /> Go to Recovery Playbook
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 10 of 10</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">

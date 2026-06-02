@@ -1,4 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
+import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  Copy,
+  Network,
+  Zap,
+  Sliders,
+  Globe
+} from 'lucide-react';
 
 // Types & Configs for EC2 Visualizer
 interface InstanceFamily {
@@ -167,7 +178,65 @@ echo "=== Bootstrapping Complete: Host Hardened ==="`
 };
 
 export default function EC2Visualizer() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'purchasing' | 'storage' | 'lifecycle' | 'best'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'purchasing' | 'storage' | 'lifecycle' | 'best' | 'notebook'>('notebook');
+
+  // Visual Architect Academy Notebook states
+  const [selectedNote, setSelectedNote] = useState<string>('ec2_bootstrap');
+  const [expandedCategory, setExpandedCategory] = useState<string>('ec2_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive CPU Credit states
+  const [nbInstanceSize, setNbInstanceSize] = useState<'nano' | 'micro' | 'small'>('micro');
+  const [nbCpuUtilization, setNbCpuUtilization] = useState<number>(35);
+  const [nbCreditLog, setNbCreditLog] = useState<string[]>([]);
+
+  const runCpuCreditCycleSim = () => {
+    const logs: string[] = [];
+    let baseline = 10;
+    let rate = 12; // credits earned per hour
+    let maxCredits = 288;
+    if (nbInstanceSize === 'nano') {
+      baseline = 5;
+      rate = 6;
+      maxCredits = 144;
+    } else if (nbInstanceSize === 'small') {
+      baseline = 20;
+      rate = 24;
+      maxCredits = 576;
+    }
+
+    let currentCredits = Math.floor(maxCredits * 0.4); // Start at 40% full
+    logs.push(`📊 Starting 24-hour simulation for t3.${nbInstanceSize} (Baseline CPU: ${baseline}%, Earn Rate: ${rate} credits/hr, Max Bucket: ${maxCredits})`);
+    logs.push(`🔌 Initial credit balance: ${currentCredits} credits (40% capacity).`);
+
+    // Simulate 24 hours
+    for (let hour = 1; hour <= 24; hour++) {
+      // Add random fluctuations to simulated CPU around the chosen target
+      const fluctuation = (Math.random() - 0.5) * 15;
+      const hourCpu = Math.max(1, Math.min(100, Math.round(nbCpuUtilization + fluctuation)));
+      
+      const earned = rate;
+      const burned = Number((1.2 * hourCpu).toFixed(1));
+      const net = Number((earned - burned).toFixed(1));
+      
+      currentCredits = Math.max(0, Math.min(maxCredits, Number((currentCredits + net).toFixed(1))));
+      
+      let statusIcon = net >= 0 ? '📈' : '📉';
+      logs.push(`Hour ${hour}: CPU Avg: ${hourCpu}% | ${statusIcon} Earned: ${earned} | Spent: ${burned} | Net: ${net >= 0 ? '+' : ''}${net} | Balance: ${currentCredits}`);
+      
+      if (currentCredits <= 0) {
+        logs.push(`🚨 CRITICAL: Credit balance exhausted at Hour ${hour}! CPU is now forced-throttled to baseline ${baseline}%.`);
+      }
+    }
+    
+    setNbCreditLog(logs);
+  };
+
+  const handleCopyCode = (codeText: string, noteId: string) => {
+    navigator.clipboard.writeText(codeText);
+    setCopiedNoteId(noteId);
+    setTimeout(() => setCopiedNoteId(null), 2000);
+  };
 
   // Tab 1: Overview States
   const [selectedFamily, setSelectedFamily] = useState<string>('general');
@@ -610,6 +679,184 @@ export default function EC2Visualizer() {
           box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
           border-color: #0284c7;
         }
+
+        /* Modern Architect Learning Center styles */
+        .da-edu-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .da-edu-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 20px -8px rgba(79, 70, 229, 0.12);
+          border-color: #c7d2fe;
+        }
+        
+        /* Premium Academy Directory Styles */
+        .acad-dir-container {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          background: #0f172a;
+          color: #f8fafc;
+          padding: 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border: none;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 10px;
+          font-weight: 850;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .acad-dir-folder-btn:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #64748b;
+          border: none;
+          border-left: 3px solid transparent;
+          background: #ffffff;
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: #f8fafc;
+          color: #4f46e5;
+          border-left-color: #cbd5e1;
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eef2ff;
+          color: #4338ca;
+          border-left-color: #4f46e5;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        }
+        .acad-hero-badge {
+          background: #ecfdf5;
+          border: 1.5px solid #a7f3d0;
+          color: #065f46;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-left: 4px solid #4f46e5;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 12px;
+          line-height: 1.6;
+          color: #475569;
+          font-weight: 600;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+        }
+        .acad-table th {
+          background: #f8fafc;
+          color: #334155;
+          font-weight: 800;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid #e2e8f0;
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          color: #475569;
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-sim-diagram {
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 18px;
+          box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+          position: relative;
+        }
+        .acad-terminal {
+          background: #090d16;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* Academy Grid Layouts */
+        .acad-grid-12 {
+          display: grid;
+          grid-template-columns: repeat(12, minmax(0, 1fr));
+          gap: 24px;
+        }
+        .acad-col-3 {
+          grid-column: span 3 / span 3;
+        }
+        .acad-col-9 {
+          grid-column: span 9 / span 9;
+        }
+        @media (max-width: 1024px) {
+          .acad-grid-12 {
+            display: flex;
+            flex-direction: column;
+          }
+          .acad-col-3, .acad-col-9 {
+            width: 100%;
+          }
+        }
       `}</style>
 
       {/* Header */}
@@ -625,6 +872,7 @@ export default function EC2Visualizer() {
 
         {/* Tab Navigation */}
         <div className="ec2-tabs">
+          <button className={`ec2-tb ${activeTab === 'notebook' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
           <button className={`ec2-tb ${activeTab === 'overview' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('overview')}>💻 Core &amp; Bootstrap</button>
           <button className={`ec2-tb ${activeTab === 'security' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Security Groups &amp; Network</button>
           <button className={`ec2-tb ${activeTab === 'purchasing' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('purchasing')}>💰 Spot &amp; Purchasing</button>
@@ -636,6 +884,640 @@ export default function EC2Visualizer() {
 
       {/* Content Panels */}
       <div style={{ padding: '0 16px' }}>
+
+        {/* VISUAL ARCHITECT ACADEMY NOTEBOOK PANEL */}
+        {activeTab === 'notebook' && (() => {
+          const imdsCodeSnippet = `# Request 60-second metadata token (IMDSv2)
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+
+# Read local instance IP using the token
+curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4`;
+
+          const sgCodeSnippet = `# Authorize SSH access (port 22) restricted to Bastion proxy IP
+aws ec2 authorize-security-group-ingress \\
+  --group-id sg-0851f98d301c \\
+  --protocol tcp \\
+  --port 22 \\
+  --cidr 10.0.1.50/32
+
+# Authorize Inbound HTTP (port 80) to all public traffic
+aws ec2 authorize-security-group-ingress \\
+  --group-id sg-0851f98d301c \\
+  --protocol tcp \\
+  --port 80 \\
+  --cidr 0.0.0.0/0`;
+
+          const spotCodeSnippet = `# Request Spot Fleet using lowest-price allocation strategy
+aws ec2 request-spot-instances \\
+  --spot-price-limit "0.05" \\
+  --instance-count 3 \\
+  --type "persistent" \\
+  --launch-specification file://spot-spec.json`;
+
+          const mountCodeSnippet = `# Format attached EBS block device volume (/dev/xvdf) as ext4
+sudo mkfs -t ext4 /dev/xvdf
+
+# Mount the volume to the local application directory
+sudo mount /dev/xvdf /var/www/html`;
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
+              
+              {/* Academy Banner */}
+              <div style={{
+                background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
+                borderRadius: '16px',
+                padding: '24px',
+                color: '#ffffff',
+                boxShadow: '0 10px 25px -5px rgba(2, 132, 199, 0.15)',
+                border: '1px solid rgba(2, 132, 199, 0.2)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'relative', zIndex: 2 }}>
+                  <span style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    color: '#ffffff',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    display: 'inline-block'
+                  }}>
+                    Interactive Architect Academy
+                  </span>
+                  <h2 style={{ fontSize: '22px', fontWeight: 900, marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BookOpen style={{ color: '#bae6fd', width: '24px', height: '24px' }} /> EC2 Developer Academy &amp; Visual Notes
+                  </h2>
+                  <p style={{ fontSize: '12.5px', color: '#e0f2fe', marginTop: '6px', maxWidth: '850px', lineHeight: '1.5' }}>
+                    A premium study guide covering EC2 instance initialization, stateful security groups, spot fleets purchasing strategies, T-series burstable CPU credit behaviors, block storage, and WELL-ARCHITECTED auditing.
+                  </p>
+                </div>
+              </div>
+
+              {/* Grid Layout */}
+              <div className="acad-grid-12">
+                
+                {/* Left Sidebar Menu */}
+                <div className="acad-col-3">
+                  <div className="acad-dir-container">
+                    <div className="acad-dir-header">
+                      <BookOpen style={{ width: '16px', height: '16px', color: '#bae6fd' }} />
+                      <span>Module Index</span>
+                    </div>
+
+                    {/* Category 1: EC2 Fundamentals */}
+                    <div>
+                      <button
+                        className="acad-dir-folder-btn"
+                        onClick={() => setExpandedCategory(expandedCategory === 'ec2_fundamentals' ? '' : 'ec2_fundamentals')}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Sliders style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                          1. EC2 Fundamentals
+                        </span>
+                        {expandedCategory === 'ec2_fundamentals' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                      </button>
+                      {expandedCategory === 'ec2_fundamentals' && (
+                        <div style={{ background: '#f8fafc', padding: '4px 0' }}>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'ec2_bootstrap' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('ec2_bootstrap')}
+                          >
+                            User Data &amp; IMDSv2
+                          </button>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'security_groups' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('security_groups')}
+                          >
+                            Stateful Security Groups
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Category 2: Purchasing Options */}
+                    <div>
+                      <button
+                        className="acad-dir-folder-btn"
+                        onClick={() => setExpandedCategory(expandedCategory === 'purchasing_options' ? '' : 'purchasing_options')}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Globe style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                          2. Purchasing Options
+                        </span>
+                        {expandedCategory === 'purchasing_options' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                      </button>
+                      {expandedCategory === 'purchasing_options' && (
+                        <div style={{ background: '#f8fafc', padding: '4px 0' }}>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'purchasing_models' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('purchasing_models')}
+                          >
+                            Pricing &amp; Spot Fleets
+                          </button>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'burstable_performance' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('burstable_performance')}
+                          >
+                            Burstable CPU Credits
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Category 3: Storage & Auditing */}
+                    <div>
+                      <button
+                        className="acad-dir-folder-btn"
+                        onClick={() => setExpandedCategory(expandedCategory === 'storage_audit' ? '' : 'storage_audit')}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Network style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                          3. Storage &amp; Auditing
+                        </span>
+                        {expandedCategory === 'storage_audit' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                      </button>
+                      {expandedCategory === 'storage_audit' && (
+                        <div style={{ background: '#f8fafc', padding: '4px 0' }}>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'storage_comparison' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('storage_comparison')}
+                          >
+                            EBS vs Instance Store vs EFS
+                          </button>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'best_practices' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('best_practices')}
+                          >
+                            HA Architecture &amp; Audit
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+
+                  <div style={{ background: '#0a0d16', borderRadius: '16px', padding: '16px', color: '#94a3b8', fontSize: '11px', marginTop: '16px', border: '1px solid #1e293b', lineHeight: '1.5' }}>
+                    <span style={{ color: '#ffffff', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
+                      <Info style={{ width: '14px', height: '14px', color: '#38bdf8' }} /> Academy Guidance
+                    </span>
+                    You can switch directly to target interactive simulations inside standard visualizer tabs using the action buttons in each note.
+                  </div>
+                </div>
+
+                {/* Right Content Panel */}
+                <div className="acad-col-9">
+
+                  {/* NOTE 1: User Data & IMDSv2 */}
+                  {selectedNote === 'ec2_bootstrap' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>EC2 Bootstrapping &amp; Instance Metadata</h3>
+                        <span className="acad-hero-badge">Core Compute</span>
+                      </div>
+                      
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        Instance initialization relies on User Data scripts and configuration blueprints. Understanding the sequence of system execution and retrieval of dynamic runtime values secures virtual hosts.
+                      </p>
+
+                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
+                        <strong>💡 Key Takeaways:</strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
+                          <li><strong>User Data:</strong> Shell scripts executed **exactly once** during the very first boot of the instance as the <code>root</code> user. Used to install patches, start servers, and mount drives.</li>
+                          <li><strong>Golden Image:</strong> Pre-configuring system packages and baking them into a custom **Amazon Machine Image (AMI)** avoids bootstrapping startup delays during scaling events.</li>
+                          <li><strong>IMDSv2 Endpoint:</strong> Non-routable local IP <code>169.254.169.254</code> serving metadata. Enforces a session-based token (PUT request) to block SSRF proxy attacks.</li>
+                        </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>CLI Command Reference: Requesting IMDSv2 Token</h4>
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>imds_fetch.sh</span>
+                          <button
+                            onClick={() => handleCopyCode(imdsCodeSnippet, 'imds_sh')}
+                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                          >
+                            <Copy style={{ width: '12px', height: '12px' }} />
+                            {copiedNoteId === 'imds_sh' ? 'Copied!' : 'Copy Script'}
+                          </button>
+                        </div>
+                        <div className="acad-terminal">
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                            <code>{imdsCodeSnippet}</code>
+                          </pre>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('overview')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Core &amp; Bootstrap Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2: Stateful Security Groups */}
+                  {selectedNote === 'security_groups' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Stateful Security Groups vs Stateless NACLs</h3>
+                        <span className="acad-hero-badge">Network Security</span>
+                      </div>
+
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        Security Groups acts as virtual firewalls directly on the EC2 Elastic Network Interface (ENI) layer, monitoring state connections to simplify security rules.
+                      </p>
+
+                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
+                        <strong>🛡️ Stateful vs Stateless Mechanics:</strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'circle' }}>
+                          <li><strong>Stateful (Security Groups):</strong> If you authorize an inbound rule (e.g. port 80), return traffic is **automatically allowed** outbound. It evaluates *allow* rules only (default drops everything else).</li>
+                          <li><strong>Stateless (Network ACLs):</strong> Evaluates traffic entering and leaving VPC subnets. You must explicitly configure both inbound and outbound rules, including ephemeral port ranges (e.g., 1024-65535). Supports both *allow* and *deny* rules.</li>
+                        </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Authorizing Security Group Inbound Rules</h4>
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>security_rules.sh</span>
+                          <button
+                            onClick={() => handleCopyCode(sgCodeSnippet, 'sg_sh')}
+                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                          >
+                            <Copy style={{ width: '12px', height: '12px' }} />
+                            {copiedNoteId === 'sg_sh' ? 'Copied!' : 'Copy Commands'}
+                          </button>
+                        </div>
+                        <div className="acad-terminal">
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                            <code>{sgCodeSnippet}</code>
+                          </pre>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('security')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Security Groups Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3: Pricing & Spot Fleets */}
+                  {selectedNote === 'purchasing_models' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>EC2 Purchasing Models &amp; Spot Fleets</h3>
+                        <span className="acad-hero-badge">Cost Optimization</span>
+                      </div>
+
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        AWS offers diverse billing options tailored for specific workload lifecycle requirements. Aligning compute demands to the correct purchasing strategy optimizes costs.
+                      </p>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Billing Framework Comparison</h4>
+                      <div style={{ overflowX: 'auto', margin: '12px 0 20px' }}>
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Purchase Model</th>
+                              <th>Discount Rate</th>
+                              <th>Commitment Requirement</th>
+                              <th>Best Match Workload</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong>On-Demand</strong></td>
+                              <td>0% (Standard)</td>
+                              <td>None (Billed per second)</td>
+                              <td>Unpredictable spikes, short-term devs</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Reserved Instances (RI)</strong></td>
+                              <td>Up to 72%</td>
+                              <td>1 or 3 years (Specific instances)</td>
+                              <td>Steady-state, constant database hosts</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Savings Plans</strong></td>
+                              <td>Up to 72%</td>
+                              <td>1 or 3 years ($ / hour spend)</td>
+                              <td>Dynamic microservices, Lambda + Fargate fleets</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Spot Instances</strong></td>
+                              <td>Up to 90%</td>
+                              <td>None (Subject to termination)</td>
+                              <td>Batch processing, stateless web tiers, CI/CD</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
+                        <strong>⚠️ Spot Reclaim Warning:</strong> AWS can reclaim Spot capacity at any time when On-Demand demand rises. Route 53 or the Auto-Scaling Group receives a **2-minute warning notification** before shutdown. Spot Fleets manage allocations across instance pools to automatically replace reclaimed instances.
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Requesting Spot Instances</h4>
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>spot_request.sh</span>
+                          <button
+                            onClick={() => handleCopyCode(spotCodeSnippet, 'spot_sh')}
+                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                          >
+                            <Copy style={{ width: '12px', height: '12px' }} />
+                            {copiedNoteId === 'spot_sh' ? 'Copied!' : 'Copy Command'}
+                          </button>
+                        </div>
+                        <div className="acad-terminal">
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                            <code>{spotCodeSnippet}</code>
+                          </pre>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('purchasing')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Spot &amp; Purchasing Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4: Burstable CPU Credits */}
+                  {selectedNote === 'burstable_performance' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Burstable CPU Credits &amp; Performance Limits</h3>
+                        <span className="acad-hero-badge">Instance Specs</span>
+                      </div>
+
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        T-series burstable performance instances (t3, t3a, t4g) provide a baseline CPU capacity with the ability to burst above it. They accumulate "CPU credits" when running below baseline and burn them during CPU spikes.
+                      </p>
+
+                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
+                        <strong>⚡ Standard vs Unlimited Mode:</strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
+                          <li><strong>Standard Mode:</strong> If you burn through all accumulated credits, AWS throttles the instance CPU directly down to the baseline limit. Excellent for development environments.</li>
+                          <li><strong>Unlimited Mode:</strong> Allows the instance to burst indefinitely above baseline. If the credit bucket exhausts, AWS charges extra billing rates per vCPU-hour. Highly recommended for production workloads.</li>
+                        </ul>
+                      </div>
+
+                      {/* Interactive Widget: Credit Accumulator Simulator */}
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
+                        <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 12px' }}>
+                          📈 Burstable CPU Credit Simulator
+                        </h4>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{ flex: '1 1 200px' }}>
+                              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569', display: 'block', marginBottom: '6px' }}>
+                                Select Burstable Instance Type:
+                              </label>
+                              <div style={{ display: 'flex', gap: '6px' }}>
+                                {(['nano', 'micro', 'small'] as const).map((size) => (
+                                  <button
+                                    key={size}
+                                    onClick={() => setNbInstanceSize(size)}
+                                    className={`ec2-btn ${nbInstanceSize === size ? 'ec2-on' : ''}`}
+                                    style={{ padding: '6px 12px', fontSize: '11px', textTransform: 'capitalize' }}
+                                  >
+                                    t3.{size}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div style={{ flex: '1 1 200px' }}>
+                              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                <span>Simulated Average CPU load:</span>
+                                <span style={{ color: '#0284c7' }}>{nbCpuUtilization}%</span>
+                              </label>
+                              <input
+                                type="range"
+                                min="1"
+                                max="100"
+                                value={nbCpuUtilization}
+                                onChange={(e) => setNbCpuUtilization(parseInt(e.target.value))}
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                              onClick={runCpuCreditCycleSim}
+                              className="ec2-btn ec2-on"
+                              style={{ padding: '8px 18px', fontSize: '11.5px' }}
+                            >
+                              ⚡ Run 24-Hour Credit Simulation
+                            </button>
+                          </div>
+
+                          <div className="acad-terminal" style={{ maxHeight: '150px' }}>
+                            <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>burstable-performance-telemetry logs</span>
+                            {nbCreditLog.length === 0 ? (
+                              <div style={{ fontSize: '11.5px', color: '#64748b', fontStyle: 'italic', padding: '16px 0', textAlign: 'center' }}>
+                                Click the button above to simulate how the credit bucket behaves over a 24-hour cycle.
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px' }}>
+                                {nbCreditLog.map((log, index) => (
+                                  <div
+                                    key={index}
+                                    style={{
+                                      color: index === 0 ? '#34d399' : log.includes('🚨') ? '#f87171' : log.includes('📈') ? '#10b981' : '#cbd5e1',
+                                      fontWeight: index === 0 ? 'bold' : 'normal',
+                                      borderBottom: index === 0 ? '1px solid #1e293b' : 'none',
+                                      paddingBottom: index === 0 ? '6px' : '0',
+                                      marginBottom: index === 0 ? '6px' : '0'
+                                    }}
+                                  >
+                                    {log}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('lifecycle')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Virtual Console Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 5: EBS vs Instance Store vs EFS */}
+                  {selectedNote === 'storage_comparison' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>EBS vs Instance Store vs EFS</h3>
+                        <span className="acad-hero-badge">Instance Storage</span>
+                      </div>
+
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        AWS hosts support multiple persistent and ephemeral disk mounts, matching IOPS and file system capabilities to access requirements.
+                      </p>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Storage Category comparison</h4>
+                      <div style={{ overflowX: 'auto', margin: '12px 0 20px' }}>
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Feature / Metric</th>
+                              <th>EBS (Elastic Block Store)</th>
+                              <th>Instance Store (SSD)</th>
+                              <th>EFS (Elastic File System)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong>Type</strong></td>
+                              <td>Network Block device (SAN)</td>
+                              <td>Direct physical SSD attach</td>
+                              <td>Network File System (NFS)</td>
+                            </tr>
+                              <tr>
+                              <td><strong>Persistence</strong></td>
+                              <td>✅ Persistent (Survives VM stops/terminations)</td>
+                              <td>❌ Ephemeral (Data wiped on instance stop)</td>
+                              <td>✅ Persistent (Survives VM terminations)</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Throughput</strong></td>
+                              <td>Up to 10,000 MB/s (io2 Block Express)</td>
+                              <td>Ultra-high low-latency local IOPS</td>
+                              <td>Elastic scaling up to GBs/second</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Shared Access</strong></td>
+                              <td>❌ Single VM mount (except EBS Multi-Attach)</td>
+                              <td>❌ Restricted to a single physical VM host</td>
+                              <td>✅ Multi-mount (thousands of EC2s concurrently)</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
+                        <strong>⚠️ Stop / Termination Data Loss warning:</strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px' }}>
+                          <li><strong>Instance Store:</strong> Stopping an instance releases the underlying hypervisor hardware, formatting local SSD drives. Data is **permanently lost** on instance stops!</li>
+                          <li><strong>Delete On Termination:</strong> EBS volumes default to `DeleteOnTermination = true` for root disks. Always flag critical volumes to `false` to prevent accidental deletion during VM teardown.</li>
+                        </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Bash Command: Formatting and Mounting attached EBS volume</h4>
+                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>ebs_mount.sh</span>
+                          <button
+                            onClick={() => handleCopyCode(mountCodeSnippet, 'mount_sh')}
+                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                          >
+                            <Copy style={{ width: '12px', height: '12px' }} />
+                            {copiedNoteId === 'mount_sh' ? 'Copied!' : 'Copy Script'}
+                          </button>
+                        </div>
+                        <div className="acad-terminal">
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                            <code>{mountCodeSnippet}</code>
+                          </pre>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('storage')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Storage: EBS vs EFS Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 6: HA Architecture & Audit */}
+                  {selectedNote === 'best_practices' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>High Availability &amp; Well-Architected Auditing</h3>
+                        <span className="acad-hero-badge">Pro Architect</span>
+                      </div>
+
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        Designing fault-tolerant, resilient compute configurations requires leveraging specific instance grouping frameworks and well-architected operational policies.
+                      </p>
+
+                      <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>EC2 Placement Groups</h4>
+                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <li><strong>Cluster Placement Groups:</strong> Packs instances close together inside a single Availability Zone. Delivers ultra-low latency and 10 Gbps network bandwidth. Ideal for high-performance computing (HPC).</li>
+                        <li><strong>Spread Placement Groups:</strong> Places instances across distinct physical hardware racks (maximum 7 per AZ). Minimizes simultaneous hardware failure risks. Ideal for critical database replicas.</li>
+                        <li><strong>Partition Placement Groups:</strong> Divides instances across logical partitions. No two partitions share hardware racks. Ideal for distributed platforms (Hadoop, Cassandra, Kafka).</li>
+                      </ul>
+
+                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
+                        <strong>🧠 Well-Architected Compute Checklist:</strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
+                          <li><strong>Stateless Web Servers:</strong> Offload all local session storage to DynamoDB or ElastiCache to enable seamless Auto Scaling.</li>
+                          <li><strong>Golden Image Pipelines:</strong> Regularly audit base AMIs for security patches and automate baking using EC2 Image Builder.</li>
+                          <li><strong>Multi-AZ Deployment:</strong> Always distribute instance fleets across multiple availability zones under a Load Balancer to guarantee 99.99% system availability.</li>
+                        </ul>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('best')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Architecture &amp; Audit Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+          );
+        })()}
 
         {/* OVERVIEW PANEL */}
         {activeTab === 'overview' && (

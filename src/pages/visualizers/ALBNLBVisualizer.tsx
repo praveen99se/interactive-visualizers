@@ -1,10 +1,56 @@
 import { useEffect, useState } from 'react';
+import {
+  BookOpen,
+  Shield,
+  Activity,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  Check,
+  Copy,
+  Network,
+  Cpu
+} from 'lucide-react';
 
-type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'config';
+type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'config' | 'notebook';
 type DecisionKey = 'layer' | 'throughput' | 'staticIp' | 'inspection';
+
+const tfRuleCode = `resource "aws_lb_listener_rule" "host_path_routing" {
+  listener_arn = aws_lb_listener.front_end.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
+  }
+
+  condition {
+    host_header {
+      values = ["api.example.com"]
+    }
+  }
+
+  condition {
+    path_pattern {
+      values = ["/v1/*"]
+    }
+  }
+}`;
 
 export default function ALBNLBVisualizer() {
   const [activeSection, setActiveSection] = useState<TabType>('concept');
+  const [selectedNote, setSelectedNote] = useState<string>('alb_headers_routing');
+  const [expandedCategory, setExpandedCategory] = useState<string>('l7_routing');
+
+  // Notebook interactive simulation states
+  const [nbSrcIp, setNbSrcIp] = useState('192.168.1.105');
+  const [nbSrcPort, setNbSrcPort] = useState(49822);
+  const [nbDstPort, setNbDstPort] = useState(443);
+  const [nbProtocol, setNbProtocol] = useState<'TCP' | 'UDP'>('TCP');
+  const [nbDsrMode, setNbDsrMode] = useState<'dsr' | 'proxy'>('dsr');
+  const [crossZoneActive, setCrossZoneActive] = useState<boolean>(true);
+  const [genevePayloadType, setGenevePayloadType] = useState<'SAFE' | 'MALICIOUS'>('SAFE');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
   // Load Balancer Infra Scenario state (Integrations)
   const [infraScenario, setInfraScenario] = useState<'alb_ingress' | 'nlb_throughput' | 'privatelink'>('alb_ingress');
@@ -679,6 +725,150 @@ export default function ALBNLBVisualizer() {
           opacity: 0.45;
           background: #ffffff;
         }
+
+        /* Premium Academy Directory Styles */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-dir-header {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          padding: 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: var(--color-background-primary);
+          border: none;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--color-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-info);
+          border-left-color: var(--color-border-tertiary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eff6ff;
+          color: #0284c7;
+          border-left-color: #0ea5e9;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #e0f2fe;
+          border: 1.5px solid #bae6fd;
+          color: #0369a1;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          font-weight: 600;
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid var(--color-border-tertiary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-sim-diagram {
+          background: var(--color-background-secondary);
+          border: 1.5px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 18px;
+          position: relative;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
       `}</style>
 
       {/* Header */}
@@ -700,6 +890,7 @@ export default function ALBNLBVisualizer() {
           <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
           <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
           <button className={`anl-tb ${activeSection === 'config' ? 'anl-on' : ''}`} onClick={() => setActiveSection('config')}>⚙️ Config &amp; Terraform</button>
+          <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
         </div>
       </div>
 
@@ -2271,6 +2462,868 @@ resource "aws_lb_target_group" "tcp_tg" {
   }
 }`}</pre>
             </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 7: VISUAL ARCHITECT NOTES (DEVELOPER ACADEMY)                         */}
+        {/* ========================================================================= */}
+        {activeSection === 'notebook' && (
+          <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+            
+            {/* SaaS Academy Header Banner */}
+            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-sky-500 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
+                    Interactive Architect Academy
+                  </span>
+                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
+                    <BookOpen className="w-6 h-6 stroke-[2] text-white" /> AWS Elastic Load Balancer Academy
+                  </h2>
+                  <p className="text-xs text-white/90 mt-1 max-w-2xl leading-relaxed">
+                    A premium, high-fidelity visual workbook covering Layer 3, Layer 4, and Layer 7 load balancer routing taxonomy, SNI cert mappings, session stickiness cookies, static IP allocations, GENEVE encapsulation, and failover topologies.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 bg-black/10 border border-white/20 px-4 py-2 rounded-xl">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                  <span className="text-[10px] font-black text-emerald-100 tracking-wider uppercase font-mono">Academy Engine Online</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Sidebar Category Explorer */}
+              <div className="lg:col-span-3 space-y-4 text-left">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1 font-mono">VPC Directory Tree:</span>
+                
+                <div className="acad-dir-container">
+                  <div className="acad-dir-header">
+                    <BookOpen className="w-4 h-4 text-indigo-500" />
+                    <span>Module Explorer</span>
+                  </div>
+
+                  {/* CATEGORY 1: LAYER 7 APPLICATION BALANCING */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'l7_routing' ? '' : 'l7_routing')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-orange-500" />
+                        1. L7 Application LB
+                      </span>
+                      {expandedCategory === 'l7_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'l7_routing' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                        <button 
+                          onClick={() => setSelectedNote('alb_headers_routing')}
+                          className={`acad-dir-item-btn ${selectedNote === 'alb_headers_routing' ? 'acad-active' : ''}`}
+                        >
+                          Host &amp; Path Routing
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('session_stickiness')}
+                          className={`acad-dir-item-btn ${selectedNote === 'session_stickiness' ? 'acad-active' : ''}`}
+                        >
+                          ALB Session Cookies
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('ssl_offloading')}
+                          className={`acad-dir-item-btn ${selectedNote === 'ssl_offloading' ? 'acad-active' : ''}`}
+                        >
+                          SSL Termination &amp; SNI
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 2: LAYER 4 NETWORK BALANCING */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'l4_routing' ? '' : 'l4_routing')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Network className="w-3.5 h-3.5 text-sky-500" />
+                        2. L4 Network LB
+                      </span>
+                      {expandedCategory === 'l4_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'l4_routing' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                        <button 
+                          onClick={() => setSelectedNote('nlb_flow_hashing')}
+                          className={`acad-dir-item-btn ${selectedNote === 'nlb_flow_hashing' ? 'acad-active' : ''}`}
+                        >
+                          5-Tuple Hashing Math
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('static_ips_az')}
+                          className={`acad-dir-item-btn ${selectedNote === 'static_ips_az' ? 'acad-active' : ''}`}
+                        >
+                          Subnet Static IPs
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('dsr_return')}
+                          className={`acad-dir-item-btn ${selectedNote === 'dsr_return' ? 'acad-active' : ''}`}
+                        >
+                          Direct Server Return (DSR)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 3: LAYER 3 GATEWAY BALANCING */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'l3_routing' ? '' : 'l3_routing')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-violet-500" />
+                        3. L3 Gateway LB
+                      </span>
+                      {expandedCategory === 'l3_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'l3_routing' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                        <button 
+                          onClick={() => setSelectedNote('gwlb_firewalls')}
+                          className={`acad-dir-item-btn ${selectedNote === 'gwlb_firewalls' ? 'acad-active' : ''}`}
+                        >
+                          Virtual Firewalls Inlining
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('geneve_encapsulation')}
+                          className={`acad-dir-item-btn ${selectedNote === 'geneve_encapsulation' ? 'acad-active' : ''}`}
+                        >
+                          GENEVE UDP Tunneling
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 4: GLOBAL BALANCING & HIGH AVAILABILITY */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'ha_equalization' ? '' : 'ha_equalization')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Activity className="w-3.5 h-3.5 text-teal-500" />
+                        4. HA &amp; Equalization
+                      </span>
+                      {expandedCategory === 'ha_equalization' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'ha_equalization' && (
+                      <div className="bg-slate-50/50 py-1">
+                        <button 
+                          onClick={() => setSelectedNote('cross_zone_lb')}
+                          className={`acad-dir-item-btn ${selectedNote === 'cross_zone_lb' ? 'acad-active' : ''}`}
+                        >
+                          Cross-Zone Load Equalizer
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('health_checks_drain')}
+                          className={`acad-dir-item-btn ${selectedNote === 'health_checks_drain' ? 'acad-active' : ''}`}
+                        >
+                          Deregistration Delay
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
+                  <span className="text-slate-800 font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                    <Info className="w-3.5 h-3.5 text-indigo-500" /> Academy Advice
+                  </span>
+                  "Choose any load balancer topic in the directory above to reveal full visual descriptions, interactive tools, and production-grade configurations."
+                </div>
+              </div>
+
+              {/* Right Active Note Workspace */}
+              <div className="lg:col-span-9 space-y-6 text-left">
+
+                {/* NOTE 1: HOST & PATH ROUTING */}
+                {selectedNote === 'alb_headers_routing' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">L7 Smart Delivery</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB HTTP Host &amp; Path Rules</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      At Layer 7 (Application), an Application Load Balancer terminates the incoming SSL connection and inspects the HTTP request envelope. It evaluates Host headers, request paths, query strings, and custom header payloads sequentially according to listener rule priorities.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs">
+                        <span className="font-extrabold text-slate-800 block">HTTP Request Scanning Cycle:</span>
+                        
+                        <div className="space-y-2 font-mono text-[11px] text-slate-600">
+                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                            <span>Step 1: Host Matching</span>
+                            <span className="text-slate-800 font-semibold">Matches host (e.g. *.example.com)</span>
+                          </div>
+                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                            <span>Step 2: Path Matching</span>
+                            <span className="text-slate-800 font-semibold">Evaluates route path (e.g. /v1/*)</span>
+                          </div>
+                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                            <span>Step 3: Query Strings</span>
+                            <span className="text-slate-800 font-semibold">Checks URL parameters (tier=premium)</span>
+                          </div>
+                          <div className="flex justify-between pb-1.5">
+                            <span>Step 4: Headers Check</span>
+                            <span className="text-slate-800 font-semibold">Matches custom keys/values</span>
+                          </div>
+                        </div>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Professional Takeaway:</strong> ALB evaluations follow a strict priority ordering. If an incoming request matches a rule at priority 100, the ALB immediately routes the packet and stops scanning lower rules. Always place your narrowest, most specific rules (like canary release routes) at high priorities!
+                        </div>
+                      </div>
+
+                      {/* Visual HCL Code block */}
+                      <div className="flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Terraform Listener Rule Snippet</span>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(tfRuleCode);
+                              setCopiedNoteId('tf-rule');
+                              setTimeout(() => setCopiedNoteId(null), 2000);
+                            }}
+                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                          >
+                            {copiedNoteId === 'tf-rule' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-60">
+                          {tfRuleCode}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2: ALB SESSION COOKIES */}
+                {selectedNote === 'session_stickiness' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Session Persistence</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB Session Stickiness &amp; Cookies</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      By default, an Application Load Balancer distributes incoming HTTP requests across all target instances using a round-robin algorithm. If your application relies on local server-side memory sessions, you must enable **stickiness** to pin subsequent requests from the same user to the same target server.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
+                        <h4 className="font-bold text-slate-800 text-xs">Types of Session Stickiness:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong className="text-slate-800">Duration-Based Cookie:</strong> The ALB itself generates and encrypts a cookie named <code className="text-amber-700 bg-slate-100 px-1 py-0.5 rounded font-mono font-bold">AWSALB</code>. When the client returns this cookie in subsequent headers, the ALB routes the flow to the pinned server.
+                          </li>
+                          <li>
+                            <strong className="text-slate-800">Application-Based Cookie:</strong> The backend application injects a custom session cookie, and the ALB wraps it in its own tracking cookie (<code className="text-amber-700 bg-slate-100 px-1 py-0.5 rounded font-mono font-bold">AWSALBAPP</code>) to maintain target affinity.
+                          </li>
+                        </ul>
+
+                        <div className="acad-takeaway-box">
+                          <strong>⚠️ Failover Catch:</strong> If the pinned server instance experiences a health check crash, the ALB instantly overrides session stickiness, routes the request to a surviving server, and updates the cookie values. Ensure your app can re-authenticate or uses external session stores (like Redis)!
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono block mb-3">Interactive Cookie Header Simulation</span>
+                        
+                        <div className="space-y-3 font-mono text-[10.5px]">
+                          <div className="bg-slate-100 border border-slate-200 p-2.5 rounded-lg">
+                            <span className="text-emerald-700 font-bold">Response Header from ALB:</span>
+                            <p className="text-slate-800 mt-1">HTTP/1.1 200 OK</p>
+                            <p className="text-amber-700 font-bold">Set-Cookie: AWSALB=e30ab8f51a44e9102; Max-Age=3600; Path=/</p>
+                          </div>
+
+                          <div className="bg-slate-100 border border-slate-200 p-2.5 rounded-lg">
+                            <span className="text-sky-700 font-bold">Next Ingress Header from Client:</span>
+                            <p className="text-slate-800 mt-1">GET /v1/users HTTP/1.1</p>
+                            <p className="text-amber-700 font-bold">Cookie: AWSALB=e30ab8f51a44e9102</p>
+                          </div>
+                        </div>
+
+                        <div className="text-[10px] text-slate-500 italic mt-3">
+                          * Note: Client returns the matching cookie automatically, pinning the state.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3: SSL OFFLOADING & SNI */}
+                {selectedNote === 'ssl_offloading' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">TLS Terminations</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSL/TLS Offloading &amp; SNI</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      SSL/TLS offloading relieves your backend application servers of the CPU-intensive work of encrypting and decrypting data. The ALB handles the SSL handshake, decrypts requests using certificates mapped from AWS Certificate Manager (ACM), and forwards cleartext HTTP requests to target compute instances inside private subnets.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">Server Name Indication (SNI):</span>
+                        <p className="leading-relaxed">
+                          SNI allows you to host multiple secure websites, each with its own SSL certificate, behind a single Application Load Balancer. When a client initiates a handshake, SNI passes the requested hostname, and the ALB dynamic mapper selects the matching ACM certificate.
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>🔒 Security Best Practice:</strong> Secure the communication path inside your VPC by using security groups. Configure backend EC2 instances to only accept HTTP traffic coming directly from the ALB's security group, blocking all direct public access!
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">SSL Offloading Network Diagram</span>
+                        
+                        <div className="flex items-center justify-center gap-2 text-[10px] font-mono">
+                          <div className="bg-slate-100 border border-slate-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-slate-800">💻 Client</p>
+                            <span className="text-red-650 font-bold">HTTPS (443)</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-orange-50 border border-orange-250 p-2.5 rounded-lg">
+                            <p className="font-bold text-orange-600">⚖️ ALB</p>
+                            <span className="text-amber-700 font-semibold">Decrypts TLS</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-emerald-50 border border-emerald-250 p-2.5 rounded-lg">
+                            <p className="font-bold text-emerald-600">🖥️ EC2</p>
+                            <span className="text-emerald-700 font-semibold">HTTP (80)</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[10px] text-slate-500 mt-4 leading-normal max-w-xs mx-auto">
+                          Decryption happens at the load balancer boundary. Computes scale easily without handling complex key handshakes.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 4: NLB FLOW HASHING MATH */}
+                {selectedNote === 'nlb_flow_hashing' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">L4 Flow Mechanics</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">L4 5-Tuple Connection Hashing</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      Network Load Balancers operate at Layer 4 (Transport), routing raw packets without decoding HTTP headers or cookies. To maintain connection persistence statelessly, the NLB's ASIC routing engine hashes the connection's **5-tuple key** to map flows deterministically to the same target server.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Interactive Hashing Math HUD */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono block">Interactive FNV-1a Hashing Tool</span>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <label className="block text-slate-500 mb-1">Protocol</label>
+                            <select 
+                              value={nbProtocol} 
+                              onChange={(e) => setNbProtocol(e.target.value as any)}
+                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                            >
+                              <option value="TCP">TCP</option>
+                              <option value="UDP">UDP</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-slate-500 mb-1">Src IP</label>
+                            <input 
+                              type="text" 
+                              value={nbSrcIp} 
+                              onChange={(e) => setNbSrcIp(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-slate-500 mb-1">Src Port</label>
+                            <input 
+                              type="number" 
+                              value={nbSrcPort} 
+                              onChange={(e) => setNbSrcPort(parseInt(e.target.value) || 1024)}
+                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-slate-500 mb-1">Dst Port</label>
+                            <input 
+                              type="number" 
+                              value={nbDstPort} 
+                              onChange={(e) => setNbDstPort(parseInt(e.target.value) || 443)}
+                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Hash Results HUD */}
+                        <div className="bg-white border border-slate-200 p-3 rounded-lg font-mono text-[10.5px] space-y-1.5 text-slate-600">
+                          <p>Tuple: <span className="text-slate-850 font-bold">{`${nbProtocol}:${nbSrcIp}:${nbSrcPort}->203.0.113.88:${nbDstPort}`}</span></p>
+                          <p>FNV-1a Hash: <span className="text-sky-600 font-bold">0x{calculateFnv1a(`${nbProtocol}:${nbSrcIp}:${nbSrcPort}->203.0.113.88:${nbDstPort}`)}</span></p>
+                          <p>Modulo Index: <span className="text-emerald-600 font-bold font-semibold">
+                            Index {parseInt(calculateFnv1a(`${nbProtocol}:${nbSrcIp}:${nbSrcPort}->203.0.113.88:${nbDstPort}`), 16) % 3}
+                          </span></p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">The 5-Tuple Routing Parameters:</span>
+                        
+                        <ol className="list-decimal pl-4 space-y-1.5">
+                          <li>Source IP address</li>
+                          <li>Source port</li>
+                          <li>Destination IP address</li>
+                          <li>Destination port</li>
+                          <li>IP Protocol (TCP/UDP)</li>
+                        </ol>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Scaling Fact:</strong> Because NLB uses stateless mathematical hashing instead of saving active connection lookups in memory, it can support millions of requests per second with sub-millisecond latencies.
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 5: SUBNET STATIC IPS */}
+                {selectedNote === 'static_ips_az' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">IP Architecture</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Static Zonal IPs &amp; Whitelisting</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      Unlike an Application Load Balancer, which scales out by dynamically updating DNS records to point to changing public IPs, a Network Load Balancer binds a single **static IP address** (either an Elastic IP or private IPv4 address) to each enabled subnet in each Availability Zone.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <h4 className="font-bold text-slate-800 text-xs">Firewall Whitelisting Advantages:</h4>
+                        <p className="leading-relaxed">
+                          Many enterprise networks and third-party partner portals require restricting outbound traffic to a small, immutable list of static IP addresses. Running an NLB allows you to provide static IPs for your cloud ingress points, making it easy to configure strict firewall rules.
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Zonal Redundancy:</strong> An NLB provisions one static IP address per enabled Availability Zone. If an AZ goes offline, the NLB's DNS record handles failover by directing traffic only to the static IPs of the surviving zones.
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Static IP Zonal Mapping</span>
+                        
+                        <div className="space-y-2.5 text-left max-w-xs mx-auto">
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-orange-600 font-bold">us-east-1a Subnet</span>
+                            <span className="text-slate-700">EIP: 3.208.53.11</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-sky-600 font-bold">us-east-1b Subnet</span>
+                            <span className="text-slate-700">EIP: 54.88.192.42</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[10.5px] text-slate-500 mt-4 leading-normal">
+                          Client devices can hard-code these two IP addresses in their firewalls, with zero risk of DNS rotation outages.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 6: DIRECT SERVER RETURN */}
+                {selectedNote === 'dsr_return' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Network Performance</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Direct Server Return (DSR) Pathing</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      In a standard load balancer configuration (Proxy Mode), the load balancer acts as a middleman: it receives requests from the client, forwards them to the server, and then receives response packets from the server to send back to the client. This means all response traffic is routed back through the load balancer, which can create a bandwidth bottleneck.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Interactive DSR comparison panel */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono">Interactive DSR Router</span>
+                          
+                          <div className="flex bg-slate-200 p-0.5 rounded">
+                            <button 
+                              onClick={() => setNbDsrMode('dsr')}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${nbDsrMode === 'dsr' ? 'bg-sky-500 text-white' : 'text-slate-600'}`}
+                            >
+                              DSR
+                            </button>
+                            <button 
+                              onClick={() => setNbDsrMode('proxy')}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${nbDsrMode === 'proxy' ? 'bg-sky-500 text-white' : 'text-slate-600'}`}
+                            >
+                              Proxy
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Interactive DSR SVG Diagram */}
+                        <div className="border border-slate-200 rounded-lg p-2 bg-slate-50 h-36">
+                          <svg width="100%" height="100%" viewBox="0 0 280 140">
+                            {/* Nodes */}
+                            <g transform="translate(10, 45)">
+                              <rect width="45" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                              <text x="22.5" y="18.5" fill="#334155" fontSize="8" textAnchor="middle" fontWeight="bold">Client</text>
+                            </g>
+                            <g transform="translate(95, 45)">
+                              <rect width="55" height="30" rx="4" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1" />
+                              <text x="27.5" y="18.5" fill="#0369a1" fontSize="8" textAnchor="middle" fontWeight="bold">NLB L4</text>
+                            </g>
+                            <g transform="translate(195, 45)">
+                              <rect width="55" height="30" rx="4" fill="#dcfce7" stroke="#10b981" strokeWidth="1" />
+                              <text x="27.5" y="18.5" fill="#15803d" fontSize="8" textAnchor="middle" fontWeight="bold">Server</text>
+                            </g>
+
+                            {/* Inbound path */}
+                            <path d="M 55 55 L 95 55" fill="none" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,2" />
+                            <path d="M 150 60 L 195 60" fill="none" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,2" />
+
+                            {/* Outbound path */}
+                            {nbDsrMode === 'dsr' ? (
+                              <>
+                                <path d="M 222.5 75 C 222.5 115, 32.5 115, 32.5 75" fill="none" stroke="#06b6d4" strokeWidth="2" strokeDasharray="4,2" />
+                                <circle cx="222.5" cy="75" r="3.5" fill="#06b6d4">
+                                  <animateMotion dur="2.2s" repeatCount="indefinite" path="M 222.5 75 C 222.5 115, 32.5 115, 32.5 75" />
+                                </circle>
+                                <text x="127.5" y="125" fill="#0891b2" fontSize="7.5" textAnchor="middle" fontWeight="bold">Direct Bypass Return</text>
+                              </>
+                            ) : (
+                              <>
+                                <path d="M 195 68 L 150 68" fill="none" stroke="#ef4444" strokeWidth="1.5" />
+                                <path d="M 95 63 L 55 63" fill="none" stroke="#ef4444" strokeWidth="1.5" />
+                                <circle cx="195" cy="68" r="3.5" fill="#ef4444">
+                                  <animateMotion dur="2.5s" repeatCount="indefinite" path="M 195 68 L 150 68 M 95 63 L 55 63" />
+                                </circle>
+                                <text x="127.5" y="92" fill="#ef4444" fontSize="7.5" textAnchor="middle">Proxy Loop (Slow)</text>
+                              </>
+                            )}
+                          </svg>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-655">
+                        <span className="font-extrabold text-slate-800 block">DSR Technical Mechanics:</span>
+                        <p className="leading-relaxed">
+                          With **Direct Server Return (DSR)**, the load balancer receives the packet, routes it to the target server, and leaves the client source IP intact. When responding, the server sends response packets directly back to the client's public IP, bypassing the load balancer completely. This improves overall throughput, since response payloads are typically much larger than requests!
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 AWS Implementation:</strong> AWS handles DSR inside the Hyperplane routing layer. Since NLB does not edit the client's packet source fields, backend instances can reply directly to the client, providing high throughput for large downloads.
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 7: VIRTUAL FIREWALLS INLINING */}
+                {selectedNote === 'gwlb_firewalls' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Layer 3 Ingress</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GWLB Inline Firewall Topologies</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      Operating at Layer 3 (Network), the Gateway Load Balancer (GWLB) is designed to run inline security appliances, such as third-party virtual firewalls, intrusion detection and prevention systems (IDS/IPS), or deep packet inspectors.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <h4 className="font-bold text-slate-800 text-xs">Transparent Inspection Routing:</h4>
+                        <p className="leading-relaxed">
+                          Unlike traditional load balancers, a GWLB does not terminate connection flows. Instead, it intercepts raw IP packets, encapsulates them in a GENEVE tunnel header, and routes them to a pool of security appliances. Once inspected and approved, the appliances return the packets to the GWLB, which forwards them transparently to the target application server.
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Bump-in-the-Wire Pattern:</strong> This design lets you insert security inspection into your traffic path without changing subnet CIDRs, routing tables, or server network card configurations.
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">Transparent Inline Flow Path</span>
+                        
+                        <div className="flex flex-col items-center gap-1 text-[9.5px] font-mono text-slate-600">
+                          <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-md">
+                            💡 Raw Packet Ingress
+                          </div>
+                          <span className="text-slate-400">&darr;</span>
+                          <div className="bg-violet-50 border border-violet-205 px-3 py-1.5 rounded-md text-violet-700 font-semibold">
+                            🔒 VPC GWLB Endpoint (GWLBe)
+                          </div>
+                          <span className="text-slate-400">&darr;</span>
+                          <div className="bg-violet-100 border border-violet-300 px-3 py-1.5 rounded-md text-violet-850 font-bold">
+                            🛡️ GWLB + Firewall Pool (GENEVE UDP 6081)
+                          </div>
+                          <span className="text-slate-400">&darr;</span>
+                          <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-md">
+                            🟢 Clean Target App Instance (Layer 3 raw delivery)
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 8: GENEVE UDP TUNNELING */}
+                {selectedNote === 'geneve_encapsulation' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Tunneling Protocol</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GENEVE Tunneling Protocol</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      GENEVE (Generic Network Virtualization Encapsulation) is a tunneling protocol that encapsulates raw L3 IP packets into UDP frames (port 6081) to pass metadata alongside raw traffic. This allows the GWLB to pass critical routing context, such as VPC endpoint IDs, flow IDs, and security tags, directly to virtual firewalls.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Interactive Frame Inspector */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 font-mono text-xs">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">GENEVE Frame Inspector</span>
+                          
+                          <button
+                            onClick={() => setGenevePayloadType(genevePayloadType === 'SAFE' ? 'MALICIOUS' : 'SAFE')}
+                            className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-colors ${
+                              genevePayloadType === 'SAFE' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-red-50 border-red-300 text-red-700'
+                            }`}
+                          >
+                            {genevePayloadType === 'SAFE' ? 'SAFE' : 'ATTACK DETECT'}
+                          </button>
+                        </div>
+
+                        <div className="space-y-2 text-[10px]">
+                          <div className="bg-white border border-slate-200 p-2 rounded text-slate-700">
+                            <span className="text-slate-400 text-[8.5px] block font-bold">1. OUTER IP HEADER (ENI to GWLB)</span>
+                            <p>Src: 10.0.1.25 (GWLBe) &rarr; Dst: 10.0.3.102 (GWLB)</p>
+                            <p>Proto: UDP (Dst Port: 6081)</p>
+                          </div>
+
+                          <div className="bg-violet-50 border border-violet-200 p-2 rounded text-violet-800">
+                            <span className="text-violet-600 text-[8.5px] block font-bold">2. GENEVE METADATA HEADER</span>
+                            <p>VNI: 80020 | Connection Flow ID: 41828</p>
+                            <p>VPCE ID: vpce-0a1b2c3d4e5f6</p>
+                          </div>
+
+                          <div className={`p-2 rounded border ${genevePayloadType === 'SAFE' ? 'bg-white border-slate-200 text-slate-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                            <span className="text-slate-400 text-[8.5px] block font-bold">3. INNER CUSTOMER PACKET (Client to Server)</span>
+                            <p>Src: 198.51.100.4 (Client) &rarr; Dst: 10.0.8.10 (Server)</p>
+                            <p className={genevePayloadType === 'SAFE' ? 'text-slate-800' : 'text-red-600 font-bold'}>
+                              Payload: {genevePayloadType === 'SAFE' ? 'GET /index.html' : 'UNION SELECT null, username, password FROM users;'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">Why GENEVE over VXLAN?</span>
+                        <p className="leading-relaxed">
+                          While protocols like VXLAN have static headers, GENEVE supports variable-length options headers. This allows AWS to embed custom metadata, helping security appliances identify which customer VPC or endpoint interface generated the request.
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Appliance Support:</strong> To integrate with a GWLB, the security appliance must be configured to support GENEVE packet decapsulation and encapsulation, decapsulating packets for inspection and then repacking them with the same metadata options headers!
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 9: CROSS-ZONE LOAD BALANCING */}
+                {selectedNote === 'cross_zone_lb' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Traffic Equalization</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cross-Zone Load Equalizer</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      By default, an Elastic Load Balancer node distributes incoming requests only to targets in its own Availability Zone. If your target groups are distributed unevenly across zones, this default behavior can lead to unequal instance load. Enabling **Cross-Zone Load Balancing** resolves this by letting balancer nodes distribute traffic evenly across all registered targets in all enabled zones.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Interactive Cross-Zone Visual */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider font-mono">Interactive Equalizer</span>
+                          
+                          <button
+                            onClick={() => setCrossZoneActive(!crossZoneActive)}
+                            className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                              crossZoneActive ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-550'
+                            }`}
+                          >
+                            Cross-Zone: {crossZoneActive ? 'ENABLED' : 'DISABLED'}
+                          </button>
+                        </div>
+
+                        {/* Cross-Zone Load Visual Diagram */}
+                        <div className="border border-slate-200 rounded-lg p-2.5 bg-slate-50 h-40 flex flex-col justify-between text-[10px] font-mono">
+                          
+                          {/* Zone A */}
+                          <div className="bg-white border border-slate-200 p-2 rounded flex justify-between items-center text-slate-800">
+                            <div>
+                              <span className="text-orange-600 font-bold block">Subnet AZ1 (2 Servers)</span>
+                              <span className="text-[9px] text-slate-500">Gets 50% traffic (25% per instance)</span>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded text-[9.5px] font-bold ${crossZoneActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700 animate-pulse'}`}>
+                              {crossZoneActive ? 'Balanced (100% Load)' : 'Divergent Load'}
+                            </span>
+                          </div>
+
+                          {/* Zone B */}
+                          <div className="bg-white border border-slate-200 p-2 rounded flex justify-between items-center text-slate-800">
+                            <div>
+                              <span className="text-sky-600 font-bold block">Subnet AZ2 (1 Server)</span>
+                              <span className="text-[9px] text-slate-500">
+                                {crossZoneActive ? 'Gets 33.3% traffic (33.3% load)' : 'Gets 50% traffic (50% load)'}
+                              </span>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded text-[9.5px] font-bold ${crossZoneActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                              {crossZoneActive ? 'Balanced (100% Load)' : 'Overloaded (200% Load!)'}
+                            </span>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-655">
+                        <span className="font-extrabold text-slate-800 block">Cross-Zone Default Behaviors:</span>
+                        
+                        <ul className="list-disc pl-4 space-y-1.5">
+                          <li>
+                            <strong className="text-slate-800">Application Load Balancer:</strong> Cross-Zone Load Balancing is **always enabled** by default, ensuring even load distribution across zones.
+                          </li>
+                          <li>
+                            <strong className="text-slate-800">Network Load Balancer:</strong> Cross-Zone Load Balancing is **disabled** by default. Enabling it incurs a small cross-zone data transfer charge.
+                          </li>
+                        </ul>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Best Practice:</strong> Always enable Cross-Zone Load Balancing for NLB if your target compute capacity is asymmetrical or if targets are not distributed evenly across subnets!
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 10: DEREGISTRATION DELAY */}
+                {selectedNote === 'health_checks_drain' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Compute Governance</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Deregistration Delay &amp; Draining</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-650 leading-relaxed">
+                      When a server instance is marked for deregistration (for example, during scale-in events, deployments, or manual decommissioning), the load balancer stops routing new requests to it. However, it keeps active connections open for a specified duration, known as the **Deregistration Delay (Connection Draining)**, to let ongoing requests complete gracefully.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-655">
+                        <h4 className="font-bold text-slate-800 text-xs">Configuration Options:</h4>
+                        <p className="leading-relaxed">
+                          Deregistration delay can be configured per target group between **0 and 3600 seconds** (default: 300 seconds). If your app serves long-lived connection flows (like file uploads or reports generation), set this delay to a larger value to prevent connections from dropping abruptly!
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Health Probe Cycles:</strong> Target groups verify instance health using health checks. If an instance fails a health check for `unhealthy_threshold` consecutive times, it is marked unhealthy and removed from active routing, with no connection draining delay!
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Deregistration State Transitions</span>
+                        
+                        <div className="space-y-2 text-[10.5px] text-left">
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between text-slate-800">
+                            <span className="font-bold">1. Active Status</span>
+                            <span className="text-emerald-700 font-bold font-mono">Healthy &amp; Routing</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between text-slate-800">
+                            <span className="font-bold">2. Draining Status</span>
+                            <span className="text-amber-700 font-bold font-mono">Draining (Active Conns Only)</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between text-slate-800">
+                            <span className="font-bold">3. Deregistered Status</span>
+                            <span className="text-slate-500 font-bold font-mono">Deregistered (Safe to Terminate)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+
+            </div>
+
           </div>
         )}
 

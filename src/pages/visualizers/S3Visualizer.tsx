@@ -1,4 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  Copy,
+  Network,
+  Zap,
+  Sliders,
+  Globe
+} from 'lucide-react';
 
 // S3 Storage Classes Specs Data
 const STORAGE_CLASSES = {
@@ -138,7 +149,25 @@ const BUCKET_POLICIES = {
 };
 
 export default function S3Visualizer() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'encryption' | 'versioning' | 'storage' | 'networking' | 'transfer' | 'operations'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'encryption' | 'versioning' | 'storage' | 'networking' | 'transfer' | 'operations' | 'notebook'>('notebook');
+
+  // Visual Architect Academy Notebook states
+  const [selectedNote, setSelectedNote] = useState<string>('s3_namespace');
+  const [expandedCategory, setExpandedCategory] = useState<string>('s3_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  const handleCopyCode = (code: string, id: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedNoteId(id);
+    setTimeout(() => {
+      setCopiedNoteId(null);
+    }, 2000);
+  };
+
+  // S3 Prefix Partitioning Calculator state variables
+  const [nbPrefixCount, setNbPrefixCount] = useState<number>(4);
+  const [nbGetsPerPrefix, setNbGetsPerPrefix] = useState<number>(3000);
+  const [nbPutsPerPrefix, setNbPutsPerPrefix] = useState<number>(1500);
 
   // TAB 1: BUCKET CONCEPTS STATE VARIABLES
   const [bucketType, setBucketType] = useState<'general' | 'directory'>('general');
@@ -1626,6 +1655,151 @@ export default function S3Visualizer() {
           from { box-shadow: 0 0 4px rgba(220, 38, 38, 0.2); background: #fef2f2; }
           to { box-shadow: 0 0 16px rgba(220, 38, 38, 0.55); background: #fee2e2; }
         }
+
+        /* Premium Academy Directory Styles */
+        .acad-dir-container {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          background: #0f172a;
+          color: #f8fafc;
+          padding: 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 10px;
+          font-weight: 850;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+          border-top: none;
+          border-left: none;
+          border-right: none;
+          cursor: pointer;
+        }
+        .acad-dir-folder-btn:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #64748b;
+          border-top: none;
+          border-right: none;
+          border-bottom: none;
+          border-left: 3px solid transparent;
+          background: #ffffff;
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: #f8fafc;
+          color: #10b981;
+          border-left-color: #cbd5e1;
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #ecfdf5;
+          color: #065f46;
+          border-left-color: #10b981;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        }
+        .acad-hero-badge {
+          background: #ecfdf5;
+          border: 1.5px solid #a7f3d0;
+          color: #065f46;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+          border-left: 4px solid #10b981;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 12px;
+          line-height: 1.6;
+          color: #475569;
+          font-weight: 600;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+        }
+        .acad-table th {
+          background: #f8fafc;
+          color: #334155;
+          font-weight: 800;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid #e2e8f0;
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid #f1f5f9;
+          color: #475569;
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-sim-diagram {
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 18px;
+          box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+          position: relative;
+        }
+        .acad-terminal {
+          background: #090d16;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px;
+          font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
       `}</style>
 
       {/* Header */}
@@ -1641,6 +1815,7 @@ export default function S3Visualizer() {
 
         {/* Tab Selection */}
         <div className="s3-tabs">
+          <button className={`s3-tb ${activeTab === 'notebook' ? 's3-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
           <button className={`s3-tb ${activeTab === 'overview' ? 's3-on' : ''}`} onClick={() => setActiveTab('overview')}>🪣 Namespace & CORS</button>
           <button className={`s3-tb ${activeTab === 'security' ? 's3-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Policies & BPA</button>
           <button className={`s3-tb ${activeTab === 'encryption' ? 's3-on' : ''}`} onClick={() => setActiveTab('encryption')}>🔒 SSE & KMS keys</button>
@@ -1651,68 +1826,1143 @@ export default function S3Visualizer() {
           <button className={`s3-tb ${activeTab === 'operations' ? 's3-on' : ''}`} onClick={() => setActiveTab('operations')}>⚙️ Batch & Lens</button>
         </div>
 
+        {/* VISUAL ARCHITECT NOTES (NOTEBOOK WORKWHEETS) */}
+        {activeTab === 'notebook' && (
+          <div className="space-y-6 animate-fadeIn text-left" style={{ marginTop: '16px' }}>
+            
+            {/* SaaS Academy Header Banner */}
+            <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-2xl border border-emerald-500/20">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_50%)]"></div>
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span className="bg-emerald-50/30 border border-emerald-400/30 text-emerald-200 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                    Interactive Architect Academy
+                  </span>
+                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2 font-display">
+                    <BookOpen className="w-6 h-6 stroke-[2] text-emerald-400" /> AWS S3 Storage &amp; Security Academy
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed font-sans">
+                    A premium, high-fidelity visual workspace covering flat namespaces, bucket access policies, server-side KMS encryption, version stacks, WORM object locks, lifecycle optimization, Gateway Endpoints, and global replication.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 bg-emerald-950/80 border border-emerald-855 px-4 py-2 rounded-xl">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="text-[10px] font-black text-emerald-300 tracking-wider uppercase">Telemetry Engine Online</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Sidebar Category Explorer */}
+              <div className="lg:col-span-3 space-y-4 text-left">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">S3 Directory Tree:</span>
+                
+                <div className="acad-dir-container">
+                  <div className="acad-dir-header">
+                    <BookOpen className="w-4 h-4 text-emerald-400" />
+                    <span>Module Explorer</span>
+                  </div>
+
+                  {/* CATEGORY 1: S3 FUNDAMENTALS */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 's3_fundamentals' ? '' : 's3_fundamentals')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Sliders className="w-3.5 h-3.5 text-emerald-500" />
+                        1. S3 Fundamentals
+                      </span>
+                      {expandedCategory === 's3_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 's3_fundamentals' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                        <button 
+                          onClick={() => setSelectedNote('s3_namespace')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_namespace' ? 'acad-active' : ''}`}
+                        >
+                          Namespaces &amp; CORS
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_security')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_security' ? 'acad-active' : ''}`}
+                        >
+                          Access Control Policies
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_encryption')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_encryption' ? 'acad-active' : ''}`}
+                        >
+                          Security &amp; KMS Keys
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 2: DATA MANAGEMENT */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 's3_data_management' ? '' : 's3_data_management')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-emerald-500" />
+                        2. Data Management
+                      </span>
+                      {expandedCategory === 's3_data_management' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 's3_data_management' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                        <button 
+                          onClick={() => setSelectedNote('s3_versioning')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_versioning' ? 'acad-active' : ''}`}
+                        >
+                          Versioning &amp; WORM
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_storage')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_storage' ? 'acad-active' : ''}`}
+                        >
+                          Storage &amp; Lifecycles
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 3: ADVANCED TOPOLOGIES */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 's3_advanced' ? '' : 's3_advanced')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Network className="w-3.5 h-3.5 text-emerald-500" />
+                        3. Advanced Topologies
+                      </span>
+                      {expandedCategory === 's3_advanced' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 's3_advanced' && (
+                      <div className="bg-slate-50/50 py-1">
+                        <button 
+                          onClick={() => setSelectedNote('s3_networking')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_networking' ? 'acad-active' : ''}`}
+                        >
+                          Gateway VPC Endpoints
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_transfer')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_transfer' ? 'acad-active' : ''}`}
+                        >
+                          Acceleration &amp; Replication
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_operations')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_operations' ? 'acad-active' : ''}`}
+                        >
+                          Event Notifications &amp; Batch
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-400 font-semibold space-y-1">
+                  <span className="text-white font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                    <Info className="w-3.5 h-3.5 text-emerald-400" /> Academy Advice
+                  </span>
+                  "Choose any module from the tree above. Each view includes custom interactive elements, dynamic code blocks, or structural system architecture diagrams."
+                </div>
+              </div>
+
+              {/* Right Active Note Workspace */}
+              <div className="lg:col-span-9 space-y-6 text-left">
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 1: NAMESPACES & CORS                                              */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_namespace' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Namespaces &amp; CORS</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Bucket Namespaces, Static Hosting &amp; CORS</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 1 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Amazon S3 is a flat key-value store rather than a traditional hierarchical operating system directory tree. Folders are only simulated using key prefix prefixes, allowing it to scale infinitely and support a baseline rate of 3,500 PUT and 5,500 GET requests per second per prefix.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#0891b2' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Buckets, Objects &amp; Prefixes
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          A <span className="s3-hl-cyan">Bucket</span> is a globally unique storage container in the AWS cloud. An <span className="s3-hl-cyan">Object</span> is the fundamental entity stored in S3, consisting of data and metadata. A <span className="s3-hl-cyan">Prefix</span> is a logical string delimiter (like <code>images/</code>) used to partition keys and partition high-throughput request rates.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Static Website Hosting
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <span className="s3-hl-cyan">Static Website Hosting</span> is an S3 feature that allows you to configure a bucket to host website assets (HTML, CSS, JS, images, client scripts) and serve them via an HTTP/HTTPS endpoint directly to users, eliminating server overhead.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          CORS &amp; Requester Pays
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <span className="s3-hl-cyan">CORS (Cross-Origin Resource Sharing)</span> is a browser security mechanism that allows web applications loaded in one domain to interact with resources in S3. <span className="s3-hl-cyan">Requester Pays</span> is a bucket setting that shifts data download egress fees to the requesting user.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 S3 operates as a flat key-value store rather than a hierarchical file tree. Folders are simulated through logical prefixes, which allows S3 to scale infinitely and support high request volumes per prefix.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — CREATE BUCKET &amp; CORS
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Create an S3 Bucket in a specific region\naws s3api create-bucket --bucket my-premium-bucket --region us-east-1\n\n# Configure CORS configuration\naws s3api put-bucket-cors --bucket my-premium-bucket --cors-configuration '{\n  "CORSRules": [\n    {\n      "AllowedOrigins": ["https://domain-a.com"],\n      "AllowedMethods": ["GET"],\n      "AllowedHeaders": ["*"],\n      "MaxAgeSeconds": 3000\n    }\n  ]\n}'`,
+                            "s3_namespace_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_namespace_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Create an S3 Bucket in a specific region
+aws s3api create-bucket --bucket my-premium-bucket --region us-east-1
+
+# Configure CORS configuration
+aws s3api put-bucket-cors --bucket my-premium-bucket --cors-configuration '{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://domain-a.com"],
+      "AllowedMethods": ["GET"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3000
+    }
+  ]
+}'`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('overview')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Namespace &amp; CORS Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 2: POLICIES & BPA                                                 */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_security' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Access Controls</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Identity Policies, Resource Policies &amp; BPA</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 2 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      S3 access control evaluates identity-based IAM policies, resource-based S3 Bucket policies, and the Block Public Access (BPA) master overrides. S3 processes all active configurations simultaneously to authorize requests.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#f59e0b' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          IAM Policies vs Resource Policies
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          An <span className="s3-hl-orange">IAM Policy</span> is attached to identities (users/roles) within your AWS account. A <span className="s3-hl-orange">Resource Policy (Bucket Policy)</span> is attached directly to the bucket itself, enabling cross-account access or public access configurations.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Policy Conditions
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <span className="s3-hl-orange">Policy Conditions</span> are optional logic checks (like `aws:sourceVpce` or `aws:SourceIp`) that restrict request access to specific source VPC endpoints or corporate subnets.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Block Public Access Override (BPA)
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <span className="s3-hl-orange">Block Public Access (BPA)</span> is an absolute firewall setting applied at the bucket or account level to block wildcard public access rules from taking effect, overriding policy configurations.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 S3 evaluations prioritize explicit denials. S3 Block Public Access (BPA) serves as a centralized override switch to completely drop public bucket policies and ACL permissions regardless of their statements.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — BUCKET POLICY &amp; BPA
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Apply a resource-based Bucket Policy (restricts access to a specific VPC endpoint)\naws s3api put-bucket-policy --bucket my-premium-bucket --policy '{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Sid": "RestrictAccessToSpecificVPCEndpoint",\n      "Effect": "Deny",\n      "Principal": "*",\n      "Action": "s3:*",\n      "Resource": [\n        "arn:aws:s3:::my-premium-bucket",\n        "arn:aws:s3:::my-premium-bucket/*"\n      ],\n      "Condition": {\n        "StringNotEquals": {\n          "aws:sourceVpce": "vpce-0d8fa928bcde1a38"\n        }\n      }\n    }\n  ]\n}'\n\n# Configure Block Public Access (BPA) master firewall overrides\naws s3api put-public-access-block --bucket my-premium-bucket --public-access-block-configuration '{\n  "BlockPublicAcls": true,\n  "IgnorePublicAcls": true,\n  "BlockPublicPolicy": true,\n  "RestrictPublicBuckets": true\n}'`,
+                            "s3_security_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_security_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Apply a resource-based Bucket Policy (restricts access to a specific VPC endpoint)
+aws s3api put-bucket-policy --bucket my-premium-bucket --policy '{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RestrictAccessToSpecificVPCEndpoint",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::my-premium-bucket",
+        "arn:aws:s3:::my-premium-bucket/*"
+      ],
+      "Condition": {
+        "StringNotEquals": {
+          "aws:sourceVpce": "vpce-0d8fa928bcde1a38"
+        }
+      }
+    }
+  ]
+}'
+
+# Configure Block Public Access (BPA) master firewall overrides
+aws s3api put-public-access-block --bucket my-premium-bucket --public-access-block-configuration '{
+  "BlockPublicAcls": true,
+  "IgnorePublicAcls": true,
+  "BlockPublicPolicy": true,
+  "RestrictPublicBuckets": true
+}'`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('security')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Policies &amp; BPA Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 3: SECURITY & KMS KEYS                                            */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_encryption' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Encryption</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSE Models, KMS API Quotas &amp; S3 Bucket Keys</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 3 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      S3 manages data encryption at rest transparently at the storage hardware layer. Use SSE-S3 or SSE-KMS keys, and leverage S3 Bucket Keys to minimize outbound KMS API calls.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#10b981' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Server-Side Encryption Models (SSE)
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-green">Server-Side Encryption</span></strong> includes SSE-S3 (AWS-managed keys), SSE-KMS (KMS Customer Master Keys), SSE-C (customer-provided keys), and DSSE-KMS (dual-layer independent KMS keys).
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          KMS Envelope Encryption &amp; Quotas
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-green">Envelope Encryption</span></strong> encrypts data payloads with a unique local data key, and then encrypts that data key under a KMS Customer Master Key. High-volume transit is subject to regional KMS API limits, which may throttle requests.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Bucket Keys &amp; Key Scrubbing
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-green">S3 Bucket Keys</span></strong> cache derived data keys at the S3 bucket layer. This reduces outbound KMS API request volumes and transit costs by up to 99% while maintaining standard hypervisor RAM key zeroization.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 Enable S3 Bucket Keys when deploying SSE-KMS in high-throughput environments to prevent `KMS:ThrottlingException` errors and drastically reduce KMS billing expenses.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — SSE-KMS &amp; S3 BUCKET KEY
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Configure default bucket encryption using SSE-KMS and S3 Bucket Keys\naws s3api put-bucket-encryption --bucket my-premium-bucket --server-side-encryption-configuration '{\n  "Rules": [\n    {\n      "ApplyServerSideEncryptionByDefault": {\n        "SSEAlgorithm": "aws:kms",\n        "KMSMasterKeyId": "arn:aws:kms:us-east-1:123456789012:key/your-custom-key-id"\n      },\n      "BucketKeyEnabled": true\n    }\n  ]\n}'\n\n# Upload an object explicitly specifying SSE-KMS and key parameters\naws s3 cp document.pdf s3://my-premium-bucket/secure-docs/ --sse aws:kms --sse-kms-key-id arn:aws:kms:us-east-1:123456789012:key/your-custom-key-id`,
+                            "s3_encryption_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_encryption_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Configure default bucket encryption using SSE-KMS and S3 Bucket Keys
+aws s3api put-bucket-encryption --bucket my-premium-bucket --server-side-encryption-configuration '{
+  "Rules": [
+    {
+      "ApplyServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "aws:kms",
+        "KMSMasterKeyId": "arn:aws:kms:us-east-1:123456789012:key/your-custom-key-id"
+      },
+      "BucketKeyEnabled": true
+    }
+  ]
+}'
+
+# Upload an object explicitly specifying SSE-KMS and key parameters
+aws s3 cp document.pdf s3://my-premium-bucket/secure-docs/ --sse aws:kms --sse-kms-key-id arn:aws:kms:us-east-1:123456789012:key/your-custom-key-id`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('encryption')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Encryption &amp; KMS Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 4: VERSIONING & WORM                                              */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_versioning' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Versioning</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Version Stacks, Delete Markers &amp; WORM Object Lock</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 4 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      S3 Object Versioning provides protection against accidental edits or deletions. Objects locks enforce regulatory compliance controls to ensure absolute file immutability.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#6366f1' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Object Versioning &amp; Delete Markers
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-indigo">Object Versioning</span></strong> preserves historical versions of files in a chronological stack. Deleting an object places a zero-byte <strong><span className="s3-hl-indigo">Delete Marker</span></strong> at the top of the stack, hiding it from standard listings.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 MFA Delete Protection
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-indigo">MFA Delete</span></strong> requires a physical hardware MFA token passcode to suspend versioning or permanently purge object versions from the stack, securing against administrator compromises.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Object Lock &amp; WORM Compliance
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> enforces Write Once Read Many (WORM) models using Retention Periods (fixed time duration locks) or Legal Holds (indefinite compliance blocks requiring specific release permissions).
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 Standard deletes only insert Delete Markers. To permanently erase a file version, the specific Version ID must be supplied in the API call. MFA Delete blocks permanently destructive actions without physical MFA token codes.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — VERSIONING &amp; RESTORES
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Enable versioning on a bucket\naws s3api put-bucket-versioning --bucket my-premium-bucket --versioning-configuration Status=Enabled\n\n# List versions for a specific object key\naws s3api list-object-versions --bucket my-premium-bucket --prefix document.pdf\n\n# Restore a logically deleted object by deleting its current version Delete Marker\naws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-id qwer1234asdf5678`,
+                            "s3_versioning_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_versioning_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Enable versioning on a bucket
+aws s3api put-bucket-versioning --bucket my-premium-bucket --versioning-configuration Status=Enabled
+
+# List versions for a specific object key
+aws s3api list-object-versions --bucket my-premium-bucket --prefix document.pdf
+
+# Restore a logically deleted object by deleting its current version Delete Marker
+aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-id qwer1234asdf5678`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('versioning')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Versioning &amp; WORM Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 5: STORAGE CLASSES & CALCULATOR                                   */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_storage' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Classes &amp; Lifecycles</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Storage Classes, Lifecycles &amp; Prefix Calculator</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 5 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Optimizing S3 storage classes matches data access patterns to physical hardware pricing. Configure lifecycle policies to transition objects to archive tiers automatically.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#a855f7' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Storage Classes Specs
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          S3 offers classes: Standard (hot data), Standard-IA (infrequent access), One Zone-IA (recreatable data), Intelligent-Tiering (automated cost shift), Glacier Instant Retrieval, Glacier Flexible, and Glacier Deep Archive.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Automated Lifecycle Policies
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-purple">Lifecycle Policies</span></strong> automate storage tier migration rules (Transition Actions) or permanent file deletions (Expiration Actions) based on object age parameters.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Glacier Vault Locks
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          A <strong><span className="s3-hl-purple">Glacier Vault Lock</span></strong> applies an immutable compliance policy that cannot be altered, overridden, or deleted by any system administrator or AWS root account once committed.
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* S3 PREFIX CALCULATOR */}
+                    <div className="bg-emerald-50/50 border border-emerald-200/60 rounded-xl p-6 space-y-4">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sliders className="w-5 h-5 text-emerald-600" />
+                        <h4 style={{ fontWeight: 'bold', fontSize: '14.5px', color: 'var(--color-text-primary)', margin: 0 }}>
+                          S3 Prefix Throughput &amp; Rate Partitioning Calculator
+                        </h4>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0 }}>
+                        S3 scales throughput performance linearly by key prefixes. A single prefix supports a baseline rate of <strong>3,500 PUT/POST/DELETE</strong> and <strong>5,500 GET/HEAD</strong> requests per second. Use the sliders below to adjust workload parameters.
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                        <div className="space-y-2">
+                          <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                            Number of Prefixes: <span className="text-emerald-700 font-extrabold">{nbPrefixCount}</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="1" 
+                            max="15" 
+                            value={nbPrefixCount} 
+                            onChange={(e) => setNbPrefixCount(Number(e.target.value))} 
+                            className="w-full"
+                          />
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                            E.g. partitioning keys using hash prefix prefixes.
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                            GET Requests per Prefix: <span className="text-emerald-700 font-extrabold">{nbGetsPerPrefix.toLocaleString()}/sec</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="1000" 
+                            max="10000" 
+                            step="500"
+                            value={nbGetsPerPrefix} 
+                            onChange={(e) => setNbGetsPerPrefix(Number(e.target.value))} 
+                            className="w-full"
+                          />
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                            S3 Limit: 5,500 GETs/sec per prefix.
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                            PUT Requests per Prefix: <span className="text-emerald-700 font-extrabold">{nbPutsPerPrefix.toLocaleString()}/sec</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="500" 
+                            max="6000" 
+                            step="250"
+                            value={nbPutsPerPrefix} 
+                            onChange={(e) => setNbPutsPerPrefix(Number(e.target.value))} 
+                            className="w-full"
+                          />
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                            S3 Limit: 3,500 PUTs/sec per prefix.
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Calculator Results */}
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* GET capacity check */}
+                        <div style={{ borderRight: '1px solid #e2e8f0', paddingRight: '16px' }} className="space-y-2">
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>GET Throughput Status:</span>
+                            {nbGetsPerPrefix > 5500 ? (
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '6px' }}>
+                                ⚠️ Throttling Expected
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669', background: '#ecfdf5', padding: '2px 8px', borderRadius: '6px' }}>
+                                ✅ Healthy Load
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                            Requested GETs/Prefix: <strong>{nbGetsPerPrefix.toLocaleString()}/sec</strong>
+                          </div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                            Aggregate GET Capacity: <strong>{(nbPrefixCount * 5500).toLocaleString()}/sec</strong> across {nbPrefixCount} prefixes.
+                          </div>
+                          {nbGetsPerPrefix > 5500 && (
+                            <div style={{ fontSize: '11px', color: '#b91c1c' }}>
+                              Individual prefix exceeds 5,500 GETs limit. S3 will return `503 Slow Down` errors. Increase prefix partition paths to distribute request keys.
+                            </div>
+                          )}
+                        </div>
+
+                        {/* PUT capacity check */}
+                        <div className="space-y-2">
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>PUT Throughput Status:</span>
+                            {nbPutsPerPrefix > 3500 ? (
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '6px' }}>
+                                ⚠️ Throttling Expected
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669', background: '#ecfdf5', padding: '2px 8px', borderRadius: '6px' }}>
+                                ✅ Healthy Load
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                            Requested PUTs/Prefix: <strong>{nbPutsPerPrefix.toLocaleString()}/sec</strong>
+                          </div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                            Aggregate PUT Capacity: <strong>{(nbPrefixCount * 3500).toLocaleString()}/sec</strong> across {nbPrefixCount} prefixes.
+                          </div>
+                          {nbPutsPerPrefix > 3500 && (
+                            <div style={{ fontSize: '11px', color: '#b91c1c' }}>
+                              Individual prefix exceeds 3,500 PUTs limit. S3 will return `503 Slow Down` errors. Distribute objects across more key prefixes.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Visual prefix partition grid */}
+                      <div className="space-y-2 pt-2">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          Simulated Active Prefix Directories:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                          {Array.from({ length: Math.min(nbPrefixCount, 8) }).map((_, idx) => {
+                            const isGetsOver = nbGetsPerPrefix > 5500;
+                            const isPutsOver = nbPutsPerPrefix > 3500;
+                            const isThrottled = isGetsOver || isPutsOver;
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`border rounded-lg p-3 text-center space-y-1.5 transition-all ${
+                                  isThrottled 
+                                    ? 'border-red-350 bg-red-50/50 shadow-sm' 
+                                    : 'border-emerald-250 bg-emerald-50/20'
+                                }`}
+                                style={{
+                                  borderColor: isThrottled ? '#fca5a5' : '#a7f3d0',
+                                  backgroundColor: isThrottled ? '#fef2f2' : '#f0fdf4'
+                                }}
+                              >
+                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: isThrottled ? '#991b1b' : '#065f46', fontFamily: 'monospace' }}>
+                                  /partition-{idx + 1}/
+                                </div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                                  GETs: <span style={{ color: isGetsOver ? '#dc2626' : 'var(--color-text-primary)', fontWeight: 'bold' }}>{nbGetsPerPrefix.toLocaleString()}</span>
+                                </div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+                                  PUTs: <span style={{ color: isPutsOver ? '#dc2626' : 'var(--color-text-primary)', fontWeight: 'bold' }}>{nbPutsPerPrefix.toLocaleString()}</span>
+                                </div>
+                                <div style={{ fontSize: '9px', fontWeight: 'bold', color: isThrottled ? '#dc2626' : '#059669' }}>
+                                  {isThrottled ? '💥 Throttled!' : '🟢 Line Rate OK'}
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {nbPrefixCount > 8 && (
+                            <div className="border border-dashed border-slate-300 rounded-lg p-3 flex items-center justify-center bg-slate-50/50 text-[11px] text-slate-500 font-semibold" style={{ minHeight: '80px' }}>
+                              + {nbPrefixCount - 8} more partitioned directories
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — LIFECYCLE RULES
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Apply a Lifecycle configuration policy to a bucket\naws s3api put-bucket-lifecycle-configuration --bucket my-premium-bucket --lifecycle-configuration '{\n  "Rules": [\n    {\n      "ID": "MoveToGlacierAndExpire",\n      "Status": "Enabled",\n      "Filter": {\n        "Prefix": "logs/"\n      },\n      "Transitions": [\n        {\n          "Days": 30,\n          "StorageClass": "GLACIER"\n        }\n      ],\n      "Expiration": {\n        "Days": 365\n      }\n    }\n  ]\n}'`,
+                            "s3_storage_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_storage_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Apply a Lifecycle configuration policy to a bucket
+aws s3api put-bucket-lifecycle-configuration --bucket my-premium-bucket --lifecycle-configuration '{
+  "Rules": [
+    {
+      "ID": "MoveToGlacierAndExpire",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "logs/"
+      },
+      "Transitions": [
+        {
+          "Days": 30,
+          "StorageClass": "GLACIER"
+        }
+      ],
+      "Expiration": {
+        "Days": 365
+      }
+    }
+  ]
+}'`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('storage')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Storage Classes Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 6: GATEWAY VPC ENDPOINTS                                         */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_networking' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Networking</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Gateway Endpoints &amp; Subpath Access Points</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 6 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Secure your subnet routing path to S3 by routing traffic over Gateway VPC Endpoints, bypassing default internet gateways and public routes.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#06b6d4' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Gateway VPC Endpoints
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          A <strong><span className="s3-hl-cyan">Gateway VPC Endpoint</span></strong> connects a VPC directly to S3 over AWS's private high-speed regional backplane network, bypassing public IP paths and NAT Gateways.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Prefix Lists &amp; Route Priorities
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          A <strong><span className="s3-hl-cyan">S3 Prefix List</span></strong> (like `pl-63a5400a`) is a regional, AWS-managed set of public S3 IP blocks. This list simplifies and prioritizes routing priorities in VPC route tables.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Access Points
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          An <strong><span className="s3-hl-cyan">S3 Access Point</span></strong> is a dedicated network endpoint with hostnames scoped to specific directories or subpaths, enforcing focused IAM policies to isolate access.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 Gateway VPC Endpoints are free of charge, highly available routing table destinations. Access Points help distribute access control rules for shared bucket spaces, preventing policy size limits.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — GATEWAY ENDPOINT &amp; PREFIX LIST
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Create a Gateway VPC Endpoint inside a specific VPC for S3\naws ec2 create-vpc-endpoint --vpc-id vpc-0a1b2c3d4e5f6g7h8 --service-name com.amazonaws.us-east-1.s3 --route-table-ids rtb-0123456789abcdef0\n\n# Describe Prefix List information to use inside route tables\naws ec2 describe-prefix-lists --filters "Name=prefix-list-name,Values=com.amazonaws.us-east-1.s3"`,
+                            "s3_networking_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_networking_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Create a Gateway VPC Endpoint inside a specific VPC for S3
+aws ec2 create-vpc-endpoint --vpc-id vpc-0a1b2c3d4e5f6g7h8 --service-name com.amazonaws.us-east-1.s3 --route-table-ids rtb-0123456789abcdef0
+
+# Describe Prefix List information to use inside route tables
+aws ec2 describe-prefix-lists --filters "Name=prefix-list-name,Values=com.amazonaws.us-east-1.s3"`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('networking')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Gateway Endpoints Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 7: ACCELERATION & REPLICATION                                     */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_transfer' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Transfer &amp; Replication</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Transfer Acceleration, CRR/SRR &amp; Presigned URLs</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 7 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Optimize data transit rates and security using CloudFront Edge ingestion and secure, temporary presigned URLs. Configure CRR/SRR for automated cross-bucket copies.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#3b82f6' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Transfer Acceleration
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-cyan">Transfer Acceleration</span></strong> routes uploads through the closest CloudFront Edge location to travel over AWS's private high-speed fiber backbone network.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Replication (SRR &amp; CRR)
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-cyan">S3 Replication</span></strong> executes automated, asynchronous copies of object writes to separate buckets in the same region (SRR) or different regions (CRR) for compliance and DR standby.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Presigned URLs
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          A <strong><span className="s3-hl-cyan">Presigned URL</span></strong> is a secure link generated with credentials that grants temporary read or write permissions to specific objects for a designated timeframe.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 S3 replication is asynchronous. Direct upload boosts via Transfer Acceleration minimize latency over geographically distributed clients by utilizing the internal high-speed AWS backplane.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — PRESIGNED URL &amp; REPLICATION
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Generate a presigned URL valid for 3600 seconds (1 hour)\naws s3 presign s3://my-premium-bucket/confidential-report.docx --expires-in 3600\n\n# Configure bucket replication policies using CLI\naws s3api put-bucket-replication --bucket my-premium-bucket --replication-configuration '{\n  "Role": "arn:aws:iam::123456789012:role/s3-replication-role",\n  "Rules": [\n    {\n      "Status": "Enabled",\n      "Priority": 1,\n      "Destination": {\n        "Bucket": "arn:aws:s3:::my-dr-standby-bucket",\n        "Account": "123456789012"\n      }\n    }\n  ]\n}'`,
+                            "s3_transfer_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_transfer_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Generate a presigned URL valid for 3600 seconds (1 hour)
+aws s3 presign s3://my-premium-bucket/confidential-report.docx --expires-in 3600
+
+# Configure bucket replication policies using CLI
+aws s3api put-bucket-replication --bucket my-premium-bucket --replication-configuration '{
+  "Role": "arn:aws:iam::123456789012:role/s3-replication-role",
+  "Rules": [
+    {
+      "Status": "Enabled",
+      "Priority": 1,
+      "Destination": {
+        "Bucket": "arn:aws:s3:::my-dr-standby-bucket",
+        "Account": "123456789012"
+      }
+    }
+  ]
+}'`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('transfer')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Acceleration &amp; Replication Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ========================================================================= */}
+                {/* CONCEPT 8: OPERATIONS                                                    */}
+                {/* ========================================================================= */}
+                {selectedNote === 's3_operations' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">S3 Operations &amp; Analytics</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Event Notifications, Batch Jobs &amp; Storage Lens Analytics</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">Concept 8 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Optimize administration workloads across millions of objects using asynchronous Event Notifications, fully managed Batch Operations, and organization-wide daily diagnostics via S3 Storage Lens.
+                    </p>
+
+                    <div className="s3-grid-edu" style={{ '--theme-color': '#ec4899' } as React.CSSProperties}>
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Decoupled Event Notifications
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          An <strong><span className="s3-hl-pink">Event Notification</span></strong> publishes standard alert message payloads asynchronously to SQS, SNS, or AWS Lambda when write or delete operations occur.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          S3 Batch Operations
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-pink">S3 Batch Operations</span></strong> is a large-scale execution engine that processes administrative actions (like tagging, copying, or lock overrides) across billions of objects in parallel using CSV manifests.
+                        </div>
+                      </div>
+
+                      <div className="s3-edu-card-new">
+                        <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
+                        <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                          Storage Lens Analytics
+                        </div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <strong><span className="s3-hl-pink">Storage Lens Analytics</span></strong> aggregates organization-wide bucket metadata daily to yield usage summaries, configuration audits, and cost optimization recommendations.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="acad-takeaway-box">
+                      💡 Use S3 Batch Operations to execute tagging, replication, or encryption updates on vast buckets instead of orchestrating multi-threaded scripting servers.
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
+                          CLI COMMANDS — EVENT NOTIFICATIONS &amp; BATCH JOBS
+                        </span>
+                        <button
+                          onClick={() => handleCopyCode(
+                            `# Configure S3 Event Notifications to send to SQS\naws s3api put-bucket-notification-configuration --bucket my-premium-bucket --notification-configuration '{\n  "QueueConfigurations": [\n    {\n      "QueueArn": "arn:aws:sqs:us-east-1:123456789012:s3-upload-queue",\n      "Events": ["s3:ObjectCreated:*"]\n    }\n  ]\n}'\n\n# Create an S3 Batch Operations tagging job\naws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTagging": {"TagSet": [{"Key": "DataClassification", "Value": "Confidential"}]}}' --report '{"Bucket": "arn:aws:s3:::my-audit-bucket", "Prefix": "batch-reports", "Format": "Report_CSV_20180820", "Enabled": true, "ReportScope": "AllTasks"}' --manifest '{"Spec": {"Format": "S3BatchOperations_CSV_20180820"}, "Location": {"ObjectArn": "arn:aws:s3:::my-audit-bucket/manifests/targets.csv", "ETag": "abc123xyz"}}' --priority 10 --role-arn arn:aws:iam::123456789012:role/s3-batch-ops-role`,
+                            "s3_operations_cli"
+                          )}
+                          className="s3-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
+                        >
+                          <Copy className="w-3 h-3 text-slate-500" />
+                          {copiedNoteId === "s3_operations_cli" ? "Copied!" : "Copy Commands"}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal">
+{`# Configure S3 Event Notifications to send to SQS
+aws s3api put-bucket-notification-configuration --bucket my-premium-bucket --notification-configuration '{
+  "QueueConfigurations": [
+    {
+      "QueueArn": "arn:aws:sqs:us-east-1:123456789012:s3-upload-queue",
+      "Events": ["s3:ObjectCreated:*"]
+    }
+  ]
+}'
+
+# Create an S3 Batch Operations tagging job
+aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTagging": {"TagSet": [{"Key": "DataClassification", "Value": "Confidential"}]}}' --report '{"Bucket": "arn:aws:s3:::my-audit-bucket", "Prefix": "batch-reports", "Format": "Report_CSV_20180820", "Enabled": true, "ReportScope": "AllTasks"}' --manifest '{"Spec": {"Format": "S3BatchOperations_CSV_20180820"}, "Location": {"ObjectArn": "arn:aws:s3:::my-audit-bucket/manifests/targets.csv", "ETag": "abc123xyz"}}' --priority 10 --role-arn arn:aws:iam::123456789012:role/s3-batch-ops-role`}
+                      </pre>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                      <button 
+                        onClick={() => setActiveTab('operations')}
+                        className="s3-btn s3-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-4 h-4" /> Launch Batch &amp; Lens Simulator
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'overview' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: S3 Namespaces, Hosting &amp; CORS</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#0891b2' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Buckets, Objects &amp; Prefixes
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <span className="s3-hl-cyan">Bucket</span> <span className="s3-desc-mute">(a globally unique, flat storage container that acts as the root namespace for all your files)</span> is a globally unique storage container in the AWS cloud. An <span className="s3-hl-cyan">Object</span> <span className="s3-desc-mute">(the fundamental entity stored in S3, consisting of raw binary payload data, a unique developer-assigned key, and customizable metadata pairs)</span> is the fundamental entity stored in a bucket, consisting of file data and descriptive metadata. A <span className="s3-hl-cyan">Prefix</span> <span className="s3-desc-mute">(a string delimiter prefix, such as <code>images/</code>, used to group objects logically and partition high-throughput request rates)</span> is a string prefix (like <code>images/</code>) used to partition keys and simulate a directory structure.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #0891b2' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0891b2', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">S3 Buckets</span> <span className="s3-desc-mute">(globally unique namespace root containers)</span> as globally unique root containers, and <span className="s3-hl-cyan">S3 Objects</span> <span className="s3-desc-mute">(immutable file payloads with structured metadata)</span> as the files and metadata stored inside them, organized using <span className="s3-hl-cyan">Prefixes</span> <span className="s3-desc-mute">(logical simulated folder paths)</span>. Which means <span className="s3-hl-cyan">S3 operates as a flat key-value store</span> rather than a traditional hierarchical operating system directory tree, allowing it to scale infinitely and support a baseline rate of 3,500 PUT and 5,500 GET requests per second per prefix.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Static Website Hosting
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-cyan">Static Website Hosting</span> <span className="s3-desc-mute">(a serverless bucket setting that exposes high-performance HTTP/HTTPS web endpoints to serve public static website assets directly to browsers)</span> is an S3 feature that allows you to configure a bucket to host website assets (HTML, CSS, JS, images, client scripts) and serve them via an HTTP/HTTPS endpoint directly to users.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #0891b2' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0891b2', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">S3 Static Website Hosting</span> <span className="s3-desc-mute">(direct serverless HTTP/HTTPS content gateways)</span> to configure a bucket to act as an <span className="s3-hl-cyan">HTTP gateway</span>, serving HTML, CSS, JavaScript, and client-side images directly. Which means you can serve fast, globally scalable frontend applications without the operational overhead, pricing, patching, or scaling stress of running virtual machines (like EC2 or Nginx/Apache servers).
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  CORS &amp; Requester Pays
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-cyan">CORS (Cross-Origin Resource Sharing)</span> <span className="s3-desc-mute">(a browser security restriction policy that controls and authorizes cross-domain HTTP request fetching of storage assets)</span> is a browser security mechanism that allows web applications loaded in one domain to interact with resources in a different domain (S3). <span className="s3-hl-cyan">Requester Pays</span> <span className="s3-desc-mute">(a storage billing setting shifting data download data-egress fees from the bucket owner to the caller's AWS billing account)</span> is a bucket setting that shifts data download fees to the requesting user.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #0891b2' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0891b2', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">CORS configurations</span> <span className="s3-desc-mute">(whitelisting browser HTTP request origins)</span> to whitelist origins and <span className="s3-hl-cyan">Requester Pays billing flags</span> <span className="s3-desc-mute">(shifting data download egress charges to downloaders)</span> for buckets. Which means you can securely authorize web applications running on other domains to fetch S3 data through standard browser preflight handshakes, and shift data egress bandwidth costs onto the downloader's AWS account rather than your own.
-                  </div>
-                </div>
-              </div>
-
-            </div>
 
             {/* 🎨 Architectural SVG */}
             <div className="s3-sec">S3 Flat Key Database Index Architecture</div>
@@ -2418,64 +3668,7 @@ export default function S3Visualizer() {
         {/* TAB 2: SECURITY */}
         {activeTab === 'security' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: S3 Access Controls &amp; Firewalls</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#f59e0b' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  IAM Policies vs Resource Policies
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <span className="s3-hl-orange">IAM Policy</span> <span className="s3-desc-mute">(an identity-based JSON permission document attached to users, groups, or roles inside your corporate cloud perimeter)</span> is an identity-based JSON policy attached to users, groups, or roles inside your account. A <span className="s3-hl-orange">Resource Policy (S3 Bucket Policy)</span> <span className="s3-desc-mute">(a resource-attached JSON authorization document applied directly to a bucket to govern public or cross-account clients)</span> is attached directly to the bucket itself, governing cross-account or public rules.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #f59e0b' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f59e0b', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers resource-based <span className="s3-hl-orange">S3 Bucket Policies</span> <span className="s3-desc-mute">(resource-level authorization rules)</span> alongside identity-based <span className="s3-hl-orange">IAM Policies</span> <span className="s3-desc-mute">(client identity access policies)</span>. Which means you can control access from the perspective of both the storage resource itself (the bucket) and the client identity (the user/role), with S3 evaluating both sets of policies simultaneously to decide whether to authorize the request.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Policy Conditions (VPC &amp; IP Restricts)
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-orange">Policy Conditions</span> <span className="s3-desc-mute">(highly advanced contextual logic clauses matching variables like client source IP addresses, SSL enforcement flags, or specific VPC endpoints)</span> are optional clauses in S3 policies that match specific request context keys, such as source IP range (<code>SourceIp</code>) or the VPC Gateway Endpoint identifier (<code>sourceVpce</code>).
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #f59e0b' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f59e0b', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-orange">S3 Policy Conditions</span> <span className="s3-desc-mute">(contextual authorization filters)</span> such as <span className="s3-hl-orange">aws:sourceVpce</span> <span className="s3-desc-mute">(VPC endpoint restriction gate)</span> and <span className="s3-hl-orange">aws:SourceIp</span> <span className="s3-desc-mute">(corporate IP subnet filter gate)</span>. Which means you can lock bucket access down to specific Virtual Private Cloud (VPC) Gateway Endpoints or corporate IP addresses, completely blocking requests that originate from the public internet even if they have valid IAM keys.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Block Public Access Override (BPA)
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <span className="s3-hl-orange">Block Public Access (BPA)</span> <span className="s3-desc-mute">(an absolute centralized account or bucket firewall override setting that guarantees no public policies or wildcard rules take effect)</span> is a four-tiered master security firewall setting applied at the AWS account or S3 bucket level to block wildcard public access rules from ever taking effect.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #f59e0b' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#f59e0b', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-orange">S3 Block Public Access (BPA)</span> <span className="s3-desc-mute">(account-level absolute public override firewall switch)</span> as a centralized, account-level or bucket-level master override switch. Which means S3 places a fail-safe gate that overrides and completely drops public bucket policies and ACL permissions, ensuring human developer configuration errors can never accidentally expose your internal company data to the public internet.
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* 🎨 Architectural SVG */}
             <div className="s3-sec">S3 Inbound Request Authorization Evaluation Pipeline</div>
@@ -2853,65 +4046,7 @@ export default function S3Visualizer() {
         {/* TAB 3: ENCRYPTION */}
         {activeTab === 'encryption' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: Server-Side &amp; Envelope Encryption</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#10b981' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Server-Side Encryption Models (SSE)
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Server-Side Encryption (SSE)</span></strong> <span className="s3-desc-mute">(the transparent background process where S3 hardware hypervisors encrypt data payloads at-rest as they are written to disk storage networks, and decrypt them on GET requests)</span> is the process where S3 automatically encrypts your object data at the hardware level as it writes it to disks in its data centers, and decrypts it when accessed.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers four models of <strong><span className="s3-hl-green">Server-Side Encryption</span></strong>: <span className="s3-hl-green">SSE-S3</span> <span className="s3-desc-mute">(AWS-managed standard AES-256 keys)</span>, <span className="s3-hl-green">SSE-KMS</span> <span className="s3-desc-mute">(KMS-managed Customer Master Keys with advanced key rotation schedules and full audit trails)</span>, <span className="s3-hl-green">SSE-C</span> <span className="s3-desc-mute">(keys managed entirely by the customer, only via CLI/API over HTTPS)</span>, and <strong><span className="s3-hl-green">DSSE-KMS</span></strong> <span className="s3-desc-mute">(Dual-layer Server-Side Encryption with two independent KMS keys for absolute compliance)</span>. Which means your objects are automatically encrypted before they are written to disk, complying with data-at-rest security rules.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  KMS Envelope Encryption &amp; API Quota Limits
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Envelope Encryption</span></strong> <span className="s3-desc-mute">(a multi-key security practice that encrypts high-volume data payloads with a unique local data key, and then encrypts that data key under a secure master key managed inside a centralized key store)</span> is the practice of encrypting data with a Plaintext Data Key, and then encrypting that key under a highly secure, non-exportable Customer Master Key (CMK) managed inside KMS.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers **KMS Envelope Encryption** where every object upload/download makes direct KMS calls: <strong><span className="s3-hl-green">GenerateDataKey</span></strong> (for uploads) and <strong><span className="s3-hl-green">Decrypt</span></strong> (for downloads). Which means high-volume traffic is subject to regional KMS API limits <span className="s3-desc-mute">(e.g. 5,500 / 10,000 / 30,000 requests per second per region)</span>; exceeding these thresholds triggers a `KMS:ThrottlingException`. To mitigate this, you can request a **KMS Quota Increase** using the Service Quotas Console.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Bucket Keys &amp; Key Scrubbing
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-green">Key Scrubbing</span></strong> <span className="s3-desc-mute">(a hypervisor-level microsecond register zeroization that zeroizes and overwrites RAM containing symmetric keys the instant a block cipher finishes execution)</span> is a hypervisor security function. An **S3 Bucket Key** is a secure, bucket-level caching key that reduces KMS transit requests.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #10b981' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10b981', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-green">S3 Bucket Keys</span></strong> <span className="s3-desc-mute">(bucket-level data key caching)</span> to cache keys at the S3 bucket layer. Which means instead of calling KMS on every single object operations, S3 caches a bucket-level key transiently in memory to derive folder keys locally, reducing outbound KMS API requests and transit cost by **up to 99%** while maintaining standard hypervisor **Memory Key Scrubbing** zeroization.
-                  </div>
-                </div>
-              </div>
-
-            </div>
             {/* 🎮 Interactive Playground */}
             <div className="s3-sec">🔒 SSE Envelope write execution simulator</div>
             <div className="s3-card">
@@ -3497,65 +4632,7 @@ export default function S3Visualizer() {
         {/* TAB 4: VERSIONING & WORM */}
         {activeTab === 'versioning' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: S3 Versioning stacks &amp; WORM Compliance</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#6366f1' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Object Versioning &amp; Delete Markers
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">Object Versioning</span></strong> <span className="s3-desc-mute">(a bucket-level configuration that preserves historical copies of files in a chronological stack under unique Version IDs)</span> is a bucket-level setting that maintains a running stack of historical files under unique Version IDs. A <strong><span className="s3-hl-indigo">Delete Marker</span></strong> <span className="s3-desc-mute">(a zero-byte logical placeholder placed at the top of a version stack to hide the object from standard logical namespace listings)</span> is a zero-byte placeholder placed at the top of the stack when an object is deleted, logically hiding the file.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">S3 Object Versioning</span></strong> <span className="s3-desc-mute">(running stack version preservation)</span> to preserve, retrieve, and restore every iteration of an object stored in a bucket. Which means S3 maintains a stack of file historical copies under unique Version IDs; deleting an object merely places a logical '<span className="s3-hl-indigo">Delete Marker</span>' <span className="s3-desc-mute">(logical file listing hider)</span> at the top of the version stack to hide it, making it trivial to restore objects or recover from accidental deletions.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 MFA Delete Protection
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">MFA Delete</span></strong> <span className="s3-desc-mute">(an S3 security protocol that requires the supply of a physical hardware token TOTP code to complete permanently destructive API requests or change versioning settings)</span> is an S3 security control requiring the configuration of a physical hardware Multi-Factor Authentication (MFA) token to complete permanently destructive API requests.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">S3 MFA Delete</span></strong> <span className="s3-desc-mute">(physical hardware MFA gate for destructive actions)</span> to require multi-factor authentication for critical version operations. Which means suspensions of bucket versioning or permanent purges of historical object versions from the stack must supply a live passcode from a physical MFA hardware token, preventing ransomware or compromised administrative credentials from destroying data.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Object Lock (WORM Compliancy)
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-indigo">S3 Object Lock</span></strong> <span className="s3-desc-mute">(a WORM regulatory lock system guaranteeing file immutability by blocking deletes and edits)</span> is a WORM (Write Once Read Many) mechanism. It includes <strong><span className="s3-hl-indigo">Retention Periods</span></strong> <span className="s3-desc-mute">(which protect objects for a fixed period and can be extended)</span> and <strong><span className="s3-hl-indigo">Legal Holds</span></strong> <span className="s3-desc-mute">(which protect objects indefinitely and require the s3:PutObjectLegalHold IAM permission)</span>.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #6366f1' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6366f1', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-indigo">Retention Periods</span></strong> <span className="s3-desc-mute">(fixed WORM duration blocks)</span> to protect objects for a set duration, which can be extended. It also offers <strong><span className="s3-hl-indigo">Legal Holds</span></strong> <span className="s3-desc-mute">(indefinite compliance blocks)</span> which protect objects infinitely and independently from any retention period. Which means you can ensure total, tamper-proof file immutability, with legal holds overriding all deletion calls until explicitly removed by authorized admins carrying the <code>s3:PutObjectLegalHold</code> IAM permission.
-                  </div>
-                </div>
-              </div>
-
-            </div>
 
             {/* 🎨 Architectural SVG */}
             <div className="s3-sec">S3 Active version Stack &amp; Delete marker mechanics</div>
@@ -3922,65 +4999,7 @@ export default function S3Visualizer() {
         {/* TAB 5: STORAGE CLASSES & LIFECYCLE */}
         {activeTab === 'storage' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: S3 Tiering, Lifecycles &amp; Vaults</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#a855f7' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Storage Classes Specs
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-purple">S3 Storage Class</span></strong> <span className="s3-desc-mute">(a storage hardware tier configured for specific data access frequency patterns, durability SLAs, minimum file lifetimes, data retrieval fees, and physical media architectures)</span> is a storage tier configured for specific data access patterns, availability SLA targets, minimum storage durations, and pricing structures.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #a855f7' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a855f7', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers seven unique <strong><span className="s3-hl-purple">S3 Storage Classes</span></strong>: <span className="s3-hl-purple">Standard</span> <span className="s3-desc-mute">(active hot data accessed frequently)</span>, <span className="s3-hl-purple">Standard-IA</span> <span className="s3-desc-mute">(Infrequent Access with millisecond retrievals)</span>, <span className="s3-hl-purple">One Zone-IA</span> <span className="s3-desc-mute">(single Availability Zone storage for non-critical, recreatable datasets)</span>, <span className="s3-hl-purple">Intelligent-Tiering</span> <span className="s3-desc-mute">(automated machine-learning based transitions between hot and cold access tiers)</span>, <span className="s3-hl-purple">Glacier Instant Retrieval</span> <span className="s3-desc-mute">(archived data retrievable in milliseconds)</span>, <span className="s3-hl-purple">Glacier Flexible Retrieval</span> <span className="s3-desc-mute">(cold tape archives retrievable in 1 to 5 hours)</span>, and <span className="s3-hl-purple">Glacier Deep Archive</span> <span className="s3-desc-mute">(hyper-cheap taped archives retrievable in 12 hours)</span>. Which means you can optimize hosting costs by matching access patterns to hardware tiers, keeping active files on high-performance hot disks and shifting older, rarely-accessed datasets to archival tapes for up to a 90%+ cost reduction.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Automated Lifecycle Transitions
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-purple">S3 Lifecycle Policy</span></strong> <span className="s3-desc-mute">(a set of rule triggers that automates data tier migration ciphers or permanent deletion actions as objects age)</span> is a set of XML rules that automates storage tier migrations (<i>Transition Actions</i>) or object purges (<i>Expiration Actions</i>) based on the age of the file.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #a855f7' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a855f7', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-purple">S3 Lifecycle Policies</span></strong> containing <span className="s3-hl-purple">Transition Actions</span> <span className="s3-desc-mute">(automatic migrations to cheaper, colder storage classes)</span> and <span className="s3-hl-purple">Expiration Actions</span> <span className="s3-desc-mute">(automatic file deletions and purge cycles)</span>. Which means you can define XML rules that automatically shift objects to colder classes or permanently delete them after a certain number of days, automating cold-tier optimization without any manual scripts or operational overhead.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Glacier Vault Locks (WORM Vaults)
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-purple">Glacier Vault Lock</span></strong> <span className="s3-desc-mute">(an immutable compliance policy applied directly to long-term archives that cannot be modified, overridden, or deleted by any system administrator or root user once committed)</span> is an immutable resource policy attached directly to a Glacier vault that enforces unalterable, regulatory compliance locks.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #a855f7' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a855f7', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-purple">S3 Glacier Vault Lock</span></strong> <span className="s3-desc-mute">(write-once immutable regulatory tape vault lock)</span> as an immutable, write-once policy attached directly to a Glacier vault. Which means once a vault lock policy is committed and locked, the policy becomes unchangeable and un-deletable, ensuring absolute legal compliance for long-term records preservation.
-                  </div>
-                </div>
-              </div>
-
-            </div>
 
             {/* 🎨 Architectural SVG */}
             <div className="s3-sec">S3 Automatic Lifecycle Class Transition Timeline</div>
@@ -4180,65 +5199,7 @@ export default function S3Visualizer() {
         {/* TAB 6: NETWORKING */}
         {activeTab === 'networking' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: S3 Gateway VPC Endpoints &amp; Access Points</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#06b6d4' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Gateway VPC Endpoints
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-cyan">Gateway VPC Endpoint</span></strong> <span className="s3-desc-mute">(a secure, private routing gateway that connects Virtual Private Clouds directly to S3 over regional backplane routing tables without using public IP gateways)</span> is a highly available, logical routing destination established inside a Virtual Private Cloud subnet that connects resources directly to regional S3 services.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #06b6d4' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#06b6d4', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-cyan">Gateway VPC Endpoints</span></strong> <span className="s3-desc-mute">(direct routing connections to internal S3 backplanes)</span> for S3 as a highly available, routing-table destination inside your Virtual Private Cloud. Which means private virtual machines (like EC2) can establish secure connections directly to S3 endpoints over AWS's private high-speed network backplane, bypassing the public internet and avoiding expensive NAT Gateway transit charges.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Prefix Lists &amp; Route Table Priorities
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-cyan">S3 Prefix List</span></strong> <span className="s3-desc-mute">(a regional set of public AWS S3 IP address blocks managed automatically by AWS to simplify corporate firewall and route-table rules)</span> is a regional, AWS-managed set of public S3 IP address blocks (e.g. <code>pl-63a5400a</code>) used to simplify and prioritize routing rules inside VPC route tables.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #06b6d4' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#06b6d4', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers regional <strong><span className="s3-hl-cyan">S3 Prefix Lists</span></strong> <span className="s3-desc-mute">(AWS-managed IP routing filters)</span> (like <code>pl-63a5400a</code>) for network routing configuration. Which means your subnet route tables automatically prioritize S3-destined traffic through the private Gateway Endpoint interface over default internet gateway routes, ensuring seamless, secure private transit without modifying server OS code.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Access Points
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-cyan">S3 Access Point</span></strong> <span className="s3-desc-mute">(a dedicated named network gateway hostname with its own focused IAM resource policy scoped for individual directory paths)</span> is an additional, named network endpoint with hostnames scoped specifically for a single directory or bucket path, each enforcing its own customized access rules.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #06b6d4' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#06b6d4', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-cyan">S3 Access Points</span></strong> <span className="s3-desc-mute">(dedicated hostnames for isolated subpaths)</span> as dedicated, named network endpoints attached to S3 buckets. Which means you can partition shared enterprise buckets into isolated directory-level routes (e.g. <code>/accounting</code> vs <code>/marketing</code>), each with its own focused access control policy to prevent a single bucket policy from growing too complex or hitting size limits.
-                  </div>
-                </div>
-              </div>
-
-            </div>
 
             {/* 🎨 Architectural SVG */}
             <div className="s3-sec">VPC Gateway Endpoint Private network routing topology</div>
@@ -4764,65 +5725,7 @@ export default function S3Visualizer() {
         {/* TAB 7: TRANSFER & REPLICATION */}
         {activeTab === 'transfer' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: Acceleration, Replication &amp; signed tokens</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#3b82f6' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Transfer Acceleration
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-cyan">Transfer Acceleration</span></strong> <span className="s3-desc-mute">(a performance optimization feature that routes geographic uploads through the closest Amazon CloudFront Edge location to travel over AWS\'s private high-speed fiber backbone)</span> is a geographic upload-optimization feature that routes your file uploads through the globally distributed Amazon CloudFront Edge network.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #3b82f6' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-cyan">S3 Transfer Acceleration</span></strong> <span className="s3-desc-mute">(global CloudFront Edge ingestion routing)</span> utilizing the globally distributed Amazon CloudFront Edge Location network. Which means upload packets are ingested at the nearest geographic edge location and routed over AWS\'s private high-speed fiber backbone to the target bucket, reducing latency and boosting upload speeds by up to 300% for international clients.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Replication (SRR &amp; CRR)
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-cyan">S3 Replication</span></strong> <span className="s3-desc-mute">(an asynchronous storage engine that automatically copies new object writes to separate buckets in the same region or different countries)</span> is a bucket-level feature that executes automated, asynchronous copy tasks of newly uploaded files to separate destination buckets in the same region (<i>Same-Region Replication / SRR</i> <span className="s3-desc-mute">(standby backup copies in the same region)</span>) or different regions (<i>Cross-Region Replication / CRR</i> <span className="s3-desc-mute">(standby backup copies across different geographic regions)</span>).
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #3b82f6' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <span className="s3-hl-cyan">Same-Region Replication</span> <span className="s3-desc-mute">(SRR - standby copies in the same region)</span> and <span className="s3-hl-cyan">Cross-Region Replication</span> <span className="s3-desc-mute">(CRR - compliance/disaster recovery global standby copies)</span> as automated asynchronous copy engines. Which means S3 instantly replicates uploaded objects to separate destination buckets in either the same region (for standby disaster recovery) or a different country (to comply with data residency laws or minimize latency for remote users).
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Presigned URLs
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  A <strong><span className="s3-hl-cyan">Presigned URL</span></strong> <span className="s3-desc-mute">(a secure web link cryptographically signed with corporate credentials that authorizes clients to directly read or write objects for a temporary timeframe)</span> is a secure, temporary web link generated with embedded credentials that grants limited read or write access to specific S3 object paths for a designated timeframe.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #3b82f6' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#3b82f6', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers temporal <strong><span className="s3-hl-cyan">S3 Presigned URLs</span></strong> <span className="s3-desc-mute">(cryptographically signed temporal credential links)</span> cryptographically signed by an application server's IAM credentials. Which means clients can directly upload to or download from designated bucket paths for a limited time without possessing AWS credentials, keeping the bucket secure and avoiding app server bandwidth bottlenecks.
-                  </div>
-                </div>
-              </div>
-
-            </div>
 
             {/* 🎨 Transfer Acceleration SVG Diagram */}
             <div className="s3-sec">Standard Routing vs. S3 Transfer Acceleration Route Map</div>
@@ -5341,64 +6244,7 @@ export default function S3Visualizer() {
         {/* TAB 8: OPERATIONS */}
         {activeTab === 'operations' && (
           <div>
-            {/* 📚 Visual Concept Deep-Dive Grid */}
-            <div className="s3-sec">📚 Concept Deep-Dive: Event Notifications, Batch Jobs &amp; Lens Analytics</div>
-            <div className="s3-grid-edu" style={{ '--theme-color': '#ec4899' } as React.CSSProperties}>
 
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  Decoupled Event Notifications
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  An <strong><span className="s3-hl-pink">S3 Event Notification</span></strong> <span className="s3-desc-mute">(an asynchronous bucket trigger that automatically publishes standard alert payloads to SNS, SQS, or Lambda when write or delete operations occur)</span> is an asynchronous event trigger configured on a bucket to automatically publish standard alert messages to SNS, SQS, or Lambda when write/delete operations occur.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #ec4899' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ec4899', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers asynchronous <strong><span className="s3-hl-pink">S3 Event Notifications</span></strong> <span className="s3-desc-mute">(serverless event publishers)</span> integrated with Amazon SNS, SQS, and AWS Lambda. Which means your systems can react instantly the millisecond a file is uploaded or deleted (e.g., resizing an image or updating a database), building responsive serverless workflows instead of wasting resource cycles polling folders.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Batch Operations
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-pink">S3 Batch Operations</span></strong> <span className="s3-desc-mute">(an enterprise-scale large volume execution engine that processes bulk tag updates, encryption overrides, or WORM locks across billions of files simultaneously using a CSV manifest or S3 inventory report)</span> is an enterprise-scale bulk object management service that automates administrative tasks across billions of objects in parallel using an input CSV/inventory catalog.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #ec4899' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ec4899', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-pink">S3 Batch Operations</span></strong> <span className="s3-desc-mute">(fully-managed bulk object processor)</span> as a fully managed large-scale bulk object management service. Which means you can execute administrative actions (like modifying tags, replacing object locks, or copying files) in parallel across billions of objects using a simple CSV manifest, eliminating the need to write, host, and debug custom migration scripts.
-                  </div>
-                </div>
-              </div>
-
-              <div className="s3-edu-card-new">
-                <span className="s3-pill-badge s3-pill-why">📖 Term Definitions</span>
-                <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                  S3 Storage Lens Analytics
-                </div>
-                <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '10px' }}>
-                  <strong><span className="s3-hl-pink">S3 Storage Lens Analytics</span></strong> <span className="s3-desc-mute">(an organization-wide daily metadata scanning and analytics dashboard that offers unified usage metrics, configuration visibility, security alerts, and cost recommendations)</span> is a centralized operational and analytical dashboard that scans organization-wide bucket metadata daily, providing unified metrics and recommendations.
-                </div>
-                <div style={{ padding: '10px', borderRadius: '6px', background: 'var(--color-background-secondary)', borderLeft: '3px solid #ec4899' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ec4899', marginBottom: '4px' }}>
-                    💡 AWS Offers &amp; What It Means
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    AWS offers <strong><span className="s3-hl-pink">S3 Storage Lens Analytics</span></strong> <span className="s3-desc-mute">(centralized metadata scanning dashboard)</span> to view setups. Which means you can audit organization-wide object counts, identify inactive prefixes, detect public buckets, and view recommendations in a single visual interface to optimize costs.
-                  </div>
-                </div>
-              </div>
-            </div>
             {/* 📊 S3 Storage Lens HUD Panel */}
             <div className="s3-sec">📊 S3 Storage Lens Organization HUD</div>
             <div className="s3-card" style={{ background: '#f8fafc', border: '1px solid #cbd5e1' }}>

@@ -1,6 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import {
+  BookOpen,
+  Shield,
+  Activity,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  Check,
+  Copy,
+  Cpu,
+  Network
+} from 'lucide-react';
 
-type TabType = 'concept' | 'arch' | 'policies' | 'health' | 'sim';
+type TabType = 'concept' | 'arch' | 'policies' | 'health' | 'sim' | 'notebook';
 
 interface Inst {
   id: number;
@@ -37,6 +49,79 @@ const makeInstance = (id: number): Inst => ({
   failed: false,
 });
 
+// Production Terraform Launch Template Snippet
+const terraformLaunchTemplateCode = `resource "aws_launch_template" "asg_template" {
+  name_prefix   = "asg-premium-template-"
+  image_id      = "ami-0c7217cdde317cfec" # Amazon Linux 2023
+  instance_type = "t3.medium"
+
+  monitoring {
+    enabled = true # Detailed 1-minute CloudWatch metrics
+  }
+
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups             = [\${aws_security_group.app_sg.id}]
+  }
+
+  user_data = base64encode(<<-EOF
+              #!/bin/bash
+              echo "Initializing node database cache connection..."
+              yum update -y
+              yum install -y httpd
+              systemctl start httpd
+              systemctl enable httpd
+              echo "<h1>Welcome to EC2 instance \\$(hostname -f)</h1>" > /var/www/html/index.html
+              EOF
+  )
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name        = "asg-academy-node"
+      Environment = "production"
+    }
+  }
+}`;
+
+// Python Lambda Lifecycle Hook Handler
+const lifecycleHookLambdaCode = `import json
+import boto3
+
+autoscaling = boto3.client('autoscaling')
+
+def lambda_handler(event, context):
+    # Retrieve details from EventBridge ASG event payload
+    detail = event['detail']
+    lifecycle_hook_name = detail['LifecycleHookName']
+    autoscaling_group_name = detail['AutoScalingGroupName']
+    lifecycle_action_token = detail['LifecycleActionToken']
+    instance_id = detail['EC2InstanceId']
+    
+    print(f"ASG Lifecycle Event: Booting config for {instance_id}")
+    
+    # Perform operational boot tasks: precache, register endpoints, run tests
+    boot_success = run_boot_orchestration(instance_id)
+    
+    # Send signal to either CONTINUE or ABANDON
+    action_result = 'CONTINUE' if boot_success else 'ABANDON'
+    
+    autoscaling.complete_lifecycle_action(
+        LifecycleHookName=lifecycle_hook_name,
+        AutoScalingGroupName=autoscaling_group_name,
+        LifecycleActionToken=lifecycle_action_token,
+        LifecycleActionResult=action_result,
+        InstanceId=instance_id
+    )
+    return {
+        'statusCode': 200,
+        'body': json.dumps(f"Lifecycle hook completed with action: {action_result}")
+    }
+
+def run_boot_orchestration(instance_id):
+    # Put custom warmup / verification scripts here
+    return True`;
+
 export default function ASGVisualizer() {
   const [activeSection, setActiveSection] = useState<TabType>('concept');
 
@@ -64,6 +149,20 @@ export default function ASGVisualizer() {
   const [sandboxFailed, setSandboxFailed] = useState<boolean>(false);
   const [launchHookApproved, setLaunchHookApproved] = useState<boolean>(false);
   const [terminateHookApproved, setTerminateHookApproved] = useState<boolean>(false);
+
+  // Visual Architect Academy Notebook states
+  const [selectedNote, setSelectedNote] = useState<string>('launch_templates');
+  const [expandedCategory, setExpandedCategory] = useState<string>('asg_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Boundary Clamp Calculator states
+  const [nbMinCap, setNbMinCap] = useState<number>(2);
+  const [nbMaxCap, setNbMaxCap] = useState<number>(8);
+  const [nbTargetScaleRequest, setNbTargetScaleRequest] = useState<number>(5);
+
+  // Interactive Target Tracking Math states
+  const [nbCurrentCpu, setNbCurrentCpu] = useState<number>(72);
+  const [nbTargetCpu, setNbTargetCpu] = useState<number>(50);
 
   const logLifecycle = (msg: string) => {
     const time = new Date().toLocaleTimeString();
@@ -382,6 +481,150 @@ export default function ASGVisualizer() {
         .led-blink {
           animation: pulse-led 1s infinite ease-in-out;
         }
+
+        /* Premium Academy Directory Styles */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-dir-header {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          padding: 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: var(--color-background-primary);
+          border: none;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--color-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-info);
+          border-left-color: var(--color-border-tertiary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eff6ff;
+          color: #0284c7;
+          border-left-color: #0ea5e9;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #e0f2fe;
+          border: 1.5px solid #bae6fd;
+          color: #0369a1;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          font-weight: 600;
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid var(--color-border-tertiary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-sim-diagram {
+          background: var(--color-background-secondary);
+          border: 1.5px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 18px;
+          position: relative;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
       `}</style>
 
       {/* Header */}
@@ -402,6 +645,7 @@ export default function ASGVisualizer() {
           <button className={`asg-tb ${activeSection === 'policies' ? 'asg-on' : ''}`} onClick={() => setActiveSection('policies')}>📈 Scaling Policies</button>
           <button className={`asg-tb ${activeSection === 'health' ? 'asg-on' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health &amp; Lifecycles</button>
           <button className={`asg-tb ${activeSection === 'sim' ? 'asg-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Live Scaling Simulator</button>
+          <button className={`asg-tb ${activeSection === 'notebook' ? 'asg-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
         </div>
       </div>
 
@@ -1307,6 +1551,846 @@ export default function ASGVisualizer() {
             </div>
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* TAB 6: VISUAL ARCHITECT NOTES (DEVELOPER ACADEMY)                         */}
+        {/* ========================================================================= */}
+        {activeSection === 'notebook' && (
+          <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+            
+            {/* SaaS Academy Header Banner */}
+            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-sky-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
+                    ASG Architect Academy
+                  </span>
+                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
+                    <BookOpen className="w-6 h-6 stroke-[2] text-white" /> AWS Auto Scaling Group Academy
+                  </h2>
+                  <p className="text-xs text-white/90 mt-1 max-w-2xl leading-relaxed">
+                    A premium, high-fidelity visual workbook covering fleet capacity thresholds, Launch Templates configurations, scaling policy mathematics, lifecycle transition hook stages, and multi-AZ zonal rebalancing mechanics.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 bg-black/10 border border-white/20 px-4 py-2 rounded-xl">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                  <span className="text-[10px] font-black text-emerald-100 tracking-wider uppercase font-mono">ASG Academy Engine Online</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Sidebar Category Explorer */}
+              <div className="lg:col-span-3 space-y-4 text-left">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1 font-mono">ASG Directory Tree:</span>
+                
+                <div className="acad-dir-container">
+                  <div className="acad-dir-header">
+                    <BookOpen className="w-4 h-4 text-emerald-600" />
+                    <span>Module Explorer</span>
+                  </div>
+
+                  {/* CATEGORY 1: ASG FUNDAMENTALS */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'asg_fundamentals' ? '' : 'asg_fundamentals')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-emerald-500" />
+                        1. ASG Fundamentals
+                      </span>
+                      {expandedCategory === 'asg_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'asg_fundamentals' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('launch_templates')}
+                          className={`acad-dir-item-btn ${selectedNote === 'launch_templates' ? 'acad-active' : ''}`}
+                        >
+                          Launch Templates
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('capacity_boundaries')}
+                          className={`acad-dir-item-btn ${selectedNote === 'capacity_boundaries' ? 'acad-active' : ''}`}
+                        >
+                          Capacity Boundaries
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 2: SCALING POLICIES */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'scaling_policies' ? '' : 'scaling_policies')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                        2. Scaling Policies
+                      </span>
+                      {expandedCategory === 'scaling_policies' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'scaling_policies' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('target_tracking')}
+                          className={`acad-dir-item-btn ${selectedNote === 'target_tracking' ? 'acad-active' : ''}`}
+                        >
+                          Target Tracking Math
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('step_vs_simple')}
+                          className={`acad-dir-item-btn ${selectedNote === 'step_vs_simple' ? 'acad-active' : ''}`}
+                        >
+                          Step vs Simple Scaling
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('scheduled_scaling')}
+                          className={`acad-dir-item-btn ${selectedNote === 'scheduled_scaling' ? 'acad-active' : ''}`}
+                        >
+                          Scheduled Chron Scaling
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 3: HEALTH & LIFECYCLE */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'health_lifecycle' ? '' : 'health_lifecycle')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-red-500" />
+                        3. Health &amp; Lifecycles
+                      </span>
+                      {expandedCategory === 'health_lifecycle' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'health_lifecycle' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('ec2_vs_elb_checks')}
+                          className={`acad-dir-item-btn ${selectedNote === 'ec2_vs_elb_checks' ? 'acad-active' : ''}`}
+                        >
+                          EC2 vs ELB Health Checks
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('lifecycle_hooks')}
+                          className={`acad-dir-item-btn ${selectedNote === 'lifecycle_hooks' ? 'acad-active' : ''}`}
+                        >
+                          Lifecycle Hook Hooks
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('cooldowns_warmups')}
+                          className={`acad-dir-item-btn ${selectedNote === 'cooldowns_warmups' ? 'acad-active' : ''}`}
+                        >
+                          Cooldowns &amp; Warmups
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 4: ZONAL ARCHITECTURE */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'zonal_arch' ? '' : 'zonal_arch')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Network className="w-3.5 h-3.5 text-teal-500" />
+                        4. Zonal Architecture
+                      </span>
+                      {expandedCategory === 'zonal_arch' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'zonal_arch' && (
+                      <div className="bg-slate-50/50 py-1 font-semibold font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('zonal_rebalancing')}
+                          className={`acad-dir-item-btn ${selectedNote === 'zonal_rebalancing' ? 'acad-active' : ''}`}
+                        >
+                          Zonal Rebalancing
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('lb_colocation')}
+                          className={`acad-dir-item-btn ${selectedNote === 'lb_colocation' ? 'acad-active' : ''}`}
+                        >
+                          ALB/NLB Registration
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
+                  <span className="text-slate-800 font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                    <Info className="w-3.5 h-3.5 text-emerald-600" /> Academy Advice
+                  </span>
+                  "Choose any auto scaling topic in the directory tree above to reveal architectural designs, interactive mathematical playbooks, and production configuration codes."
+                </div>
+              </div>
+
+              {/* Right Active Note Workspace */}
+              <div className="lg:col-span-9 space-y-6 text-left">
+
+                {/* NOTE 1: LAUNCH TEMPLATES */}
+                {selectedNote === 'launch_templates' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Fleet blueprint</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Launch Templates vs Launch Configurations</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Before an Auto Scaling Group can provision a single EC2 instance, it needs a blueprint that specifies the configuration. Historically, AWS used <strong>Launch Configurations</strong>, but has replaced them with the modern, feature-rich <strong>Launch Templates</strong>.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">Why Launch Templates Win:</span>
+                        
+                        <div className="space-y-2 font-mono text-[11px] text-slate-600">
+                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                            <span>Versioning Support</span>
+                            <span className="text-emerald-600 font-semibold font-bold">Yes (Configurations: Immutable)</span>
+                          </div>
+                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                            <span>Purchase Options</span>
+                            <span className="text-slate-800 font-semibold">Mix Spot &amp; On-Demand in 1 ASG</span>
+                          </div>
+                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                            <span>Parameter Inheritance</span>
+                            <span className="text-slate-800 font-semibold">Extend baseline template settings</span>
+                          </div>
+                          <div className="flex justify-between pb-1.5">
+                            <span>Dynamic Updates</span>
+                            <span className="text-slate-850 font-semibold">Roll updates using template version tags</span>
+                          </div>
+                        </div>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Professional Takeaway:</strong> Never hard-code your launch configurations. Modern CI/CD templates use versions of a launch template (e.g. <code>$Latest</code> or <code>$Default</code>). When updating your application code or patching AMI operating systems, simply deploy a new template version, and trigger an ASG Instance Refresh to roll it out safely!
+                        </div>
+                      </div>
+
+                      {/* Visual HCL Code block */}
+                      <div className="flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Terraform Launch Template Snippet</span>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(terraformLaunchTemplateCode);
+                              setCopiedNoteId('lt-terraform');
+                              setTimeout(() => setCopiedNoteId(null), 2000);
+                            }}
+                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-655"
+                          >
+                            {copiedNoteId === 'lt-terraform' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
+                          {terraformLaunchTemplateCode}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2: CAPACITY BOUNDARIES */}
+                {selectedNote === 'capacity_boundaries' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Fleet Limits</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ASG Capacity Boundaries Clamp</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      An Auto Scaling Group maintains a target size by scaling to its **Desired Capacity**. However, the ASG engine enforces strict boundary constraints. Desired capacity is mathematically clamped between the **Minimum** and **Maximum** sizes.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Interactive Boundary Clamp Widget */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-4">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono block mb-3">Boundary Clamping Simulator</span>
+                          
+                          <div className="grid grid-cols-2 gap-2.5 text-xs mb-3">
+                            <div>
+                              <label className="block text-slate-500 mb-1">Min Capacity</label>
+                              <input 
+                                type="number" 
+                                value={nbMinCap} 
+                                onChange={(e) => setNbMinCap(Math.max(0, parseInt(e.target.value) || 0))}
+                                className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-slate-500 mb-1">Max Capacity</label>
+                              <input 
+                                type="number" 
+                                value={nbMaxCap} 
+                                onChange={(e) => setNbMaxCap(Math.max(nbMinCap, parseInt(e.target.value) || 0))}
+                                className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <label className="block text-slate-500 mb-1">Target Scaling Request</label>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="15" 
+                                value={nbTargetScaleRequest} 
+                                onChange={(e) => setNbTargetScaleRequest(parseInt(e.target.value))}
+                                className="w-full accent-emerald-600 cursor-ew-resize"
+                              />
+                              <div className="flex justify-between text-[9.5px] text-slate-450 mt-1 font-mono">
+                                <span>Requested: {nbTargetScaleRequest} nodes</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Clamping Mathematics output */}
+                          {(() => {
+                            const clampResult = Math.max(nbMinCap, Math.min(nbMaxCap, nbTargetScaleRequest));
+                            let clampReason = "Allowed (Within bounds)";
+                            let clampBadgeStyle = "bg-emerald-50 border-emerald-250 text-emerald-700";
+                            if (nbTargetScaleRequest < nbMinCap) {
+                              clampReason = "Clamped to Min (Cannot scale lower)";
+                              clampBadgeStyle = "bg-amber-50 border-amber-250 text-amber-700";
+                            } else if (nbTargetScaleRequest > nbMaxCap) {
+                              clampReason = "Clamped to Max (Ceiling budget cap)";
+                              clampBadgeStyle = "bg-red-50 border-red-255 text-red-700";
+                            }
+                            return (
+                              <div className={`border p-3 rounded-lg font-mono text-[10.5px] space-y-1.5 ${clampBadgeStyle}`}>
+                                <p className="font-bold flex justify-between">
+                                  <span>Math: max({nbMinCap}, min({nbMaxCap}, {nbTargetScaleRequest}))</span>
+                                  <span>&rarr; Desired: {clampResult}</span>
+                                </p>
+                                <p className="text-[10px] opacity-90 font-sans italic">Status: {clampReason}</p>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        <div className="text-[10px] text-slate-450 italic font-semibold">
+                          * Adjust inputs to watch the Desired capacity clamp automatically.
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
+                        <h4 className="font-bold text-slate-800 text-xs">Boundary Mechanics &amp; Playbook:</h4>
+                        <ul className="list-disc pl-4 space-y-1.5">
+                          <li>
+                            <strong className="text-slate-800">Minimum:</strong> Acts as your high-availability base baseline. The ASG will launch replacement nodes if hardware fails, but scaling alarms will never shrink the group below this boundary.
+                          </li>
+                          <li>
+                            <strong className="text-slate-800">Maximum:</strong> Serves as a financial protection budget check. If your site suffers an active DDoS attack or process lock infinite loop, the max limit blocks the fleet from over-billing you.
+                          </li>
+                          <li>
+                            <strong className="text-slate-800">Desired:</strong> The scaling policy engine's output. Any scaling alarm modifies this property directly, which triggers a scaling action to reconcile the differences.
+                          </li>
+                        </ul>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3: TARGET TRACKING MATH */}
+                {selectedNote === 'target_tracking' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Dynamic scaling math</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Target Tracking Scaling Mathematics</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Target Tracking is the most common scaling policy type. It acts like a home thermostat: you define a target metric value (e.g. 50% average CPU), and the ASG engine increases or decreases Desired capacity dynamically to keep the metric near that target.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650 animate-fadeIn">
+                        <span className="font-extrabold text-slate-800 block">The Scaling Arithmetic:</span>
+                        <p className="leading-relaxed">
+                          The Auto Scaling engine calculates the target group size using the following ratio formula:
+                        </p>
+                        <div className="bg-slate-105 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] text-slate-800 text-center font-bold">
+                          New Capacity = Current Capacity &times; (Current Metric / Target Metric)
+                        </div>
+                        <p className="leading-relaxed">
+                          Because the results are rounded up to the nearest whole integer, even a minor deviation above the target metric will trigger a scale-out action.
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>⚠️ Warning:</strong> Under Target Tracking, scale-in is more conservative than scale-out. Scale-in actions evaluate longer time periods (typically 15 minutes of cool stable metrics) before removing instances to prevent thrashing.
+                        </div>
+                      </div>
+
+                      {/* Interactive Calculator */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3 font-mono text-xs">
+                        <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider block">Target Tracking calculator</span>
+                        
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center text-slate-650">
+                            <span>Current Fleet Capacity</span>
+                            <span className="text-slate-850 font-bold font-mono">4 Nodes</span>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-slate-550 mb-1">Current average CPU utilization: {nbCurrentCpu}%</label>
+                            <input 
+                              type="range" 
+                              min="10" 
+                              max="100" 
+                              value={nbCurrentCpu} 
+                              onChange={(e) => setNbCurrentCpu(parseInt(e.target.value))}
+                              className="w-full accent-indigo-600 cursor-ew-resize"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-slate-550 mb-1">Target CPU Threshold: {nbTargetCpu}%</label>
+                            <input 
+                              type="range" 
+                              min="30" 
+                              max="80" 
+                              value={nbTargetCpu} 
+                              onChange={(e) => setNbTargetCpu(parseInt(e.target.value))}
+                              className="w-full accent-indigo-600 cursor-ew-resize"
+                            />
+                          </div>
+                        </div>
+
+                        {(() => {
+                          const currentFleetSize = 4;
+                          const rawResult = currentFleetSize * (nbCurrentCpu / nbTargetCpu);
+                          const resultRounded = Math.ceil(rawResult);
+                          const delta = resultRounded - currentFleetSize;
+                          const actionText = delta > 0 
+                            ? `📈 SCALE OUT: Add ${delta} node(s)` 
+                            : delta < 0 
+                              ? `📉 SCALE IN: Remove ${Math.abs(delta)} node(s)` 
+                              : "🟢 NO ACTION: Fleet size stable";
+                          const textStyle = delta > 0 
+                            ? "text-orange-600 font-bold" 
+                            : delta < 0 
+                              ? "text-blue-600 font-bold" 
+                              : "text-emerald-600 font-semibold";
+                          
+                          return (
+                            <div className="bg-white border border-slate-200 p-3 rounded-lg text-[10.5px] space-y-1.5 text-slate-600">
+                              <p>Raw Ratio: 4 &times; ({nbCurrentCpu} / {nbTargetCpu}) = <span className="font-bold text-slate-800">{rawResult.toFixed(2)}</span></p>
+                              <p>Rounded Up Fleet Size: <span className="font-bold text-slate-800">{resultRounded} Nodes</span></p>
+                              <p className={`mt-1 border-t border-slate-100 pt-1.5 ${textStyle}`}>{actionText}</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 4: STEP VS SIMPLE SCALING */}
+                {selectedNote === 'step_vs_simple' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Policy Comparison</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Step Scaling vs Simple Scaling</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      While Target Tracking handles standard capacity scaling automatically, custom alerting architectures often require **Step Scaling** or **Simple Scaling** policies triggered by CloudWatch alarms.
+                    </p>
+
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Capability</th>
+                          <th>Simple Scaling (Legacy)</th>
+                          <th>Step Scaling (Recommended)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="font-bold text-slate-800">Scaling Adjustment</td>
+                          <td>Applies a single fixed node change (e.g. +1 node) when alarm triggers.</td>
+                          <td>Applies adjustments based on the **size of the alarm breach** (e.g. +1 node at 60%, +3 nodes at 85%).</td>
+                        </tr>
+                        <tr>
+                          <td className="font-bold text-slate-800">Cooldown Periods</td>
+                          <td>Locks the entire ASG during cooldown. Alarms triggered during cooldown are ignored.</td>
+                          <td>Allows step scaling evaluations while warm-ups are in progress, dynamically adding more nodes.</td>
+                        </tr>
+                        <tr>
+                          <td className="font-bold text-slate-800">DDoS Response</td>
+                          <td>Slow response. Adds nodes one-by-one, lagging behind major traffic surges.</td>
+                          <td>Fast response. Instantly jumps to the highest tier adjustment to absorb high surges.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <div className="acad-takeaway-box">
+                      <strong>💡 Recommended Design:</strong> Prefer **Target Tracking** for standard application workloads (CPU, Request count per target). Use **Step Scaling** when scaling based on custom complex metrics, such as Amazon SQS queue backlogs (e.g. scale out by +1 instance for every 10,000 backlog messages).
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 5: SCHEDULED SCALING */}
+                {selectedNote === 'scheduled_scaling' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Predictable loads</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Scheduled Chron-Driven Scaling</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Dynamic scaling takes time: instances must launch, boot, and pass health checks. If your traffic patterns are highly predictable (e.g. a retail business peaking at 9 AM, or a school testing application), you can pre-emptively scale the fleet using **Scheduled Actions** based on Unix cron expressions.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">Production Cron Scaling Configuration:</span>
+                        
+                        <div className="space-y-3 font-mono text-[10.5px]">
+                          <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-lg">
+                            <span className="text-emerald-700 font-bold">Morning Scale-Out (08:30 AM):</span>
+                            <p className="text-slate-805 mt-1">Recurrence: <code className="bg-slate-200 px-1 py-0.5 rounded text-amber-700">30 8 * * 1-5</code> (Mon-Fri)</p>
+                            <p className="text-slate-600">Desired: 8 Nodes, Min: 8, Max: 15</p>
+                          </div>
+
+                          <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-lg">
+                            <span className="text-indigo-700 font-bold">Evening Scale-In (06:00 PM):</span>
+                            <p className="text-slate-805 mt-1">Recurrence: <code className="bg-slate-200 px-1 py-0.5 rounded text-amber-700">0 18 * * 1-5</code> (Mon-Fri)</p>
+                            <p className="text-slate-600">Desired: 2 Nodes, Min: 2, Max: 15</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
+                        <h4 className="font-bold text-slate-800 text-xs">The Advantages of Scheduled Scaling:</h4>
+                        <p className="leading-relaxed">
+                          By scaling out 30 minutes <em>before</em> the daily workload peak starts, you guarantee that all servers are warm and ready, preventing latency spikes for your initial morning users.
+                        </p>
+                        
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Hybrid Strategy:</strong> You can combine scheduled actions with dynamic scaling. Let a scheduled action scale out to 8 instances at 8:30 AM, and let Target Tracking scale the fleet even higher if CPU spikes during mid-day flash sales!
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 6: EC2 VS ELB HEALTH CHECKS */}
+                {selectedNote === 'ec2_vs_elb_checks' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Fleet diagnostics</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">EC2 vs ELB Active Target Group Health Checks</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      By default, an Auto Scaling Group only monitors basic EC2 status checks. This means that if your underlying hardware is fine but your application process crashes, the ASG will report the instance as healthy, keeping it in rotation. To prevent this, you should enable **ELB Health Checks**.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
+                        <h4 className="font-bold text-slate-800 text-xs">The Health Diagnostics Breakdown:</h4>
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong className="text-slate-805">EC2 Status Checks:</strong> Monitors hypervisor virtualization, memory allocation, and OS hardware level errors. Ignore application-level code crashes.
+                          </li>
+                          <li>
+                            <strong className="text-slate-805">ELB Health Checks:</strong> The ALB actively pings a target path (e.g. <code>HTTP /healthz</code>). If the application server returns a non-200 status code (e.g., 502 Bad Gateway), the ALB alerts the ASG to replace the node.
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between font-mono text-[11px] text-slate-600">
+                        <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider block mb-2">Self-Healing Diagnostics Flow</span>
+                        
+                        <div className="space-y-2.5">
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-slate-700">App crash (502 return)</span>
+                            <span className="text-red-600 font-bold font-semibold">&bull; ALB marks Fail</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-slate-700">Evict target group</span>
+                            <span className="text-orange-600 font-bold font-semibold">&bull; Route bypass</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-slate-700">Reconcile Desired size</span>
+                            <span className="text-indigo-600 font-bold font-semibold">&bull; Provision i-new</span>
+                          </div>
+                        </div>
+
+                        <div className="text-[9.5px] text-slate-450 mt-3 leading-normal">
+                          * Always set the health check grace period to allow your application to boot fully before health checks begin.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 7: LIFECYCLE HOOKS */}
+                {selectedNote === 'lifecycle_hooks' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Instance Transition Hooks</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Lifecycle Hooks &amp; State Interrupts</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      By default, instances transition straight from creation to in-service. With **Lifecycle Hooks**, the ASG pauses instances at the state boundaries (<code>Pending:Wait</code> or <code>Terminating:Wait</code>) for up to 1 hour, letting you run orchestration scripts before instances accept traffic or get terminated.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">Common Hook Use Cases:</span>
+                        
+                        <ol className="list-decimal pl-4 space-y-2">
+                          <li>
+                            <strong className="text-slate-800">Pending Launch:</strong> Wait for Lambda / EventBridge to precache dynamic assets, download system keys, or run database migrations before the node joins the ALB target group.
+                          </li>
+                          <li>
+                            <strong className="text-slate-800">Terminating Terminate:</strong> Pause node destruction to upload logs to S3, finalize transaction state buffers, or back up local states.
+                          </li>
+                        </ol>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Timeout Actions:</strong> If your hook orchestration script fails to return a <code>CONTINUE</code> signal within the timeout window, the ASG will enforce the default fallback action: either <code>CONTINUE</code> (putting the node in rotation anyway) or <code>ABANDON</code> (destroying and replacing the node).
+                        </div>
+                      </div>
+
+                      {/* Lambda Hook code block */}
+                      <div className="flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Python Lambda Hook Completer</span>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(lifecycleHookLambdaCode);
+                              setCopiedNoteId('lh-lambda');
+                              setTimeout(() => setCopiedNoteId(null), 2000);
+                            }}
+                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                          >
+                            {copiedNoteId === 'lh-lambda' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
+                          {lifecycleHookLambdaCode}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 8: COOLDOWNS & WARMUPS */}
+                {selectedNote === 'cooldowns_warmups' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Fleet stabilization</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cooldown Periods vs Instance Warmup</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      To prevent an Auto Scaling Group from scaling too quickly (e.g., launching new instances before the previously launched ones have finished booting), AWS uses **Cooldown Periods** and **Instance Warmup** parameters to stabilize the fleet size.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
+                        <span className="font-extrabold text-slate-800 block">Fleet Stabilization Mechanics:</span>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong className="text-slate-805">Scaling Cooldown (Default: 300s):</strong> The period after a scaling activity completes during which the ASG ignores other alarms. This ensures the fleet has time to process traffic and lower metric levels before another scale action runs.
+                          </li>
+                          <li>
+                            <strong className="text-slate-805">Instance Warmup:</strong> Used in Target Tracking. Specifies how long it takes an instance to boot and begin sending metric data. Warmup metrics are excluded from target group averages to prevent metric distortion.
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">Cooldown Loop Safeguard</span>
+                        
+                        <div className="flex items-center justify-center gap-2 text-[10px] font-mono">
+                          <div className="bg-orange-50 border border-orange-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-orange-655">📈 Scale Out</p>
+                            <span>Launch Instance</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-indigo-650">⏳ Cooldown</p>
+                            <span>Lock: 300s</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-emerald-600">🛡️ Safe Evaluation</p>
+                            <span>Release locks</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[10px] text-slate-500 mt-4 leading-normal max-w-xs mx-auto">
+                          Cooldown guards block rapid scaling actions, protecting you from over-provisioning servers due to lag in boot processes.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 9: ZONAL REBALANCING */}
+                {selectedNote === 'zonal_rebalancing' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">zonal distribution</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Zonal Rebalancing Mechanics</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      To ensure high availability, an Auto Scaling Group always tries to keep instances distributed evenly across all enabled Availability Zones (AZs). When an AZ goes down or the fleet scales in, the ASG engine uses rebalancing mechanics to restore symmetry.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
+                        <span className="font-extrabold text-slate-800 block">ASG Rebalancing Steps:</span>
+                        
+                        <ol className="list-decimal pl-4 space-y-1.5 leading-relaxed">
+                          <li>
+                            ASG monitors instance counts per AZ.
+                          </li>
+                          <li>
+                            If an instance is terminated in AZ-A, the ASG immediately launches a replacement.
+                          </li>
+                          <li>
+                            If the ASG is rebalancing a lopsided group (e.g. 3 nodes in AZ-A, 1 node in AZ-B), it launches a new instance in AZ-B first, and then terminates an instance in AZ-A to keep desired capacity stable.
+                          </li>
+                        </ol>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Availability Priority:</strong> During rebalancing, the ASG launches the new instance <em>before</em> terminating the old one. This ensures that the group remains at or above desired capacity, avoiding performance degradation during rebalancing.
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Symmetric Fleet Rebalance</span>
+                        
+                        <div className="space-y-2 text-left max-w-xs mx-auto">
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-emerald-600 font-bold">Subnet us-east-1a</span>
+                            <span className="text-slate-700">2 Nodes</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="text-emerald-600 font-bold">Subnet us-east-1b</span>
+                            <span className="text-slate-700">2 Nodes</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[10.5px] text-slate-500 mt-4 leading-normal">
+                          If an Availability Zone suffers a hardware outage, the ASG will provision all desired nodes in the surviving zone automatically.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 10: LB CO-LOCATION */}
+                {selectedNote === 'lb_colocation' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Ingress Integration</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB/NLB Target Group Integration</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      An Auto Scaling Group does not route user traffic itself; it only manages compute instances. Outward-facing traffic is received by a Load Balancer (ALB or NLB), which distributes requests across the instances registered in its **Target Group**.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
+                        <span className="font-extrabold text-slate-800 block">Registration &amp; Scale-In Cycle:</span>
+                        
+                        <ul className="list-disc pl-4 space-y-1.5">
+                          <li>
+                            <strong className="text-slate-805">Ingress:</strong> When the ASG launches a new instance, it automatically registers its private IP and port with the associated ALB target group.
+                          </li>
+                          <li>
+                            <strong className="text-slate-805">Egress (Draining):</strong> When scaling in, the ALB sets the instance status to <code>draining</code>. The load balancer immediately stops sending new connections to the instance, while allowing active connections to complete before termination.
+                          </li>
+                        </ul>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Professional Practice:</strong> Set your target group's Deregistration Delay (connection draining timeout) to match your application's longest request duration (e.g. 30s for web APIs, 300s for large document generation).
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-3">Load Balancer Registration Flow</span>
+                        
+                        <div className="flex items-center justify-center gap-1.5 text-[9.5px] font-mono">
+                          <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-blue-600">⚖️ ALB/NLB</p>
+                            <span>Ingress ingress</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-orange-50 border border-orange-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-orange-655">📈 ASG Group</p>
+                            <span>Auto Scale</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-emerald-50 border border-emerald-250 p-2.5 rounded-lg">
+                            <p className="font-bold text-emerald-600">🖥️ target node</p>
+                            <span>Reg / Drain</span>
+                          </div>
+                        </div>
+
+                        <p className="text-[10px] text-slate-500 mt-4 leading-normal max-w-xs mx-auto">
+                          Decoupling scale management from traffic routing allows your application to scale smoothly without interrupting user sessions.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+        )}
+
 
       </div>
     </div>

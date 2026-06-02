@@ -1,14 +1,91 @@
 import { useState, useEffect } from 'react';
+import {
+  BookOpen,
+  Shield,
+  Activity,
+  ChevronRight,
+  ChevronDown,
+  Info,
+  Check,
+  Copy,
+  Cpu,
+  Network
+} from 'lucide-react';
 
-type TabType = 'overview' | 'endpoints' | 'failover' | 'global' | 'serverless' | 'cloning' | 'hardening';
+type TabType = 'overview' | 'endpoints' | 'failover' | 'global' | 'serverless' | 'cloning' | 'hardening' | 'notebook';
 
 interface SecItem {
   label: string;
   done: boolean;
 }
 
+// Production Terraform Aurora Cluster Snippet
+const terraformAuroraClusterCode = `resource "aws_rds_cluster" "aurora_db" {
+  cluster_identifier      = "aurora-production-cluster"
+  engine                  = "aurora-postgresql"
+  engine_version          = "15.4"
+  database_name           = "aurora_academy"
+  master_username         = "db_admin"
+  master_password         = var.db_password
+  backup_retention_period = 7
+  preferred_backup_window = "02:00-03:00"
+  
+  # Shared Storage is automatic - no EBS volume allocations needed!
+  storage_encrypted   = true
+  deletion_protection = true
+
+  # Enable Built-in Machine Learning Integrations
+  enable_local_write_double_buffer = false # Double buffering not needed for Aurora
+}
+
+resource "aws_rds_cluster_instance" "cluster_instances" {
+  count              = 3
+  identifier         = "aurora-node-\${count.index}"
+  cluster_identifier = aws_rds_cluster.aurora_db.id
+  instance_class     = "db.r6g.xlarge"
+  engine             = aws_rds_cluster.aurora_db.engine
+  engine_version     = aws_rds_cluster.aurora_db.engine_version
+
+  # Priority failover tier: counts[0] promoted first
+  promotion_tier     = count.index
+  publicly_accessible = false
+}`;
+
+// Production Aurora ML SQL Query Snippet
+const auroraMlSqlQueryCode = `-- Invoke Amazon Comprehend ML analysis directly inside Postgres/MySQL SQL queries
+SELECT 
+  customer_id, 
+  review_date,
+  review_text,
+  aws_comprehend.detect_sentiment(
+    review_text, 
+    'en'
+  ) AS sentiment_result,
+  aws_comprehend.detect_sentiment_confidence(
+    review_text, 
+    'en'
+  ) AS confidence_score
+FROM customer_reviews
+WHERE product_category = 'ComputeNodes'
+  AND review_date >= CURRENT_DATE - INTERVAL '7 days'
+LIMIT 10;`;
+
 export default function AuroraVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+  // Visual Architect Academy Notebook states
+  const [selectedNote, setSelectedNote] = useState<string>('shared_storage');
+  const [expandedCategory, setExpandedCategory] = useState<string>('aurora_storage');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Failover Priority Calculator states
+  const [nbReplica1Tier, setNbReplica1Tier] = useState<number>(0);
+  const [nbReplica2Tier, setNbReplica2Tier] = useState<number>(1);
+  const [nbReplica3Tier, setNbReplica3Tier] = useState<number>(2);
+
+  // Interactive Copy-on-Write Database Cloning states
+  const [nbBaselineGb, setNbBaselineGb] = useState<number>(100);
+  const [nbCloneModifiedPct, setNbCloneModifiedPct] = useState<number>(15);
 
   // ==========================================
   // STATE DEFINITIONS
@@ -711,6 +788,150 @@ export default function AuroraVisualizer() {
         .led-blink {
           animation: ledBlink 1s infinite;
         }
+
+        /* Premium Academy Directory Styles */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-dir-header {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          padding: 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: var(--color-background-primary);
+          border: none;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--color-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-info);
+          border-left-color: var(--color-border-tertiary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eff6ff;
+          color: #0284c7;
+          border-left-color: #0ea5e9;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #e0f2fe;
+          border: 1.5px solid #bae6fd;
+          color: #0369a1;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 12px;
+          padding: 18px;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          font-weight: 600;
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid var(--color-border-tertiary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-sim-diagram {
+          background: var(--color-background-secondary);
+          border: 1.5px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 18px;
+          position: relative;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 14px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
       `}</style>
 
       {/* Header Panel */}
@@ -732,6 +953,7 @@ export default function AuroraVisualizer() {
         <button className={`aurora-tb ${activeTab === 'serverless' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('serverless')}>⚡ 5. Serverless v2 Scaling</button>
         <button className={`aurora-tb ${activeTab === 'cloning' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('cloning')}>🧬 6. Copy-on-Write Clones</button>
         <button className={`aurora-tb ${activeTab === 'hardening' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('hardening')}>🔒 7. Hardening HUD &amp; Analytics</button>
+        <button className={`aurora-tb ${activeTab === 'notebook' ? 'aurora-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
       </div>
 
       {/* Primary Display Card */}
@@ -1802,6 +2024,677 @@ export default function AuroraVisualizer() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 8: VISUAL ARCHITECT NOTES (DEVELOPER ACADEMY)                         */}
+        {/* ========================================================================= */}
+        {activeTab === 'notebook' && (
+          <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+            
+            {/* SaaS Academy Header Banner */}
+            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
+                    Aurora Database Academy
+                  </span>
+                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
+                    <BookOpen className="w-6 h-6 stroke-[2] text-white" /> AWS Amazon Aurora Academy
+                  </h2>
+                  <p className="text-xs text-white/90 mt-1 max-w-2xl leading-relaxed">
+                    A premium, high-fidelity visual workbook covering 6-way storage replication quorums, cluster endpoints routing logic, failover priority promotions, database Copy-on-Write cloning, and native ML inferences.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 bg-black/10 border border-white/20 px-4 py-2 rounded-xl">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                  <span className="text-[10px] font-black text-emerald-100 tracking-wider uppercase font-mono">Aurora Academy Engine Online</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Left Sidebar Category Explorer */}
+              <div className="lg:col-span-3 space-y-4 text-left">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1 font-mono">Aurora Directory Tree:</span>
+                
+                <div className="acad-dir-container">
+                  <div className="acad-dir-header">
+                    <BookOpen className="w-4 h-4 text-emerald-600" />
+                    <span>Module Explorer</span>
+                  </div>
+
+                  {/* CATEGORY 1: AURORA STORAGE */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'aurora_storage' ? '' : 'aurora_storage')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-emerald-500" />
+                        1. Storage Architecture
+                      </span>
+                      {expandedCategory === 'aurora_storage' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'aurora_storage' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('shared_storage')}
+                          className={`acad-dir-item-btn ${selectedNote === 'shared_storage' ? 'acad-active' : ''}`}
+                        >
+                          6-Way Quorum Replicas
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('log_structured')}
+                          className={`acad-dir-item-btn ${selectedNote === 'log_structured' ? 'acad-active' : ''}`}
+                        >
+                          Log-Structured Storage
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 2: ROUTING & FAILOVER */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'routing_failover' ? '' : 'routing_failover')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                        2. Routing &amp; Failover
+                      </span>
+                      {expandedCategory === 'routing_failover' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'routing_failover' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('endpoints_routing')}
+                          className={`acad-dir-item-btn ${selectedNote === 'endpoints_routing' ? 'acad-active' : ''}`}
+                        >
+                          Cluster Endpoints
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('failover_priority')}
+                          className={`acad-dir-item-btn ${selectedNote === 'failover_priority' ? 'acad-active' : ''}`}
+                        >
+                          Failover Promotion Math
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 3: ADVANCED STORAGE FEATURES */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'advanced_storage' ? '' : 'advanced_storage')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Network className="w-3.5 h-3.5 text-teal-500" />
+                        3. Advanced Storage
+                      </span>
+                      {expandedCategory === 'advanced_storage' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'advanced_storage' && (
+                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('db_cloning')}
+                          className={`acad-dir-item-btn ${selectedNote === 'db_cloning' ? 'acad-active' : ''}`}
+                        >
+                          Copy-on-Write Cloning
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('backtrack_pitr')}
+                          className={`acad-dir-item-btn ${selectedNote === 'backtrack_pitr' ? 'acad-active' : ''}`}
+                        >
+                          Backtrack &amp; Recovery
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CATEGORY 4: INTEGRATIONS */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 'integrations' ? '' : 'integrations')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-red-500" />
+                        4. DB Integrations
+                      </span>
+                      {expandedCategory === 'integrations' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 'integrations' && (
+                      <div className="bg-slate-50/50 py-1 font-semibold">
+                        <button 
+                          onClick={() => setSelectedNote('zero_etl')}
+                          className={`acad-dir-item-btn ${selectedNote === 'zero_etl' ? 'acad-active' : ''}`}
+                        >
+                          Zero-ETL Warehouse sync
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('in_database_ml')}
+                          className={`acad-dir-item-btn ${selectedNote === 'in_database_ml' ? 'acad-active' : ''}`}
+                        >
+                          SQL Machine Learning
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
+                  <span className="text-slate-800 font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                    <Info className="w-3.5 h-3.5 text-emerald-600" /> Academy Advice
+                  </span>
+                  "Choose any database architecture topic in the tree directory above to load interactive widgets, comparisons, and production-grade code configurations."
+                </div>
+              </div>
+
+              {/* Right Active Note Workspace */}
+              <div className="lg:col-span-9 space-y-6 text-left">
+
+                {/* NOTE 1: 6-WAY QUORUM STORAGE */}
+                {selectedNote === 'shared_storage' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Cloud-Native Storage</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Shared Storage 6-Way Quorum</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Traditional databases replicate data by writing full page blocks to local EBS volumes and streaming pages to replica servers. Amazon Aurora decouples compute from storage, utilizing a virtualized shared storage volume replicated <strong>6-ways across 3 Availability Zones (AZs)</strong>.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-655">
+                        <span className="font-extrabold text-slate-800 block">The Drive Quorum Mathematics:</span>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong className="text-slate-805">Write Quorum (4/6):</strong> Out of the 6 storage nodes, a write is considered successful as soon as 4 copies acknowledge receipt of the redo vectors. This allows the cluster to survive the loss of an entire Availability Zone + one additional node without write outages.
+                          </li>
+                          <li>
+                            <strong className="text-slate-805">Read Quorum (3/6):</strong> Read operations require 3 node confirmations. By checking segment log sequence numbers (LSN), Aurora guarantees it always reads the most up-to-date data state.
+                          </li>
+                        </ul>
+
+                        <div className="acad-takeaway-box font-sans">
+                          <strong>💡 Rebuild Performance:</strong> If a storage sector crashes or disk blocks degrade, background storage nodes self-heal automatically. They stream missing log vectors from healthy nodes, restoring the 6-way protection in seconds with zero compute degradation.
+                        </div>
+                      </div>
+
+                      {/* Visual HCL Code block */}
+                      <div className="flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Terraform Aurora Cluster Snippet</span>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(terraformAuroraClusterCode);
+                              setCopiedNoteId('aurora-tf');
+                              setTimeout(() => setCopiedNoteId(null), 2000);
+                            }}
+                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                          >
+                            {copiedNoteId === 'aurora-tf' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
+                          {terraformAuroraClusterCode}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2: LOG-STRUCTURED STORAGE */}
+                {selectedNote === 'log_structured' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Replication Engine</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">"The Log is the Database" Architecture</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      In traditional database engines, modified pages in the buffer pool are periodically flushed to storage. This process creates high network I/O, writing data twice (once to the WAL log, and once to the tablespace pages). Aurora completely eliminates page flushes.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650">
+                        <span className="font-extrabold text-slate-800 block">Redo-Only Storage Streaming:</span>
+                        <p className="leading-relaxed">
+                          When a transaction commits on the writer node, Aurora streams <strong>only the redo log vectors (state changes)</strong> directly to the 6 storage nodes. The storage nodes themselves are intelligent: they accept the log vectors and apply them in the background to reconstruct the relational pages when a read request occurs.
+                        </p>
+
+                        <div className="acad-takeaway-box">
+                          <strong>⚡ performance Results:</strong> By writing only redo logs, Aurora reduces database network write operations by <strong>up to 90%</strong>. This frees database compute to focus purely on executing transactional SQL queries, giving you up to 5x higher throughput than standard PostgreSQL!
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Replication Pipeline Comparison</span>
+                        
+                        <div className="space-y-3 text-left max-w-xs mx-auto">
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg">
+                            <span className="text-red-655 font-bold font-mono">Standard Engine Pipeline:</span>
+                            <p className="text-slate-500 mt-0.5 text-[9.5px]">App commits &rarr; writes WAL &rarr; flushes heavy data pages &rarr; syncs secondary storage.</p>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg">
+                            <span className="text-emerald-650 font-bold font-mono">Aurora Engine Pipeline:</span>
+                            <p className="text-slate-500 mt-0.5 text-[9.5px]">App commits &rarr; streams lightweight redo log vectors to storage. Storage handles page reconstruction in background.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3: CLUSTER ENDPOINTS */}
+                {selectedNote === 'endpoints_routing' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Routing Ingress</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Aurora DNS Endpoint Mappings</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      An Aurora cluster provides multiple DNS entry endpoints that separate application ingress targets according to workload types.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-655">
+                        <h4 className="font-bold text-slate-800 text-xs">Types of Endpoints:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong className="text-slate-805">Cluster Writer Endpoint:</strong> A DNS record pointing directly to the current primary writer node. Used for insert, update, delete, and transactional traffic.
+                          </li>
+                          <li>
+                            <strong className="text-slate-805">Reader Endpoint:</strong> A DNS record that load-balances read-only traffic across all active read replicas in the cluster.
+                          </li>
+                          <li>
+                            <strong className="text-slate-850">Custom Endpoints:</strong> Let you group specific replicas together. Excellent for separating analytical reporting traffic from fast transactional query read operations!
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center font-mono text-[10.5px]">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-3 text-center">DNS Endpoint Routing Matrix</span>
+                        
+                        <div className="space-y-2.5">
+                          <div className="bg-white border border-slate-200 p-2 rounded-lg flex items-center justify-between">
+                            <span className="text-slate-600 font-semibold font-mono">cluster-writer.rds.amazonaws.com</span>
+                            <span className="text-red-655 font-bold">&rarr; Writer Node</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2 rounded-lg flex items-center justify-between">
+                            <span className="text-slate-600 font-semibold font-mono">cluster-reader.rds.amazonaws.com</span>
+                            <span className="text-blue-650 font-bold">&rarr; Reader 1, 2, 3</span>
+                          </div>
+                          <div className="bg-white border border-slate-200 p-2 rounded-lg flex items-center justify-between">
+                            <span className="text-slate-600 font-semibold font-mono">custom-analytics.rds.amazonaws.com</span>
+                            <span className="text-purple-655 font-bold">&rarr; Reader 4 (xlarge)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 4: FAILOVER PROMOTION */}
+                {selectedNote === 'failover_priority' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Cluster High Availability</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Failover Priorities &amp; Promotion Mechanics</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      If the primary database instance suffers a hardware outage or crashes, Amazon Aurora automatically promotes one of the read replicas to be the new writer. The failover sequence takes less than 30 seconds.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Failover Priority Calculator widget */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-4">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider font-mono block mb-2">Failover Priority Calculator</span>
+                          
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between items-center text-slate-650">
+                              <span className="font-semibold font-mono">Replica 1 (AZ-A) Promotion Tier</span>
+                              <select 
+                                value={nbReplica1Tier} 
+                                onChange={(e) => setNbReplica1Tier(parseInt(e.target.value))}
+                                className="bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                              >
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  <option key={i} value={i}>Tier {i}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex justify-between items-center text-slate-650">
+                              <span className="font-semibold font-mono">Replica 2 (AZ-B) Promotion Tier</span>
+                              <select 
+                                value={nbReplica2Tier} 
+                                onChange={(e) => setNbReplica2Tier(parseInt(e.target.value))}
+                                className="bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                              >
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  <option key={i} value={i}>Tier {i}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex justify-between items-center text-slate-650">
+                              <span className="font-semibold font-mono">Replica 3 (AZ-C) Promotion Tier</span>
+                              <select 
+                                value={nbReplica3Tier} 
+                                onChange={(e) => setNbReplica3Tier(parseInt(e.target.value))}
+                                className="bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                              >
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  <option key={i} value={i}>Tier {i}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Failover promotion decision result */}
+                          {(() => {
+                            const tiers = [
+                              { name: "Replica 1 (AZ-A)", tier: nbReplica1Tier },
+                              { name: "Replica 2 (AZ-B)", tier: nbReplica2Tier },
+                              { name: "Replica 3 (AZ-C)", tier: nbReplica3Tier }
+                            ];
+                            const sorted = [...tiers].sort((a, b) => a.tier - b.tier);
+                            const winner = sorted[0];
+                            const ties = sorted.filter(t => t.tier === winner.tier);
+                            const tieText = ties.length > 1 
+                              ? ` (Tie! Arbitrary tiebreaker applied between ${ties.map(t => t.name).join(' & ')})` 
+                              : '';
+                            return (
+                              <div className="bg-white border border-slate-200 p-3 rounded-lg font-mono text-[10.5px] mt-4 space-y-1.5 text-slate-600">
+                                <p>First Promotion Candidate: <span className="text-indigo-650 font-bold font-semibold">{winner.name}</span></p>
+                                <p className="text-[10px] opacity-90 font-sans italic">Priority Rule: Replica with the lowest Tier number (Tier 0 &gt; Tier 1) is chosen first.{tieText}</p>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed animate-fadeIn">
+                        <span className="font-extrabold text-slate-850 block">Promotion Rules &amp; Steps:</span>
+                        <ol className="list-decimal pl-4 space-y-1.5">
+                          <li>
+                            <strong className="text-slate-808">Tier Scan:</strong> Aurora scans read replicas for the lowest promotion tier (Tier 0 is highest priority).
+                          </li>
+                          <li>
+                            <strong className="text-slate-808">Size Match:</strong> If multiple replicas share the same tier, Aurora promotes the replica that matches the size of the failing writer.
+                          </li>
+                          <li>
+                            <strong className="text-slate-808">DNS Shift:</strong> The cluster CNAME writer DNS record is updated. Because replicas share the exact same storage volume, no data recovery or journal playback is needed, enabling near-instant promotion!
+                          </li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 5: COPY-ON-WRITE DATABASE CLONING */}
+                {selectedNote === 'db_cloning' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Zero-Copy Clones</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Copy-on-Write Database Cloning</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Traditionally, copying a database cluster for staging or analytical work requires restoring a backup snapshot. This takes hours and doubles your storage costs. Aurora provides **Fast Database Cloning** using a Copy-on-Write metadata layer.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
+                        <h4 className="font-bold text-slate-800 text-xs">Copy-on-Write Mechanics:</h4>
+                        <p>
+                          When you create a clone, the new cluster references the **exact same storage segments** as the source production database. No data is duplicated.
+                        </p>
+                        <p>
+                          As writes occur on either production or the clone, the storage layer creates a new copy of the modified page block, updating the metadata maps. You only pay for the **diverged pages**, saving storage costs!
+                        </p>
+
+                        <div className="acad-takeaway-box animate-fadeIn">
+                          <strong>💡 Professional Practice:</strong> Database cloning is instant (taking less than 5 seconds even for multi-terabyte databases). Use cloning to spin up test databases dynamically during your CI/CD test runs, and terminate them when tests finish!
+                        </div>
+                      </div>
+
+                      {/* Interactive Cloning Calculator */}
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-4 font-mono text-xs">
+                        <div>
+                          <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider block mb-3">Clone Page Storage Calculator</span>
+                          
+                          <div className="space-y-3.5 mb-2.5">
+                            <div>
+                              <label className="block text-slate-500 mb-1">Baseline Production DB Size</label>
+                              <input 
+                                type="number" 
+                                value={nbBaselineGb} 
+                                onChange={(e) => setNbBaselineGb(Math.max(1, parseInt(e.target.value) || 0))}
+                                className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-slate-500 mb-1">Percentage of pages modified in Clone: {nbCloneModifiedPct}%</label>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={nbCloneModifiedPct} 
+                                onChange={(e) => setNbCloneModifiedPct(parseInt(e.target.value))}
+                                className="w-full accent-emerald-600 cursor-ew-resize"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Calculated output */}
+                          {(() => {
+                            const cloneAllocated = (nbBaselineGb * (nbCloneModifiedPct / 100));
+                            const totalStorageUsed = nbBaselineGb + cloneAllocated;
+                            const standardCopyUsed = nbBaselineGb * 2;
+                            const storageSavedPct = ((standardCopyUsed - totalStorageUsed) / standardCopyUsed) * 100;
+                            return (
+                              <div className="bg-white border border-slate-200 p-3 rounded-lg text-[10.5px] space-y-1.5 text-slate-600">
+                                <p>Baseline Data Shared: <span className="font-bold text-slate-805">{nbBaselineGb} GB</span></p>
+                                <p>Diverged Page storage (Clone writes): <span className="font-bold text-sky-655">{cloneAllocated.toFixed(1)} GB</span></p>
+                                <p className="border-t border-slate-100 pt-1.5 text-emerald-650 font-bold">Storage saved: {storageSavedPct.toFixed(1)}%</p>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 6: BACKTRACK & RECOVERY */}
+                {selectedNote === 'backtrack_pitr' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Disaster recovery</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Backtrack vs Point-in-Time Recovery</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      If an operator accidentally runs a destructive command (e.g. `DROP TABLE users`), standard databases require restoring a database snapshot backup to a new instance, which takes hours. Aurora provides **Backtrack** to solve this instantly.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-655 leading-relaxed">
+                        <h4 className="font-bold text-slate-800 text-xs">Backtracking Mechanics:</h4>
+                        <p>
+                          Because the Aurora storage layer is log-structured (holding redo logs in sequence), backtracking rewinds the storage LSN markers back to a specific timestamp, bypassing snapshot restores.
+                        </p>
+                        
+                        <div className="acad-takeaway-box animate-fadeIn">
+                          <strong>⏱️ Performance Benefit:</strong> Backtracking completes in **less than 10 seconds**, regardless of database size. Once backtracked, database instances remain online without modifying cluster endpoints or application configurations!
+                        </div>
+                      </div>
+
+                      <table className="acad-table" style={{ fontSize: '11px' }}>
+                        <thead>
+                          <tr>
+                            <th>Capability</th>
+                            <th>Point-in-Time Recovery (PITR)</th>
+                            <th>Backtrack (Aurora)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="font-bold text-slate-800">Operational Target</td>
+                            <td>Provisions a **new** cluster instance.</td>
+                            <td>Rewinds the **existing** cluster in place.</td>
+                          </tr>
+                          <tr>
+                            <td className="font-bold text-slate-800">Time Taken</td>
+                            <td>Hours (proportional to DB snapshot size).</td>
+                            <td>Seconds (constant time &lt; 10s).</td>
+                          </tr>
+                          <tr>
+                            <td className="font-bold text-slate-800">Connection CNAME</td>
+                            <td>Must update DNS endpoints in client apps.</td>
+                            <td>CNAME mappings remain unchanged.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 7: ZERO-ETL WAREHOUSE SYNC */}
+                {selectedNote === 'zero_etl' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">Analytical Ingress</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Aurora Zero-ETL Redshift Sync</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Connecting operational databases to analytical data warehouses traditionally requires writing complex python glue pipelines or scheduling batch export scripts. Aurora **Zero-ETL integration** streams writes directly to Amazon Redshift without ETL pipelines.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-655 leading-relaxed">
+                        <span className="font-extrabold text-slate-800 block">How Zero-ETL Sync Works:</span>
+                        <p>
+                          The database cluster registers its transaction write-ahead logs (WAL) directly with Redshift. As commits happen, changes are streamed directly to Redshift warehouses in real-time.
+                        </p>
+                        
+                        <div className="acad-takeaway-box">
+                          <strong>⚡ Sub-Second Lag:</strong> Data becomes queryable in Redshift within **less than a second** of being committed in Aurora. Because the streaming is managed natively by the storage layer, it consumes zero query processing CPU from database instance computing cores!
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">Zero-ETL Integration Path</span>
+                        
+                        <div className="flex items-center justify-center gap-1.5 text-[9.5px] font-mono">
+                          <div className="bg-emerald-50 border border-emerald-200 p-2 rounded-lg">
+                            <p className="font-bold text-emerald-600">🌌 Aurora</p>
+                            <span>OLTP commits</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-slate-105 border border-slate-200 p-2.5 rounded-lg">
+                            <p className="font-bold text-slate-600">⚡ Zero-ETL Pipeline</p>
+                            <span>WAL Replay</span>
+                          </div>
+                          <span className="text-slate-400">&rarr;</span>
+                          <div className="bg-blue-50 border border-blue-200 p-2 rounded-lg">
+                            <p className="font-bold text-blue-650">📊 Redshift</p>
+                            <span>Analytics Ware</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 8: SQL MACHINE LEARNING */}
+                {selectedNote === 'in_database_ml' && (
+                  <div className="acad-detail-card space-y-6 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">AI Integration</span>
+                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">In-Database SQL Machine Learning</h3>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 8</span>
+                    </div>
+
+                    <p className="text-xs text-slate-605 leading-relaxed">
+                      Integrating AI predictions into relational datasets traditionally requires exporting SQL records to Python, calling models in SageMaker, and writing predictions back to the database. Aurora **In-Database Machine Learning** lets you call AI algorithms directly inside standard SQL queries.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs text-slate-655 leading-relaxed">
+                        <span className="font-extrabold text-slate-850 block">SQL Prediction Syntax:</span>
+                        <p>
+                          By configuring IAM role mappings, database query planners can call external AWS services directly. You can invoke Amazon Comprehend (sentiment, translation) or Amazon SageMaker (custom regression/classification models) directly from your `SELECT` statements!
+                        </p>
+                        
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Performance optimization:</strong> The database engine handles batching and parallel execution of ML requests automatically, reducing model inference times without loading query rows into application memory.
+                        </div>
+                      </div>
+
+                      {/* SQL code block */}
+                      <div className="flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">SQL ML Sentiment Query</span>
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(auroraMlSqlQueryCode);
+                              setCopiedNoteId('ml-sql');
+                              setTimeout(() => setCopiedNoteId(null), 2000);
+                            }}
+                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-655"
+                          >
+                            {copiedNoteId === 'ml-sql' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
+                          {auroraMlSqlQueryCode}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
           </div>
         )}
 

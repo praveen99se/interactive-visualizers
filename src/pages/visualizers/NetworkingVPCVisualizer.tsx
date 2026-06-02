@@ -32,7 +32,7 @@ interface LogRow {
 }
 
 export default function NetworkingVPCVisualizer() {
-  const [activeTab, setActiveTab] = useState<TabType>('cidr');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
   const [selectedNote, setSelectedNote] = useState<string>('public_private_ip');
   const [expandedCategory, setExpandedCategory] = useState<string>('core');
 
@@ -1179,6 +1179,9 @@ export default function NetworkingVPCVisualizer() {
 
       {/* Tab navigation bar */}
       <div className="da-tabs">
+        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+          <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+        </button>
         <button className={`da-tb ${activeTab === 'cidr' ? 'da-on' : ''}`} onClick={() => setActiveTab('cidr')}>
           <Info className="w-4 h-4" /> 1. CIDR &amp; Subnet Calculator
         </button>
@@ -1194,11 +1197,8 @@ export default function NetworkingVPCVisualizer() {
         <button className={`da-tb ${activeTab === 'hybrid' ? 'da-on' : ''}`} onClick={() => setActiveTab('hybrid')}>
           <Wifi className="w-4 h-4" /> 5. Redundant VPN &amp; Flow Logs
         </button>
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-          <BookOpen className="w-4 h-4" /> 6. Visual Architect Notes
-        </button>
         <button className={`da-tb ${activeTab === 'pricing' ? 'da-on' : ''}`} onClick={() => setActiveTab('pricing')}>
-          <DollarSign className="w-4 h-4" /> 7. Egress &amp; Firewall Optimizer
+          <DollarSign className="w-4 h-4" /> 6. Egress &amp; Firewall Optimizer
         </button>
       </div>
 
@@ -2700,7 +2700,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Core IP Addressing</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Public vs Private IP Routing</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 1 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('cidr')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Info className="w-3 h-3" /> Go to Subnet Calculator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 1 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2793,7 +2801,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Core IP Addressing</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Default VPC Architecture</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 2 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('cidr')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Info className="w-3 h-3" /> Go to Subnet Calculator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 2 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2885,7 +2901,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Core IP Addressing</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">VPC Subnet IP Allocations &amp; AWS Reserved IPs</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 3 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('cidr')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Info className="w-3 h-3" /> Go to Subnet Calculator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 3 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -2967,7 +2991,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Core IP Addressing</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Internet Gateway (IGW)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 4 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('pipelines')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Activity className="w-3 h-3" /> Go to Pipelines Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 4 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3025,7 +3057,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Egress &amp; Ingress Access</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Bastion Host Secure SSH Hops</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 5 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('pipelines')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Activity className="w-3 h-3" /> Go to Pipelines Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 5 of 19</span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -3174,7 +3214,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Egress &amp; Access Pipelines</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">NAT Instances (Outdated Legacy EC2)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 6 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('pipelines')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Activity className="w-3 h-3" /> Go to Pipelines Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 6 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3239,7 +3287,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Egress &amp; Access Pipelines</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">AWS Managed NAT Gateway</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 7 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('pipelines')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Activity className="w-3 h-3" /> Go to Pipelines Simulator
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 7 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3388,7 +3444,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Perimeter &amp; Subnet Security</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Network ACL (NACL - Stateless Perimeter Firewall)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 8 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('security')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Shield className="w-3 h-3" /> Go to Security Rules
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 8 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3509,7 +3573,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Perimeter &amp; Subnet Security</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Default Subnet NACL vs Custom Subnet NACL</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 9 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('security')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Shield className="w-3 h-3" /> Go to Security Rules
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 9 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3590,7 +3662,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Perimeter &amp; Subnet Security</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">Ephemeral Ports Range (Return Client Ports)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 10 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('security')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Shield className="w-3 h-3" /> Go to Security Rules
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 10 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3670,7 +3750,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Peering &amp; Endpoints</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">VPC Peering Connections</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 11 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('endpoints')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Layers className="w-3 h-3" /> Go to Peering &amp; Endpoints
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 11 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3738,7 +3826,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Peering &amp; Endpoints</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">VPC Gateway Endpoints vs PrivateLink Interface Endpoints</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 12 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('endpoints')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Layers className="w-3 h-3" /> Go to Peering &amp; Endpoints
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 12 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3824,7 +3920,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">VPC Peering &amp; Endpoints</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">VPC Traffic Mirroring</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 13 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('endpoints')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Layers className="w-3 h-3" /> Go to Peering &amp; Endpoints
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 13 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -3917,7 +4021,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Hybrid Connectivity</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">AWS Site-to-Site IPSec VPN Redundancy</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 14 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('hybrid')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Wifi className="w-3 h-3" /> Go to VPN &amp; Flow Logs
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 14 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -4031,7 +4143,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Hybrid Connectivity</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">AWS VPN CloudHub (Spoke-to-Spoke Tunneling)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 15 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('hybrid')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Wifi className="w-3 h-3" /> Go to VPN &amp; Flow Logs
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 15 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -4119,7 +4239,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Hybrid Connectivity</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">AWS Direct Connect (DX) Dedicated Resiliency</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 16 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('hybrid')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Wifi className="w-3 h-3" /> Go to VPN &amp; Flow Logs
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 16 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -4194,7 +4322,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Hybrid Connectivity</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">AWS Transit Gateway (Central Cloud Router)</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 17 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('hybrid')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Wifi className="w-3 h-3" /> Go to VPN &amp; Flow Logs
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 17 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -4302,7 +4438,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Telemetry &amp; Logs</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">VPC Flow Logs Ingestion</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 18 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('hybrid')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Wifi className="w-3 h-3" /> Go to VPN &amp; Flow Logs
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 18 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -4378,7 +4522,15 @@ export default function NetworkingVPCVisualizer() {
                       <span className="acad-hero-badge">Telemetry &amp; Logs</span>
                       <h3 className="text-xl font-black text-slate-900 mt-2">VPC Flow Logs &amp; SIEM Pipelines Architecture</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 19 of 19</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('hybrid')}
+                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                      >
+                        <Wifi className="w-3 h-3" /> Go to VPN &amp; Flow Logs
+                      </button>
+                      <span className="text-xs font-bold text-slate-400">Concept 19 of 19</span>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-500 leading-relaxed">
