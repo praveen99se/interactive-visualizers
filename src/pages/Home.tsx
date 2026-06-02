@@ -211,6 +211,15 @@ const visualizers: VisualizerItem[] = [
     path: '/visualizers/disaster-recovery',
     icon: '🔄',
   },
+  {
+    id: 'operations-ml',
+    title: '⚙️ AWS Operations, Management & Machine Learning',
+    description: 'Master AWS CloudFormation stack rollbacks, SSM Session/Patch/Automation operations, Cost Explorer reports, Outposts & Batch job queues, SES/Pinpoint campaign delivery pipelines, and dynamic SageMaker ML model deployments.',
+    tags: ['CloudFormation IaC', 'SSM Session & Patch', 'Cost Explorer', 'SES SMTP & Pinpoint', 'SageMaker & AWS ML APIs', 'AWS Batch & Outposts'],
+    category: 'integration',
+    path: '/visualizers/operations-ml',
+    icon: '⚙️',
+  },
   // Upcoming Roadmap Items
   {
     id: 'sorting-algorithms',

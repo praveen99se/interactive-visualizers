@@ -21,6 +21,7 @@ import SecretsAndKMSEncryptionVisualizer from './pages/visualizers/SecretsAndKMS
 import NetworkAndEdgeSecurityVisualizer from './pages/visualizers/NetworkAndEdgeSecurityVisualizer';
 import NetworkingVPCVisualizer from './pages/visualizers/NetworkingVPCVisualizer';
 import DisasterRecoveryVisualizer from './pages/visualizers/DisasterRecoveryVisualizer';
+import OperationsAndMLVisualizer from './pages/visualizers/OperationsAndMLVisualizer';
 import NotFound from './pages/NotFound';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -67,7 +68,7 @@ export default function App() {
               
               <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 rounded-xl px-3 py-1.5 text-[10px] font-mono text-slate-300 hover:border-amber-500/30 transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
                 <GitBranch className="w-3.5 h-3.5 text-amber-400" />
-                <span>SANDBOXES: <span className="text-amber-400 font-bold">19_LIVE</span></span>
+                <span>SANDBOXES: <span className="text-amber-400 font-bold">20_LIVE</span></span>
               </div>
               
               <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-[10px] font-mono text-emerald-300 font-bold shadow-[0_2px_10px_rgba(16,185,129,0.1)] hover:bg-emerald-950/60 transition-all duration-300">
@@ -106,6 +107,7 @@ export default function App() {
             <Route path="/visualizers/network-security" element={<NetworkAndEdgeSecurityVisualizer />} />
             <Route path="/visualizers/networking-vpc" element={<NetworkingVPCVisualizer />} />
             <Route path="/visualizers/disaster-recovery" element={<DisasterRecoveryVisualizer />} />
+            <Route path="/visualizers/operations-ml" element={<OperationsAndMLVisualizer />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
