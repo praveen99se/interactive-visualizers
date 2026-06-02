@@ -180,7 +180,16 @@ export const visualizerRegistry: VisualizerConfig[] = [
     tags: ['Disaster Recovery', 'DMS', 'AWS Backup', 'Vault Lock', 'Multi-Region', 'Failover'],
     path: '/visualizers/disaster-recovery',
     icon: '🔄',
-    lastUpdated: '2026-06-01',
+  },
+  {
+    id: 'operations-ml',
+    title: 'AWS Operations, Management & Machine Learning',
+    description: 'CloudFormation stack rollbacks, SSM automation runbooks, Cost Explorer reports, SES campaign pipelines, and SageMaker ML model endpoints.',
+    category: 'cloud',
+    tags: ['AWS', 'CloudFormation', 'SSM', 'SageMaker', 'FinOps', 'Batch'],
+    path: '/visualizers/operations-ml',
+    icon: '⚙️',
+    lastUpdated: '2026-06-02',
   },
 ];
 
