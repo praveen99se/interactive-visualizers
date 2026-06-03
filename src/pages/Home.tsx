@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { nodeDetails, qaData } from '../data/homeData';
 import { 
   Search, 
   Sparkles, 
@@ -16,7 +17,12 @@ import {
   Inbox,
   Terminal,
   Activity,
-  Server
+  Server,
+  Check,
+  Code,
+  ExternalLink,
+  HelpCircle,
+  Copy
 } from 'lucide-react';
 
 interface VisualizerItem {
@@ -355,119 +361,201 @@ const scenarios: Scenario[] = [
   }
 ];
 
-export default function Home() {
+export default function Home({ isDarkTheme }: { isDarkTheme: boolean }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
 
-  // Interactive Simulation States
-  const [simSpikeActive, setSimSpikeActive] = useState(false);
-  const [simFailoverActive, setSimFailoverActive] = useState(false);
-  const [simSecAttackActive, setSimSecAttackActive] = useState(false);
+  // Unified Simulation Mode
+  const [simMode, setSimMode] = useState<'normal' | 'spike' | 'ddos' | 'failover' | 'outage'>('normal');
 
-  // Live Telemetry states for Hero Section
-  const [heroReqPerSec, setHeroReqPerSec] = useState(4284);
-  const [heroLatency, setHeroLatency] = useState(24.5);
-  const [heroCpuLoad, setHeroCpuLoad] = useState(16.8);
-  const [heroActiveUsers, setHeroActiveUsers] = useState(1480);
-  const [heroTrafficState, setHeroTrafficState] = useState<'normal' | 'spike' | 'ddos'>('normal');
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  // Node Inspector Selection
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
+  // Q&A Explorer States
+  const [activeQaTab, setActiveQaTab] = useState<'compute' | 'networking' | 'database' | 'security' | 'storage' | 'integration'>('compute');
+  const [expandedQuestionId, setExpandedQuestionId] = useState<string | null>(null);
+
+  // Copy indicators
+  const [copiedNodeId, setCopiedNodeId] = useState<string | null>(null);
+  
+  // Backwards compatibility mappings for older SVGs
+  const simSpikeActive = simMode === 'spike';
+  const simFailoverActive = simMode === 'failover';
+  const simSecAttackActive = simMode === 'ddos';
+
+  // Live Telemetry States
+  const [metrics, setMetrics] = useState({
+    rps: 4200,
+    latency: 24,
+    cpu: 18,
+    sessions: 1480,
+    dbIops: 450,
+    cacheHit: 88,
+  });
+
+  // Console Log stream
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
+
+  // Fluctuating telemetry metrics based on active simulation mode
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (heroTrafficState === 'normal') {
-        setHeroReqPerSec(prev => {
-          const delta = Math.floor(Math.random() * 40) - 20;
-          return Math.max(4200, Math.min(prev + delta, 4450));
-        });
-        setHeroLatency(prev => {
-          const delta = (Math.random() * 1.2 - 0.6);
-          return Math.max(22.0, Math.min(parseFloat((prev + delta).toFixed(1)), 27.0));
-        });
-        setHeroCpuLoad(prev => {
-          const delta = (Math.random() * 2 - 1);
-          return Math.max(14.0, Math.min(parseFloat((prev + delta).toFixed(1)), 20.0));
-        });
-        setHeroActiveUsers(prev => {
-          const delta = Math.floor(Math.random() * 8) - 4;
-          return Math.max(1420, Math.min(prev + delta, 1550));
-        });
-      } else if (heroTrafficState === 'spike') {
-        setHeroReqPerSec(prev => {
-          const delta = Math.floor(Math.random() * 100) - 50;
-          return Math.max(8300, Math.min(prev + delta, 8800));
-        });
-        setHeroLatency(prev => {
-          const delta = (Math.random() * 3 - 1);
-          return Math.max(55.0, Math.min(parseFloat((prev + delta).toFixed(1)), 72.0));
-        });
-        setHeroCpuLoad(prev => {
-          const delta = (Math.random() * 4 - 2);
-          return Math.max(68.0, Math.min(parseFloat((prev + delta).toFixed(1)), 82.0));
-        });
-        setHeroActiveUsers(prev => {
-          const delta = Math.floor(Math.random() * 30) - 15;
-          return Math.max(3400, Math.min(prev + delta, 3700));
-        });
-      } else if (heroTrafficState === 'ddos') {
-        setHeroReqPerSec(prev => {
-          const delta = Math.floor(Math.random() * 150) - 75;
-          return Math.max(12400, Math.min(prev + delta, 13200));
-        });
-        setHeroLatency(prev => {
-          const delta = (Math.random() * 1.5 - 0.75);
-          return Math.max(23.0, Math.min(parseFloat((prev + delta).toFixed(1)), 28.5));
-        });
-        setHeroCpuLoad(prev => {
-          const delta = (Math.random() * 1.5 - 0.75);
-          return Math.max(22.0, Math.min(parseFloat((prev + delta).toFixed(1)), 29.0));
-        });
-        setHeroActiveUsers(prev => {
-          const delta = Math.floor(Math.random() * 50) - 25;
-          return Math.max(5100, Math.min(prev + delta, 5500));
-        });
-      }
-    }, 1200);
+    const interval = setInterval(() => {
+      setMetrics(() => {
+        let targetRps = 4200;
+        let targetLatency = 24;
+        let targetCpu = 18;
+        let targetSessions = 1480;
+        let targetDbIops = 450;
+        let targetCacheHit = 88;
 
-    return () => clearInterval(timer);
-  }, [heroTrafficState]);
+        if (simMode === 'normal') {
+          targetRps = 4000 + Math.floor(Math.random() * 400);
+          targetLatency = 20 + Math.random() * 6;
+          targetCpu = 12 + Math.random() * 6;
+          targetSessions = 1400 + Math.floor(Math.random() * 100);
+          targetDbIops = 400 + Math.floor(Math.random() * 80);
+          targetCacheHit = 86 + Math.floor(Math.random() * 4);
+        } else if (simMode === 'spike') {
+          targetRps = 14000 + Math.floor(Math.random() * 1200);
+          targetLatency = 54 + Math.random() * 12;
+          targetCpu = 76 + Math.random() * 8;
+          targetSessions = 4500 + Math.floor(Math.random() * 300);
+          targetDbIops = 2700 + Math.floor(Math.random() * 250);
+          targetCacheHit = 95 + Math.floor(Math.random() * 2);
+        } else if (simMode === 'ddos') {
+          targetRps = 88000 + Math.floor(Math.random() * 4000);
+          targetLatency = 14 + Math.random() * 4;
+          targetCpu = 8 + Math.random() * 4;
+          targetSessions = 48000 + Math.floor(Math.random() * 1500);
+          targetDbIops = 420 + Math.floor(Math.random() * 40);
+          targetCacheHit = 92 + Math.floor(Math.random() * 3);
+        } else if (simMode === 'failover') {
+          targetRps = 3800 + Math.floor(Math.random() * 250);
+          targetLatency = 110 + Math.random() * 12;
+          targetCpu = 28 + Math.random() * 6;
+          targetSessions = 1420 + Math.floor(Math.random() * 60);
+          targetDbIops = 440 + Math.floor(Math.random() * 40);
+          targetCacheHit = 60 + Math.floor(Math.random() * 8);
+        } else if (simMode === 'outage') {
+          targetRps = 4100 + Math.floor(Math.random() * 200);
+          targetLatency = 5000 + Math.floor(Math.random() * 500);
+          targetCpu = 100;
+          targetSessions = 1500 + Math.floor(Math.random() * 100);
+          targetDbIops = 0;
+          targetCacheHit = 0;
+        }
 
-  const nodeDetails: Record<string, { title: string; desc: string; metric1: string; metric2: string; status: string }> = {
-    cdn: {
-      title: 'Amazon CloudFront CDN',
-      desc: 'Global edge content delivery network cache. Intercepts static assets requests and delivers them with ultra-low latency.',
-      metric1: 'Edge Latency: < 5ms',
-      metric2: 'Cache Hit Ratio: 94.8%',
-      status: 'Active / Edge Layer'
-    },
-    waf: {
-      title: 'AWS WAF Firewall',
-      desc: 'Layer-7 Web Application Firewall. Auto-inspects headers, payloads, IP reputations, and triggers rate-limiting rules.',
-      metric1: heroTrafficState === 'ddos' ? 'Threat Rate: 8.5k/s [BLOCKED]' : 'Threat Rate: 0/s [SAFE]',
-      metric2: 'Rule Evaluation: <0.2ms',
-      status: heroTrafficState === 'ddos' ? 'SHIELD PROTECT MODE' : 'Active / Monitoring'
-    },
-    alb: {
-      title: 'Application Load Balancer',
-      desc: 'Layer-7 sticky routing router. Hashes flow targets, monitors server cluster health, and performs SSL termination.',
-      metric1: `Active Conns: ${heroActiveUsers.toLocaleString()}`,
-      metric2: `RPS Flow: ${heroTrafficState === 'ddos' ? '~1,450 (Legit)' : `~${Math.round(heroReqPerSec * 0.95).toLocaleString()}`}`,
-      status: 'Active / Healthy'
-    },
-    ecs: {
-      title: 'Amazon ECS (Fargate Compute)',
-      desc: 'Serverless Docker container blades running node applications. Managed automatically inside a highly secure isolated VPC.',
-      metric1: `Cpu Load: ${heroCpuLoad}%`,
-      metric2: heroTrafficState === 'spike' ? 'Task Blades: 6 Provisioned' : 'Task Blades: 2 Provisioned',
-      status: heroTrafficState === 'spike' ? 'Auto-Scaling Triggered' : 'Normal / Stable'
-    },
-    db: {
-      title: 'Amazon Aurora Multi-AZ Cluster',
-      desc: 'Cloud-native database cluster with automatic storage scaling and sub-10ms replica syncing across physical locations.',
-      metric1: heroTrafficState === 'spike' ? 'Database Latency: 4.8ms' : 'Database Latency: 0.8ms',
-      metric2: heroTrafficState === 'spike' ? 'ACU Allocation: 12.5 ACU' : 'ACU Allocation: 2.0 ACU',
-      status: heroTrafficState === 'spike' ? 'Storage IOPS Scale Out' : 'Active / Sync OK'
+        return {
+          rps: Math.round(targetRps),
+          latency: parseFloat(targetLatency.toFixed(1)),
+          cpu: Math.round(targetCpu),
+          sessions: Math.round(targetSessions),
+          dbIops: Math.round(targetDbIops),
+          cacheHit: Math.round(targetCacheHit),
+        };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [simMode]);
+
+  // Generate log stream messages responsive to the simulation mode
+  useEffect(() => {
+    let initialLogs: string[] = [];
+    if (simMode === 'normal') {
+      initialLogs = [
+        '[INFO] Route 53 DNS geoproximity health checks: PASSING',
+        '[INFO] CloudFront CDN edge cache hit ratio: 88.5%',
+        '[INFO] ALB routing requests smoothly to us-east-1 Fargate cluster',
+        '[INFO] Aurora Multi-AZ replication sync lag: 1.4ms',
+      ];
+    } else if (simMode === 'spike') {
+      initialLogs = [
+        '[WARN] CPU utilization threshold exceeded: 75% on ECS tasks',
+        '[INFO] CloudWatch alarm trigger: ASG_Scale_Out',
+        '[INFO] Launching +2 Fargate container task instances...',
+        '[INFO] ElastiCache write-through caching absorbing repeat select queries',
+      ];
+    } else if (simMode === 'ddos') {
+      initialLogs = [
+        '[ALERT] DDoS Volumetric Threat detected at Edge (Route 53 Anycast)',
+        '[INFO] AWS Shield Advanced activating mitigation scrubbers',
+        '[SECURITY] WAF Block Rule 12 triggered: dropped 85,000 bad requests/sec',
+        '[INFO] Backend ALB load stable: Legit sessions running unaffected',
+      ];
+    } else if (simMode === 'failover') {
+      initialLogs = [
+        '[ALERT] Health check failure detected in primary region (us-east-1)',
+        '[INFO] Route 53 Failover Policy active: Rerouting DNS queries',
+        '[INFO] Secondary active gateway online in us-west-2',
+        '[WARN] Secondary DB cache cold: Warming up database indexing...',
+      ];
+    } else if (simMode === 'outage') {
+      initialLogs = [
+        '[CRITICAL] ECS Fargate tasks thread deadlock detected',
+        '[ERROR] Database connection pool exhausted (Max Connections = 500)',
+        '[ERROR] Backend API returning HTTP 504 Gateway Timeout',
+        '[CRITICAL] 100% Request Error Rate detected on ALB listener',
+      ];
     }
+    setConsoleLogs(initialLogs);
+
+    const logInterval = setInterval(() => {
+      setConsoleLogs(prev => {
+        let newLog = '';
+        const timestamp = new Date().toLocaleTimeString();
+        if (simMode === 'normal') {
+          const logs = [
+            `[${timestamp}] [INFO] ALB connection pooling stable: 1,420 active sess`,
+            `[${timestamp}] [INFO] Database replica replication lag: 0.8ms`,
+            `[${timestamp}] [INFO] DNS queries resolved globally via Route 53 in 12ms`,
+            `[${timestamp}] [INFO] S3 bucket policy evaluation: ALLOW`,
+          ];
+          newLog = logs[Math.floor(Math.random() * logs.length)];
+        } else if (simMode === 'spike') {
+          const logs = [
+            `[${timestamp}] [INFO] Fargate scale-out complete: 4 active tasks online`,
+            `[${timestamp}] [WARN] DB IOPS spiking: read transactions/sec`,
+            `[${timestamp}] [INFO] Cache hit rate increased to maintain database load`,
+            `[${timestamp}] [INFO] Container CPU load stabilizing`,
+          ];
+          newLog = logs[Math.floor(Math.random() * logs.length)];
+        } else if (simMode === 'ddos') {
+          const logs = [
+            `[${timestamp}] [SECURITY] Blocked Layer 7 HTTP flood signature from 14.120.x.x`,
+            `[${timestamp}] [INFO] WAF rate-limiting rule dropped 12,400 sessions`,
+            `[${timestamp}] [INFO] Shield mitigation active. Backend latency safe`,
+            `[${timestamp}] [SECURITY] Auto-deflected volumetric spam packets to null route`,
+          ];
+          newLog = logs[Math.floor(Math.random() * logs.length)];
+        } else if (simMode === 'failover') {
+          const logs = [
+            `[${timestamp}] [WARN] Primary region us-east-1 remains offline`,
+            `[${timestamp}] [INFO] Serving 100% of live traffic from us-west-2 DR node`,
+            `[${timestamp}] [INFO] DMS continuous replication catching up...`,
+            `[${timestamp}] [INFO] DB cache warming up on secondary node`,
+          ];
+          newLog = logs[Math.floor(Math.random() * logs.length)];
+        } else if (simMode === 'outage') {
+          const logs = [
+            `[${timestamp}] [ERROR] Connection timeout to Aurora database writer node`,
+            `[${timestamp}] [CRITICAL] WebApp socket buffer full. Connection dropped.`,
+            `[${timestamp}] [ERROR] HTTP 504 Gateway Timeout returned for client requests`,
+            `[${timestamp}] [CRITICAL] Stack trace dumped: OutOfMemoryError in thread pool`,
+          ];
+          newLog = logs[Math.floor(Math.random() * logs.length)];
+        }
+        return [newLog, ...prev.slice(0, 4)];
+      });
+    }, 3000);
+
+    return () => clearInterval(logInterval);
+  }, [simMode]);
+
+  // Copy helper
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedNodeId(id);
+    setTimeout(() => setCopiedNodeId(null), 2000);
   };
 
   // Active Category Counter Helper
@@ -1111,7 +1199,7 @@ export default function Home() {
             <span className="text-slate-700">Simulate rapid workload surges on components:</span>
           </div>
           <button
-            onClick={() => setSimSpikeActive(prev => !prev)}
+            onClick={() => setSimMode(prev => prev === 'spike' ? 'normal' : 'spike')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 shrink-0 ${
               simSpikeActive 
                 ? 'bg-rose-100 border-rose-300 text-rose-800 animate-pulse' 
@@ -1132,7 +1220,7 @@ export default function Home() {
             <span className="text-slate-700">Trigger simulated catastrophic cloud failure:</span>
           </div>
           <button
-            onClick={() => setSimFailoverActive(prev => !prev)}
+            onClick={() => setSimMode(prev => prev === 'failover' ? 'normal' : 'failover')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 shrink-0 ${
               simFailoverActive 
                 ? 'bg-red-100 border-red-300 text-red-800 animate-pulse' 
@@ -1153,7 +1241,7 @@ export default function Home() {
             <span className="text-slate-700">Inject layer-7 botnet HTTP request flood:</span>
           </div>
           <button
-            onClick={() => setSimSecAttackActive(prev => !prev)}
+            onClick={() => setSimMode(prev => prev === 'ddos' ? 'normal' : 'ddos')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5 shrink-0 ${
               simSecAttackActive 
                 ? 'bg-rose-100 border-rose-300 text-rose-800 animate-pulse' 
@@ -1170,480 +1258,447 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className={`transition-all duration-500 -mx-4 md:-mx-8 -my-8 px-4 md:px-8 py-8 min-h-screen ${
+      isDarkTheme 
+        ? 'bg-slate-950 text-slate-100' 
+        : 'bg-slate-50 text-slate-800'
+    }`}>
+      <div className="flex flex-col gap-10">
 
-      {/* Premium Light-Theme Interactive Operations Hero Workbench */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 rounded-3xl p-8 md:p-12 text-slate-800 border border-slate-200/80 shadow-xl">
+        {/* Ultra-Premium Interactive Cloud Operations Workbench Hero */}
+        <section className={`relative overflow-hidden rounded-3xl p-6 md:p-10 border shadow-2xl transition-all duration-500 ${
+          isDarkTheme 
+            ? 'bg-slate-950 text-white border-slate-800' 
+            : 'bg-white text-slate-800 border-slate-205 shadow-md'
+        }`}>
+
         
-        {/* Soft Ambient Radial Backdrops for Light Theme Depth */}
-        <div className="absolute top-[-10%] left-[-15%] w-[450px] h-[450px] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none animate-pulse duration-5000"></div>
-        <div className="absolute bottom-[-15%] right-[-10%] w-[450px] h-[450px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none animate-pulse duration-7000"></div>
+        {/* Neon Ambient Backdrop Glows */}
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[130px] pointer-events-none animate-pulse duration-5000"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none animate-pulse duration-7000"></div>
         
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
-          {/* Left Column: Heading, Telemetry Controls & Overview */}
-          <div className="lg:col-span-6 flex flex-col gap-6 text-left">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[10.5px] font-bold tracking-wider bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 w-fit shadow-[inset_0_1px_4px_rgba(16,185,129,0.05)]">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" style={{ animationDuration: '4s' }} /> 
-              V3.0 AWS ARCHITECT WORKBENCH SANDBOX
-            </span>
-            
-            <h1 className="text-3.5xl md:text-5.5xl font-black tracking-tight leading-[1.1] text-slate-950 select-none">
-              Master Cloud Architecture <br />
-              <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-indigo-600 bg-clip-text text-transparent">
-                Interactively &amp; Live
+          {/* Left Column: Mission Control & Syslog HUD */}
+          <div className="lg:col-span-5 flex flex-col justify-between gap-6 text-left">
+            <div className="flex flex-col gap-5">
+              <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold tracking-wider border transition-all ${
+                isDarkTheme 
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              } w-fit shadow-[inset_0_1px_4px_rgba(16,185,129,0.05)]`}>
+                <Sparkles className={`w-3.5 h-3.5 animate-pulse ${isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'}`} /> 
+                AWS ARCHITECT FLUID PLAYGROUND V3.0
               </span>
-            </h1>
-            
-            <p className="text-slate-600 text-sm md:text-base leading-relaxed max-w-xl font-medium tracking-wide">
-              Interact directly with live network grids, event messaging buses, database clusters, and caching pipelines. Toggle operational workloads below to observe system telemetry update in real-time.
-            </p>
-            
-            {/* Call to Actions */}
-            <div className="flex flex-wrap gap-3.5">
-              <a 
-                href="#visualizers-explorer" 
-                className="px-5.5 py-3.5 bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black rounded-2xl text-xs flex items-center gap-2.5 transition-all duration-300 shadow-[0_4px_18px_rgba(5,150,105,0.25)] hover:shadow-[0_8px_24px_rgba(5,150,105,0.45)] hover:-translate-y-0.5"
-              >
-                Launch Sandboxes <ArrowRight className="w-4 h-4 stroke-[2.8]" />
-              </a>
-              <a 
-                href="#scenario-advisor" 
-                className="px-5.5 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-2xl text-xs border border-slate-200 shadow-sm hover:border-slate-350 transition-all duration-300 hover:-translate-y-0.5"
-              >
-                Inspect Blueprints
-              </a>
-            </div>
-
-            {/* Live Traffic State Controller HUD */}
-            <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-3 max-w-md backdrop-blur-sm shadow-md mt-1.5">
-              <div className="flex items-center gap-2 justify-between">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-emerald-600 animate-pulse" />
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-mono">
-                    Simulation Control Unit
+              
+              <h1 className={`text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.1] transition-all duration-300 ${
+                isDarkTheme ? 'text-white' : 'text-slate-900'
+              }`}>
+                Master Cloud <br />
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                  Architecture Live
+                </span>
+              </h1>
+              
+              <p className={`text-xs md:text-sm leading-relaxed max-w-xl transition-all duration-300 ${
+                isDarkTheme ? 'text-slate-400' : 'text-slate-600'
+              }`}>
+                Deploy live network topologies, simulate system workloads, and audit microservice telemetry. Click on any network node to inspect its CLI endpoints and configuration logs.
+              </p>
+              
+              {/* Simulation Mode Selectors */}
+              <div className={`border rounded-2xl p-4 flex flex-col gap-3 backdrop-blur-md transition-all duration-300 ${
+                isDarkTheme ? 'bg-slate-900/80 border-slate-800' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                    Workload Simulation Controls
+                  </span>
+                  <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded border transition-all duration-300 ${
+                    isDarkTheme ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+                  }`}>
+                    Mode: <span className="text-emerald-400 font-bold">{simMode.toUpperCase()}</span>
                   </span>
                 </div>
-                <span className="text-[9px] font-mono text-slate-400 uppercase">
-                  State: <span className="text-emerald-600 font-bold">{heroTrafficState}</span>
-                </span>
+                
+                <div className="grid grid-cols-5 gap-1.5">
+                  {(['normal', 'spike', 'ddos', 'failover', 'outage'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      onClick={() => {
+                        setSimMode(mode);
+                        setSelectedNodeId(null);
+                      }}
+                      className={`py-2 rounded-xl text-[9.5px] font-bold border transition-all capitalize ${
+                        simMode === mode
+                          ? mode === 'outage'
+                            ? isDarkTheme ? 'bg-rose-500/20 border-rose-500 text-rose-300' : 'bg-rose-50 border-rose-300 text-rose-700'
+                            : mode === 'failover'
+                              ? isDarkTheme ? 'bg-amber-500/20 border-amber-500 text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-700'
+                              : isDarkTheme ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300' : 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                          : isDarkTheme 
+                            ? 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900' 
+                            : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
               </div>
-              
-              <div className="grid grid-cols-3 gap-2.5">
-                <button
-                  onClick={() => setHeroTrafficState('normal')}
-                  className={`px-3 py-2 rounded-xl text-[10.5px] font-bold border transition-all duration-300 ${
-                    heroTrafficState === 'normal'
-                      ? 'bg-emerald-50 border-emerald-400 text-emerald-700 shadow-sm shadow-emerald-100'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                  }`}
-                >
-                  🟢 Normal
-                </button>
-                
-                <button
-                  onClick={() => setHeroTrafficState('spike')}
-                  className={`px-3 py-2 rounded-xl text-[10.5px] font-bold border transition-all duration-300 ${
-                    heroTrafficState === 'spike'
-                      ? 'bg-amber-50 border-amber-400 text-amber-700 shadow-sm shadow-amber-100 animate-pulse'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                  }`}
-                >
-                  ⚡ Spike Load
-                </button>
-                
-                <button
-                  onClick={() => setHeroTrafficState('ddos')}
-                  className={`px-3 py-2 rounded-xl text-[10.5px] font-bold border transition-all duration-300 ${
-                    heroTrafficState === 'ddos'
-                      ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm shadow-rose-100'
-                      : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                  }`}
-                >
-                  🔒 DDoS Block
-                </button>
+            </div>
+
+            {/* Monospace Operations Console Syslog */}
+            <div className={`font-mono text-[10px] flex flex-col gap-2 min-h-[120px] shadow-inner relative overflow-hidden select-none rounded-2xl p-4 transition-all duration-300 ${
+              isDarkTheme ? 'bg-slate-950 border border-slate-800/80 text-slate-300' : 'bg-slate-900 border border-slate-950 text-slate-200'
+            }`}>
+              <div className="absolute top-0 right-0 p-2 text-slate-500 text-[8px] font-bold">SYSLOG CONSOLE</div>
+              <div className="flex items-center gap-1 text-slate-500 border-b border-slate-905 pb-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>telemetry-daemon-stream: connected</span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {consoleLogs.map((log, i) => {
+                  let colorClass = 'text-slate-400';
+                  if (log.includes('[ERROR]') || log.includes('[CRITICAL]')) colorClass = 'text-rose-400';
+                  else if (log.includes('[WARN]')) colorClass = 'text-amber-400';
+                  else if (log.includes('[SECURITY]')) colorClass = 'text-cyan-400';
+                  else if (log.includes('[ALERT]')) colorClass = 'text-indigo-400';
+                  return (
+                    <div key={i} className={`truncate transition-all ${colorClass}`}>
+                      {log}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
           </div>
 
-          {/* Right Column: Live Workstation Telemetry Console & SVG Mesh */}
-          <div className="lg:col-span-6 flex flex-col gap-4 w-full">
+          {/* Right Column: Telemetry Gauge HUD & Network SVG Map */}
+          <div className="lg:col-span-7 flex flex-col justify-between gap-6 w-full">
             
-            {/* Interactive Operations Console Pane (Light Theme Dashboard) */}
-            <div className="bg-white/95 border border-slate-200/80 rounded-3xl p-5 md:p-6 shadow-xl relative overflow-hidden flex flex-col gap-5 text-slate-800 backdrop-blur-sm">
-              
-              {/* Header Status Row */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3.5">
+            {/* Live Systems Telemetry Console Grid */}
+            <div className={`border rounded-3xl p-5 shadow-xl flex flex-col gap-4 backdrop-blur-md transition-all duration-300 ${
+              isDarkTheme ? 'bg-slate-900/60 border-slate-800/80' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <div className={`flex items-center justify-between border-b pb-3 transition-all duration-300 ${
+                isDarkTheme ? 'border-slate-800' : 'border-slate-200'
+              }`}>
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2 w-2">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      heroTrafficState === 'ddos' ? 'bg-rose-400' : heroTrafficState === 'spike' ? 'bg-amber-400' : 'bg-emerald-400'
-                    }`}></span>
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                      heroTrafficState === 'ddos' ? 'bg-rose-500' : heroTrafficState === 'spike' ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`}></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                    LIVE SYSTEM CONSOLE HUD
+                  <span className={`text-[10px] font-bold uppercase tracking-widest font-mono transition-all duration-300 ${
+                    isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+                  }`}>
+                    REAL-TIME SYSTEM GAUGES
                   </span>
                 </div>
-                
-                <span className="text-[9px] font-mono bg-slate-50 border border-slate-200/60 text-slate-500 px-2 py-0.5 rounded-md">
-                  VPC_STATUS: <span className="text-emerald-600 font-bold">ONLINE</span>
+                <span className={`text-[9px] font-mono px-2 py-0.5 rounded-md border transition-all duration-300 ${
+                  isDarkTheme ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+                }`}>
+                  VPC IP_ROUTE: <span className="text-emerald-400 font-bold">STABLE</span>
                 </span>
               </div>
 
-              {/* Four Live Telemetry Counters Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-                
-                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">REQ RATE</span>
-                  <span className="text-sm md:text-base font-black text-indigo-600 font-mono leading-none">
-                    {heroReqPerSec.toLocaleString()} <span className="text-[9px] text-slate-400 font-normal">RPS</span>
-                  </span>
-                  <div className="h-1 w-full bg-slate-200 rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        heroTrafficState === 'ddos' ? 'bg-rose-500 w-full' : heroTrafficState === 'spike' ? 'bg-amber-500 w-[70%]' : 'bg-indigo-500 w-[35%]'
-                      }`}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">LATENCY</span>
-                  <span className="text-sm md:text-base font-black text-amber-600 font-mono leading-none">
-                    {heroLatency.toFixed(1)} <span className="text-[9px] text-slate-400 font-normal">ms</span>
-                  </span>
-                  <div className="h-1 w-full bg-slate-200 rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        heroTrafficState === 'ddos' ? 'bg-emerald-500 w-[20%]' : heroTrafficState === 'spike' ? 'bg-rose-500 w-[85%]' : 'bg-emerald-500 w-[25%]'
-                      }`}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">CPU LOAD</span>
-                  <span className={`text-sm md:text-base font-black font-mono leading-none ${
-                    heroCpuLoad > 50 ? 'text-rose-600' : 'text-emerald-600'
+              {/* Gauges Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+                {[
+                  { label: 'RPS RATE', value: metrics.rps.toLocaleString(), unit: 'Rps', color: 'from-cyan-500 to-blue-500', width: simMode === 'ddos' ? 'w-full' : simMode === 'spike' ? 'w-[75%]' : 'w-[40%]' },
+                  { label: 'LATENCY', value: metrics.latency, unit: 'ms', color: 'from-amber-500 to-orange-500', width: simMode === 'outage' ? 'w-full animate-pulse' : simMode === 'failover' ? 'w-[65%]' : 'w-[20%]' },
+                  { label: 'CPU LOAD', value: `${metrics.cpu}%`, unit: '', color: 'from-rose-500 to-red-500', width: simMode === 'outage' ? 'w-full' : simMode === 'spike' ? 'w-[80%]' : 'w-[25%]' },
+                  { label: 'SESSIONS', value: metrics.sessions.toLocaleString(), unit: 'Active', color: 'from-indigo-500 to-violet-500', width: simMode === 'ddos' ? 'w-full' : simMode === 'spike' ? 'w-[60%]' : 'w-[28%]' },
+                  { label: 'DB IOPS', value: metrics.dbIops.toLocaleString(), unit: 'Tx/s', color: 'from-emerald-500 to-teal-500', width: simMode === 'spike' ? 'w-[85%]' : 'w-[30%]' },
+                  { label: 'CACHE HIT', value: `${metrics.cacheHit}%`, unit: '', color: 'from-pink-500 to-purple-500', width: `${metrics.cacheHit}%` },
+                ].map((g, idx) => (
+                  <div key={idx} className={`border rounded-xl p-2.5 flex flex-col justify-between shadow-md transition-all duration-300 ${
+                    isDarkTheme ? 'bg-slate-950 border-slate-850' : 'bg-white border-slate-200'
                   }`}>
-                    {heroCpuLoad.toFixed(1)}<span className="text-[10px] text-slate-400 font-normal">%</span>
-                  </span>
-                  <div className="h-1 w-full bg-slate-200 rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        heroTrafficState === 'ddos' ? 'bg-emerald-500 w-[28%]' : heroTrafficState === 'spike' ? 'bg-rose-500 w-[78%]' : 'bg-emerald-500 w-[18%]'
-                      }`}
-                    ></div>
+                    <span className={`text-[8px] font-bold uppercase tracking-wider font-mono transition-all duration-300 ${
+                      isDarkTheme ? 'text-slate-500' : 'text-slate-400'
+                    }`}>{g.label}</span>
+                    <span className={`text-xs sm:text-sm font-black font-mono leading-none my-1 flex items-baseline gap-0.5 transition-all duration-300 ${
+                      isDarkTheme ? 'text-white' : 'text-slate-800'
+                    }`}>
+                      {g.value} <span className="text-[8px] text-slate-500 font-normal">{g.unit}</span>
+                    </span>
+                    <div className={`h-1 w-full rounded-full overflow-hidden transition-all duration-300 ${
+                      isDarkTheme ? 'bg-slate-800' : 'bg-slate-100'
+                    }`}>
+                      <div className={`h-full rounded-full bg-gradient-to-r ${g.color} ${g.width} transition-all duration-1000`}></div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">CONNS</span>
-                  <span className="text-sm md:text-base font-black text-cyan-600 font-mono leading-none">
-                    {heroActiveUsers.toLocaleString()} <span className="text-[9px] text-slate-400 font-normal">Sess</span>
-                  </span>
-                  <div className="h-1 w-full bg-slate-200 rounded-full mt-2 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        heroTrafficState === 'ddos' ? 'bg-rose-500 w-[90%]' : heroTrafficState === 'spike' ? 'bg-amber-500 w-[60%]' : 'bg-emerald-500 w-[30%]'
-                      }`}
-                    ></div>
-                  </div>
-                </div>
-
+                ))}
               </div>
 
-              {/* Dynamic Isometric AWS Routing SVG mesh */}
-              <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden shadow-inner">
-                
-                <svg width="100%" height="210" viewBox="0 0 500 210" className="max-w-full overflow-visible">
+              {/* Immersive SVG Network Map */}
+              <div className={`border rounded-2xl p-2 flex items-center justify-center relative overflow-hidden shadow-inner min-h-[220px] transition-all duration-300 ${
+                isDarkTheme ? 'bg-slate-950 border-slate-850' : 'bg-white border-slate-200 shadow-inner shadow-slate-100/50'
+              }`}>
+                <svg width="100%" height="210" viewBox="0 0 540 210" className="max-w-full overflow-visible">
                   <defs>
-                    {/* Blueprint grid backdrop pattern */}
-                    <pattern id="blueprint-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f1f5f9" strokeWidth="1.2" />
+                    <pattern id="grid-pattern" width="18" height="18" patternUnits="userSpaceOnUse">
+                      <path d="M 18 0 L 0 0 0 18" fill="none" stroke={isDarkTheme ? '#1e293b' : '#e2e8f0'} strokeWidth="0.8" opacity="0.3" />
                     </pattern>
-
-                    <linearGradient id="grad-cdn" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#a855f7" />
-                      <stop offset="100%" stopColor="#6b21a8" />
+                    <linearGradient id="g-dns" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#38bdf8" />
+                      <stop offset="100%" stopColor="#0369a1" />
                     </linearGradient>
-                    <linearGradient id="grad-waf" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="g-cf" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#a78bfa" />
+                      <stop offset="100%" stopColor="#5b21b6" />
+                    </linearGradient>
+                    <linearGradient id="g-waf" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#f43f5e" />
-                      <stop offset="100%" stopColor="#be123c" />
+                      <stop offset="100%" stopColor="#9f1239" />
                     </linearGradient>
-                    <linearGradient id="grad-alb" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f97316" />
+                    <linearGradient id="g-alb" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#fb923c" />
                       <stop offset="100%" stopColor="#c2410c" />
                     </linearGradient>
-                    <linearGradient id="grad-ecs" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#3b82f6" />
+                    <linearGradient id="g-ecs" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#60a5fa" />
                       <stop offset="100%" stopColor="#1d4ed8" />
                     </linearGradient>
-                    <linearGradient id="grad-db" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#10b981" />
+                    <linearGradient id="g-db" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#34d399" />
                       <stop offset="100%" stopColor="#047857" />
                     </linearGradient>
-                    
-                    {/* Light-theme Shadow Filter for floatation effect */}
-                    <filter id="float-shadow-light" x="-20%" y="-20%" width="140%" height="150%">
-                      <feDropShadow dx="0" dy="5" stdDeviation="4" floodColor="#64748b" floodOpacity="0.2" />
+                    <filter id="node-glow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#10b981" floodOpacity="0.2" />
                     </filter>
                   </defs>
 
                   <style>{`
-                    .packet-stream { stroke-dasharray: 8, 8; animation: flowDash 1.6s linear infinite; }
-                    .packet-stream-fast { stroke-dasharray: 6, 6; animation: flowDash 0.7s linear infinite; }
-                    .packet-stream-ddos { stroke-dasharray: 4, 4; animation: flowDash 0.3s linear infinite; }
-                    @keyframes flowDash { to { stroke-dashoffset: -32; } }
-                    .iso-node { transition: all 0.3s ease; }
-                    .iso-node:hover { filter: brightness(1.05) drop-shadow(0 0 8px rgba(16,185,129,0.2)); }
+                    .conduit-flow { stroke-dasharray: 6, 6; animation: dashFlow 1s linear infinite; }
+                    .conduit-ddos { stroke-dasharray: 4, 4; animation: dashFlow 0.25s linear infinite; }
+                    .conduit-failover-inactive { stroke-dasharray: 5, 5; opacity: 0.2; }
+                    @keyframes dashFlow { to { stroke-dashoffset: -24; } }
+                    .mesh-node { transition: all 0.25s ease; }
+                    .mesh-node:hover { filter: brightness(1.15) drop-shadow(0 0 6px rgba(52,211,153,0.4)); }
                   `}</style>
 
-                  {/* Render subtle engineering blueprint backdrop grid */}
-                  <rect width="100%" height="100%" fill="url(#blueprint-grid)" rx="16" />
+                  <rect width="100%" height="100%" fill="url(#grid-pattern)" rx="12" />
 
-                  {/* Deflected Path for blocked DDoS bots */}
-                  {heroTrafficState === 'ddos' && (
-                    <>
-                      <path 
-                        d="M 150 80 Q 150 135, 110 155 C 90 165, 50 165, 30 155" 
-                        fill="none" 
-                        stroke="#f43f5e" 
-                        strokeWidth="2.5" 
-                        className="packet-stream-ddos" 
-                      />
-                      {/* Trash Block Node */}
-                      <g transform="translate(16, 142)">
-                        <circle cx="14" cy="14" r="10" fill="#be123c" stroke="#ffe4e6" strokeWidth="1" />
-                        <text x="14" y="18" fill="#ffffff" fontSize="11" fontWeight="extrabold" textAnchor="middle">×</text>
-                      </g>
-                    </>
-                  )}
-
-                  {/* Packet Streams based on traffic State */}
-                  {heroTrafficState === 'normal' && (
-                    <>
-                      <line x1="10" y1="80" x2="50" y2="80" stroke="#0d9488" strokeWidth="2" className="packet-stream" />
-                      <line x1="50" y1="80" x2="150" y2="80" stroke="#0d9488" strokeWidth="2" className="packet-stream" />
-                      <line x1="150" y1="80" x2="250" y2="80" stroke="#0d9488" strokeWidth="2" className="packet-stream" />
-                      <line x1="250" y1="80" x2="350" y2="80" stroke="#0d9488" strokeWidth="2" className="packet-stream" />
-                      <line x1="350" y1="80" x2="450" y2="80" stroke="#0d9488" strokeWidth="2" className="packet-stream" />
-                    </>
-                  )}
-
-                  {heroTrafficState === 'spike' && (
-                    <>
-                      <line x1="10" y1="80" x2="50" y2="80" stroke="#d97706" strokeWidth="2.5" className="packet-stream-fast" />
-                      <line x1="50" y1="80" x2="150" y2="80" stroke="#d97706" strokeWidth="2.5" className="packet-stream-fast" />
-                      <line x1="150" y1="80" x2="250" y2="80" stroke="#d97706" strokeWidth="2.5" className="packet-stream-fast" />
-                      <line x1="250" y1="80" x2="350" y2="80" stroke="#d97706" strokeWidth="2.5" className="packet-stream-fast" />
-                      <line x1="350" y1="80" x2="450" y2="80" stroke="#d97706" strokeWidth="2.5" className="packet-stream-fast" />
-                    </>
-                  )}
-
-                  {heroTrafficState === 'ddos' && (
-                    <>
-                      {/* Heavy Spam coming in from public client */}
-                      <line x1="10" y1="80" x2="50" y2="80" stroke="#e11d48" strokeWidth="3" className="packet-stream-ddos" />
-                      <line x1="50" y1="80" x2="150" y2="80" stroke="#e11d48" strokeWidth="3" className="packet-stream-ddos" />
-                      
-                      {/* Clean Filtered stream passing to ALB and backend */}
-                      <line x1="150" y1="80" x2="250" y2="80" stroke="#0d9488" strokeWidth="1.5" className="packet-stream" />
-                      <line x1="250" y1="80" x2="350" y2="80" stroke="#0d9488" strokeWidth="1.5" className="packet-stream" />
-                      <line x1="350" y1="80" x2="450" y2="80" stroke="#0d9488" strokeWidth="1.5" className="packet-stream" />
-                    </>
-                  )}
-
-                  {/* static link background lines */}
-                  <line x1="10" y1="80" x2="50" y2="80" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <line x1="50" y1="80" x2="150" y2="80" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <line x1="150" y1="80" x2="250" y2="80" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <line x1="250" y1="80" x2="350" y2="80" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <line x1="350" y1="80" x2="450" y2="80" stroke="#cbd5e1" strokeWidth="1.5" />
-
-                  {/* 1. CDN Edge Node: Globe with distribution rings */}
-                  <g 
-                    className="iso-node cursor-pointer"
-                    onMouseEnter={() => setHoveredNode('cdn')}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    transform={hoveredNode === 'cdn' ? 'translate(0, -6)' : 'translate(0, 0)'}
-                    filter="url(#float-shadow-light)"
-                  >
-                    {/* Glowing halo */}
-                    {hoveredNode === 'cdn' && (
-                      <circle cx="50" cy="80" r="22" fill="none" stroke="#c084fc" strokeWidth="1.5" className="animate-pulse" />
-                    )}
-                    <circle cx="50" cy="80" r="14" fill="url(#grad-cdn)" opacity="0.9" />
-                    <ellipse cx="50" cy="80" rx="20" ry="7" fill="none" stroke="#e9d5ff" strokeWidth="1.3" transform="rotate(-15 50 80)" />
-                    <ellipse cx="50" cy="80" rx="20" ry="7" fill="none" stroke="#e9d5ff" strokeWidth="1.3" transform="rotate(45 50 80)" />
-                    <circle cx="32" cy="75" r="2" fill="#f3e8ff" />
-                    <circle cx="68" cy="85" r="2" fill="#f3e8ff" />
-                    <text x="50" y="120" fill={hoveredNode === 'cdn' ? '#8b5cf6' : '#64748b'} fontSize="8" fontWeight="bold" textAnchor="middle">CloudFront CDN</text>
-                  </g>
-
-                  {/* 2. WAF Firewall Node: High Accuracy Brick Shield */}
-                  <g 
-                    className="iso-node cursor-pointer"
-                    onMouseEnter={() => setHoveredNode('waf')}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    transform={hoveredNode === 'waf' ? 'translate(0, -6)' : 'translate(0, 0)'}
-                    filter="url(#float-shadow-light)"
-                  >
-                    {/* Glowing halo */}
-                    {hoveredNode === 'waf' && (
-                      <circle cx="150" cy="80" r="22" fill="none" stroke="#fda4af" strokeWidth="1.5" className="animate-pulse" />
-                    )}
-                    <path d="M 136 68 L 164 68 Q 164 88, 150 96 Q 136 88, 136 68 Z" fill="url(#grad-waf)" opacity="0.95" />
-                    {/* Detailed Brick lines inside shield */}
-                    <line x1="139" y1="74" x2="161" y2="74" stroke="#ffe4e6" strokeWidth="1.2" opacity="0.8" />
-                    <line x1="137" y1="81" x2="163" y2="81" stroke="#ffe4e6" strokeWidth="1.2" opacity="0.8" />
-                    <line x1="141" y1="88" x2="159" y2="88" stroke="#ffe4e6" strokeWidth="1.2" opacity="0.8" />
-                    {/* Vertical interlocking joints */}
-                    <line x1="147" y1="68" x2="147" y2="74" stroke="#ffe4e6" strokeWidth="0.8" opacity="0.8" />
-                    <line x1="155" y1="68" x2="155" y2="74" stroke="#ffe4e6" strokeWidth="0.8" opacity="0.8" />
-                    <line x1="142" y1="74" x2="142" y2="81" stroke="#ffe4e6" strokeWidth="0.8" opacity="0.8" />
-                    <line x1="150" y1="74" x2="150" y2="81" stroke="#ffe4e6" strokeWidth="0.8" opacity="0.8" />
-                    <line x1="158" y1="74" x2="158" y2="81" stroke="#ffe4e6" strokeWidth="0.8" opacity="0.8" />
-                    
-                    <text 
-                      x="150" 
-                      y="120" 
-                      fill={heroTrafficState === 'ddos' ? '#e11d48' : hoveredNode === 'waf' ? '#f43f5e' : '#64748b'} 
-                      fontSize="8" 
-                      fontWeight="bold" 
-                      textAnchor="middle"
-                    >
-                      {heroTrafficState === 'ddos' ? '🔒 AWS WAF (ACTIVE)' : 'AWS WAF'}
-                    </text>
-                  </g>
-
-                  {/* 3. ALB Router Node: Branching arrows core hub */}
-                  <g 
-                    className="iso-node cursor-pointer"
-                    onMouseEnter={() => setHoveredNode('alb')}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    transform={hoveredNode === 'alb' ? 'translate(0, -6)' : 'translate(0, 0)'}
-                    filter="url(#float-shadow-light)"
-                  >
-                    {/* Glowing halo */}
-                    {hoveredNode === 'alb' && (
-                      <circle cx="250" cy="80" r="22" fill="none" stroke="#fed7aa" strokeWidth="1.5" className="animate-pulse" />
-                    )}
-                    <circle cx="250" cy="80" r="14" fill="url(#grad-alb)" opacity="0.9" />
-                    <circle cx="250" cy="80" r="7" fill="#ffedd5" />
-                    {/* Branching distribution lines representing loadbalancer */}
-                    <path d="M 248 76 Q 254 70, 258 70" fill="none" stroke="#f97316" strokeWidth="1.2" />
-                    <path d="M 248 80 L 259 80" fill="none" stroke="#f97316" strokeWidth="1.2" />
-                    <path d="M 248 84 Q 254 90, 258 90" fill="none" stroke="#f97316" strokeWidth="1.2" />
-                    
-                    <text x="250" y="120" fill={hoveredNode === 'alb' ? '#c2410c' : '#64748b'} fontSize="8" fontWeight="bold" textAnchor="middle">Elastic ALB</text>
-                  </g>
-
-                  {/* 4. ECS Compute Node: Detailed Dual Server Rack Blades with Ticking CPU lights */}
-                  <g 
-                    className="iso-node cursor-pointer"
-                    onMouseEnter={() => setHoveredNode('ecs')}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    transform={hoveredNode === 'ecs' ? 'translate(0, -6)' : 'translate(0, 0)'}
-                    filter="url(#float-shadow-light)"
-                  >
-                    {/* Glowing halo */}
-                    {hoveredNode === 'ecs' && (
-                      <circle cx="350" cy="80" r="24" fill="none" stroke="#93c5fd" strokeWidth="1.5" className="animate-pulse" />
-                    )}
-                    
-                    {/* Task Blade 1 */}
-                    <rect x="330" y="66" width="16" height="28" rx="3" fill="url(#grad-ecs)" stroke="#cbd5e1" strokeWidth="0.8" />
-                    <line x1="334" y1="72" x2="342" y2="72" stroke="#fff" strokeWidth="1.2" opacity="0.9" />
-                    <line x1="334" y1="78" x2="342" y2="78" stroke="#fff" strokeWidth="1.2" opacity="0.9" />
-                    <circle cx="334" cy="86" r="1.5" fill="#4ade80" className="animate-pulse" />
-                    <circle cx="342" cy="86" r="1" fill="#60a5fa" />
-
-                    {/* Task Blade 2 */}
-                    <rect x="354" y="66" width="16" height="28" rx="3" fill="url(#grad-ecs)" stroke="#cbd5e1" strokeWidth="0.8" />
-                    <line x1="358" y1="72" x2="366" y2="72" stroke="#fff" strokeWidth="1.2" opacity="0.9" />
-                    <line x1="358" y1="78" x2="366" y2="78" stroke="#fff" strokeWidth="1.2" opacity="0.9" />
-                    <circle cx="358" cy="86" r="1.5" fill="#4ade80" />
-                    <circle cx="366" cy="86" r="1" fill="#60a5fa" className="animate-pulse" />
-
-                    {/* Task Blade 3 (Auto-Spawned in Spike load active) */}
-                    {heroTrafficState === 'spike' && (
-                      <g className="animate-bounce">
-                        <rect x="342" y="74" width="16" height="28" rx="3" fill="#1d4ed8" stroke="#3b82f6" strokeWidth="1" />
-                        <line x1="346" y1="80" x2="354" y2="80" stroke="#fff" strokeWidth="1.2" />
-                        <line x1="346" y1="86" x2="354" y2="86" stroke="#fff" strokeWidth="1.2" />
-                        <circle cx="346" cy="94" r="1.5" fill="#34d399" className="animate-ping" />
-                      </g>
-                    )}
-
-                    <text x="350" y="120" fill={hoveredNode === 'ecs' ? '#1d4ed8' : '#64748b'} fontSize="8" fontWeight="bold" textAnchor="middle">
-                      {heroTrafficState === 'spike' ? 'ECS Fargate (x3 Tasks)' : 'ECS Fargate (x2 Tasks)'}
-                    </text>
-                  </g>
-
-                  {/* 5. Aurora DB Node: Multi-AZ Replica Tower Cluster */}
-                  <g 
-                    className="iso-node cursor-pointer"
-                    onMouseEnter={() => setHoveredNode('db')}
-                    onMouseLeave={() => setHoveredNode(null)}
-                    transform={hoveredNode === 'db' ? 'translate(0, -6)' : 'translate(0, 0)'}
-                    filter="url(#float-shadow-light)"
-                  >
-                    {/* Glowing halo */}
-                    {hoveredNode === 'db' && (
-                      <circle cx="450" cy="80" r="22" fill="none" stroke="#a7f3d0" strokeWidth="1.5" className="animate-pulse" />
-                    )}
-
-                    {/* Replica DB Cylinder (back smaller AZ-B) */}
-                    <path d="M 458 66 Q 468 69, 478 66 L 478 80 Q 468 83, 458 80 Z" fill="#047857" opacity="0.75" stroke="#a7f3d0" strokeWidth="0.8" />
-                    <ellipse cx="468" cy="66" rx="10" ry="3" fill="#34d399" stroke="#a7f3d0" strokeWidth="0.8" />
-
-                    {/* Primary DB Cylinder (front active AZ-A) */}
-                    <path d="M 436 78 Q 450 82, 464 78 L 464 96 Q 450 100, 436 96 Z" fill="url(#grad-db)" opacity="0.95" />
-                    <ellipse cx="450" cy="78" rx="14" ry="4" fill="#6ee7b7" stroke="#cbd5e1" strokeWidth="0.8" />
-                    <path d="M 436 84 Q 450 88, 464 84" fill="none" stroke="#cbd5e1" strokeWidth="0.6" opacity="0.7" />
-                    <path d="M 436 90 Q 450 94, 464 90" fill="none" stroke="#cbd5e1" strokeWidth="0.6" opacity="0.7" />
-
-                    {/* Sync Arrow from primary to replica */}
-                    <path d="M 454 86 Q 468 86, 466 76" fill="none" stroke="#34d399" strokeWidth="1.2" strokeDasharray="2,2" className="animate-pulse" />
-                    
-                    <text x="450" y="120" fill={hoveredNode === 'db' ? '#047857' : '#64748b'} fontSize="8" fontWeight="bold" textAnchor="middle">Aurora Multi-AZ</text>
-                  </g>
+                  {/* Packet routing streams based on simMode */}
+                  {/* Users -> DNS */}
+                  <line x1="20" y1="100" x2="70" y2="100" stroke={simMode === 'ddos' ? '#f43f5e' : simMode === 'outage' ? '#94a3b8' : '#34d399'} strokeWidth="1.8" className="conduit-flow" />
                   
-                </svg>
+                  {/* DNS -> CloudFront/WAF */}
+                  <line x1="110" y1="100" x2="160" y2="100" stroke={simMode === 'ddos' ? '#f43f5e' : simMode === 'outage' ? '#94a3b8' : '#34d399'} strokeWidth="1.8" className="conduit-flow" />
 
+                  {/* CloudFront/WAF -> ALB */}
+                  <line x1="200" y1="100" x2="250" y2="100" stroke={simMode === 'outage' ? '#94a3b8' : '#34d399'} strokeWidth="1.8" className="conduit-flow" />
+
+                  {/* DDoS Deflection to trash bin */}
+                  {simMode === 'ddos' && (
+                    <>
+                      <path d="M 200 100 Q 200 160, 160 180" fill="none" stroke="#f43f5e" strokeWidth="2.2" className="conduit-ddos" />
+                      <g transform="translate(148, 170)">
+                        <circle cx="12" cy="12" r="8" fill="#be123c" stroke="#ffe4e6" strokeWidth="0.8" />
+                        <text x="12" y="16" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">×</text>
+                      </g>
+                    </>
+                  )}
+
+                  {/* ALB -> ECS Compute paths */}
+                  {simMode === 'failover' ? (
+                    <>
+                      {/* us-east-1 Primary is broken */}
+                      <path d="M 290 100 Q 330 60, 370 60" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                      {/* us-west-2 Secondary is active */}
+                      <path d="M 290 100 Q 330 140, 370 140" fill="none" stroke="#34d399" strokeWidth="1.8" className="conduit-flow" />
+                    </>
+                  ) : (
+                    <>
+                      {/* Primary region active */}
+                      <path d="M 290 100 Q 330 60, 370 60" fill="none" stroke={simMode === 'outage' ? '#94a3b8' : '#34d399'} strokeWidth="1.8" className="conduit-flow" />
+                      {/* Secondary region standby */}
+                      <path d="M 290 100 Q 330 140, 370 140" fill="none" stroke="#334155" strokeWidth="1.2" className="conduit-failover-inactive" />
+                    </>
+                  )}
+
+                  {/* ECS -> Cache / DB paths */}
+                  <line x1="390" y1="60" x2="450" y2="60" stroke={simMode === 'outage' ? '#ef4444' : '#34d399'} strokeWidth="1.2" />
+                  <line x1="390" y1="140" x2="450" y2="140" stroke={simMode === 'failover' ? '#34d399' : '#334155'} strokeWidth="1.2" />
+
+                  {/* Database sync pipeline */}
+                  <path d="M 470 70 Q 485 100, 470 130" fill="none" stroke="#34d399" strokeWidth="1.2" strokeDasharray="2,2" className="animate-pulse" />
+
+                  {/* Node 1: DNS Route 53 */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('dns')}>
+                    <circle cx="90" cy="100" r="16" fill="url(#g-dns)" stroke={selectedNodeId === 'dns' ? '#34d399' : '#0284c7'} strokeWidth="1.8" />
+                    <text x="90" y="103" fill="#fff" fontSize="7" fontWeight="bold" textAnchor="middle">DNS53</text>
+                    <text x="90" y="126" fill={isDarkTheme ? '#94a3b8' : '#64748b'} fontSize="7" textAnchor="middle">Route 53</text>
+                  </g>
+
+                  {/* Node 2: CloudFront CDN */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('cdn')}>
+                    <circle cx="180" cy="100" r="16" fill="url(#g-cf)" stroke={selectedNodeId === 'cdn' ? '#34d399' : '#7c3aed'} strokeWidth="1.8" />
+                    <text x="180" y="103" fill="#fff" fontSize="7" fontWeight="bold" textAnchor="middle">CDN</text>
+                    <text x="180" y="126" fill={isDarkTheme ? '#94a3b8' : '#64748b'} fontSize="7" textAnchor="middle">CloudFront</text>
+                  </g>
+
+                  {/* Node 3: WAF & Shield */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('waf')}>
+                    <rect x="168" y="52" width="24" height="24" rx="4" fill="url(#g-waf)" stroke={selectedNodeId === 'waf' ? '#34d399' : '#e11d48'} strokeWidth="1.5" />
+                    <text x="180" y="66" fill="#fff" fontSize="8" fontWeight="black" textAnchor="middle">🛡️</text>
+                    <text x="180" y="44" fill={simMode === 'ddos' ? '#f43f5e' : (isDarkTheme ? '#64748b' : '#8898aa')} fontSize="7" fontWeight="bold" textAnchor="middle">
+                      {simMode === 'ddos' ? 'WAF: BLOCKED' : 'AWS WAF'}
+                    </text>
+                  </g>
+
+                  {/* Node 4: Application Load Balancer */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('alb')}>
+                    <circle cx="270" cy="100" r="16" fill="url(#g-alb)" stroke={selectedNodeId === 'alb' ? '#34d399' : '#ea580c'} strokeWidth="1.8" />
+                    <text x="270" y="103" fill="#fff" fontSize="7" fontWeight="bold" textAnchor="middle">ALB</text>
+                    <text x="270" y="126" fill={isDarkTheme ? '#94a3b8' : '#64748b'} fontSize="7" textAnchor="middle">ELB ALB</text>
+                  </g>
+
+                  {/* Node 5: ECS Task Primary us-east-1 */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('ecs')}>
+                    <rect x="360" y="44" width="30" height="32" rx="5" fill={simMode === 'outage' ? '#991b1b' : 'url(#g-ecs)'} stroke={selectedNodeId === 'ecs' ? '#34d399' : '#2563eb'} strokeWidth="1.8" />
+                    <text x="375" y="60" fill="#fff" fontSize="7.5" fontWeight="bold" textAnchor="middle">ECS</text>
+                    <text x="375" y="70" fill="#fff" fontSize="6" textAnchor="middle">us-east-1</text>
+                    <text x="375" y="88" fill={simMode === 'outage' ? '#f43f5e' : (isDarkTheme ? '#64748b' : '#8898aa')} fontSize="7" fontWeight="bold" textAnchor="middle">
+                      {simMode === 'outage' ? '☠️ OUTAGE' : simMode === 'spike' ? 'Task (x4)' : 'Task (x2)'}
+                    </text>
+                  </g>
+
+                  {/* Node 6: ECS Task Secondary us-west-2 */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('ecs')}>
+                    <rect x="360" y="124" width="30" height="32" rx="5" fill="url(#g-ecs)" opacity={simMode === 'failover' ? 1 : 0.4} stroke={selectedNodeId === 'ecs' ? '#34d399' : '#2563eb'} strokeWidth="1.8" />
+                    <text x="375" y="140" fill="#fff" fontSize="7.5" fontWeight="bold" textAnchor="middle" opacity={simMode === 'failover' ? 1 : 0.5}>ECS</text>
+                    <text x="375" y="150" fill="#fff" fontSize="6" textAnchor="middle" opacity={simMode === 'failover' ? 1 : 0.5}>us-west-2</text>
+                    <text x="375" y="168" fill={isDarkTheme ? '#64748b' : '#94a3b8'} fontSize="7" textAnchor="middle">DR Standby</text>
+                  </g>
+
+                  {/* Node 7: ElastiCache Redis */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('cache')}>
+                    <circle cx="420" cy="100" r="14" fill="#be123c" opacity={simMode === 'outage' ? 0.3 : 0.9} stroke={selectedNodeId === 'cache' ? '#34d399' : '#f43f5e'} strokeWidth="1.5" />
+                    <text x="420" y="103" fill="#fff" fontSize="6.5" fontWeight="bold" textAnchor="middle">Cache</text>
+                    <text x="420" y="122" fill={isDarkTheme ? '#64748b' : '#94a3b8'} fontSize="7" textAnchor="middle">ElastiCache</text>
+                  </g>
+
+                  {/* Node 8: Aurora Primary DB */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('db')}>
+                    <rect x="461" y="44" width="28" height="24" rx="4" fill="url(#g-db)" stroke={selectedNodeId === 'db' ? '#34d399' : '#059669'} strokeWidth="1.5" />
+                    <ellipse cx="475" cy="44" rx="14" ry="4" fill="#a7f3d0" stroke={selectedNodeId === 'db' ? '#34d399' : '#059669'} strokeWidth="0.8" />
+                    <text x="475" y="58" fill="#fff" fontSize="7.5" fontWeight="bold" textAnchor="middle">DB-W</text>
+                    <text x="475" y="80" fill={isDarkTheme ? '#64748b' : '#94a3b8'} fontSize="7" textAnchor="middle">Aurora Prim</text>
+                  </g>
+
+                  {/* Node 9: Aurora Replica DB */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('db')}>
+                    <rect x="461" y="124" width="28" height="24" rx="4" fill="url(#g-db)" opacity="0.7" stroke={selectedNodeId === 'db' ? '#34d399' : '#059669'} strokeWidth="1.5" />
+                    <ellipse cx="475" cy="124" rx="14" ry="4" fill="#a7f3d0" opacity="0.7" stroke={selectedNodeId === 'db' ? '#34d399' : '#059669'} strokeWidth="0.8" />
+                    <text x="475" y="138" fill="#fff" fontSize="7.5" fontWeight="bold" textAnchor="middle">DB-R</text>
+                    <text x="475" y="160" fill={isDarkTheme ? '#64748b' : '#94a3b8'} fontSize="7" textAnchor="middle">Aurora Repl</text>
+                  </g>
+
+                  {/* Node 10: S3 Assets Storage */}
+                  <g className="mesh-node cursor-pointer" onClick={() => setSelectedNodeId('s3')}>
+                    <circle cx="475" cy="20" r="10" fill="#eab308" stroke={selectedNodeId === 's3' ? '#34d399' : '#ca8a04'} strokeWidth="1.2" />
+                    <text x="475" y="23" fill="#fff" fontSize="7" fontWeight="bold" textAnchor="middle">S3</text>
+                    <text x="508" y="23" fill={isDarkTheme ? '#64748b' : '#94a3b8'} fontSize="7.5" textAnchor="middle">S3 Bucket</text>
+                  </g>
+                </svg>
               </div>
 
-              {/* Dynamic Interactive Telemetry Panel HUD (Below SVG - Light Theme details) */}
-              <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-2 min-h-[92px] transition-all duration-300 shadow-inner text-slate-700">
-                {hoveredNode && nodeDetails[hoveredNode] ? (
-                  <div className="flex flex-col gap-1.5 animate-fadeIn">
-                    <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
-                      <span className="text-xs font-black text-emerald-700 tracking-tight flex items-center gap-1.5">
-                        <Server className="w-3.5 h-3.5 text-emerald-600" />
-                        {nodeDetails[hoveredNode].title}
-                      </span>
-                      <span className="text-[8.5px] font-mono font-bold text-slate-500 uppercase tracking-widest">
-                        {nodeDetails[hoveredNode].status}
+              {/* Node Detail Inspector Drawer */}
+              <div className={`rounded-2xl p-4 flex flex-col gap-3 min-h-[140px] text-left border transition-all duration-300 ${
+                isDarkTheme ? 'bg-slate-950 border-slate-850 text-slate-300' : 'bg-white border-slate-200 shadow-sm text-slate-800'
+              }`}>
+                {selectedNodeId && nodeDetails[selectedNodeId] ? (
+                  <div className="flex flex-col gap-3 animate-fadeIn">
+                    <div className={`flex items-center justify-between border-b pb-2 transition-all ${
+                      isDarkTheme ? 'border-slate-800' : 'border-slate-100'
+                    }`}>
+                      <div className="flex flex-col">
+                        <span className={`text-xs font-black tracking-tight flex items-center gap-1.5 transition-all ${
+                          isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'
+                        }`}>
+                          <Server className={`w-3.5 h-3.5 ${isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                          {nodeDetails[selectedNodeId].title}
+                        </span>
+                        <span className={`text-[8px] uppercase tracking-widest font-mono transition-all ${
+                          isDarkTheme ? 'text-slate-500' : 'text-slate-400'
+                        }`}>
+                          {nodeDetails[selectedNodeId].category}
+                        </span>
+                      </div>
+                      <span className={`text-[9px] font-mono px-2 py-0.5 rounded font-bold uppercase tracking-wider border transition-all ${
+                        isDarkTheme ? 'bg-slate-900 border-slate-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                      }`}>
+                        {nodeDetails[selectedNodeId].status}
                       </span>
                     </div>
-                    <p className="text-[11.5px] text-slate-600 leading-relaxed font-medium">
-                      {nodeDetails[hoveredNode].desc}
+
+                    <p className={`text-xs leading-relaxed font-medium transition-all ${
+                      isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
+                      {nodeDetails[selectedNodeId].desc}
                     </p>
-                    <div className="flex gap-4 mt-0.5 text-[10px] font-mono text-emerald-700 font-bold">
-                      <span>● {nodeDetails[hoveredNode].metric1}</span>
-                      <span>● {nodeDetails[hoveredNode].metric2}</span>
+
+                    {/* Copyable AWS CLI Window */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className={`text-[8.5px] font-bold uppercase tracking-widest font-mono flex items-center gap-1 transition-all ${
+                        isDarkTheme ? 'text-slate-500' : 'text-slate-450'
+                      }`}>
+                        <Code className="w-3 h-3" /> Copyable AWS CLI command
+                      </span>
+                      <div className={`rounded-xl p-3 flex items-center justify-between font-mono text-[9.5px] overflow-x-auto shadow-inner border transition-all duration-300 ${
+                        isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-emerald-400' : 'bg-slate-950 border-slate-900 text-emerald-400'
+                      }`}>
+                        <span className="truncate pr-4">{nodeDetails[selectedNodeId].cli}</span>
+                        <button
+                          onClick={() => copyToClipboard(nodeDetails[selectedNodeId].cli, selectedNodeId)}
+                          className={`px-2 py-1 border rounded transition flex items-center gap-1 shrink-0 font-sans text-[9px] font-semibold ${
+                            isDarkTheme 
+                              ? 'bg-slate-950 hover:bg-slate-800 border-slate-800 text-slate-400 hover:text-white' 
+                              : 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300 hover:text-white'
+                          }`}
+                        >
+                          {copiedNodeId === selectedNodeId ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span>Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={`flex flex-col gap-1 pt-1.5 border-t text-[10.5px] transition-all ${
+                      isDarkTheme ? 'border-slate-900' : 'border-slate-100'
+                    }`}>
+                      <span className={`text-[8.5px] font-bold uppercase tracking-widest font-mono transition-all ${
+                        isDarkTheme ? 'text-emerald-500' : 'text-emerald-600'
+                      }`}>Architect Best Practices:</span>
+                      <ul className={`list-disc list-inside flex flex-col gap-1 transition-all ${
+                        isDarkTheme ? 'text-slate-400' : 'text-slate-600'
+                      }`}>
+                        {nodeDetails[selectedNodeId].bestPractices.map((bp, i) => (
+                          <li key={i} className="leading-relaxed">{bp}</li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center gap-2.5 h-full py-3 text-slate-500 select-none">
-                    <Terminal className="w-4.5 h-4.5 text-slate-400 shrink-0" />
-                    <span className="text-xs font-bold leading-relaxed tracking-wide text-center">
-                      💡 Pro-Tip: Hover over any detailed AWS service icon in the network above to inspect its real-time console parameters!
+                  <div className={`flex items-center justify-center gap-2.5 h-full py-6 select-none transition-all duration-300 ${
+                    isDarkTheme ? 'text-slate-500' : 'text-slate-400'
+                  }`}>
+                    <Terminal className={`w-5 h-5 shrink-0 ${isDarkTheme ? 'text-slate-700' : 'text-slate-300'}`} />
+                    <span className="text-xs font-bold leading-relaxed tracking-wide text-center max-w-sm">
+                      💡 Click on any active node (DNS53, CDN, ALB, ECS, DB, Cache) in the network grid above to inspect configuration logs, Security settings, and copyable AWS CLI commands!
                     </span>
                   </div>
                 )}
@@ -1657,15 +1712,25 @@ export default function Home() {
       </section>
 
       {/* Scenario Advisor Panel */}
-      <section id="scenario-advisor" className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col gap-6">
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+      <section id="scenario-advisor" className={`border rounded-3xl p-6 md:p-8 flex flex-col gap-6 transition-all duration-500 ${
+        isDarkTheme 
+          ? 'bg-slate-900/60 border-slate-800/80 shadow-2xl text-slate-100' 
+          : 'bg-white border-slate-200 shadow-sm text-slate-800'
+      }`}>
+        <div className="flex flex-col gap-1.5 animate-fadeIn">
+          <span className={`text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 transition-all ${
+            isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'
+          }`}>
             <ShieldCheck className="w-4 h-4" /> Cloud Architect Advisor
           </span>
-          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className={`text-xl md:text-2xl font-extrabold tracking-tight transition-all ${
+            isDarkTheme ? 'text-white' : 'text-slate-900'
+          }`}>
             How Do I Design For Scale?
           </h2>
-          <p className="text-xs text-slate-500 max-w-xl">
+          <p className={`text-xs max-w-xl transition-all ${
+            isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+          }`}>
             Select a common production bottleneck scenario below. The advisor engine will outline optimal architectural blueprints and direct you to the corresponding sandbox modules.
           </p>
         </div>
@@ -1680,12 +1745,18 @@ export default function Home() {
               // Call to Action / Invitation border styles when no scenario is selected
               let cardBgBorderClass = '';
               if (isSelected) {
-                cardBgBorderClass = 'bg-slate-900 border-slate-900 text-white shadow-lg';
+                cardBgBorderClass = isDarkTheme
+                  ? 'bg-slate-950 border-emerald-500/80 text-white shadow-lg'
+                  : 'bg-slate-900 border-slate-900 text-white shadow-lg';
               } else if (isNoneSelected) {
                 // Pulse invitation highlight class
-                cardBgBorderClass = 'bg-white border-emerald-300 hover:bg-slate-50 hover:border-emerald-500 text-slate-800 shadow-[0_4px_12px_rgba(16,185,129,0.04)] hover:shadow-[0_6px_16px_rgba(16,185,129,0.12)] hover:-translate-y-0.5';
+                cardBgBorderClass = isDarkTheme
+                  ? 'bg-slate-900/40 border-emerald-900/50 hover:bg-slate-900/80 hover:border-emerald-500 text-slate-200 shadow-md hover:-translate-y-0.5'
+                  : 'bg-white border-emerald-300 hover:bg-slate-50 hover:border-emerald-500 text-slate-800 shadow-[0_4px_12px_rgba(16,185,129,0.04)] hover:shadow-[0_6px_16px_rgba(16,185,129,0.12)] hover:-translate-y-0.5';
               } else {
-                cardBgBorderClass = 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-800';
+                cardBgBorderClass = isDarkTheme
+                  ? 'bg-slate-900/10 border-slate-850 hover:bg-slate-900/40 hover:border-slate-800 text-slate-400'
+                  : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300 text-slate-800';
               }
 
               return (
@@ -1694,18 +1765,20 @@ export default function Home() {
                   onClick={() => {
                     const nextId = isSelected ? null : scenario.id;
                     setSelectedScenarioId(nextId);
-                    setSimSpikeActive(false);
-                    setSimFailoverActive(false);
-                    setSimSecAttackActive(false);
+                    setSimMode('normal');
                   }}
                   className={`text-left p-4 rounded-2xl border transition-all duration-300 flex items-start gap-3.5 w-full group ${cardBgBorderClass}`}
                 >
-                  <div className={`p-2.5 rounded-xl text-lg transition-all duration-300 ${
+                  <div className={`p-2.5 rounded-xl text-lg transition-all duration-300 border ${
                     isSelected 
-                      ? 'bg-emerald-950/80 text-emerald-400' 
+                      ? 'bg-emerald-950/80 border-emerald-900/40 text-emerald-400' 
                       : isNoneSelected 
-                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-600'
-                        : 'bg-white border border-slate-200 text-slate-700'
+                        ? isDarkTheme 
+                          ? 'bg-emerald-950/30 border-emerald-900/30 text-emerald-400' 
+                          : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
+                        : isDarkTheme
+                          ? 'bg-slate-950 border-slate-850 text-slate-400'
+                          : 'bg-white border border-slate-200 text-slate-700'
                   }`}>
                     {scenario.icon}
                   </div>
@@ -1715,7 +1788,11 @@ export default function Home() {
                     </span>
                     
                     {isNoneSelected ? (
-                      <span className="text-[9.5px] bg-emerald-50/80 text-emerald-700 font-extrabold px-2.5 py-0.5 rounded-md border border-emerald-300/30 animate-pulse flex items-center gap-1.5 w-fit mt-1 shadow-sm">
+                      <span className={`text-[9.5px] font-extrabold px-2.5 py-0.5 rounded-md border animate-pulse flex items-center gap-1.5 w-fit mt-1 shadow-sm transition-all duration-300 ${
+                        isDarkTheme 
+                          ? 'bg-emerald-950/40 border-emerald-900/50 text-emerald-400' 
+                          : 'bg-emerald-50/80 text-emerald-700 border-emerald-300/30'
+                      }`}>
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
@@ -1723,8 +1800,10 @@ export default function Home() {
                         Analyze Blueprint
                       </span>
                     ) : (
-                      <span className={`text-[10px] leading-normal font-medium flex items-center gap-1 ${
-                        isSelected ? 'text-slate-400' : 'text-slate-500'
+                      <span className={`text-[10px] leading-normal font-medium flex items-center gap-1 transition-all ${
+                        isSelected 
+                          ? 'text-slate-400' 
+                          : isDarkTheme ? 'text-slate-500' : 'text-slate-500'
                       }`}>
                         {isSelected ? 'Active Blueprint' : 'Click to inspect blueprint'} 
                         <ChevronRight className={`w-3 h-3 transition-transform ${isSelected ? 'rotate-90 text-emerald-400' : 'group-hover:translate-x-0.5'}`} />
@@ -1739,12 +1818,18 @@ export default function Home() {
           {/* Right: Rich Scenario Detail Display Pane (col-span-7) */}
           <div className="lg:col-span-7 h-full">
             {activeScenario ? (
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 flex flex-col gap-5 animate-fadeIn">
-                <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
+              <div className={`border rounded-2xl p-6 flex flex-col gap-5 animate-fadeIn transition-all duration-300 ${
+                isDarkTheme ? 'bg-slate-950/40 border-slate-800 text-slate-100' : 'bg-slate-50 border-slate-200/80 text-slate-800'
+              }`}>
+                <div className={`flex items-center gap-2 pb-3 border-b transition-all duration-300 ${
+                  isDarkTheme ? 'border-slate-800' : 'border-slate-200'
+                }`}>
                   <span className="text-2xl">{activeScenario.icon}</span>
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">AWS Recommended Architecture</span>
-                    <span className="text-xs font-black text-slate-800 tracking-tight leading-normal">
+                    <span className={`text-xs font-black tracking-tight leading-normal transition-all duration-300 ${
+                      isDarkTheme ? 'text-white' : 'text-slate-800'
+                    }`}>
                       {activeScenario.title}
                     </span>
                   </div>
@@ -1752,38 +1837,54 @@ export default function Home() {
 
                 <div className="flex flex-col gap-2">
                   <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">The Engineering Challenge</span>
-                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                  <p className={`text-xs leading-relaxed font-medium transition-all duration-300 ${
+                    isDarkTheme ? 'text-slate-300' : 'text-slate-700'
+                  }`}>
                     {activeScenario.problem}
                   </p>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <span className="text-[10.5px] font-bold text-emerald-600 uppercase tracking-widest font-mono">Recommended Blueprint Solution</span>
-                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                  <span className={`text-[10.5px] font-bold uppercase tracking-widest font-mono transition-all duration-300 ${
+                    isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'
+                  }`}>Recommended Blueprint Solution</span>
+                  <p className={`text-xs leading-relaxed font-medium transition-all duration-300 ${
+                    isDarkTheme ? 'text-slate-300' : 'text-slate-700'
+                  }`}>
                     {activeScenario.solution}
                   </p>
                 </div>
 
                 {/* Dynamic SVG Architectural Flow Diagram */}
-                <div className="flex flex-col gap-3 pt-2 border-t border-slate-200/80">
+                <div className={`flex flex-col gap-3 pt-2 border-t transition-all duration-300 ${
+                  isDarkTheme ? 'border-slate-800' : 'border-slate-200/80'
+                }`}>
                   <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">Interactive Flow Blueprint</span>
                   
                   {/* Interactive Toggle Widgets Bar */}
                   {renderSimulationWidgets(activeScenario.id)}
 
-                  <div className="bg-white border border-slate-200 rounded-2xl p-4 overflow-x-auto shadow-inner flex items-center justify-center">
+                  <div className={`rounded-2xl p-4 overflow-x-auto shadow-inner flex items-center justify-center border transition-all duration-300 ${
+                    isDarkTheme ? 'bg-slate-950 border-slate-850' : 'bg-white border-slate-200'
+                  }`}>
                     {renderScenarioDiagram(activeScenario.id)}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-200/80">
+                <div className={`flex flex-col gap-2.5 pt-2 border-t transition-all duration-300 ${
+                  isDarkTheme ? 'border-slate-800' : 'border-slate-200/80'
+                }`}>
                   <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-widest font-mono">Launch Interactive Sandboxes</span>
                   <div className="flex flex-col gap-2">
                     {activeScenario.links.map((link) => (
                       <Link
                         key={link.path}
                         to={link.path}
-                        className="px-4 py-2.5 bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-between transition-all group"
+                        className={`px-4 py-2.5 border rounded-xl text-xs font-semibold flex items-center justify-between transition-all group ${
+                          isDarkTheme 
+                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-emerald-500 hover:text-emerald-400 hover:bg-slate-850' 
+                            : 'bg-white border-slate-200 hover:border-emerald-500 hover:text-emerald-700 text-slate-700'
+                        }`}
                       >
                         <span className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -1796,7 +1897,9 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white border border-slate-200 shadow-md rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-6 min-h-[460px] relative overflow-hidden">
+              <div className={`shadow-md rounded-3xl p-8 text-center flex flex-col items-center justify-center gap-6 min-h-[460px] relative overflow-hidden border transition-all duration-300 ${
+                isDarkTheme ? 'bg-slate-950/30 border-slate-800 shadow-2xl shadow-black/30' : 'bg-white border-slate-200 shadow-md'
+              }`}>
                 {/* Floating ambient subtle backdrop glows */}
                 <div className="absolute top-[-10%] left-[-10%] w-48 h-48 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-48 h-48 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none"></div>
@@ -1842,9 +1945,9 @@ export default function Home() {
                     `}</style>
 
                     {/* Orbit lines */}
-                    <circle cx="120" cy="120" r="95" fill="none" stroke="#f1f5f9" strokeWidth="2.5" />
-                    <circle cx="120" cy="120" r="70" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeDasharray="6,4" />
-                    <circle cx="120" cy="120" r="45" fill="none" stroke="#cbd5e1" strokeWidth="1" opacity="0.6" />
+                    <circle cx="120" cy="120" r="95" fill="none" stroke={isDarkTheme ? '#1e293b' : '#f1f5f9'} strokeWidth="2.5" />
+                    <circle cx="120" cy="120" r="70" fill="none" stroke={isDarkTheme ? '#334155' : '#e2e8f0'} strokeWidth="1.5" strokeDasharray="6,4" />
+                    <circle cx="120" cy="120" r="45" fill="none" stroke={isDarkTheme ? '#475569' : '#cbd5e1'} strokeWidth="1" opacity="0.6" />
 
                     {/* Core Hub with active glow */}
                     <circle cx="120" cy="120" r="30" fill="url(#glow-grad)" className="ping-node" />
@@ -1879,19 +1982,25 @@ export default function Home() {
                     </g>
 
                     {/* connection crosshair overlays */}
-                    <line x1="120" y1="104" x2="120" y2="70" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="2,2" />
-                    <line x1="120" y1="136" x2="120" y2="170" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="2,2" />
+                    <line x1="120" y1="104" x2="120" y2="70" stroke={isDarkTheme ? '#475569' : '#cbd5e1'} strokeWidth="1" strokeDasharray="2,2" />
+                    <line x1="120" y1="136" x2="120" y2="170" stroke={isDarkTheme ? '#475569' : '#cbd5e1'} strokeWidth="1" strokeDasharray="2,2" />
                   </svg>
                 </div>
 
                 <div className="flex flex-col gap-2.5 max-w-sm relative z-10">
-                  <span className="px-3 py-1 rounded-full text-[9px] font-mono font-bold tracking-widest bg-emerald-50 border border-emerald-200 text-emerald-700 uppercase animate-pulse w-fit mx-auto shadow-sm">
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-mono font-bold tracking-widest uppercase animate-pulse w-fit mx-auto shadow-sm border transition-all duration-300 ${
+                    isDarkTheme ? 'bg-emerald-950/40 border-emerald-900/50 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  }`}>
                     ⚡ advisor engine: ready
                   </span>
-                  <h3 className="text-base font-extrabold text-slate-800">
+                  <h3 className={`text-base font-extrabold transition-all duration-300 ${
+                    isDarkTheme ? 'text-white' : 'text-slate-800'
+                  }`}>
                     No Bottleneck Profile Selected
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  <p className={`text-xs leading-relaxed font-medium transition-all duration-300 ${
+                    isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+                  }`}>
                     Select one of the architectural challenges on the left. The advisor engine will construct the corresponding solution blueprint, live simulations, and interactive conduits.
                   </p>
                 </div>
@@ -1901,35 +2010,183 @@ export default function Home() {
         </div>
       </section>
 
+      {/* AWS Cloud Architect Q&A Explorer Section */}
+      <section id="qa-explorer" className={`border rounded-3xl p-6 md:p-8 flex flex-col gap-6 scroll-mt-24 transition-all duration-500 ${
+        isDarkTheme 
+          ? 'bg-slate-900/60 border-slate-800/80 shadow-2xl text-slate-100' 
+          : 'bg-white border-slate-200 shadow-sm text-slate-800'
+      }`}>
+        <div className="flex flex-col gap-1.5 animate-fadeIn">
+          <span className={`text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 font-mono transition-all ${
+            isDarkTheme ? 'text-emerald-400' : 'text-emerald-600'
+          }`}>
+            <HelpCircle className="w-4 h-4" /> Cloud Architect Knowledge Base
+          </span>
+          <h2 className={`text-xl md:text-2xl font-extrabold tracking-tight transition-all ${
+            isDarkTheme ? 'text-white' : 'text-slate-900'
+          }`}>
+            AWS Architect Q&A Explorer
+          </h2>
+          <p className={`text-xs max-w-xl transition-all ${
+            isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+          }`}>
+            Explore deep-dive technical explanations for standard architectural interview topics and cloud design patterns. Launch the interactive sandbox models to visualize each concept in action.
+          </p>
+        </div>
+
+        {/* Tab Headers */}
+        <div className={`flex items-center gap-1.5 flex-wrap overflow-x-auto pb-1 border-b transition-all duration-300 ${
+          isDarkTheme ? 'border-slate-800' : 'border-slate-100'
+        }`}>
+          {(['compute', 'networking', 'database', 'security', 'storage', 'integration'] as const).map(tab => {
+            const isActive = activeQaTab === tab;
+            let themeClass = 'bg-slate-900 text-white border-slate-900';
+            let hoverClass = isDarkTheme 
+              ? 'hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white' 
+              : 'hover:bg-slate-50 hover:border-slate-350 text-slate-600';
+            
+            if (isActive) {
+              if (tab === 'compute') themeClass = 'bg-cyan-500 border-cyan-500 text-white';
+              else if (tab === 'networking') themeClass = 'bg-violet-500 border-violet-500 text-white';
+              else if (tab === 'database') themeClass = 'bg-emerald-500 border-emerald-500 text-white';
+              else if (tab === 'security') themeClass = 'bg-rose-500 border-rose-500 text-white';
+              else if (tab === 'storage') themeClass = 'bg-amber-500 border-amber-500 text-white';
+              else if (tab === 'integration') themeClass = 'bg-indigo-500 border-indigo-500 text-white';
+            }
+
+            return (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveQaTab(tab);
+                  setExpandedQuestionId(null);
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all capitalize ${
+                  isActive ? themeClass : `${isDarkTheme ? 'bg-slate-950 border-slate-850' : 'bg-white border-slate-200'} ${hoverClass}`
+                }`}
+              >
+                {tab === 'integration' ? 'Integration & DR' : tab}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Questions Grid */}
+        <div className="flex flex-col gap-3">
+          {qaData[activeQaTab].map(item => {
+            const isExpanded = expandedQuestionId === item.id;
+            return (
+              <div
+                key={item.id}
+                className={`border rounded-2xl transition-all duration-300 overflow-hidden ${
+                  isExpanded 
+                    ? isDarkTheme ? 'border-slate-750 bg-slate-950/60 shadow-inner' : 'border-slate-900 bg-slate-50/50 shadow-sm' 
+                    : isDarkTheme ? 'border-slate-850 bg-slate-900/10 hover:border-slate-750 hover:shadow-sm' : 'border-slate-200 bg-white hover:border-slate-350 hover:shadow-xs'
+                }`}
+              >
+                {/* Header/Question Trigger */}
+                <button
+                  onClick={() => setExpandedQuestionId(isExpanded ? null : item.id)}
+                  className={`w-full text-left p-4 flex items-center justify-between gap-4 font-bold text-xs md:text-sm transition-all duration-300 ${
+                    isDarkTheme ? 'text-slate-200 hover:text-white' : 'text-slate-800 hover:text-slate-900'
+                  }`}
+                >
+                  <span className="leading-snug">{item.q}</span>
+                  <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${isExpanded ? 'rotate-90' : ''} ${isDarkTheme ? 'text-slate-300' : 'text-slate-900'}`} />
+                </button>
+
+                {/* Content Panel */}
+                {isExpanded && (
+                  <div className={`px-4 pb-5 pt-1 border-t flex flex-col gap-4 animate-fadeIn text-left transition-all ${
+                    isDarkTheme ? 'border-slate-850' : 'border-slate-100'
+                  }`}>
+                    <p className={`text-xs leading-relaxed font-medium transition-all duration-300 ${
+                      isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
+                      {item.a}
+                    </p>
+
+                    {/* Architectural Flow Diagram */}
+                    {item.diagram && (
+                      <div className="flex flex-col gap-1.5">
+                        <span className={`text-[9px] font-bold uppercase tracking-widest font-mono flex items-center gap-1 transition-all ${
+                          isDarkTheme ? 'text-slate-500' : 'text-slate-400'
+                        }`}>
+                          <Code className="w-3 h-3" /> System Architecture Layout
+                        </span>
+                        <pre className="bg-slate-900 border border-slate-850 rounded-xl p-3 font-mono text-[9px] text-emerald-400 leading-relaxed overflow-x-auto shadow-inner">
+                          {item.diagram}
+                        </pre>
+                      </div>
+                    )}
+
+                    {/* Launch sandbox button */}
+                    <Link
+                      to={item.sandboxLink}
+                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all w-fit shadow-md hover:shadow-lg hover:-translate-y-0.5 ${
+                        isDarkTheme 
+                          ? 'bg-slate-950 border border-slate-800 text-white hover:bg-slate-900 hover:border-slate-700' 
+                          : 'bg-slate-900 hover:bg-slate-800 text-white'
+                      }`}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{item.sandboxName}</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Main Search & Interactive Visualizers Grid Section */}
       <section id="visualizers-explorer" className="flex flex-col gap-6 scroll-mt-24">
         
         {/* Search & Category Filter Header */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-slate-900 text-white p-2 rounded-xl">
+        <div className={`flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b pb-5 transition-all duration-300 ${
+          isDarkTheme ? 'border-slate-800' : 'border-slate-200'
+        }`}>
+          <div className="flex items-center gap-2.5 animate-fadeIn">
+            <div className={`p-2 rounded-xl transition-all ${
+              isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-350 shadow-inner' : 'bg-slate-900 text-white'
+            }`}>
               <Layers className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
-              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">AWS Modules Registry</h2>
-              <p className="text-xs text-slate-500">Filter modules dynamically by service type or keywords</p>
+              <h2 className={`text-xl font-extrabold tracking-tight transition-all ${
+                isDarkTheme ? 'text-white' : 'text-slate-900'
+              }`}>AWS Modules Registry</h2>
+              <p className={`text-xs transition-all ${
+                isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+              }`}>Filter modules dynamically by service type or keywords</p>
             </div>
           </div>
 
           {/* Search bar input container */}
           <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-all ${
+              isDarkTheme ? 'text-slate-550' : 'text-slate-400'
+            } pointer-events-none`} />
             <input
               type="text"
               placeholder="Search by S3, ALB, failover, versions..."
-              className="w-full pl-9 pr-8 py-2 border border-slate-300 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:border-slate-800 transition-colors placeholder:text-slate-400"
+              className={`w-full pl-9 pr-8 py-2 border rounded-xl text-xs font-medium transition-all ${
+                isDarkTheme 
+                  ? 'bg-slate-900 border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-slate-650' 
+                  : 'bg-white border-slate-300 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-slate-800'
+              }`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded border border-slate-200"
+                className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold px-1.5 py-0.5 rounded border transition-all ${
+                  isDarkTheme 
+                    ? 'text-slate-400 hover:text-white bg-slate-950 hover:bg-slate-800 border-slate-800' 
+                    : 'text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 border-slate-200'
+                }`}
               >
                 Clear
               </button>
@@ -1941,90 +2198,102 @@ export default function Home() {
         <div className="flex items-center gap-1.5 flex-wrap overflow-x-auto pb-1 scrollbar-thin">
           <button
             onClick={() => setActiveCategory('all')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all duration-300 ${
               activeCategory === 'all'
-                ? 'bg-slate-900 border-slate-900 text-white'
-                : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-600'
+                ? isDarkTheme ? 'bg-slate-100 border-slate-100 text-slate-950' : 'bg-slate-900 border-slate-900 text-white'
+                : isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:border-slate-700 hover:text-white' : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-600'
             }`}
           >
             <span>All Modules</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-              activeCategory === 'all' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono transition-all duration-300 ${
+              activeCategory === 'all' 
+                ? isDarkTheme ? 'bg-slate-200 text-slate-900' : 'bg-slate-800 text-slate-300' 
+                : isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-500' : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>{getCategoryCount('all')}</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('compute')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all duration-300 ${
               activeCategory === 'compute'
                 ? 'bg-cyan-500 border-cyan-500 text-white'
-                : 'bg-white border-slate-200 hover:bg-cyan-50 hover:border-cyan-200 text-slate-600'
+                : isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:border-slate-700 hover:text-white' : 'bg-white border-slate-200 hover:bg-cyan-50 hover:border-cyan-200 text-slate-600'
             }`}
           >
             <Cpu className="w-3.5 h-3.5 shrink-0" />
             <span>Compute &amp; Containers</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-              activeCategory === 'compute' ? 'bg-cyan-600 text-cyan-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono transition-all duration-300 ${
+              activeCategory === 'compute' 
+                ? 'bg-cyan-600 text-cyan-100' 
+                : isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-500' : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>{getCategoryCount('compute')}</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('networking')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all duration-300 ${
               activeCategory === 'networking'
                 ? 'bg-violet-500 border-violet-500 text-white'
-                : 'bg-white border-slate-200 hover:bg-violet-50 hover:border-violet-200 text-slate-600'
+                : isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:border-slate-700 hover:text-white' : 'bg-white border-slate-200 hover:bg-violet-50 hover:border-violet-200 text-slate-600'
             }`}
           >
             <Globe className="w-3.5 h-3.5 shrink-0" />
             <span>Networking &amp; CDN</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-              activeCategory === 'networking' ? 'bg-violet-600 text-violet-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono transition-all duration-300 ${
+              activeCategory === 'networking' 
+                ? 'bg-violet-600 text-violet-100' 
+                : isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-500' : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>{getCategoryCount('networking')}</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('databases')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all duration-300 ${
               activeCategory === 'databases'
                 ? 'bg-emerald-500 border-emerald-500 text-white'
-                : 'bg-white border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 text-slate-600'
+                : isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:border-slate-700 hover:text-white' : 'bg-white border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 text-slate-600'
             }`}
           >
             <Database className="w-3.5 h-3.5 shrink-0" />
             <span>Databases &amp; Cache</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-              activeCategory === 'databases' ? 'bg-emerald-600 text-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono transition-all duration-300 ${
+              activeCategory === 'databases' 
+                ? 'bg-emerald-600 text-emerald-100' 
+                : isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-500' : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>{getCategoryCount('databases')}</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('storage')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all duration-300 ${
               activeCategory === 'storage'
                 ? 'bg-amber-500 border-amber-500 text-white'
-                : 'bg-white border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-slate-600'
+                : isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:border-slate-700 hover:text-white' : 'bg-white border-slate-200 hover:bg-amber-50 hover:border-amber-200 text-slate-600'
             }`}
           >
             <Folder className="w-3.5 h-3.5 shrink-0" />
             <span>Storage &amp; Filesystems</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-              activeCategory === 'storage' ? 'bg-amber-600 text-amber-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono transition-all duration-300 ${
+              activeCategory === 'storage' 
+                ? 'bg-amber-600 text-amber-100' 
+                : isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-500' : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>{getCategoryCount('storage')}</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('integration')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all duration-300 ${
               activeCategory === 'integration'
                 ? 'bg-indigo-500 border-indigo-500 text-white'
-                : 'bg-white border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 text-slate-600'
+                : isDarkTheme ? 'bg-slate-900 border-slate-800/80 text-slate-400 hover:bg-slate-800 hover:border-slate-700 hover:text-white' : 'bg-white border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 text-slate-600'
             }`}
           >
             <Inbox className="w-3.5 h-3.5 shrink-0" />
             <span>Messaging &amp; Analytics</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-              activeCategory === 'integration' ? 'bg-indigo-600 text-indigo-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono transition-all duration-300 ${
+              activeCategory === 'integration' 
+                ? 'bg-indigo-600 text-indigo-100' 
+                : isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-500' : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>{getCategoryCount('integration')}</span>
           </button>
         </div>
@@ -2034,31 +2303,38 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVisualizers.map((viz) => {
               // Custom Category Styles
-              let accentClass = 'hover:border-slate-400 hover:shadow-slate-100';
-              let badgeBg = 'bg-slate-100 text-slate-700';
+              let accentClass = '';
+              let badgeBg = '';
 
               if (viz.category === 'compute') {
-                accentClass = 'hover:border-cyan-400 hover:shadow-cyan-50/50';
-                badgeBg = 'bg-cyan-50 text-cyan-700 border border-cyan-200';
+                accentClass = isDarkTheme ? 'hover:border-cyan-500 hover:shadow-cyan-950/20' : 'hover:border-cyan-400 hover:shadow-cyan-50/50';
+                badgeBg = isDarkTheme ? 'bg-cyan-950/40 text-cyan-400 border border-cyan-900/50' : 'bg-cyan-50 text-cyan-700 border border-cyan-200';
               } else if (viz.category === 'networking') {
-                accentClass = 'hover:border-violet-400 hover:shadow-violet-50/50';
-                badgeBg = 'bg-violet-50 text-violet-700 border border-violet-200';
+                accentClass = isDarkTheme ? 'hover:border-violet-500 hover:shadow-violet-950/20' : 'hover:border-violet-400 hover:shadow-violet-50/50';
+                badgeBg = isDarkTheme ? 'bg-violet-950/40 text-violet-400 border border-violet-900/50' : 'bg-violet-50 text-violet-700 border border-violet-200';
               } else if (viz.category === 'databases') {
-                accentClass = 'hover:border-emerald-400 hover:shadow-emerald-50/50';
-                badgeBg = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                accentClass = isDarkTheme ? 'hover:border-emerald-500 hover:shadow-emerald-950/20' : 'hover:border-emerald-400 hover:shadow-emerald-50/50';
+                badgeBg = isDarkTheme ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/50' : 'bg-emerald-50 text-emerald-700 border border-emerald-200';
               } else if (viz.category === 'storage') {
-                accentClass = 'hover:border-amber-400 hover:shadow-amber-50/50';
-                badgeBg = 'bg-amber-50 text-amber-700 border border-amber-200';
+                accentClass = isDarkTheme ? 'hover:border-amber-500 hover:shadow-amber-950/20' : 'hover:border-amber-400 hover:shadow-amber-50/50';
+                badgeBg = isDarkTheme ? 'bg-amber-950/40 text-amber-400 border border-amber-900/50' : 'bg-amber-50 text-amber-700 border border-amber-200';
               } else if (viz.category === 'integration') {
-                accentClass = 'hover:border-indigo-400 hover:shadow-indigo-50/50';
-                badgeBg = 'bg-indigo-50 text-indigo-700 border border-indigo-200';
+                accentClass = isDarkTheme ? 'hover:border-indigo-500 hover:shadow-indigo-950/20' : 'hover:border-indigo-400 hover:shadow-indigo-50/50';
+                badgeBg = isDarkTheme ? 'bg-indigo-950/40 text-indigo-400 border border-indigo-900/50' : 'bg-indigo-50 text-indigo-700 border border-indigo-200';
+              } else {
+                accentClass = isDarkTheme ? 'hover:border-slate-700 hover:shadow-slate-950/20' : 'hover:border-slate-400 hover:shadow-slate-100';
+                badgeBg = isDarkTheme ? 'bg-slate-950 border border-slate-850 text-slate-400' : 'bg-slate-100 text-slate-700 border border-slate-200';
               }
 
               return (
                 <Link
                   key={viz.id}
                   to={viz.path}
-                  className={`relative flex flex-col justify-between bg-white border border-slate-200 rounded-2xl p-5 transition-all duration-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${accentClass} ${
+                  className={`relative flex flex-col justify-between rounded-2xl p-5 transition-all duration-300 shadow-sm hover:-translate-y-0.5 hover:shadow-md cursor-pointer ${accentClass} ${
+                    isDarkTheme 
+                      ? 'bg-slate-900/60 border border-slate-800/80 text-slate-100' 
+                      : 'bg-white border border-slate-200 text-slate-800'
+                  } ${
                     viz.comingSoon ? 'opacity-60 cursor-not-allowed hover:translate-y-0 hover:shadow-sm' : ''
                   }`}
                   onClick={(e) => viz.comingSoon && e.preventDefault()}
@@ -2066,17 +2342,23 @@ export default function Home() {
                   <div className="flex flex-col gap-4">
                     {/* Header Info */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="text-3xl bg-slate-50 border border-slate-100 rounded-xl p-2.5 shrink-0">
+                      <div className={`text-3xl rounded-xl p-2.5 shrink-0 border transition-all ${
+                        isDarkTheme ? 'bg-slate-950 border-slate-850' : 'bg-slate-50 border-slate-100'
+                      }`}>
                         {viz.icon}
                       </div>
 
                       {/* Status Badges */}
                       {viz.comingSoon ? (
-                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 px-2 py-0.5 bg-slate-100 rounded border border-slate-200 shrink-0">
+                        <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border shrink-0 transition-all ${
+                          isDarkTheme ? 'bg-slate-950 border-slate-850 text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-400'
+                        }`}>
                           ● Roadmap
                         </span>
                       ) : (
-                        <span className="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600 px-2 py-0.5 bg-emerald-50 rounded border border-emerald-200 shrink-0 flex items-center gap-1.5">
+                        <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border shrink-0 flex items-center gap-1.5 transition-all ${
+                          isDarkTheme ? 'bg-emerald-950/40 border-emerald-900/40 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                        }`}>
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                           Online
                         </span>
@@ -2084,17 +2366,23 @@ export default function Home() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+                      <h3 className={`text-sm font-bold tracking-tight transition-all ${
+                        isDarkTheme ? 'text-white' : 'text-slate-800'
+                      }`}>
                         {viz.title}
                       </h3>
-                      <p className="text-[11.5px] text-slate-500 leading-relaxed font-medium">
+                      <p className={`text-[11.5px] leading-relaxed font-medium transition-all ${
+                        isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+                      }`}>
                         {viz.description}
                       </p>
                     </div>
                   </div>
 
                   {/* Tag List & Links (Bottom) */}
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col gap-3">
+                  <div className={`mt-5 pt-4 border-t flex flex-col gap-3 transition-all ${
+                    isDarkTheme ? 'border-slate-800' : 'border-slate-100'
+                  }`}>
                     <div className="flex flex-wrap gap-1.5">
                       {/* Domain Badge */}
                       <span className={`text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded ${badgeBg}`}>
@@ -2103,7 +2391,9 @@ export default function Home() {
                       {viz.tags.slice(0, 2).map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 text-[9px] font-bold bg-slate-50 text-slate-500 rounded border border-slate-200"
+                          className={`px-2 py-0.5 text-[9px] font-bold rounded border transition-all ${
+                            isDarkTheme ? 'bg-slate-950 text-slate-400 border-slate-850' : 'bg-slate-50 text-slate-500 border border-slate-200'
+                          }`}
                         >
                           {tag}
                         </span>
@@ -2111,7 +2401,9 @@ export default function Home() {
                     </div>
 
                     {!viz.comingSoon && (
-                      <div className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 flex items-center gap-1">
+                      <div className={`text-[10px] font-bold flex items-center gap-1 transition-all ${
+                        isDarkTheme ? 'text-slate-500 group-hover:text-slate-350' : 'text-slate-400 group-hover:text-slate-600'
+                      }`}>
                         Open Architect sandbox <ChevronRight className="w-3 h-3" />
                       </div>
                     )}
@@ -2121,17 +2413,25 @@ export default function Home() {
             })}
           </div>
         ) : (
-          <div className="border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3 bg-slate-50/50">
-            <div className="bg-slate-100 p-3 rounded-full text-slate-400 border border-slate-200">
+          <div className={`border-2 border-dashed rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+            isDarkTheme ? 'border-slate-850 bg-slate-900/10' : 'border-slate-200 bg-slate-50/50'
+          }`}>
+            <div className={`p-3 rounded-full border transition-all ${
+              isDarkTheme ? 'bg-slate-950 text-slate-500 border-slate-850' : 'bg-slate-100 text-slate-400 border border-slate-200'
+            }`}>
               <Search className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-slate-700">No Modules Match Your Search</h3>
-            <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
-              We couldn't find any visualizer matching <span className="font-semibold text-slate-700">"{searchTerm}"</span> under the selected category. Try resetting filters.
+            <h3 className={`text-sm font-bold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>No Modules Match Your Search</h3>
+            <p className={`text-xs max-w-xs leading-relaxed transition-all ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}`}>
+              We couldn't find any visualizer matching <span className={`font-semibold ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}>"{searchTerm}"</span> under the selected category. Try resetting filters.
             </p>
             <button 
               onClick={() => { setSearchTerm(''); setActiveCategory('all'); }} 
-              className="mt-2 text-xs font-bold text-emerald-600 hover:text-emerald-700 border border-emerald-200 bg-white hover:bg-emerald-50 px-3 py-1.5 rounded-xl transition-colors"
+              className={`mt-2 text-xs font-bold border px-3 py-1.5 rounded-xl transition-all ${
+                isDarkTheme 
+                  ? 'text-emerald-450 border-emerald-900 bg-slate-950 hover:bg-emerald-950/20' 
+                  : 'text-emerald-600 hover:text-emerald-700 border-emerald-200 bg-white hover:bg-emerald-50'
+              }`}
             >
               Reset All Filters
             </button>
@@ -2166,7 +2466,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
     </div>
+  </div>
   );
 }

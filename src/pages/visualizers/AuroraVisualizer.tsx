@@ -932,6 +932,384 @@ export default function AuroraVisualizer() {
           color: #cbd5e1;
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
+
+        /* Theme Aware Colors */
+        .text-orange { color: #c2410c !important; fill: #c2410c !important; }
+        .text-blue { color: #0369a1 !important; fill: #0369a1 !important; }
+        .text-purple { color: #7c3aed !important; fill: #7c3aed !important; }
+        .text-green { color: #16a34a !important; fill: #16a34a !important; }
+        .text-red { color: #ef4444 !important; fill: #ef4444 !important; }
+        .text-slate { color: #64748b !important; fill: #64748b !important; }
+
+        .dark .text-orange { color: #f97316 !important; fill: #f97316 !important; }
+        .dark .text-blue { color: #38bdf8 !important; fill: #38bdf8 !important; }
+        .dark .text-purple { color: #a78bfa !important; fill: #a78bfa !important; }
+        .dark .text-green { color: #4ade80 !important; fill: #4ade80 !important; }
+        .dark .text-red { color: #f87171 !important; fill: #f87171 !important; }
+        .dark .text-slate { color: #94a3b8 !important; fill: #94a3b8 !important; }
+
+        /* Card Colors */
+        .aurora-card-orange { border-left: 3px solid #c2410c !important; }
+        .dark .aurora-card-orange { border-left: 3px solid #f97316 !important; }
+        .aurora-card-blue { border-left: 3px solid #0369a1 !important; }
+        .dark .aurora-card-blue { border-left: 3px solid #38bdf8 !important; }
+        .aurora-card-purple { border-left: 3px solid #7c3aed !important; }
+        .dark .aurora-card-purple { border-left: 3px solid #a78bfa !important; }
+        .aurora-card-slate { border-left: 3px solid #64748b !important; }
+        .dark .aurora-card-slate { border-left: 3px solid #94a3b8 !important; }
+
+        /* SVG Overrides */
+        .aurora-svg-rect {
+          fill: var(--color-background-primary);
+          stroke: var(--color-border-secondary);
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect {
+          fill: rgba(15, 23, 42, 0.8) !important;
+          stroke: rgba(51, 65, 85, 0.6) !important;
+        }
+        .aurora-svg-rect-blue {
+          fill: #eff6ff;
+          stroke: #93c5fd;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-blue {
+          fill: rgba(2, 132, 199, 0.15) !important;
+          stroke: rgba(56, 189, 248, 0.4) !important;
+        }
+        .aurora-svg-rect-purple {
+          fill: #f5f3ff;
+          stroke: #a78bfa;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-purple {
+          fill: rgba(124, 58, 237, 0.15) !important;
+          stroke: rgba(167, 139, 250, 0.4) !important;
+        }
+        .aurora-svg-rect-red {
+          fill: #fff1f2;
+          stroke: #fca5a5;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-red {
+          fill: rgba(239, 68, 68, 0.15) !important;
+          stroke: rgba(248, 113, 113, 0.4) !important;
+        }
+        .aurora-svg-rect-orange {
+          fill: #fff7ed;
+          stroke: #ffedd5;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-orange {
+          fill: rgba(234, 88, 12, 0.15) !important;
+          stroke: rgba(249, 115, 22, 0.4) !important;
+        }
+        .aurora-svg-rect-green {
+          fill: #f0fdf4;
+          stroke: #86efac;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-green {
+          fill: rgba(16, 185, 129, 0.15) !important;
+          stroke: rgba(74, 222, 128, 0.4) !important;
+        }
+        .aurora-svg-rect-grey {
+          fill: #f8fafc;
+          stroke: #cbd5e1;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-grey {
+          fill: rgba(148, 163, 184, 0.1) !important;
+          stroke: rgba(148, 163, 184, 0.4) !important;
+        }
+        .aurora-svg-rect-blue-dashed {
+          fill: rgba(239, 246, 255, 0.4);
+          stroke: #93c5fd;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-rect-blue-dashed {
+          fill: rgba(30, 41, 59, 0.2) !important;
+          stroke: rgba(56, 189, 248, 0.4) !important;
+        }
+        .aurora-svg-text-primary {
+          fill: #1e293b;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-text-primary {
+          fill: #f8fafc !important;
+        }
+        .aurora-svg-text-secondary {
+          fill: #475569;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-text-secondary {
+          fill: #94a3b8 !important;
+        }
+
+        .aurora-svg-drive-rect {
+          transition: all 0.3s ease;
+        }
+        .aurora-svg-drive-rect.healthy {
+          fill: #f0fdf4;
+          stroke: #86efac;
+        }
+        .aurora-svg-drive-rect.failed {
+          fill: #fff1f2;
+          stroke: #fecdd3;
+        }
+        .dark .aurora-svg-drive-rect.healthy {
+          fill: rgba(16, 185, 129, 0.15) !important;
+          stroke: rgba(16, 185, 129, 0.4) !important;
+        }
+        .dark .aurora-svg-drive-rect.failed {
+          fill: rgba(239, 68, 68, 0.15) !important;
+          stroke: rgba(239, 68, 68, 0.4) !important;
+        }
+
+        .aurora-svg-chassis-rect {
+          transition: all 0.3s ease;
+        }
+        .aurora-svg-chassis-rect.healthy {
+          fill: #f0fdf4;
+          stroke: #86efac;
+        }
+        .aurora-svg-chassis-rect.failed {
+          fill: #fff1f2;
+          stroke: #ef4444;
+        }
+        .aurora-svg-chassis-rect.promoted {
+          fill: #f5f3ff;
+          stroke: #7c3aed;
+        }
+        .aurora-svg-chassis-rect.replica {
+          fill: rgba(255,255,255,0.8);
+          stroke: #cbd5e1;
+        }
+        .dark .aurora-svg-chassis-rect.healthy {
+          fill: rgba(16, 185, 129, 0.15) !important;
+          stroke: rgba(16, 185, 129, 0.5) !important;
+        }
+        .dark .aurora-svg-chassis-rect.failed {
+          fill: rgba(239, 68, 68, 0.15) !important;
+          stroke: rgba(239, 68, 68, 0.5) !important;
+        }
+        .dark .aurora-svg-chassis-rect.promoted {
+          fill: rgba(124, 58, 237, 0.15) !important;
+          stroke: rgba(167, 139, 250, 0.5) !important;
+        }
+        .dark .aurora-svg-chassis-rect.replica {
+          fill: rgba(15, 23, 42, 0.6) !important;
+          stroke: rgba(51, 65, 85, 0.6) !important;
+        }
+
+        /* Developer Notebook styling */
+        .aurora-note-title {
+          color: var(--color-text-primary);
+        }
+        .aurora-note-desc {
+          color: var(--color-text-secondary);
+        }
+        .aurora-notebook-label {
+          color: var(--color-text-primary);
+        }
+        .aurora-notebook-copy-btn {
+          padding: 4px;
+          border-radius: 4px;
+          background: var(--color-background-tertiary);
+          border: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .aurora-notebook-copy-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .aurora-notebook-inner-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        .aurora-notebook-inner-card-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--color-text-tertiary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-family: var(--font-mono);
+          display: block;
+          margin-bottom: 12px;
+        }
+        .aurora-notebook-inner-subcard-white {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .aurora-notebook-inner-subcard-grey {
+          background: var(--color-background-tertiary);
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .aurora-notebook-inner-subcard-blue {
+          background: #eff6ff;
+          border: 1px solid #93c5fd;
+        }
+        .dark .aurora-notebook-inner-subcard-blue {
+          background: rgba(2, 132, 199, 0.15) !important;
+          border-color: rgba(56, 189, 248, 0.3) !important;
+        }
+        .aurora-notebook-inner-subcard-green {
+          background: #f0fdf4;
+          border: 1px solid #86efac;
+        }
+        .dark .aurora-notebook-inner-subcard-green {
+          background: rgba(16, 185, 129, 0.15) !important;
+          border-color: rgba(16, 185, 129, 0.3) !important;
+        }
+        .aurora-notebook-input {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 4px;
+          padding: 4px;
+          color: var(--color-text-primary);
+          outline: none;
+        }
+
+        .failover-step-indicator {
+          text-align: center;
+          padding: 6px 2px;
+          border-radius: 6px;
+          font-size: 9.5px;
+          font-weight: bold;
+          transition: all 0.2s ease;
+        }
+        .failover-step-indicator.active {
+          background: #dcfce7;
+          border: 1px solid #86efac;
+          color: #15803d;
+        }
+        .failover-step-indicator.inactive {
+          background: #f1f5f9;
+          border: 1px solid #cbd5e1;
+          color: #64748b;
+        }
+        .dark .failover-step-indicator.active {
+          background: rgba(16, 185, 129, 0.15) !important;
+          border-color: rgba(16, 185, 129, 0.4) !important;
+          color: #4ade80 !important;
+        }
+        .dark .failover-step-indicator.inactive {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+
+        /* Centralized Dark Theme Overrides for .aurora- elements */
+        .dark .aurora-container {
+          color: var(--color-text-primary) !important;
+        }
+        .dark .aurora-h {
+          color: var(--color-text-primary) !important;
+        }
+        .dark .aurora-sub {
+          color: var(--color-text-secondary) !important;
+        }
+        .dark .aurora-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: var(--color-text-secondary) !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .aurora-card b,
+        .dark .aurora-card strong,
+        .dark .aurora-card h2,
+        .dark .aurora-card h3,
+        .dark .aurora-card h4,
+        .dark .aurora-card .aurora-card-title {
+          color: #ffffff !important;
+        }
+        .dark .aurora-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .aurora-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .aurora-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .aurora-tb.aurora-on {
+          background: #16a34a !important;
+          color: #fff !important;
+          border-color: #16a34a !important;
+        }
+        .dark .aurora-sec {
+          color: #cbd5e1 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .aurora-row {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: var(--color-text-secondary) !important;
+        }
+        .dark .aurora-svg-bg {
+          background-color: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.4) 1.2px, transparent 1.2px) !important;
+        }
+        .dark .aurora-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .aurora-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .aurora-subtb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .aurora-subtb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        
+        /* Theme aware classes for SVG frames and colored buttons */
+        .aurora-svg-frame {
+          fill: rgba(255, 255, 255, 0.75);
+          stroke: #cbd5e1;
+          transition: all 0.3s ease;
+        }
+        .dark .aurora-svg-frame {
+          fill: rgba(15, 23, 42, 0.6) !important;
+          stroke: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        .aurora-btn-red {
+          border-color: #fca5a5;
+          background: #fef2f2;
+          color: #b91c1c;
+        }
+        .dark .aurora-btn-red {
+          border-color: rgba(239, 68, 68, 0.4) !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        .aurora-btn-green {
+          border-color: #86efac;
+          background: #f0fdf4;
+          color: #15803d;
+        }
+        .dark .aurora-btn-green {
+          border-color: rgba(16, 185, 129, 0.4) !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
       `}</style>
 
       {/* Header Panel */}
@@ -982,41 +1360,41 @@ export default function AuroraVisualizer() {
                   </defs>
 
                   {/* Grid / Region text label */}
-                  <text x="340" y="24" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="700" letterSpacing="0.05em">VPC — us-east-1 (3 Availability Zones)</text>
+                  <text x="340" y="24" textAnchor="middle" fontSize="11" className="aurora-svg-text-secondary" fontWeight="700" letterSpacing="0.05em">VPC — us-east-1 (3 Availability Zones)</text>
 
                   {/* Compute Layer Frame */}
-                  <rect x="20" y="38" width="640" height="72" rx="12" fill="rgba(255, 255, 255, 0.75)" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="340" y="52" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="700" letterSpacing="0.05em">AURORA ELAPSED COMPUTE FLEET</text>
-
+                  <rect x="20" y="38" width="640" height="72" rx="12" className="aurora-svg-frame" strokeWidth="1" />
+                  <text x="340" y="52" textAnchor="middle" fontSize="9" className="aurora-svg-text-secondary" fontWeight="700" letterSpacing="0.05em">AURORA ELAPSED COMPUTE FLEET</text>
+ 
                   {/* AZ-1 Writer Instance */}
                   <g transform="translate(40, 60)">
-                    <rect width="170" height="38" rx="8" fill="#f5f3ff" stroke="#a78bfa" strokeWidth="1.5" />
+                    <rect width="170" height="38" rx="8" className="aurora-svg-rect-purple" strokeWidth="1.5" />
                     <circle cx="16" cy="19" r="4.5" fill="#7c3aed" className="led-blink" />
-                    <text x="30" y="23" fontSize="11.5" fill="#4c1d95" fontWeight="bold">✍️ Primary Writer (AZ-1)</text>
+                    <text x="30" y="23" fontSize="11.5" className="text-purple" fontWeight="bold">✍️ Primary Writer (AZ-1)</text>
                     {/* Pulsing state bar */}
                     <rect x="145" y="14" width="16" height="10" rx="3" fill="#10b981" />
                   </g>
-
+ 
                   {/* AZ-2 Reader 1 */}
                   <g transform="translate(250, 60)">
-                    <rect width="170" height="38" rx="8" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1" />
+                    <rect width="170" height="38" rx="8" className="aurora-svg-rect-blue" strokeWidth="1" />
                     <circle cx="16" cy="19" r="4.5" fill="#3b82f6" className="led-blink" />
-                    <text x="30" y="23" fontSize="11.5" fill="#1e40af" fontWeight="bold">📖 Reader Replica 1</text>
+                    <text x="30" y="23" fontSize="11.5" className="text-blue" fontWeight="bold">📖 Reader Replica 1</text>
                     <rect x="145" y="14" width="16" height="10" rx="3" fill="#3b82f6" />
                   </g>
-
+ 
                   {/* AZ-3 Reader 2 */}
                   <g transform="translate(460, 60)">
-                    <rect width="170" height="38" rx="8" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1" />
+                    <rect width="170" height="38" rx="8" className="aurora-svg-rect-blue" strokeWidth="1" />
                     <circle cx="16" cy="19" r="4.5" fill="#3b82f6" className="led-blink" />
-                    <text x="30" y="23" fontSize="11.5" fill="#1e40af" fontWeight="bold">📖 Reader Replica 2</text>
+                    <text x="30" y="23" fontSize="11.5" className="text-blue" fontWeight="bold">📖 Reader Replica 2</text>
                     <rect x="145" y="14" width="16" height="10" rx="3" fill="#3b82f6" />
                   </g>
-
+ 
                   {/* Shared Storage Frame */}
-                  <rect x="20" y="150" width="640" height="230" rx="14" fill="rgba(239, 246, 255, 0.4)" stroke="#93c5fd" strokeWidth="1" strokeDasharray="4,2" />
-                  <text x="340" y="168" textAnchor="middle" fontSize="9.5" fill="#1e40af" fontWeight="700" letterSpacing="0.05em">SHARED 6-WAY VIRTUALIZED DISTRIBUTED STORAGE LAYER</text>
-
+                  <rect x="20" y="150" width="640" height="230" rx="14" className="aurora-svg-rect-blue-dashed" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="340" y="168" textAnchor="middle" fontSize="9.5" className="text-blue" fontWeight="700" letterSpacing="0.05em">SHARED 6-WAY VIRTUALIZED DISTRIBUTED STORAGE LAYER</text>
+ 
                   {/* Active flow pipelines */}
                   {copies[0] && (
                     <circle r="3" fill="#10b981">
@@ -1048,124 +1426,124 @@ export default function AuroraVisualizer() {
                       <animateMotion dur="2.0s" repeatCount="indefinite" path="M 545 98 L 555 258" />
                     </circle>
                   )}
-
+ 
                   {/* Redo stream paths (static pipelines behind particles) */}
-                  <path d="M 125 98 L 125 215" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 125 98 L 125 258" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 335 98 L 340 215" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 335 98 L 340 258" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 545 98 L 555 215" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 545 98 L 555 258" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-
+                  <path d="M 125 98 L 125 215" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 125 98 L 125 258" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 335 98 L 340 215" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 335 98 L 340 258" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 545 98 L 555 215" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 545 98 L 555 258" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+ 
                   {/* AZ-1 Subnet Zone */}
                   <g transform="translate(35, 185)">
-                    <rect width="180" height="150" rx="8" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">AZ-1 (us-east-1a)</text>
+                    <rect width="180" height="150" rx="8" className="aurora-svg-frame" strokeWidth="1" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" className="aurora-svg-text-secondary" fontWeight="bold">AZ-1 (us-east-1a)</text>
                     
                     {/* Copy 1 */}
                     <g transform="translate(15, 30)">
-                      <rect width="150" height="40" rx="6" fill={copies[0] ? '#f0fdf4' : '#fff1f2'} stroke={copies[0] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <rect width="150" height="40" rx="6" className={`aurora-svg-drive-rect ${copies[0] ? 'healthy' : 'failed'}`} strokeWidth="1.5" />
                       <circle cx="15" cy="20" r="3.5" fill={copies[0] ? '#10b981' : '#ef4444'} className={!copies[0] ? 'led-blink' : undefined} />
-                      <text x="30" y="24" fontSize="10" fill={copies[0] ? '#166534' : '#991b1b'} fontWeight="600">{copies[0] ? 'Storage Drive Copy 1' : 'Copy 1 Outage ❌'}</text>
-                      {copies[0] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                      <text x="30" y="24" fontSize="10" className={copies[0] ? 'text-green' : 'text-red'} fontWeight="600">{copies[0] ? 'Storage Drive Copy 1' : 'Copy 1 Outage ❌'}</text>
+                      {copies[0] && <text x="110" y="34" fontSize="7" className="text-green" fontFamily="monospace">Active Quorum</text>}
                     </g>
                     
                     {/* Copy 2 */}
                     <g transform="translate(15, 85)">
-                      <rect width="150" height="40" rx="6" fill={copies[1] ? '#f0fdf4' : '#fff1f2'} stroke={copies[1] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <rect width="150" height="40" rx="6" className={`aurora-svg-drive-rect ${copies[1] ? 'healthy' : 'failed'}`} strokeWidth="1.5" />
                       <circle cx="15" cy="20" r="3.5" fill={copies[1] ? '#10b981' : '#ef4444'} className={!copies[1] ? 'led-blink' : undefined} />
-                      <text x="30" y="24" fontSize="10" fill={copies[1] ? '#166534' : '#991b1b'} fontWeight="600">{copies[1] ? 'Storage Drive Copy 2' : 'Copy 2 Outage ❌'}</text>
-                      {copies[1] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                      <text x="30" y="24" fontSize="10" className={copies[1] ? 'text-green' : 'text-red'} fontWeight="600">{copies[1] ? 'Storage Drive Copy 2' : 'Copy 2 Outage ❌'}</text>
+                      {copies[1] && <text x="110" y="34" fontSize="7" className="text-green" fontFamily="monospace">Active Quorum</text>}
                     </g>
                   </g>
-
+ 
                   {/* AZ-2 Subnet Zone */}
                   <g transform="translate(250, 185)">
-                    <rect width="180" height="150" rx="8" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">AZ-2 (us-east-1b)</text>
+                    <rect width="180" height="150" rx="8" className="aurora-svg-frame" strokeWidth="1" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" className="aurora-svg-text-secondary" fontWeight="bold">AZ-2 (us-east-1b)</text>
                     
                     {/* Copy 3 */}
                     <g transform="translate(15, 30)">
-                      <rect width="150" height="40" rx="6" fill={copies[2] ? '#f0fdf4' : '#fff1f2'} stroke={copies[2] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <rect width="150" height="40" rx="6" className={`aurora-svg-drive-rect ${copies[2] ? 'healthy' : 'failed'}`} strokeWidth="1.5" />
                       <circle cx="15" cy="20" r="3.5" fill={copies[2] ? '#10b981' : '#ef4444'} className={!copies[2] ? 'led-blink' : undefined} />
-                      <text x="30" y="24" fontSize="10" fill={copies[2] ? '#166534' : '#991b1b'} fontWeight="600">{copies[2] ? 'Storage Drive Copy 3' : 'Copy 3 Outage ❌'}</text>
-                      {copies[2] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                      <text x="30" y="24" fontSize="10" className={copies[2] ? 'text-green' : 'text-red'} fontWeight="600">{copies[2] ? 'Storage Drive Copy 3' : 'Copy 3 Outage ❌'}</text>
+                      {copies[2] && <text x="110" y="34" fontSize="7" className="text-green" fontFamily="monospace">Active Quorum</text>}
                     </g>
                     
                     {/* Copy 4 */}
                     <g transform="translate(15, 85)">
-                      <rect width="150" height="40" rx="6" fill={copies[3] ? '#f0fdf4' : '#fff1f2'} stroke={copies[3] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <rect width="150" height="40" rx="6" className={`aurora-svg-drive-rect ${copies[3] ? 'healthy' : 'failed'}`} strokeWidth="1.5" />
                       <circle cx="15" cy="20" r="3.5" fill={copies[3] ? '#10b981' : '#ef4444'} className={!copies[3] ? 'led-blink' : undefined} />
-                      <text x="30" y="24" fontSize="10" fill={copies[3] ? '#166534' : '#991b1b'} fontWeight="600">{copies[3] ? 'Storage Drive Copy 4' : 'Copy 4 Outage ❌'}</text>
-                      {copies[3] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                      <text x="30" y="24" fontSize="10" className={copies[3] ? 'text-green' : 'text-red'} fontWeight="600">{copies[3] ? 'Storage Drive Copy 4' : 'Copy 4 Outage ❌'}</text>
+                      {copies[3] && <text x="110" y="34" fontSize="7" className="text-green" fontFamily="monospace">Active Quorum</text>}
                     </g>
                   </g>
-
+ 
                   {/* AZ-3 Subnet Zone */}
                   <g transform="translate(465, 185)">
-                    <rect width="180" height="150" rx="8" fill="rgba(255, 255, 255, 0.8)" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="bold">AZ-3 (us-east-1c)</text>
+                    <rect width="180" height="150" rx="8" className="aurora-svg-frame" strokeWidth="1" />
+                    <text x="90" y="20" textAnchor="middle" fontSize="10.5" className="aurora-svg-text-secondary" fontWeight="bold">AZ-3 (us-east-1c)</text>
                     
                     {/* Copy 5 */}
                     <g transform="translate(15, 30)">
-                      <rect width="150" height="40" rx="6" fill={copies[4] ? '#f0fdf4' : '#fff1f2'} stroke={copies[4] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <rect width="150" height="40" rx="6" className={`aurora-svg-drive-rect ${copies[4] ? 'healthy' : 'failed'}`} strokeWidth="1.5" />
                       <circle cx="15" cy="20" r="3.5" fill={copies[4] ? '#10b981' : '#ef4444'} className={!copies[4] ? 'led-blink' : undefined} />
-                      <text x="30" y="24" fontSize="10" fill={copies[4] ? '#166534' : '#991b1b'} fontWeight="600">{copies[4] ? 'Storage Drive Copy 5' : 'Copy 5 Outage ❌'}</text>
-                      {copies[4] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                      <text x="30" y="24" fontSize="10" className={copies[4] ? 'text-green' : 'text-red'} fontWeight="600">{copies[4] ? 'Storage Drive Copy 5' : 'Copy 5 Outage ❌'}</text>
+                      {copies[4] && <text x="110" y="34" fontSize="7" className="text-green" fontFamily="monospace">Active Quorum</text>}
                     </g>
                     
                     {/* Copy 6 */}
                     <g transform="translate(15, 85)">
-                      <rect width="150" height="40" rx="6" fill={copies[5] ? '#f0fdf4' : '#fff1f2'} stroke={copies[5] ? '#86efac' : '#fecdd3'} strokeWidth="1.5" />
+                      <rect width="150" height="40" rx="6" className={`aurora-svg-drive-rect ${copies[5] ? 'healthy' : 'failed'}`} strokeWidth="1.5" />
                       <circle cx="15" cy="20" r="3.5" fill={copies[5] ? '#10b981' : '#ef4444'} className={!copies[5] ? 'led-blink' : undefined} />
-                      <text x="30" y="24" fontSize="10" fill={copies[5] ? '#166534' : '#991b1b'} fontWeight="600">{copies[5] ? 'Storage Drive Copy 6' : 'Copy 6 Outage ❌'}</text>
-                      {copies[5] && <text x="110" y="34" fontSize="7" fill="#15803d" fontFamily="monospace">Active Quorum</text>}
+                      <text x="30" y="24" fontSize="10" className={copies[5] ? 'text-green' : 'text-red'} fontWeight="600">{copies[5] ? 'Storage Drive Copy 6' : 'Copy 6 Outage ❌'}</text>
+                      {copies[5] && <text x="110" y="34" fontSize="7" className="text-green" fontFamily="monospace">Active Quorum</text>}
                     </g>
                   </g>
-
-                  <text x="340" y="365" textAnchor="middle" fontSize="11" fill="#047857" fontWeight="bold">Self-Healing Storage rebuilds segments instantly on healthy nodes if sectors fail.</text>
+ 
+                  <text x="340" y="365" textAnchor="middle" fontSize="11" className="text-green" fontWeight="bold">Self-Healing Storage rebuilds segments instantly on healthy nodes if sectors fail.</text>
                 </svg>
               </div>
-
+ 
               <div>
                 {/* Drive Quorum Hardening Status */}
                 <div className="aurora-card" style={{ marginBottom: '12px', borderTop: '3px solid #10b981' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#1b4332', marginBottom: '6px' }}>🛠️ Drive Failures &amp; Quorum HUD</div>
-                  <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Aurora replicates data to 6 storage drives. Test failures to see read/write quorum.</div>
-
+                  <div className="text-green" style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px' }}>🛠️ Drive Failures &amp; Quorum HUD</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Aurora replicates data to 6 storage drives. Test failures to see read/write quorum.</div>
+ 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ background: '#f8fafc', padding: '6px', borderRadius: '6px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '9.5px', color: '#64748b' }}>Write Quorum (needs 4/6)</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: copies.filter(Boolean).length >= 4 ? '#16a34a' : '#dc2626', marginTop: '2px' }}>
+                    <div className="aurora-notebook-inner-subcard-grey" style={{ padding: '6px', borderRadius: '6px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '9.5px', color: 'var(--color-text-secondary)' }}>Write Quorum (needs 4/6)</div>
+                      <div className={copies.filter(Boolean).length >= 4 ? 'text-green' : 'text-red'} style={{ fontSize: '13px', fontWeight: 700, marginTop: '2px' }}>
                         {copies.filter(Boolean).length >= 4 ? '🟢 Stable ACK' : '🔴 Blocked'} ({copies.filter(Boolean).length}/6)
                       </div>
                     </div>
-                    <div style={{ background: '#f8fafc', padding: '6px', borderRadius: '6px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '9.5px', color: '#64748b' }}>Read Quorum (needs 3/6)</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: copies.filter(Boolean).length >= 3 ? '#16a34a' : '#dc2626', marginTop: '2px' }}>
+                    <div className="aurora-notebook-inner-subcard-grey" style={{ padding: '6px', borderRadius: '6px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '9.5px', color: 'var(--color-text-secondary)' }}>Read Quorum (needs 3/6)</div>
+                      <div className={copies.filter(Boolean).length >= 3 ? 'text-green' : 'text-red'} style={{ fontSize: '13px', fontWeight: 700, marginTop: '2px' }}>
                         {copies.filter(Boolean).length >= 3 ? '🟢 Stable ACK' : '🔴 Blocked'} ({copies.filter(Boolean).length}/6)
                       </div>
                     </div>
                   </div>
-
-                  <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', minHeight: '52px', fontSize: '9.5px', color: '#334155', border: '1px solid #e2e8f0', lineHeight: 1.45 }}>
+ 
+                  <div className="aurora-mono aurora-notebook-inner-subcard-grey" style={{ padding: '8px', borderRadius: '6px', minHeight: '52px', fontSize: '9.5px', lineHeight: 1.45 }}>
                     {storageLog}
                   </div>
-
+ 
                   <div className="aurora-btnbar" style={{ marginTop: '8px' }}>
-                    <button className="aurora-btn" style={{ borderColor: '#fca5a5', background: '#fef2f2', color: '#b91c1c' }} onClick={failOneCopy}>💥 Fail 1 copy</button>
-                    <button className="aurora-btn" style={{ borderColor: '#86efac', background: '#f0fdf4', color: '#15803d' }} onClick={selfHealStorage}>🔄 Self-heal rebuild</button>
+                    <button className="aurora-btn aurora-btn-red" onClick={failOneCopy}>💥 Fail 1 copy</button>
+                    <button className="aurora-btn aurora-btn-green" onClick={selfHealStorage}>🔄 Self-heal rebuild</button>
                     <button className="aurora-btn" onClick={resetStorageCopies}>Reset</button>
                   </div>
                 </div>
-
+ 
                 {/* Auto-Expanding used/allocated simulator */}
                 <div className="aurora-card" style={{ borderTop: '3px solid #0284c7' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#0f4c5c', marginBottom: '6px' }}>📈 Dynamic Segment Allocation</div>
-                  <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Aurora storage grows automatically in 10 GB increments as database size increases.</div>
-
+                  <div className="text-blue" style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px' }}>📈 Dynamic Segment Allocation</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Aurora storage grows automatically in 10 GB increments as database size increases.</div>
+ 
                   <div>
-                    <label style={{ fontSize: '11px', color: '#64748b', display: 'flex', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
                       <span>Active Used Size:</span> <b>{usedGb} GB</b>
                     </label>
                     <input
@@ -1174,13 +1552,13 @@ export default function AuroraVisualizer() {
                       max="115"
                       value={usedGb}
                       onChange={(e) => handleUsedGbChange(Number(e.target.value))}
-                      style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer', margin: '6px 0' }}
+                      className="aurora-ctrl" style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer', margin: '6px 0' } as React.CSSProperties}
                     />
-                    <div style={{ fontSize: '11px', color: '#334155', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
                       <span>Allocated: <b>{allocatedGb} GB</b></span>
-                      <span style={{ color: expandColor, fontWeight: 'bold' }}>{expandStatus}</span>
+                      <span className={expandColor === '#d97706' ? 'text-orange' : 'text-green'} style={{ fontWeight: 'bold' }}>{expandStatus}</span>
                     </div>
-                    <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginTop: '6px' }}>
+                    <div style={{ height: '8px', background: 'var(--color-background-tertiary)', borderRadius: '4px', overflow: 'hidden', marginTop: '6px' }}>
                       <div style={{ height: '100%', width: `${Math.round((usedGb / allocatedGb) * 100)}%`, background: '#2563eb', borderRadius: '4px' }}></div>
                     </div>
                   </div>
@@ -1211,70 +1589,70 @@ export default function AuroraVisualizer() {
 
                   {/* Client App Sources */}
                   <g style={{ cursor: 'pointer' }} onClick={() => setActiveSource('client')}>
-                    <rect x="30" y="30" width="160" height="60" rx="10" fill={activeSource === 'client' ? '#eff6ff' : 'rgba(255,255,255,0.7)'} stroke={activeSource === 'client' ? '#2563eb' : '#cbd5e1'} strokeWidth={activeSource === 'client' ? 2 : 1} className={activeSource === 'client' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(37, 99, 235, 0.25)' } as React.CSSProperties} />
-                    <text x="110" y="58" textAnchor="middle" fontSize="12" fill={activeSource === 'client' ? '#1e40af' : '#475569'} fontWeight="bold">💻 Standard OLTP App</text>
+                    <rect x="30" y="30" width="160" height="60" rx="10" fill={activeSource === 'client' ? 'rgba(37, 99, 235, 0.1)' : 'var(--color-background-primary)'} stroke={activeSource === 'client' ? '#2563eb' : 'var(--color-border-tertiary)'} strokeWidth={activeSource === 'client' ? 2 : 1} className={activeSource === 'client' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(37, 99, 235, 0.25)' } as React.CSSProperties} />
+                    <text x="110" y="58" textAnchor="middle" fontSize="12" className={activeSource === 'client' ? 'text-blue' : 'aurora-svg-text-secondary'} fontWeight="bold">💻 Standard OLTP App</text>
                     <text x="110" y="74" textAnchor="middle" fontSize="8.5" fill="#64748b">Web App / ECS Cluster</text>
                   </g>
 
                   <g style={{ cursor: 'pointer' }} onClick={() => setActiveSource('proxy')}>
-                    <rect x="30" y="130" width="160" height="60" rx="10" fill={activeSource === 'proxy' ? '#f5f3ff' : 'rgba(255,255,255,0.7)'} stroke={activeSource === 'proxy' ? '#7c3aed' : '#cbd5e1'} strokeWidth={activeSource === 'proxy' ? 2 : 1} className={activeSource === 'proxy' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(124, 58, 237, 0.25)' } as React.CSSProperties} />
-                    <text x="110" y="158" textAnchor="middle" fontSize="12" fill={activeSource === 'proxy' ? '#5b21b6' : '#475569'} fontWeight="bold">⚡ Serverless Lambda</text>
+                    <rect x="30" y="130" width="160" height="60" rx="10" fill={activeSource === 'proxy' ? 'rgba(124, 58, 237, 0.1)' : 'var(--color-background-primary)'} stroke={activeSource === 'proxy' ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={activeSource === 'proxy' ? 2 : 1} className={activeSource === 'proxy' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(124, 58, 237, 0.25)' } as React.CSSProperties} />
+                    <text x="110" y="158" textAnchor="middle" fontSize="12" className={activeSource === 'proxy' ? 'text-purple' : 'aurora-svg-text-secondary'} fontWeight="bold">⚡ Serverless Lambda</text>
                     <text x="110" y="174" textAnchor="middle" fontSize="8.5" fill="#64748b">RDS Proxy / TCP Pool</text>
                   </g>
 
                   <g style={{ cursor: 'pointer' }} onClick={() => setActiveSource('analytics')}>
-                    <rect x="30" y="230" width="160" height="60" rx="10" fill={activeSource === 'analytics' ? '#f0fdf4' : 'rgba(255,255,255,0.7)'} stroke={activeSource === 'analytics' ? '#10b981' : '#cbd5e1'} strokeWidth={activeSource === 'analytics' ? 2 : 1} className={activeSource === 'analytics' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(16, 185, 129, 0.25)' } as React.CSSProperties} />
-                    <text x="110" y="258" textAnchor="middle" fontSize="12" fill={activeSource === 'analytics' ? '#166534' : '#475569'} fontWeight="bold">📊 Analytics Worker</text>
+                    <rect x="30" y="230" width="160" height="60" rx="10" fill={activeSource === 'analytics' ? 'rgba(16, 185, 129, 0.1)' : 'var(--color-background-primary)'} stroke={activeSource === 'analytics' ? '#10b981' : 'var(--color-border-tertiary)'} strokeWidth={activeSource === 'analytics' ? 2 : 1} className={activeSource === 'analytics' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(16, 185, 129, 0.25)' } as React.CSSProperties} />
+                    <text x="110" y="258" textAnchor="middle" fontSize="12" className={activeSource === 'analytics' ? 'text-green' : 'aurora-svg-text-secondary'} fontWeight="bold">📊 Analytics Worker</text>
                     <text x="110" y="274" textAnchor="middle" fontSize="8.5" fill="#64748b">Heavy OLAP Queries</text>
                   </g>
 
                   {/* Static routes under particles */}
-                  <path d="M 190 60 L 270 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 450 80 L 520 70" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 190 60 L 270 80" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 80 L 520 70" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
 
-                  <path d="M 190 160 L 270 260" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 450 260 L 520 70" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 450 260 L 520 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 190 160 L 270 260" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 260 L 520 70" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 260 L 520 170" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
 
-                  <path d="M 190 260 L 270 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 450 170 L 520 170" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 450 170 L 520 270" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 190 260 L 270 170" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 170 L 520 170" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 450 170 L 520 270" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
 
                   {/* Endpoints */}
                   <g transform="translate(270, 60)">
-                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'client' ? '#2563eb' : '#cbd5e1'} strokeWidth={activeSource === 'client' ? 2 : 1} />
+                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'client' ? '#2563eb' : 'var(--color-border-tertiary)'} strokeWidth={activeSource === 'client' ? 2 : 1} className="aurora-svg-rect" />
                     <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">✍️ Writer Endpoint</text>
                     <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.writer.rds.com</text>
                   </g>
 
                   <g transform="translate(270, 150)">
-                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'analytics' ? '#10b981' : '#cbd5e1'} strokeWidth={activeSource === 'analytics' ? 2 : 1} />
+                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'analytics' ? '#10b981' : 'var(--color-border-tertiary)'} strokeWidth={activeSource === 'analytics' ? 2 : 1} className="aurora-svg-rect" />
                     <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">📖 Reader Endpoint</text>
                     <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">cluster.reader-ro.rds.com</text>
                   </g>
 
                   <g transform="translate(270, 240)">
-                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'proxy' ? '#7c3aed' : '#cbd5e1'} strokeWidth={activeSource === 'proxy' ? 2 : 1} />
+                    <rect width="180" height="40" rx="8" fill="rgba(255,255,255,0.9)" stroke={activeSource === 'proxy' ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={activeSource === 'proxy' ? 2 : 1} className="aurora-svg-rect" />
                     <text x="90" y="20" textAnchor="middle" fontSize="10.5" fill="#1e293b" fontWeight="bold">🔌 Data API Endpoint</text>
                     <text x="90" y="32" textAnchor="middle" fontSize="8" fill="#64748b" fontFamily="monospace">data-api.ap-region.rds.com</text>
                   </g>
 
                   {/* Database Compute instances */}
                   <g transform="translate(520, 45)">
-                    <rect width="130" height="48" rx="8" fill="#fffbeb" stroke="#fcd34d" strokeWidth="1.5" />
-                    <text x="65" y="22" textAnchor="middle" fontSize="11" fill="#78350f" fontWeight="bold">Writer Instance</text>
+                    <rect width="130" height="48" rx="8" className="aurora-svg-rect-orange" strokeWidth="1.5" />
+                    <text x="65" y="22" textAnchor="middle" fontSize="11" className="text-orange" fontWeight="bold">Writer Instance</text>
                     <text x="65" y="36" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">🟢 Primary</text>
                   </g>
 
                   <g transform="translate(520, 145)">
-                    <rect width="130" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="65" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Reader Replica A</text>
+                    <rect width="130" height="48" rx="8" className="aurora-svg-rect" strokeWidth="1.5" />
+                    <text x="65" y="22" textAnchor="middle" fontSize="11" className="aurora-svg-text-primary" fontWeight="bold">Reader Replica A</text>
                     <text x="65" y="36" textAnchor="middle" fontSize="9" fill="#2563eb" fontWeight="bold">🔵 Online Reader</text>
                   </g>
 
                   <g transform="translate(520, 245)">
-                    <rect width="130" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="65" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">Reader Replica B</text>
+                    <rect width="130" height="48" rx="8" className="aurora-svg-rect" strokeWidth="1.5" />
+                    <text x="65" y="22" textAnchor="middle" fontSize="11" className="aurora-svg-text-primary" fontWeight="bold">Reader Replica B</text>
                     <text x="65" y="36" textAnchor="middle" fontSize="9" fill="#2563eb" fontWeight="bold">🔵 Online Reader</text>
                   </g>
 
@@ -1321,19 +1699,19 @@ export default function AuroraVisualizer() {
               </div>
 
               <div>
-                <div className="aurora-card" style={{ borderLeft: '4px solid #2563eb', paddingLeft: '12px' }}>
+                <div className="aurora-card aurora-card-blue" style={{ paddingLeft: '12px' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', color: '#1e3a8a' }}>👑 Writer Cluster Endpoint</div>
                   <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
                     Static CNAME routing strictly to N. Virginia primary database instance. Bypasses replicas. On failovers, targets shift IP addresses automatically in seconds.
                   </div>
                 </div>
-                <div className="aurora-card" style={{ borderLeft: '4px solid #10b981', paddingLeft: '12px' }}>
+                <div className="aurora-card aurora-card-green" style={{ paddingLeft: '12px' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', color: '#064e3b' }}>📖 Reader Load-balanced Endpoint</div>
                   <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
                     Spreads heavy read-only SELECT connections across all reader nodes dynamically via round-robin DNS records. Bypasses primary writes.
                   </div>
                 </div>
-                <div className="aurora-card" style={{ borderLeft: '4px solid #7c3aed', paddingLeft: '12px' }}>
+                <div className="aurora-card aurora-card-purple" style={{ paddingLeft: '12px' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', color: '#581c87' }}>🔌 Serverless Data API Endpoint</div>
                   <div style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
                     Enables HTTP-based SQL execution over standard JSON calls. Eliminates persistent socket limits. Perfect for containerized Lambda structures.
@@ -1372,7 +1750,7 @@ export default function AuroraVisualizer() {
                   {/* Static routes */}
                   <path d="M 340 57 L 125 105" fill="none" stroke={writerState === 'dead' ? '#ef4444' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray="3,3" />
                   <path d="M 340 57 L 335 105" fill="none" stroke={replicaState === 'promoted' ? '#16a34a' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 340 57 L 545 105" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 340 57 L 545 105" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="1.5" strokeDasharray="3,3" />
 
                   {/* Animated motion route signals */}
                   {writerState === 'healthy' && (
@@ -1401,8 +1779,8 @@ export default function AuroraVisualizer() {
 
                   {/* AZ-1 Instance */}
                   <g transform="translate(40, 105)">
-                    <rect width="170" height="72" rx="10" fill={writerState === 'healthy' ? '#f0fdf4' : '#fff1f2'} stroke={writerState === 'healthy' ? '#86efac' : '#ef4444'} strokeWidth={writerState === 'healthy' ? 1.5 : 2} />
-                    <text x="85" y="22" textAnchor="middle" fontSize="11" fill={writerState === 'healthy' ? '#14532d' : '#991b1b'} fontWeight="bold">AZ-1 N. Virginia (1a)</text>
+                    <rect width="170" height="72" rx="10" className={`aurora-svg-chassis-rect ${writerState === 'healthy' ? 'healthy' : 'failed'}`} strokeWidth={writerState === 'healthy' ? 1.5 : 2} />
+                    <text x="85" y="22" textAnchor="middle" fontSize="11" className={writerState === 'healthy' ? 'text-green' : 'text-red'} fontWeight="bold">AZ-1 N. Virginia (1a)</text>
                     
                     {writerState === 'healthy' ? (
                       <>
@@ -1421,8 +1799,8 @@ export default function AuroraVisualizer() {
 
                   {/* AZ-2 Instance */}
                   <g transform="translate(250, 105)">
-                    <rect width="170" height="72" rx="10" fill={replicaState === 'promoted' ? '#f5f3ff' : 'rgba(255,255,255,0.8)'} stroke={replicaState === 'promoted' ? '#7c3aed' : '#cbd5e1'} strokeWidth={replicaState === 'promoted' ? 2 : 1.5} />
-                    <text x="85" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">AZ-2 us-east-1b</text>
+                    <rect width="170" height="72" rx="10" className={`aurora-svg-chassis-rect ${replicaState === 'promoted' ? 'promoted' : 'replica'}`} strokeWidth={replicaState === 'promoted' ? 2 : 1.5} />
+                    <text x="85" y="22" textAnchor="middle" fontSize="11" className="aurora-svg-text-primary" fontWeight="bold">AZ-2 us-east-1b</text>
                     
                     {replicaState === 'promoted' ? (
                       <>
@@ -1441,8 +1819,8 @@ export default function AuroraVisualizer() {
 
                   {/* AZ-3 Instance */}
                   <g transform="translate(460, 105)">
-                    <rect width="170" height="72" rx="10" fill="rgba(255,255,255,0.8)" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="85" y="22" textAnchor="middle" fontSize="11" fill="#334155" fontWeight="bold">AZ-3 us-east-1c</text>
+                    <rect width="170" height="72" rx="10" className="aurora-svg-rect" strokeWidth="1.5" />
+                    <text x="85" y="22" textAnchor="middle" fontSize="11" className="aurora-svg-text-primary" fontWeight="bold">AZ-3 us-east-1c</text>
                     <text x="85" y="42" textAnchor="middle" fontSize="10" fill="#2563eb" fontWeight="600">📖 Reader Replica 2</text>
                     <circle cx="15" cy="52" r="3.5" fill="#3b82f6" className="led-blink" />
                     <text x="30" y="55" fontSize="8" fill="#475569">Standby (Priority 1)</text>
@@ -1458,16 +1836,7 @@ export default function AuroraVisualizer() {
                     { s: 4, label: '4. promotion' },
                     { s: 5, label: '5. Proxy active' }
                   ].map((step) => (
-                    <div key={step.s} style={{
-                      textAlign: 'center',
-                      padding: '6px 2px',
-                      borderRadius: '6px',
-                      fontSize: '9.5px',
-                      fontWeight: 'bold',
-                      background: failoverStep >= step.s ? '#dcfce7' : '#f1f5f9',
-                      border: `1px solid ${failoverStep >= step.s ? '#86efac' : '#cbd5e1'}`,
-                      color: failoverStep >= step.s ? '#15803d' : '#64748b'
-                    }}>
+                    <div key={step.s} className={`failover-step-indicator ${failoverStep >= step.s ? 'active' : 'inactive'}`}>
                       {step.label}
                     </div>
                   ))}
@@ -1482,13 +1851,13 @@ export default function AuroraVisualizer() {
               </div>
 
               <div>
-                <div className="aurora-card" style={{ background: '#f8fafc', minHeight: '180px', border: '1px solid #cbd5e1' }}>
-                  <div style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px', fontFamily: 'monospace' }}>
+                <div className="aurora-card aurora-notebook-inner-subcard-grey" style={{ minHeight: '180px' }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '6px', fontFamily: 'monospace' }}>
                     📟 PLAYBOOK TIMELINE STREAMS
                   </div>
                   <div className="aurora-mono" style={{ fontSize: '9.5px', color: '#334155', minHeight: '120px', lineHeight: 1.5 }}>
                     {failoverLogs.map((log, i) => (
-                      <div key={i} style={{ borderBottom: '0.5px solid #cbd5e1', padding: '4px 0' }}>
+                      <div key={i} style={{ borderBottom: '0.5px solid var(--color-border-tertiary)', padding: '4px 0' }}>
                         {log}
                       </div>
                     ))}
@@ -1517,45 +1886,45 @@ export default function AuroraVisualizer() {
                   </defs>
 
                   {/* Primary Region us-east-1 */}
-                  <rect x="20" y="30" width="260" height="180" rx="12" fill="rgba(255, 255, 255, 0.75)" stroke={secRegionState === 'promoted' ? '#fca5a5' : '#c4b5fd'} strokeWidth={secRegionState === 'promoted' ? 1.5 : 2} className={secRegionState === 'replica' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(124, 58, 237, 0.15)' } as React.CSSProperties} />
+                  <rect x="20" y="30" width="260" height="180" rx="12" className={`aurora-svg-rect ${secRegionState === "replica" ? "active-glow-node" : ""}`} stroke={secRegionState === 'promoted' ? '#fca5a5' : '#c4b5fd'} strokeWidth={secRegionState === 'promoted' ? 1.5 : 2} style={{ '--pulse-color': 'rgba(124, 58, 237, 0.15)' } as React.CSSProperties} />
                   <text x="150" y="52" textAnchor="middle" fontSize="11" fill="#7c3aed" fontWeight="bold">🌎 PRIMARY N. VIRGINIA (us-east-1)</text>
 
                   {secRegionState === 'replica' ? (
                     <g transform="translate(40, 70)">
-                      <rect width="220" height="34" rx="6" fill="#f5f3ff" stroke="#a78bfa" strokeWidth="1" />
+                      <rect width="220" height="34" rx="6" className="aurora-svg-rect-purple" strokeWidth="1" />
                       <circle cx="15" cy="17" r="3.5" fill="#10b981" className="led-blink" />
-                      <text x="30" y="21" fontSize="10" fill="#4c1d95" fontWeight="bold">Active Primary Writer DB</text>
+                      <text x="30" y="21" fontSize="10" className="text-purple" fontWeight="bold">Active Primary Writer DB</text>
                     </g>
                   ) : (
                     <g transform="translate(40, 70)">
-                      <rect width="220" height="34" rx="6" fill="#fff1f2" stroke="#fca5a5" strokeWidth="1" />
+                      <rect width="220" height="34" rx="6" className="aurora-svg-rect-red" strokeWidth="1" />
                       <circle cx="15" cy="17" r="3.5" fill="#ef4444" className="led-blink" />
                       <text x="30" y="21" fontSize="10" fill="#be123c" fontWeight="bold">Catastrophic Outage 💥</text>
                     </g>
                   )}
 
-                  <rect x="40" y="115" width="220" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <rect x="40" y="115" width="220" height="34" rx="6" className="aurora-svg-rect" strokeWidth="1" />
                   <text x="150" y="136" textAnchor="middle" fontSize="10.5" fill="#475569">Shared Storage (6 copies replicated)</text>
 
-                  <rect x="40" y="160" width="220" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <rect x="40" y="160" width="220" height="34" rx="6" className="aurora-svg-rect-grey" strokeWidth="1" />
                   <text x="150" y="181" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">Global storage replication channel</text>
 
                   {/* Secondary Region ap-southeast-1 */}
-                  <rect x="400" y="30" width="260" height="180" rx="12" fill="rgba(255, 255, 255, 0.75)" stroke={secRegionState === 'promoted' ? '#16a34a' : '#cbd5e1'} strokeWidth={secRegionState === 'promoted' ? 2 : 1.5} className={secRegionState === 'promoted' ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(22, 163, 74, 0.15)' } as React.CSSProperties} />
-                  <text x="530" y="52" textAnchor="middle" fontSize="11" fill={secRegionState === 'promoted' ? '#15803d' : '#475569'} fontWeight="bold">🌏 SINGAPORE (ap-southeast-1)</text>
+                  <rect x="400" y="30" width="260" height="180" rx="12" className={`aurora-svg-rect ${secRegionState === "promoted" ? "active-glow-node" : ""}`} stroke={secRegionState === 'promoted' ? '#16a34a' : 'var(--color-border-tertiary)'} strokeWidth={secRegionState === 'promoted' ? 2 : 1.5} style={{ '--pulse-color': 'rgba(22, 163, 74, 0.15)' } as React.CSSProperties} />
+                  <text x="530" y="52" textAnchor="middle" fontSize="11" className={secRegionState === 'promoted' ? 'text-green' : 'aurora-svg-text-secondary'} fontWeight="bold">🌏 SINGAPORE (ap-southeast-1)</text>
 
                   <g transform="translate(420, 70)">
-                    <rect width="220" height="34" rx="6" fill={secRegionState === 'promoted' ? '#f0fdf4' : '#f0fdfa'} stroke={secRegionState === 'promoted' ? '#86efac' : '#5eead4'} strokeWidth="1" />
+                    <rect width="220" height="34" rx="6" className={secRegionState === 'promoted' ? 'aurora-svg-rect-blue' : 'aurora-svg-rect-grey'} strokeWidth="1" />
                     <circle cx="15" cy="17" r="3.5" fill="#10b981" className="led-blink" />
                     <text x="30" y="21" fontSize="10" fill={secRegionState === 'promoted' ? '#15803d' : '#0f766e'} fontWeight="bold">
                       {secRegionState === 'promoted' ? '👑 Promoted Primary Writer' : '📖 Standby Reader Pool'}
                     </text>
                   </g>
 
-                  <rect x="420" y="115" width="220" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
+                  <rect x="420" y="115" width="220" height="34" rx="6" className="aurora-svg-rect" strokeWidth="1" />
                   <text x="530" y="136" textAnchor="middle" fontSize="10.5" fill="#475569">Shared Storage (6 copies replicated)</text>
 
-                  <rect x="420" y="160" width="220" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+                  <rect x="420" y="160" width="220" height="34" rx="6" className="aurora-svg-rect-grey" strokeWidth="1" />
                   <text x="530" y="181" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">Active local reads served locally</text>
 
                   {/* Replication line (WAN) */}
@@ -1580,7 +1949,7 @@ export default function AuroraVisualizer() {
                   <div style={{ fontWeight: 600, fontSize: '12px', color: '#581c87', marginBottom: '6px' }}>💥 Global DR Disaster promotion</div>
                   <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Test promoting Singapore from a read-only secondary to active writer when us-east-1 fails.</div>
 
-                  <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', fontSize: '9.5px', color: '#334155', minHeight: '62px', border: '1px solid #cbd5e1', lineHeight: 1.4, marginBottom: '8px' }}>
+                  <div className="aurora-mono aurora-notebook-inner-subcard-grey" style={{ padding: '8px', borderRadius: '6px', fontSize: '9.5px', minHeight: '62px',  lineHeight: 1.4, marginBottom: '8px' }}>
                     {globalLogs[0]}
                   </div>
 
@@ -1592,9 +1961,9 @@ export default function AuroraVisualizer() {
 
                 <div className="aurora-card">
                   <div style={{ fontWeight: 600, fontSize: '11.5px', color: '#1e293b', marginBottom: '6px' }}>📋 Global DB parameters</div>
-                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: '#64748b' }}>RPO (Data Lag)</span><b>&lt; 1 second</b></div>
-                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: '#64748b' }}>RTO (Promotion)</span><b>&lt; 1 minute</b></div>
-                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: '#64748b' }}>Max Target Regions</span><b>5 Regions</b></div>
+                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: 'var(--color-text-secondary)' }}>RPO (Data Lag)</span><b>&lt; 1 second</b></div>
+                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: 'var(--color-text-secondary)' }}>RTO (Promotion)</span><b>&lt; 1 minute</b></div>
+                  <div className="aurora-row" style={{ padding: '6px' }}><span style={{ minWidth: '100px', color: 'var(--color-text-secondary)' }}>Max Target Regions</span><b>5 Regions</b></div>
                 </div>
               </div>
             </div>
@@ -1613,7 +1982,7 @@ export default function AuroraVisualizer() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '14px', alignItems: 'start' }}>
               <div>
-                <div className="aurora-card" style={{ background: '#f8fafc', padding: '14px', marginBottom: '12px' }}>
+                <div className="aurora-card aurora-notebook-inner-subcard-grey" style={{ padding: '14px', marginBottom: '12px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155', display: 'block', marginBottom: '4px' }}>
                     Simulate Client Connection Spikes (TCP sockets): <b>{connections} active clients</b>
                   </label>
@@ -1625,7 +1994,7 @@ export default function AuroraVisualizer() {
                     onChange={(e) => setConnections(Number(e.target.value))}
                     style={{ width: '100%', accentColor: '#2563eb', cursor: 'pointer' }}
                   />
-                  <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '4px', textAlign: 'right' }}>Slider limits: 10 to 500 connections</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '4px', textAlign: 'right' }}>Slider limits: 10 to 500 connections</div>
                 </div>
 
                 <div className="aurora-grid3" style={{ marginBottom: '12px' }}>
@@ -1643,7 +2012,7 @@ export default function AuroraVisualizer() {
                   </div>
                 </div>
 
-                <div className="aurora-card" style={{ borderLeft: `4px solid ${scaleColor}`, background: '#ecfdf5', padding: '10px' }}>
+                <div className="aurora-card" style={{ borderLeft: `4px solid ${scaleColor}`, background: 'rgba(16, 185, 129, 0.15)', padding: '10px' }}>
                   <div style={{ fontSize: '11px', color: scaleColor, fontWeight: 'bold' }}>
                     {scaleStatus}
                   </div>
@@ -1655,10 +2024,10 @@ export default function AuroraVisualizer() {
 
               <div>
                 <svg width="100%" height="210" viewBox="0 0 240 210" className="aurora-svg-bg" style={{ display: 'block' }}>
-                  <text x="120" y="24" textAnchor="middle" fontSize="10.5" fill="#475569" fontWeight="700" letterSpacing="0.05em">ACU CAPACITY SCALING HUD</text>
+                  <text x="120" y="24" textAnchor="middle" fontSize="10.5" className="aurora-svg-text-secondary" fontWeight="700" letterSpacing="0.05em">ACU CAPACITY SCALING HUD</text>
 
                   {/* Circular Dial HUD representing ACU capacity size */}
-                  <circle cx="120" cy="115" r="56" fill="none" stroke="#cbd5e1" strokeWidth="6" />
+                  <circle cx="120" cy="115" r="56" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="6" />
                   
                   {/* Scaled progress ring representing active capacity */}
                   <circle
@@ -1678,7 +2047,7 @@ export default function AuroraVisualizer() {
                   {/* Glowing center indicator */}
                   <circle cx="120" cy="115" r={Math.min(48, 16 + acu * 1.4)} fill="rgba(37, 99, 235, 0.05)" stroke={scaleColor} strokeWidth="2.5" className="active-glow-node" style={{ '--pulse-color': scaleColor } as React.CSSProperties} />
                   
-                  <text x="120" y="112" textAnchor="middle" dominantBaseline="central" fontSize="16" fill="#0f172a" fontWeight="800">{acu} ACU</text>
+                  <text x="120" y="112" textAnchor="middle" dominantBaseline="central" fontSize="16" className="aurora-svg-text-primary" fontWeight="800">{acu} ACU</text>
                   <text x="120" y="128" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#64748b" fontWeight="600" letterSpacing="0.05em">ALLOCATED CAPACITY</text>
 
                   <text x="120" y="192" textAnchor="middle" fontSize="9.5" fill="#475569" fontWeight="600" fontFamily="monospace">1 ACU = 2 GB RAM</text>
@@ -1708,45 +2077,45 @@ export default function AuroraVisualizer() {
 
                   {/* Production DB */}
                   <g transform="translate(30, 20)">
-                    <rect width="180" height="52" rx="10" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="90" y="24" textAnchor="middle" fontSize="11" fill="#047857" fontWeight="bold">🏭 Production Writer DB</text>
+                    <rect width="180" height="52" rx="10" className="aurora-svg-rect-blue" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="90" y="24" textAnchor="middle" fontSize="11" className="text-green" fontWeight="bold">🏭 Production Writer DB</text>
                     <text x="90" y="38" textAnchor="middle" fontSize="8.5" fill="#065f46" fontFamily="monospace">Active Volume size: 100 TB</text>
                   </g>
 
                   {/* Staging DB Clone */}
                   <g transform="translate(470, 20)">
-                    <rect width="180" height="52" rx="10" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1.5" />
-                    <text x="90" y="24" textAnchor="middle" fontSize="11" fill="#4c1d95" fontWeight="bold">🧬 Dev/Staging Clone DB</text>
+                    <rect width="180" height="52" rx="10" className="aurora-svg-rect-purple" stroke="#7c3aed" strokeWidth="1.5" />
+                    <text x="90" y="24" textAnchor="middle" fontSize="11" className="text-purple" fontWeight="bold">🧬 Dev/Staging Clone DB</text>
                     <text x="90" y="38" textAnchor="middle" fontSize="8.5" fill="#5b21b6" fontFamily="monospace">Virtual Volume size: 100 TB</text>
                   </g>
 
                   {/* Shared storage space */}
-                  <rect x="30" y="105" width="620" height="135" rx="14" fill="rgba(240, 253, 250, 0.4)" stroke="#10b981" strokeWidth="1" strokeDasharray="4,2" />
-                  <text x="340" y="122" textAnchor="middle" fontSize="9.5" fill="#166534" fontWeight="700" letterSpacing="0.05em">SHARED VIRTUAL STORAGE VOLUMES (COPY-ON-WRITE BLOCKS)</text>
+                  <rect x="30" y="105" width="620" height="135" rx="14" className="aurora-svg-rect-blue-dashed" stroke="#10b981" strokeWidth="1" strokeDasharray="4,2" />
+                  <text x="340" y="122" textAnchor="middle" fontSize="9.5" className="text-green" fontWeight="700" letterSpacing="0.05em">SHARED VIRTUAL STORAGE VOLUMES (COPY-ON-WRITE BLOCKS)</text>
 
                   {/* Shared Blocks */}
                   <g transform="translate(50, 140)">
-                    <rect width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" fill="#334155" fontWeight="bold">Block A (Shared)</text>
+                    <rect width="130" height="38" rx="6" className="aurora-svg-rect" strokeWidth="1.5" />
+                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" className="aurora-svg-text-primary" fontWeight="bold">Block A (Shared)</text>
                     <rect x="105" y="6" width="16" height="8" rx="2" fill="#10b981" />
                   </g>
 
                   <g transform="translate(195, 140)">
-                    <rect width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" fill="#334155" fontWeight="bold">Block B (Shared)</text>
+                    <rect width="130" height="38" rx="6" className="aurora-svg-rect" strokeWidth="1.5" />
+                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" className="aurora-svg-text-primary" fontWeight="bold">Block B (Shared)</text>
                     <rect x="105" y="6" width="16" height="8" rx="2" fill="#10b981" />
                   </g>
 
                   <g transform="translate(340, 140)">
-                    <rect width="130" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" fill="#334155" fontWeight="bold">Block C (Shared)</text>
+                    <rect width="130" height="38" rx="6" className="aurora-svg-rect" strokeWidth="1.5" />
+                    <text x="65" y="23" textAnchor="middle" fontSize="9.5" className="aurora-svg-text-primary" fontWeight="bold">Block C (Shared)</text>
                     <rect x="105" y="6" width="16" height="8" rx="2" fill="#10b981" />
                   </g>
 
                   {/* Diverged Blocks */}
                   <g transform="translate(485, 140)">
-                    <rect width="150" height="38" rx="6" fill={cloneWrites > 0 ? '#fffbeb' : '#ffffff'} stroke={cloneWrites > 0 ? '#f59e0b' : '#cbd5e1'} strokeWidth={cloneWrites > 0 ? 2 : 1.5} className={cloneWrites > 0 ? 'active-glow-node' : undefined} style={{ '--pulse-color': 'rgba(245, 158, 11, 0.3)' } as React.CSSProperties} />
-                    <text x="75" y="23" textAnchor="middle" fontSize="9.5" fill={cloneWrites > 0 ? '#b45309' : '#334155'} fontWeight="bold">
+                    <rect width="150" height="38" rx="6" className={cloneWrites > 0 ? 'aurora-svg-rect-orange active-glow-node' : 'aurora-svg-rect'} stroke={cloneWrites > 0 ? '#f59e0b' : 'var(--color-border-tertiary)'} strokeWidth={cloneWrites > 0 ? 2 : 1.5} style={{ '--pulse-color': 'rgba(245, 158, 11, 0.3)' } as React.CSSProperties} />
+                    <text x="75" y="23" textAnchor="middle" fontSize="9.5" className={cloneWrites > 0 ? 'text-orange' : 'aurora-svg-text-primary'} fontWeight="bold">
                       {cloneWrites > 0 ? `Diverged Block D 🧬` : 'Block D (Shared)'}
                     </text>
                     <rect x="125" y="6" width="16" height="8" rx="2" fill={cloneWrites > 0 ? '#f59e0b' : '#10b981'} />
@@ -1772,7 +2141,7 @@ export default function AuroraVisualizer() {
                   <div style={{ fontWeight: 600, fontSize: '12px', color: '#581c87', marginBottom: '6px' }}>💰 Diverged Write Simulator</div>
                   <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Test writing to the staging clone database. Watch storage costs remain optimized.</div>
 
-                  <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', fontSize: '9.5px', color: '#334155', minHeight: '62px', border: '1px solid #cbd5e1', lineHeight: 1.45, marginBottom: '8px' }}>
+                  <div className="aurora-mono aurora-notebook-inner-subcard-grey" style={{ padding: '8px', borderRadius: '6px', fontSize: '9.5px', minHeight: '62px',  lineHeight: 1.45, marginBottom: '8px' }}>
                     {cloneLog[0]}
                   </div>
 
@@ -1821,28 +2190,29 @@ export default function AuroraVisualizer() {
                         <div
                           key={i}
                           onClick={() => toggleSecCheck(i)}
+                          className={`aurora-svg-drive-rect ${check.done ? 'healthy' : 'failed'}`}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
                             padding: '8px 10px',
-                            border: '1px solid #cbd5e1',
+                            
                             borderRadius: '8px',
-                            background: check.done ? '#ecfdf5' : '#fff1f2',
-                            borderColor: check.done ? '#86efac' : '#fecdd3',
+                            
+                            
                             cursor: 'pointer',
                             transition: 'all 0.15s'
                           }}
                         >
                           <div style={{ fontSize: '12px' }}>{check.done ? '✅' : '⬜'}</div>
-                          <div style={{ fontSize: '9.5px', fontWeight: 'bold', color: check.done ? '#047857' : '#be123c' }}>{check.label}</div>
+                          <div className={check.done ? 'text-green' : 'text-red'} style={{ fontSize: '9.5px', fontWeight: 'bold' }}>{check.label}</div>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   <div>
-                    <div className="aurora-card" style={{ display: 'flex', gap: '14px', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+                    <div className="aurora-card aurora-notebook-inner-subcard-grey" style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                       <svg width="70" height="70" viewBox="0 0 36 36">
                         <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="2.5" />
                         <circle
@@ -1861,8 +2231,8 @@ export default function AuroraVisualizer() {
                         <text x="18" y="18" textAnchor="middle" dominantBaseline="central" fontSize="10.5" fill={gradeColor} fontWeight="bold">{grade}</text>
                       </svg>
                       <div>
-                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b' }}>Hardening Grade: <span style={{ color: gradeColor }}>{grade}</span></div>
-                        <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '2px', lineHeight: 1.45 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>Hardening Grade: <span style={{ color: gradeColor }}>{grade}</span></div>
+                        <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '2px', lineHeight: 1.45 }}>
                           Database satisfies <b>{passedChecksCount} of {totalChecksCount}</b> Well-Architected production checklists.
                         </div>
                       </div>
@@ -1908,23 +2278,23 @@ export default function AuroraVisualizer() {
                     <svg width="100%" viewBox="0 0 680 180" className="aurora-svg-bg" style={{ display: 'block' }}>
                       {/* Aurora cluster storage */}
                       <g transform="translate(20, 35)">
-                        <rect width="200" height="90" rx="8" fill="#f0fdf4" stroke="#86efac" strokeWidth="1.5" />
-                        <text x="100" y="26" textAnchor="middle" fontSize="12" fill="#166534" fontWeight="bold">🐘 Aurora Cluster Volume</text>
-                        <text x="100" y="46" textAnchor="middle" fontSize="9" fill="#15803d" fontFamily="monospace">Redo Log WAL segments</text>
+                        <rect width="200" height="90" rx="8" className="aurora-svg-rect-green" strokeWidth="1.5" />
+                        <text x="100" y="26" textAnchor="middle" fontSize="12" className="text-green" fontWeight="bold">🐘 Aurora Cluster Volume</text>
+                        <text x="100" y="46" textAnchor="middle" fontSize="9" className="text-green" fontFamily="monospace">Redo Log WAL segments</text>
                         <circle cx="100" cy="66" r="4.5" fill="#10b981" className="led-blink" />
                       </g>
 
                       {/* Redshift storage */}
                       <g transform="translate(460, 35)">
-                        <rect width="200" height="90" rx="8" fill="#eff6ff" stroke="#93c5fd" strokeWidth="1.5" />
-                        <text x="100" y="26" textAnchor="middle" fontSize="12" fill="#1e40af" fontWeight="bold">📊 Amazon Redshift DW</text>
+                        <rect width="200" height="90" rx="8" className="aurora-svg-rect-blue" strokeWidth="1.5" />
+                        <text x="100" y="26" textAnchor="middle" fontSize="12" className="text-blue" fontWeight="bold">📊 Amazon Redshift DW</text>
                         <text x="100" y="46" textAnchor="middle" fontSize="9" fill="#2563eb" fontFamily="monospace">Materialized DW Schemas</text>
                         <circle cx="100" cy="66" r="4.5" fill="#3b82f6" className="led-blink" />
                       </g>
 
                       {/* Zero-ETL sync stream */}
                       <path d="M 220 80 L 460 80" fill="none" stroke={zeroEtlStatus === 'syncing' ? '#10b981' : '#cbd5e1'} strokeWidth="3.5" strokeDasharray={zeroEtlStatus === 'syncing' ? '6,4' : '2,6'} className={zeroEtlStatus === 'syncing' ? 'flow-active-line' : undefined} />
-                      <text x="340" y="65" textAnchor="middle" fontSize="10.5" fill="#047857" fontWeight="bold">Continuous Zero-ETL Sync Pipeline</text>
+                      <text x="340" y="65" textAnchor="middle" fontSize="10.5" className="text-green" fontWeight="bold">Continuous Zero-ETL Sync Pipeline</text>
                       <text x="340" y="105" textAnchor="middle" fontSize="8" fill="#64748b">latency &lt; 1s · serverless WAL streaming</text>
 
                       {zeroEtlStatus === 'syncing' && (
@@ -1940,9 +2310,9 @@ export default function AuroraVisualizer() {
                       <div style={{ fontWeight: 600, fontSize: '12px', color: '#166534', marginBottom: '6px' }}>⚡ Start analytical syncing</div>
                       <div style={{ fontSize: '11px', color: '#475569', marginBottom: '8px' }}>Test starting real-time log structured Zero-ETL pipeline sync logs to Redshift.</div>
 
-                      <div className="aurora-mono" style={{ background: '#f1f5f9', padding: '8px', borderRadius: '6px', fontSize: '9.5px', color: '#334155', minHeight: '62px', border: '1px solid #cbd5e1', lineHeight: 1.45, marginBottom: '8px' }}>
+                      <div className="aurora-mono aurora-notebook-inner-subcard-grey" style={{ padding: '8px', borderRadius: '6px', fontSize: '9.5px', minHeight: '62px',  lineHeight: 1.45, marginBottom: '8px' }}>
                         {zeroEtlLogs.length === 0 ? (
-                          <span style={{ color: '#64748b' }}>Click "Initiate Zero-ETL Redshift Sync" to monitor continuous synchronization.</span>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>Click "Initiate Zero-ETL Redshift Sync" to monitor continuous synchronization.</span>
                         ) : zeroEtlLogs.map((log, i) => <div key={i}>{log}</div>)}
                       </div>
 
@@ -1983,21 +2353,21 @@ export default function AuroraVisualizer() {
 
                   <div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px' }}>
-                        <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', fontFamily: 'monospace', marginBottom: '4px' }}>📟 ML CLUSTER INFERENCE STREAMS</div>
-                        <div className="aurora-mono" style={{ fontSize: '9px', color: '#334155', minHeight: '62px', lineHeight: 1.45 }}>
+                      <div className="aurora-notebook-inner-subcard-grey" style={{ borderRadius: '8px', padding: '10px' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold', fontFamily: 'monospace', marginBottom: '4px' }}>📟 ML CLUSTER INFERENCE STREAMS</div>
+                        <div className="aurora-mono aurora-note-desc" style={{ fontSize: '9px', minHeight: '62px', lineHeight: 1.45 }}>
                           {mlIsLoading ? (
                             <div style={{ color: '#b45309', animation: 'activeNodePulse 1.2s infinite', '--pulse-color': 'rgba(180, 83, 9, 0.4)' } as React.CSSProperties}>
                               Connecting to SageMaker inference nodes... 🚀
                             </div>
                           ) : mlLogs.length === 0 ? (
-                            <span style={{ color: '#64748b' }}>Click "Execute ML Inference Query inside DB" to monitor transactions.</span>
+                            <span style={{ color: 'var(--color-text-secondary)' }}>Click "Execute ML Inference Query inside DB" to monitor transactions.</span>
                           ) : mlLogs.map((log, i) => <div key={i}>{log}</div>)}
                         </div>
                       </div>
 
                       {mlOutput.length > 0 && (
-                        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px' }}>
+                        <div className="aurora-notebook-inner-subcard-white" style={{ borderRadius: '8px', padding: '10px' }}>
                           <div style={{ fontSize: '10.5px', color: '#047857', fontWeight: 'bold', fontFamily: 'monospace', marginBottom: '4px' }}>📊 SQL RESULT COLUMN VALUES</div>
                           <table className="aurora-table" style={{ fontSize: '9.5px' }}>
                             <thead>
@@ -2011,8 +2381,8 @@ export default function AuroraVisualizer() {
                               {mlOutput.map((row, i) => (
                                 <tr key={i}>
                                   <td style={{ padding: '4px' }}>{row.feedback}</td>
-                                  <td style={{ padding: '4px', fontWeight: 'bold', color: row.sentiment.includes('NEGATIVE') || row.sentiment.includes('HIGH') ? '#b91c1c' : '#15803d' }}>{row.sentiment}</td>
-                                  <td style={{ padding: '4px', color: '#2563eb' }}>{row.conf}</td>
+                                  <td className={row.sentiment.includes('NEGATIVE') || row.sentiment.includes('HIGH') ? 'text-red' : 'text-green'} style={{ padding: '4px', fontWeight: 'bold' }}>{row.sentiment}</td>
+                                  <td className="text-blue" style={{ padding: '4px' }}>{row.conf}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -2033,33 +2403,20 @@ export default function AuroraVisualizer() {
         {activeTab === 'notebook' && (
           <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
             
-            {/* SaaS Academy Header Banner */}
-            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
-                    Aurora Database Academy
-                  </span>
-                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
-                    <BookOpen className="w-6 h-6 stroke-[2] text-white" /> AWS Amazon Aurora Academy
-                  </h2>
-                  <p className="text-xs text-white/90 mt-1 max-w-2xl leading-relaxed">
-                    A premium, high-fidelity visual workbook covering 6-way storage replication quorums, cluster endpoints routing logic, failover priority promotions, database Copy-on-Write cloning, and native ML inferences.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 bg-black/10 border border-white/20 px-4 py-2 rounded-xl">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                  <span className="text-[10px] font-black text-emerald-100 tracking-wider uppercase font-mono">Aurora Academy Engine Online</span>
-                </div>
-              </div>
+            <div className="card text-left">
+              <h2 className="text-xl font-bold flex items-center gap-2 font-display aurora-note-title">
+                <BookOpen className="w-5 h-5 text-indigo-600" /> AWS Amazon Aurora Academy
+              </h2>
+              <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold aurora-note-desc">
+                A premium, high-fidelity visual workbook covering 6-way storage replication quorums, cluster endpoints routing logic, failover priority promotions, database Copy-on-Write cloning, and native ML inferences.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Sidebar Category Explorer */}
               <div className="lg:col-span-3 space-y-4 text-left">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1 font-mono">Aurora Directory Tree:</span>
+                <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono aurora-note-desc">Aurora Directory Tree:</span>
                 
                 <div className="acad-dir-container">
                   <div className="acad-dir-header">
@@ -2080,7 +2437,7 @@ export default function AuroraVisualizer() {
                       {expandedCategory === 'aurora_storage' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'aurora_storage' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                      <div className="acad-dir-subfolder py-1 font-semibold">
                         <button 
                           onClick={() => setSelectedNote('shared_storage')}
                           className={`acad-dir-item-btn ${selectedNote === 'shared_storage' ? 'acad-active' : ''}`}
@@ -2110,7 +2467,7 @@ export default function AuroraVisualizer() {
                       {expandedCategory === 'routing_failover' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'routing_failover' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                      <div className="acad-dir-subfolder py-1 font-semibold">
                         <button 
                           onClick={() => setSelectedNote('endpoints_routing')}
                           className={`acad-dir-item-btn ${selectedNote === 'endpoints_routing' ? 'acad-active' : ''}`}
@@ -2140,7 +2497,7 @@ export default function AuroraVisualizer() {
                       {expandedCategory === 'advanced_storage' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'advanced_storage' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                      <div className="acad-dir-subfolder py-1 font-semibold">
                         <button 
                           onClick={() => setSelectedNote('db_cloning')}
                           className={`acad-dir-item-btn ${selectedNote === 'db_cloning' ? 'acad-active' : ''}`}
@@ -2188,7 +2545,7 @@ export default function AuroraVisualizer() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
+                <div className="aurora-notebook-advice-box rounded-2xl p-4 text-[11px] leading-relaxed space-y-1">
                   <span className="text-slate-800 font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
                     <Info className="w-3.5 h-3.5 text-emerald-600" /> Academy Advice
                   </span>
@@ -2205,7 +2562,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Cloud-Native Storage</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Shared Storage 6-Way Quorum</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">Shared Storage 6-Way Quorum</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2218,20 +2575,20 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       Traditional databases replicate data by writing full page blocks to local EBS volumes and streaming pages to replica servers. Amazon Aurora decouples compute from storage, utilizing a virtualized shared storage volume replicated <strong>6-ways across 3 Availability Zones (AZs)</strong>.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-655">
-                        <span className="font-extrabold text-slate-800 block">The Drive Quorum Mathematics:</span>
+                      <div className="space-y-4 text-xs aurora-note-desc">
+                        <span className="font-extrabold block aurora-notebook-label">The Drive Quorum Mathematics:</span>
                         
                         <ul className="list-disc pl-4 space-y-2">
                           <li>
-                            <strong className="text-slate-805">Write Quorum (4/6):</strong> Out of the 6 storage nodes, a write is considered successful as soon as 4 copies acknowledge receipt of the redo vectors. This allows the cluster to survive the loss of an entire Availability Zone + one additional node without write outages.
+                            <strong className="aurora-notebook-label">Write Quorum (4/6):</strong> Out of the 6 storage nodes, a write is considered successful as soon as 4 copies acknowledge receipt of the redo vectors. This allows the cluster to survive the loss of an entire Availability Zone + one additional node without write outages.
                           </li>
                           <li>
-                            <strong className="text-slate-805">Read Quorum (3/6):</strong> Read operations require 3 node confirmations. By checking segment log sequence numbers (LSN), Aurora guarantees it always reads the most up-to-date data state.
+                            <strong className="aurora-notebook-label">Read Quorum (3/6):</strong> Read operations require 3 node confirmations. By checking segment log sequence numbers (LSN), Aurora guarantees it always reads the most up-to-date data state.
                           </li>
                         </ul>
 
@@ -2243,14 +2600,14 @@ export default function AuroraVisualizer() {
                       {/* Visual HCL Code block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Terraform Aurora Cluster Snippet</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono aurora-note-desc">Terraform Aurora Cluster Snippet</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(terraformAuroraClusterCode);
                               setCopiedNoteId('aurora-tf');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
-                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="aurora-notebook-copy-btn"
                           >
                             {copiedNoteId === 'aurora-tf' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -2269,7 +2626,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Replication Engine</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">"The Log is the Database" Architecture</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">"The Log is the Database" Architecture</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2282,13 +2639,13 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       In traditional database engines, modified pages in the buffer pool are periodically flushed to storage. This process creates high network I/O, writing data twice (once to the WAL log, and once to the tablespace pages). Aurora completely eliminates page flushes.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650">
-                        <span className="font-extrabold text-slate-800 block">Redo-Only Storage Streaming:</span>
+                      <div className="space-y-4 text-xs aurora-note-desc">
+                        <span className="font-extrabold block aurora-notebook-label">Redo-Only Storage Streaming:</span>
                         <p className="leading-relaxed">
                           When a transaction commits on the writer node, Aurora streams <strong>only the redo log vectors (state changes)</strong> directly to the 6 storage nodes. The storage nodes themselves are intelligent: they accept the log vectors and apply them in the background to reconstruct the relational pages when a read request occurs.
                         </p>
@@ -2298,16 +2655,16 @@ export default function AuroraVisualizer() {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center font-mono text-xs">
-                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Replication Pipeline Comparison</span>
+                      <div className="aurora-notebook-inner-card rounded-xl p-4 flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="aurora-notebook-inner-card-title block mb-4">Replication Pipeline Comparison</span>
                         
                         <div className="space-y-3 text-left max-w-xs mx-auto">
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg">
-                            <span className="text-red-655 font-bold font-mono">Standard Engine Pipeline:</span>
+                          <div className="aurora-notebook-inner-subcard-white p-2.5 rounded-lg">
+                            <span className="text-red font-bold font-mono">Standard Engine Pipeline:</span>
                             <p className="text-slate-500 mt-0.5 text-[9.5px]">App commits &rarr; writes WAL &rarr; flushes heavy data pages &rarr; syncs secondary storage.</p>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg">
-                            <span className="text-emerald-650 font-bold font-mono">Aurora Engine Pipeline:</span>
+                          <div className="aurora-notebook-inner-subcard-white p-2.5 rounded-lg">
+                            <span className="text-green font-bold font-mono">Aurora Engine Pipeline:</span>
                             <p className="text-slate-500 mt-0.5 text-[9.5px]">App commits &rarr; streams lightweight redo log vectors to storage. Storage handles page reconstruction in background.</p>
                           </div>
                         </div>
@@ -2322,7 +2679,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Routing Ingress</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Aurora DNS Endpoint Mappings</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">Aurora DNS Endpoint Mappings</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2335,42 +2692,42 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       An Aurora cluster provides multiple DNS entry endpoints that separate application ingress targets according to workload types.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-655">
-                        <h4 className="font-bold text-slate-800 text-xs">Types of Endpoints:</h4>
+                      <div className="space-y-4 text-xs aurora-note-desc">
+                        <h4 className="font-bold text-xs aurora-notebook-label">Types of Endpoints:</h4>
                         
                         <ul className="list-disc pl-4 space-y-2">
                           <li>
-                            <strong className="text-slate-805">Cluster Writer Endpoint:</strong> A DNS record pointing directly to the current primary writer node. Used for insert, update, delete, and transactional traffic.
+                            <strong className="aurora-notebook-label">Cluster Writer Endpoint:</strong> A DNS record pointing directly to the current primary writer node. Used for insert, update, delete, and transactional traffic.
                           </li>
                           <li>
-                            <strong className="text-slate-805">Reader Endpoint:</strong> A DNS record that load-balances read-only traffic across all active read replicas in the cluster.
+                            <strong className="aurora-notebook-label">Reader Endpoint:</strong> A DNS record that load-balances read-only traffic across all active read replicas in the cluster.
                           </li>
                           <li>
-                            <strong className="text-slate-850">Custom Endpoints:</strong> Let you group specific replicas together. Excellent for separating analytical reporting traffic from fast transactional query read operations!
+                            <strong className="aurora-notebook-label">Custom Endpoints:</strong> Let you group specific replicas together. Excellent for separating analytical reporting traffic from fast transactional query read operations!
                           </li>
                         </ul>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center font-mono text-[10.5px]">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-3 text-center">DNS Endpoint Routing Matrix</span>
+                      <div className="aurora-notebook-inner-card rounded-xl p-4 flex flex-col justify-center font-mono text-[10.5px]">
+                        <span className="aurora-notebook-inner-card-title block mb-3 text-center">DNS Endpoint Routing Matrix</span>
                         
                         <div className="space-y-2.5">
-                          <div className="bg-white border border-slate-200 p-2 rounded-lg flex items-center justify-between">
+                          <div className="aurora-notebook-inner-subcard-white p-2 rounded-lg flex items-center justify-between">
                             <span className="text-slate-600 font-semibold font-mono">cluster-writer.rds.amazonaws.com</span>
-                            <span className="text-red-655 font-bold">&rarr; Writer Node</span>
+                            <span className="text-red font-bold">&rarr; Writer Node</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2 rounded-lg flex items-center justify-between">
+                          <div className="aurora-notebook-inner-subcard-white p-2 rounded-lg flex items-center justify-between">
                             <span className="text-slate-600 font-semibold font-mono">cluster-reader.rds.amazonaws.com</span>
-                            <span className="text-blue-650 font-bold">&rarr; Reader 1, 2, 3</span>
+                            <span className="text-blue font-bold">&rarr; Reader 1, 2, 3</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2 rounded-lg flex items-center justify-between">
+                          <div className="aurora-notebook-inner-subcard-white p-2 rounded-lg flex items-center justify-between">
                             <span className="text-slate-600 font-semibold font-mono">custom-analytics.rds.amazonaws.com</span>
-                            <span className="text-purple-655 font-bold">&rarr; Reader 4 (xlarge)</span>
+                            <span className="text-purple font-bold">&rarr; Reader 4 (xlarge)</span>
                           </div>
                         </div>
                       </div>
@@ -2384,7 +2741,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Cluster High Availability</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Failover Priorities &amp; Promotion Mechanics</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">Failover Priorities &amp; Promotion Mechanics</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2397,16 +2754,16 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       If the primary database instance suffers a hardware outage or crashes, Amazon Aurora automatically promotes one of the read replicas to be the new writer. The failover sequence takes less than 30 seconds.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       
                       {/* Failover Priority Calculator widget */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-4">
+                      <div className="aurora-notebook-inner-card rounded-xl p-4 flex flex-col justify-between space-y-4">
                         <div>
-                          <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider font-mono block mb-2">Failover Priority Calculator</span>
+                          <span className="aurora-notebook-inner-card-title block mb-2">Failover Priority Calculator</span>
                           
                           <div className="space-y-2 text-xs">
                             <div className="flex justify-between items-center text-slate-650">
@@ -2414,7 +2771,7 @@ export default function AuroraVisualizer() {
                               <select 
                                 value={nbReplica1Tier} 
                                 onChange={(e) => setNbReplica1Tier(parseInt(e.target.value))}
-                                className="bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                                className="aurora-notebook-input rounded p-1 outline-none"
                               >
                                 {Array.from({ length: 5 }, (_, i) => (
                                   <option key={i} value={i}>Tier {i}</option>
@@ -2426,7 +2783,7 @@ export default function AuroraVisualizer() {
                               <select 
                                 value={nbReplica2Tier} 
                                 onChange={(e) => setNbReplica2Tier(parseInt(e.target.value))}
-                                className="bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                                className="aurora-notebook-input rounded p-1 outline-none"
                               >
                                 {Array.from({ length: 5 }, (_, i) => (
                                   <option key={i} value={i}>Tier {i}</option>
@@ -2438,7 +2795,7 @@ export default function AuroraVisualizer() {
                               <select 
                                 value={nbReplica3Tier} 
                                 onChange={(e) => setNbReplica3Tier(parseInt(e.target.value))}
-                                className="bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                                className="aurora-notebook-input rounded p-1 outline-none"
                               >
                                 {Array.from({ length: 5 }, (_, i) => (
                                   <option key={i} value={i}>Tier {i}</option>
@@ -2461,8 +2818,8 @@ export default function AuroraVisualizer() {
                               ? ` (Tie! Arbitrary tiebreaker applied between ${ties.map(t => t.name).join(' & ')})` 
                               : '';
                             return (
-                              <div className="bg-white border border-slate-200 p-3 rounded-lg font-mono text-[10.5px] mt-4 space-y-1.5 text-slate-600">
-                                <p>First Promotion Candidate: <span className="text-indigo-650 font-bold font-semibold">{winner.name}</span></p>
+                              <div className="aurora-notebook-inner-subcard-white p-3 rounded-lg font-mono text-[10.5px] mt-4 space-y-1.5 aurora-note-desc">
+                                <p>First Promotion Candidate: <span className="text-purple font-bold">{winner.name}</span></p>
                                 <p className="text-[10px] opacity-90 font-sans italic">Priority Rule: Replica with the lowest Tier number (Tier 0 &gt; Tier 1) is chosen first.{tieText}</p>
                               </div>
                             );
@@ -2470,17 +2827,17 @@ export default function AuroraVisualizer() {
                         </div>
                       </div>
 
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed animate-fadeIn">
-                        <span className="font-extrabold text-slate-850 block">Promotion Rules &amp; Steps:</span>
+                      <div className="space-y-4 text-xs leading-relaxed animate-fadeIn aurora-note-desc">
+                        <span className="font-extrabold block aurora-notebook-label">Promotion Rules &amp; Steps:</span>
                         <ol className="list-decimal pl-4 space-y-1.5">
                           <li>
-                            <strong className="text-slate-808">Tier Scan:</strong> Aurora scans read replicas for the lowest promotion tier (Tier 0 is highest priority).
+                            <strong className="aurora-notebook-label">Tier Scan:</strong> Aurora scans read replicas for the lowest promotion tier (Tier 0 is highest priority).
                           </li>
                           <li>
-                            <strong className="text-slate-808">Size Match:</strong> If multiple replicas share the same tier, Aurora promotes the replica that matches the size of the failing writer.
+                            <strong className="aurora-notebook-label">Size Match:</strong> If multiple replicas share the same tier, Aurora promotes the replica that matches the size of the failing writer.
                           </li>
                           <li>
-                            <strong className="text-slate-808">DNS Shift:</strong> The cluster CNAME writer DNS record is updated. Because replicas share the exact same storage volume, no data recovery or journal playback is needed, enabling near-instant promotion!
+                            <strong className="aurora-notebook-label">DNS Shift:</strong> The cluster CNAME writer DNS record is updated. Because replicas share the exact same storage volume, no data recovery or journal playback is needed, enabling near-instant promotion!
                           </li>
                         </ol>
                       </div>
@@ -2494,7 +2851,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Zero-Copy Clones</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Copy-on-Write Database Cloning</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">Copy-on-Write Database Cloning</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2507,13 +2864,13 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       Traditionally, copying a database cluster for staging or analytical work requires restoring a backup snapshot. This takes hours and doubles your storage costs. Aurora provides **Fast Database Cloning** using a Copy-on-Write metadata layer.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
-                        <h4 className="font-bold text-slate-800 text-xs">Copy-on-Write Mechanics:</h4>
+                      <div className="space-y-4 text-xs leading-relaxed aurora-note-desc">
+                        <h4 className="font-bold text-xs aurora-notebook-label">Copy-on-Write Mechanics:</h4>
                         <p>
                           When you create a clone, the new cluster references the **exact same storage segments** as the source production database. No data is duplicated.
                         </p>
@@ -2527,9 +2884,9 @@ export default function AuroraVisualizer() {
                       </div>
 
                       {/* Interactive Cloning Calculator */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-4 font-mono text-xs">
+                      <div className="aurora-notebook-inner-card rounded-xl p-4 flex flex-col justify-between space-y-4 font-mono text-xs">
                         <div>
-                          <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider block mb-3">Clone Page Storage Calculator</span>
+                          <span className="aurora-notebook-inner-card-title block mb-3">Clone Page Storage Calculator</span>
                           
                           <div className="space-y-3.5 mb-2.5">
                             <div>
@@ -2538,7 +2895,7 @@ export default function AuroraVisualizer() {
                                 type="number" 
                                 value={nbBaselineGb} 
                                 onChange={(e) => setNbBaselineGb(Math.max(1, parseInt(e.target.value) || 0))}
-                                className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                                className="w-full aurora-notebook-input rounded p-1 font-mono"
                               />
                             </div>
                             
@@ -2562,10 +2919,10 @@ export default function AuroraVisualizer() {
                             const standardCopyUsed = nbBaselineGb * 2;
                             const storageSavedPct = ((standardCopyUsed - totalStorageUsed) / standardCopyUsed) * 100;
                             return (
-                              <div className="bg-white border border-slate-200 p-3 rounded-lg text-[10.5px] space-y-1.5 text-slate-600">
-                                <p>Baseline Data Shared: <span className="font-bold text-slate-805">{nbBaselineGb} GB</span></p>
-                                <p>Diverged Page storage (Clone writes): <span className="font-bold text-sky-655">{cloneAllocated.toFixed(1)} GB</span></p>
-                                <p className="border-t border-slate-100 pt-1.5 text-emerald-650 font-bold">Storage saved: {storageSavedPct.toFixed(1)}%</p>
+                              <div className="aurora-notebook-inner-subcard-white p-3 rounded-lg text-[10.5px] space-y-1.5 aurora-note-desc">
+                                <p>Baseline Data Shared: <span className="font-bold aurora-notebook-label">{nbBaselineGb} GB</span></p>
+                                <p>Diverged Page storage (Clone writes): <span className="font-bold text-blue">{cloneAllocated.toFixed(1)} GB</span></p>
+                                <p className="border-t border-slate-100 pt-1.5 text-green font-bold">Storage saved: {storageSavedPct.toFixed(1)}%</p>
                               </div>
                             );
                           })()}
@@ -2581,7 +2938,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Disaster recovery</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Backtrack vs Point-in-Time Recovery</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">Backtrack vs Point-in-Time Recovery</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2594,13 +2951,13 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       If an operator accidentally runs a destructive command (e.g. `DROP TABLE users`), standard databases require restoring a database snapshot backup to a new instance, which takes hours. Aurora provides **Backtrack** to solve this instantly.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-655 leading-relaxed">
-                        <h4 className="font-bold text-slate-800 text-xs">Backtracking Mechanics:</h4>
+                      <div className="space-y-4 text-xs leading-relaxed aurora-note-desc">
+                        <h4 className="font-bold text-xs aurora-notebook-label">Backtracking Mechanics:</h4>
                         <p>
                           Because the Aurora storage layer is log-structured (holding redo logs in sequence), backtracking rewinds the storage LSN markers back to a specific timestamp, bypassing snapshot restores.
                         </p>
@@ -2620,17 +2977,17 @@ export default function AuroraVisualizer() {
                         </thead>
                         <tbody>
                           <tr>
-                            <td className="font-bold text-slate-800">Operational Target</td>
+                            <td className="font-bold aurora-notebook-label">Operational Target</td>
                             <td>Provisions a **new** cluster instance.</td>
                             <td>Rewinds the **existing** cluster in place.</td>
                           </tr>
                           <tr>
-                            <td className="font-bold text-slate-800">Time Taken</td>
+                            <td className="font-bold aurora-notebook-label">Time Taken</td>
                             <td>Hours (proportional to DB snapshot size).</td>
                             <td>Seconds (constant time &lt; 10s).</td>
                           </tr>
                           <tr>
-                            <td className="font-bold text-slate-800">Connection CNAME</td>
+                            <td className="font-bold aurora-notebook-label">Connection CNAME</td>
                             <td>Must update DNS endpoints in client apps.</td>
                             <td>CNAME mappings remain unchanged.</td>
                           </tr>
@@ -2646,7 +3003,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Analytical Ingress</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Aurora Zero-ETL Redshift Sync</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">Aurora Zero-ETL Redshift Sync</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2659,13 +3016,13 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       Connecting operational databases to analytical data warehouses traditionally requires writing complex python glue pipelines or scheduling batch export scripts. Aurora **Zero-ETL integration** streams writes directly to Amazon Redshift without ETL pipelines.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-655 leading-relaxed">
-                        <span className="font-extrabold text-slate-800 block">How Zero-ETL Sync Works:</span>
+                      <div className="space-y-4 text-xs leading-relaxed aurora-note-desc">
+                        <span className="font-extrabold block aurora-notebook-label">How Zero-ETL Sync Works:</span>
                         <p>
                           The database cluster registers its transaction write-ahead logs (WAL) directly with Redshift. As commits happen, changes are streamed directly to Redshift warehouses in real-time.
                         </p>
@@ -2675,21 +3032,21 @@ export default function AuroraVisualizer() {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">Zero-ETL Integration Path</span>
+                      <div className="aurora-notebook-inner-card rounded-xl p-4 flex flex-col justify-center text-center">
+                        <span className="aurora-notebook-inner-card-title block mb-4">Zero-ETL Integration Path</span>
                         
                         <div className="flex items-center justify-center gap-1.5 text-[9.5px] font-mono">
-                          <div className="bg-emerald-50 border border-emerald-200 p-2 rounded-lg">
+                          <div className="aurora-notebook-inner-subcard-green p-2 rounded-lg">
                             <p className="font-bold text-emerald-600">🌌 Aurora</p>
                             <span>OLTP commits</span>
                           </div>
                           <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-slate-105 border border-slate-200 p-2.5 rounded-lg">
+                          <div className="aurora-notebook-inner-subcard-grey p-2.5 rounded-lg">
                             <p className="font-bold text-slate-600">⚡ Zero-ETL Pipeline</p>
                             <span>WAL Replay</span>
                           </div>
                           <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-blue-50 border border-blue-200 p-2 rounded-lg">
+                          <div className="aurora-notebook-inner-subcard-blue p-2 rounded-lg">
                             <p className="font-bold text-blue-650">📊 Redshift</p>
                             <span>Analytics Ware</span>
                           </div>
@@ -2705,7 +3062,7 @@ export default function AuroraVisualizer() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">AI Integration</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">In-Database SQL Machine Learning</h3>
+                        <h3 className="text-xl font-black mt-2 font-display aurora-note-title">In-Database SQL Machine Learning</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2718,13 +3075,13 @@ export default function AuroraVisualizer() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="text-xs leading-relaxed aurora-note-desc">
                       Integrating AI predictions into relational datasets traditionally requires exporting SQL records to Python, calling models in SageMaker, and writing predictions back to the database. Aurora **In-Database Machine Learning** lets you call AI algorithms directly inside standard SQL queries.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-655 leading-relaxed">
-                        <span className="font-extrabold text-slate-850 block">SQL Prediction Syntax:</span>
+                      <div className="space-y-4 text-xs leading-relaxed aurora-note-desc">
+                        <span className="font-extrabold block aurora-notebook-label">SQL Prediction Syntax:</span>
                         <p>
                           By configuring IAM role mappings, database query planners can call external AWS services directly. You can invoke Amazon Comprehend (sentiment, translation) or Amazon SageMaker (custom regression/classification models) directly from your `SELECT` statements!
                         </p>
@@ -2737,14 +3094,14 @@ export default function AuroraVisualizer() {
                       {/* SQL code block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">SQL ML Sentiment Query</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono aurora-note-desc">SQL ML Sentiment Query</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(auroraMlSqlQueryCode);
                               setCopiedNoteId('ml-sql');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
-                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-655"
+                            className="aurora-notebook-copy-btn"
                           >
                             {copiedNoteId === 'ml-sql' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>

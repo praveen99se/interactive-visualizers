@@ -598,7 +598,115 @@ export default function ElasticContainersVisualizer() {
         .badge-amber { background: #fffbeb; color: #b45309; border: 1.5px solid #fde047; }
         .badge-purple { background: #faf5ff; color: #6b21a8; border: 1.5px solid #e9d5ff; }
         .badge-coral { background: #fff5f5; color: #c53030; border: 1.5px solid #feb2b2; }
-      `}</style>
+
+        /* Centralized Dark Mode Overrides for ElasticContainersVisualizer.tsx */
+        .dark .ecs-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .ecs-card,
+        .dark [class*="ecs-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .ecs-card b,
+        .dark .ecs-card strong,
+        .dark .ecs-card h3,
+        .dark .ecs-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .ecs-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .ecs-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .ecs-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .ecs-sec,
+        .dark .ecs-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .ecs-log,
+        .dark .ecs-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .ecs-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .ecs-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .ecs-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.ecs-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .ecs-inst,
+        .dark .ecs-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .ecs-inst .meta,
+        .dark .ecs-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .ecs-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .ecs-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .ecs-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .ecs-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .ecs-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+          `}</style>
 
       {/* Header section */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-4">

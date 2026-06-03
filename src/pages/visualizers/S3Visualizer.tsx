@@ -1800,7 +1800,172 @@ export default function S3Visualizer() {
           color: #cbd5e1;
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
-      `}</style>
+
+        /* Centralized Dark Mode Overrides for S3Visualizer.tsx */
+        .dark .s3-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .s3-card,
+        .dark [class*="s3-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .s3-card b,
+        .dark .s3-card strong,
+        .dark .s3-card h3,
+        .dark .s3-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .s3-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .s3-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .s3-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .s3-sec,
+        .dark .s3-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .s3-log,
+        .dark .s3-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .s3-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .s3-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .s3-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.s3-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .s3-inst,
+        .dark .s3-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .s3-inst .meta,
+        .dark .s3-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .s3-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .s3-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .s3-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .s3-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .s3-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+    
+        .dark .acad-dir-container {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn {
+          background: rgba(15, 23, 42, 0.7) !important;
+          color: #94a3b8 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .acad-dir-item-btn {
+          background: rgba(15, 23, 42, 0.5) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .acad-dir-item-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.2) !important;
+          color: #38bdf8 !important;
+          border-left-color: #0ea5e9 !important;
+        }
+        .dark .acad-table {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table th {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table td {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-sim-diagram {
+          background: rgba(15, 23, 42, 0.7) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-detail-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-takeaway-box {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+              `}</style>
 
       {/* Header */}
       <div style={{ padding: '14px 16px 4px' }}>
@@ -1830,26 +1995,13 @@ export default function S3Visualizer() {
         {activeTab === 'notebook' && (
           <div className="space-y-6 animate-fadeIn text-left" style={{ marginTop: '16px' }}>
             
-            {/* SaaS Academy Header Banner */}
-            <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-2xl border border-emerald-500/20">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_50%)]"></div>
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="bg-emerald-50/30 border border-emerald-400/30 text-emerald-200 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                    Interactive Architect Academy
-                  </span>
-                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2 font-display">
-                    <BookOpen className="w-6 h-6 stroke-[2] text-emerald-400" /> AWS S3 Storage &amp; Security Academy
-                  </h2>
-                  <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed font-sans">
-                    A premium, high-fidelity visual workspace covering flat namespaces, bucket access policies, server-side KMS encryption, version stacks, WORM object locks, lifecycle optimization, Gateway Endpoints, and global replication.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 bg-emerald-950/80 border border-emerald-855 px-4 py-2 rounded-xl">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="text-[10px] font-black text-emerald-300 tracking-wider uppercase">Telemetry Engine Online</span>
-                </div>
-              </div>
+            <div className="card text-left">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
+                <BookOpen className="w-5 h-5 text-indigo-600" /> S3 Storage &amp; Security Notes
+              </h2>
+              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+                Learn about Amazon S3 storage classes, cross-region replication architecture, Multi-Region Access Points, object versioning, and bucket policies to secure data at rest.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

@@ -857,7 +857,172 @@ export default function EC2Visualizer() {
             width: 100%;
           }
         }
-      `}</style>
+
+        /* Centralized Dark Mode Overrides for EC2Visualizer.tsx */
+        .dark .ec2-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .ec2-card,
+        .dark [class*="ec2-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .ec2-card b,
+        .dark .ec2-card strong,
+        .dark .ec2-card h3,
+        .dark .ec2-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .ec2-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .ec2-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .ec2-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .ec2-sec,
+        .dark .ec2-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .ec2-log,
+        .dark .ec2-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .ec2-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .ec2-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .ec2-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.ec2-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .ec2-inst,
+        .dark .ec2-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .ec2-inst .meta,
+        .dark .ec2-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .ec2-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .ec2-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .ec2-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .ec2-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .ec2-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+    
+        .dark .acad-dir-container {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn {
+          background: rgba(15, 23, 42, 0.7) !important;
+          color: #94a3b8 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .acad-dir-item-btn {
+          background: rgba(15, 23, 42, 0.5) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .acad-dir-item-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.2) !important;
+          color: #38bdf8 !important;
+          border-left-color: #0ea5e9 !important;
+        }
+        .dark .acad-table {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table th {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table td {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-sim-diagram {
+          background: rgba(15, 23, 42, 0.7) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-detail-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-takeaway-box {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+              `}</style>
 
       {/* Header */}
       <div style={{ padding: '14px 16px 4px' }}>
@@ -923,39 +1088,13 @@ sudo mount /dev/xvdf /var/www/html`;
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
               
-              {/* Academy Banner */}
-              <div style={{
-                background: 'linear-gradient(135deg, #0284c7 0%, #075985 100%)',
-                borderRadius: '16px',
-                padding: '24px',
-                color: '#ffffff',
-                boxShadow: '0 10px 25px -5px rgba(2, 132, 199, 0.15)',
-                border: '1px solid rgba(2, 132, 199, 0.2)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                  <span style={{
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.4)',
-                    color: '#ffffff',
-                    fontSize: '10px',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    padding: '4px 10px',
-                    borderRadius: '999px',
-                    display: 'inline-block'
-                  }}>
-                    Interactive Architect Academy
-                  </span>
-                  <h2 style={{ fontSize: '22px', fontWeight: 900, marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BookOpen style={{ color: '#bae6fd', width: '24px', height: '24px' }} /> EC2 Developer Academy &amp; Visual Notes
-                  </h2>
-                  <p style={{ fontSize: '12.5px', color: '#e0f2fe', marginTop: '6px', maxWidth: '850px', lineHeight: '1.5' }}>
-                    A premium study guide covering EC2 instance initialization, stateful security groups, spot fleets purchasing strategies, T-series burstable CPU credit behaviors, block storage, and WELL-ARCHITECTED auditing.
-                  </p>
-                </div>
+              <div className="card text-left">
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
+                  <BookOpen className="w-5 h-5 text-indigo-600" /> EC2 Compute &amp; Storage Notes
+                </h2>
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+                  This guide outlines EC2 instance types, purchasing strategies (On-Demand, Spot, Reserved), EBS block storage mapping, stateful security groups, and burstable CPU credit behaviors.
+                </p>
               </div>
 
               {/* Grid Layout */}

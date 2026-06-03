@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Cloud, Terminal, GitBranch } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import Home from './pages/Home';
 import ALBNLBVisualizer from './pages/visualizers/ALBNLBVisualizer';
 import ASGVisualizer from './pages/visualizers/ASGVisualizer';
@@ -26,13 +27,16 @@ import NotFound from './pages/NotFound';
 import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
   const isGithubPages = window.location.pathname.startsWith('/interactive-visualizers');
   const basename = isGithubPages ? '/interactive-visualizers' : '';
 
   return (
     <Router basename={basename}>
       <ScrollToTop />
-      <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans">
+      <div className={`min-h-screen flex flex-col font-sans transition-colors duration-500 ${
+        isDarkTheme ? 'dark bg-slate-950 text-slate-100' : 'bg-[#f8fafc] text-slate-800'
+      }`}>
         
         {/* Ultra-Premium Glassmorphic Sticky Header */}
         <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300">
@@ -59,25 +63,27 @@ export default function App() {
               </div>
             </Link>
 
-            {/* Developer Metadata & Status Badges */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 rounded-xl px-3 py-1.5 text-[10px] font-mono text-slate-300 hover:border-emerald-500/30 transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                <span>ENG: <span className="text-emerald-400 font-bold">REACT_TS</span></span>
-              </div>
-              
-              <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 rounded-xl px-3 py-1.5 text-[10px] font-mono text-slate-300 hover:border-amber-500/30 transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-                <GitBranch className="w-3.5 h-3.5 text-amber-400" />
-                <span>SANDBOXES: <span className="text-amber-400 font-bold">20_LIVE</span></span>
-              </div>
-              
-              <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 rounded-xl px-3 py-1.5 text-[10px] font-mono text-emerald-300 font-bold shadow-[0_2px_10px_rgba(16,185,129,0.1)] hover:bg-emerald-950/60 transition-all duration-300">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span>STATUS: STABLE</span>
-              </div>
+            {/* Premium Theme Switcher Toggle (repositioned in header) */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsDarkTheme(prev => !prev)}
+                className={`px-3 py-1.5 rounded-xl border transition-all duration-300 flex items-center justify-center hover:scale-105 active:scale-95 text-[10.5px] font-bold font-mono shadow-[0_2px_8px_rgba(0,0,0,0.2)] ${
+                  isDarkTheme 
+                    ? 'bg-slate-900 border-slate-800 text-amber-400 hover:text-amber-300 hover:bg-slate-800' 
+                    : 'bg-slate-900 border-slate-850 text-slate-300 hover:text-white hover:bg-slate-850'
+                }`}
+                title={isDarkTheme ? "Switch to Light Theme" : "Switch to Dark Theme"}
+              >
+                {isDarkTheme ? (
+                  <span className="flex items-center gap-1.5">
+                    ☀️ Light Mode
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    🌙 Dark Mode
+                  </span>
+                )}
+              </button>
             </div>
 
           </nav>
@@ -86,7 +92,7 @@ export default function App() {
         {/* Core Main Display Wrapper */}
         <main className="max-w-7xl w-full mx-auto px-4 md:px-8 py-8 flex-grow">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home isDarkTheme={isDarkTheme} />} />
             <Route path="/visualizers/alb-nlb" element={<ALBNLBVisualizer />} />
             <Route path="/visualizers/asg" element={<ASGVisualizer />} />
             <Route path="/visualizers/rds" element={<RDSVisualizer />} />

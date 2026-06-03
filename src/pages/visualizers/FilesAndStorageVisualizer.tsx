@@ -807,7 +807,115 @@ export default function FilesAndStorageVisualizer() {
           text-shadow: 0 1px 1px rgba(255,255,255,0.3);
           transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-      `}</style>
+
+        /* Centralized Dark Mode Overrides for FilesAndStorageVisualizer.tsx */
+        .dark .fs-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .fs-card,
+        .dark [class*="fs-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .fs-card b,
+        .dark .fs-card strong,
+        .dark .fs-card h3,
+        .dark .fs-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .fs-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .fs-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .fs-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .fs-sec,
+        .dark .fs-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .fs-log,
+        .dark .fs-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .fs-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .fs-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .fs-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.fs-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .fs-inst,
+        .dark .fs-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .fs-inst .meta,
+        .dark .fs-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .fs-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .fs-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .fs-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .fs-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .fs-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+          `}</style>
 
       <div className="fs-container">
         {/* Title Header */}

@@ -590,7 +590,172 @@ export default function OperationsAndMLVisualizer() {
         .acad-hero-badge { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 9.5px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 8px; display: inline-flex; align-items: center; }
         .acad-takeaway-box { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid #0ea5e9; border-radius: 12px; padding: 16px; font-size: 11.5px; line-height: 1.6; color: #475569; font-weight: 600; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
         .acad-terminal { background: #0f172a; border-radius: 12px; padding: 12px; font-family: monospace; color: #cbd5e1; font-size: 10px; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
-      `}</style>
+
+        /* Centralized Dark Mode Overrides for OperationsAndMLVisualizer.tsx */
+        .dark .ops-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .ops-card,
+        .dark [class*="ops-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .ops-card b,
+        .dark .ops-card strong,
+        .dark .ops-card h3,
+        .dark .ops-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .ops-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .ops-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .ops-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .ops-sec,
+        .dark .ops-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .ops-log,
+        .dark .ops-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .ops-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .ops-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .ops-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.ops-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .ops-inst,
+        .dark .ops-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .ops-inst .meta,
+        .dark .ops-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .ops-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .ops-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .ops-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .ops-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .ops-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+    
+        .dark .acad-dir-container {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn {
+          background: rgba(15, 23, 42, 0.7) !important;
+          color: #94a3b8 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .acad-dir-item-btn {
+          background: rgba(15, 23, 42, 0.5) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .acad-dir-item-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.2) !important;
+          color: #38bdf8 !important;
+          border-left-color: #0ea5e9 !important;
+        }
+        .dark .acad-table {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table th {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table td {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-sim-diagram {
+          background: rgba(15, 23, 42, 0.7) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-detail-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-takeaway-box {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+              `}</style>
 
       {/* Header Banner */}
       <div style={{ padding: '14px 16px 4px' }}>
@@ -620,19 +785,13 @@ export default function OperationsAndMLVisualizer() {
         {/* ========================================================================= */}
         {activeTab === 'notebook' && (
           <div className="space-y-6 text-left">
-            {/* Header Banner */}
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
-              <div className="relative z-10">
-                <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
-                  Developer Operations Academy
-                </span>
-                <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
-                  <BookOpen className="w-6 h-6 stroke-[2] text-white" /> Operations &amp; Artificial Intelligence Workbench
-                </h2>
-                <p className="text-xs text-white/90 mt-1 max-w-3xl leading-relaxed">
-                  A high-fidelity workspace covering CloudFormation StackSets lifecycle, systems automation runbooks, secure SSH-less session controls, SMTP delivery telemetry, SageMaker shadow endpoints, and cost allocation tags.
-                </p>
-              </div>
+            <div className="card text-left">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
+                <BookOpen className="w-5 h-5 text-indigo-600" /> Operations &amp; Artificial Intelligence Notes
+              </h2>
+              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+                Understand operations governance, automation runbooks, secure SSH-less session controls via SSM, SMTP delivery telemetry, SageMaker endpoints routing, and cost allocation tags.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

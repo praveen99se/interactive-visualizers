@@ -220,25 +220,25 @@ export default function ALBNLBVisualizer() {
       return {
         title: '🔒 Recommended: AWS Gateway Load Balancer (GWLB)',
         desc: 'Since you require deep, inline third-party security packet inspection or firewall appliances, GWLB acts at Layer 3 to route raw IP packets transparently through a virtual appliance pool.',
-        color: '#7c3aed'
+        themeClass: 'text-purple'
       };
     } else if (decisions.layer === 'tcp' && decisions.throughput === 'extreme') {
       return {
         title: '⚡ Recommended: AWS Network Load Balancer (NLB)',
         desc: 'Extreme throughput requirements combined with raw TCP/UDP networking make NLB the optimal choice. It operates at Layer 4, handling millions of requests per second with sub-millisecond latencies.',
-        color: '#0369a1'
+        themeClass: 'text-blue'
       };
     } else if (decisions.staticIp === 'yes') {
       return {
         title: '🔢 Recommended: AWS Network Load Balancer (NLB)',
         desc: 'Since you require static elastic IP addresses per availability zone for white-listing, NLB is required because it binds a static elastic IP to each zonal subnet, unlike ALB which uses dynamic DNS names.',
-        color: '#0369a1'
+        themeClass: 'text-blue'
       };
     } else {
       return {
         title: '🍔 Recommended: AWS Application Load Balancer (ALB)',
         desc: 'For standard HTTP/HTTPS application routing, ALB is the industry standard. It evaluates Layer 7 properties (Path rules, Host headers, and Cookie sessions) to intelligently load balance microservices and containerized backends.',
-        color: '#c2410c'
+        themeClass: 'text-orange'
       };
     }
   };
@@ -481,10 +481,407 @@ export default function ALBNLBVisualizer() {
   };
 
   return (
-    <div>
+    <div className="anl-container">
       <style>{`
         /* Premium Glassmorphic Developer Workspace Theme */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        /* Theme Aware Colors */
+        .text-orange { color: #c2410c !important; fill: #c2410c !important; }
+        .text-blue { color: #0369a1 !important; fill: #0369a1 !important; }
+        .text-purple { color: #7c3aed !important; fill: #7c3aed !important; }
+        .text-green { color: #16a34a !important; fill: #16a34a !important; }
+        .text-red { color: #ef4444 !important; fill: #ef4444 !important; }
+        .text-slate { color: #64748b !important; fill: #64748b !important; }
+
+        .dark .text-orange { color: #f97316 !important; fill: #f97316 !important; }
+        .dark .text-blue { color: #38bdf8 !important; fill: #38bdf8 !important; }
+        .dark .text-purple { color: #a78bfa !important; fill: #a78bfa !important; }
+        .dark .text-green { color: #4ade80 !important; fill: #4ade80 !important; }
+        .dark .text-red { color: #f87171 !important; fill: #f87171 !important; }
+        .dark .text-slate { color: #94a3b8 !important; fill: #94a3b8 !important; }
+
+        /* Card Colors */
+        .anl-card-orange { border-left: 3px solid #c2410c !important; }
+        .dark .anl-card-orange { border-left: 3px solid #f97316 !important; }
+        .anl-card-blue { border-left: 3px solid #0369a1 !important; }
+        .dark .anl-card-blue { border-left: 3px solid #38bdf8 !important; }
+        .anl-card-purple { border-left: 3px solid #7c3aed !important; }
+        .dark .anl-card-purple { border-left: 3px solid #a78bfa !important; }
+        .anl-card-slate { border-left: 3px solid #64748b !important; }
+        .dark .anl-card-slate { border-left: 3px solid #94a3b8 !important; }
+
+        /* SVG Overrides */
+        .anl-svg-rect {
+          fill: #f8fafc;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-rect {
+          fill: rgba(15, 23, 42, 0.8) !important;
+        }
+        .anl-svg-rect-blue {
+          fill: #f0f9ff;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-rect-blue {
+          fill: rgba(2, 132, 199, 0.1) !important;
+        }
+        .anl-svg-rect-purple {
+          fill: #faf5ff;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-rect-purple {
+          fill: rgba(124, 58, 237, 0.1) !important;
+        }
+        .anl-svg-rect-red {
+          fill: #fff5f5;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-rect-red {
+          fill: rgba(239, 68, 68, 0.1) !important;
+        }
+        .anl-svg-rect-orange {
+          fill: #fff7ed;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-rect-orange {
+          fill: rgba(234, 88, 12, 0.1) !important;
+        }
+        .anl-svg-rect-grey {
+          fill: #f1f5f9;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-rect-grey {
+          fill: rgba(148, 163, 184, 0.1) !important;
+        }
+
+        .anl-svg-text-primary {
+          fill: #1e293b;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-text-primary {
+          fill: #f8fafc !important;
+        }
+        .anl-svg-text-secondary {
+          fill: #64748b;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-text-secondary {
+          fill: #94a3b8 !important;
+        }
+
+        .anl-svg-alb-node {
+          fill: #fff7ed;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-alb-node {
+          fill: rgba(234, 88, 12, 0.1) !important;
+        }
+        .anl-svg-text-alb-primary {
+          fill: #7c2d12;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-text-alb-primary {
+          fill: #ffedd5 !important;
+        }
+        .anl-svg-text-alb-secondary {
+          fill: #c2410c;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-text-alb-secondary {
+          fill: #f97316 !important;
+        }
+
+        .anl-svg-tg-rect {
+          fill: #f8fafc;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-tg-rect {
+          fill: rgba(15, 23, 42, 0.8) !important;
+        }
+
+        .anl-svg-text-blue-primary {
+          fill: #0369a1;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-text-blue-primary {
+          fill: #e0f2fe !important;
+        }
+
+        .anl-svg-inner-healthy {
+          fill: #e6f4ea;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-inner-healthy {
+          fill: rgba(16, 185, 129, 0.2) !important;
+        }
+        .anl-svg-inner-unhealthy {
+          fill: #fce8e6;
+          transition: all 0.3s ease;
+        }
+        .dark .anl-svg-inner-unhealthy {
+          fill: rgba(239, 68, 68, 0.2) !important;
+        }
+
+        /* Server Failures controls */
+        .anl-server-health-btn {
+          flex: 1;
+          font-size: 11px;
+          padding: 4px 6px;
+          border-radius: 6px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .anl-server-health-btn.healthy {
+          background: #dcfce7;
+          border: 0.5px solid #86efac;
+          color: #166534;
+        }
+        .dark .anl-server-health-btn.healthy {
+          background: rgba(16, 185, 129, 0.15) !important;
+          border-color: rgba(16, 185, 129, 0.4) !important;
+          color: #4ade80 !important;
+        }
+        .anl-server-health-btn.unhealthy {
+          background: #fee2e2;
+          border: 0.5px solid #fca5a5;
+          color: #991b1b;
+        }
+        .dark .anl-server-health-btn.unhealthy {
+          background: rgba(239, 68, 68, 0.15) !important;
+          border-color: rgba(239, 68, 68, 0.4) !important;
+          color: #f87171 !important;
+        }
+
+        /* Developer Notebook styling */
+        .anl-notebook-title {
+          color: var(--color-text-primary);
+        }
+        .anl-notebook-desc {
+          color: var(--color-text-secondary);
+        }
+        .anl-notebook-label {
+          color: var(--color-text-primary);
+        }
+        .anl-notebook-copy-btn {
+          padding: 4px;
+          border-radius: 4px;
+          background: var(--color-background-tertiary);
+          border: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .anl-notebook-copy-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .anl-notebook-inner-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        .anl-notebook-inner-card-title {
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--color-text-tertiary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-family: var(--font-mono);
+          display: block;
+          margin-bottom: 12px;
+        }
+        .anl-notebook-inner-subcard {
+          background: var(--color-background-tertiary);
+          border: 1px solid var(--color-border-tertiary);
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+          margin-bottom: 8px;
+        }
+        .anl-notebook-inner-card-text {
+          color: var(--color-text-primary);
+          margin-top: 4px;
+        }
+        .anl-notebook-inner-card-subtext {
+          font-size: 10px;
+          color: var(--color-text-tertiary);
+          font-style: italic;
+          margin-top: 12px;
+        }
+        .anl-notebook-inner-subcard-orange {
+          background: #fff7ed;
+          border: 1px solid #ffedd5;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+        }
+        .dark .anl-notebook-inner-subcard-orange {
+          background: rgba(234, 88, 12, 0.15) !important;
+          border-color: rgba(234, 88, 12, 0.3) !important;
+        }
+        .anl-notebook-inner-subcard-green {
+          background: #f0fdf4;
+          border: 1px solid #dcfce7;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+        }
+        .dark .anl-notebook-inner-subcard-green {
+          background: rgba(16, 185, 129, 0.15) !important;
+          border-color: rgba(16, 185, 129, 0.3) !important;
+        }
+        .anl-notebook-inner-subcard-purple {
+          background: #faf5ff;
+          border: 1px solid #e9d5ff;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+        }
+        .dark .anl-notebook-inner-subcard-purple {
+          background: rgba(124, 58, 237, 0.15) !important;
+          border-color: rgba(124, 58, 237, 0.3) !important;
+        }
+        .anl-notebook-inner-subcard-purple-dark {
+          background: #f3e8ff;
+          border: 1px solid #d8b4fe;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+        }
+        .dark .anl-notebook-inner-subcard-purple-dark {
+          background: rgba(124, 58, 237, 0.25) !important;
+          border-color: rgba(124, 58, 237, 0.5) !important;
+        }
+        .anl-notebook-inner-subcard-red-warning {
+          background: #fce8e6;
+          border: 1px solid #fca5a5;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+        }
+        .dark .anl-notebook-inner-subcard-red-warning {
+          background: rgba(239, 68, 68, 0.15) !important;
+          border-color: rgba(239, 68, 68, 0.4) !important;
+        }
+        .anl-notebook-tab-toggle {
+          display: flex;
+          background: var(--color-background-tertiary);
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .anl-toggle-active-blue {
+          background: #0284c7;
+          color: #ffffff;
+        }
+        .anl-toggle-inactive {
+          color: var(--color-text-secondary);
+          background: transparent;
+        }
+        .anl-notebook-input {
+          width: 100%;
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 4px;
+          padding: 4px;
+          color: var(--color-text-primary);
+          outline: none;
+        }
+        .anl-notebook-code-cookie {
+          color: #b45309;
+          background: rgba(245, 158, 11, 0.05);
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-family: var(--font-mono);
+          font-weight: bold;
+        }
+        .dark .anl-notebook-code-cookie {
+          color: #f59e0b;
+          background: rgba(245, 158, 11, 0.15) !important;
+        }
+        .anl-geneve-btn-safe {
+          background: #e6f4ea;
+          border: 1px solid #86efac;
+          color: #137333;
+        }
+        .dark .anl-geneve-btn-safe {
+          background: rgba(16, 185, 129, 0.15) !important;
+          border-color: rgba(16, 185, 129, 0.4) !important;
+          color: #4ade80 !important;
+        }
+        .anl-geneve-btn-attack {
+          background: #fce8e6;
+          border: 1px solid #fca5a5;
+          color: #c5221f;
+        }
+        .dark .anl-geneve-btn-attack {
+          background: rgba(239, 68, 68, 0.15) !important;
+          border-color: rgba(239, 68, 68, 0.4) !important;
+          color: #f87171 !important;
+        }
+        .anl-crosszone-btn-active {
+          background: #16a34a;
+          color: #ffffff;
+        }
+        .dark .anl-crosszone-btn-active {
+          background: rgba(16, 185, 129, 0.25) !important;
+          color: #4ade80 !important;
+        }
+        .anl-crosszone-btn-inactive {
+          background: var(--color-background-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .anl-notebook-inner-subcard-white {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .anl-badge-healthy {
+          background: #e6f4ea;
+          color: #137333;
+        }
+        .dark .anl-badge-healthy {
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .anl-badge-warning {
+          background: #fef7e0;
+          color: #b06000;
+        }
+        .dark .anl-badge-warning {
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .anl-badge-danger {
+          background: #fce8e6;
+          color: #c5221f;
+        }
+        .dark .anl-badge-danger {
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        .anl-notebook-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .anl-notebook-advice-box .title {
+          color: var(--color-text-primary);
+          font-weight: 800;
+          font-size: 11.5px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 4px;
+        }
+        .acad-dir-subfolder {
+          background: rgba(248, 250, 252, 0.5);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-dir-subfolder {
+          background: rgba(15, 23, 42, 0.4) !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-hero-badge {
+          background: rgba(3, 105, 161, 0.2) !important;
+          border-color: rgba(3, 105, 161, 0.4) !important;
+          color: #38bdf8 !important;
+        }
 
         .anl-tabs {
           display: flex;
@@ -869,8 +1266,191 @@ export default function ALBNLBVisualizer() {
           color: #cbd5e1;
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
-      `}</style>
 
+        /* Centralized Dark Mode Overrides for ALBNLBVisualizer.tsx */
+        .dark .anl-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .anl-card,
+        .dark [class*="anl-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .anl-card b,
+        .dark .anl-card strong,
+        .dark .anl-card h3,
+        .dark .anl-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .anl-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .anl-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .anl-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .anl-sec,
+        .dark .anl-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .anl-log,
+        .dark .anl-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .anl-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .anl-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .anl-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.anl-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .anl-inst,
+        .dark .anl-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .anl-inst .meta,
+        .dark .anl-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .anl-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .anl-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .anl-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .anl-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .anl-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+    
+        .dark .rule-item {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .rule-item.checking {
+          border-color: #f57c00 !important;
+          background: rgba(245, 124, 0, 0.1) !important;
+        }
+        .dark .rule-item.matched {
+          border-color: #388e3c !important;
+          background: rgba(56, 142, 60, 0.15) !important;
+          color: #81c784 !important;
+        }
+        .dark .rule-item.mismatched {
+          opacity: 0.35 !important;
+          background: transparent !important;
+        }
+        
+        .dark .acad-dir-container {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn {
+          background: rgba(15, 23, 42, 0.7) !important;
+          color: #94a3b8 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .acad-dir-item-btn {
+          background: rgba(15, 23, 42, 0.5) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .acad-dir-item-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.2) !important;
+          color: #38bdf8 !important;
+          border-left-color: #0ea5e9 !important;
+        }
+        .dark .acad-table {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table th {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table td {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-sim-diagram {
+          background: rgba(15, 23, 42, 0.7) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-detail-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-takeaway-box {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+      `}</style>
       {/* Header */}
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
@@ -903,15 +1483,15 @@ export default function ALBNLBVisualizer() {
             <div className="anl-sec">Four Types of AWS Elastic Load Balancers</div>
             <div className="anl-g2" style={{ marginBottom: '12px' }}>
               <div>
-                <div className="anl-card" style={{ borderLeft: '3px solid #c2410c', marginBottom: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#c2410c' }}>🍔 1. Application Load Balancer (ALB)</div>
+                <div className="anl-card anl-card-orange" style={{ marginBottom: '10px' }}>
+                  <div className="card-title" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>🍔 1. Application Load Balancer (ALB)</div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
                     Operates at <b>Layer 7 (HTTP/HTTPS)</b>. Inspects header payloads, paths, cookies, and query parameters to execute content-based smart routing rules to target microservices.
                   </div>
                 </div>
 
-                <div className="anl-card" style={{ borderLeft: '3px solid #0369a1', marginBottom: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#0369a1' }}>🔢 2. Network Load Balancer (NLB)</div>
+                <div className="anl-card anl-card-blue" style={{ marginBottom: '10px' }}>
+                  <div className="card-title" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>🔢 2. Network Load Balancer (NLB)</div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
                     Operates at <b>Layer 4 (TCP/UDP/TLS)</b>. Designed for extreme throughput (millions of RPS) at ultra-low latency. Binds static Elastic IPs to subnets, allowing hard IP whitelisting.
                   </div>
@@ -919,15 +1499,15 @@ export default function ALBNLBVisualizer() {
               </div>
 
               <div>
-                <div className="anl-card" style={{ borderLeft: '3px solid #7c3aed', marginBottom: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#7c3aed' }}>🔒 3. Gateway Load Balancer (GWLB)</div>
+                <div className="anl-card anl-card-purple" style={{ marginBottom: '10px' }}>
+                  <div className="card-title" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>🔒 3. Gateway Load Balancer (GWLB)</div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
                     Operates at <b>Layer 3 (IP Packets)</b>. Deploys, scales, and manages virtual security firewalls or deep packet inspection appliances seamlessly in line without network modification.
                   </div>
                 </div>
 
-                <div className="anl-card" style={{ borderLeft: '3px solid #64748b', marginBottom: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#64748b' }}>🕰️ 4. Classic Load Balancer (CLB)</div>
+                <div className="anl-card anl-card-slate" style={{ marginBottom: '10px' }}>
+                  <div className="card-title" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>🕰️ 4. Classic Load Balancer (CLB)</div>
                   <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
                     <b>Legacy product (Layer 4/7 basic bridges)</b>. Intended for old applications built within the EC2-Classic network. Avoid using for any modern cloud-native architectures.
                   </div>
@@ -941,9 +1521,9 @@ export default function ALBNLBVisualizer() {
                 <thead>
                   <tr style={{ borderBottom: '1.5px solid var(--color-border-secondary)', color: 'var(--color-text-secondary)' }}>
                     <th style={{ padding: '8px 6px' }}>Parameter Feature</th>
-                    <th style={{ padding: '8px 6px', color: '#c2410c' }}>ALB (Layer 7)</th>
-                    <th style={{ padding: '8px 6px', color: '#0369a1' }}>NLB (Layer 4)</th>
-                    <th style={{ padding: '8px 6px', color: '#7c3aed' }}>GWLB (Layer 3)</th>
+                    <th style={{ padding: '8px 6px' }} className="text-orange">ALB (Layer 7)</th>
+                    <th style={{ padding: '8px 6px' }} className="text-blue">NLB (Layer 4)</th>
+                    <th style={{ padding: '8px 6px' }} className="text-purple">GWLB (Layer 3)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -962,18 +1542,18 @@ export default function ALBNLBVisualizer() {
                   <tr style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px 6px', fontWeight: '500' }}>Subnet IPs Allocation</td>
                     <td style={{ padding: '8px 6px' }}>Dynamic IPs (rescaling DNS)</td>
-                    <td style={{ padding: '8px 6px', fontWeight: 'bold', color: '#0369a1' }}>Static per AZ / Elastic IP</td>
+                    <td style={{ padding: '8px 6px', fontWeight: 'bold' }} className="text-blue">Static per AZ / Elastic IP</td>
                     <td style={{ padding: '8px 6px' }}>Private Endpoint IPs</td>
                   </tr>
                   <tr style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px 6px', fontWeight: '500' }}>Latency profile</td>
                     <td style={{ padding: '8px 6px' }}>~10-20ms (request parsing)</td>
-                    <td style={{ padding: '8px 6px', fontWeight: 'bold', color: '#16a34a' }}>&lt; 1ms (super-fast bypass)</td>
+                    <td style={{ padding: '8px 6px', fontWeight: 'bold' }} className="text-green">&lt; 1ms (super-fast bypass)</td>
                     <td style={{ padding: '8px 6px' }}>~1-5ms</td>
                   </tr>
                   <tr style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px 6px', fontWeight: '500' }}>Sticky Sessions</td>
-                    <td style={{ padding: '8px 6px', color: '#16a34a' }}>✅ Cookie-based (AWS or App)</td>
+                    <td style={{ padding: '8px 6px' }} className="text-green">✅ Cookie-based (AWS or App)</td>
                     <td style={{ padding: '8px 6px' }}>❌ No (Flow Hashing pins connection)</td>
                     <td style={{ padding: '8px 6px' }}>❌ No</td>
                   </tr>
@@ -1033,7 +1613,7 @@ export default function ALBNLBVisualizer() {
               </div>
 
               <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--color-background-secondary)' }}>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: recommendation.color, marginBottom: '6px' }}>
+                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }} className={recommendation.themeClass}>
                   {recommendation.title}
                 </div>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
@@ -1070,14 +1650,14 @@ export default function ALBNLBVisualizer() {
 
                   {/* Browser / Client Node */}
                   <g opacity={1} className={albIsAnimating ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                    <rect x="10" y="115" width="65" height="46" rx="6" fill="#f8fafc" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
-                    <text x="42.5" y="133" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">💻 Browser</text>
-                    <text x="42.5" y="146" textAnchor="middle" fontSize="7" fill="#64748b" fontFamily="monospace">{albMethod} Request</text>
+                    <rect x="10" y="115" width="65" height="46" rx="6" className="anl-svg-rect" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
+                    <text x="42.5" y="133" textAnchor="middle" fontSize="10" className="anl-svg-text-primary" fontWeight="bold">💻 Browser</text>
+                    <text x="42.5" y="146" textAnchor="middle" fontSize="7" className="anl-svg-text-secondary" fontFamily="monospace">{albMethod} Request</text>
                     
                     {/* Session Cookie Visual Indicator inside client */}
                     {matchedRule && matchedRule !== 'Rule 6 (Priority 60)' && (
                       <g transform="translate(48, 8)">
-                        <circle cx="0" cy="0" r="5" fill="#fef3c7" stroke="#d97706" strokeWidth="0.5"/>
+                        <circle cx="0" cy="0" r="5" className="anl-svg-cookie" fill="#fef3c7" stroke="#d97706" strokeWidth="0.5"/>
                         <text x="0" y="2.5" textAnchor="middle" fontSize="7" fill="#78350f" fontWeight="bold">🍪</text>
                       </g>
                     )}
@@ -1085,10 +1665,10 @@ export default function ALBNLBVisualizer() {
 
                   {/* ALB L7 intake portal */}
                   <g opacity={1} className={albIsAnimating ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                    <rect x="105" y="95" width="90" height="90" rx="8" fill="#fff7ed" stroke="#ea580c" strokeWidth={albIsAnimating ? 2 : 1}/>
-                    <text x="150" y="122" textAnchor="middle" fontSize="11" fill="#7c2d12" fontWeight="bold">ALB L7</text>
-                    <text x="150" y="136" textAnchor="middle" fontSize="8" fill="#c2410c">Rules Engine</text>
-                    <text x="150" y="150" textAnchor="middle" fontSize="7.5" fill="#7c2d12" fontFamily="monospace">Port 443 SSL</text>
+                    <rect x="105" y="95" width="90" height="90" rx="8" className="anl-svg-alb-node" strokeWidth={albIsAnimating ? 2 : 1}/>
+                    <text x="150" y="122" textAnchor="middle" fontSize="11" className="anl-svg-text-alb-primary" fontWeight="bold">ALB L7</text>
+                    <text x="150" y="136" textAnchor="middle" fontSize="8" className="anl-svg-text-alb-secondary">Rules Engine</text>
+                    <text x="150" y="150" textAnchor="middle" fontSize="7.5" className="anl-svg-text-alb-primary" fontFamily="monospace">Port 443 SSL</text>
                     
                     {/* Visual Check/Cross lights */}
                     {albCheckingRuleIndex !== -1 && (
@@ -1106,9 +1686,9 @@ export default function ALBNLBVisualizer() {
                   
                   {/* TG1: user-service-tg */}
                   <g opacity={matchedRule.includes('Rule 1') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="10" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 1') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 1') ? 2 : 0.5}/>
-                    <text x="258" y="24" fontSize="9" fill={matchedRule.includes('Rule 1') ? '#15803d' : '#1e293b'} fontWeight="bold">user-service-tg</text>
-                    <text x="258" y="38" fontSize="7" fill="#64748b">EC2 pool (Port 8080) · us-east-1a</text>
+                    <rect x="250" y="10" width="160" height="36" rx="5" className="anl-svg-tg-rect" stroke={matchedRule.includes('Rule 1') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={matchedRule.includes('Rule 1') ? 2 : 0.5}/>
+                    <text x="258" y="24" fontSize="9" className={matchedRule.includes('Rule 1') ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">user-service-tg</text>
+                    <text x="258" y="38" fontSize="7" className="anl-svg-text-secondary">EC2 pool (Port 8080) · us-east-1a</text>
                   </g>
                   <path
                     d="M 195 120 L 225 120 L 225 28 L 250 28"
@@ -1120,9 +1700,9 @@ export default function ALBNLBVisualizer() {
 
                   {/* TG2: order-service-tg */}
                   <g opacity={matchedRule.includes('Rule 2') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="52" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 2') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 2') ? 2 : 0.5}/>
-                    <text x="258" y="66" fontSize="9" fill={matchedRule.includes('Rule 2') ? '#15803d' : '#1e293b'} fontWeight="bold">order-service-tg</text>
-                    <text x="258" y="80" fontSize="7" fill="#64748b">EC2 pool (Port 8081) · us-east-1b</text>
+                    <rect x="250" y="52" width="160" height="36" rx="5" className="anl-svg-tg-rect" stroke={matchedRule.includes('Rule 2') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={matchedRule.includes('Rule 2') ? 2 : 0.5}/>
+                    <text x="258" y="66" fontSize="9" className={matchedRule.includes('Rule 2') ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">order-service-tg</text>
+                    <text x="258" y="80" fontSize="7" className="anl-svg-text-secondary">EC2 pool (Port 8081) · us-east-1b</text>
                   </g>
                   <path
                     d="M 195 128 L 230 128 L 230 70 L 250 70"
@@ -1134,9 +1714,9 @@ export default function ALBNLBVisualizer() {
 
                   {/* TG3: premium-only-tg */}
                   <g opacity={matchedRule.includes('Rule 3') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="94" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 3') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 3') ? 2 : 0.5}/>
-                    <text x="258" y="108" fontSize="9" fill={matchedRule.includes('Rule 3') ? '#15803d' : '#1e293b'} fontWeight="bold">premium-only-tg 💎</text>
-                    <text x="258" y="122" fontSize="7" fill="#64748b">Dedicated VPS (Port 8000) · us-east-1a</text>
+                    <rect x="250" y="94" width="160" height="36" rx="5" className="anl-svg-tg-rect" stroke={matchedRule.includes('Rule 3') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={matchedRule.includes('Rule 3') ? 2 : 0.5}/>
+                    <text x="258" y="108" fontSize="9" className={matchedRule.includes('Rule 3') ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">premium-only-tg 💎</text>
+                    <text x="258" y="122" fontSize="7" className="anl-svg-text-secondary">Dedicated VPS (Port 8000) · us-east-1a</text>
                   </g>
                   <path
                     d="M 195 136 L 250 136"
@@ -1148,9 +1728,9 @@ export default function ALBNLBVisualizer() {
 
                   {/* TG4: special-tg */}
                   <g opacity={matchedRule.includes('Rule 4') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="136" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 4') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 4') ? 2 : 0.5}/>
-                    <text x="258" y="150" fontSize="9" fill={matchedRule.includes('Rule 4') ? '#15803d' : '#1e293b'} fontWeight="bold">special-tg 🚨</text>
-                    <text x="258" y="164" fontSize="7" fill="#64748b">Canary target pool (Port 9000)</text>
+                    <rect x="250" y="136" width="160" height="36" rx="5" className="anl-svg-tg-rect" stroke={matchedRule.includes('Rule 4') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={matchedRule.includes('Rule 4') ? 2 : 0.5}/>
+                    <text x="258" y="150" fontSize="9" className={matchedRule.includes('Rule 4') ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">special-tg 🚨</text>
+                    <text x="258" y="164" fontSize="7" className="anl-svg-text-secondary">Canary target pool (Port 9000)</text>
                   </g>
                   <path
                     d="M 195 144 L 230 144 L 230 154 L 250 154"
@@ -1162,9 +1742,9 @@ export default function ALBNLBVisualizer() {
 
                   {/* TG5: blog-wordpress-tg */}
                   <g opacity={matchedRule.includes('Rule 5') ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="178" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 5') ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 5') ? 2 : 0.5}/>
-                    <text x="258" y="192" fontSize="9" fill={matchedRule.includes('Rule 5') ? '#15803d' : '#1e293b'} fontWeight="bold">blog-wordpress-tg</text>
-                    <text x="258" y="206" fontSize="7" fill="#64748b">Wordpress Server (Port 80) · us-east-1c</text>
+                    <rect x="250" y="178" width="160" height="36" rx="5" className="anl-svg-tg-rect" stroke={matchedRule.includes('Rule 5') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={matchedRule.includes('Rule 5') ? 2 : 0.5}/>
+                    <text x="258" y="192" fontSize="9" className={matchedRule.includes('Rule 5') ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">blog-wordpress-tg</text>
+                    <text x="258" y="206" fontSize="7" className="anl-svg-text-secondary">Wordpress Server (Port 80) · us-east-1c</text>
                   </g>
                   <path
                     d="M 195 152 L 225 152 L 225 196 L 250 196"
@@ -1176,11 +1756,11 @@ export default function ALBNLBVisualizer() {
 
                   {/* TG6: static-s3-tg */}
                   <g opacity={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="250" y="220" width="160" height="36" rx="5" fill="#f8fafc" stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#22c55e' : '#cbd5e1'} strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2 : 0.5}/>
-                    <text x="258" y="234" fontSize="9" fill={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#15803d' : '#1e293b'} fontWeight="bold">
+                    <rect x="250" y="220" width="160" height="36" rx="5" className="anl-svg-tg-rect" stroke={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 2 : 0.5}/>
+                    <text x="258" y="234" fontSize="9" className={matchedRule.includes('Rule 6') || matchedRule === 'Default Ruleset' ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">
                       {matchedRule === 'Default Ruleset' ? 'default-s3-website-tg' : 'static-s3-tg 🪣'}
                     </text>
-                    <text x="258" y="248" fontSize="7" fill="#64748b">S3 Bucket Web Origin redirect</text>
+                    <text x="258" y="248" fontSize="7" className="anl-svg-text-secondary">S3 Bucket Web Origin redirect</text>
                   </g>
                   <path
                     d="M 195 160 L 215 160 L 215 238 L 250 238"
@@ -1379,10 +1959,10 @@ Connection: keep-alive`}</pre>
 
                   {/* TCP Client App socket node */}
                   <g opacity={1} className={activeNlbTarget ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
-                    <rect x="10" y="115" width="75" height="50" rx="6" fill="#f0f9ff" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
-                    <text x="47.5" y="133" textAnchor="middle" fontSize="10" fill="#0c4a6e" fontWeight="bold">🏢 Client App</text>
-                    <text x="47.5" y="145" textAnchor="middle" fontSize="7" fill="#0284c7">IP Preserved</text>
-                    <text x="47.5" y="156" textAnchor="middle" fontSize="6.5" fill="#475569" fontFamily="monospace">{currentNlbClient || `${nlbSrcIp}:${nlbSrcPort}`}</text>
+                    <rect x="10" y="115" width="75" height="50" rx="6" className="anl-svg-rect" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
+                    <text x="47.5" y="133" textAnchor="middle" fontSize="10" className="anl-svg-text-primary" fontWeight="bold">🏢 Client App</text>
+                    <text x="47.5" y="145" textAnchor="middle" fontSize="7" className="text-blue">IP Preserved</text>
+                    <text x="47.5" y="156" textAnchor="middle" fontSize="6.5" className="anl-svg-text-secondary" fontFamily="monospace">{currentNlbClient || `${nlbSrcIp}:${nlbSrcPort}`}</text>
                   </g>
 
                   {/* Connection from Client to NLB */}
@@ -1390,25 +1970,25 @@ Connection: keep-alive`}</pre>
 
                   {/* NLB Hashing Engine Node */}
                   <g opacity={1} className={activeNlbTarget ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
-                    <rect x="115" y="95" width="95" height="90" rx="8" fill="#f0f9ff" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
-                    <text x="162.5" y="114" textAnchor="middle" fontSize="10" fill="#0369a1" fontWeight="bold">NLB Engine</text>
-                    <text x="162.5" y="127" textAnchor="middle" fontSize="8" fill="#475569">Stateless Flow Hash</text>
+                    <rect x="115" y="95" width="95" height="90" rx="8" className="anl-svg-rect-blue" stroke="#0284c7" strokeWidth={activeNlbTarget ? 2 : 1}/>
+                    <text x="162.5" y="114" textAnchor="middle" fontSize="10" className="anl-svg-text-blue-primary" fontWeight="bold">NLB Engine</text>
+                    <text x="162.5" y="127" textAnchor="middle" fontSize="8" className="anl-svg-text-secondary">Stateless Flow Hash</text>
                     
                     {/* Live Digital Hash Display */}
-                    <rect x="125" y="138" width="75" height="20" rx="4" fill="#0284c70c" stroke="#38bdf8" strokeWidth="0.5"/>
-                    <text x="162.5" y="151" textAnchor="middle" fontSize="9" fill="#0284c7" fontWeight="bold" fontFamily="monospace">
+                    <rect x="125" y="138" width="75" height="20" rx="4" fill="rgba(2, 132, 199, 0.05)" stroke="#38bdf8" strokeWidth="0.5"/>
+                    <text x="162.5" y="151" textAnchor="middle" fontSize="9" className="text-blue" fontWeight="bold" fontFamily="monospace">
                       {currentNlbHash || '0x0000'}
                     </text>
-                    <text x="162.5" y="174" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold" fontFamily="monospace">ASIC-L4 Hashing</text>
+                    <text x="162.5" y="174" textAnchor="middle" fontSize="7.5" className="anl-svg-text-blue-primary" fontWeight="bold" fontFamily="monospace">ASIC-L4 Hashing</text>
                   </g>
 
                   {/* Target Servers */}
                   
                   {/* Target Server A */}
                   <g opacity={activeNlbTarget === 'A' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="260" y="20" width="150" height="42" rx="6" fill="#f8fafc" stroke={activeNlbTarget === 'A' ? '#22c55e' : '#cbd5e1'} strokeWidth={activeNlbTarget === 'A' ? 2 : 0.5}/>
-                    <text x="270" y="37" fontSize="10" fill={activeNlbTarget === 'A' ? '#166534' : '#1e293b'} fontWeight="bold">Target Server A</text>
-                    <text x="270" y="51" fontSize="7.5" fill="#475569">AZ us-east-1a · IP preservation</text>
+                    <rect x="260" y="20" width="150" height="42" rx="6" className="anl-svg-rect" stroke={activeNlbTarget === 'A' ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={activeNlbTarget === 'A' ? 2 : 0.5}/>
+                    <text x="270" y="37" fontSize="10" className={activeNlbTarget === 'A' ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">Target Server A</text>
+                    <text x="270" y="51" fontSize="7.5" className="anl-svg-text-secondary">AZ us-east-1a · IP preservation</text>
                   </g>
                   <path
                     d="M 210 130 L 235 130 L 235 41 L 260 41"
@@ -1420,9 +2000,9 @@ Connection: keep-alive`}</pre>
 
                   {/* Target Server B */}
                   <g opacity={activeNlbTarget === 'B' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="260" y="105" width="150" height="42" rx="6" fill="#f8fafc" stroke={activeNlbTarget === 'B' ? '#22c55e' : '#cbd5e1'} strokeWidth={activeNlbTarget === 'B' ? 2 : 0.5}/>
-                    <text x="270" y="122" fontSize="10" fill={activeNlbTarget === 'B' ? '#166534' : '#1e293b'} fontWeight="bold">Target Server B</text>
-                    <text x="270" y="136" fontSize="7.5" fill="#475569">AZ us-east-1b · IP preservation</text>
+                    <rect x="260" y="105" width="150" height="42" rx="6" className="anl-svg-rect" stroke={activeNlbTarget === 'B' ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={activeNlbTarget === 'B' ? 2 : 0.5}/>
+                    <text x="270" y="122" fontSize="10" className={activeNlbTarget === 'B' ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">Target Server B</text>
+                    <text x="270" y="136" fontSize="7.5" className="anl-svg-text-secondary">AZ us-east-1b · IP preservation</text>
                   </g>
                   <path
                     d="M 210 140 L 260 140"
@@ -1434,9 +2014,9 @@ Connection: keep-alive`}</pre>
 
                   {/* Target Server C */}
                   <g opacity={activeNlbTarget === 'C' ? 1.0 : 0.4} style={{ transition: 'opacity 0.3s ease' }}>
-                    <rect x="260" y="190" width="150" height="42" rx="6" fill="#f8fafc" stroke={activeNlbTarget === 'C' ? '#22c55e' : '#cbd5e1'} strokeWidth={activeNlbTarget === 'C' ? 2 : 0.5}/>
-                    <text x="270" y="207" fontSize="10" fill={activeNlbTarget === 'C' ? '#166534' : '#1e293b'} fontWeight="bold">Target Server C</text>
-                    <text x="270" y="221" fontSize="7.5" fill="#475569">AZ us-east-1c · IP preservation</text>
+                    <rect x="260" y="190" width="150" height="42" rx="6" className="anl-svg-rect" stroke={activeNlbTarget === 'C' ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={activeNlbTarget === 'C' ? 2 : 0.5}/>
+                    <text x="270" y="207" fontSize="10" className={activeNlbTarget === 'C' ? 'text-green' : 'anl-svg-text-primary'} fontWeight="bold">Target Server C</text>
+                    <text x="270" y="221" fontSize="7.5" className="anl-svg-text-secondary">AZ us-east-1c · IP preservation</text>
                   </g>
                   <path
                     d="M 210 150 L 235 150 L 235 211 L 260 211"
@@ -1773,9 +2353,9 @@ Target Server Index:
                       const hasCookie = simMode === 'alb_sticky' && stickyMap[idx];
                       return (
                         <g key={idx}>
-                          <rect x="20" y={y} width="70" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="55" y={y + 18} fontSize="9" fontWeight="bold" textAnchor="middle" fill="#1e293b">Client {idx + 1}</text>
-                          <text x="55" y={y + 30} fontSize="7.5" fill="#64748b" textAnchor="middle" fontFamily="monospace">
+                          <rect x="20" y={y} width="70" height="40" rx="6" className="anl-svg-rect" stroke="var(--color-border-tertiary)" strokeWidth="1.5" />
+                          <text x="55" y={y + 18} fontSize="9" fontWeight="bold" textAnchor="middle" className="anl-svg-text-primary">Client {idx + 1}</text>
+                          <text x="55" y={y + 30} fontSize="7.5" className="anl-svg-text-secondary" textAnchor="middle" fontFamily="monospace">
                             {idx === 0 ? '198.51.10.4' : idx === 1 ? '198.51.10.8' : '198.51.10.9'}
                           </text>
                           {hasCookie && (
@@ -1819,18 +2399,18 @@ Target Server Index:
                             width="70"
                             height="40"
                             rx="5"
-                            fill="#f8fafc"
+                            className="anl-svg-rect"
                             stroke={isHealthy ? '#10b981' : '#ef4444'}
                             strokeWidth="1.5"
                           />
                           {/* Inner details */}
-                          <rect x="5" y="5" width="60" height="8" rx="2" fill={isHealthy ? '#e6f4ea' : '#fce8e6'} />
-                          <text x="35" y="11" fontSize="7.5" fontWeight="bold" textAnchor="middle" fill={isHealthy ? '#137333' : '#c5221f'}>
+                          <rect x="5" y="5" width="60" height="8" rx="2" className={isHealthy ? 'anl-svg-inner-healthy' : 'anl-svg-inner-unhealthy'} />
+                          <text x="35" y="11" fontSize="7.5" fontWeight="bold" textAnchor="middle" className={isHealthy ? 'text-green' : 'text-red'}>
                             Target {letter}
                           </text>
 
                           {/* IP Details */}
-                          <text x="35" y="24" fontSize="7.5" fill="#475569" textAnchor="middle" fontFamily="monospace">
+                          <text x="35" y="24" fontSize="7.5" className="anl-svg-text-secondary" textAnchor="middle" fontFamily="monospace">
                             10.0.1.{idx + 10}
                           </text>
 
@@ -1840,12 +2420,12 @@ Target Server Index:
                               <circle cx="10" cy="32" r="3" fill="#10b981" className="led-blink" />
                               <circle cx="17" cy="32" r="1.5" fill="#10b981" opacity="0.7" />
                               <circle cx="22" cy="32" r="1.5" fill="#10b981" opacity="0.7" />
-                              <text x="60" y="34" fontSize="7.5" textAnchor="end" fill="#10b981" fontWeight="bold">ONLINE</text>
+                              <text x="60" y="34" fontSize="7.5" textAnchor="end" className="text-green" fontWeight="bold">ONLINE</text>
                             </>
                           ) : (
                             <>
                               <circle cx="10" cy="32" r="3" fill="#ef4444" className="led-blink" />
-                              <text x="60" y="34" fontSize="7.5" textAnchor="end" fill="#ef4444" fontWeight="bold">CRASHED ×</text>
+                              <text x="60" y="34" fontSize="7.5" textAnchor="end" className="text-red" fontWeight="bold">CRASHED ×</text>
                             </>
                           )}
                         </g>
@@ -1941,17 +2521,7 @@ Target Server Index:
                                 ...prev
                               ]);
                             }}
-                            style={{
-                              flex: 1,
-                              fontSize: '11px',
-                              padding: '4px 6px',
-                              background: serverHealth[idx] ? '#dcfce7' : '#fee2e2',
-                              border: serverHealth[idx] ? '0.5px solid #86efac' : '0.5px solid #fca5a5',
-                              color: serverHealth[idx] ? '#166534' : '#991b1b',
-                              borderRadius: '6px',
-                              fontWeight: 600,
-                              cursor: 'pointer'
-                            }}
+                            className={`anl-server-health-btn ${serverHealth[idx] ? 'healthy' : 'unhealthy'}`}
                           >
                             Server {String.fromCharCode(65 + idx)} {serverHealth[idx] ? '✅' : '❌'}
                           </button>
@@ -2076,78 +2646,78 @@ Target Server Index:
                     </defs>
 
                     {/* Shared VPC Boundary Box */}
-                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3,3"/>
-                    <text x="150" y="70" fontSize="8" fill="#475569" fontWeight="bold">VPC boundary (us-east-1)</text>
+                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" stroke="rgba(148, 163, 184, 0.5)" strokeWidth="1" strokeDasharray="3,3"/>
+                    <text x="150" y="70" fontSize="8" className="anl-svg-text-secondary" fontWeight="bold">VPC boundary (us-east-1)</text>
 
                     {/* Subnet Boundaries */}
-                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="0.8"/>
-                    <text x="370" y="93" fontSize="7.5" fill="#475569">🔒 Private Subnet AZ1</text>
+                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="0.8"/>
+                    <text x="370" y="93" fontSize="7.5" className="anl-svg-text-secondary">🔒 Private Subnet AZ1</text>
 
-                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="0.8"/>
-                    <text x="370" y="198" fontSize="7.5" fill="#475569">🔒 Private Subnet AZ2</text>
+                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="0.8"/>
+                    <text x="370" y="198" fontSize="7.5" className="anl-svg-text-secondary">🔒 Private Subnet AZ2</text>
 
                     {/* Nodes Rendering */}
 
                     {/* Node 1: Client Node */}
                     <g opacity={isNodeActive('client') || isNodeActive('phz') ? 1.0 : 0.7} className={isNodeActive('client') || isNodeActive('phz') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
-                      <rect x="15" y="125" width="85" height="50" rx="6" fill="#f8fafc" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : '#cbd5e1'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 0.5}/>
-                      <text x="57.5" y="145" textAnchor="middle" fontSize="10" fill="#1e293b" fontWeight="bold">💻 Public Client</text>
-                      <text x="57.5" y="160" textAnchor="middle" fontSize="7.5" fill="#0284c7">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
+                      <rect x="15" y="125" width="85" height="50" rx="6" className="anl-svg-rect" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 0.5}/>
+                      <text x="57.5" y="145" textAnchor="middle" fontSize="10" className="anl-svg-text-primary" fontWeight="bold">💻 Public Client</text>
+                      <text x="57.5" y="160" textAnchor="middle" fontSize="7.5" className="text-blue">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
                     </g>
 
                     {/* Node 2: Route 53 (L7 / L4 only) */}
                     {infraScenario !== 'privatelink' && (
                       <g opacity={isNodeActive('route53') ? 1.0 : 0.7} className={isNodeActive('route53') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="150" y="85" width="80" height="42" rx="6" fill="#faf5ff" stroke={isNodeActive('route53') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('route53') ? 2 : 0.5}/>
-                        <text x="190" y="103" textAnchor="middle" fontSize="10" fill="#581c87" fontWeight="bold">🚀 Route 53</text>
-                        <text x="190" y="116" textAnchor="middle" fontSize="7.5" fill="#7e22ce">Global DNS Resolver</text>
+                        <rect x="150" y="85" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('route53') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('route53') ? 2 : 0.5}/>
+                        <text x="190" y="103" textAnchor="middle" fontSize="10" className="text-purple" fontWeight="bold">🚀 Route 53</text>
+                        <text x="190" y="116" textAnchor="middle" fontSize="7.5" className="text-purple">Global DNS Resolver</text>
                       </g>
                     )}
 
                     {/* Node 3: AWS WAF (ALB only) */}
                     {infraScenario === 'alb_ingress' && (
                       <g opacity={isNodeActive('waf') ? 1.0 : 0.7} className={isNodeActive('waf') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#fff5f5" stroke={isNodeActive('waf') ? '#ea580c' : '#cbd5e1'} strokeWidth={isNodeActive('waf') ? 2 : 0.5}/>
-                        <text x="190" y="163" textAnchor="middle" fontSize="10" fill="#991b1b" fontWeight="bold">🛡️ AWS WAF</text>
-                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#b91c1c">Packet Inspection</text>
+                        <rect x="150" y="145" width="80" height="42" rx="6" className="anl-svg-rect-red" stroke={isNodeActive('waf') ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('waf') ? 2 : 0.5}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="10" className="text-red" fontWeight="bold">🛡️ AWS WAF</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" className="text-red">Packet Inspection</text>
                       </g>
                     )}
 
                     {/* Node 4: CloudFront Edge (ALB only) */}
                     {infraScenario === 'alb_ingress' && (
                       <g opacity={isNodeActive('cloudfront') ? 1.0 : 0.7} className={isNodeActive('cloudfront') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                        <rect x="150" y="205" width="80" height="42" rx="6" fill="#fff7ed" stroke={isNodeActive('cloudfront') ? '#ea580c' : '#cbd5e1'} strokeWidth={isNodeActive('cloudfront') ? 2 : 0.5}/>
-                        <text x="190" y="223" textAnchor="middle" fontSize="9.5" fill="#c2410c" fontWeight="bold">☁️ CloudFront CDN</text>
-                        <text x="190" y="236" textAnchor="middle" fontSize="7.5" fill="#ea580c">Edge Location Cache</text>
+                        <rect x="150" y="205" width="80" height="42" rx="6" className="anl-svg-rect-orange" stroke={isNodeActive('cloudfront') ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('cloudfront') ? 2 : 0.5}/>
+                        <text x="190" y="223" textAnchor="middle" fontSize="9.5" className="text-orange" fontWeight="bold">☁️ CloudFront CDN</text>
+                        <text x="190" y="236" textAnchor="middle" fontSize="7.5" className="text-orange">Edge Location Cache</text>
                       </g>
                     )}
 
                     {/* Node 5: Interface VPC Endpoint ENI (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
                       <g opacity={isNodeActive('eni') ? 1.0 : 0.7} className={isNodeActive('eni') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="150" y="145" width="80" height="42" rx="6" fill="#faf5ff" stroke={isNodeActive('eni') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('eni') ? 2 : 0.5}/>
-                        <text x="190" y="163" textAnchor="middle" fontSize="9.5" fill="#581c87" fontWeight="bold">🔌 Interface ENI</text>
-                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" fill="#7e22ce">Consumer Gateway</text>
+                        <rect x="150" y="145" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('eni') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('eni') ? 2 : 0.5}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="9.5" className="text-purple" fontWeight="bold">🔌 Interface ENI</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" className="text-purple">Consumer Gateway</text>
                       </g>
                     )}
 
                     {/* Node 6: AWS Private Backbone (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
                       <g opacity={isNodeActive('backbone') ? 1.0 : 0.7} className={isNodeActive('backbone') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="255" y="145" width="80" height="42" rx="6" fill="#faf5ff" stroke={isNodeActive('backbone') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('backbone') ? 2 : 0.5}/>
-                        <text x="295" y="163" textAnchor="middle" fontSize="9.5" fill="#581c87" fontWeight="bold">🌐 AWS Backbone</text>
-                        <text x="295" y="176" textAnchor="middle" fontSize="7.5" fill="#7e22ce">Physical Fiber Tunnel</text>
+                        <rect x="255" y="145" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('backbone') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('backbone') ? 2 : 0.5}/>
+                        <text x="295" y="163" textAnchor="middle" fontSize="9.5" className="text-purple" fontWeight="bold">🌐 AWS Backbone</text>
+                        <text x="295" y="176" textAnchor="middle" fontSize="7.5" className="text-purple">Physical Fiber Tunnel</text>
                       </g>
                     )}
 
                     {/* Node 7: Load Balancer (ALB / NLB Node) */}
                     {infraScenario !== 'privatelink' && (
                       <g opacity={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 1.0 : 0.7} className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
-                        <rect x="255" y="125" width="80" height="50" rx="8" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? activeColor : '#fff7ed'} stroke={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : activeColor} strokeWidth="1.5"/>
-                        <text x="295" y="146.5" textAnchor="middle" fontSize="10.5" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : '#1e293b'} fontWeight="bold">
+                        <rect x="255" y="125" width="80" height="50" rx="8" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-rect-orange'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? activeColor : undefined} stroke={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : activeColor} strokeWidth="1.5"/>
+                        <text x="295" y="146.5" textAnchor="middle" fontSize="10.5" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-text-primary'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : undefined} fontWeight="bold">
                           {infraScenario === 'alb_ingress' ? '🍔 Public ALB' : '🔢 Public NLB'}
                         </text>
-                        <text x="295" y="159.5" textAnchor="middle" fontSize="7.5" fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : '#64748b'}>
+                        <text x="295" y="159.5" textAnchor="middle" fontSize="7.5" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-text-secondary'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : undefined}>
                           {infraScenario === 'alb_ingress' ? 'Layer 7 Smart' : 'Layer 4 Static'}
                         </text>
                       </g>
@@ -2156,30 +2726,30 @@ Target Server Index:
                     {/* Provider NLB (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
                       <g opacity={isNodeActive('nlb') ? 1.0 : 0.7} className={isNodeActive('nlb') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="360" y="140" width="80" height="42" rx="6" fill="#f0f9ff" stroke={isNodeActive('nlb') ? '#7c3aed' : '#cbd5e1'} strokeWidth={isNodeActive('nlb') ? 2 : 0.5}/>
-                        <text x="400" y="158" textAnchor="middle" fontSize="9.5" fill="#0369a1" fontWeight="bold">🔌 Provider NLB</text>
-                        <text x="400" y="171" textAnchor="middle" fontSize="7.5" fill="#0284c7">Endpoint Service</text>
+                        <rect x="360" y="140" width="80" height="42" rx="6" className="anl-svg-rect-blue" stroke={isNodeActive('nlb') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('nlb') ? 2 : 0.5}/>
+                        <text x="400" y="158" textAnchor="middle" fontSize="9.5" className="text-blue" fontWeight="bold">🔌 Provider NLB</text>
+                        <text x="400" y="171" textAnchor="middle" fontSize="7.5" className="text-blue">Endpoint Service</text>
                       </g>
                     )}
 
                     {/* Node 8: Private Compute AZ1 Racks */}
                     <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
-                      <rect x="460" y="95" width="130" height="36" rx="5" fill="#f8fafc" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#cbd5e1'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
-                      <text x="468" y="110" fontSize="9.5" fill="#1e293b" fontWeight="bold">🖥️ Target Host AZ1</text>
-                      <text x="468" y="123" fontSize="7" fill="#64748b">Port 80 · Healthy Target Pool</text>
+                      <rect x="460" y="95" width="130" height="36" rx="5" className="anl-svg-rect" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
+                      <text x="468" y="110" fontSize="9.5" className="anl-svg-text-primary" fontWeight="bold">🖥️ Target Host AZ1</text>
+                      <text x="468" y="123" fontSize="7" className="anl-svg-text-secondary">Port 80 · Healthy Target Pool</text>
                     </g>
 
                     {/* Node 9: Private Compute AZ2 Racks */}
                     <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
-                      <rect x="460" y="200" width="130" height="36" rx="5" fill="#f8fafc" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#cbd5e1'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
-                      <text x="468" y="215" fontSize="9.5" fill="#1e293b" fontWeight="bold">🖥️ Target Host AZ2</text>
-                      <text x="468" y="228" fontSize="7" fill="#64748b">Port 80 · Healthy Target Pool</text>
+                      <rect x="460" y="200" width="130" height="36" rx="5" className="anl-svg-rect" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
+                      <text x="468" y="215" fontSize="9.5" className="anl-svg-text-primary" fontWeight="bold">🖥️ Target Host AZ2</text>
+                      <text x="468" y="228" fontSize="7" className="anl-svg-text-secondary">Port 80 · Healthy Target Pool</text>
                     </g>
 
                     {/* Node 10: RDS Database Subnet */}
                     <g opacity={0.7}>
-                      <rect x="460" y="255" width="130" height="30" rx="4" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="0.5"/>
-                      <text x="525" y="274" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
+                      <rect x="460" y="255" width="130" height="30" rx="4" className="anl-svg-rect-grey" stroke="var(--color-border-tertiary)" strokeWidth="0.5"/>
+                      <text x="525" y="274" textAnchor="middle" fontSize="9" className="anl-svg-text-secondary" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
                     </g>
 
                     {/* Flow Arrow Lines & Dynamic Paths */}
@@ -2187,21 +2757,21 @@ Target Server Index:
                     {/* Scenario 1: ALB Ingress Path */}
                     {infraScenario === 'alb_ingress' && (
                       <g>
-                        <path d="M 100 150 L 150 106" fill="none" stroke={infraStep >= 1 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
-                        <path d="M 190 127 L 190 145" fill="none" stroke={infraStep >= 2 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 2 ? 2.5 : 1} className={infraStep === 2 ? 'flow-active-line' : ''} />
-                        <path d="M 190 187 L 190 205" fill="none" stroke={infraStep >= 3 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
-                        <path d="M 230 226 L 295 226 L 295 175" fill="none" stroke={infraStep >= 4 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
-                        <path d="M 335 140 L 460 113" fill="none" stroke={infraStep >= 5 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 5 ? 2.5 : 1} className={infraStep === 5 ? 'flow-active-line' : ''} />
-                        <path d="M 335 160 L 460 218" fill="none" stroke={infraStep >= 5 ? '#ea580c' : '#334155'} strokeWidth={infraStep >= 5 ? 2.5 : 1} className={infraStep === 5 ? 'flow-active-line' : ''} />
+                        <path d="M 100 150 L 150 106" fill="none" stroke={infraStep >= 1 ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
+                        <path d="M 190 127 L 190 145" fill="none" stroke={infraStep >= 2 ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 2 ? 2.5 : 1} className={infraStep === 2 ? 'flow-active-line' : ''} />
+                        <path d="M 190 187 L 190 205" fill="none" stroke={infraStep >= 3 ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 230 226 L 295 226 L 295 175" fill="none" stroke={infraStep >= 4 ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
+                        <path d="M 335 140 L 460 113" fill="none" stroke={infraStep >= 5 ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 5 ? 2.5 : 1} className={infraStep === 5 ? 'flow-active-line' : ''} />
+                        <path d="M 335 160 L 460 218" fill="none" stroke={infraStep >= 5 ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 5 ? 2.5 : 1} className={infraStep === 5 ? 'flow-active-line' : ''} />
                       </g>
                     )}
 
                     {/* Scenario 2: NLB Flow Hashing Path */}
                     {infraScenario === 'nlb_throughput' && (
                       <g>
-                        <path d="M 100 150 L 255 150" fill="none" stroke={infraStep >= 1 ? '#0284c7' : '#334155'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
-                        <path d="M 335 140 L 460 113" fill="none" stroke={infraStep >= 3 ? '#0284c7' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
-                        <path d="M 335 160 L 460 218" fill="none" stroke={infraStep >= 3 ? '#0284c7' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 100 150 L 255 150" fill="none" stroke={infraStep >= 1 ? '#0284c7' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
+                        <path d="M 335 140 L 460 113" fill="none" stroke={infraStep >= 3 ? '#0284c7' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 335 160 L 460 218" fill="none" stroke={infraStep >= 3 ? '#0284c7' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
                         
                         {/* Direct Server Return Path (Dotted Cyan from servers back to client) */}
                         {infraStep >= 4 && (
@@ -2216,11 +2786,11 @@ Target Server Index:
                     {/* Scenario 3: VPC PrivateLink Path */}
                     {infraScenario === 'privatelink' && (
                       <g>
-                        <path d="M 100 150 L 150 166" fill="none" stroke={infraStep >= 1 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
-                        <path d="M 230 166 L 255 166" fill="none" stroke={infraStep >= 2 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 2 ? 2.5 : 1} className={infraStep === 2 ? 'flow-active-line' : ''} />
-                        <path d="M 335 166 L 360 161" fill="none" stroke={infraStep >= 3 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
-                        <path d="M 440 150 L 460 113" fill="none" stroke={infraStep >= 4 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
-                        <path d="M 440 170 L 460 218" fill="none" stroke={infraStep >= 4 ? '#7c3aed' : '#334155'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
+                        <path d="M 100 150 L 150 166" fill="none" stroke={infraStep >= 1 ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 1 ? 2.5 : 1} className={infraStep === 1 ? 'flow-active-line' : ''} />
+                        <path d="M 230 166 L 255 166" fill="none" stroke={infraStep >= 2 ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 2 ? 2.5 : 1} className={infraStep === 2 ? 'flow-active-line' : ''} />
+                        <path d="M 335 166 L 360 161" fill="none" stroke={infraStep >= 3 ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 3 ? 2.5 : 1} className={infraStep === 3 ? 'flow-active-line' : ''} />
+                        <path d="M 440 150 L 460 113" fill="none" stroke={infraStep >= 4 ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
+                        <path d="M 440 170 L 460 218" fill="none" stroke={infraStep >= 4 ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={infraStep >= 4 ? 2.5 : 1} className={infraStep === 4 ? 'flow-active-line' : ''} />
                       </g>
                     )}
 
@@ -2471,26 +3041,13 @@ resource "aws_lb_target_group" "tcp_tg" {
         {activeSection === 'notebook' && (
           <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
             
-            {/* SaaS Academy Header Banner */}
-            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-sky-500 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
-                    Interactive Architect Academy
-                  </span>
-                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
-                    <BookOpen className="w-6 h-6 stroke-[2] text-white" /> AWS Elastic Load Balancer Academy
-                  </h2>
-                  <p className="text-xs text-white/90 mt-1 max-w-2xl leading-relaxed">
-                    A premium, high-fidelity visual workbook covering Layer 3, Layer 4, and Layer 7 load balancer routing taxonomy, SNI cert mappings, session stickiness cookies, static IP allocations, GENEVE encapsulation, and failover topologies.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 bg-black/10 border border-white/20 px-4 py-2 rounded-xl">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                  <span className="text-[10px] font-black text-emerald-100 tracking-wider uppercase font-mono">Academy Engine Online</span>
-                </div>
-              </div>
+            <div className="card text-left">
+              <h2 className="text-xl font-bold flex items-center gap-2 font-display anl-notebook-title">
+                <BookOpen className="w-5 h-5 text-indigo-600" /> Elastic Load Balancing (ALB/NLB) Notes
+              </h2>
+              <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold anl-notebook-desc">
+                Understand the architecture of Application and Network Load Balancers, covering routing algorithms, health checks, connection draining, SSL offloading, and cross-zone routing.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -2518,7 +3075,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                       {expandedCategory === 'l7_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'l7_routing' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1">
                         <button 
                           onClick={() => setSelectedNote('alb_headers_routing')}
                           className={`acad-dir-item-btn ${selectedNote === 'alb_headers_routing' ? 'acad-active' : ''}`}
@@ -2554,7 +3111,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                       {expandedCategory === 'l4_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'l4_routing' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1">
                         <button 
                           onClick={() => setSelectedNote('nlb_flow_hashing')}
                           className={`acad-dir-item-btn ${selectedNote === 'nlb_flow_hashing' ? 'acad-active' : ''}`}
@@ -2590,7 +3147,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                       {expandedCategory === 'l3_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'l3_routing' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1">
                         <button 
                           onClick={() => setSelectedNote('gwlb_firewalls')}
                           className={`acad-dir-item-btn ${selectedNote === 'gwlb_firewalls' ? 'acad-active' : ''}`}
@@ -2638,8 +3195,8 @@ resource "aws_lb_target_group" "tcp_tg" {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
-                  <span className="text-slate-800 font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                <div className="anl-notebook-advice-box p-4 rounded-2xl text-[11px] leading-relaxed font-semibold space-y-1">
+                  <span className="title">
                     <Info className="w-3.5 h-3.5 text-indigo-500" /> Academy Advice
                   </span>
                   "Choose any load balancer topic in the directory above to reveal full visual descriptions, interactive tools, and production-grade configurations."
@@ -2655,7 +3212,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">L7 Smart Delivery</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB HTTP Host &amp; Path Rules</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">ALB HTTP Host &amp; Path Rules</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2668,30 +3225,30 @@ resource "aws_lb_target_group" "tcp_tg" {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs leading-relaxed anl-notebook-desc">
                       At Layer 7 (Application), an Application Load Balancer terminates the incoming SSL connection and inspects the HTTP request envelope. It evaluates Host headers, request paths, query strings, and custom header payloads sequentially according to listener rule priorities.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4 text-xs">
-                        <span className="font-extrabold text-slate-800 block">HTTP Request Scanning Cycle:</span>
+                        <span className="font-extrabold block anl-notebook-label">HTTP Request Scanning Cycle:</span>
                         
-                        <div className="space-y-2 font-mono text-[11px] text-slate-600">
-                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                        <div className="space-y-2 font-mono text-[11px] anl-notebook-desc">
+                          <div className="flex justify-between border-b var(--color-border-tertiary) pb-1.5">
                             <span>Step 1: Host Matching</span>
-                            <span className="text-slate-800 font-semibold">Matches host (e.g. *.example.com)</span>
+                            <span className="font-bold anl-notebook-label">Matches host (e.g. *.example.com)</span>
                           </div>
-                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                          <div className="flex justify-between border-b var(--color-border-tertiary) pb-1.5">
                             <span>Step 2: Path Matching</span>
-                            <span className="text-slate-800 font-semibold">Evaluates route path (e.g. /v1/*)</span>
+                            <span className="font-bold anl-notebook-label">Evaluates route path (e.g. /v1/*)</span>
                           </div>
-                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                          <div className="flex justify-between border-b var(--color-border-tertiary) pb-1.5">
                             <span>Step 3: Query Strings</span>
-                            <span className="text-slate-800 font-semibold">Checks URL parameters (tier=premium)</span>
+                            <span className="font-bold anl-notebook-label">Checks URL parameters (tier=premium)</span>
                           </div>
                           <div className="flex justify-between pb-1.5">
                             <span>Step 4: Headers Check</span>
-                            <span className="text-slate-800 font-semibold">Matches custom keys/values</span>
+                            <span className="font-bold anl-notebook-label">Matches custom keys/values</span>
                           </div>
                         </div>
 
@@ -2703,14 +3260,14 @@ resource "aws_lb_target_group" "tcp_tg" {
                       {/* Visual HCL Code block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Terraform Listener Rule Snippet</span>
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono">Terraform Listener Rule Snippet</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(tfRuleCode);
                               setCopiedNoteId('tf-rule');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
-                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="anl-notebook-copy-btn"
                           >
                             {copiedNoteId === 'tf-rule' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -2729,7 +3286,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Session Persistence</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB Session Stickiness &amp; Cookies</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">ALB Session Stickiness &amp; Cookies</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2742,20 +3299,20 @@ resource "aws_lb_target_group" "tcp_tg" {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs leading-relaxed anl-notebook-desc">
                       By default, an Application Load Balancer distributes incoming HTTP requests across all target instances using a round-robin algorithm. If your application relies on local server-side memory sessions, you must enable **stickiness** to pin subsequent requests from the same user to the same target server.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
-                        <h4 className="font-bold text-slate-800 text-xs">Types of Session Stickiness:</h4>
+                      <div className="space-y-4 text-xs leading-relaxed anl-notebook-desc">
+                        <h4 className="font-bold text-xs anl-notebook-label">Types of Session Stickiness:</h4>
                         
                         <ul className="list-disc pl-4 space-y-2">
                           <li>
-                            <strong className="text-slate-800">Duration-Based Cookie:</strong> The ALB itself generates and encrypts a cookie named <code className="text-amber-700 bg-slate-100 px-1 py-0.5 rounded font-mono font-bold">AWSALB</code>. When the client returns this cookie in subsequent headers, the ALB routes the flow to the pinned server.
+                            <strong className="anl-notebook-label">Duration-Based Cookie:</strong> The ALB itself generates and encrypts a cookie named <code className="anl-notebook-code-cookie">AWSALB</code>. When the client returns this cookie in subsequent headers, the ALB routes the flow to the pinned server.
                           </li>
                           <li>
-                            <strong className="text-slate-800">Application-Based Cookie:</strong> The backend application injects a custom session cookie, and the ALB wraps it in its own tracking cookie (<code className="text-amber-700 bg-slate-100 px-1 py-0.5 rounded font-mono font-bold">AWSALBAPP</code>) to maintain target affinity.
+                            <strong className="anl-notebook-label">Application-Based Cookie:</strong> The backend application injects a custom session cookie, and the ALB wraps it in its own tracking cookie (<code className="anl-notebook-code-cookie">AWSALBAPP</code>) to maintain target affinity.
                           </li>
                         </ul>
 
@@ -2764,24 +3321,24 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono block mb-3">Interactive Cookie Header Simulation</span>
+                      <div className="anl-notebook-inner-card p-4 rounded-xl">
+                        <span className="anl-notebook-inner-card-title">Interactive Cookie Header Simulation</span>
                         
                         <div className="space-y-3 font-mono text-[10.5px]">
-                          <div className="bg-slate-100 border border-slate-200 p-2.5 rounded-lg">
-                            <span className="text-emerald-700 font-bold">Response Header from ALB:</span>
-                            <p className="text-slate-800 mt-1">HTTP/1.1 200 OK</p>
-                            <p className="text-amber-700 font-bold">Set-Cookie: AWSALB=e30ab8f51a44e9102; Max-Age=3600; Path=/</p>
+                          <div className="anl-notebook-inner-subcard p-2.5 rounded-lg">
+                            <span className="text-green font-bold">Response Header from ALB:</span>
+                            <p className="anl-notebook-inner-card-text mt-1">HTTP/1.1 200 OK</p>
+                            <p className="text-orange font-bold">Set-Cookie: AWSALB=e30ab8f51a44e9102; Max-Age=3600; Path=/</p>
                           </div>
 
-                          <div className="bg-slate-100 border border-slate-200 p-2.5 rounded-lg">
-                            <span className="text-sky-700 font-bold">Next Ingress Header from Client:</span>
-                            <p className="text-slate-800 mt-1">GET /v1/users HTTP/1.1</p>
-                            <p className="text-amber-700 font-bold">Cookie: AWSALB=e30ab8f51a44e9102</p>
+                          <div className="anl-notebook-inner-subcard p-2.5 rounded-lg">
+                            <span className="text-blue font-bold">Next Ingress Header from Client:</span>
+                            <p className="anl-notebook-inner-card-text mt-1">GET /v1/users HTTP/1.1</p>
+                            <p className="text-orange font-bold">Cookie: AWSALB=e30ab8f51a44e9102</p>
                           </div>
                         </div>
 
-                        <div className="text-[10px] text-slate-500 italic mt-3">
+                        <div className="anl-notebook-inner-card-subtext">
                           * Note: Client returns the matching cookie automatically, pinning the state.
                         </div>
                       </div>
@@ -2795,7 +3352,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">TLS Terminations</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSL/TLS Offloading &amp; SNI</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">SSL/TLS Offloading &amp; SNI</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2808,7 +3365,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 leading-relaxed">
+                    <p className="text-xs leading-relaxed anl-notebook-desc">
                       SSL/TLS offloading relieves your backend application servers of the CPU-intensive work of encrypting and decrypting data. The ALB handles the SSL handshake, decrypts requests using certificates mapped from AWS Certificate Manager (ACM), and forwards cleartext HTTP requests to target compute instances inside private subnets.
                     </p>
 
@@ -2824,27 +3381,27 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">SSL Offloading Network Diagram</span>
+                      <div className="anl-notebook-inner-card p-4 rounded-xl flex flex-col justify-center text-center">
+                        <span className="anl-notebook-inner-card-title">SSL Offloading Network Diagram</span>
                         
                         <div className="flex items-center justify-center gap-2 text-[10px] font-mono">
-                          <div className="bg-slate-100 border border-slate-200 p-2.5 rounded-lg">
-                            <p className="font-bold text-slate-800">💻 Client</p>
-                            <span className="text-red-650 font-bold">HTTPS (443)</span>
+                          <div className="anl-notebook-inner-subcard p-2.5 rounded-lg">
+                            <p className="font-bold anl-notebook-inner-card-text">💻 Client</p>
+                            <span className="text-red font-bold">HTTPS (443)</span>
                           </div>
                           <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-orange-50 border border-orange-250 p-2.5 rounded-lg">
-                            <p className="font-bold text-orange-600">⚖️ ALB</p>
-                            <span className="text-amber-700 font-semibold">Decrypts TLS</span>
+                          <div className="anl-notebook-inner-subcard-orange p-2.5 rounded-lg">
+                            <p className="font-bold text-orange">⚖️ ALB</p>
+                            <span className="text-orange font-semibold">Decrypts TLS</span>
                           </div>
                           <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-emerald-50 border border-emerald-250 p-2.5 rounded-lg">
-                            <p className="font-bold text-emerald-600">🖥️ EC2</p>
-                            <span className="text-emerald-700 font-semibold">HTTP (80)</span>
+                          <div className="anl-notebook-inner-subcard-green p-2.5 rounded-lg">
+                            <p className="font-bold text-green">🖥️ EC2</p>
+                            <span className="text-green font-semibold">HTTP (80)</span>
                           </div>
                         </div>
 
-                        <p className="text-[10px] text-slate-500 mt-4 leading-normal max-w-xs mx-auto">
+                        <p className="anl-notebook-inner-card-subtext mt-4 leading-normal max-w-xs mx-auto">
                           Decryption happens at the load balancer boundary. Computes scale easily without handling complex key handshakes.
                         </p>
                       </div>
@@ -2858,7 +3415,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">L4 Flow Mechanics</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">L4 5-Tuple Connection Hashing</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">L4 5-Tuple Connection Hashing</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2878,8 +3435,8 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       
                       {/* Interactive Hashing Math HUD */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-4">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono block">Interactive FNV-1a Hashing Tool</span>
+                      <div className="anl-notebook-inner-card p-5 space-y-4 rounded-xl">
+                        <span className="anl-notebook-inner-card-title">Interactive FNV-1a Hashing Tool</span>
                         
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
@@ -2887,7 +3444,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                             <select 
                               value={nbProtocol} 
                               onChange={(e) => setNbProtocol(e.target.value as any)}
-                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 outline-none"
+                              className="anl-notebook-input"
                             >
                               <option value="TCP">TCP</option>
                               <option value="UDP">UDP</option>
@@ -2899,7 +3456,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                               type="text" 
                               value={nbSrcIp} 
                               onChange={(e) => setNbSrcIp(e.target.value)}
-                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                              className="anl-notebook-input font-mono"
                             />
                           </div>
                           <div>
@@ -2908,7 +3465,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                               type="number" 
                               value={nbSrcPort} 
                               onChange={(e) => setNbSrcPort(parseInt(e.target.value) || 1024)}
-                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                              className="anl-notebook-input font-mono"
                             />
                           </div>
                           <div>
@@ -2917,13 +3474,13 @@ resource "aws_lb_target_group" "tcp_tg" {
                               type="number" 
                               value={nbDstPort} 
                               onChange={(e) => setNbDstPort(parseInt(e.target.value) || 443)}
-                              className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                              className="anl-notebook-input font-mono"
                             />
                           </div>
                         </div>
 
                         {/* Hash Results HUD */}
-                        <div className="bg-white border border-slate-200 p-3 rounded-lg font-mono text-[10.5px] space-y-1.5 text-slate-600">
+                        <div className="anl-notebook-inner-subcard p-3 rounded-lg font-mono text-[10.5px] space-y-1.5 text-slate-600">
                           <p>Tuple: <span className="text-slate-850 font-bold">{`${nbProtocol}:${nbSrcIp}:${nbSrcPort}->203.0.113.88:${nbDstPort}`}</span></p>
                           <p>FNV-1a Hash: <span className="text-sky-600 font-bold">0x{calculateFnv1a(`${nbProtocol}:${nbSrcIp}:${nbSrcPort}->203.0.113.88:${nbDstPort}`)}</span></p>
                           <p>Modulo Index: <span className="text-emerald-600 font-bold font-semibold">
@@ -2932,8 +3489,8 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="space-y-4 text-xs text-slate-650">
-                        <span className="font-extrabold text-slate-800 block">The 5-Tuple Routing Parameters:</span>
+                      <div className="space-y-4 text-xs anl-notebook-desc">
+                        <span className="font-extrabold block anl-notebook-label">The 5-Tuple Routing Parameters:</span>
                         
                         <ol className="list-decimal pl-4 space-y-1.5">
                           <li>Source IP address</li>
@@ -3028,27 +3585,27 @@ resource "aws_lb_target_group" "tcp_tg" {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-650 leading-relaxed">
+                    <p className="text-xs leading-relaxed anl-notebook-desc">
                       In a standard load balancer configuration (Proxy Mode), the load balancer acts as a middleman: it receives requests from the client, forwards them to the server, and then receives response packets from the server to send back to the client. This means all response traffic is routed back through the load balancer, which can create a bandwidth bottleneck.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       
                       {/* Interactive DSR comparison panel */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+                      <div className="anl-notebook-inner-card p-4 space-y-4 rounded-xl">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono">Interactive DSR Router</span>
+                          <span className="anl-notebook-inner-card-title">Interactive DSR Router</span>
                           
-                          <div className="flex bg-slate-200 p-0.5 rounded">
+                          <div className="anl-notebook-tab-toggle p-0.5 rounded">
                             <button 
                               onClick={() => setNbDsrMode('dsr')}
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${nbDsrMode === 'dsr' ? 'bg-sky-500 text-white' : 'text-slate-600'}`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${nbDsrMode === 'dsr' ? 'anl-toggle-active-blue' : 'anl-toggle-inactive'}`}
                             >
                               DSR
                             </button>
                             <button 
                               onClick={() => setNbDsrMode('proxy')}
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${nbDsrMode === 'proxy' ? 'bg-sky-500 text-white' : 'text-slate-600'}`}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${nbDsrMode === 'proxy' ? 'anl-toggle-active-blue' : 'anl-toggle-inactive'}`}
                             >
                               Proxy
                             </button>
@@ -3056,7 +3613,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
 
                         {/* Interactive DSR SVG Diagram */}
-                        <div className="border border-slate-200 rounded-lg p-2 bg-slate-50 h-36">
+                        <div className="anl-notebook-inner-subcard p-2 h-36">
                           <svg width="100%" height="100%" viewBox="0 0 280 140">
                             {/* Nodes */}
                             <g transform="translate(10, 45)">
@@ -3099,8 +3656,8 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="space-y-4 text-xs text-slate-655">
-                        <span className="font-extrabold text-slate-800 block">DSR Technical Mechanics:</span>
+                      <div className="space-y-4 text-xs anl-notebook-desc">
+                        <span className="font-extrabold block anl-notebook-label">DSR Technical Mechanics:</span>
                         <p className="leading-relaxed">
                           With **Direct Server Return (DSR)**, the load balancer receives the packet, routes it to the target server, and leaves the client source IP intact. When responding, the server sends response packets directly back to the client's public IP, bypassing the load balancer completely. This improves overall throughput, since response payloads are typically much larger than requests!
                         </p>
@@ -3120,7 +3677,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Layer 3 Ingress</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GWLB Inline Firewall Topologies</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">GWLB Inline Firewall Topologies</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -3149,23 +3706,23 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">Transparent Inline Flow Path</span>
+                      <div className="anl-notebook-inner-card p-4 rounded-xl flex flex-col justify-center text-center">
+                        <span className="anl-notebook-inner-card-title">Transparent Inline Flow Path</span>
                         
-                        <div className="flex flex-col items-center gap-1 text-[9.5px] font-mono text-slate-600">
-                          <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-md">
+                        <div className="flex flex-col items-center gap-1 text-[9.5px] font-mono text-slate-655">
+                          <div className="anl-notebook-inner-subcard px-3 py-1.5 rounded-md text-center">
                             💡 Raw Packet Ingress
                           </div>
                           <span className="text-slate-400">&darr;</span>
-                          <div className="bg-violet-50 border border-violet-205 px-3 py-1.5 rounded-md text-violet-700 font-semibold">
+                          <div className="anl-notebook-inner-subcard-purple px-3 py-1.5 rounded-md text-center text-purple font-semibold">
                             🔒 VPC GWLB Endpoint (GWLBe)
                           </div>
                           <span className="text-slate-400">&darr;</span>
-                          <div className="bg-violet-100 border border-violet-300 px-3 py-1.5 rounded-md text-violet-850 font-bold">
+                          <div className="anl-notebook-inner-subcard-purple-dark px-3 py-1.5 rounded-md text-center font-bold">
                             🛡️ GWLB + Firewall Pool (GENEVE UDP 6081)
                           </div>
                           <span className="text-slate-400">&darr;</span>
-                          <div className="bg-white border border-slate-200 px-3 py-1.5 rounded-md">
+                          <div className="anl-notebook-inner-subcard px-3 py-1.5 rounded-md text-center">
                             🟢 Clean Target App Instance (Layer 3 raw delivery)
                           </div>
                         </div>
@@ -3180,7 +3737,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Tunneling Protocol</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GENEVE Tunneling Protocol</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">GENEVE Tunneling Protocol</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -3193,44 +3750,44 @@ resource "aws_lb_target_group" "tcp_tg" {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-650 leading-relaxed">
+                    <p className="text-xs leading-relaxed anl-notebook-desc">
                       GENEVE (Generic Network Virtualization Encapsulation) is a tunneling protocol that encapsulates raw L3 IP packets into UDP frames (port 6081) to pass metadata alongside raw traffic. This allows the GWLB to pass critical routing context, such as VPC endpoint IDs, flow IDs, and security tags, directly to virtual firewalls.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       
                       {/* Interactive Frame Inspector */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 font-mono text-xs">
+                      <div className="anl-notebook-inner-card p-5 space-y-3 rounded-xl">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">GENEVE Frame Inspector</span>
+                          <span className="anl-notebook-inner-card-title">GENEVE Frame Inspector</span>
                           
                           <button
                             onClick={() => setGenevePayloadType(genevePayloadType === 'SAFE' ? 'MALICIOUS' : 'SAFE')}
                             className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-colors ${
-                              genevePayloadType === 'SAFE' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-red-50 border-red-300 text-red-700'
+                              genevePayloadType === 'SAFE' ? 'anl-geneve-btn-safe' : 'anl-geneve-btn-attack'
                             }`}
                           >
                             {genevePayloadType === 'SAFE' ? 'SAFE' : 'ATTACK DETECT'}
                           </button>
                         </div>
 
-                        <div className="space-y-2 text-[10px]">
-                          <div className="bg-white border border-slate-200 p-2 rounded text-slate-700">
+                        <div className="space-y-2 text-[10px] font-mono">
+                          <div className="anl-notebook-inner-subcard p-2 rounded">
                             <span className="text-slate-400 text-[8.5px] block font-bold">1. OUTER IP HEADER (ENI to GWLB)</span>
-                            <p>Src: 10.0.1.25 (GWLBe) &rarr; Dst: 10.0.3.102 (GWLB)</p>
-                            <p>Proto: UDP (Dst Port: 6081)</p>
+                            <p className="anl-notebook-inner-card-text">Src: 10.0.1.25 (GWLBe) &rarr; Dst: 10.0.3.102 (GWLB)</p>
+                            <p className="anl-notebook-inner-card-text">Proto: UDP (Dst Port: 6081)</p>
                           </div>
 
-                          <div className="bg-violet-50 border border-violet-200 p-2 rounded text-violet-800">
+                          <div className="anl-notebook-inner-subcard-purple p-2 rounded">
                             <span className="text-violet-600 text-[8.5px] block font-bold">2. GENEVE METADATA HEADER</span>
-                            <p>VNI: 80020 | Connection Flow ID: 41828</p>
-                            <p>VPCE ID: vpce-0a1b2c3d4e5f6</p>
+                            <p className="anl-notebook-inner-card-text">VNI: 80020 | Connection Flow ID: 41828</p>
+                            <p className="anl-notebook-inner-card-text">VPCE ID: vpce-0a1b2c3d4e5f6</p>
                           </div>
 
-                          <div className={`p-2 rounded border ${genevePayloadType === 'SAFE' ? 'bg-white border-slate-200 text-slate-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+                          <div className={`p-2 rounded border ${genevePayloadType === 'SAFE' ? 'anl-notebook-inner-subcard' : 'anl-notebook-inner-subcard-red-warning'}`}>
                             <span className="text-slate-400 text-[8.5px] block font-bold">3. INNER CUSTOMER PACKET (Client to Server)</span>
-                            <p>Src: 198.51.100.4 (Client) &rarr; Dst: 10.0.8.10 (Server)</p>
-                            <p className={genevePayloadType === 'SAFE' ? 'text-slate-800' : 'text-red-600 font-bold'}>
+                            <p className="anl-notebook-inner-card-text">Src: 198.51.100.4 (Client) &rarr; Dst: 10.0.8.10 (Server)</p>
+                            <p className={genevePayloadType === 'SAFE' ? 'anl-notebook-inner-card-text' : 'text-red font-bold'}>
                               Payload: {genevePayloadType === 'SAFE' ? 'GET /index.html' : 'UNION SELECT null, username, password FROM users;'}
                             </p>
                           </div>
@@ -3258,7 +3815,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Traffic Equalization</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cross-Zone Load Equalizer</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">Cross-Zone Load Equalizer</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -3271,7 +3828,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-650 leading-relaxed">
+                    <p className="text-xs leading-relaxed anl-notebook-desc">
                       By default, an Elastic Load Balancer node distributes incoming requests only to targets in its own Availability Zone. If your target groups are distributed unevenly across zones, this default behavior can lead to unequal instance load. Enabling **Cross-Zone Load Balancing** resolves this by letting balancer nodes distribute traffic evenly across all registered targets in all enabled zones.
                     </p>
 
@@ -3322,8 +3879,8 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="space-y-4 text-xs text-slate-655">
-                        <span className="font-extrabold text-slate-800 block">Cross-Zone Default Behaviors:</span>
+                      <div className="space-y-4 text-xs anl-notebook-desc">
+                        <span className="font-extrabold block anl-notebook-label">Cross-Zone Default Behaviors:</span>
                         
                         <ul className="list-disc pl-4 space-y-1.5">
                           <li>
@@ -3349,7 +3906,7 @@ resource "aws_lb_target_group" "tcp_tg" {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
                         <span className="acad-hero-badge">Compute Governance</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Deregistration Delay &amp; Draining</h3>
+                        <h3 className="text-xl font-black mt-2 font-display anl-notebook-title">Deregistration Delay &amp; Draining</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -3367,8 +3924,8 @@ resource "aws_lb_target_group" "tcp_tg" {
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-655">
-                        <h4 className="font-bold text-slate-800 text-xs">Configuration Options:</h4>
+                      <div className="space-y-4 text-xs anl-notebook-desc">
+                        <h4 className="font-bold text-xs anl-notebook-label">Configuration Options:</h4>
                         <p className="leading-relaxed">
                           Deregistration delay can be configured per target group between **0 and 3600 seconds** (default: 300 seconds). If your app serves long-lived connection flows (like file uploads or reports generation), set this delay to a larger value to prevent connections from dropping abruptly!
                         </p>
@@ -3378,21 +3935,21 @@ resource "aws_lb_target_group" "tcp_tg" {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-center text-center font-mono text-xs">
-                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Deregistration State Transitions</span>
+                      <div className="anl-notebook-inner-card p-5 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="anl-notebook-inner-card-title">Deregistration State Transitions</span>
                         
                         <div className="space-y-2 text-[10.5px] text-left">
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between text-slate-800">
-                            <span className="font-bold">1. Active Status</span>
-                            <span className="text-emerald-700 font-bold font-mono">Healthy &amp; Routing</span>
+                          <div className="anl-notebook-inner-subcard-white p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="font-bold anl-notebook-label">1. Active Status</span>
+                            <span className="text-green font-bold">Healthy &amp; Routing</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between text-slate-800">
-                            <span className="font-bold">2. Draining Status</span>
-                            <span className="text-amber-700 font-bold font-mono">Draining (Active Conns Only)</span>
+                          <div className="anl-notebook-inner-subcard-white p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="font-bold anl-notebook-label">2. Draining Status</span>
+                            <span className="text-orange font-bold">Draining (Active Conns Only)</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between text-slate-800">
-                            <span className="font-bold">3. Deregistered Status</span>
-                            <span className="text-slate-500 font-bold font-mono">Deregistered (Safe to Terminate)</span>
+                          <div className="anl-notebook-inner-subcard-white p-2.5 rounded-lg flex items-center justify-between">
+                            <span className="font-bold anl-notebook-label">3. Deregistered Status</span>
+                            <span className="text-slate font-bold">Deregistered (Safe to Terminate)</span>
                           </div>
                         </div>
                       </div>

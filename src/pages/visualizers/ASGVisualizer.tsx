@@ -378,49 +378,107 @@ export default function ASGVisualizer() {
   const metrics = distributeTraffic(instances, { rps, capPer });
 
   return (
-    <div>
+    <div className="asg-container">
       <style>{`
         .asg-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
         .asg-tb { padding: 6px 14px; border-radius: var(--border-radius-lg, 12px); border: 0.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: var(--color-background-secondary, #f8fafc); color: var(--color-text-secondary, #475569); transition: all 0.15s; outline: none; font-weight: 500; }
         .asg-tb:hover { background: var(--color-background-tertiary, #f1f5f9); }
-        .asg-tb.asg-on { background: #16a34a; color: #fff; border-color: #16a34a; font-weight: 500; }
-        .asg-card { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02); }
-        .asg-sec { font-size: 11px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
+        .asg-tb.asg-on { background: #10b981; color: #fff; border-color: #10b981; font-weight: 500; }
+        .asg-card { border: 1.5px solid var(--color-border-tertiary, #cbd5e1); border-radius: 12px; padding: 16px; background: var(--color-background-secondary, rgba(255, 255, 255, 0.7)); backdrop-filter: blur(12px); margin-bottom: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02); transition: background-color 0.3s, border-color 0.3s; }
+        
+        /* Left border utility classes for cards */
+        .asg-card-green { border-left: 4px solid #10b981 !important; }
+        .asg-card-blue { border-left: 4px solid #0ea5e9 !important; }
+        .asg-card-orange { border-left: 4px solid #f97316 !important; }
+        .asg-card-purple { border-left: 4px solid #8b5cf6 !important; }
+        
+        /* Dynamic text status colors */
+        .text-green { color: #16a34a; }
+        .text-blue { color: #0284c7; }
+        .text-orange { color: #ea580c; }
+        .text-purple { color: #7c3aed; }
+        
+        .asg-sec { font-size: 11px; font-weight: 600; color: var(--color-text-secondary, #475569); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
         .asg-sec:first-child { margin-top: 0; }
         .asg-kv { display: flex; gap: 8px; font-size: 12px; margin: 6px 0; align-items: baseline; }
-        .asg-kk { min-width: 160px; color: #475569; flex-shrink: 0; }
+        .asg-kv b { color: var(--color-text-primary); }
+        .asg-kk { min-width: 160px; color: var(--color-text-secondary, #475569); flex-shrink: 0; }
         .asg-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .asg-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .asg-met { background: #f8fafc; border-radius: 8px; padding: 12px; text-align: center; border: 1px solid #cbd5e1; }
-        ul.asg-ck li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; color: #334155; }
-        ul.asg-ck li::before { content: "✓"; position: absolute; left: 0; color: #16a34a; font-weight: 700; }
-        .asg-log { border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; background: #f8fafc; font-size: 11px; font-family: var(--font-mono, monospace); white-space: pre-wrap; line-height: 1.5; color: #1e293b; }
+        .asg-met { background: var(--color-background-secondary, #f8fafc); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--color-border-tertiary, #cbd5e1); }
+        ul.asg-ck li { font-size: 12px; margin-bottom: 6px; list-style: none; padding-left: 18px; position: relative; color: var(--color-text-secondary, #334155); }
+        ul.asg-ck li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+        .asg-log { border: 1.5px solid var(--color-border-tertiary, #cbd5e1); border-radius: 8px; padding: 10px 12px; background: var(--color-background-tertiary, #f8fafc); font-size: 11px; font-family: var(--font-mono, monospace); white-space: pre-wrap; line-height: 1.5; color: var(--color-text-primary, #1e293b); }
         .asg-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
         .asg-binfo { background: #dbeafe; color: #1d4ed8; }
         .asg-bok { background: #dcfce7; color: #15803d; }
         .asg-bwarn { background: #fef3c7; color: #b45309; }
         .asg-bbad { background: #fee2e2; color: #b91c1c; }
-        .asg-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; cursor: pointer; transition: all 0.15s; outline: none; }
-        .asg-btn:hover { background: #f8fafc; }
-        .asg-btn.asg-on { background: #16a34a; color: #fff; border-color: #16a34a; }
+        
+        .asg-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1.5px solid var(--color-border-tertiary, #cbd5e1); background: var(--color-background-secondary, #ffffff); color: var(--color-text-secondary, #334155); cursor: pointer; transition: all 0.15s; outline: none; }
+        .asg-btn:hover { background: var(--color-background-tertiary, #f8fafc); color: var(--color-text-primary); }
+        .asg-btn.asg-on { background: #10b981; color: #fff; border-color: #10b981; }
+        
+        .asg-btn-outline-green { border-color: #10b981; color: #10b981; }
+        .asg-btn-outline-green:hover { background: rgba(16, 185, 129, 0.05); }
+        .asg-btn-outline-blue { border-color: #0ea5e9; color: #0ea5e9; }
+        .asg-btn-outline-blue:hover { background: rgba(14, 165, 233, 0.05); }
+        .asg-btn-outline-red { border-color: #ef4444; color: #ef4444; }
+        .asg-btn-outline-red:hover { background: rgba(239, 68, 68, 0.05); }
+        
+        .asg-input-wrapper { background: var(--color-background-secondary, #f8fafc); border: 1.5px solid var(--color-border-tertiary, #cbd5e1); padding: 10px 12px; border-radius: 8px; transition: background-color 0.3s, border-color 0.3s; }
+        .asg-number-input { width: 56px; font-size: 11px; padding: 4px 6px; border: 1.5px solid var(--color-border-tertiary, #cbd5e1); border-radius: 4px; background: var(--color-background-secondary, #ffffff); color: var(--color-text-primary); outline: none; }
+        .asg-control-status-box { padding: 8px 10px; border-radius: 6px; background: var(--color-background-secondary, #f8fafc); border: 1px solid var(--color-border-tertiary, #cbd5e1); margin-bottom: 10px; }
+        .asg-formula-box { background: var(--color-background-secondary, #f1f5f9); border: 1px solid var(--color-border-tertiary, #e2e8f0); border-radius: 8px; padding: 10px; font-family: var(--font-mono, monospace); font-size: 11px; text-align: center; font-weight: bold; color: var(--color-text-primary); }
+        .acad-advice-box { background: var(--color-background-secondary, #f8fafc); border: 1px solid var(--color-border-tertiary, #cbd5e1); border-radius: 12px; padding: 16px; font-size: 11px; line-height: 1.6; color: var(--color-text-secondary); }
+
         .asg-instances { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-        .asg-inst { border-radius: 10px; border: 1.5px solid #cbd5e1; padding: 8px 8px; text-align: center; background: #f8fafc; transition: all 0.15s; }
+        .asg-inst { border-radius: 10px; border: 1.5px solid var(--color-border-tertiary, #cbd5e1); padding: 8px 8px; text-align: center; background: var(--color-background-tertiary, #f8fafc); transition: all 0.15s; }
         .asg-inst .name { font-size: 11px; font-weight: bold; margin-bottom: 4px; }
-        .asg-inst .meta { font-size: 10px; color: #64748b; line-height: 1.4; }
-        .asg-inst.asg-ok { border-color: #10b981; background: #ecfdf5; color: #047857; }
-        .asg-inst.asg-warm { border-color: #d97706; background: #fffbeb; color: #b45309; }
-        .asg-inst.asg-drain { border-color: #1d4ed8; background: #eff6ff; color: #1d4ed8; }
-        .asg-inst.asg-down { border-color: #dc2626; background: #fff5f5; color: #b91c1c; opacity: 0.85; }
+        .asg-inst .meta { font-size: 10px; color: var(--color-text-tertiary, #64748b); line-height: 1.4; }
+        .asg-inst.asg-ok { border-color: #10b981; background: rgba(16, 185, 129, 0.05); color: #047857; }
+        .asg-inst.asg-warm { border-color: #f59e0b; background: rgba(245, 158, 11, 0.05); color: #b45309; }
+        .asg-inst.asg-drain { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); color: #1d4ed8; }
+        .asg-inst.asg-down { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); color: #b91c1c; opacity: 0.85; }
         
         /* Blueprint dot-grid backdrop style */
         .asg-svg-bg {
-          background-color: #ffffff;
-          background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+          background-color: var(--color-background-secondary, #ffffff);
+          background-image: radial-gradient(var(--color-border-tertiary, #cbd5e1) 1.2px, transparent 1.2px);
           background-size: 14px 14px;
-          border: 1.5px solid #cbd5e1;
+          border: 1.5px solid var(--color-border-tertiary, #cbd5e1);
           border-radius: 8px;
           display: block;
         }
+
+        /* SVG Layout classes */
+        .asg-svg-vpc { fill: var(--color-background-secondary, rgba(255, 255, 255, 0.5)); stroke: var(--color-border-tertiary, #cbd5e1); }
+        .asg-svg-subnet { fill: var(--color-background-secondary, #f8fafc); stroke: var(--color-border-tertiary, #cbd5e1); }
+        .asg-svg-subnet-outage { fill: rgba(239, 68, 68, 0.03); stroke: #ef4444; }
+        .asg-svg-node-users { fill: rgba(59, 130, 246, 0.05); stroke: #3b82f6; }
+        .asg-svg-node-alb { fill: rgba(16, 185, 129, 0.05); stroke: #10b981; }
+        .asg-svg-node-cw { fill: rgba(239, 68, 68, 0.03); stroke: #cbd5e1; }
+        .asg-svg-node-cw.active { fill: rgba(239, 68, 68, 0.05); stroke: #ef4444; }
+        .asg-svg-inst-ok { fill: rgba(16, 185, 129, 0.05); stroke: #10b981; }
+        .asg-svg-inst-new { fill: rgba(245, 158, 11, 0.05); stroke: #f59e0b; }
+        .asg-svg-inst-err { fill: rgba(239, 68, 68, 0.05); stroke: #ef4444; }
+        .asg-svg-text-title { fill: var(--color-text-primary, #0f172a); }
+        .asg-svg-text-desc { fill: var(--color-text-secondary, #475569); }
+        .asg-svg-text-success { fill: #047857; }
+        .asg-svg-text-error { fill: #b91c1c; }
+        
+        /* Lifecycle SVG Styles */
+        .asg-lc-rect { fill: var(--color-background-secondary, #f8fafc); stroke: var(--color-border-tertiary, #cbd5e1); transition: all 0.3s; }
+        .asg-lc-text-title { fill: var(--color-text-primary, #1e293b); }
+        .asg-lc-text-desc { fill: var(--color-text-secondary, #475569); }
+        .asg-lc-active.asg-lc-launch { fill: rgba(249, 115, 22, 0.05); stroke: #f97316; }
+        .asg-lc-active.asg-lc-launch .asg-lc-text-title { fill: #ea580c; }
+        .asg-lc-active.asg-lc-wait { fill: rgba(124, 58, 237, 0.05); stroke: #7c3aed; }
+        .asg-lc-active.asg-lc-wait .asg-lc-text-title { fill: #6d28d9; }
+        .asg-lc-active.asg-lc-inservice { fill: rgba(16, 185, 129, 0.05); stroke: #10b981; }
+        .asg-lc-active.asg-lc-inservice.failed { fill: rgba(239, 68, 68, 0.05); stroke: #ef4444; }
+        .asg-lc-active.asg-lc-drain { fill: rgba(2, 132, 199, 0.05); stroke: #0284c7; }
+        .asg-lc-active.asg-lc-terminated { fill: rgba(239, 68, 68, 0.05); stroke: #ef4444; }
 
         @keyframes activeNodePulse {
           0% { filter: drop-shadow(0 0 2px var(--pulse-color)); }
@@ -441,21 +499,21 @@ export default function ASGVisualizer() {
           font-size: 12px;
           padding: 6px 12px;
           border-radius: 6px;
-          border: 1.5px solid #cbd5e1;
-          background: #ffffff;
-          color: #475569;
+          border: 1.5px solid var(--color-border-tertiary, #cbd5e1);
+          background: var(--color-background-secondary, #ffffff);
+          color: var(--color-text-secondary, #475569);
           cursor: pointer;
           font-weight: 500;
           transition: all 0.2s;
         }
         .arch-scenario-btn:hover {
-          background: #f8fafc;
-          color: #0f172a;
+          background: var(--color-background-tertiary, #f8fafc);
+          color: var(--color-text-primary, #0f172a);
         }
         .arch-scenario-btn.active {
-          background: rgba(22, 163, 74, 0.1);
-          color: #16a34a;
-          border-color: #16a34a;
+          background: rgba(16, 185, 129, 0.1);
+          color: #10b981;
+          border-color: #10b981;
         }
         .mnemonic-gcard {
           border-radius: 12px;
@@ -625,6 +683,387 @@ export default function ASGVisualizer() {
           color: #cbd5e1;
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
+
+        /* Centralized Dark Mode Overrides for ASGVisualizer.tsx */
+        .dark .asg-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .asg-card,
+        .dark [class*="asg-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .asg-card b,
+        .dark .asg-card strong,
+        .dark .asg-card h3,
+        .dark .asg-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .asg-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .asg-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .asg-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .asg-tb.asg-on {
+          background: #10b981 !important;
+          color: #fff !important;
+          border-color: #10b981 !important;
+        }
+        .dark .asg-sec,
+        .dark .asg-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .asg-log,
+        .dark .asg-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .asg-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .asg-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .asg-btn.asg-on {
+          background: #10b981 !important;
+          color: #fff !important;
+          border-color: #10b981 !important;
+        }
+        .dark .asg-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.asg-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .asg-inst,
+        .dark .asg-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .asg-inst .meta,
+        .dark .asg-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .asg-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .asg-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .asg-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .asg-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .asg-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+    
+        .dark .mnemonic-gcard {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%) !important;
+          border-color: #f59e0b !important;
+          color: #fbbf24 !important;
+        }
+        .dark .mnemonic-gcard-title {
+          color: #fbbf24 !important;
+        }
+        
+        .dark .acad-dir-container {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn {
+          background: rgba(15, 23, 42, 0.7) !important;
+          color: #94a3b8 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .acad-dir-item-btn {
+          background: rgba(15, 23, 42, 0.5) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .acad-dir-item-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.2) !important;
+          color: #38bdf8 !important;
+          border-left-color: #0ea5e9 !important;
+        }
+        .dark .acad-table {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table th {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table td {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-sim-diagram {
+          background: rgba(15, 23, 42, 0.7) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-detail-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-takeaway-box {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+
+        /* Border left overrides preservation */
+        .dark .asg-card-green { border-left-color: #10b981 !important; }
+        .dark .asg-card-blue { border-left-color: #0ea5e9 !important; }
+        .dark .asg-card-orange { border-left-color: #f97316 !important; }
+        .dark .asg-card-purple { border-left-color: #8b5cf6 !important; }
+
+        .dark .text-green { color: #4ade80 !important; }
+        .dark .text-blue { color: #38bdf8 !important; }
+        .dark .text-orange { color: #fdba74 !important; }
+        .dark .text-purple { color: #c084fc !important; }
+
+        /* Dynamic log badges in dark mode */
+        .dark .asg-binfo { background: rgba(29, 78, 216, 0.2) !important; color: #60a5fa !important; }
+        .dark .asg-bok { background: rgba(21, 128, 61, 0.2) !important; color: #4ade80 !important; }
+        .dark .asg-bwarn { background: rgba(180, 83, 9, 0.2) !important; color: #fbbf24 !important; }
+        .dark .asg-bbad { background: rgba(185, 28, 28, 0.2) !important; color: #f87171 !important; }
+
+        /* Dynamic outline button overrides */
+        .dark .asg-btn-outline-green { border-color: #4ade80 !important; color: #4ade80 !important; }
+        .dark .asg-btn-outline-green:hover { background: rgba(74, 222, 128, 0.1) !important; }
+        .dark .asg-btn-outline-blue { border-color: #38bdf8 !important; color: #38bdf8 !important; }
+        .dark .asg-btn-outline-blue:hover { background: rgba(56, 189, 248, 0.1) !important; }
+        .dark .asg-btn-outline-red { border-color: #f87171 !important; color: #f87171 !important; }
+        .dark .asg-btn-outline-red:hover { background: rgba(248, 113, 113, 0.1) !important; }
+
+        .dark .arch-scenario-btn { background: rgba(15, 23, 42, 0.8) !important; border-color: rgba(51, 65, 85, 0.6) !important; color: #cbd5e1 !important; }
+        .dark .arch-scenario-btn:hover { background: rgba(30, 41, 59, 0.8) !important; color: #ffffff !important; }
+        .dark .arch-scenario-btn.active { background: rgba(16, 185, 129, 0.15) !important; border-color: #10b981 !important; color: #4ade80 !important; }
+
+        .dark .asg-svg-vpc { fill: rgba(15, 23, 42, 0.4) !important; stroke: rgba(51, 65, 85, 0.6) !important; }
+        .dark .asg-svg-subnet { fill: rgba(30, 41, 59, 0.3) !important; stroke: rgba(51, 65, 85, 0.5) !important; }
+        .dark .asg-svg-subnet-outage { fill: rgba(239, 68, 68, 0.05) !important; stroke: #ef4444 !important; }
+        .dark .asg-svg-node-users { fill: rgba(30, 58, 138, 0.2) !important; stroke: #3b82f6; }
+        .dark .asg-svg-node-alb { fill: rgba(6, 78, 59, 0.2) !important; stroke: #10b981; }
+        .dark .asg-svg-node-cw { fill: rgba(15, 23, 42, 0.4) !important; stroke: rgba(51, 65, 85, 0.6) !important; }
+        .dark .asg-svg-node-cw.active { fill: rgba(127, 29, 29, 0.2) !important; stroke: #ef4444 !important; }
+        .dark .asg-svg-inst-ok { fill: rgba(6, 78, 59, 0.3) !important; stroke: #10b981; }
+        .dark .asg-svg-inst-new { fill: rgba(120, 53, 4, 0.3) !important; stroke: #f59e0b; }
+        .dark .asg-svg-inst-err { fill: rgba(127, 29, 29, 0.3) !important; stroke: #ef4444; }
+        .dark .asg-svg-text-title { fill: #f8fafc !important; }
+        .dark .asg-svg-text-desc { fill: #cbd5e1 !important; }
+        .dark .asg-svg-text-success { fill: #4ade80 !important; }
+        .dark .asg-svg-text-error { fill: #f87171 !important; }
+        
+        .dark .asg-lc-rect { fill: rgba(30, 41, 59, 0.2) !important; stroke: rgba(51, 65, 85, 0.6) !important; }
+        .dark .asg-lc-text-title { fill: #f8fafc !important; }
+        .dark .asg-lc-text-desc { fill: #cbd5e1 !important; }
+        .dark .asg-lc-active.asg-lc-launch { fill: rgba(249, 115, 22, 0.15) !important; stroke: #f97316 !important; }
+        .dark .asg-lc-active.asg-lc-launch .asg-lc-text-title { fill: #fdba74 !important; }
+        .dark .asg-lc-active.asg-lc-wait { fill: rgba(124, 58, 237, 0.15) !important; stroke: #7c3aed !important; }
+        .dark .asg-lc-active.asg-lc-wait .asg-lc-text-title { fill: #c084fc !important; }
+        .dark .asg-lc-active.asg-lc-inservice { fill: rgba(16, 185, 129, 0.15) !important; stroke: #10b981 !important; }
+        .dark .asg-lc-active.asg-lc-inservice.failed { fill: rgba(239, 68, 68, 0.15) !important; stroke: #ef4444 !important; }
+        .dark .asg-lc-active.asg-lc-drain { fill: rgba(2, 132, 199, 0.15) !important; stroke: #38bdf8 !important; }
+        .dark .asg-lc-active.asg-lc-terminated { fill: rgba(239, 68, 68, 0.15) !important; stroke: #f87171 !important; }
+
+        /* Notebook detail classes */
+        .asg-note-header { border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 16px; margin-bottom: 16px; }
+        .asg-note-title { color: var(--color-text-primary, #0f172a); }
+        .asg-note-subtitle { color: var(--color-text-secondary, #475569); }
+        .asg-note-desc { color: var(--color-text-secondary, #475569); font-size: 12px; line-height: 1.6; }
+        .asg-note-sec-title { color: var(--color-text-primary, #0f172a); font-weight: bold; font-size: 13px; margin-bottom: 12px; display: block; }
+        .asg-note-row { display: flex; justify-between; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 6px; margin-bottom: 6px; }
+        .asg-note-row:last-child { border-bottom: none; }
+        .asg-note-row-label { color: var(--color-text-secondary, #475569); }
+        .asg-note-row-value { color: var(--color-text-primary, #0f172a); font-weight: 600; }
+        
+        .asg-note-widget {
+          background: var(--color-background-primary, #f8fafc);
+          border: 1px solid var(--color-border-tertiary, #cbd5e1);
+          border-radius: 12px;
+          padding: 16px;
+        }
+        .dark .asg-note-widget {
+          background: rgba(15, 23, 42, 0.4) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        .asg-note-input {
+          background: var(--color-background-secondary, #ffffff);
+          border: 1px solid var(--color-border-tertiary, #cbd5e1);
+          border-radius: 6px;
+          padding: 6px 10px;
+          color: var(--color-text-primary, #0f172a);
+          outline: none;
+          font-family: var(--font-mono, monospace);
+        }
+        .dark .asg-note-input {
+          background: #0f172a !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .asg-note-range {
+          width: 100%;
+          accent-color: #10b981;
+          cursor: ew-resize;
+        }
+        
+        .asg-note-math-box {
+          padding: 12px;
+          border-radius: 8px;
+          font-family: var(--font-mono, monospace);
+          font-size: 11px;
+          margin-top: 10px;
+          border: 1px solid transparent;
+        }
+        
+        .asg-math-allowed {
+          background: #f0fdf4;
+          border-color: #bbf7d0;
+          color: #15803d;
+        }
+        .dark .asg-math-allowed {
+          background: rgba(21, 128, 61, 0.15) !important;
+          border-color: rgba(34, 197, 94, 0.3) !important;
+          color: #4ade80 !important;
+        }
+        
+        .asg-math-warning {
+          background: #fffbeb;
+          border-color: #fde68a;
+          color: #b45309;
+        }
+        .dark .asg-math-warning {
+          background: rgba(180, 83, 9, 0.15) !important;
+          border-color: rgba(245, 158, 11, 0.3) !important;
+          color: #fbbf24 !important;
+        }
+        
+        .asg-math-danger {
+          background: #fff5f5;
+          border-color: #feb2b2;
+          color: #c53030;
+        }
+        .dark .asg-math-danger {
+          background: rgba(185, 28, 28, 0.15) !important;
+          border-color: rgba(239, 68, 68, 0.3) !important;
+          color: #f87171 !important;
+        }
+
+        .asg-status-widget-orange {
+          background: #fffbeb;
+          border: 1px solid #fde68a;
+          color: #b45309;
+        }
+        .dark .asg-status-widget-orange {
+          background: rgba(245, 158, 11, 0.15) !important;
+          border-color: rgba(245, 158, 11, 0.3) !important;
+          color: #fbbf24 !important;
+        }
+        
+        .asg-status-widget-blue {
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          color: #1d4ed8;
+        }
+        .dark .asg-status-widget-blue {
+          background: rgba(59, 130, 246, 0.15) !important;
+          border-color: rgba(59, 130, 246, 0.3) !important;
+          color: #60a5fa !important;
+        }
+        
+        .asg-status-widget-green {
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #15803d;
+        }
+        .dark .asg-status-widget-green {
+          background: rgba(21, 128, 61, 0.15) !important;
+          border-color: rgba(34, 197, 94, 0.3) !important;
+          color: #4ade80 !important;
+        }
+
+        .asg-copy-btn {
+          padding: 4px;
+          border-radius: 4px;
+          background: var(--color-background-secondary, #f1f5f9);
+          border: 1px solid var(--color-border-tertiary, #cbd5e1);
+          color: var(--color-text-secondary, #475569);
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .asg-copy-btn:hover {
+          background: var(--color-background-tertiary, #e2e8f0);
+          color: var(--color-text-primary, #0f172a);
+        }
+        .dark .asg-copy-btn {
+          background: rgba(30, 41, 59, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .asg-copy-btn:hover {
+          background: rgba(30, 41, 59, 0.9) !important;
+          color: #ffffff !important;
+        }
       `}</style>
 
       {/* Header */}
@@ -657,18 +1096,18 @@ export default function ASGVisualizer() {
           <div>
             <div className="asg-sec">Auto Scaling Group Fleet Capacities</div>
             <div className="asg-g2" style={{ marginBottom: '12px' }}>
-              <div className="asg-card" style={{ borderLeft: '3px solid #16a34a' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#16a34a' }}>📏 Key Capacity Boundaries</div>
+              <div className="asg-card asg-card-green">
+                <div className="text-green" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>📏 Key Capacity Boundaries</div>
                 <div className="asg-kv"><span className="asg-kk">Minimum Capacity</span><b>Lowest server count (ASG will never shrink below this)</b></div>
                 <div className="asg-kv"><span className="asg-kk">Desired Capacity</span><b>Current target size (ASG scales up/down to match this)</b></div>
                 <div className="asg-kv"><span className="asg-kk">Maximum Capacity</span><b>Hard upper limit ceiling (Prevents run-away bill costs)</b></div>
                 <div className="asg-kv"><span className="asg-kk">Launch Template</span><b>Fleet blueprints (AMI, Instance type, keys, user data scripts)</b></div>
               </div>
 
-              <div className="asg-card" style={{ borderLeft: '3px solid #0369a1' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#0369a1' }}>Launch Templates vs Launch Configurations</div>
+              <div className="asg-card asg-card-blue">
+                <div className="text-blue" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Launch Templates vs Launch Configurations</div>
                 <div className="asg-kv"><span className="asg-kk">Launch Configuration</span><b>Legacy blueprint system (Immutable; must recreate to change)</b></div>
-                <div className="asg-kv"><span className="asg-kk">Launch Template</span><b style={{ color: '#16a34a' }}>Modern standard. Supports versions, parameter inheritance</b></div>
+                <div className="asg-kv"><span className="asg-kk">Launch Template</span><b className="text-green">Modern standard. Supports versions, parameter inheritance</b></div>
                 <div className="asg-kv"><span className="asg-kk">Container Integration</span><b>Templates support dynamic ECS node mappings</b></div>
                 <div className="asg-kv"><span className="asg-kk">Spot &amp; On-Demand</span><b>Templates support mixing purchase options in one ASG</b></div>
               </div>
@@ -677,8 +1116,8 @@ export default function ASGVisualizer() {
             <div className="asg-sec">ASG Auto-Recovery Playbook</div>
             <div className="asg-g2">
               <div>
-                <div className="asg-card" style={{ borderLeft: '3px solid #c2410c' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#c2410c' }}>Self-Healing Detection Loop</div>
+                <div className="asg-card asg-card-orange">
+                  <div className="text-orange" style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px' }}>Self-Healing Detection Loop</div>
                   <div className="asg-kv"><span className="asg-kk" style={{ minWidth: '100px' }}>1. Diagnostic</span><b>Instance status checks fail or target group health fails</b></div>
                   <div className="asg-kv"><span className="asg-kk" style={{ minWidth: '100px' }}>2. Eviction</span><b>ASG marks node unhealthy, stopping listener routing flows</b></div>
                   <div className="asg-kv"><span className="asg-kk" style={{ minWidth: '100px' }}>3. Replacement</span><b>Terminates failed EC2, and launches brand new clone</b></div>
@@ -687,8 +1126,8 @@ export default function ASGVisualizer() {
               </div>
 
               <div>
-                <div className="asg-card" style={{ borderLeft: '3px solid #7c3aed', minHeight: '130px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', color: '#7c3aed', marginBottom: '8px' }}>Key Benefits of ASG Fleet Management</div>
+                <div className="asg-card asg-card-purple" style={{ minHeight: '130px' }}>
+                  <div className="text-purple" style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px' }}>Key Benefits of ASG Fleet Management</div>
                   <ul className="asg-ck">
                     <li><b>High Availability:</b> Fleet automatically shifts nodes across AZ zones on data-center down.</li>
                     <li><b>Self-Healing Auto Recovery:</b> Unhealthy boxes are automatically replaced without operator work.</li>
@@ -766,33 +1205,33 @@ export default function ASGVisualizer() {
                   </defs>
                   
                   {/* Outer VPC Boundary */}
-                  <rect x="5" y="5" width="670" height="330" rx="16" fill="rgba(255, 255, 255, 0.5)" stroke="#cbd5e1" strokeWidth="1.5"/>
-                  <text x="25" y="24" fontSize="10" fill="#475569" fontWeight="bold" fontFamily="monospace">VPC (10.0.0.0/16)</text>
+                  <rect x="5" y="5" width="670" height="330" rx="16" className="asg-svg-vpc" strokeWidth="1.5"/>
+                  <text x="25" y="24" fontSize="10" className="asg-svg-text-desc" fontWeight="bold" fontFamily="monospace">VPC (10.0.0.0/16)</text>
 
                   {/* Users Node */}
                   <g className="active-glow-node" style={{ '--pulse-color': '#3b82f6' } as React.CSSProperties}>
-                    <rect x="20" y="110" width="85" height="50" rx="8" fill="#f0f9ff" stroke="#3b82f6" strokeWidth={1.5}/>
-                    <text x="62.5" y="132" textAnchor="middle" fontSize="11" fill="#0c4a6e" fontWeight="bold">🌐 Public Users</text>
-                    <text x="62.5" y="146" textAnchor="middle" fontSize="8.5" fill="#0284c7" fontFamily="monospace">
+                    <rect x="20" y="110" width="85" height="50" rx="8" className="asg-svg-node-users" strokeWidth={1.5}/>
+                    <text x="62.5" y="132" textAnchor="middle" fontSize="11" className="asg-svg-text-title" fontWeight="bold">🌐 Public Users</text>
+                    <text x="62.5" y="146" textAnchor="middle" fontSize="8.5" className="asg-svg-text-desc" fontFamily="monospace">
                       {archScenario === 'surge' ? '1800 RPS (Peak)' : '400 RPS (Normal)'}
                     </text>
                   </g>
 
                   {/* ALB Node */}
                   <g opacity={1} className={archScenario !== 'outage' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                    <rect x="145" y="95" width="110" height="70" rx="10" fill="#ecfdf5" stroke="#10b981" strokeWidth={1.5} />
-                    <text x="200" y="120" textAnchor="middle" fontSize="12" fill="#047857" fontWeight="bold">ALB Load Balancer</text>
-                    <text x="200" y="136" textAnchor="middle" fontSize="8" fill="#475569">L7 Rules Router</text>
-                    <text x="200" y="152" textAnchor="middle" fontSize="7.5" fill="#10b981" fontWeight="bold" fontFamily="monospace">
+                    <rect x="145" y="95" width="110" height="70" rx="10" className="asg-svg-node-alb" strokeWidth={1.5} />
+                    <text x="200" y="120" textAnchor="middle" fontSize="12" className="asg-svg-text-title" fontWeight="bold">ALB Load Balancer</text>
+                    <text x="200" y="136" textAnchor="middle" fontSize="8" className="asg-svg-text-desc">L7 Rules Router</text>
+                    <text x="200" y="152" textAnchor="middle" fontSize="7.5" className="asg-svg-text-success" fontWeight="bold" fontFamily="monospace">
                       {archScenario === 'outage' ? 'Zonal Failover ON' : 'Subnet Load Balanced'}
                     </text>
                   </g>
 
                   {/* CloudWatch CPU Alarm Node */}
                   <g opacity={1} className={archScenario === 'surge' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ef4444' } as React.CSSProperties}>
-                    <rect x="145" y="210" width="110" height="60" rx="10" fill="#fff5f5" stroke={archScenario === 'surge' ? '#ef4444' : '#64748b'} strokeWidth={1.5}/>
-                    <text x="200" y="232" textAnchor="middle" fontSize="11" fill={archScenario === 'surge' ? '#991b1b' : '#334155'} fontWeight="bold">CloudWatch Alarm</text>
-                    <text x="200" y="247" textAnchor="middle" fontSize="8.5" fill={archScenario === 'surge' ? '#ef4444' : '#475569'} fontWeight="bold" fontFamily="monospace">
+                    <rect x="145" y="210" width="110" height="60" rx="10" className={`asg-svg-node-cw ${archScenario === 'surge' ? 'active' : ''}`} strokeWidth={1.5}/>
+                    <text x="200" y="232" textAnchor="middle" fontSize="11" className="asg-svg-text-title" fontWeight="bold">CloudWatch Alarm</text>
+                    <text x="200" y="247" textAnchor="middle" fontSize="8.5" className={archScenario === 'surge' ? 'asg-svg-text-error' : 'asg-svg-text-desc'} fontWeight="bold" fontFamily="monospace">
                       {archScenario === 'surge' ? '⚠️ CPU ALARM (>75%)' : '🟢 CPU OK (<50%)'}
                     </text>
                   </g>
@@ -800,34 +1239,34 @@ export default function ASGVisualizer() {
                   {/* ASG Boundary */}
                   <rect 
                     x="295" y="30" width="365" height="290" rx="12" 
-                    fill="rgba(255, 255, 255, 0.4)" stroke="#10b981" strokeWidth="1.5" 
+                    className="asg-svg-vpc" strokeWidth="1.5" 
                     strokeDasharray="6,4" 
                     style={archScenario === 'surge' ? { filter: 'url(#glow-green)' } : {}}
                   />
-                  <text x="477.5" y="46" textAnchor="middle" fontSize="11" fill="#047857" fontWeight="bold">Auto Scaling Group (ASG Private Subnets)</text>
+                  <text x="477.5" y="46" textAnchor="middle" fontSize="11" className="asg-svg-text-success" fontWeight="bold">Auto Scaling Group (ASG Private Subnets)</text>
 
                   {/* Subnets Racks */}
 
                   {/* us-east-1a subnet */}
                   <g opacity={1}>
-                    <rect x="310" y="55" width="335" height="75" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="320" y="70" fontSize="8" fill="#475569" fontWeight="bold" fontFamily="monospace">Subnet A: us-east-1a</text>
+                    <rect x="310" y="55" width="335" height="75" rx="6" className="asg-svg-subnet" strokeWidth="1" />
+                    <text x="320" y="70" fontSize="8" className="asg-svg-text-desc" fontWeight="bold" fontFamily="monospace">Subnet A: us-east-1a</text>
                     
                     {/* Instance i-101 */}
                     <g>
-                      <rect x="350" y="76" width="90" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                      <text x="395" y="93" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-101</text>
-                      <text x="395" y="107" textAnchor="middle" fontSize="8.5" fill="#137333" fontFamily="monospace">In-Service (OK)</text>
+                      <rect x="350" y="76" width="90" height="42" rx="4" className="asg-svg-inst-ok" strokeWidth="1" />
+                      <text x="395" y="93" textAnchor="middle" fontSize="10" className="asg-svg-text-title" fontWeight="bold">🖥️ i-101</text>
+                      <text x="395" y="107" textAnchor="middle" fontSize="8.5" className="asg-svg-text-success" fontFamily="monospace">In-Service (OK)</text>
                     </g>
                     
                     {/* Instance i-104 (Outage Replacement) or i-105 (Surge Instance) */}
                     {(archScenario === 'outage' || archScenario === 'surge') && (
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="460" y="76" width="105" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                        <text x="512.5" y="93" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">
+                        <rect x="460" y="76" width="105" height="42" rx="4" className="asg-svg-inst-ok" strokeWidth="1" />
+                        <text x="512.5" y="93" textAnchor="middle" fontSize="10" className="asg-svg-text-title" fontWeight="bold">
                           {archScenario === 'outage' ? '🖥️ i-104 (New)' : '🖥️ i-105'}
                         </text>
-                        <text x="512.5" y="107" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" fontFamily="monospace">
+                        <text x="512.5" y="107" textAnchor="middle" fontSize="8.5" className="text-orange" fontWeight="bold" fontFamily="monospace">
                           {archScenario === 'outage' ? '🛡️ Zonal Rebalance' : '📈 Scale Out'}
                         </text>
                       </g>
@@ -836,22 +1275,22 @@ export default function ASGVisualizer() {
 
                   {/* us-east-1b subnet */}
                   <g opacity={1}>
-                    <rect x="310" y="135" width="335" height="75" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="320" y="150" fontSize="8" fill="#475569" fontWeight="bold" fontFamily="monospace">Subnet B: us-east-1b</text>
+                    <rect x="310" y="135" width="335" height="75" rx="6" className="asg-svg-subnet" strokeWidth="1" />
+                    <text x="320" y="150" fontSize="8" className="asg-svg-text-desc" fontWeight="bold" fontFamily="monospace">Subnet B: us-east-1b</text>
                     
                     {/* Instance i-102 */}
                     <g>
-                      <rect x="350" y="156" width="90" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                      <text x="395" y="173" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-102</text>
-                      <text x="395" y="187" textAnchor="middle" fontSize="8.5" fill="#137333" fontFamily="monospace">In-Service (OK)</text>
+                      <rect x="350" y="156" width="90" height="42" rx="4" className="asg-svg-inst-ok" strokeWidth="1" />
+                      <text x="395" y="173" textAnchor="middle" fontSize="10" className="asg-svg-text-title" fontWeight="bold">🖥️ i-102</text>
+                      <text x="395" y="187" textAnchor="middle" fontSize="8.5" className="asg-svg-text-success" fontFamily="monospace">In-Service (OK)</text>
                     </g>
 
                     {/* Instance i-106 (Surge Only) */}
                     {archScenario === 'surge' && (
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="460" y="156" width="105" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                        <text x="512.5" y="173" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-106</text>
-                        <text x="512.5" y="187" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
+                        <rect x="460" y="156" width="105" height="42" rx="4" className="asg-svg-inst-ok" strokeWidth="1" />
+                        <text x="512.5" y="173" textAnchor="middle" fontSize="10" className="asg-svg-text-title" fontWeight="bold">🖥️ i-106</text>
+                        <text x="512.5" y="187" textAnchor="middle" fontSize="8.5" className="text-orange" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
                       </g>
                     )}
                   </g>
@@ -860,28 +1299,27 @@ export default function ASGVisualizer() {
                   <g opacity={archScenario === 'outage' ? 0.7 : 1}>
                     <rect 
                       x="310" y="215" width="335" height="75" rx="6" 
-                      fill={archScenario === 'outage' ? 'rgba(239, 68, 68, 0.03)' : '#f8fafc'} 
-                      stroke={archScenario === 'outage' ? '#ef4444' : '#cbd5e1'} 
+                      className={archScenario === 'outage' ? 'asg-svg-subnet-outage' : 'asg-svg-subnet'} 
                       strokeWidth={1} 
                       strokeDasharray={archScenario === 'outage' ? '4,4' : 'none'}
                     />
-                    <text x="320" y="230" fontSize="8" fill={archScenario === 'outage' ? '#ef4444' : '#475569'} fontWeight="bold" fontFamily="monospace">
+                    <text x="320" y="230" fontSize="8" className={archScenario === 'outage' ? 'asg-svg-text-error' : 'asg-svg-text-desc'} fontWeight="bold" fontFamily="monospace">
                       {archScenario === 'outage' ? 'Subnet C: us-east-1c [🔥 OUTAGE]' : 'Subnet C: us-east-1c'}
                     </text>
                     
                     {/* Instance i-103 */}
                     {archScenario !== 'outage' ? (
                       <g>
-                        <rect x="350" y="236" width="90" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                        <text x="395" y="253" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-103</text>
-                        <text x="395" y="267" textAnchor="middle" fontSize="8.5" fill="#137333" fontFamily="monospace">In-Service (OK)</text>
+                        <rect x="350" y="236" width="90" height="42" rx="4" className="asg-svg-inst-ok" strokeWidth="1" />
+                        <text x="395" y="253" textAnchor="middle" fontSize="10" className="asg-svg-text-title" fontWeight="bold">🖥️ i-103</text>
+                        <text x="395" y="267" textAnchor="middle" fontSize="8.5" className="asg-svg-text-success" fontFamily="monospace">In-Service (OK)</text>
                       </g>
                     ) : (
                       <g>
                         {/* Outage representation */}
-                        <rect x="350" y="236" width="90" height="42" rx="4" fill="#fff5f5" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,2" />
-                        <text x="395" y="253" textAnchor="middle" fontSize="10" fill="#b91c1c" fontWeight="bold" style={{ textDecoration: 'line-through' }}>🖥️ i-103</text>
-                        <text x="395" y="267" textAnchor="middle" fontSize="8" fill="#b91c1c" fontWeight="bold" fontFamily="monospace">⚠️ UNREACHABLE</text>
+                        <rect x="350" y="236" width="90" height="42" rx="4" className="asg-svg-inst-err" strokeWidth="1" strokeDasharray="3,2" />
+                        <text x="395" y="253" textAnchor="middle" fontSize="10" className="asg-svg-text-error" fontWeight="bold" style={{ textDecoration: 'line-through' }}>🖥️ i-103</text>
+                        <text x="395" y="267" textAnchor="middle" fontSize="8" className="asg-svg-text-error" fontWeight="bold" fontFamily="monospace">⚠️ UNREACHABLE</text>
                         <path d="M345 231 L445 283 M445 231 L345 283" stroke="#ef4444" strokeWidth="1.5" opacity="0.4"/>
                       </g>
                     )}
@@ -889,9 +1327,9 @@ export default function ASGVisualizer() {
                     {/* Instance i-107 (Surge Only) */}
                     {archScenario === 'surge' && (
                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        <rect x="460" y="236" width="105" height="42" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                        <text x="512.5" y="253" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🖥️ i-107</text>
-                        <text x="512.5" y="282" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
+                        <rect x="460" y="236" width="105" height="42" rx="4" className="asg-svg-inst-ok" strokeWidth="1" />
+                        <text x="512.5" y="253" textAnchor="middle" fontSize="10" className="asg-svg-text-title" fontWeight="bold">🖥️ i-107</text>
+                        <text x="512.5" y="282" textAnchor="middle" fontSize="8.5" className="text-orange" fontWeight="bold" fontFamily="monospace">📈 Scale Out</text>
                       </g>
                     )}
                   </g>
@@ -963,26 +1401,26 @@ export default function ASGVisualizer() {
                   <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
                     📊 Simulation Telemetry
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '8px' }}>
                     {archScenario === 'normal' && '🟢 Balanced Fleet Operation'}
                     {archScenario === 'outage' && '⚠️ Zonal Outage & Self-Healing'}
                     {archScenario === 'surge' && '⚡ High-Load Horizontal Scaling'}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-tertiary, #e2e8f0)', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Active Subnets:</span>
                       <span style={{ fontWeight: 'bold', color: archScenario === 'outage' ? '#ef4444' : '#16a34a' }}>
                         {archScenario === 'outage' ? '2 / 3 Zones' : '3 / 3 Zones'}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-tertiary, #e2e8f0)', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Total Instances:</span>
-                      <span style={{ fontWeight: 'bold', color: '#1e293b' }}>
+                      <span style={{ fontWeight: 'bold' }}>
                         {archScenario === 'surge' ? '6 EC2 instances' : '3 EC2 instances'}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-tertiary, #e2e8f0)', paddingBottom: '4px' }}>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Average CPU Load:</span>
                       <span style={{ fontWeight: 'bold', color: archScenario === 'surge' ? '#ef4444' : '#16a34a' }}>
                         {archScenario === 'normal' && '38% (Healthy)'}
@@ -1001,7 +1439,7 @@ export default function ASGVisualizer() {
 
                 {/* Scenario Description Card */}
                 <div className="asg-card" style={{ padding: '12px 14px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1e293b', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '6px' }}>
                     ⚙️ Architectural Explanation
                   </div>
                   <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
@@ -1039,7 +1477,7 @@ export default function ASGVisualizer() {
             <div className="asg-sec">Fleet Auto-Scaling Policies</div>
             <div className="asg-g2" style={{ marginBottom: '10px' }}>
               <div className="asg-card">
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#16a34a' }}>1. Target Tracking (Recommended)</div>
+                <div className="text-green" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>1. Target Tracking (Recommended)</div>
                 <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
                   Keep average CPU load or RequestCountPerTarget strictly around a set target value (e.g., "Keep avg CPU at 50%"). ASG automatically scales size.
                 </div>
@@ -1047,7 +1485,7 @@ export default function ASGVisualizer() {
               </div>
 
               <div className="asg-card">
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#0369a1' }}>2. Step Scaling (Threshold Blocks)</div>
+                <div className="text-blue" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>2. Step Scaling (Threshold Blocks)</div>
                 <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
                   Scale out or in based on explicit threshold steps (e.g., "If CPU &gt; 70% add 2 nodes, if CPU &gt; 85% add 4 nodes").
                 </div>
@@ -1057,7 +1495,7 @@ export default function ASGVisualizer() {
 
             <div className="asg-g2" style={{ marginBottom: '12px' }}>
               <div className="asg-card">
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#7c3aed' }}>3. Scheduled Scaling</div>
+                <div className="text-purple" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>3. Scheduled Scaling</div>
                 <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
                   Add capacity based on known schedules (e.g., "Every weekday morning at 8:30 AM scale out to 10 instances").
                 </div>
@@ -1065,7 +1503,7 @@ export default function ASGVisualizer() {
               </div>
 
               <div className="asg-card">
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px', color: '#c2410c' }}>4. Predictive Scaling</div>
+                <div className="text-orange" style={{ fontWeight: 600, fontSize: '13px', marginBottom: '6px' }}>4. Predictive Scaling</div>
                 <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4', marginBottom: '8px' }}>
                   Uses machine learning algorithms to scan historical traffic patterns and proactively scale out *before* spikes hit.
                 </div>
@@ -1075,7 +1513,7 @@ export default function ASGVisualizer() {
 
             <div className="asg-sec">Provisioning Scaling Policies (Terraform HCL)</div>
             <div className="asg-card">
-              <div style={{ fontWeight: 600, fontSize: '12px', color: '#16a34a', marginBottom: '6px' }}>Target Tracking Scaling Policy: Target Average CPU = 50%</div>
+              <div className="text-green" style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px' }}>Target Tracking Scaling Policy: Target Average CPU = 50%</div>
               <pre className="asg-log" style={{ fontSize: '11px' }}>{`resource "aws_autoscaling_policy" "cpu_target_tracking" {
   name                   = "cpu-50-percent-target-tracking"
   autoscaling_group_name = aws_autoscaling_group.production_asg.name
@@ -1108,7 +1546,7 @@ export default function ASGVisualizer() {
                     <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
                       📍 State-Responsive Lifecycle Transitions Map
                     </span>
-                    <span style={{ fontSize: '11px', color: '#7c3aed', fontWeight: 'bold' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold' }} className="text-purple">
                       ● ACTIVE NODE
                     </span>
                   </div>
@@ -1125,25 +1563,23 @@ export default function ASGVisualizer() {
 
                     {/* Step 1: Pending:Launch */}
                     <g opacity={lifecycleStage === 'pending_launch' ? 1 : 0.65} className={lifecycleStage === 'pending_launch' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#f97316' } as React.CSSProperties}>
-                      <rect x="15" y="45" width="105" height="52" rx="8" fill="#fff7ed" stroke={lifecycleStage === 'pending_launch' ? '#f97316' : '#cbd5e1'} strokeWidth={lifecycleStage === 'pending_launch' ? 2 : 1}/>
-                      <text x="67.5" y="69" textAnchor="middle" fontSize="10.5" fill="#c2410c" fontWeight="bold">Pending:Launch</text>
-                      <text x="67.5" y="83" textAnchor="middle" fontSize="8" fill="#7c2d12">EC2 Provisioning...</text>
+                      <rect x="15" y="45" width="105" height="52" rx="8" className={`asg-lc-rect ${lifecycleStage === 'pending_launch' ? 'asg-lc-active asg-lc-launch' : ''}`} strokeWidth={lifecycleStage === 'pending_launch' ? 2 : 1}/>
+                      <text x="67.5" y="69" textAnchor="middle" fontSize="10.5" className="asg-lc-text-title" fontWeight="bold">Pending:Launch</text>
+                      <text x="67.5" y="83" textAnchor="middle" fontSize="8" className="asg-lc-text-desc">EC2 Provisioning...</text>
                     </g>
 
                     {/* Connecting 1 -> 2 */}
                     <line 
                       x1="120" y1="71" x2="147" y2="71" 
-                      stroke={lifecycleStage === 'pending_wait' ? '#10b981' : '#cbd5e1'} 
-                      strokeWidth={lifecycleStage === 'pending_wait' ? 2 : 1} 
-                      className={lifecycleStage === 'pending_wait' ? 'flow-active-line' : ''}
+                      className={`asg-lc-line ${lifecycleStage === 'pending_wait' ? 'active' : ''}`}
                       markerEnd={lifecycleStage === 'pending_wait' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
                     />
 
                     {/* Step 2: Pending:Wait (Hook) */}
                     <g opacity={lifecycleStage === 'pending_wait' ? 1 : 0.65} className={lifecycleStage === 'pending_wait' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                      <rect x="150" y="45" width="115" height="52" rx="8" fill="#faf5ff" stroke={lifecycleStage === 'pending_wait' ? '#7c3aed' : '#cbd5e1'} strokeWidth={lifecycleStage === 'pending_wait' ? 2 : 1}/>
-                      <text x="207.5" y="69" textAnchor="middle" fontSize="10.5" fill="#581c87" fontWeight="bold">Pending:Wait</text>
-                      <text x="207.5" y="83" textAnchor="middle" fontSize="8.5" fill={launchHookApproved ? '#166534' : '#7e22ce'} fontWeight="bold">
+                      <rect x="150" y="45" width="115" height="52" rx="8" className={`asg-lc-rect ${lifecycleStage === 'pending_wait' ? 'asg-lc-active asg-lc-wait' : ''}`} strokeWidth={lifecycleStage === 'pending_wait' ? 2 : 1}/>
+                      <text x="207.5" y="69" textAnchor="middle" fontSize="10.5" className="asg-lc-text-title" fontWeight="bold">Pending:Wait</text>
+                      <text x="207.5" y="83" textAnchor="middle" fontSize="8.5" className={launchHookApproved ? 'text-green' : 'text-purple'} fontWeight="bold">
                         {launchHookApproved ? '✓ Hook Approved' : '⏳ Launch Hook Active'}
                       </text>
                     </g>
@@ -1151,9 +1587,7 @@ export default function ASGVisualizer() {
                     {/* Connecting 2 -> 3 */}
                     <line 
                       x1="265" y1="71" x2="292" y2="71" 
-                      stroke={lifecycleStage === 'inservice' ? '#10b981' : '#cbd5e1'} 
-                      strokeWidth={lifecycleStage === 'inservice' ? 2 : 1} 
-                      className={lifecycleStage === 'inservice' ? 'flow-active-line' : ''}
+                      className={`asg-lc-line ${lifecycleStage === 'inservice' ? 'active' : ''}`}
                       markerEnd={lifecycleStage === 'inservice' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
                     />
 
@@ -1165,12 +1599,11 @@ export default function ASGVisualizer() {
                     >
                       <rect 
                         x="295" y="45" width="110" height="52" rx="8" 
-                        fill={sandboxFailed ? '#fff5f5' : '#ecfdf5'} 
-                        stroke={lifecycleStage === 'inservice' ? (sandboxFailed ? '#ef4444' : '#10b981') : '#cbd5e1'} 
+                        className={`asg-lc-rect ${lifecycleStage === 'inservice' ? (sandboxFailed ? 'asg-lc-active asg-lc-inservice failed' : 'asg-lc-active asg-lc-inservice') : ''}`}
                         strokeWidth={lifecycleStage === 'inservice' ? 2 : 1}
                       />
-                      <text x="350" y="69" textAnchor="middle" fontSize="11" fill="#1e293b" fontWeight="bold">🖥️ InService</text>
-                      <text x="350" y="83" textAnchor="middle" fontSize="8.5" fill={sandboxFailed ? '#c53030' : '#15803d'} fontWeight="bold">
+                      <text x="350" y="69" textAnchor="middle" fontSize="11" className="asg-lc-text-title" fontWeight="bold">🖥️ InService</text>
+                      <text x="350" y="83" textAnchor="middle" fontSize="8.5" className={sandboxFailed ? 'text-red' : 'text-green'} fontWeight="bold">
                         {sandboxFailed ? '💥 App Crashed!' : '🟢 Serving Traffic'}
                       </text>
                     </g>
@@ -1178,17 +1611,15 @@ export default function ASGVisualizer() {
                     {/* Connecting 3 -> 4 */}
                     <line 
                       x1="405" y1="71" x2="432" y2="71" 
-                      stroke={lifecycleStage === 'terminating_wait' ? '#ef4444' : '#cbd5e1'} 
-                      strokeWidth={lifecycleStage === 'terminating_wait' ? 2 : 1} 
-                      className={lifecycleStage === 'terminating_wait' ? 'flow-active-line' : ''}
+                      className={`asg-lc-line ${lifecycleStage === 'terminating_wait' ? 'active' : ''}`}
                       markerEnd={lifecycleStage === 'terminating_wait' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
                     />
 
                     {/* Step 4: Terminating:Wait (Hook) */}
                     <g opacity={lifecycleStage === 'terminating_wait' ? 1 : 0.65} className={lifecycleStage === 'terminating_wait' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#0284c7' } as React.CSSProperties}>
-                      <rect x="435" y="45" width="125" height="52" rx="8" fill="#f0f9ff" stroke={lifecycleStage === 'terminating_wait' ? '#0284c7' : '#cbd5e1'} strokeWidth={lifecycleStage === 'terminating_wait' ? 2 : 1}/>
-                      <text x="497.5" y="69" textAnchor="middle" fontSize="10.5" fill="#0c4a6e" fontWeight="bold">Terminating:Wait</text>
-                      <text x="497.5" y="83" textAnchor="middle" fontSize="8.5" fill={terminateHookApproved ? '#166534' : '#0284c7'} fontWeight="bold">
+                      <rect x="435" y="45" width="125" height="52" rx="8" className={`asg-lc-rect ${lifecycleStage === 'terminating_wait' ? 'asg-lc-active asg-lc-drain' : ''}`} strokeWidth={lifecycleStage === 'terminating_wait' ? 2 : 1}/>
+                      <text x="497.5" y="69" textAnchor="middle" fontSize="10.5" className="asg-lc-text-title" fontWeight="bold">Terminating:Wait</text>
+                      <text x="497.5" y="83" textAnchor="middle" fontSize="8.5" className={terminateHookApproved ? 'text-green' : 'text-blue'} fontWeight="bold">
                         {terminateHookApproved ? '✓ Drained (Ready)' : '⏳ Draining active'}
                       </text>
                     </g>
@@ -1196,17 +1627,15 @@ export default function ASGVisualizer() {
                     {/* Connecting 4 -> 5 */}
                     <line 
                       x1="560" y1="71" x2="587" y2="71" 
-                      stroke={lifecycleStage === 'terminated' ? '#ef4444' : '#cbd5e1'} 
-                      strokeWidth={lifecycleStage === 'terminated' ? 2 : 1} 
-                      className={lifecycleStage === 'terminated' ? 'flow-active-line' : ''}
+                      className={`asg-lc-line ${lifecycleStage === 'terminated' ? 'active' : ''}`}
                       markerEnd={lifecycleStage === 'terminated' ? 'url(#m-arrow-active)' : 'url(#m-arrow)'}
                     />
 
                     {/* Step 5: Terminated */}
                     <g opacity={lifecycleStage === 'terminated' ? 1 : 0.65} className={lifecycleStage === 'terminated' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ef4444' } as React.CSSProperties}>
-                      <rect x="590" y="45" width="80" height="52" rx="8" fill="#fff5f5" stroke={lifecycleStage === 'terminated' ? '#ef4444' : '#cbd5e1'} strokeWidth={lifecycleStage === 'terminated' ? 2 : 1}/>
-                      <text x="630" y="70" textAnchor="middle" fontSize="11" fill="#991b1b" fontWeight="bold">Terminated</text>
-                      <text x="630" y="83" textAnchor="middle" fontSize="8" fill="#ef4444">Offlined</text>
+                      <rect x="590" y="45" width="80" height="52" rx="8" className={`asg-lc-rect ${lifecycleStage === 'terminated' ? 'asg-lc-active asg-lc-terminated' : ''}`} strokeWidth={lifecycleStage === 'terminated' ? 2 : 1}/>
+                      <text x="630" y="70" textAnchor="middle" fontSize="11" className="asg-lc-text-title" fontWeight="bold">Terminated</text>
+                      <text x="630" y="83" textAnchor="middle" fontSize="8" className="text-red">Offlined</text>
                     </g>
 
                     {/* Back loop arrow from 3 to 4 */}
@@ -1250,17 +1679,14 @@ export default function ASGVisualizer() {
                   </div>
                   
                   {/* Current State Details Badge */}
-                  <div style={{ padding: '8px 10px', borderRadius: '6px', background: '#f8fafc', border: '1px solid #cbd5e1', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '10px', color: '#475569', display: 'block' }}>Current Stage:</span>
-                    <span style={{ 
-                      fontWeight: 'bold', 
-                      fontSize: '12px',
-                      color: 
-                        lifecycleStage === 'pending_launch' ? '#f97316' : 
-                        lifecycleStage === 'pending_wait' ? '#7c3aed' : 
-                        lifecycleStage === 'inservice' ? (sandboxFailed ? '#ef4444' : '#16a34a') : 
-                        lifecycleStage === 'terminating_wait' ? '#0284c7' : '#ef4444'
-                    }}>
+                  <div className="asg-control-status-box">
+                    <span className="asg-svg-text-desc" style={{ fontSize: '10px', display: 'block' }}>Current Stage:</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '12px' }} className={
+                      lifecycleStage === 'pending_launch' ? 'text-orange' : 
+                      lifecycleStage === 'pending_wait' ? 'text-purple' : 
+                      lifecycleStage === 'inservice' ? (sandboxFailed ? 'text-red' : 'text-green') : 
+                      lifecycleStage === 'terminating_wait' ? 'text-blue' : 'text-red'
+                    }>
                       {lifecycleStage === 'pending_launch' && '🟠 Pending:Launch'}
                       {lifecycleStage === 'pending_wait' && '🟣 Pending:Wait (Hook)'}
                       {lifecycleStage === 'inservice' && (sandboxFailed ? '🔴 Unhealthy Service' : '🟢 InService (ALB Routing)')}
@@ -1312,12 +1738,12 @@ export default function ASGVisualizer() {
                     {/* Launch Lifecycle hook Approval */}
                     {lifecycleStage === 'pending_wait' && (
                       <button 
-                        className="asg-btn" 
+                        className="asg-btn asg-btn-outline-green" 
                         onClick={() => {
                           setLaunchHookApproved(true);
                           logLifecycle('✅ [Lambda callback] Launch Lifecycle Hook APPROVED! Signal sent: CONTINUE. Fleet manager registering target with ALB.');
                         }}
-                        style={{ borderColor: '#16a34a', color: '#16a34a', fontSize: '11.5px', padding: '7px' }}
+                        style={{ fontSize: '11.5px', padding: '7px' }}
                         disabled={launchHookApproved}
                       >
                         {launchHookApproved ? '✓ Launch Hook Approved' : '🟢 Approve Launch Hook'}
@@ -1327,12 +1753,12 @@ export default function ASGVisualizer() {
                     {/* Terminate Lifecycle hook Approval */}
                     {lifecycleStage === 'terminating_wait' && (
                       <button 
-                        className="asg-btn" 
+                        className="asg-btn asg-btn-outline-blue" 
                         onClick={() => {
                           setTerminateHookApproved(true);
                           logLifecycle('✅ [Lambda callback] Connection Draining COMPLETE! Log backups sent. Signal sent: CONTINUE.');
                         }}
-                        style={{ borderColor: '#0284c7', color: '#0284c7', fontSize: '11.5px', padding: '7px' }}
+                        style={{ fontSize: '11.5px', padding: '7px' }}
                         disabled={terminateHookApproved}
                       >
                         {terminateHookApproved ? '✓ Draining Hook Approved' : '🔵 Complete Connection Drain'}
@@ -1342,7 +1768,7 @@ export default function ASGVisualizer() {
                     {/* Failure Injection */}
                     {lifecycleStage === 'inservice' && !sandboxFailed && (
                       <button 
-                        className="asg-btn" 
+                        className="asg-btn asg-btn-outline-red" 
                         onClick={() => {
                           setSandboxFailed(true);
                           logLifecycle('💥 CRITICAL APP CRASH: i-09941a suffered a core process failure. ALB health check returned HTTP 502 Bad Gateway.');
@@ -1352,7 +1778,7 @@ export default function ASGVisualizer() {
                             logLifecycle('🚨 ASG Self-Healing Active: Evicting crashed node. Transitioning state to [Terminating:Wait] for connection draining.');
                           }, 2000);
                         }}
-                        style={{ borderColor: '#ef4444', color: '#ef4444', fontSize: '11.5px', padding: '7px' }}
+                        style={{ fontSize: '11.5px', padding: '7px' }}
                       >
                         💥 Inject App Crash (Self-Heal)
                       </button>
@@ -1361,8 +1787,8 @@ export default function ASGVisualizer() {
                 </div>
 
                 {/* Explanation Card */}
-                <div className="asg-card" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4', color: '#334155' }}>
-                  <div style={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}>🛡️ Stage Description</div>
+                <div className="asg-card" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>🛡️ Stage Description</div>
                   {lifecycleStage === 'pending_launch' && 'Instance provisioning starts. AWS reads the Launch Template DNA and starts allocating hardware resources.'}
                   {lifecycleStage === 'pending_wait' && 'The boot process is paused. Custom EventBridge configurations/Lambda functions run heavy boots, caching data before letting client traffic hit the server.'}
                   {lifecycleStage === 'inservice' && 'Target registered and healthy behind the ALB. Production HTTP requests flow happily. Click the app crash button to watch the ASG self-heal!'}
@@ -1414,7 +1840,7 @@ export default function ASGVisualizer() {
 
               {/* Range inputs */}
               <div className="asg-g2" style={{ marginBottom: '12px' }}>
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                <div className="asg-input-wrapper">
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Incoming Traffic: <b>{rps} RPS</b></label>
                   <input
                     type="range"
@@ -1422,11 +1848,11 @@ export default function ASGVisualizer() {
                     max="1800"
                     value={rps}
                     onChange={(e) => setRps(parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                    style={{ width: '100%', accentColor: '#10b981', cursor: 'ew-resize' }}
                   />
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                <div className="asg-input-wrapper">
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Target CPU Limit: <b>{targetCpu}%</b></label>
                   <input
                     type="range"
@@ -1434,13 +1860,13 @@ export default function ASGVisualizer() {
                     max="80"
                     value={targetCpu}
                     onChange={(e) => setTargetCpu(parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                    style={{ width: '100%', accentColor: '#10b981', cursor: 'ew-resize' }}
                   />
                 </div>
               </div>
 
               <div className="asg-g2" style={{ marginBottom: '14px' }}>
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                <div className="asg-input-wrapper">
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>ASG Boundaries (Min / Desired / Max Capacity):</label>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Min:</span>
@@ -1450,7 +1876,7 @@ export default function ASGVisualizer() {
                       min="0"
                       max="30"
                       onChange={(e) => setMinCap(parseInt(e.target.value))}
-                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
+                      className="asg-number-input"
                     />
                     <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Desired:</span>
                     <input
@@ -1459,7 +1885,7 @@ export default function ASGVisualizer() {
                       min="0"
                       max="30"
                       onChange={(e) => setDesCap(parseInt(e.target.value))}
-                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
+                      className="asg-number-input"
                     />
                     <span style={{ fontSize: '11px', fontFamily: 'monospace' }}>Max:</span>
                     <input
@@ -1468,12 +1894,12 @@ export default function ASGVisualizer() {
                       min="0"
                       max="50"
                       onChange={(e) => setMaxCap(parseInt(e.target.value))}
-                      style={{ width: '56px', fontSize: '11px', padding: '4px 6px', border: '1.5px solid #cbd5e1', borderRadius: '4px', background: '#ffffff', color: 'var(--color-text-primary)' }}
+                      className="asg-number-input"
                     />
                   </div>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1' }}>
+                <div className="asg-input-wrapper">
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Instance Max Capacity: <b>{capPer} RPS</b></label>
                   <input
                     type="range"
@@ -1481,7 +1907,7 @@ export default function ASGVisualizer() {
                     max="400"
                     value={capPer}
                     onChange={(e) => setCapPer(parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#16a34a', cursor: 'ew-resize' }}
+                    style={{ width: '100%', accentColor: '#10b981', cursor: 'ew-resize' }}
                   />
                 </div>
               </div>
@@ -1490,20 +1916,20 @@ export default function ASGVisualizer() {
               <div className="asg-g3" style={{ marginBottom: '14px' }}>
                 <div className="asg-met">
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Healthy instances</div>
-                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#16a34a' }}>{metrics.n}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600 }} className="text-green">{metrics.n}</div>
                 </div>
                 <div className="asg-met">
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Avg CPU Utilization</div>
-                  <div style={{ fontSize: '18px', fontWeight: 600, color: metrics.avgCpu > targetCpu + 8 ? '#c2410c' : '#15803d' }}>{Math.round(metrics.avgCpu)}%</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600 }} className={metrics.avgCpu > targetCpu + 8 ? 'text-orange' : 'text-green'}>{Math.round(metrics.avgCpu)}%</div>
                 </div>
                 <div className="asg-met">
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>RPS per target</div>
-                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#0369a1' }}>{metrics.n ? Math.round(metrics.rpt) : '∞'}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600 }} className="text-blue">{metrics.n ? Math.round(metrics.rpt) : '∞'}</div>
                 </div>
               </div>
 
               {/* Play buttons */}
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '1.5px solid #cbd5e1', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px', borderBottom: '1.5px solid var(--color-border-tertiary)', paddingBottom: '12px' }}>
                 <button className="asg-btn asg-on" onClick={isRunning ? pause : start}>{isRunning ? 'Pause ⏸' : 'Start ▶'}</button>
                 <button className="asg-btn" onClick={stepOnce}>Step ⏭</button>
                 <button className="asg-btn" onClick={resetSim}>Reset 🔄</button>
@@ -1558,33 +1984,20 @@ export default function ASGVisualizer() {
         {activeSection === 'notebook' && (
           <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
             
-            {/* SaaS Academy Header Banner */}
-            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-sky-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-md">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]"></div>
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="bg-white/20 border border-white/20 text-white font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full font-mono">
-                    ASG Architect Academy
-                  </span>
-                  <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2">
-                    <BookOpen className="w-6 h-6 stroke-[2] text-white" /> AWS Auto Scaling Group Academy
-                  </h2>
-                  <p className="text-xs text-white/90 mt-1 max-w-2xl leading-relaxed">
-                    A premium, high-fidelity visual workbook covering fleet capacity thresholds, Launch Templates configurations, scaling policy mathematics, lifecycle transition hook stages, and multi-AZ zonal rebalancing mechanics.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 bg-black/10 border border-white/20 px-4 py-2 rounded-xl">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-pulse"></span>
-                  <span className="text-[10px] font-black text-emerald-100 tracking-wider uppercase font-mono">ASG Academy Engine Online</span>
-                </div>
-              </div>
+            <div className="card text-left">
+              <h2 className="text-xl font-bold flex items-center gap-2 font-display">
+                <BookOpen className="w-5 h-5 text-indigo-600" /> Auto Scaling Groups (ASG) Architect Notes
+              </h2>
+              <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                This module covers fleet capacity thresholds, Launch Templates configurations, scaling policy mathematics, lifecycle transition hook stages, and multi-AZ zonal rebalancing mechanics to optimize applications for demand peaks.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Sidebar Category Explorer */}
               <div className="lg:col-span-3 space-y-4 text-left">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1 font-mono">ASG Directory Tree:</span>
+                <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>ASG Directory Tree:</span>
                 
                 <div className="acad-dir-container">
                   <div className="acad-dir-header">
@@ -1605,7 +2018,7 @@ export default function ASGVisualizer() {
                       {expandedCategory === 'asg_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'asg_fundamentals' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
                         <button 
                           onClick={() => setSelectedNote('launch_templates')}
                           className={`acad-dir-item-btn ${selectedNote === 'launch_templates' ? 'acad-active' : ''}`}
@@ -1635,7 +2048,7 @@ export default function ASGVisualizer() {
                       {expandedCategory === 'scaling_policies' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'scaling_policies' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
                         <button 
                           onClick={() => setSelectedNote('target_tracking')}
                           className={`acad-dir-item-btn ${selectedNote === 'target_tracking' ? 'acad-active' : ''}`}
@@ -1671,7 +2084,7 @@ export default function ASGVisualizer() {
                       {expandedCategory === 'health_lifecycle' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'health_lifecycle' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100 font-semibold">
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
                         <button 
                           onClick={() => setSelectedNote('ec2_vs_elb_checks')}
                           className={`acad-dir-item-btn ${selectedNote === 'ec2_vs_elb_checks' ? 'acad-active' : ''}`}
@@ -1707,7 +2120,7 @@ export default function ASGVisualizer() {
                       {expandedCategory === 'zonal_arch' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'zonal_arch' && (
-                      <div className="bg-slate-50/50 py-1 font-semibold font-semibold">
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
                         <button 
                           onClick={() => setSelectedNote('zonal_rebalancing')}
                           className={`acad-dir-item-btn ${selectedNote === 'zonal_rebalancing' ? 'acad-active' : ''}`}
@@ -1725,8 +2138,8 @@ export default function ASGVisualizer() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-500 font-semibold space-y-1">
-                  <span className="text-slate-800 font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
+                <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                  <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
                     <Info className="w-3.5 h-3.5 text-emerald-600" /> Academy Advice
                   </span>
                   "Choose any auto scaling topic in the directory tree above to reveal architectural designs, interactive mathematical playbooks, and production configuration codes."
@@ -1739,10 +2152,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 1: LAUNCH TEMPLATES */}
                 {selectedNote === 'launch_templates' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Fleet blueprint</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Launch Templates vs Launch Configurations</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Launch Templates vs Launch Configurations</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -1751,34 +2164,34 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Simulator
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 1 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       Before an Auto Scaling Group can provision a single EC2 instance, it needs a blueprint that specifies the configuration. Historically, AWS used <strong>Launch Configurations</strong>, but has replaced them with the modern, feature-rich <strong>Launch Templates</strong>.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650">
-                        <span className="font-extrabold text-slate-800 block">Why Launch Templates Win:</span>
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Why Launch Templates Win:</span>
                         
-                        <div className="space-y-2 font-mono text-[11px] text-slate-600">
-                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                        <div className="space-y-2 font-mono text-[11px]">
+                          <div className="flex justify-between border-b pb-1.5" style={{ borderColor: 'var(--color-border-tertiary)' }}>
                             <span>Versioning Support</span>
-                            <span className="text-emerald-600 font-semibold font-bold">Yes (Configurations: Immutable)</span>
+                            <span className="text-green font-bold">Yes (Configurations: Immutable)</span>
                           </div>
-                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                          <div className="flex justify-between border-b pb-1.5" style={{ borderColor: 'var(--color-border-tertiary)' }}>
                             <span>Purchase Options</span>
-                            <span className="text-slate-800 font-semibold">Mix Spot &amp; On-Demand in 1 ASG</span>
+                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Mix Spot &amp; On-Demand in 1 ASG</span>
                           </div>
-                          <div className="flex justify-between border-b border-slate-200 pb-1.5">
+                          <div className="flex justify-between border-b pb-1.5" style={{ borderColor: 'var(--color-border-tertiary)' }}>
                             <span>Parameter Inheritance</span>
-                            <span className="text-slate-800 font-semibold">Extend baseline template settings</span>
+                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Extend baseline template settings</span>
                           </div>
                           <div className="flex justify-between pb-1.5">
                             <span>Dynamic Updates</span>
-                            <span className="text-slate-850 font-semibold">Roll updates using template version tags</span>
+                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Roll updates using template version tags</span>
                           </div>
                         </div>
 
@@ -1790,14 +2203,14 @@ export default function ASGVisualizer() {
                       {/* Visual HCL Code block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Terraform Launch Template Snippet</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Terraform Launch Template Snippet</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(terraformLaunchTemplateCode);
                               setCopiedNoteId('lt-terraform');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
-                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-655"
+                            className="asg-copy-btn"
                           >
                             {copiedNoteId === 'lt-terraform' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -1813,10 +2226,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 2: CAPACITY BOUNDARIES */}
                 {selectedNote === 'capacity_boundaries' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Fleet Limits</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ASG Capacity Boundaries Clamp</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>ASG Capacity Boundaries Clamp</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -1825,51 +2238,51 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Simulator
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 2 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       An Auto Scaling Group maintains a target size by scaling to its **Desired Capacity**. However, the ASG engine enforces strict boundary constraints. Desired capacity is mathematically clamped between the **Minimum** and **Maximum** sizes.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       
                       {/* Interactive Boundary Clamp Widget */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-4">
+                      <div className="asg-note-widget flex flex-col justify-between space-y-4">
                         <div>
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono block mb-3">Boundary Clamping Simulator</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Boundary Clamping Simulator</span>
                           
                           <div className="grid grid-cols-2 gap-2.5 text-xs mb-3">
                             <div>
-                              <label className="block text-slate-500 mb-1">Min Capacity</label>
+                              <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Min Capacity</label>
                               <input 
                                 type="number" 
                                 value={nbMinCap} 
                                 onChange={(e) => setNbMinCap(Math.max(0, parseInt(e.target.value) || 0))}
-                                className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                                className="asg-note-input w-full p-1 font-mono"
                               />
                             </div>
                             <div>
-                              <label className="block text-slate-500 mb-1">Max Capacity</label>
+                              <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Max Capacity</label>
                               <input 
                                 type="number" 
                                 value={nbMaxCap} 
                                 onChange={(e) => setNbMaxCap(Math.max(nbMinCap, parseInt(e.target.value) || 0))}
-                                className="w-full bg-white border border-slate-200 rounded p-1 text-slate-800 font-mono"
+                                className="asg-note-input w-full p-1 font-mono"
                               />
                             </div>
                             <div className="col-span-2">
-                              <label className="block text-slate-500 mb-1">Target Scaling Request</label>
+                              <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Target Scaling Request</label>
                               <input 
                                 type="range" 
                                 min="0" 
                                 max="15" 
                                 value={nbTargetScaleRequest} 
                                 onChange={(e) => setNbTargetScaleRequest(parseInt(e.target.value))}
-                                className="w-full accent-emerald-600 cursor-ew-resize"
+                                className="asg-note-range accent-emerald-600 w-full"
                               />
-                              <div className="flex justify-between text-[9.5px] text-slate-450 mt-1 font-mono">
+                              <div className="flex justify-between text-[9.5px] mt-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>
                                 <span>Requested: {nbTargetScaleRequest} nodes</span>
                               </div>
                             </div>
@@ -1879,16 +2292,16 @@ export default function ASGVisualizer() {
                           {(() => {
                             const clampResult = Math.max(nbMinCap, Math.min(nbMaxCap, nbTargetScaleRequest));
                             let clampReason = "Allowed (Within bounds)";
-                            let clampBadgeStyle = "bg-emerald-50 border-emerald-250 text-emerald-700";
+                            let clampBadgeStyle = "asg-math-allowed";
                             if (nbTargetScaleRequest < nbMinCap) {
                               clampReason = "Clamped to Min (Cannot scale lower)";
-                              clampBadgeStyle = "bg-amber-50 border-amber-250 text-amber-700";
+                              clampBadgeStyle = "asg-math-warning";
                             } else if (nbTargetScaleRequest > nbMaxCap) {
                               clampReason = "Clamped to Max (Ceiling budget cap)";
-                              clampBadgeStyle = "bg-red-50 border-red-255 text-red-700";
+                              clampBadgeStyle = "asg-math-danger";
                             }
                             return (
-                              <div className={`border p-3 rounded-lg font-mono text-[10.5px] space-y-1.5 ${clampBadgeStyle}`}>
+                              <div className={`asg-note-math-box ${clampBadgeStyle} space-y-1.5`}>
                                 <p className="font-bold flex justify-between">
                                   <span>Math: max({nbMinCap}, min({nbMaxCap}, {nbTargetScaleRequest}))</span>
                                   <span>&rarr; Desired: {clampResult}</span>
@@ -1899,22 +2312,22 @@ export default function ASGVisualizer() {
                           })()}
                         </div>
 
-                        <div className="text-[10px] text-slate-450 italic font-semibold">
+                        <div className="text-[10px] italic font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
                           * Adjust inputs to watch the Desired capacity clamp automatically.
                         </div>
                       </div>
 
-                      <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
-                        <h4 className="font-bold text-slate-800 text-xs">Boundary Mechanics &amp; Playbook:</h4>
+                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Boundary Mechanics &amp; Playbook:</h4>
                         <ul className="list-disc pl-4 space-y-1.5">
                           <li>
-                            <strong className="text-slate-800">Minimum:</strong> Acts as your high-availability base baseline. The ASG will launch replacement nodes if hardware fails, but scaling alarms will never shrink the group below this boundary.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Minimum:</strong> Acts as your high-availability base baseline. The ASG will launch replacement nodes if hardware fails, but scaling alarms will never shrink the group below this boundary.
                           </li>
                           <li>
-                            <strong className="text-slate-800">Maximum:</strong> Serves as a financial protection budget check. If your site suffers an active DDoS attack or process lock infinite loop, the max limit blocks the fleet from over-billing you.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Maximum:</strong> Serves as a financial protection budget check. If your site suffers an active DDoS attack or process lock infinite loop, the max limit blocks the fleet from over-billing you.
                           </li>
                           <li>
-                            <strong className="text-slate-800">Desired:</strong> The scaling policy engine's output. Any scaling alarm modifies this property directly, which triggers a scaling action to reconcile the differences.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Desired:</strong> The scaling policy engine's output. Any scaling alarm modifies this property directly, which triggers a scaling action to reconcile the differences.
                           </li>
                         </ul>
                       </div>
@@ -1926,10 +2339,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 3: TARGET TRACKING MATH */}
                 {selectedNote === 'target_tracking' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Dynamic scaling math</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Target Tracking Scaling Mathematics</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Target Tracking Scaling Mathematics</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -1938,21 +2351,21 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Policies
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 3 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       Target Tracking is the most common scaling policy type. It acts like a home thermostat: you define a target metric value (e.g. 50% average CPU), and the ASG engine increases or decreases Desired capacity dynamically to keep the metric near that target.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650 animate-fadeIn">
-                        <span className="font-extrabold text-slate-800 block">The Scaling Arithmetic:</span>
+                      <div className="space-y-4 text-xs animate-fadeIn" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>The Scaling Arithmetic:</span>
                         <p className="leading-relaxed">
                           The Auto Scaling engine calculates the target group size using the following ratio formula:
                         </p>
-                        <div className="bg-slate-105 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] text-slate-800 text-center font-bold">
+                        <div className="asg-formula-box">
                           New Capacity = Current Capacity &times; (Current Metric / Target Metric)
                         </div>
                         <p className="leading-relaxed">
@@ -1965,36 +2378,36 @@ export default function ASGVisualizer() {
                       </div>
 
                       {/* Interactive Calculator */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3 font-mono text-xs">
-                        <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider block">Target Tracking calculator</span>
+                      <div className="asg-note-widget flex flex-col justify-between space-y-3 font-mono text-xs">
+                        <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Target Tracking calculator</span>
                         
                         <div className="space-y-3">
-                          <div className="flex justify-between items-center text-slate-650">
+                          <div className="flex justify-between items-center" style={{ color: 'var(--color-text-secondary)' }}>
                             <span>Current Fleet Capacity</span>
-                            <span className="text-slate-850 font-bold font-mono">4 Nodes</span>
+                            <span className="font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>4 Nodes</span>
                           </div>
                           
                           <div>
-                            <label className="block text-slate-550 mb-1">Current average CPU utilization: {nbCurrentCpu}%</label>
+                            <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Current average CPU utilization: {nbCurrentCpu}%</label>
                             <input 
                               type="range" 
                               min="10" 
                               max="100" 
                               value={nbCurrentCpu} 
                               onChange={(e) => setNbCurrentCpu(parseInt(e.target.value))}
-                              className="w-full accent-indigo-600 cursor-ew-resize"
+                              className="asg-note-range accent-indigo-600 w-full"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-slate-550 mb-1">Target CPU Threshold: {nbTargetCpu}%</label>
+                            <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Target CPU Threshold: {nbTargetCpu}%</label>
                             <input 
                               type="range" 
                               min="30" 
                               max="80" 
                               value={nbTargetCpu} 
                               onChange={(e) => setNbTargetCpu(parseInt(e.target.value))}
-                              className="w-full accent-indigo-600 cursor-ew-resize"
+                              className="asg-note-range accent-indigo-600 w-full"
                             />
                           </div>
                         </div>
@@ -2010,16 +2423,16 @@ export default function ASGVisualizer() {
                               ? `📉 SCALE IN: Remove ${Math.abs(delta)} node(s)` 
                               : "🟢 NO ACTION: Fleet size stable";
                           const textStyle = delta > 0 
-                            ? "text-orange-600 font-bold" 
+                            ? "text-orange font-bold" 
                             : delta < 0 
-                              ? "text-blue-600 font-bold" 
-                              : "text-emerald-600 font-semibold";
+                              ? "text-blue font-bold" 
+                              : "text-green font-bold";
                           
                           return (
-                            <div className="bg-white border border-slate-200 p-3 rounded-lg text-[10.5px] space-y-1.5 text-slate-600">
-                              <p>Raw Ratio: 4 &times; ({nbCurrentCpu} / {nbTargetCpu}) = <span className="font-bold text-slate-800">{rawResult.toFixed(2)}</span></p>
-                              <p>Rounded Up Fleet Size: <span className="font-bold text-slate-800">{resultRounded} Nodes</span></p>
-                              <p className={`mt-1 border-t border-slate-100 pt-1.5 ${textStyle}`}>{actionText}</p>
+                            <div className="border p-3 rounded-lg text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)', color: 'var(--color-text-secondary)' }}>
+                              <p>Raw Ratio: 4 &times; ({nbCurrentCpu} / {nbTargetCpu}) = <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{rawResult.toFixed(2)}</span></p>
+                              <p>Rounded Up Fleet Size: <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{resultRounded} Nodes</span></p>
+                              <p className={`mt-1 border-t pt-1.5 ${textStyle}`} style={{ borderColor: 'var(--color-border-tertiary)' }}>{actionText}</p>
                             </div>
                           );
                         })()}
@@ -2031,10 +2444,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 4: STEP VS SIMPLE SCALING */}
                 {selectedNote === 'step_vs_simple' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Policy Comparison</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Step Scaling vs Simple Scaling</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Step Scaling vs Simple Scaling</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2043,11 +2456,11 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Policies
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 4 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       While Target Tracking handles standard capacity scaling automatically, custom alerting architectures often require **Step Scaling** or **Simple Scaling** policies triggered by CloudWatch alarms.
                     </p>
 
@@ -2061,17 +2474,17 @@ export default function ASGVisualizer() {
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="font-bold text-slate-800">Scaling Adjustment</td>
+                          <td className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Scaling Adjustment</td>
                           <td>Applies a single fixed node change (e.g. +1 node) when alarm triggers.</td>
                           <td>Applies adjustments based on the **size of the alarm breach** (e.g. +1 node at 60%, +3 nodes at 85%).</td>
                         </tr>
                         <tr>
-                          <td className="font-bold text-slate-800">Cooldown Periods</td>
+                          <td className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Cooldown Periods</td>
                           <td>Locks the entire ASG during cooldown. Alarms triggered during cooldown are ignored.</td>
                           <td>Allows step scaling evaluations while warm-ups are in progress, dynamically adding more nodes.</td>
                         </tr>
                         <tr>
-                          <td className="font-bold text-slate-800">DDoS Response</td>
+                          <td className="font-bold" style={{ color: 'var(--color-text-primary)' }}>DDoS Response</td>
                           <td>Slow response. Adds nodes one-by-one, lagging behind major traffic surges.</td>
                           <td>Fast response. Instantly jumps to the highest tier adjustment to absorb high surges.</td>
                         </tr>
@@ -2087,10 +2500,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 5: SCHEDULED SCALING */}
                 {selectedNote === 'scheduled_scaling' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Predictable loads</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Scheduled Chron-Driven Scaling</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Scheduled Chron-Driven Scaling</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2099,35 +2512,35 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Policies
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 5 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       Dynamic scaling takes time: instances must launch, boot, and pass health checks. If your traffic patterns are highly predictable (e.g. a retail business peaking at 9 AM, or a school testing application), you can pre-emptively scale the fleet using **Scheduled Actions** based on Unix cron expressions.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650">
-                        <span className="font-extrabold text-slate-800 block">Production Cron Scaling Configuration:</span>
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Production Cron Scaling Configuration:</span>
                         
                         <div className="space-y-3 font-mono text-[10.5px]">
-                          <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-lg">
-                            <span className="text-emerald-700 font-bold">Morning Scale-Out (08:30 AM):</span>
-                            <p className="text-slate-805 mt-1">Recurrence: <code className="bg-slate-200 px-1 py-0.5 rounded text-amber-700">30 8 * * 1-5</code> (Mon-Fri)</p>
-                            <p className="text-slate-600">Desired: 8 Nodes, Min: 8, Max: 15</p>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-green font-bold">Morning Scale-Out (08:30 AM):</span>
+                            <p className="mt-1" style={{ color: 'var(--color-text-primary)' }}>Recurrence: <code style={{ background: 'var(--color-background-tertiary)', color: 'var(--color-text-primary)' }} className="px-1 py-0.5 rounded">30 8 * * 1-5</code> (Mon-Fri)</p>
+                            <p style={{ color: 'var(--color-text-secondary)' }}>Desired: 8 Nodes, Min: 8, Max: 15</p>
                           </div>
 
-                          <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-lg">
-                            <span className="text-indigo-700 font-bold">Evening Scale-In (06:00 PM):</span>
-                            <p className="text-slate-805 mt-1">Recurrence: <code className="bg-slate-200 px-1 py-0.5 rounded text-amber-700">0 18 * * 1-5</code> (Mon-Fri)</p>
-                            <p className="text-slate-600">Desired: 2 Nodes, Min: 2, Max: 15</p>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-blue font-bold">Evening Scale-In (06:00 PM):</span>
+                            <p className="mt-1" style={{ color: 'var(--color-text-primary)' }}>Recurrence: <code style={{ background: 'var(--color-background-tertiary)', color: 'var(--color-text-primary)' }} className="px-1 py-0.5 rounded">0 18 * * 1-5</code> (Mon-Fri)</p>
+                            <p style={{ color: 'var(--color-text-secondary)' }}>Desired: 2 Nodes, Min: 2, Max: 15</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
-                        <h4 className="font-bold text-slate-800 text-xs">The Advantages of Scheduled Scaling:</h4>
+                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The Advantages of Scheduled Scaling:</h4>
                         <p className="leading-relaxed">
                           By scaling out 30 minutes <em>before</em> the daily workload peak starts, you guarantee that all servers are warm and ready, preventing latency spikes for your initial morning users.
                         </p>
@@ -2143,10 +2556,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 6: EC2 VS ELB HEALTH CHECKS */}
                 {selectedNote === 'ec2_vs_elb_checks' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Fleet diagnostics</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">EC2 vs ELB Active Target Group Health Checks</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>EC2 vs ELB Active Target Group Health Checks</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2155,46 +2568,46 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Health &amp; Lifecycles
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 6 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 6 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       By default, an Auto Scaling Group only monitors basic EC2 status checks. This means that if your underlying hardware is fine but your application process crashes, the ASG will report the instance as healthy, keeping it in rotation. To prevent this, you should enable **ELB Health Checks**.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
-                        <h4 className="font-bold text-slate-800 text-xs">The Health Diagnostics Breakdown:</h4>
+                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The Health Diagnostics Breakdown:</h4>
                         <ul className="list-disc pl-4 space-y-2">
                           <li>
-                            <strong className="text-slate-805">EC2 Status Checks:</strong> Monitors hypervisor virtualization, memory allocation, and OS hardware level errors. Ignore application-level code crashes.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>EC2 Status Checks:</strong> Monitors hypervisor virtualization, memory allocation, and OS hardware level errors. Ignore application-level code crashes.
                           </li>
                           <li>
-                            <strong className="text-slate-805">ELB Health Checks:</strong> The ALB actively pings a target path (e.g. <code>HTTP /healthz</code>). If the application server returns a non-200 status code (e.g., 502 Bad Gateway), the ALB alerts the ASG to replace the node.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>ELB Health Checks:</strong> The ALB actively pings a target path (e.g. <code>HTTP /healthz</code>). If the application server returns a non-200 status code (e.g., 502 Bad Gateway), the ALB alerts the ASG to replace the node.
                           </li>
                         </ul>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between font-mono text-[11px] text-slate-600">
-                        <span className="text-[10px] font-black text-slate-450 uppercase tracking-wider block mb-2">Self-Healing Diagnostics Flow</span>
+                      <div className="asg-note-widget flex flex-col justify-between font-mono text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="text-[10px] font-black uppercase tracking-wider block mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Self-Healing Diagnostics Flow</span>
                         
                         <div className="space-y-2.5">
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
-                            <span className="text-slate-700">App crash (502 return)</span>
-                            <span className="text-red-600 font-bold font-semibold">&bull; ALB marks Fail</span>
+                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
+                            <span style={{ color: 'var(--color-text-primary)' }}>App crash (502 return)</span>
+                            <span className="text-red-500 font-bold">&bull; ALB marks Fail</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
-                            <span className="text-slate-700">Evict target group</span>
-                            <span className="text-orange-600 font-bold font-semibold">&bull; Route bypass</span>
+                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
+                            <span style={{ color: 'var(--color-text-primary)' }}>Evict target group</span>
+                            <span className="text-orange font-bold">&bull; Route bypass</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
-                            <span className="text-slate-700">Reconcile Desired size</span>
-                            <span className="text-indigo-600 font-bold font-semibold">&bull; Provision i-new</span>
+                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
+                            <span style={{ color: 'var(--color-text-primary)' }}>Reconcile Desired size</span>
+                            <span className="text-blue font-bold">&bull; Provision i-new</span>
                           </div>
                         </div>
 
-                        <div className="text-[9.5px] text-slate-450 mt-3 leading-normal">
+                        <div className="text-[9.5px] mt-3 leading-normal" style={{ color: 'var(--color-text-tertiary)' }}>
                           * Always set the health check grace period to allow your application to boot fully before health checks begin.
                         </div>
                       </div>
@@ -2205,10 +2618,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 7: LIFECYCLE HOOKS */}
                 {selectedNote === 'lifecycle_hooks' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Instance Transition Hooks</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Lifecycle Hooks &amp; State Interrupts</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Lifecycle Hooks &amp; State Interrupts</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2217,24 +2630,24 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Health &amp; Lifecycles
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 7 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 7 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       By default, instances transition straight from creation to in-service. With **Lifecycle Hooks**, the ASG pauses instances at the state boundaries (<code>Pending:Wait</code> or <code>Terminating:Wait</code>) for up to 1 hour, letting you run orchestration scripts before instances accept traffic or get terminated.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650">
-                        <span className="font-extrabold text-slate-800 block">Common Hook Use Cases:</span>
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Common Hook Use Cases:</span>
                         
                         <ol className="list-decimal pl-4 space-y-2">
                           <li>
-                            <strong className="text-slate-800">Pending Launch:</strong> Wait for Lambda / EventBridge to precache dynamic assets, download system keys, or run database migrations before the node joins the ALB target group.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Pending Launch:</strong> Wait for Lambda / EventBridge to precache dynamic assets, download system keys, or run database migrations before the node joins the ALB target group.
                           </li>
                           <li>
-                            <strong className="text-slate-800">Terminating Terminate:</strong> Pause node destruction to upload logs to S3, finalize transaction state buffers, or back up local states.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Terminating Terminate:</strong> Pause node destruction to upload logs to S3, finalize transaction state buffers, or back up local states.
                           </li>
                         </ol>
 
@@ -2246,14 +2659,14 @@ export default function ASGVisualizer() {
                       {/* Lambda Hook code block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Python Lambda Hook Completer</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Python Lambda Hook Completer</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(lifecycleHookLambdaCode);
                               setCopiedNoteId('lh-lambda');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
-                            className="p-1 rounded bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="asg-copy-btn"
                           >
                             {copiedNoteId === 'lh-lambda' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -2269,10 +2682,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 8: COOLDOWNS & WARMUPS */}
                 {selectedNote === 'cooldowns_warmups' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Fleet stabilization</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cooldown Periods vs Instance Warmup</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Cooldown Periods vs Instance Warmup</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2281,49 +2694,49 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Fleet Simulator
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 8 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 8 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       To prevent an Auto Scaling Group from scaling too quickly (e.g., launching new instances before the previously launched ones have finished booting), AWS uses **Cooldown Periods** and **Instance Warmup** parameters to stabilize the fleet size.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
-                        <span className="font-extrabold text-slate-800 block">Fleet Stabilization Mechanics:</span>
+                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Fleet Stabilization Mechanics:</span>
                         
                         <ul className="list-disc pl-4 space-y-2">
                           <li>
-                            <strong className="text-slate-805">Scaling Cooldown (Default: 300s):</strong> The period after a scaling activity completes during which the ASG ignores other alarms. This ensures the fleet has time to process traffic and lower metric levels before another scale action runs.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Scaling Cooldown (Default: 300s):</strong> The period after a scaling activity completes during which the ASG ignores other alarms. This ensures the fleet has time to process traffic and lower metric levels before another scale action runs.
                           </li>
                           <li>
-                            <strong className="text-slate-805">Instance Warmup:</strong> Used in Target Tracking. Specifies how long it takes an instance to boot and begin sending metric data. Warmup metrics are excluded from target group averages to prevent metric distortion.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Instance Warmup:</strong> Used in Target Tracking. Specifies how long it takes an instance to boot and begin sending metric data. Warmup metrics are excluded from target group averages to prevent metric distortion.
                           </li>
                         </ul>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-4">Cooldown Loop Safeguard</span>
+                      <div className="asg-note-widget flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest block mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Cooldown Loop Safeguard</span>
                         
                         <div className="flex items-center justify-center gap-2 text-[10px] font-mono">
-                          <div className="bg-orange-50 border border-orange-200 p-2.5 rounded-lg">
-                            <p className="font-bold text-orange-655">📈 Scale Out</p>
+                          <div className="asg-status-widget-orange p-2.5 rounded-lg">
+                            <p className="font-bold text-orange">📈 Scale Out</p>
                             <span>Launch Instance</span>
                           </div>
-                          <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-indigo-50 border border-indigo-200 p-2.5 rounded-lg">
-                            <p className="font-bold text-indigo-650">⏳ Cooldown</p>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
+                          <div className="asg-status-widget-blue p-2.5 rounded-lg">
+                            <p className="font-bold text-blue">⏳ Cooldown</p>
                             <span>Lock: 300s</span>
                           </div>
-                          <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg">
-                            <p className="font-bold text-emerald-600">🛡️ Safe Evaluation</p>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
+                          <div className="asg-status-widget-green p-2.5 rounded-lg">
+                            <p className="font-bold text-green">🛡️ Safe Evaluation</p>
                             <span>Release locks</span>
                           </div>
                         </div>
 
-                        <p className="text-[10px] text-slate-500 mt-4 leading-normal max-w-xs mx-auto">
+                        <p className="text-[10px] mt-4 leading-normal max-w-xs mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
                           Cooldown guards block rapid scaling actions, protecting you from over-provisioning servers due to lag in boot processes.
                         </p>
                       </div>
@@ -2334,10 +2747,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 9: ZONAL REBALANCING */}
                 {selectedNote === 'zonal_rebalancing' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">zonal distribution</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Zonal Rebalancing Mechanics</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Zonal Rebalancing Mechanics</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2346,17 +2759,17 @@ export default function ASGVisualizer() {
                         >
                           <Cpu className="w-3.5 h-3.5" /> Go to VPC Architecture
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 9 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 9 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       To ensure high availability, an Auto Scaling Group always tries to keep instances distributed evenly across all enabled Availability Zones (AZs). When an AZ goes down or the fleet scales in, the ASG engine uses rebalancing mechanics to restore symmetry.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
-                        <span className="font-extrabold text-slate-800 block">ASG Rebalancing Steps:</span>
+                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>ASG Rebalancing Steps:</span>
                         
                         <ol className="list-decimal pl-4 space-y-1.5 leading-relaxed">
                           <li>
@@ -2375,21 +2788,21 @@ export default function ASGVisualizer() {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col justify-center text-center font-mono text-xs">
-                        <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest block mb-4">Symmetric Fleet Rebalance</span>
+                      <div className="asg-note-widget flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-bold uppercase tracking-widest block mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Symmetric Fleet Rebalance</span>
                         
                         <div className="space-y-2 text-left max-w-xs mx-auto">
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
-                            <span className="text-emerald-600 font-bold">Subnet us-east-1a</span>
-                            <span className="text-slate-700">2 Nodes</span>
+                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
+                            <span className="text-green font-bold">Subnet us-east-1a</span>
+                            <span style={{ color: 'var(--color-text-primary)' }}>2 Nodes</span>
                           </div>
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center justify-between">
-                            <span className="text-emerald-600 font-bold">Subnet us-east-1b</span>
-                            <span className="text-slate-700">2 Nodes</span>
+                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
+                            <span className="text-green font-bold">Subnet us-east-1b</span>
+                            <span style={{ color: 'var(--color-text-primary)' }}>2 Nodes</span>
                           </div>
                         </div>
 
-                        <p className="text-[10.5px] text-slate-500 mt-4 leading-normal">
+                        <p className="text-[10.5px] mt-4 leading-normal" style={{ color: 'var(--color-text-secondary)' }}>
                           If an Availability Zone suffers a hardware outage, the ASG will provision all desired nodes in the surviving zone automatically.
                         </p>
                       </div>
@@ -2400,10 +2813,10 @@ export default function ASGVisualizer() {
                 {/* NOTE 10: LB CO-LOCATION */}
                 {selectedNote === 'lb_colocation' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
                       <div>
                         <span className="acad-hero-badge">Ingress Integration</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ALB/NLB Target Group Integration</h3>
+                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>ALB/NLB Target Group Integration</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
@@ -2412,24 +2825,24 @@ export default function ASGVisualizer() {
                         >
                           <Activity className="w-3.5 h-3.5" /> Go to Fleet Simulator
                         </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 10 of 10</span>
+                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 10 of 10</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-605 leading-relaxed">
+                    <p className="asg-note-desc">
                       An Auto Scaling Group does not route user traffic itself; it only manages compute instances. Outward-facing traffic is received by a Load Balancer (ALB or NLB), which distributes requests across the instances registered in its **Target Group**.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-650 leading-relaxed">
-                        <span className="font-extrabold text-slate-800 block">Registration &amp; Scale-In Cycle:</span>
+                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Registration &amp; Scale-In Cycle:</span>
                         
                         <ul className="list-disc pl-4 space-y-1.5">
                           <li>
-                            <strong className="text-slate-805">Ingress:</strong> When the ASG launches a new instance, it automatically registers its private IP and port with the associated ALB target group.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Ingress:</strong> When the ASG launches a new instance, it automatically registers its private IP and port with the associated ALB target group.
                           </li>
                           <li>
-                            <strong className="text-slate-805">Egress (Draining):</strong> When scaling in, the ALB sets the instance status to <code>draining</code>. The load balancer immediately stops sending new connections to the instance, while allowing active connections to complete before termination.
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Egress (Draining):</strong> When scaling in, the ALB sets the instance status to <code>draining</code>. The load balancer immediately stops sending new connections to the instance, while allowing active connections to complete before termination.
                           </li>
                         </ul>
 
@@ -2438,27 +2851,27 @@ export default function ASGVisualizer() {
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-3">Load Balancer Registration Flow</span>
+                      <div className="asg-note-widget flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Load Balancer Registration Flow</span>
                         
                         <div className="flex items-center justify-center gap-1.5 text-[9.5px] font-mono">
-                          <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg">
-                            <p className="font-bold text-blue-600">⚖️ ALB/NLB</p>
+                          <div className="asg-status-widget-blue p-2.5 rounded-lg">
+                            <p className="font-bold text-blue">⚖️ ALB/NLB</p>
                             <span>Ingress ingress</span>
                           </div>
-                          <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-orange-50 border border-orange-200 p-2.5 rounded-lg">
-                            <p className="font-bold text-orange-655">📈 ASG Group</p>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
+                          <div className="asg-status-widget-orange p-2.5 rounded-lg">
+                            <p className="font-bold text-orange">📈 ASG Group</p>
                             <span>Auto Scale</span>
                           </div>
-                          <span className="text-slate-400">&rarr;</span>
-                          <div className="bg-emerald-50 border border-emerald-250 p-2.5 rounded-lg">
-                            <p className="font-bold text-emerald-600">🖥️ target node</p>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
+                          <div className="asg-status-widget-green p-2.5 rounded-lg">
+                            <p className="font-bold text-green">🖥️ target node</p>
                             <span>Reg / Drain</span>
                           </div>
                         </div>
 
-                        <p className="text-[10px] text-slate-500 mt-4 leading-normal max-w-xs mx-auto">
+                        <p className="text-[10px] mt-4 leading-normal max-w-xs mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
                           Decoupling scale management from traffic routing allows your application to scale smoothly without interrupting user sessions.
                         </p>
                       </div>

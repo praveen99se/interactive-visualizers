@@ -1,32 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================
-   GLOBAL CSS VARIABLES & COLOR SYSTEM
+   GLOBAL CSS VARIABLES & CURATED COLOR SYSTEM
    ============================================ */
-
 :root {
+  /* Premium HSL Color Tokens */
+  --color-primary-hue: 224; /* Slate/Indigo family */
+  
   /* Text Colors */
-  --color-text-info: rgb(6, 182, 212);        /* cyan-500 */
-  --color-text-secondary: rgb(107, 114, 128); /* gray-500 */
-  --color-text-tertiary: rgb(156, 163, 175);  /* gray-400 */
-  --color-text-primary: rgb(17, 24, 39);      /* gray-900 */
+  --color-text-primary: hsl(var(--color-primary-hue), 47%, 12%);     /* Deep slate #0f172a */
+  --color-text-secondary: hsl(var(--color-primary-hue), 25%, 35%);   /* Soft charcoal #334155 */
+  --color-text-tertiary: hsl(var(--color-primary-hue), 16%, 55%);    /* Muted slate #64748b */
+  --color-text-info: rgb(6, 182, 212);                               /* cyan-500 */
+  --color-text-accent: #6366f1;                                      /* Violet/Indigo */
 
   /* Background Colors */
-  --color-background-primary: rgb(255, 255, 255);     /* white */
-  --color-background-secondary: rgb(243, 244, 246);   /* gray-100 */
-  --color-background-tertiary: rgb(229, 231, 235);    /* gray-200 */
+  --color-background-primary: #f8fafc;                               /* Slate-50 */
+  --color-background-secondary: rgba(255, 255, 255, 0.7);            /* Glassmorphic white */
+  --color-background-tertiary: hsl(var(--color-primary-hue), 30%, 94%); /* Light Slate-100/200 blend */
 
   /* Border Colors */
-  --color-border-tertiary: rgb(209, 213, 219);        /* gray-300 */
+  --color-border-tertiary: rgba(226, 232, 240, 0.8);                 /* Slate-200 */
 
   /* Typography */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Fira Code', 'Courier New', monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Spacing & Radius */
-  --border-radius-md: 0.375rem;
+  /* Radius & Shadows */
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --shadow-premium: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  --shadow-premium-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.03);
 }
 
 * {
@@ -35,191 +44,328 @@
   padding: 0;
 }
 
+/* Styled Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--color-primary-hue), 20%, 80%);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--color-primary-hue), 20%, 65%);
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--color-text-primary);
-  background: var(--color-background-primary);
+  background: radial-gradient(circle at top left, hsl(210, 100%, 98%) 0%, hsl(220, 100%, 99%) 50%, hsl(224, 30%, 97%) 100%);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* BADGE STYLES */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* ============================================
+   BADGE STYLES
+   ============================================ */
 .badge {
   font-size: 11px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 4px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
   white-space: nowrap;
   display: inline-block;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  border: 1px solid transparent;
 }
 
-.badge-blue { background: #dbeafe; color: #1d4ed8; }
-.badge-teal { background: #ccfbf1; color: #0f766e; }
-.badge-amber { background: #fef3c7; color: #b45309; }
-.badge-coral { background: #fee2e2; color: #b91c1c; }
-.badge-purple { background: #ede9fe; color: #6d28d9; }
-.badge-green { background: #dcfce7; color: #15803d; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
+.badge-teal { background: #f0fdf4; color: #0f766e; border-color: #dcfce7; }
+.badge-amber { background: #fffbeb; color: #b45309; border-color: #fef3c7; }
+.badge-coral { background: #fff5f5; color: #c53030; border-color: #fed7d7; }
+.badge-purple { background: #faf5ff; color: #6d28d9; border-color: #e9d5ff; }
+.badge-green { background: #f0fdf4; color: #15803d; border-color: #dcfce7; }
 
-/* CARD STYLES */
+/* ============================================
+   CARD STYLES
+   ============================================ */
 .card {
   background: var(--color-background-secondary);
-  border: 0.5px solid var(--color-border-tertiary);
+  border: 1px solid var(--color-border-tertiary);
   border-radius: var(--border-radius-md);
-  padding: 10px 14px;
-  margin-bottom: 10px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-premium);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-hover);
+  border-color: rgba(99, 102, 241, 0.2);
 }
 
 .info-banner {
-  border-left: 3px solid var(--color-text-info);
-  border-radius: 0 6px 6px 0;
-  padding: 8px 12px;
-  font-size: 13px;
+  border-left: 4px solid var(--color-text-info);
+  border-radius: 4px var(--border-radius-md) var(--border-radius-md) 4px;
+  padding: 12px 16px;
+  font-size: 13.5px;
   color: var(--color-text-secondary);
-  margin-bottom: 12px;
-  background: var(--color-background-secondary);
+  margin-bottom: 16px;
+  background: rgba(239, 246, 255, 0.6);
+  border-top: 1px solid rgba(219, 234, 254, 0.5);
+  border-bottom: 1px solid rgba(219, 234, 254, 0.5);
+  border-right: 1px solid rgba(219, 234, 254, 0.5);
+  backdrop-filter: blur(8px);
 }
 
-/* CODE BLOCK STYLES */
+/* ============================================
+   CODE BLOCK STYLES
+   ============================================ */
 .code-block {
   font-family: var(--font-mono);
-  font-size: 11px;
-  background: #1e293b;
+  font-size: 11.5px;
+  background: #0f172a; /* Slate 900 for high-end code contrast */
   color: #e2e8f0;
-  border-radius: 6px;
-  padding: 10px 12px;
-  line-height: 1.6;
-  margin-bottom: 8px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  line-height: 1.65;
+  margin-bottom: 12px;
   overflow-x: auto;
+  border: 1px solid #1e293b;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.kw { color: #93c5fd; }
-.str { color: #86efac; }
-.cm { color: #64748b; }
+.kw { color: #f472b6; font-weight: 500; } /* Pink-400 for keywords */
+.str { color: #34d399; }                   /* Emerald-400 for strings */
+.cm { color: #64748b; font-style: italic; } /* Muted comments */
 
-/* TAB STYLES */
+/* ============================================
+   TAB STYLES
+   ============================================ */
 .tab-bar {
   display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
+  background: rgba(15, 23, 42, 0.03);
+  padding: 4px;
+  border-radius: 14px;
+  width: fit-content;
 }
 
 .tab {
-  font-size: 12px;
-  padding: 5px 12px;
-  border-radius: 6px;
-  border: 0.5px solid var(--color-border-tertiary);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
   cursor: pointer;
-  background: var(--color-background-primary);
+  background: transparent;
   color: var(--color-text-secondary);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
 }
 
-.tab:hover { border-color: var(--color-text-info); }
+.tab:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(6, 182, 212, 0.15);
+}
+
 .tab.active {
-  background: var(--color-text-info);
-  color: #fff;
-  border-color: var(--color-text-info);
+  background: #ffffff;
+  color: #6366f1; /* Premium Indigo theme */
+  border-color: rgba(99, 102, 241, 0.1);
+  box-shadow: 0 4px 10px -1px rgba(99, 102, 241, 0.1), 0 2px 4px -1px rgba(99, 102, 241, 0.06);
 }
 
-/* GRID LAYOUTS */
+/* ============================================
+   GRID LAYOUTS & ROWS
+   ============================================ */
 .grid2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .row {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 6px;
-  border: 0.5px solid var(--color-border-tertiary);
-  background: var(--color-background-primary);
-  margin-bottom: 6px;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-tertiary);
+  background: #ffffff;
+  margin-bottom: 8px;
   font-size: 13px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+}
+
+.row:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  background: #fdfdfd;
+  transform: translateX(2px);
 }
 
 .section-label {
+  font-family: var(--font-display);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--color-text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
 }
 
-/* SIMULATION STYLES */
+/* ============================================
+   SIMULATION STYLES
+   ============================================ */
 .sim-client {
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  margin-bottom: 6px;
-  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  background: #ffffff;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-.sim-client:hover { border-color: var(--color-text-info); }
+.sim-client:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  transform: translateY(-1px);
+}
+
 .sim-client.selected {
-  border-color: var(--color-text-info);
+  border-color: rgba(6, 182, 212, 1);
   background: #eff6ff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.12);
 }
 
 .server-box {
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12.5px;
   border: 1.5px solid var(--color-border-tertiary);
   text-align: center;
-  transition: border-color 0.2s, background 0.2s;
+  background: #ffffff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .server-box.lit {
-  border-color: #16a34a;
-  background: #dcfce7;
+  border-color: #10b981;
+  background: #f0fdf4;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+  transform: scale(1.02);
 }
 
-/* COMPARISON TABLE STYLES */
+/* ============================================
+   COMPARISON TABLE STYLES
+   ============================================ */
 .vs-row {
   display: flex;
   align-items: stretch;
   gap: 0;
   border-radius: var(--border-radius-md);
   overflow: hidden;
-  border: 0.5px solid var(--color-border-tertiary);
-  margin-bottom: 6px;
+  border: 1px solid var(--color-border-tertiary);
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
 }
 
 .vs-label {
+  font-family: var(--font-display);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--color-text-tertiary);
-  padding: 7px 10px;
-  background: var(--color-background-secondary);
-  min-width: 120px;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  min-width: 140px;
   display: flex;
   align-items: center;
-  border-right: 0.5px solid var(--color-border-tertiary);
+  border-right: 1px solid var(--color-border-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .vs-alb {
   flex: 1;
-  padding: 7px 10px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-size: 12.5px;
   color: var(--color-text-primary);
   background: #eff6ff;
-  border-right: 0.5px solid var(--color-border-tertiary);
+  border-right: 1px solid var(--color-border-tertiary);
+  line-height: 1.5;
 }
 
 .vs-nlb {
   flex: 1;
-  padding: 7px 10px;
-  font-size: 12px;
+  padding: 10px 14px;
+  font-size: 12.5px;
   color: var(--color-text-primary);
   background: #f0fdf4;
+  line-height: 1.5;
+}
+
+/* Premium micro-animations & layout improvements */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-premium-hover);
 }
 
 @media (max-width: 768px) {
   .grid2 { grid-template-columns: 1fr; }
-  .tab { font-size: 11px; padding: 4px 10px; }
+  .tab { font-size: 11.5px; padding: 5px 10px; }
+  .vs-row { flex-direction: column; }
+  .vs-label { border-right: none; border-bottom: 1px solid var(--color-border-tertiary); }
+  .vs-alb { border-right: none; border-bottom: 1px solid var(--color-border-tertiary); }
 }
+
+/* ============================================
+   GLOBAL DARK THEME OVERRIDES FOR VISUALIZERS
+   ============================================ */
+
+.dark {
+  /* Dynamic CSS Variable mapping for dark theme */
+  --color-text-primary: #f8fafc;                                     /* Slate-50 */
+  --color-text-secondary: #cbd5e1;                                   /* Slate-300 */
+  --color-text-tertiary: #94a3b8;                                    /* Slate-400 */
+  
+  --color-background-primary: #020617;                               /* Slate-950 */
+  --color-background-secondary: rgba(15, 23, 42, 0.7);               /* Glassmorphic dark slate */
+  --color-background-tertiary: #0f172a;                              /* Slate-900 */
+
+  --color-border-tertiary: rgba(51, 65, 85, 0.8);                    /* Slate-700 */
+}
+
+/* Base body background for dark theme */
+.dark body {
+  background-color: #020617 !important;
+  color: #f8fafc !important;
+}
+
+
+

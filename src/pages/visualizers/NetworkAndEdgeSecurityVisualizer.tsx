@@ -664,7 +664,172 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           border-color: #10b981;
           color: #ffffff;
         }
-      `}</style>
+
+        /* Centralized Dark Mode Overrides for NetworkAndEdgeSecurityVisualizer.tsx */
+        .dark .da-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+        }
+        .dark .da-card,
+        .dark [class*="da-card"] {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .dark .da-card b,
+        .dark .da-card strong,
+        .dark .da-card h3,
+        .dark .da-card h4 {
+          color: #ffffff !important;
+        }
+        .dark .da-tabs {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .da-tb {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .da-tb:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #f8fafc !important;
+        }
+        .dark .da-sec,
+        .dark .da-kk {
+          color: #94a3b8 !important;
+        }
+        .dark .da-log,
+        .dark .da-terminal {
+          background: #020617 !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .da-btn {
+          background: rgba(15, 23, 42, 0.8) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .da-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .da-met {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark ul.da-ck li {
+          color: #cbd5e1 !important;
+        }
+        .dark .da-inst,
+        .dark .da-instance {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .da-inst .meta,
+        .dark .da-instance .meta {
+          color: #94a3b8 !important;
+        }
+        .dark .da-svg-bg {
+          background-color: #020617 !important;
+          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        
+        /* Node Status Overrides */
+        .dark .da-ok {
+          border-color: #10b981 !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: #4ade80 !important;
+        }
+        .dark .da-warm {
+          border-color: #f59e0b !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: #fbbf24 !important;
+        }
+        .dark .da-drain {
+          border-color: #3b82f6 !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: #60a5fa !important;
+        }
+        .dark .da-down {
+          border-color: #ef4444 !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: #f87171 !important;
+        }
+        
+        /* General form overrides */
+        .dark select,
+        .dark input,
+        .dark textarea {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+          border-color: rgba(51, 65, 85, 0.8) !important;
+        }
+        .dark select option {
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+    
+        .dark .acad-dir-container {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn {
+          background: rgba(15, 23, 42, 0.7) !important;
+          color: #94a3b8 !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-dir-folder-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #ffffff !important;
+        }
+        .dark .acad-dir-item-btn {
+          background: rgba(15, 23, 42, 0.5) !important;
+          color: #94a3b8 !important;
+        }
+        .dark .acad-dir-item-btn:hover {
+          background: rgba(30, 41, 59, 0.8) !important;
+          color: #38bdf8 !important;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.2) !important;
+          color: #38bdf8 !important;
+          border-left-color: #0ea5e9 !important;
+        }
+        .dark .acad-table {
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table th {
+          background: rgba(15, 23, 42, 0.9) !important;
+          color: #ffffff !important;
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-table td {
+          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-sim-diagram {
+          background: rgba(15, 23, 42, 0.7) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+        }
+        .dark .acad-detail-card {
+          background: rgba(15, 23, 42, 0.75) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .acad-takeaway-box {
+          background: rgba(15, 23, 42, 0.6) !important;
+          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #cbd5e1 !important;
+        }
+              `}</style>
 
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
@@ -712,26 +877,13 @@ export default function NetworkAndEdgeSecurityVisualizer() {
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
           
-          {/* SaaS Academy Header Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden shadow-2xl border border-blue-500/20">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.15),transparent_50%)]"></div>
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <span className="bg-blue-500/30 border border-blue-400/30 text-blue-200 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                  Interactive Architect Academy
-                </span>
-                <h2 className="text-2xl font-black tracking-tight mt-2 flex items-center gap-2 font-display">
-                  <Shield className="w-6 h-6 stroke-[2] text-blue-400" /> AWS Network &amp; Edge Security Academy
-                </h2>
-                <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed font-sans">
-                  A high-fidelity learning space detailing WAF WebACL inspection logic, volumetric Shield DDoS mitigations, ACM TLS handshakes, scanner anomalies, and API Gateway endpoints.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 bg-blue-950/80 border border-blue-850 px-4 py-2 rounded-xl">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="text-[10px] font-black text-emerald-300 tracking-wider uppercase">Security Engines Active</span>
-              </div>
-            </div>
+          <div className="card text-left">
+            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
+              <Shield className="w-5 h-5 text-indigo-600" /> Network &amp; Edge Security Architect Notes
+            </h2>
+            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+              This guide covers WAF WebACL inspection logic, volumetric Shield DDoS mitigation, TLS certificate management via ACM, and API Gateway access control to secure external endpoints.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
