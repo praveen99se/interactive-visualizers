@@ -539,223 +539,366 @@ export default function OperationsAndMLVisualizer() {
   return (
     <div className="ops-container" style={{ color: 'var(--color-text-primary)' }}>
       <style>{`
-        .ops-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 12px; }
-        .ops-tb { padding: 6px 14px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 12px; cursor: pointer; background: rgba(255, 255, 255, 0.8); color: #475569; transition: all 0.15s ease-in-out; outline: none; font-weight: 500; }
-        .ops-tb:hover { background: #f1f5f9; border-color: #94a3b8; color: #0f172a; }
+        .ops-container {
+          font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+          color: var(--ops-text);
+          background-color: var(--ops-bg);
+          padding: 20px;
+          border-radius: 16px;
+          transition: all 0.25s ease;
+
+          --ops-bg: #f8fafc;
+          --ops-text: #1e293b;
+          --ops-text-title: #0f172a;
+          --ops-text-muted: #475569;
+          
+          --ops-card-bg: rgba(255, 255, 255, 0.95);
+          --ops-card-border: rgba(226, 232, 240, 0.9);
+          --ops-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+          
+          --ops-tab-bg: rgba(255, 255, 255, 0.85);
+          --ops-tab-border: rgba(226, 232, 240, 0.85);
+          --ops-tab-text: #475569;
+          --ops-tab-hover-bg: #f1f5f9;
+          --ops-tab-hover-border: #cbd5e1;
+          --ops-tab-hover-text: #0f172a;
+          
+          --ops-btn-bg: #ffffff;
+          --ops-btn-border: #cbd5e1;
+          --ops-btn-text: #475569;
+          --ops-btn-hover-bg: #f8fafc;
+          --ops-btn-hover-border: #94a3b8;
+          --ops-btn-hover-text: #0f172a;
+
+          --ops-input-bg: #ffffff;
+          --ops-input-color: #1e293b;
+          --ops-input-border: #cbd5e1;
+          
+          --ops-terminal-bg: #0f172a;
+          --ops-terminal-text: #38bdf8;
+          --ops-terminal-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+
+          --ops-shell-bg: #000000;
+          --ops-shell-text: #10b981;
+          
+          --ops-table-border: #cbd5e1;
+          --ops-table-th-bg: #f8fafc;
+          --ops-table-th-text: #475569;
+          --ops-table-td-text: #1e293b;
+          --ops-table-even-row-bg: rgba(248, 250, 252, 0.5);
+
+          --ops-badge-ok-bg: #dcfce7;
+          --ops-badge-ok-text: #15803d;
+          --ops-badge-warn-bg: #fef3c7;
+          --ops-badge-warn-text: #b45309;
+          --ops-badge-error-bg: #fee2e2;
+          --ops-badge-error-text: #b91c1c;
+
+          /* Academy mappings styling tokens */
+          --acad-dir-bg: #ffffff;
+          --acad-dir-border: #cbd5e1;
+          --acad-dir-header-bg: #f8fafc;
+          --acad-dir-header-text: #1e293b;
+          --acad-dir-folder-btn-bg: #ffffff;
+          --acad-dir-folder-btn-text: #475569;
+          --acad-dir-folder-hover-bg: #f1f5f9;
+          --acad-dir-item-btn-bg: #ffffff;
+          --acad-dir-item-text: #64748b;
+          --acad-dir-item-hover-bg: #f8fafc;
+          --acad-dir-item-hover-text: #0284c7;
+          --acad-dir-item-active-bg: #eff6ff;
+          --acad-dir-item-active-text: #0284c7;
+          --acad-dir-item-active-border: #0ea5e9;
+
+          --acad-detail-bg: #ffffff;
+          --acad-detail-border: #cbd5e1;
+          --acad-detail-text: #334155;
+          
+          --acad-hero-badge-bg: #e0f2fe;
+          --acad-hero-badge-border: #bae6fd;
+          --acad-hero-badge-text: #0369a1;
+
+          --acad-takeaway-border: #0ea5e9;
+          --acad-takeaway-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          --acad-takeaway-text: #475569;
+          
+          --acad-terminal-bg: #0f172a;
+          --acad-terminal-text: #cbd5e1;
+
+          --ops-svg-stroke: #cbd5e1;
+          --ops-svg-text: #64748b;
+
+          --ops-svg-blue-bg: #eff6ff;
+          --ops-svg-blue-border: #3b82f6;
+          --ops-svg-blue-text: #1e3a8a;
+
+          --ops-svg-green-bg: #f0fdf4;
+          --ops-svg-green-border: #10b981;
+          --ops-svg-green-text: #064e3b;
+
+          --ops-svg-red-bg: #fef2f2;
+          --ops-svg-red-border: #ef4444;
+          --ops-svg-red-text: #991b1b;
+        }
+
+        /* Centralized Dark Mode Overrides */
+        .dark .ops-container {
+          --ops-bg: #020617;
+          --ops-text: #cbd5e1;
+          --ops-text-title: #ffffff;
+          --ops-text-muted: #94a3b8;
+          
+          --ops-card-bg: rgba(15, 23, 42, 0.75);
+          --ops-card-border: rgba(51, 65, 85, 0.6);
+          --ops-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --ops-tab-bg: rgba(15, 23, 42, 0.6);
+          --ops-tab-border: rgba(51, 65, 85, 0.6);
+          --ops-tab-text: #94a3b8;
+          --ops-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --ops-tab-hover-border: rgba(51, 65, 85, 0.8);
+          --ops-tab-hover-text: #f8fafc;
+          
+          --ops-btn-bg: rgba(15, 23, 42, 0.8);
+          --ops-btn-border: rgba(51, 65, 85, 0.6);
+          --ops-btn-text: #cbd5e1;
+          --ops-btn-hover-bg: rgba(30, 41, 59, 0.8);
+          --ops-btn-hover-border: rgba(51, 65, 85, 0.8);
+          --ops-btn-hover-text: #ffffff;
+
+          --ops-input-bg: #0f172a;
+          --ops-input-color: #f1f5f9;
+          --ops-input-border: rgba(51, 65, 85, 0.8);
+          
+          --ops-terminal-bg: #020617;
+          --ops-terminal-text: #38bdf8;
+          --ops-terminal-shadow: inset 0 2px 8px rgba(0,0,0,0.9);
+
+          --ops-shell-bg: #020617;
+          --ops-shell-text: #10b981;
+          
+          --ops-table-border: rgba(51, 65, 85, 0.6);
+          --ops-table-th-bg: rgba(15, 23, 42, 0.9);
+          --ops-table-th-text: #ffffff;
+          --ops-table-td-text: #cbd5e1;
+          --ops-table-even-row-bg: rgba(15, 23, 42, 0.4);
+
+          --ops-badge-ok-bg: rgba(16, 185, 129, 0.15);
+          --ops-badge-ok-text: #4ade80;
+          --ops-badge-warn-bg: rgba(245, 158, 11, 0.15);
+          --ops-badge-warn-text: #fbbf24;
+          --ops-badge-error-bg: rgba(239, 68, 68, 0.15);
+          --ops-badge-error-text: #f87171;
+
+          /* Academy mappings styling tokens */
+          --acad-dir-bg: rgba(15, 23, 42, 0.5);
+          --acad-dir-border: rgba(51, 65, 85, 0.6);
+          --acad-dir-header-bg: rgba(15, 23, 42, 0.9);
+          --acad-dir-header-text: #ffffff;
+          --acad-dir-folder-btn-bg: rgba(15, 23, 42, 0.7);
+          --acad-dir-folder-btn-text: #94a3b8;
+          --acad-dir-folder-hover-bg: rgba(30, 41, 59, 0.8);
+          --acad-dir-item-btn-bg: rgba(15, 23, 42, 0.5);
+          --acad-dir-item-text: #94a3b8;
+          --acad-dir-item-hover-bg: rgba(30, 41, 59, 0.8);
+          --acad-dir-item-hover-text: #38bdf8;
+          --acad-dir-item-active-bg: rgba(2, 132, 199, 0.2);
+          --acad-dir-item-active-text: #38bdf8;
+          --acad-dir-item-active-border: #0ea5e9;
+
+          --acad-detail-bg: rgba(15, 23, 42, 0.75);
+          --acad-detail-border: rgba(51, 65, 85, 0.6);
+          --acad-detail-text: #cbd5e1;
+          
+          --acad-hero-badge-bg: rgba(2, 132, 199, 0.15);
+          --acad-hero-badge-border: rgba(2, 132, 199, 0.3);
+          --acad-hero-badge-text: #38bdf8;
+
+          --acad-takeaway-border: rgba(51, 65, 85, 0.6);
+          --acad-takeaway-bg: rgba(15, 23, 42, 0.6);
+          --acad-takeaway-text: #cbd5e1;
+          
+          --acad-terminal-bg: #020617;
+          --acad-terminal-text: #cbd5e1;
+
+          --ops-svg-stroke: rgba(51, 65, 85, 0.6);
+          --ops-svg-text: #94a3b8;
+
+          --ops-svg-blue-bg: rgba(59, 130, 246, 0.15);
+          --ops-svg-blue-border: #3b82f6;
+          --ops-svg-blue-text: #60a5fa;
+
+          --ops-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --ops-svg-green-border: #10b981;
+          --ops-svg-green-text: #4ade80;
+
+          --ops-svg-red-bg: rgba(239, 68, 68, 0.15);
+          --ops-svg-red-border: #ef4444;
+          --ops-svg-red-text: #f87171;
+        }
+
+        /* Mapping Tailwind slate utility overrides inside .ops-container */
+        .ops-container .text-slate-900,
+        .ops-container .text-slate-800,
+        .ops-container .text-slate-850,
+        .ops-container .text-slate-505 {
+          color: var(--ops-text-title) !important;
+        }
+        .ops-container .text-slate-700,
+        .ops-container .text-slate-650 {
+          color: var(--ops-text) !important;
+        }
+        .ops-container .text-slate-600,
+        .ops-container .text-slate-550,
+        .ops-container .text-slate-500,
+        .ops-container .text-slate-450,
+        .ops-container .text-slate-400 {
+          color: var(--ops-text-muted) !important;
+        }
+
+        .ops-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; border-bottom: 1.5px solid var(--ops-tab-border); padding-bottom: 12px; }
+        .ops-tb { padding: 6px 14px; border-radius: 10px; border: 1px solid var(--ops-tab-border); font-size: 12px; cursor: pointer; background: var(--ops-tab-bg); color: var(--ops-tab-text); transition: all 0.15s ease-in-out; outline: none; font-weight: 500; }
+        .ops-tb:hover { background: var(--ops-tab-hover-bg); border-color: var(--ops-tab-hover-border); color: var(--ops-tab-hover-text); }
         .ops-tb.ops-on { background: #16a34a; color: #fff; border-color: #16a34a; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2); }
-        .ops-card { border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 16px; padding: 14px 16px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02); margin-bottom: 14px; }
-        .ops-sec { font-size: 11px; font-weight: 750; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .ops-card { border: 1px solid var(--ops-card-border); border-radius: 16px; padding: 14px 16px; background: var(--ops-card-bg); backdrop-filter: blur(10px); box-shadow: var(--ops-card-shadow); margin-bottom: 14px; color: var(--ops-text); }
+        .ops-sec { font-size: 11px; font-weight: 750; color: var(--ops-text-title); text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 8px; border-bottom: 1px solid var(--ops-card-border); padding-bottom: 4px; }
         .ops-sec:first-child { margin-top: 0; }
         .ops-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
         .ops-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
         
-        .ops-btn { font-size: 11.5px; padding: 6px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
-        .ops-btn:hover { background: #f8fafc; color: #0f172a; border-color: #94a3b8; }
+        .ops-btn { font-size: 11.5px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--ops-btn-border); background: var(--ops-btn-bg); color: var(--ops-btn-text); cursor: pointer; transition: all 0.15s; outline: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+        .ops-btn:hover { background: var(--ops-btn-hover-bg); color: var(--ops-btn-hover-text); border-color: var(--ops-btn-hover-border); }
         .ops-btn.ops-primary { background: #16a34a; border-color: #16a34a; color: #fff; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.15); }
         .ops-btn.ops-primary:hover { background: #15803d; border-color: #15803d; }
         .ops-btn.ops-danger { background: #dc2626; border-color: #dc2626; color: #fff; }
         .ops-btn.ops-danger:hover { background: #b91c1c; border-color: #b91c1c; }
-        .ops-btn:disabled { background: #f1f5f9; border-color: #e2e8f0; color: #cbd5e1; cursor: not-allowed; }
+        .ops-btn:disabled { background: var(--ops-tab-hover-bg); border-color: var(--ops-tab-border); color: var(--ops-text-muted); opacity: 0.5; cursor: not-allowed; }
         
-        .ops-log-terminal { background: #0f172a; border-radius: 12px; padding: 14px; font-family: monospace; color: #38bdf8; font-size: 11px; line-height: 1.5; overflow-y: auto; max-height: 220px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.8); text-align: left; }
+        .ops-log-terminal { background: var(--ops-terminal-bg); border-radius: 12px; padding: 14px; font-family: monospace; color: var(--ops-terminal-text); font-size: 11px; line-height: 1.5; overflow-y: auto; max-height: 220px; box-shadow: var(--ops-terminal-shadow); text-align: left; }
         .ops-log-terminal p { margin: 2px 0; }
         .ops-log-row-success { color: #34d399; }
         .ops-log-row-warn { color: #f59e0b; }
         .ops-log-row-error { color: #f87171; }
         .ops-log-row-info { color: #38bdf8; }
 
-        .ops-shell { background: #000; border-radius: 10px; padding: 14px; font-family: monospace; color: #10b981; font-size: 11px; min-height: 180px; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; }
+        .ops-shell { background: var(--ops-shell-bg); border-radius: 10px; padding: 14px; font-family: monospace; color: var(--ops-shell-text); font-size: 11px; min-height: 180px; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; }
         .ops-shell-line { white-space: pre-wrap; margin-bottom: 2px; }
-        .ops-shell-input { background: transparent; border: none; outline: none; color: #10b981; font-family: monospace; flex-grow: 1; font-size: 11px; }
+        .ops-shell-input { background: transparent; border: none; outline: none; color: var(--ops-shell-text); font-family: monospace; flex-grow: 1; font-size: 11px; }
 
         .ops-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-        .ops-table th { background: #f8fafc; border: 1.5px solid #cbd5e1; padding: 8px; text-align: left; font-weight: 750; color: #475569; }
-        .ops-table td { border: 1.5px solid #cbd5e1; padding: 8px; color: #1e293b; }
-        .ops-table tr:nth-child(even) { background: rgba(248, 250, 252, 0.5); }
+        .ops-table th { background: var(--ops-table-th-bg); border: 1.5px solid var(--ops-table-border); padding: 8px; text-align: left; font-weight: 750; color: var(--ops-table-th-text); }
+        .ops-table td { border: 1.5px solid var(--ops-table-border); padding: 8px; color: var(--ops-table-td-text); }
+        .ops-table tr:nth-child(even) { background: var(--ops-table-even-row-bg); }
 
         .ops-status-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 750; text-transform: uppercase; }
-        .ops-sb-ok { background: #dcfce7; color: #15803d; }
-        .ops-sb-warn { background: #fef3c7; color: #b45309; }
-        .ops-sb-error { background: #fee2e2; color: #b91c1c; }
+        .ops-sb-ok { background: var(--ops-badge-ok-bg); color: var(--ops-badge-ok-text); }
+        .ops-sb-warn { background: var(--ops-badge-warn-bg); color: var(--ops-badge-warn-text); }
+        .ops-sb-error { background: var(--ops-badge-error-bg); color: var(--ops-badge-error-text); }
+
+        .ops-row-selected { background: rgba(14, 165, 233, 0.15) !important; }
+        .ops-row-hover:hover { background: var(--ops-table-even-row-bg) !important; }
+
+        /* General form controls inside container */
+        .ops-container select,
+        .ops-container input:not([type="checkbox"]),
+        .ops-container textarea {
+          background-color: var(--ops-input-bg) !important;
+          color: var(--ops-input-color) !important;
+          border-color: var(--ops-input-border) !important;
+        }
 
         /* Mappings styles */
-        .acad-dir-container { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; overflow: hidden; }
-        .acad-dir-header { background: #f8fafc; color: #1e293b; padding: 12px 16px; font-weight: 800; font-size: 11px; border-bottom: 1px solid #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
-        .acad-dir-folder-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: #ffffff; border: none; border-bottom: 1px solid #cbd5e1; font-size: 10.5px; font-weight: 800; color: #475569; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-        .acad-dir-folder-btn:hover { background: #f1f5f9; }
-        .acad-dir-item-btn { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 18px; font-size: 11.5px; font-weight: 600; color: #64748b; border: none; border-left: 3px solid transparent; background: #ffffff; transition: all 0.15s; text-align: left; cursor: pointer; }
-        .acad-dir-item-btn:hover { background: #f8fafc; color: #0284c7; }
-        .acad-dir-item-btn.acad-active { background: #eff6ff; color: #0284c7; border-left-color: #0ea5e9; font-weight: 800; }
-        .acad-detail-card { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
-        .acad-hero-badge { background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 9.5px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 8px; display: inline-flex; align-items: center; }
-        .acad-takeaway-box { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border-left: 4px solid #0ea5e9; border-radius: 12px; padding: 16px; font-size: 11.5px; line-height: 1.6; color: #475569; font-weight: 600; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
-        .acad-terminal { background: #0f172a; border-radius: 12px; padding: 12px; font-family: monospace; color: #cbd5e1; font-size: 10px; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        .acad-dir-container { background: var(--acad-dir-bg); border: 1px solid var(--acad-dir-border); border-radius: 16px; overflow: hidden; }
+        .acad-dir-header { background: var(--acad-dir-header-bg); color: var(--acad-dir-header-text); padding: 12px 16px; font-weight: 800; font-size: 11px; border-bottom: 1px solid var(--acad-dir-border); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
+        .acad-dir-folder-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--acad-dir-folder-btn-bg); border: none; border-bottom: 1px solid var(--acad-dir-border); font-size: 10.5px; font-weight: 800; color: var(--acad-dir-folder-btn-text); text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+        .acad-dir-folder-btn:hover { background: var(--acad-dir-folder-hover-bg); }
+        .acad-dir-subfolder { background-color: var(--ops-table-even-row-bg) !important; border-bottom-color: var(--acad-dir-border) !important; }
+        .acad-dir-item-btn { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 18px; font-size: 11.5px; font-weight: 600; color: var(--acad-dir-item-text); border: none; border-left: 3px solid transparent; background: var(--acad-dir-item-btn-bg); transition: all 0.15s; text-align: left; cursor: pointer; }
+        .acad-dir-item-btn:hover { background: var(--acad-dir-item-hover-bg); color: var(--acad-dir-item-hover-text); }
+        .acad-dir-item-btn.acad-active { background: var(--acad-dir-item-active-bg); color: var(--acad-dir-item-active-text); border-left-color: var(--acad-dir-item-active-border); font-weight: 800; }
+        .acad-detail-card { background: var(--acad-detail-bg); border: 1px solid var(--acad-detail-border); border-radius: 16px; padding: 24px; box-shadow: var(--ops-card-shadow); }
+        .acad-hero-badge { background: var(--acad-hero-badge-bg); border: 1px solid var(--acad-hero-badge-border); color: var(--acad-hero-badge-text); font-size: 9.5px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 8px; display: inline-flex; align-items: center; }
+        .acad-takeaway-box { background: var(--acad-takeaway-bg); border-left: 4px solid var(--acad-takeaway-border); border-radius: 12px; padding: 16px; font-size: 11.5px; line-height: 1.6; color: var(--acad-takeaway-text); font-weight: 600; border-top: 1px solid var(--ops-card-border); border-right: 1px solid var(--ops-card-border); border-bottom: 1px solid var(--ops-card-border); }
+        .acad-terminal { background: var(--acad-terminal-bg); border-radius: 12px; padding: 12px; font-family: monospace; color: var(--acad-terminal-text); font-size: 10px; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        
+        .acad-copy-btn {
+          padding: 4px;
+          border-radius: 4px;
+          background: var(--ops-btn-bg);
+          border: 1px solid var(--ops-btn-border);
+          color: var(--ops-btn-text);
+          transition: all 0.15s;
+          cursor: pointer;
+        }
+        .acad-copy-btn:hover {
+          background: var(--ops-btn-hover-bg);
+          border-color: var(--ops-btn-hover-border);
+          color: var(--ops-btn-hover-text);
+        }
 
-        /* Centralized Dark Mode Overrides for OperationsAndMLVisualizer.tsx */
-        .dark .ops-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
+        .ops-badge-match {
+          background: #eff6ff;
+          color: #0369a1;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 700;
+          font-family: monospace;
         }
-        .dark .ops-card,
-        .dark [class*="ops-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        .dark .ops-badge-match {
+          background: rgba(2, 132, 199, 0.2);
+          color: #38bdf8;
         }
-        .dark .ops-card b,
-        .dark .ops-card strong,
-        .dark .ops-card h3,
-        .dark .ops-card h4 {
-          color: #ffffff !important;
+
+        .ops-slot-card {
+          background: var(--ops-table-th-bg);
+          border: 1px solid var(--ops-table-border);
+          border-radius: 8px;
+          padding: 10px;
         }
-        .dark .ops-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        .ops-savings-card {
+          background: var(--ops-table-th-bg);
+          border: 1px solid var(--ops-table-border);
+          border-radius: 8px;
+          padding: 12px;
+          color: var(--ops-text-muted);
         }
-        .dark .ops-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
+
+        .ops-alert-danger {
+          background: #fef2f2;
+          border: 1px solid #fca5a5;
+          color: #991b1b;
         }
-        .dark .ops-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
+        .dark .ops-alert-danger {
+          background: rgba(239, 68, 68, 0.1);
+          border-color: rgba(239, 68, 68, 0.3);
+          color: #fca5a5;
         }
-        .dark .ops-sec,
-        .dark .ops-kk {
-          color: #94a3b8 !important;
+
+        .ops-savings-badge {
+          background: #f0fdf4;
+          color: #16a34a;
+          border: 1px solid #bbf7d0;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-weight: 700;
         }
-        .dark .ops-log,
-        .dark .ops-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
+        .dark .ops-savings-badge {
+          background: rgba(22, 163, 74, 0.15);
+          color: #4ade80;
+          border-color: rgba(22, 163, 74, 0.3);
         }
-        .dark .ops-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+
+        .ops-advisor-row {
+          background: var(--ops-table-th-bg);
+          border: 1px solid var(--ops-table-border);
         }
-        .dark .ops-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
+
+        .ops-chart-svg {
+          background-color: var(--ops-table-even-row-bg);
+          border: 1px solid var(--ops-table-border);
         }
-        .dark .ops-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.ops-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .ops-inst,
-        .dark .ops-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .ops-inst .meta,
-        .dark .ops-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .ops-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        
-        /* Node Status Overrides */
-        .dark .ops-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .ops-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .ops-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .ops-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
-        }
-        
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
-        }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-        }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
-        }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-              `}</style>
+      `}</style>
 
       {/* Header Banner */}
       <div style={{ padding: '14px 16px 4px' }}>
@@ -818,7 +961,7 @@ export default function OperationsAndMLVisualizer() {
                       {expandedCategory === 'iac_automation' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'iac_automation' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
                         <button 
                           onClick={() => setSelectedNote('cloudformation')}
                           className={`acad-dir-item-btn ${selectedNote === 'cloudformation' ? 'acad-active' : ''}`}
@@ -848,7 +991,7 @@ export default function OperationsAndMLVisualizer() {
                       {expandedCategory === 'fleet_mgmt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'fleet_mgmt' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
                         <button 
                           onClick={() => setSelectedNote('session_manager')}
                           className={`acad-dir-item-btn ${selectedNote === 'session_manager' ? 'acad-active' : ''}`}
@@ -884,7 +1027,7 @@ export default function OperationsAndMLVisualizer() {
                       {expandedCategory === 'hybrid_delivery' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'hybrid_delivery' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
                         <button 
                           onClick={() => setSelectedNote('ses_pinpoint')}
                           className={`acad-dir-item-btn ${selectedNote === 'ses_pinpoint' ? 'acad-active' : ''}`}
@@ -920,7 +1063,7 @@ export default function OperationsAndMLVisualizer() {
                       {expandedCategory === 'ml_analytics_worksheets' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'ml_analytics_worksheets' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
                         <button 
                           onClick={() => setSelectedNote('sagemaker_workspace')}
                           className={`acad-dir-item-btn ${selectedNote === 'sagemaker_workspace' ? 'acad-active' : ''}`}
@@ -956,7 +1099,7 @@ export default function OperationsAndMLVisualizer() {
                       {expandedCategory === 'finops_mgmt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'finops_mgmt' && (
-                      <div className="bg-slate-50/50 py-1">
+                      <div className="acad-dir-subfolder py-1">
                         <button 
                           onClick={() => setSelectedNote('cost_explorer')}
                           className={`acad-dir-item-btn ${selectedNote === 'cost_explorer' ? 'acad-active' : ''}`}
@@ -1010,7 +1153,7 @@ export default function OperationsAndMLVisualizer() {
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Deploy Stack CLI Snippet</span>
                           <button 
                             onClick={() => handleCopyCode(cfnDeployCli, 'cfn-cli')}
-                            className="p-1 rounded bg-slate-105 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="acad-copy-btn"
                           >
                             {copiedNoteId === 'cfn-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -1090,7 +1233,7 @@ export default function OperationsAndMLVisualizer() {
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">SSM Start-Session CLI Command</span>
                           <button 
                             onClick={() => handleCopyCode(ssmStartSessionCli, 'ssm-cli')}
-                            className="p-1 rounded bg-slate-105 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="acad-copy-btn"
                           >
                             {copiedNoteId === 'ssm-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -1199,7 +1342,7 @@ export default function OperationsAndMLVisualizer() {
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Verify Domain SES CLI Command</span>
                           <button 
                             onClick={() => handleCopyCode(sesVerifyDomainCli, 'ses-cli')}
-                            className="p-1 rounded bg-slate-105 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="acad-copy-btn"
                           >
                             {copiedNoteId === 'ses-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -1303,7 +1446,7 @@ export default function OperationsAndMLVisualizer() {
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Invoke SageMaker Endpoint CLI</span>
                           <button 
                             onClick={() => handleCopyCode(sagemakerInferenceCli, 'sm-cli')}
-                            className="p-1 rounded bg-slate-105 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="acad-copy-btn"
                           >
                             {copiedNoteId === 'sm-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -1407,7 +1550,7 @@ export default function OperationsAndMLVisualizer() {
                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Cost Query CE Command</span>
                           <button 
                             onClick={() => handleCopyCode(costExplorerQueryCli, 'ce-cli')}
-                            className="p-1 rounded bg-slate-105 border border-slate-200 hover:bg-slate-200 text-slate-650"
+                            className="acad-copy-btn"
                           >
                             {copiedNoteId === 'ce-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
@@ -1528,20 +1671,20 @@ export default function OperationsAndMLVisualizer() {
                 <svg width="400" height="120" className="mt-2">
                   <g transform="translate(10, 30)">
                     {/* VPC Block */}
-                    <rect width="380" height="80" rx="8" fill="none" stroke={driftDetected ? "#ef4444" : "#cbd5e1"} strokeWidth="2" strokeDasharray={driftDetected ? "5,3" : "none"} />
-                    <text x="12" y="16" fontSize="9" fontWeight="bold" fill="#64748b" fontFamily="monospace">VPC (10.0.0.0/16)</text>
+                    <rect width="380" height="80" rx="8" fill="none" stroke={driftDetected ? "var(--ops-svg-red-border)" : "var(--ops-svg-stroke)"} strokeWidth="2" strokeDasharray={driftDetected ? "5,3" : "none"} />
+                    <text x="12" y="16" fontSize="9" fontWeight="bold" fill="var(--ops-svg-text)" fontFamily="monospace">VPC (10.0.0.0/16)</text>
                     
                     {/* Subnet resource */}
                     <g transform="translate(30, 25)">
-                      <rect width="100" height="40" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                      <text x="50" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#1e3a8a">Public Subnet</text>
+                      <rect width="100" height="40" rx="6" fill="var(--ops-svg-blue-bg)" stroke="var(--ops-svg-blue-border)" strokeWidth="1.5" />
+                      <text x="50" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--ops-svg-blue-text)">Public Subnet</text>
                     </g>
-
+ 
                     {/* Security Group resource */}
                     <g transform="translate(160, 25)">
-                      <rect width="100" height="40" rx="6" fill={driftDetected ? "#fef2f2" : "#f0fdf4"} stroke={driftDetected ? "#ef4444" : "#10b981"} strokeWidth="1.5" />
-                      <text x="50" y="20" textAnchor="middle" fontSize="9" fontWeight="bold" fill={driftDetected ? "#991b1b" : "#064e3b"}>Security Group</text>
-                      <text x="50" y="32" textAnchor="middle" fontSize="7.5" fill={driftDetected ? "#ef4444" : "#059669"} fontWeight="bold" fontFamily="monospace">
+                      <rect width="100" height="40" rx="6" fill={driftDetected ? "var(--ops-svg-red-bg)" : "var(--ops-svg-green-bg)"} stroke={driftDetected ? "var(--ops-svg-red-border)" : "var(--ops-svg-green-border)"} strokeWidth="1.5" />
+                      <text x="50" y="20" textAnchor="middle" fontSize="9" fontWeight="bold" fill={driftDetected ? "var(--ops-svg-red-text)" : "var(--ops-svg-green-text)"}>Security Group</text>
+                      <text x="50" y="32" textAnchor="middle" fontSize="7.5" fill={driftDetected ? "var(--ops-svg-red-border)" : "var(--ops-svg-green-border)"} fontWeight="bold" fontFamily="monospace">
                         {driftDetected ? '⚠️ DRIFTED' : 'In-Sync'}
                       </text>
                     </g>
@@ -1575,7 +1718,7 @@ export default function OperationsAndMLVisualizer() {
                         <tr 
                           key={inst.id}
                           onClick={() => inst.ssmAgent === 'Online' && setSelectedInstanceId(inst.id)}
-                          className={`cursor-pointer transition-colors ${selectedInstanceId === inst.id ? 'bg-sky-50' : 'hover:bg-slate-50'}`}
+                          className={`cursor-pointer transition-colors ${selectedInstanceId === inst.id ? 'ops-row-selected' : 'ops-row-hover'}`}
                         >
                           <td className="font-bold">{inst.id}</td>
                           <td>{inst.os}</td>
@@ -1906,7 +2049,7 @@ export default function OperationsAndMLVisualizer() {
                     {parsedLabels.map((lbl, idx) => (
                       <div key={idx} className="flex justify-between items-center text-xs border-b border-slate-100 pb-1.5">
                         <span className="font-semibold text-slate-700">{lbl.label}</span>
-                        <span className="font-mono bg-sky-50 text-sky-700 px-1.5 py-0.5 rounded font-bold">{lbl.conf.toFixed(1)}% Match</span>
+                        <span className="ops-badge-match">{lbl.conf.toFixed(1)}% Match</span>
                       </div>
                     ))}
                   </div>
@@ -1930,7 +2073,7 @@ export default function OperationsAndMLVisualizer() {
                   <span className="ops-sec">Lex Bot Intent Slots values</span>
                   <div className="grid grid-cols-3 gap-3 mt-2 text-xs">
                     {lexSlots.map((s, idx) => (
-                      <div key={idx} className="bg-slate-50 border border-slate-200 rounded p-2.5">
+                      <div key={idx} className="ops-slot-card">
                         <span className="text-[10px] text-slate-400 block font-bold uppercase">{s.slot}</span>
                         <span className="font-mono font-bold text-slate-850">{s.val}</span>
                       </div>
@@ -1998,31 +2141,31 @@ export default function OperationsAndMLVisualizer() {
                   </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono space-y-1 text-slate-600">
+                <div className="ops-savings-card text-xs font-mono space-y-1">
                   <p>Standard unblended cost: <span className="font-bold text-slate-800">${savings.unblended}</span></p>
                   <p>Savings plans cost: <span className="font-bold text-indigo-700">${savings.blended}</span></p>
                   <p className="border-t border-slate-200 pt-1.5 text-emerald-600 font-bold">Estimated savings: ${savings.savings}/month</p>
                 </div>
               </div>
             </div>
-
+ 
             {/* Cost Graph and Trusted Advisor check results */}
             <div className="lg:col-span-8 space-y-4">
               <div className="ops-card">
                 <span className="ops-sec">Monthly Cost Explorer analytics ($ USD)</span>
                 <div className="mt-4 flex flex-col items-center">
-                  <svg width="100%" height="160" className="bg-slate-50 border border-slate-200 rounded-xl">
-                    <line x1="50" y1="120" x2="450" y2="120" stroke="#cbd5e1" strokeWidth="1" />
+                  <svg width="100%" height="160" className="ops-chart-svg rounded-xl">
+                    <line x1="50" y1="120" x2="450" y2="120" stroke="var(--ops-svg-stroke)" strokeWidth="1" />
                     
                     {/* Normal base costs bar chart */}
                     <rect x="80" y="80" width="30" height="40" fill="#3b82f6" rx="2" />
-                    <text x="95" y="132" textAnchor="middle" fontSize="8.5" fill="#64748b" fontFamily="monospace">March</text>
-                    <text x="95" y="72" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="bold" fontFamily="monospace">$420</text>
-
+                    <text x="95" y="132" textAnchor="middle" fontSize="8.5" fill="var(--ops-svg-text)" fontFamily="monospace">March</text>
+                    <text x="95" y="72" textAnchor="middle" fontSize="8.5" fill="var(--ops-text)" fontWeight="bold" fontFamily="monospace">$420</text>
+ 
                     <rect x="180" y="70" width="30" height="50" fill="#3b82f6" rx="2" />
-                    <text x="195" y="132" textAnchor="middle" fontSize="8.5" fill="#64748b" fontFamily="monospace">April</text>
-                    <text x="195" y="62" textAnchor="middle" fontSize="8.5" fill="#475569" fontWeight="bold" fontFamily="monospace">$500</text>
-
+                    <text x="195" y="132" textAnchor="middle" fontSize="8.5" fill="var(--ops-svg-text)" fontFamily="monospace">April</text>
+                    <text x="195" y="62" textAnchor="middle" fontSize="8.5" fill="var(--ops-text)" fontWeight="bold" fontFamily="monospace">$500</text>
+ 
                     {/* Cost anomaly spike bar chart */}
                     <rect 
                       x="280" 
@@ -2032,14 +2175,14 @@ export default function OperationsAndMLVisualizer() {
                       fill={anomalySpike !== 'none' ? "#ef4444" : "#3b82f6"} 
                       rx="2" 
                     />
-                    <text x="295" y="132" textAnchor="middle" fontSize="8.5" fill="#64748b" fontFamily="monospace">May (Current)</text>
-                    <text x="295" y={anomalySpike === 'lambda' ? "12" : anomalySpike === 'ebs' ? "42" : "57"} textAnchor="middle" fontSize="8.5" fill={anomalySpike !== 'none' ? "#b91c1c" : "#475569"} fontWeight="bold" fontFamily="monospace">
+                    <text x="295" y="132" textAnchor="middle" fontSize="8.5" fill="var(--ops-svg-text)" fontFamily="monospace">May (Current)</text>
+                    <text x="295" y={anomalySpike === 'lambda' ? "12" : anomalySpike === 'ebs' ? "42" : "57"} textAnchor="middle" fontSize="8.5" fill={anomalySpike !== 'none' ? "var(--ops-svg-red-border)" : "var(--ops-text)"} fontWeight="bold" fontFamily="monospace">
                       {anomalySpike === 'lambda' ? '$1,850' : anomalySpike === 'ebs' ? '$850' : '$550'}
                     </text>
                   </svg>
                   
                   {anomalySpike !== 'none' && (
-                    <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3.5 mt-3 flex items-center gap-2.5 w-full">
+                    <div className="ops-alert-danger text-xs rounded-xl p-3.5 mt-3 flex items-center gap-2.5 w-full">
                       <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
                       <div>
                         <span className="font-extrabold text-[12px] block">Cost Anomaly Warning Alert triggered!</span>
@@ -2069,13 +2212,13 @@ export default function OperationsAndMLVisualizer() {
 
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {advisorResults.map((res, idx) => (
-                    <div key={idx} className="flex justify-between items-center text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+                    <div key={idx} className="ops-advisor-row flex justify-between items-center text-xs p-2.5 rounded-xl">
                       <div>
                         <span className="text-[10px] text-slate-450 block font-bold uppercase">{res.category}</span>
                         <span className="font-semibold text-slate-800">{res.title}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {res.savings && <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-150">Save {res.savings}</span>}
+                        {res.savings && <span className="ops-savings-badge">Save {res.savings}</span>}
                         <span className={`ops-status-badge ${res.status === 'ok' ? 'ops-sb-ok' : res.status === 'warn' ? 'ops-sb-warn' : 'ops-sb-error'}`}>
                           {res.status === 'ok' ? 'nominal' : res.status === 'warn' ? 'warning' : 'action required'}
                         </span>

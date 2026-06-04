@@ -797,22 +797,130 @@ export default function NetworkingVPCVisualizer() {
 
   return (
     <div className="da-container animate-fadeIn">
-      {/* Isolated visualizer styles */}
       <style>{`
         .da-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-          color: #1e293b;
-          background-color: #f8fafc;
+          color: var(--da-text);
+          background-color: var(--da-bg);
           padding: 20px;
           border-radius: 16px;
+          transition: all 0.25s ease;
+
+          --da-bg: #f8fafc;
+          --da-text: #1e293b;
+          --da-text-title: #0f172a;
+          --da-text-muted: #475569;
+          --da-card-bg: rgba(255, 255, 255, 0.95);
+          --da-card-border: rgba(226, 232, 240, 0.9);
+          --da-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+          
+          --da-tab-bg: rgba(255, 255, 255, 0.85);
+          --da-tab-border: rgba(226, 232, 240, 0.85);
+          --da-tab-text: #475569;
+          --da-tab-hover-bg: #f8fafc;
+          --da-tab-hover-border: #cbd5e1;
+          --da-tab-hover-text: #1e293b;
+          
+          --da-input-bg: #ffffff;
+          --da-input-color: #0f172a;
+          --da-input-border: rgba(226, 232, 240, 0.85);
+          
+          --da-code-bg: #090d16;
+          --da-code-border: #1e293b;
+          --da-code-text: #cbd5e1;
+          
+          --da-table-border: rgba(226, 232, 240, 0.85);
+          --da-table-th-bg: #f8fafc;
+          --da-table-th-text: #475569;
+          --da-table-td-text: #334155;
+
+          --da-svg-bg: #ffffff;
+          --da-svg-grid: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          
+          --da-svg-indigo-bg: #eff6ff;
+          --da-svg-indigo-border: #3b82f6;
+          --da-svg-indigo-text: #1e3a8a;
+          
+          --da-svg-green-bg: #f0fdf4;
+          --da-svg-green-border: #10b981;
+          --da-svg-green-text: #065f46;
+          
+          --da-svg-red-bg: #fff5f5;
+          --da-svg-red-border: #f43f5e;
+          --da-svg-red-text: #b91c1c;
+          
+          --da-svg-amber-bg: #fffbeb;
+          --da-svg-amber-border: #fef3c7;
+          --da-svg-amber-text: #b45309;
+
+          --da-svg-purple-bg: #faf5ff;
+          --da-svg-purple-border: #c084fc;
+          --da-svg-purple-text: #6b21a8;
         }
+
+        .dark .da-container {
+          background-color: #020617 !important;
+          color: #cbd5e1 !important;
+
+          --da-bg: #020617;
+          --da-text: #cbd5e1;
+          --da-text-title: #ffffff;
+          --da-text-muted: #94a3b8;
+          --da-card-bg: rgba(15, 23, 42, 0.75);
+          --da-card-border: rgba(51, 65, 85, 0.6);
+          --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --da-tab-bg: rgba(15, 23, 42, 0.6);
+          --da-tab-border: rgba(51, 65, 85, 0.6);
+          --da-tab-text: #94a3b8;
+          --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --da-tab-hover-border: rgba(51, 65, 85, 0.6);
+          --da-tab-hover-text: #f8fafc;
+          
+          --da-input-bg: #0f172a;
+          --da-input-color: #f1f5f9;
+          --da-input-border: rgba(51, 65, 85, 0.8);
+          
+          --da-code-bg: #020617;
+          --da-code-border: rgba(51, 65, 85, 0.6);
+          --da-code-text: #38bdf8;
+          
+          --da-table-border: rgba(51, 65, 85, 0.6);
+          --da-table-th-bg: rgba(15, 23, 42, 0.8);
+          --da-table-th-text: #94a3b8;
+          --da-table-td-text: #cbd5e1;
+
+          --da-svg-bg: #020617;
+          --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+          
+          --da-svg-indigo-bg: rgba(59, 130, 246, 0.15);
+          --da-svg-indigo-border: rgba(59, 130, 246, 0.5);
+          --da-svg-indigo-text: #60a5fa;
+          
+          --da-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --da-svg-green-border: rgba(16, 185, 129, 0.4);
+          --da-svg-green-text: #4ade80;
+          
+          --da-svg-red-bg: rgba(244, 63, 94, 0.15);
+          --da-svg-red-border: rgba(244, 63, 94, 0.5);
+          --da-svg-red-text: #f87171;
+          
+          --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
+          --da-svg-amber-border: rgba(245, 158, 11, 0.5);
+          --da-svg-amber-text: #fbbf24;
+
+          --da-svg-purple-bg: rgba(168, 85, 247, 0.15);
+          --da-svg-purple-border: rgba(168, 85, 247, 0.4);
+          --da-svg-purple-text: #c084fc;
+        }
+
         .da-card {
-          background: rgba(255, 255, 255, 0.95);
-          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
           margin-bottom: 20px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+          box-shadow: var(--da-card-shadow);
           transition: all 0.2s ease-in-out;
         }
         .da-card:hover {
@@ -822,7 +930,7 @@ export default function NetworkingVPCVisualizer() {
         .da-card-title {
           font-size: 17px;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--da-text-title);
           margin-bottom: 10px;
           display: flex;
           align-items: center;
@@ -830,7 +938,7 @@ export default function NetworkingVPCVisualizer() {
         }
         .da-card-desc {
           font-size: 13px;
-          color: #475569;
+          color: var(--da-text-muted);
           line-height: 1.6;
         }
         .da-tabs {
@@ -838,7 +946,7 @@ export default function NetworkingVPCVisualizer() {
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--da-card-border);
           padding-bottom: 10px;
         }
         .da-tb {
@@ -847,20 +955,20 @@ export default function NetworkingVPCVisualizer() {
           gap: 6px;
           padding: 8px 16px;
           border-radius: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--da-tab-border);
           font-size: 12px;
           font-weight: 600;
-          color: #475569;
-          background: rgba(255, 255, 255, 0.85);
+          color: var(--da-tab-text);
+          background: var(--da-tab-bg);
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.15s ease-in-out;
           outline: none;
         }
         .da-tb:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          border-color: var(--da-tab-hover-border);
+          color: var(--da-tab-hover-text);
         }
         .da-tb.da-on {
           background: #2563eb;
@@ -870,8 +978,8 @@ export default function NetworkingVPCVisualizer() {
         }
 
         .da-svg-bg {
-          background-color: #ffffff;
-          background-image: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          background-color: var(--da-svg-bg);
+          background-image: var(--da-svg-grid);
           background-size: 16px 16px;
         }
         
@@ -915,13 +1023,47 @@ export default function NetworkingVPCVisualizer() {
           100% { stroke-dashoffset: -40; }
         }
 
+        /* Interactive Cost Table styles */
+        .da-cost-row {
+          background-color: var(--da-bg);
+          border: 1.5px solid var(--da-card-border);
+          transition: all 0.2s ease;
+        }
+        .da-cost-row:hover {
+          background-color: var(--da-tab-hover-bg);
+        }
+        .da-cost-row.da-selected {
+          background-color: var(--da-svg-green-bg) !important;
+          border-color: var(--da-svg-green-border) !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+        }
+        .da-cost-row .da-route-name {
+          color: var(--da-text-title);
+        }
+        .da-cost-row.da-selected .da-route-name {
+          color: var(--da-svg-green-text) !important;
+        }
+        .da-cost-row .da-route-desc {
+          color: var(--da-text-muted);
+        }
+        .da-cost-row .da-route-total {
+          color: var(--da-text-title);
+        }
+        .da-cost-row .da-route-rate {
+          color: var(--da-text-muted);
+        }
+        .da-cost-bar-bg {
+          background-color: var(--da-bg);
+          border: 1px solid var(--da-card-border);
+        }
+
         /* Modern Architect Learning Center styles */
         .da-edu-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+          box-shadow: var(--da-card-shadow);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-edu-card:hover {
@@ -940,52 +1082,52 @@ export default function NetworkingVPCVisualizer() {
           line-height: 1.5;
         }
         .da-modern-table th {
-          background: #f8fafc;
-          color: #475569;
+          background: var(--da-table-th-bg);
+          color: var(--da-table-th-text);
           font-weight: 700;
           text-align: left;
           padding: 12px 16px;
-          border-bottom: 1.5px solid #e2e8f0;
+          border-bottom: 1.5px solid var(--da-table-border);
         }
         .da-modern-table td {
           padding: 12px 16px;
-          border-bottom: 1px solid #f1f5f9;
-          color: #334155;
+          border-bottom: 1px solid var(--da-table-border);
+          color: var(--da-table-td-text);
         }
         .da-modern-table tr:hover td {
-          background: #f8fafc;
+          background: var(--da-bg);
         }
         .da-badge-cyan {
-          background: #ecfeff;
-          border: 1px solid #c5f6fa;
-          color: #0891b2;
+          background: var(--da-svg-indigo-bg);
+          border: 1px solid var(--da-svg-indigo-border);
+          color: var(--da-svg-indigo-text);
           font-size: 10px;
           font-weight: 700;
           padding: 2px 8px;
           border-radius: 6px;
         }
         .da-badge-emerald {
-          background: #ecfdf5;
-          border: 1px solid #a7f3d0;
-          color: #059669;
+          background: var(--da-svg-green-bg);
+          border: 1px solid var(--da-svg-green-border);
+          color: var(--da-svg-green-text);
           font-size: 10px;
           font-weight: 700;
           padding: 2px 8px;
           border-radius: 6px;
         }
         .da-badge-rose {
-          background: #fff5f5;
-          border: 1px solid #fed7d7;
-          color: #e53e3e;
+          background: var(--da-svg-red-bg);
+          border: 1px solid var(--da-svg-red-border);
+          color: var(--da-svg-red-text);
           font-size: 10px;
           font-weight: 700;
           padding: 2px 8px;
           border-radius: 6px;
         }
         .da-badge-amber {
-          background: #fffbeb;
-          border: 1px solid #fef3c7;
-          color: #d97706;
+          background: var(--da-svg-amber-bg);
+          border: 1px solid var(--da-svg-amber-border);
+          color: var(--da-svg-amber-text);
           font-size: 10px;
           font-weight: 700;
           padding: 2px 8px;
@@ -1009,11 +1151,11 @@ export default function NetworkingVPCVisualizer() {
         
         /* Premium Academy Directory Styles */
         .acad-dir-container {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--da-card-shadow);
         }
         .acad-dir-header {
           background: #0f172a;
@@ -1033,18 +1175,18 @@ export default function NetworkingVPCVisualizer() {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          background: var(--da-bg);
+          border-bottom: 1px solid var(--da-card-border);
           font-size: 10px;
           font-weight: 850;
-          color: #475569;
+          color: var(--da-text-muted);
           text-transform: uppercase;
           letter-spacing: 0.04em;
           transition: all 0.2s ease;
         }
         .acad-dir-folder-btn:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          color: var(--da-tab-hover-text);
         }
         .acad-dir-item-btn {
           width: 100%;
@@ -1054,34 +1196,34 @@ export default function NetworkingVPCVisualizer() {
           padding: 10px 18px;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: var(--da-text-muted);
           border-left: 3px solid transparent;
-          background: #ffffff;
+          background: var(--da-card-bg);
           transition: all 0.15s ease;
           text-align: left;
         }
         .acad-dir-item-btn:hover {
-          background: #f8fafc;
-          color: #2563eb;
-          border-left-color: #cbd5e1;
+          background: var(--da-tab-hover-bg);
+          color: var(--da-svg-indigo-border);
+          border-left-color: var(--da-card-border);
         }
         .acad-dir-item-btn.acad-active {
-          background: #eff6ff;
-          color: #1d4ed8;
-          border-left-color: #2563eb;
+          background: var(--da-svg-indigo-bg);
+          color: var(--da-svg-indigo-text);
+          border-left-color: var(--da-svg-indigo-border);
           font-weight: 800;
         }
         .acad-detail-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           padding: 28px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+          box-shadow: var(--da-card-shadow);
         }
         .acad-hero-badge {
-          background: #ecfdf5;
-          border: 1.5px solid #a7f3d0;
-          color: #065f46;
+          background: var(--da-svg-green-bg);
+          border: 1.5px solid var(--da-svg-green-border);
+          color: var(--da-svg-green-text);
           font-size: 9.5px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -1093,13 +1235,13 @@ export default function NetworkingVPCVisualizer() {
           gap: 5px;
         }
         .acad-takeaway-box {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border-left: 4px solid #2563eb;
+          background: var(--da-bg);
+          border-left: 4px solid var(--da-svg-indigo-border);
           border-radius: 12px;
           padding: 18px;
           font-size: 12px;
           line-height: 1.6;
-          color: #475569;
+          color: var(--da-text-muted);
           font-weight: 600;
         }
         .acad-table {
@@ -1108,39 +1250,39 @@ export default function NetworkingVPCVisualizer() {
           font-size: 12px;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--da-card-border);
         }
         .acad-table th {
-          background: #f8fafc;
-          color: #334155;
+          background: var(--da-table-th-bg);
+          color: var(--da-text-title);
           font-weight: 800;
           padding: 12px 14px;
-          border-bottom: 1.5px solid #e2e8f0;
+          border-bottom: 1.5px solid var(--da-card-border);
           text-align: left;
         }
         .acad-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid #f1f5f9;
-          color: #475569;
+          border-bottom: 1px solid var(--da-card-border);
+          color: var(--da-text-muted);
         }
         .acad-table tr:last-child td {
           border-bottom: none;
         }
         .acad-sim-diagram {
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 18px;
           box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
           position: relative;
         }
         .acad-terminal {
-          background: #090d16;
-          border: 1px solid #1e293b;
+          background: var(--da-code-bg);
+          border: 1px solid var(--da-code-border);
           border-radius: 12px;
           padding: 14px;
           font-family: 'Fira Code', 'Courier New', Courier, monospace;
-          color: #cbd5e1;
+          color: var(--da-code-text);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
         .animate-dash {
@@ -1158,171 +1300,310 @@ export default function NetworkingVPCVisualizer() {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Centralized Dark Mode Overrides for NetworkingVPCVisualizer.tsx */
-        .dark .da-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-card,
-        .dark [class*="da-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
-        .dark .da-card b,
-        .dark .da-card strong,
-        .dark .da-card h3,
-        .dark .da-card h4 {
+        .dark .acad-dir-header {
+          background: rgba(15, 23, 42, 0.9) !important;
           color: #ffffff !important;
         }
-        .dark .da-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .da-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .da-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-sec,
-        .dark .da-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .da-log,
-        .dark .da-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .da-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .da-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.da-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst,
-        .dark .da-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst .meta,
-        .dark .da-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .da-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        /* Scoped overrides to map tailwind utility classes to theme variables */
+        .da-container h1,
+        .da-container h2,
+        .da-container h3,
+        .da-container h4,
+        .da-container th,
+        .da-container .text-slate-900,
+        .da-container .text-slate-850,
+        .da-container .text-slate-800,
+        .da-container .text-gray-900 {
+          color: var(--da-text-title) !important;
         }
         
+        .da-container p,
+        .da-container td,
+        .da-container li,
+        .da-container .text-slate-750,
+        .da-container .text-slate-700,
+        .da-container .text-slate-650,
+        .da-container .text-slate-600,
+        .da-container .text-slate-500,
+        .da-container .text-gray-600,
+        .da-container .text-gray-500 {
+          color: var(--da-text-muted) !important;
+        }
+
+        .da-container .bg-white {
+          background-color: var(--da-card-bg) !important;
+        }
+        
+        .da-container .bg-slate-50,
+        .da-container .bg-slate-100 {
+          background-color: var(--da-bg) !important;
+        }
+
+        .da-container .hover\:bg-slate-50:hover,
+        .da-container .hover\:bg-slate-100:hover,
+        .da-container .hover\:bg-blue-50:hover {
+          background-color: var(--da-tab-hover-bg) !important;
+        }
+
+        .da-container .border-slate-200,
+        .da-container .border-slate-100,
+        .da-container .border-slate-150,
+        .da-container .border-slate-250,
+        .da-container .border-gray-200 {
+          border-color: var(--da-card-border) !important;
+        }
+
+        /* Scoped input/form components */
+        .da-container select,
+        .da-container input,
+        .da-container textarea {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
+          border: 1.5px solid var(--da-input-border) !important;
+          border-radius: 8px;
+          outline: none;
+          transition: all 0.2s ease;
+        }
+
+        .da-container select option {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
+        }
+
+        .da-container select:focus,
+        .da-container input:focus,
+        .da-container textarea:focus {
+          border-color: #2563eb !important;
+        }
+
+        .dark .da-container .da-sec,
+        .dark .da-container .da-kk {
+          color: var(--da-text-muted) !important;
+        }
+        .dark .da-container .da-log {
+          background: var(--da-code-bg) !important;
+          border-color: var(--da-code-border) !important;
+          color: var(--da-code-text) !important;
+        }
+        .dark .da-container .da-btn {
+          background: var(--da-tab-bg) !important;
+          border-color: var(--da-tab-border) !important;
+          color: var(--da-tab-text) !important;
+        }
+        .dark .da-container .da-btn:hover {
+          background: var(--da-tab-hover-bg) !important;
+          color: var(--da-tab-hover-text) !important;
+        }
+        .dark .da-container .da-met {
+          background: var(--da-tab-bg) !important;
+          border-color: var(--da-tab-border) !important;
+          color: var(--da-tab-text) !important;
+        }
+        .dark .da-container ul.da-ck li {
+          color: var(--da-text-muted) !important;
+        }
+        .dark .da-container .da-inst,
+        .dark .da-container .da-instance {
+          background: var(--da-tab-bg) !important;
+          border-color: var(--da-tab-border) !important;
+          color: var(--da-tab-text) !important;
+        }
+        .dark .da-container .da-inst .meta,
+        .dark .da-container .da-instance .meta {
+          color: var(--da-text-muted) !important;
+        }
+
         /* Node Status Overrides */
-        .dark .da-ok {
+        .dark .da-container .da-ok {
           border-color: #10b981 !important;
           background: rgba(16, 185, 129, 0.15) !important;
           color: #4ade80 !important;
         }
-        .dark .da-warm {
+        .dark .da-container .da-warm {
           border-color: #f59e0b !important;
           background: rgba(245, 158, 11, 0.15) !important;
           color: #fbbf24 !important;
         }
-        .dark .da-drain {
+        .dark .da-container .da-drain {
           border-color: #3b82f6 !important;
           background: rgba(59, 130, 246, 0.15) !important;
           color: #60a5fa !important;
         }
-        .dark .da-down {
+        .dark .da-container .da-down {
           border-color: #ef4444 !important;
           background: rgba(239, 68, 68, 0.15) !important;
           color: #f87171 !important;
         }
+
+        /* Alert overrides in dark mode */
+        .dark .da-container .bg-blue-50 {
+          background-color: rgba(37, 99, 235, 0.15) !important;
+          color: #a5b4fc !important;
+        }
         
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
+        .dark .da-container .bg-sky-50 {
+          background-color: rgba(14, 165, 233, 0.15) !important;
+          color: #7dd3fc !important;
         }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
+        
+        .dark .da-container .bg-amber-50 {
+          background-color: rgba(245, 158, 11, 0.15) !important;
+          color: #fef08a !important;
         }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        .dark .da-container .bg-rose-50 {
+          background-color: rgba(244, 63, 94, 0.15) !important;
+          color: #fca5a5 !important;
         }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        
+        .dark .da-container .bg-red-50 {
+          background-color: rgba(239, 68, 68, 0.15) !important;
+          color: #fca5a5 !important;
         }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        
+        .dark .da-container .bg-green-50 {
+          background-color: rgba(16, 185, 129, 0.15) !important;
+          color: #86efac !important;
         }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
+
+        .dark .da-container .bg-indigo-50 {
+          background-color: rgba(99, 102, 241, 0.15) !important;
+          color: #a5b4fc !important;
         }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
+        .dark .da-container .border-indigo-300 {
+          border-color: rgba(99, 102, 241, 0.4) !important;
         }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
+        .dark .da-container .bg-emerald-50 {
+          background-color: rgba(16, 185, 129, 0.15) !important;
+          color: #6ee7b7 !important;
         }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
+        .dark .da-container .border-emerald-300 {
+          border-color: rgba(16, 185, 129, 0.4) !important;
         }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+        .dark .da-container .border-amber-300 {
+          border-color: rgba(245, 158, 11, 0.4) !important;
         }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        .dark .da-container .border-rose-300 {
+          border-color: rgba(244, 63, 94, 0.4) !important;
         }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+        .dark .da-container .bg-emerald-100 {
+          background-color: rgba(16, 185, 129, 0.2) !important;
+          color: #34d399 !important;
+          border-color: rgba(16, 185, 129, 0.4) !important;
         }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
+        .dark .da-container .bg-rose-100 {
+          background-color: rgba(244, 63, 94, 0.2) !important;
+          color: #f87171 !important;
+          border-color: rgba(244, 63, 94, 0.4) !important;
         }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+
+        /* Scoped text overrides for dynamic theme colors */
+        .dark .da-container .text-blue-800 { color: #93c5fd !important; }
+        .dark .da-container .text-blue-700 { color: #60a5fa !important; }
+        .dark .da-container .text-blue-900 { color: #bfdbfe !important; }
+        
+        .dark .da-container .text-green-800 { color: #86efac !important; }
+        .dark .da-container .text-green-700 { color: #4ade80 !important; }
+        .dark .da-container .text-green-900 { color: #bbf7d0 !important; }
+        
+        .dark .da-container .text-emerald-800 { color: #6ee7b7 !important; }
+        .dark .da-container .text-emerald-750 { color: #34d399 !important; }
+        .dark .da-container .text-emerald-700 { color: #34d399 !important; }
+        
+        .dark .da-container .text-amber-850 { color: #fde047 !important; }
+        .dark .da-container .text-amber-800 { color: #fde047 !important; }
+        .dark .da-container .text-amber-700 { color: #fbbf24 !important; }
+        
+        .dark .da-container .text-rose-800 { color: #fda4af !important; }
+        .dark .da-container .text-rose-700 { color: #fca5a5 !important; }
+        .dark .da-container .text-rose-600 { color: #fecdd3 !important; }
+
+        /* Costly vs Savings Card Enhancements */
+        .da-card-costly {
+          background-color: rgba(254, 242, 242, 0.4);
+          border: 1.5px solid rgba(254, 205, 211, 0.7);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 20px -2px rgba(244, 63, 94, 0.04);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
         }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+        .da-card-costly:hover {
+          border-color: #fda4af;
+          box-shadow: 0 12px 30px -4px rgba(244, 63, 94, 0.12);
+          transform: translateY(-2px);
         }
-              `}</style>
+        
+        .da-card-savings {
+          background: linear-gradient(135deg, rgba(240, 253, 244, 0.7) 0%, rgba(240, 253, 244, 0.2) 100%);
+          border: 2.5px solid #10b981;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 8px 30px -2px rgba(16, 185, 129, 0.08);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+        .da-card-savings:hover {
+          border-color: #059669;
+          box-shadow: 0 16px 36px -4px rgba(16, 185, 129, 0.2);
+          transform: translateY(-2px);
+        }
+
+        .da-cost-box-costly {
+          background-color: rgba(254, 242, 242, 0.7);
+          border: 1px solid rgba(254, 205, 211, 0.8);
+          border-radius: 12px;
+          padding: 12px;
+          transition: all 0.2s ease;
+        }
+        
+        .da-cost-box-savings {
+          background-color: rgba(240, 253, 244, 0.7);
+          border: 1px solid rgba(167, 243, 208, 0.8);
+          border-radius: 12px;
+          padding: 12px;
+          transition: all 0.2s ease;
+        }
+
+        .dark .da-card-costly {
+          background-color: rgba(244, 63, 94, 0.04) !important;
+          border-color: rgba(244, 63, 94, 0.35) !important;
+          box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+        }
+        .dark .da-card-costly:hover {
+          border-color: rgba(244, 63, 94, 0.6) !important;
+          box-shadow: 0 12px 30px -4px rgba(244, 63, 94, 0.2) !important;
+        }
+
+        .dark .da-card-savings {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(20, 184, 166, 0.02) 100%) !important;
+          border-color: rgba(16, 185, 129, 0.7) !important;
+          box-shadow: 0 8px 30px -2px rgba(16, 185, 129, 0.1) !important;
+        }
+        .dark .da-card-savings:hover {
+          border-color: rgba(16, 185, 129, 0.95) !important;
+          box-shadow: 0 16px 36px -4px rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .dark .da-cost-box-costly {
+          background-color: rgba(244, 63, 94, 0.08) !important;
+          border-color: rgba(244, 63, 94, 0.25) !important;
+        }
+
+        .dark .da-cost-box-savings {
+          background-color: rgba(16, 185, 129, 0.08) !important;
+          border-color: rgba(16, 185, 129, 0.25) !important;
+        }
+
+        .dark .da-container .text-rose-500 { color: #fb7185 !important; }
+        .dark .da-container .text-emerald-500 { color: #34d399 !important; }
+        .dark .da-container .text-emerald-600 { color: #34d399 !important; }
+        .dark .da-container .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3) !important; }
+        .dark .da-container .text-slate-400 { color: var(--da-text-muted) !important; }
+      `}</style>
 
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
@@ -1498,68 +1779,68 @@ export default function NetworkingVPCVisualizer() {
                 <div className="w-full flex justify-center py-2 bg-white rounded-xl border border-blue-200">
                   <svg className="w-full max-w-[480px] h-[180px]" viewBox="0 0 480 180">
                     {/* Subnet Bounding Box */}
-                    <rect x="15" y="10" width="450" height="160" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="4,2" />
-                    <text x="25" y="24" fill="#1e3a8a" fontSize="7.5" fontWeight="black">SUBNET BLOCK: {vpcCidr.split('/')[0].slice(0,-1)}1.0/{subnetMaskSize}</text>
+                    <rect x="15" y="10" width="450" height="160" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" strokeDasharray="4,2" />
+                    <text x="25" y="24" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black">SUBNET BLOCK: {vpcCidr.split('/')[0].slice(0,-1)}1.0/{subnetMaskSize}</text>
 
                     {/* Left: 5 AWS Reserved IPs Section */}
-                    <rect x="25" y="32" width="200" height="128" rx="6" fill="#fff5f5" stroke="#f43f5e" strokeWidth="1.2" strokeDasharray="2,2" />
-                    <text x="32" y="44" fill="#b91c1c" fontSize="7" fontWeight="bold">AWS Reserved IPs (5 Locked)</text>
+                    <rect x="25" y="32" width="200" height="128" rx="6" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1.2" strokeDasharray="2,2" />
+                    <text x="32" y="44" fill="var(--da-svg-red-text)" fontSize="7" fontWeight="bold">AWS Reserved IPs (5 Locked)</text>
 
                     {/* Reserved IP nodes */}
                     <g transform="translate(32, 50)">
-                      <rect x="0" y="0" width="85" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
-                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.0 (Network IP)</text>
+                      <rect x="0" y="0" width="85" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-svg-red-border)" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold">.0 (Network IP)</text>
                     </g>
                     <g transform="translate(122, 50)">
-                      <rect x="0" y="0" width="95" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
-                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.1 (Router Gateway)</text>
+                      <rect x="0" y="0" width="95" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-svg-red-border)" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold">.1 (Router Gateway)</text>
                     </g>
 
                     <g transform="translate(32, 75)">
-                      <rect x="0" y="0" width="85" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
-                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.2 (Route 53 DNS)</text>
+                      <rect x="0" y="0" width="85" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-svg-red-border)" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold">.2 (Route 53 DNS)</text>
                     </g>
                     <g transform="translate(122, 75)">
-                      <rect x="0" y="0" width="95" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
-                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.3 (AWS Reserved)</text>
+                      <rect x="0" y="0" width="95" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-svg-red-border)" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold">.3 (AWS Reserved)</text>
                     </g>
 
                     <g transform="translate(32, 100)">
-                      <rect x="0" y="0" width="186" height="18" rx="2" fill="#ffffff" stroke="#f43f5e" strokeWidth="0.8" />
-                      <text x="5" y="11" fill="#dc2626" fontSize="6.5" fontWeight="bold">.255 (Classic Broadcast Drop)</text>
+                      <rect x="0" y="0" width="186" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-svg-red-border)" strokeWidth="0.8" />
+                      <text x="5" y="11" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold">.255 (Classic Broadcast Drop)</text>
                     </g>
 
-                    <text x="32" y="145" fill="#e11d48" fontSize="6.5" fontWeight="bold">⚠️ Inactive: 100% Locked by VPC Router</text>
+                    <text x="32" y="145" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold">⚠️ Inactive: 100% Locked by VPC Router</text>
 
 
                     {/* Right: Usable IP Pool Section */}
-                    <rect x="240" y="32" width="215" height="128" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="248" y="44" fill="#065f46" fontSize="7" fontWeight="bold">Usable IP Range ({ipStats.usableIps} Available)</text>
+                    <rect x="240" y="32" width="215" height="128" rx="6" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                    <text x="248" y="44" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="bold">Usable IP Range ({ipStats.usableIps} Available)</text>
 
                     {/* Active IP Instance 1 */}
                     <g transform="translate(250, 52)">
-                      <rect x="0" y="0" width="90" height="42" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
-                      <text x="45" y="12" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">Prod EC2 Instance</text>
-                      <text x="45" y="24" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">IP: .4</text>
-                      <rect x="15" y="28" width="60" height="10" rx="1.5" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.6" />
-                      <text x="45" y="35" fill="#047857" fontSize="5" fontWeight="extrabold" textAnchor="middle">SG: PORT 443 OK</text>
+                      <rect x="0" y="0" width="90" height="42" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                      <text x="45" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="black" textAnchor="middle">Prod EC2 Instance</text>
+                      <text x="45" y="24" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">IP: .4</text>
+                      <rect x="15" y="28" width="60" height="10" rx="1.5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="0.6" />
+                      <text x="45" y="35" fill="var(--da-svg-green-text)" fontSize="5" fontWeight="extrabold" textAnchor="middle">SG: PORT 443 OK</text>
                     </g>
 
                     {/* Active IP Instance 2 */}
                     <g transform="translate(352, 52)">
-                      <rect x="0" y="0" width="90" height="42" rx="4" fill="#ffffff" stroke="#10b981" strokeWidth="1.2" />
-                      <text x="45" y="12" fill="#1e293b" fontSize="7" fontWeight="black" textAnchor="middle">Application ALB</text>
-                      <text x="45" y="24" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">IP: .15</text>
-                      <rect x="15" y="28" width="60" height="10" rx="1.5" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.6" />
-                      <text x="45" y="35" fill="#047857" fontSize="5" fontWeight="extrabold" textAnchor="middle">SG: PORT 80 OK</text>
+                      <rect x="0" y="0" width="90" height="42" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                      <text x="45" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="black" textAnchor="middle">Application ALB</text>
+                      <text x="45" y="24" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">IP: .15</text>
+                      <rect x="15" y="28" width="60" height="10" rx="1.5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="0.6" />
+                      <text x="45" y="35" fill="var(--da-svg-green-text)" fontSize="5" fontWeight="extrabold" textAnchor="middle">SG: PORT 80 OK</text>
                     </g>
 
                     {/* Usable range summary */}
                     <g transform="translate(250, 105)">
-                      <rect x="0" y="0" width="192" height="45" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                      <text x="10" y="14" fill="#475569" fontSize="6.5" fontWeight="black">Allocated IP Block Range:</text>
-                      <text x="10" y="26" fill="#2563eb" fontSize="7.5" fontWeight="extrabold">.4  to  .{Math.pow(2, 32 - subnetMaskSize) - 2}</text>
-                      <text x="10" y="36" fill="#94a3b8" fontSize="5.5" fontWeight="bold">Dynamically allocated as servers request local leases.</text>
+                      <rect x="0" y="0" width="192" height="45" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                      <text x="10" y="14" fill="var(--da-text-title)" fontSize="6.5" fontWeight="black">Allocated IP Block Range:</text>
+                      <text x="10" y="26" fill="var(--da-svg-indigo-border)" fontSize="7.5" fontWeight="extrabold">.4  to  .{Math.pow(2, 32 - subnetMaskSize) - 2}</text>
+                      <text x="10" y="36" fill="var(--da-text-muted)" fontSize="5.5" fontWeight="bold">Dynamically allocated as servers request local leases.</text>
                     </g>
                   </svg>
                 </div>
@@ -1716,129 +1997,129 @@ export default function NetworkingVPCVisualizer() {
                   </defs>
 
                   {/* ==================== VPC BOUNDARY ==================== */}
-                  <rect x="6" y="24" width="488" height="225" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="5,3" />
-                  <text x="16" y="34" fill="#2563eb" fontSize="7.5" fontWeight="black">VPC BOUNDARY (10.0.0.0/16)</text>
-
-                  {/* Zones outlines */}
-                  {/* Availability Zone 1 */}
-                  <rect x="12" y="40" width="232" height="202" rx="6" fill="none" stroke={pipelineFlowType === 'az_failover' ? '#f43f5e' : '#cbd5e1'} strokeWidth="1.2" strokeDasharray={pipelineFlowType === 'az_failover' ? '4,4' : 'none'} />
-                  <text x="20" y="51" fill={pipelineFlowType === 'az_failover' ? '#e11d48' : '#64748b'} fontSize="7" fontWeight="bold">
-                    Availability Zone 1 {pipelineFlowType === 'az_failover' && '⚠️ OUTAGE'}
-                  </text>
-
-                  {/* Availability Zone 2 */}
-                  <rect x="256" y="40" width="232" height="202" rx="6" fill="none" stroke="#cbd5e1" strokeWidth="1.2" />
-                  <text x="264" y="51" fill="#64748b" fontSize="7" fontWeight="bold">Availability Zone 2</text>
-
-                  {/* Internet Gateway Gateway ENI Node */}
-                  <g transform="translate(210, 1)">
-                    <rect x="0" y="0" width="80" height="20" rx="4" fill={igwAttached ? '#e0f2fe' : '#fee2e2'} stroke={igwAttached ? '#0284c7' : '#ef4444'} strokeWidth="1.2" />
-                    <text x="40" y="13" fill={igwAttached ? '#0369a1' : '#991b1b'} fontSize="7" fontWeight="black" textAnchor="middle">
-                      {igwAttached ? 'IGW Attached' : 'IGW Detached'}
-                    </text>
-                  </g>
-
-                  {/* Conduit paths flows */}
-                  {/* SSH Flow path: IGW -> Bastion (AZ-1) -> Private EC2 (AZ-1) */}
-                  {pipelineFlowType === 'ssh_bastion' && pipelineSimState === 'success' && (
-                    <g>
-                      <path d="M 250 22 V 90 H 85 V 170" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
-                    </g>
-                  )}
-                  {pipelineFlowType === 'ssh_bastion' && pipelineSimState === 'failed' && !igwAttached && (
-                    <g>
-                      <circle cx="250" cy="11" r="3" fill="#f43f5e" />
-                      <line x1="250" y1="11" x2="250" y2="22" stroke="#f43f5e" strokeWidth="1.8" strokeDasharray="2,2" />
-                    </g>
-                  )}
-
-                  {/* EC2 Egress Flow path (AZ-1): Private EC2 -> NAT AZ-1 -> IGW */}
-                  {pipelineFlowType === 'ec2_egress' && activeAz === 'az1' && pipelineSimState === 'success' && (
-                    <g>
-                      <path d="M 85 170 V 90 H 130 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
-                    </g>
-                  )}
-
-                  {/* EC2 Egress Flow path (AZ-2): Private EC2 (AZ-2) -> NAT AZ-2 -> IGW */}
-                  {pipelineFlowType === 'ec2_egress' && activeAz === 'az2' && pipelineSimState === 'success' && natHaMode === 'dual_ha' && (
-                    <g>
-                      <path d="M 325 170 V 90 H 370 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
-                    </g>
-                  )}
-
-                  {/* AZ Failover path: Private EC2 (AZ-2) rerouting from AZ-1 single NAT down to AZ-2 if Multi-AZ */}
-                  {pipelineFlowType === 'az_failover' && pipelineSimState === 'success' && (
-                    <g>
-                      <path d="M 325 170 V 90 H 370 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
-                    </g>
-                  )}
-
-                  {/* AZ-1 Public Subnet Components */}
-                  <g transform="translate(20, 60)">
-                    <rect x="0" y="0" width="200" height="42" rx="6" fill="#f8fafc" stroke="#3b82f6" strokeWidth="1" strokeDasharray="2,2" />
-                    <text x="10" y="12" fill="#2563eb" fontSize="6.5" fontWeight="bold">Public Subnet (AZ-1)</text>
-                    
-                    {/* Bastion Host */}
-                    <g transform="translate(15, 16)">
-                      <rect x="0" y="0" width="80" height="20" rx="3" fill={bastionTunnel ? '#ecfdf5' : '#ffffff'} stroke={bastionTunnel ? '#10b981' : '#cbd5e1'} strokeWidth="1" />
-                      <text x="40" y="12" fill="#334155" fontSize="7" fontWeight="extrabold" textAnchor="middle">
-                        Bastion Host {bastionTunnel ? '🔓' : '🔒'}
-                      </text>
-                    </g>
-
-                    {/* NAT Gateway AZ-1 */}
-                    <g transform="translate(105, 16)">
-                      <rect x="0" y="0" width="80" height="20" rx="3" fill={pipelineFlowType === 'az_failover' ? '#fee2e2' : '#eff6ff'} stroke={pipelineFlowType === 'az_failover' ? '#ef4444' : '#2563eb'} strokeWidth="1" />
-                      <text x="40" y="12" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">
-                        NAT Gateway-1 {pipelineFlowType === 'az_failover' ? '❌' : '⚡'}
-                      </text>
-                    </g>
-                  </g>
-
-                  {/* AZ-2 Public Subnet Components */}
-                  <g transform="translate(265, 60)">
-                    <rect x="0" y="0" width="200" height="42" rx="6" fill="#f8fafc" stroke="#3b82f6" strokeWidth="1" strokeDasharray="2,2" />
-                    <text x="10" y="12" fill="#2563eb" fontSize="6.5" fontWeight="bold">Public Subnet (AZ-2)</text>
-                    
-                    {/* NAT Gateway AZ-2 */}
-                    <g transform="translate(105, 16)">
-                      <rect x="0" y="0" width="80" height="20" rx="3" fill={natHaMode === 'dual_ha' ? '#eff6ff' : '#f1f5f9'} stroke={natHaMode === 'dual_ha' ? '#2563eb' : '#cbd5e1'} strokeWidth="1" />
-                      <text x="40" y="12" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">
-                        {natHaMode === 'dual_ha' ? 'NAT Gateway-2 ⚡' : 'No NAT ⚪'}
-                      </text>
-                    </g>
-                  </g>
-
-                  {/* AZ-1 Private Subnet */}
-                  <g transform="translate(25, 135)">
-                    <rect x="0" y="0" width="200" height="90" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1" strokeDasharray="2,2" />
-                    <text x="10" y="12" fill="#475569" fontSize="6.5" fontWeight="bold">Private Subnet (AZ-1)</text>
-
-                    {/* Private EC2 */}
-                    <g transform="translate(50, 25)">
-                      <rect x="0" y="0" width="100" height="45" rx="4" fill={activeAz === 'az1' && pipelineSimState === 'success' ? '#ecfdf5' : '#ffffff'} stroke={activeAz === 'az1' && pipelineSimState === 'success' ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="50" y="16" fill="#1e293b" fontSize="8" fontWeight="black" textAnchor="middle">EC2 Cluster-1</text>
-                      <text x="50" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">IP: 10.0.1.15</text>
-                      <text x="50" y="38" fill={pipelineFlowType === 'az_failover' ? '#dc2626' : '#16a34a'} fontSize="6" fontWeight="bold" textAnchor="middle">
-                        {pipelineFlowType === 'az_failover' ? '❌ Out of AZ' : '🟢 Secure Node'}
-                      </text>
-                    </g>
-                  </g>
-
-                  {/* AZ-2 Private Subnet */}
-                  <g transform="translate(265, 135)">
-                    <rect x="0" y="0" width="200" height="90" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1" strokeDasharray="2,2" />
-                    <text x="10" y="12" fill="#475569" fontSize="6.5" fontWeight="bold">Private Subnet (AZ-2)</text>
-
-                    {/* Private EC2 AZ-2 */}
-                    <g transform="translate(50, 25)">
-                      <rect x="0" y="0" width="100" height="45" rx="4" fill={activeAz === 'az2' && pipelineSimState === 'success' ? '#ecfdf5' : '#ffffff'} stroke={activeAz === 'az2' && pipelineSimState === 'success' ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="50" y="16" fill="#1e293b" fontSize="8" fontWeight="black" textAnchor="middle">EC2 Cluster-2</text>
-                      <text x="50" y="27" fill="#64748b" fontSize="6.5" textAnchor="middle">IP: 10.0.2.88</text>
-                      <text x="50" y="38" fill="#16a34a" fontSize="6" fontWeight="bold" textAnchor="middle">🟢 Secure Node</text>
-                    </g>
-                  </g>
-                </svg>
+                  <rect x="6" y="24" width="488" height="225" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" strokeDasharray="5,3" />
+                  <text x="16" y="34" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black">VPC BOUNDARY (10.0.0.0/16)</text>
+ 
+                   {/* Zones outlines */}
+                   {/* Availability Zone 1 */}
+                  <rect x="12" y="40" width="232" height="202" rx="6" fill="none" stroke={pipelineFlowType === 'az_failover' ? 'var(--da-svg-red-border)' : 'var(--da-card-border)'} strokeWidth="1.2" strokeDasharray={pipelineFlowType === 'az_failover' ? '4,4' : 'none'} />
+                  <text x="20" y="51" fill={pipelineFlowType === 'az_failover' ? 'var(--da-svg-red-text)' : 'var(--da-text-muted)'} fontSize="7" fontWeight="bold">
+                     Availability Zone 1 {pipelineFlowType === 'az_failover' && '⚠️ OUTAGE'}
+                   </text>
+ 
+                   {/* Availability Zone 2 */}
+                  <rect x="256" y="40" width="232" height="202" rx="6" fill="none" stroke="var(--da-card-border)" strokeWidth="1.2" />
+                  <text x="264" y="51" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold">Availability Zone 2</text>
+ 
+                   {/* Internet Gateway Gateway ENI Node */}
+                   <g transform="translate(210, 1)">
+                    <rect x="0" y="0" width="80" height="20" rx="4" fill={igwAttached ? 'var(--da-svg-indigo-bg)' : 'var(--da-svg-red-bg)'} stroke={igwAttached ? 'var(--da-svg-indigo-border)' : 'var(--da-svg-red-border)'} strokeWidth="1.2" />
+                    <text x="40" y="13" fill={igwAttached ? 'var(--da-svg-indigo-text)' : 'var(--da-svg-red-text)'} fontSize="7" fontWeight="black" textAnchor="middle">
+                       {igwAttached ? 'IGW Attached' : 'IGW Detached'}
+                     </text>
+                   </g>
+ 
+                   {/* Conduit paths flows */}
+                   {/* SSH Flow path: IGW -> Bastion (AZ-1) -> Private EC2 (AZ-1) */}
+                   {pipelineFlowType === 'ssh_bastion' && pipelineSimState === 'success' && (
+                     <g>
+                       <path d="M 250 22 V 90 H 85 V 170" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                     </g>
+                   )}
+                   {pipelineFlowType === 'ssh_bastion' && pipelineSimState === 'failed' && !igwAttached && (
+                     <g>
+                       <circle cx="250" cy="11" r="3" fill="var(--da-svg-red-border)" />
+                       <line x1="250" y1="11" x2="250" y2="22" stroke="var(--da-svg-red-border)" strokeWidth="1.8" strokeDasharray="2,2" />
+                     </g>
+                   )}
+ 
+                   {/* EC2 Egress Flow path (AZ-1): Private EC2 -> NAT AZ-1 -> IGW */}
+                   {pipelineFlowType === 'ec2_egress' && activeAz === 'az1' && pipelineSimState === 'success' && (
+                     <g>
+                       <path d="M 85 170 V 90 H 130 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                     </g>
+                   )}
+ 
+                   {/* EC2 Egress Flow path (AZ-2): Private EC2 (AZ-2) -> NAT AZ-2 -> IGW */}
+                   {pipelineFlowType === 'ec2_egress' && activeAz === 'az2' && pipelineSimState === 'success' && natHaMode === 'dual_ha' && (
+                     <g>
+                       <path d="M 325 170 V 90 H 370 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                     </g>
+                   )}
+ 
+                   {/* AZ Failover path: Private EC2 (AZ-2) rerouting from AZ-1 single NAT down to AZ-2 if Multi-AZ */}
+                   {pipelineFlowType === 'az_failover' && pipelineSimState === 'success' && (
+                     <g>
+                       <path d="M 325 170 V 90 H 370 V 22" fill="none" className="da-flow-green" strokeWidth="2.5" markerEnd="url(#arrow-pipeline)" />
+                     </g>
+                   )}
+ 
+                   {/* AZ-1 Public Subnet Components */}
+                   <g transform="translate(20, 60)">
+                    <rect x="0" y="0" width="200" height="42" rx="6" fill="var(--da-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1" strokeDasharray="2,2" />
+                    <text x="10" y="12" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold">Public Subnet (AZ-1)</text>
+                     
+                     {/* Bastion Host */}
+                     <g transform="translate(15, 16)">
+                      <rect x="0" y="0" width="80" height="20" rx="3" fill={bastionTunnel ? 'var(--da-svg-green-bg)' : 'var(--da-card-bg)'} stroke={bastionTunnel ? 'var(--da-svg-green-border)' : 'var(--da-card-border)'} strokeWidth="1" />
+                      <text x="40" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="extrabold" textAnchor="middle">
+                         Bastion Host {bastionTunnel ? '🔓' : '🔒'}
+                       </text>
+                     </g>
+ 
+                     {/* NAT Gateway AZ-1 */}
+                     <g transform="translate(105, 16)">
+                      <rect x="0" y="0" width="80" height="20" rx="3" fill={pipelineFlowType === 'az_failover' ? 'var(--da-svg-red-bg)' : 'var(--da-svg-indigo-bg)'} stroke={pipelineFlowType === 'az_failover' ? 'var(--da-svg-red-border)' : 'var(--da-svg-indigo-border)'} strokeWidth="1" />
+                      <text x="40" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">
+                         NAT Gateway-1 {pipelineFlowType === 'az_failover' ? '❌' : '⚡'}
+                       </text>
+                     </g>
+                   </g>
+ 
+                   {/* AZ-2 Public Subnet Components */}
+                   <g transform="translate(265, 60)">
+                    <rect x="0" y="0" width="200" height="42" rx="6" fill="var(--da-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1" strokeDasharray="2,2" />
+                    <text x="10" y="12" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold">Public Subnet (AZ-2)</text>
+                     
+                     {/* NAT Gateway AZ-2 */}
+                     <g transform="translate(105, 16)">
+                      <rect x="0" y="0" width="80" height="20" rx="3" fill={natHaMode === 'dual_ha' ? 'var(--da-svg-indigo-bg)' : 'var(--da-bg)'} stroke={natHaMode === 'dual_ha' ? 'var(--da-svg-indigo-border)' : 'var(--da-card-border)'} strokeWidth="1" />
+                      <text x="40" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">
+                         {natHaMode === 'dual_ha' ? 'NAT Gateway-2 ⚡' : 'No NAT ⚪'}
+                       </text>
+                     </g>
+                   </g>
+ 
+                   {/* AZ-1 Private Subnet */}
+                   <g transform="translate(25, 135)">
+                    <rect x="0" y="0" width="200" height="90" rx="6" fill="var(--da-bg)" stroke="var(--da-text-muted)" strokeWidth="1" strokeDasharray="2,2" />
+                    <text x="10" y="12" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">Private Subnet (AZ-1)</text>
+ 
+                     {/* Private EC2 */}
+                     <g transform="translate(50, 25)">
+                      <rect x="0" y="0" width="100" height="45" rx="4" fill={activeAz === 'az1' && pipelineSimState === 'success' ? 'var(--da-svg-green-bg)' : 'var(--da-card-bg)'} stroke={activeAz === 'az1' && pipelineSimState === 'success' ? 'var(--da-svg-green-border)' : 'var(--da-card-border)'} strokeWidth="1.5" />
+                      <text x="50" y="16" fill="var(--da-text-title)" fontSize="8" fontWeight="black" textAnchor="middle">EC2 Cluster-1</text>
+                      <text x="50" y="27" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">IP: 10.0.1.15</text>
+                      <text x="50" y="38" fill={pipelineFlowType === 'az_failover' ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                         {pipelineFlowType === 'az_failover' ? '❌ Out of AZ' : '🟢 Secure Node'}
+                       </text>
+                     </g>
+                   </g>
+ 
+                   {/* AZ-2 Private Subnet */}
+                   <g transform="translate(265, 135)">
+                    <rect x="0" y="0" width="200" height="90" rx="6" fill="var(--da-bg)" stroke="var(--da-text-muted)" strokeWidth="1" strokeDasharray="2,2" />
+                    <text x="10" y="12" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">Private Subnet (AZ-2)</text>
+ 
+                     {/* Private EC2 AZ-2 */}
+                     <g transform="translate(50, 25)">
+                      <rect x="0" y="0" width="100" height="45" rx="4" fill={activeAz === 'az2' && pipelineSimState === 'success' ? 'var(--da-svg-green-bg)' : 'var(--da-card-bg)'} stroke={activeAz === 'az2' && pipelineSimState === 'success' ? 'var(--da-svg-green-border)' : 'var(--da-card-border)'} strokeWidth="1.5" />
+                      <text x="50" y="16" fill="var(--da-text-title)" fontSize="8" fontWeight="black" textAnchor="middle">EC2 Cluster-2</text>
+                      <text x="50" y="27" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">IP: 10.0.2.88</text>
+                      <text x="50" y="38" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">🟢 Secure Node</text>
+                     </g>
+                   </g>
+                 </svg>
               </div>
 
               {/* Console log output terminal */}
@@ -2011,68 +2292,68 @@ export default function NetworkingVPCVisualizer() {
                   </defs>
 
                   {/* ==================== VPC BOUNDARY ==================== */}
-                  <rect x="15" y="10" width="450" height="170" rx="8" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="5,3" />
-                  <text x="25" y="22" fill="#2563eb" fontSize="7.5" fontWeight="black">VPC BOUNDARY (10.0.0.0/16)</text>
-
-                  {/* Private Subnet Boundary Box */}
-                  <rect x="105" y="32" width="345" height="135" rx="6" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" />
-                  <text x="115" y="44" fill="#1e3a8a" fontSize="7" fontWeight="bold">Private Subnet (10.0.1.0/24)</text>
-
-                  {/* Inbound path lines */}
-                  <g fill="none" strokeWidth="1.5">
-                    {/* Public internet to subnet border */}
-                    <path d="M 5 95 H 105" stroke={animStep >= 1 ? '#2563eb' : '#cbd5e1'} className={animStep === 1 ? 'packet-pulse' : ''} strokeDasharray={animStep === 1 ? '6,4' : 'none'} />
-                    {/* Subnet border to SG border */}
-                    <path d="M 145 95 H 250" stroke={animStep >= 2 ? '#2563eb' : '#cbd5e1'} />
-                    {/* SG to EC2 Target */}
-                    <path d="M 290 95 H 355" stroke={animStep >= 3 ? '#2563eb' : '#cbd5e1'} />
-                    
-                    {/* Return path (stateless return) */}
-                    <path d="M 355 105 H 250 Q 197 135 145 105" stroke={animStep >= 4 ? (securitySimState === 'blocked_ephemeral' ? '#f43f5e' : '#10b981') : '#cbd5e1'} strokeWidth="1.8" />
-                    <path d="M 105 105 H 5" stroke={securitySimState === 'passed' ? '#10b981' : '#cbd5e1'} />
-                  </g>
-
-                  {/* Packet visualizer indicator (dot) */}
-                  {securitySimState === 'animating' && (
-                    <g>
-                      <circle r="4" fill="#2563eb" className="animate-ping">
-                        {animStep === 1 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 5 95 H 105" />}
-                        {animStep === 2 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 145 95 H 250" />}
-                        {animStep === 3 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 290 95 H 355" />}
-                        {animStep === 4 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 375 105 H 250 Q 197 135 145 105" />}
-                      </circle>
-                      <text x="240" y="24" fill="#2563eb" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">
-                        TCP Packet Port: {securityTestPort}
-                      </text>
-                    </g>
-                  )}
-
-                  {/* Stateless Subnet Border NACL */}
-                  <g transform="translate(90, 60)" className={securitySimState === 'blocked_nacl' || (animStep === 4 && securitySimState === 'blocked_ephemeral') ? 'da-sim-node-active' : ''}>
-                    <rect x="0" y="0" width="36" height="70" rx="4" 
-                      fill={securitySimState === 'blocked_nacl' ? '#fee2e2' : '#eff6ff'} 
-                      stroke={securitySimState === 'blocked_nacl' ? '#ef4444' : '#3b82f6'} strokeWidth="1.8" />
-                    <text x="18" y="20" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">Stateless</text>
-                    <text x="18" y="36" fill="#2563eb" fontSize="9" fontWeight="black" textAnchor="middle">NACL</text>
-                    <text x="18" y="52" fill="#1e3a8a" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rule 100</text>
-                  </g>
-
-                  {/* Stateful Security Group (SG) directly enclosing the ENI inside Subnet */}
-                  <g transform="translate(245, 60)" className={securitySimState === 'blocked_sg' ? 'da-sim-node-active' : ''}>
-                    <rect x="0" y="0" width="45" height="70" rx="5" 
-                      fill={securitySimState === 'blocked_sg' ? '#fee2e2' : '#f0fdf4'} 
-                      stroke={securitySimState === 'blocked_sg' ? '#ef4444' : '#10b981'} strokeWidth="1.8" />
-                    <text x="22.5" y="20" fill="#065f46" fontSize="6" fontWeight="bold" textAnchor="middle">Stateful</text>
-                    <text x="22.5" y="36" fill="#10b981" fontSize="9" fontWeight="black" textAnchor="middle">SG</text>
-                    <text x="22.5" y="52" fill="#065f46" fontSize="5.5" fontWeight="bold" textAnchor="middle">ENI Level</text>
-                  </g>
-
-                  {/* Private EC2 Instance inside SG */}
-                  <g transform="translate(355, 70)">
-                    <rect x="0" y="0" width="80" height="50" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="40" y="20" fill="#cbd5e1" fontSize="8" fontWeight="black" textAnchor="middle">EC2 SERVER</text>
-                    <text x="40" y="34" fill="#94a3b8" fontSize="6.5" textAnchor="middle">IP: 10.0.1.15</text>
-                  </g>
+                  <rect x="15" y="10" width="450" height="170" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" strokeDasharray="5,3" />
+                  <text x="25" y="22" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black">VPC BOUNDARY (10.0.0.0/16)</text>
+ 
+                   {/* Private Subnet Boundary Box */}
+                  <rect x="105" y="32" width="345" height="135" rx="6" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,2" />
+                  <text x="115" y="44" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="bold">Private Subnet (10.0.1.0/24)</text>
+ 
+                   {/* Inbound path lines */}
+                   <g fill="none" strokeWidth="1.5">
+                     {/* Public internet to subnet border */}
+                    <path d="M 5 95 H 105" stroke={animStep >= 1 ? 'var(--da-svg-indigo-border)' : 'var(--da-card-border)'} className={animStep === 1 ? 'packet-pulse' : ''} strokeDasharray={animStep === 1 ? '6,4' : 'none'} />
+                     {/* Subnet border to SG border */}
+                    <path d="M 145 95 H 250" stroke={animStep >= 2 ? 'var(--da-svg-indigo-border)' : 'var(--da-card-border)'} />
+                     {/* SG to EC2 Target */}
+                    <path d="M 290 95 H 355" stroke={animStep >= 3 ? 'var(--da-svg-indigo-border)' : 'var(--da-card-border)'} />
+                     
+                     {/* Return path (stateless return) */}
+                    <path d="M 355 105 H 250 Q 197 135 145 105" stroke={animStep >= 4 ? (securitySimState === 'blocked_ephemeral' ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)') : 'var(--da-card-border)'} strokeWidth="1.8" />
+                    <path d="M 105 105 H 5" stroke={securitySimState === 'passed' ? 'var(--da-svg-green-border)' : 'var(--da-card-border)'} />
+                   </g>
+ 
+                   {/* Packet visualizer indicator (dot) */}
+                   {securitySimState === 'animating' && (
+                     <g>
+                      <circle r="4" fill="var(--da-svg-indigo-border)" className="animate-ping">
+                         {animStep === 1 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 5 95 H 105" />}
+                         {animStep === 2 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 145 95 H 250" />}
+                         {animStep === 3 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 290 95 H 355" />}
+                         {animStep === 4 && <animateMotion dur="0.8s" repeatCount="indefinite" path="M 375 105 H 250 Q 197 135 145 105" />}
+                       </circle>
+                      <text x="240" y="24" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">
+                         TCP Packet Port: {securityTestPort}
+                       </text>
+                     </g>
+                   )}
+ 
+                   {/* Stateless Subnet Border NACL */}
+                   <g transform="translate(90, 60)" className={securitySimState === 'blocked_nacl' || (animStep === 4 && securitySimState === 'blocked_ephemeral') ? 'da-sim-node-active' : ''}>
+                     <rect x="0" y="0" width="36" height="70" rx="4" 
+                      fill={securitySimState === 'blocked_nacl' ? 'var(--da-svg-red-bg)' : 'var(--da-svg-indigo-bg)'} 
+                      stroke={securitySimState === 'blocked_nacl' ? 'var(--da-svg-red-border)' : 'var(--da-svg-indigo-border)'} strokeWidth="1.8" />
+                    <text x="18" y="20" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Stateless</text>
+                    <text x="18" y="36" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="black" textAnchor="middle">NACL</text>
+                    <text x="18" y="52" fill="var(--da-svg-indigo-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rule 100</text>
+                   </g>
+ 
+                   {/* Stateful Security Group (SG) directly enclosing the ENI inside Subnet */}
+                   <g transform="translate(245, 60)" className={securitySimState === 'blocked_sg' ? 'da-sim-node-active' : ''}>
+                     <rect x="0" y="0" width="45" height="70" rx="5" 
+                      fill={securitySimState === 'blocked_sg' ? 'var(--da-svg-red-bg)' : 'var(--da-svg-green-bg)'} 
+                      stroke={securitySimState === 'blocked_sg' ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} strokeWidth="1.8" />
+                    <text x="22.5" y="20" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Stateful</text>
+                    <text x="22.5" y="36" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="black" textAnchor="middle">SG</text>
+                    <text x="22.5" y="52" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">ENI Level</text>
+                   </g>
+ 
+                   {/* Private EC2 Instance inside SG */}
+                   <g transform="translate(355, 70)">
+                    <rect x="0" y="0" width="80" height="50" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1.5" />
+                    <text x="40" y="20" fill="var(--da-code-text)" fontSize="8" fontWeight="black" textAnchor="middle">EC2 SERVER</text>
+                    <text x="40" y="34" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">IP: 10.0.1.15</text>
+                   </g>
                 </svg>
               </div>
 
@@ -2225,77 +2506,77 @@ export default function NetworkingVPCVisualizer() {
 
                   {/* VPC boundaries */}
                   {/* VPC A */}
-                  <rect x="10" y="30" width="130" height="170" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" />
-                  <text x="20" y="42" fill="#2563eb" fontSize="8" fontWeight="black">VPC-A (10.0.0.0/16)</text>
+                  <rect x="10" y="30" width="130" height="170" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                  <text x="20" y="42" fill="var(--da-svg-indigo-text)" fontSize="8" fontWeight="black">VPC-A (10.0.0.0/16)</text>
                   {/* VPC B */}
-                  <rect x="235" y="30" width="130" height="75" rx="8" fill="none" stroke="#7c3aed" strokeWidth="1.5" />
-                  <text x="245" y="42" fill="#7c3aed" fontSize="8" fontWeight="black">VPC-B (172.16.0.0/16)</text>
+                  <rect x="235" y="30" width="130" height="75" rx="8" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                  <text x="245" y="42" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="black">VPC-B (172.16.0.0/16)</text>
                   {/* VPC C */}
-                  <rect x="235" y="125" width="130" height="75" rx="8" fill="none" stroke="#4b5563" strokeWidth="1.5" />
-                  <text x="245" y="137" fill="#475569" fontSize="8" fontWeight="black">VPC-C (192.168.0.0/16)</text>
-
-                  {/* Flow path overlays */}
-                  {/* VPC Peering Flow path */}
-                  {peeringActive && peeringTestState === 'idle' && (
-                    <path d="M 140 85 H 235" fill="none" className="da-flow-blue" strokeWidth="2" markerEnd="url(#arrow-endpoint)" />
-                  )}
-                  {peeringTestState === 'transitive_blocked' && (
-                    <g>
-                      <path d="M 140 85 H 235" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="3,3" />
-                      {/* Red cross on transition from B to C */}
-                      <path d="M 235 85 L 200 135 L 235 155" fill="none" stroke="#f43f5e" strokeWidth="2" strokeDasharray="4,4" />
-                      <line x1="210" y1="115" x2="225" y2="130" stroke="#f43f5e" strokeWidth="3" />
-                      <line x1="225" y1="115" x2="210" y2="130" stroke="#f43f5e" strokeWidth="3" />
-                    </g>
-                  )}
-
-                  {/* S3 Endpoint flow path */}
-                  {endpointType === 'gateway' && endpointSimState === 'done' && (
-                    <path d="M 80 115 H 190" fill="none" className="da-flow-green" strokeWidth="2" markerEnd="url(#arrow-endpoint)" />
-                  )}
-
-                  {/* KMS Interface flow path */}
-                  {endpointType === 'interface' && endpointSimState === 'done' && (
-                    <path d="M 80 155 H 190" fill="none" className="da-flow-green" strokeWidth="2" markerEnd="url(#arrow-endpoint)" />
-                  )}
-
-                  {/* S3 Gateway Node */}
-                  <g transform="translate(190, 95)">
-                    <rect x="0" y="0" width="36" height="36" rx="18" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="18" y="21" fill="#1d4ed8" fontSize="6.5" fontWeight="bold" textAnchor="middle">S3 Gateway</text>
-                  </g>
-
-                  {/* KMS Interface Node */}
-                  <g transform="translate(190, 140)">
-                    <rect x="0" y="0" width="36" height="36" rx="18" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="1.5" />
-                    <text x="18" y="21" fill="#6d28d9" fontSize="6.5" fontWeight="bold" textAnchor="middle">KMS Interface</text>
-                  </g>
-
-                  {/* EC2 Instance VPC-A */}
-                  <g transform="translate(25, 75)">
-                    <rect x="0" y="0" width="55" height="28" rx="4" fill="#1e293b" stroke="#0f172a" strokeWidth="1" />
-                    <text x="27.5" y="17" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 Host A</text>
-                  </g>
-
-                  {/* Interface ENI VPC-A */}
-                  <g transform="translate(25, 145)">
-                    <rect x="0" y="0" width="55" height="20" rx="3" fill="#f0fdf4" stroke="#10b981" strokeWidth="1" />
-                    <text x="27.5" y="12" fill="#047857" fontSize="6.5" fontWeight="bold" textAnchor="middle">
-                      {endpointType === 'interface' ? 'ENI Active' : 'No Endpoint'}
-                    </text>
-                  </g>
-
-                  {/* EC2 Instance VPC-B */}
-                  <g transform="translate(250, 55)">
-                    <rect x="0" y="0" width="55" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="27.5" y="17" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 Host B</text>
-                  </g>
-
-                  {/* EC2 Instance VPC-C */}
-                  <g transform="translate(250, 150)">
-                    <rect x="0" y="0" width="55" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="27.5" y="17" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 Host C</text>
-                  </g>
+                  <rect x="235" y="125" width="130" height="75" rx="8" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" />
+                  <text x="245" y="137" fill="var(--da-text-muted)" fontSize="8" fontWeight="black">VPC-C (192.168.0.0/16)</text>
+ 
+                   {/* Flow path overlays */}
+                   {/* VPC Peering Flow path */}
+                   {peeringActive && peeringTestState === 'idle' && (
+                     <path d="M 140 85 H 235" fill="none" className="da-flow-blue" strokeWidth="2" markerEnd="url(#arrow-endpoint)" />
+                   )}
+                   {peeringTestState === 'transitive_blocked' && (
+                     <g>
+                       <path d="M 140 85 H 235" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2" strokeDasharray="3,3" />
+                       {/* Red cross on transition from B to C */}
+                       <path d="M 235 85 L 200 135 L 235 155" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2" strokeDasharray="4,4" />
+                       <line x1="210" y1="115" x2="225" y2="130" stroke="var(--da-svg-red-border)" strokeWidth="3" />
+                       <line x1="225" y1="115" x2="210" y2="130" stroke="var(--da-svg-red-border)" strokeWidth="3" />
+                     </g>
+                   )}
+ 
+                   {/* S3 Endpoint flow path */}
+                   {endpointType === 'gateway' && endpointSimState === 'done' && (
+                     <path d="M 80 115 H 190" fill="none" className="da-flow-green" strokeWidth="2" markerEnd="url(#arrow-endpoint)" />
+                   )}
+ 
+                   {/* KMS Interface flow path */}
+                   {endpointType === 'interface' && endpointSimState === 'done' && (
+                     <path d="M 80 155 H 190" fill="none" className="da-flow-green" strokeWidth="2" markerEnd="url(#arrow-endpoint)" />
+                   )}
+ 
+                   {/* S3 Gateway Node */}
+                   <g transform="translate(190, 95)">
+                    <rect x="0" y="0" width="36" height="36" rx="18" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                    <text x="18" y="21" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">S3 Gateway</text>
+                   </g>
+ 
+                   {/* KMS Interface Node */}
+                   <g transform="translate(190, 140)">
+                    <rect x="0" y="0" width="36" height="36" rx="18" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                    <text x="18" y="21" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">KMS Interface</text>
+                   </g>
+ 
+                   {/* EC2 Instance VPC-A */}
+                   <g transform="translate(25, 75)">
+                    <rect x="0" y="0" width="55" height="28" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1" />
+                    <text x="27.5" y="17" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 Host A</text>
+                   </g>
+ 
+                   {/* Interface ENI VPC-A */}
+                   <g transform="translate(25, 145)">
+                    <rect x="0" y="0" width="55" height="20" rx="3" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                    <text x="27.5" y="12" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                       {endpointType === 'interface' ? 'ENI Active' : 'No Endpoint'}
+                     </text>
+                   </g>
+ 
+                   {/* EC2 Instance VPC-B */}
+                   <g transform="translate(250, 55)">
+                    <rect x="0" y="0" width="55" height="28" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                    <text x="27.5" y="17" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 Host B</text>
+                   </g>
+ 
+                   {/* EC2 Instance VPC-C */}
+                   <g transform="translate(250, 150)">
+                    <rect x="0" y="0" width="55" height="28" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                    <text x="27.5" y="17" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 Host C</text>
+                   </g>
                 </svg>
               </div>
 
@@ -2435,124 +2716,126 @@ export default function NetworkingVPCVisualizer() {
 
                   {/* ==================== AWS SIDE (TOP) ==================== */}
                   {/* VPC Bounding Box */}
-                  <rect x="20" y="10" width="540" height="98" rx="8" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4,2" />
-                  <text x="30" y="22" fill="#2563eb" fontSize="8" fontWeight="black">AWS VPC BOUNDARY</text>
-
-                  {/* Private Subnet */}
-                  <rect x="80" y="25" width="220" height="70" rx="6" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" />
-                  <text x="88" y="34" fill="#1e3a8a" fontSize="7" fontWeight="bold">Private Subnet</text>
-
-                  {/* Security Group (SG) */}
-                  <rect x="135" y="42" width="105" height="46" rx="4" fill="none" stroke="#10b981" strokeWidth="1.5" />
-                  <text x="141" y="52" fill="#047857" fontSize="6.5" fontWeight="bold">SG (Stateful)</text>
-
-                  {/* Private Server Chip inside SG */}
-                  <g transform="translate(172, 57)">
-                    <rect x="0" y="0" width="30" height="24" rx="2" fill="#f0fdf4" stroke="#10b981" strokeWidth="1" />
-                    <line x1="5" y1="6" x2="25" y2="6" stroke="#10b981" strokeWidth="1.5" />
-                    <line x1="5" y1="12" x2="25" y2="12" stroke="#10b981" strokeWidth="1.5" />
-                    <line x1="5" y1="18" x2="25" y2="18" stroke="#10b981" strokeWidth="1.5" />
-                    <circle cx="25" cy="6" r="1" fill="#10b981" />
-                    <circle cx="25" cy="12" r="1" fill="#10b981" />
-                    <circle cx="25" cy="18" r="1" fill="#10b981" />
-                  </g>
-
-                  {/* Route Table (route propagation enabled) */}
-                  <g transform="translate(320, 28)">
-                    <rect x="0" y="0" width="125" height="44" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                    <rect x="6" y="6" width="12" height="10" rx="1" fill="#3b82f6" />
-                    <line x1="10" y1="11" x2="24" y2="11" stroke="#3b82f6" strokeWidth="1" />
-                    <text x="24" y="14" fill="#f8fafc" fontSize="6.5" fontWeight="black">Route Table</text>
-                    <text x="24" y="24" fill="#38bdf8" fontSize="5.5" fontWeight="bold">Propagation: ENABLED</text>
-                    <line x1="24" y1="32" x2="115" y2="32" stroke="#38bdf8" strokeWidth="1.2" strokeDasharray="2,2" />
-                  </g>
-
-                  {/* Virtual Private Gateway (VGW) at the bottom of the VPC box */}
-                  <g transform="translate(290, 102)" className={vpnSimState !== 'idle' && vpnSimState !== 'outage' ? 'da-sim-node-active' : ''}>
-                    <circle cx="0" cy="0" r="14" fill="#eff6ff" stroke="#2563eb" strokeWidth="2.5" />
-                    {/* Lock vector */}
-                    <rect x="-5" y="-2" width="10" height="8" rx="1" fill="#2563eb" />
-                    <path d="M -3 -2 V -5 A 3 3 0 0 1 3 -5 V -2" fill="none" stroke="#2563eb" strokeWidth="1.2" />
-                    <text x="0" y="19" fill="#1e3a8a" fontSize="6.5" fontWeight="black" textAnchor="middle">VGW Gateway</text>
-                  </g>
-
-
-                  {/* ==================== IPSec TUNNELS (MIDDLE) ==================== */}
-                  {/* Left Tunnel to NAT Device */}
-                  <line x1="276" y1="108" x2="165" y2="202" 
-                    stroke={!tunnelAActive ? '#f43f5e' : vpnSimState === 'tunneling_a' ? '#10b981' : '#94a3b8'} 
-                    strokeWidth={vpnSimState === 'tunneling_a' ? '3' : '1.8'} 
-                    strokeDasharray={vpnSimState === 'tunneling_a' ? 'none' : '3,3'}
-                    className={vpnSimState === 'tunneling_a' ? 'da-flow-green' : ''}
-                  />
-                  {/* Left Encrypted Lock badge */}
-                  <g transform="translate(205, 145)">
-                    <circle cx="0" cy="0" r="7" fill={!tunnelAActive ? '#fff1f2' : '#ecfdf5'} stroke={!tunnelAActive ? '#f43f5e' : '#10b981'} strokeWidth="1.2" />
-                    <rect x="-3" y="-1.5" width="6" height="5" rx="0.5" fill={!tunnelAActive ? '#f43f5e' : '#10b981'} />
-                    <path d="M -2 -1.5 V -3.5 A 2 2 0 0 1 2 -3.5 V -1.5" fill="none" stroke={!tunnelAActive ? '#f43f5e' : '#10b981'} strokeWidth="0.8" />
-                    <text x="10" y="2" fill="#475569" fontSize="6" fontWeight="bold">IPSec A (encrypted)</text>
-                  </g>
-
-                  {/* Center "or" conditional */}
-                  <circle cx="290" cy="148" r="9" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="290" y="150.5" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">or</text>
-
-                  {/* Right Tunnel to CGW */}
-                  <line x1="304" y1="108" x2="415" y2="202" 
-                    stroke={!tunnelBActive ? '#f43f5e' : vpnSimState === 'tunneling_b' ? '#10b981' : '#94a3b8'} 
-                    strokeWidth={vpnSimState === 'tunneling_b' ? '3' : '1.8'} 
-                    strokeDasharray={vpnSimState === 'tunneling_b' ? 'none' : '3,3'}
-                    className={vpnSimState === 'tunneling_b' ? 'da-flow-green' : ''}
-                  />
-                  {/* Right Encrypted Lock badge */}
-                  <g transform="translate(345, 145)">
-                    <circle cx="0" cy="0" r="7" fill={!tunnelBActive ? '#fff1f2' : '#ecfdf5'} stroke={!tunnelBActive ? '#f43f5e' : '#10b981'} strokeWidth="1.2" />
-                    <rect x="-3" y="-1.5" width="6" height="5" rx="0.5" fill={!tunnelBActive ? '#f43f5e' : '#10b981'} />
-                    <path d="M -2 -1.5 V -3.5 A 2 2 0 0 1 2 -3.5 V -1.5" fill="none" stroke={!tunnelBActive ? '#f43f5e' : '#10b981'} strokeWidth="0.8" />
-                    <text x="10" y="2" fill="#475569" fontSize="6" fontWeight="bold">IPSec B (encrypted)</text>
-                  </g>
-
-
-                  {/* ==================== ON-PREMISES DC (BOTTOM) ==================== */}
-                  {/* Corporate DC boundary box */}
-                  <rect x="20" y="202" width="540" height="84" rx="8" fill="none" stroke="#a855f7" strokeWidth="2" strokeDasharray="4,2" />
-                  <text x="30" y="213" fill="#a855f7" fontSize="8" fontWeight="black">CORPORATE DATA CENTER BOUNDARY</text>
-
-                  {/* Left Egress Point: NAT Device (Public IP) */}
-                  <g transform="translate(110, 218)">
-                    <rect x="0" y="0" width="110" height="26" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="55" y="11" fill="#6b21a8" fontSize="6.5" fontWeight="black" textAnchor="middle">NAT Device</text>
-                    <text x="55" y="20" fill="#7c3aed" fontSize="5.5" fontWeight="bold" textAnchor="middle">Public IP: 198.51.100.10</text>
-                  </g>
-
-                  {/* Right Egress Point: Customer Gateway (Public IP) */}
-                  <g transform="translate(350, 218)">
-                    <rect x="0" y="0" width="125" height="26" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="62.5" y="11" fill="#6b21a8" fontSize="6.5" fontWeight="black" textAnchor="middle">Customer Gateway (CGW)</text>
-                    <text x="62.5" y="20" fill="#7c3aed" fontSize="5.5" fontWeight="bold" textAnchor="middle">Public IP: 198.51.100.22</text>
-                  </g>
-
-                  {/* CGW Private IP (Internal Customer Gateway) */}
-                  <g transform="translate(70, 252)">
-                    <rect x="0" y="0" width="180" height="22" rx="4" fill="#ffffff" stroke="#a855f7" strokeWidth="1.2" />
-                    <circle cx="12" cy="11" r="5" fill="#faf5ff" stroke="#a855f7" strokeWidth="0.8" />
-                    <path d="M 9 11 H 15 M 12 8 V 14" stroke="#6b21a8" strokeWidth="0.8" />
-                    <text x="24" y="14" fill="#4c1d95" fontSize="6.5" fontWeight="black">Customer Gateway (Private IP)</text>
-                  </g>
-
-                  {/* Double-sided arrow between NAT Device and Private CGW */}
-                  <path d="M 165 245 V 251" fill="none" stroke="#64748b" strokeWidth="1.2" markerStart="url(#arrow-dual)" markerEnd="url(#arrow-dual)" />
-
-                  {/* Corporate Internal Server Node */}
-                  <g transform="translate(290, 248)">
-                    <rect x="0" y="0" width="80" height="26" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.2" />
-                    <text x="40" y="11" fill="#334155" fontSize="7" fontWeight="black" textAnchor="middle">Internal Server</text>
-                    <text x="40" y="20" fill="#475569" fontSize="5.5" fontWeight="bold" textAnchor="middle">IP: 192.168.10.15</text>
-                  </g>
-                </svg>
-                <span className="text-[9px] text-slate-400 font-bold mt-2 text-center max-w-lg">
-                  💡 <i>NAT device allows many private on-premise internal servers to securely share one public EIP to route encrypted payload tunnels back to the VPC Virtual Gateway.</i>
-                </span>
+                  {/* ==================== AWS SIDE (TOP) ==================== */}
+                  {/* VPC Bounding Box */}
+                  <rect x="20" y="10" width="540" height="98" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" strokeDasharray="4,2" />
+                  <text x="30" y="22" fill="var(--da-svg-indigo-text)" fontSize="8" fontWeight="black">AWS VPC BOUNDARY</text>
+ 
+                   {/* Private Subnet */}
+                  <rect x="80" y="25" width="220" height="70" rx="6" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,2" />
+                  <text x="88" y="34" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="bold">Private Subnet</text>
+ 
+                   {/* Security Group (SG) */}
+                  <rect x="135" y="42" width="105" height="46" rx="4" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                  <text x="141" y="52" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold">SG (Stateful)</text>
+ 
+                   {/* Private Server Chip inside SG */}
+                   <g transform="translate(172, 57)">
+                    <rect x="0" y="0" width="30" height="24" rx="2" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                    <line x1="5" y1="6" x2="25" y2="6" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                    <line x1="5" y1="12" x2="25" y2="12" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                    <line x1="5" y1="18" x2="25" y2="18" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                    <circle cx="25" cy="6" r="1" fill="var(--da-svg-green-border)" />
+                    <circle cx="25" cy="12" r="1" fill="var(--da-svg-green-border)" />
+                    <circle cx="25" cy="18" r="1" fill="var(--da-svg-green-border)" />
+                   </g>
+ 
+                   {/* Route Table (route propagation enabled) */}
+                   <g transform="translate(320, 28)">
+                    <rect x="0" y="0" width="125" height="44" rx="4" fill="var(--da-code-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                    <rect x="6" y="6" width="12" height="10" rx="1" fill="var(--da-svg-indigo-border)" />
+                    <line x1="10" y1="11" x2="24" y2="11" stroke="var(--da-svg-indigo-border)" strokeWidth="1" />
+                    <text x="24" y="14" fill="var(--da-text-title)" fontSize="6.5" fontWeight="black">Route Table</text>
+                    <text x="24" y="24" fill="var(--da-code-text)" fontSize="5.5" fontWeight="bold">Propagation: ENABLED</text>
+                    <line x1="24" y1="32" x2="115" y2="32" stroke="var(--da-code-text)" strokeWidth="1.2" strokeDasharray="2,2" />
+                   </g>
+ 
+                   {/* Virtual Private Gateway (VGW) at the bottom of the VPC box */}
+                   <g transform="translate(290, 102)" className={vpnSimState !== 'idle' && vpnSimState !== 'outage' ? 'da-sim-node-active' : ''}>
+                    <circle cx="0" cy="0" r="14" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" />
+                     {/* Lock vector */}
+                    <rect x="-5" y="-2" width="10" height="8" rx="1" fill="var(--da-svg-indigo-border)" />
+                    <path d="M -3 -2 V -5 A 3 3 0 0 1 3 -5 V -2" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                    <text x="0" y="19" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">VGW Gateway</text>
+                   </g>
+ 
+ 
+                   {/* ==================== IPSec TUNNELS (MIDDLE) ==================== */}
+                   {/* Left Tunnel to NAT Device */}
+                   <line x1="276" y1="108" x2="165" y2="202" 
+                    stroke={!tunnelAActive ? 'var(--da-svg-red-border)' : vpnSimState === 'tunneling_a' ? 'var(--da-svg-green-border)' : 'var(--da-text-muted)'} 
+                     strokeWidth={vpnSimState === 'tunneling_a' ? '3' : '1.8'} 
+                     strokeDasharray={vpnSimState === 'tunneling_a' ? 'none' : '3,3'}
+                     className={vpnSimState === 'tunneling_a' ? 'da-flow-green' : ''}
+                   />
+                   {/* Left Encrypted Lock badge */}
+                   <g transform="translate(205, 145)">
+                    <circle cx="0" cy="0" r="7" fill={!tunnelAActive ? 'var(--da-svg-red-bg)' : 'var(--da-svg-green-bg)'} stroke={!tunnelAActive ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} strokeWidth="1.2" />
+                    <rect x="-3" y="-1.5" width="6" height="5" rx="0.5" fill={!tunnelAActive ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} />
+                    <path d="M -2 -1.5 V -3.5 A 2 2 0 0 1 2 -3.5 V -1.5" fill="none" stroke={!tunnelAActive ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} strokeWidth="0.8" />
+                    <text x="10" y="2" fill="var(--da-text-muted)" fontSize="6" fontWeight="bold">IPSec A (encrypted)</text>
+                   </g>
+ 
+                   {/* Center "or" conditional */}
+                  <circle cx="290" cy="148" r="9" fill="var(--da-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                  <text x="290" y="150.5" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">or</text>
+ 
+                   {/* Right Tunnel to CGW */}
+                   <line x1="304" y1="108" x2="415" y2="202" 
+                    stroke={!tunnelBActive ? 'var(--da-svg-red-border)' : vpnSimState === 'tunneling_b' ? 'var(--da-svg-green-border)' : 'var(--da-text-muted)'} 
+                     strokeWidth={vpnSimState === 'tunneling_b' ? '3' : '1.8'} 
+                     strokeDasharray={vpnSimState === 'tunneling_b' ? 'none' : '3,3'}
+                     className={vpnSimState === 'tunneling_b' ? 'da-flow-green' : ''}
+                   />
+                   {/* Right Encrypted Lock badge */}
+                   <g transform="translate(345, 145)">
+                    <circle cx="0" cy="0" r="7" fill={!tunnelBActive ? 'var(--da-svg-red-bg)' : 'var(--da-svg-green-bg)'} stroke={!tunnelBActive ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} strokeWidth="1.2" />
+                    <rect x="-3" y="-1.5" width="6" height="5" rx="0.5" fill={!tunnelBActive ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} />
+                    <path d="M -2 -1.5 V -3.5 A 2 2 0 0 1 2 -3.5 V -1.5" fill="none" stroke={!tunnelBActive ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} strokeWidth="0.8" />
+                    <text x="10" y="2" fill="var(--da-text-muted)" fontSize="6" fontWeight="bold">IPSec B (encrypted)</text>
+                   </g>
+ 
+ 
+                   {/* ==================== ON-PREMISES DC (BOTTOM) ==================== */}
+                   {/* Corporate DC boundary box */}
+                  <rect x="20" y="202" width="540" height="84" rx="8" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="2" strokeDasharray="4,2" />
+                  <text x="30" y="213" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="black">CORPORATE DATA CENTER BOUNDARY</text>
+ 
+                   {/* Left Egress Point: NAT Device (Public IP) */}
+                   <g transform="translate(110, 218)">
+                    <rect x="0" y="0" width="110" height="26" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.2" />
+                    <text x="55" y="11" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">NAT Device</text>
+                    <text x="55" y="20" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Public IP: 198.51.100.10</text>
+                   </g>
+ 
+                   {/* Right Egress Point: Customer Gateway (Public IP) */}
+                   <g transform="translate(350, 218)">
+                    <rect x="0" y="0" width="125" height="26" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.2" />
+                    <text x="62.5" y="11" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">Customer Gateway (CGW)</text>
+                    <text x="62.5" y="20" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Public IP: 198.51.100.22</text>
+                   </g>
+ 
+                   {/* CGW Private IP (Internal Customer Gateway) */}
+                   <g transform="translate(70, 252)">
+                    <rect x="0" y="0" width="180" height="22" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.2" />
+                    <circle cx="12" cy="11" r="5" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="0.8" />
+                    <path d="M 9 11 H 15 M 12 8 V 14" stroke="var(--da-svg-purple-text)" strokeWidth="0.8" />
+                    <text x="24" y="14" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="black">Customer Gateway (Private IP)</text>
+                   </g>
+ 
+                   {/* Double-sided arrow between NAT Device and Private CGW */}
+                   <path d="M 165 245 V 251" fill="none" stroke="#64748b" strokeWidth="1.2" markerStart="url(#arrow-dual)" markerEnd="url(#arrow-dual)" />
+ 
+                   {/* Corporate Internal Server Node */}
+                   <g transform="translate(290, 248)">
+                    <rect x="0" y="0" width="80" height="26" rx="4" fill="var(--da-bg)" stroke="var(--da-text-muted)" strokeWidth="1.2" />
+                    <text x="40" y="11" fill="var(--da-text-title)" fontSize="7" fontWeight="black" textAnchor="middle">Internal Server</text>
+                    <text x="40" y="20" fill="var(--da-text-muted)" fontSize="5.5" fontWeight="bold" textAnchor="middle">IP: 192.168.10.15</text>
+                   </g>
+                 </svg>
+                 <span className="text-[9px] text-slate-400 font-bold mt-2 text-center max-w-lg">
+                   💡 <i>NAT device allows many private on-premise internal servers to securely share one public EIP to route encrypted payload tunnels back to the VPC Virtual Gateway.</i>
+                 </span>
               </div>
 
               {/* Logs output terminal */}
@@ -2586,7 +2869,7 @@ export default function NetworkingVPCVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
-          <div className="card text-left">
+          <div className="da-card text-left">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
               <BookOpen className="w-5 h-5 text-indigo-600" /> VPC Networking &amp; Routing Notes
             </h2>
@@ -2911,25 +3194,25 @@ export default function NetworkingVPCVisualizer() {
                       <div className="flex justify-center my-4">
                         <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
                           {/* Internet edge */}
-                          <rect x="10" y="35" width="50" height="50" rx="6" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                          <Globe className="w-4 h-4 text-slate-500" x="27" y="44" />
-                          <text x="35" y="78" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle">Public Web</text>
+                          <rect x="10" y="35" width="50" height="50" rx="6" fill="var(--da-bg)" stroke="var(--da-text-muted)" strokeWidth="1.5" />
+                          <Globe className="w-4 h-4 text-slate-500" style={{ color: 'var(--da-text-muted)' }} x="27" y="44" />
+                          <text x="35" y="78" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Public Web</text>
 
                           {/* IGW Bridge */}
-                          <line x1="60" y1="60" x2="110" y2="60" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <circle cx="110" cy="60" r="14" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" />
-                          <Network className="w-3.5 h-3.5 text-blue-600" x="103" y="53" />
-                          <text x="110" y="86" fill="#1e3a8a" fontSize="6" fontWeight="extrabold" textAnchor="middle">1:1 NAT (IGW)</text>
+                          <line x1="60" y1="60" x2="110" y2="60" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <circle cx="110" cy="60" r="14" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="2" />
+                          <Network className="w-3.5 h-3.5" style={{ color: 'var(--da-svg-indigo-border)' }} x="103" y="53" />
+                          <text x="110" y="86" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="extrabold" textAnchor="middle">1:1 NAT (IGW)</text>
 
                           {/* Private EC2 */}
-                          <line x1="124" y1="60" x2="200" y2="60" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <rect x="200" y="30" width="70" height="60" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="2.5" />
-                          <Server className="w-4 h-4 text-emerald-600" x="227" y="40" />
-                          <text x="235" y="72" fill="#065f46" fontSize="7" fontWeight="bold" textAnchor="middle">EC2 Instance</text>
-                          <text x="235" y="82" fill="#047857" fontSize="5.5" fontWeight="black" textAnchor="middle">10.0.1.15 (Private)</text>
+                          <line x1="124" y1="60" x2="200" y2="60" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <rect x="200" y="30" width="70" height="60" rx="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                          <Server className="w-4 h-4" style={{ color: 'var(--da-svg-green-border)' }} x="227" y="40" />
+                          <text x="235" y="72" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="bold" textAnchor="middle">EC2 Instance</text>
+                          <text x="235" y="82" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="black" textAnchor="middle">10.0.1.15 (Private)</text>
 
                           {/* Route overlays */}
-                          <line x1="60" y1="60" x2="200" y2="60" stroke="#10b981" strokeWidth="3" className="da-flow-fast" />
+                          <line x1="60" y1="60" x2="200" y2="60" stroke="var(--da-svg-green-border)" strokeWidth="3" className="da-flow-fast" />
                         </svg>
                       </div>
 
@@ -3181,16 +3464,16 @@ export default function NetworkingVPCVisualizer() {
                       <div className="flex justify-center py-4 bg-slate-50/50 rounded-2xl border border-slate-100 my-3">
                         <svg className="w-full max-w-[280px] h-[90px]" viewBox="0 0 280 90">
                           {/* IGW Router */}
-                          <rect x="110" y="20" width="60" height="50" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
-                          <Network className="w-5 h-5 text-blue-600" x="128" y="28" />
-                          <text x="140" y="60" fill="#1e3a8a" fontSize="7.5" fontWeight="black" textAnchor="middle">IGW Router</text>
+                          <rect x="110" y="20" width="60" height="50" rx="8" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" />
+                          <Network className="w-5 h-5" style={{ color: 'var(--da-svg-indigo-border)' }} x="128" y="28" />
+                          <text x="140" y="60" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">IGW Router</text>
 
                           {/* Flow lines */}
-                          <path d="M 20 45 H 105" fill="none" stroke="#2563eb" strokeWidth="2" strokeDasharray="4,2" />
-                          <path d="M 175 45 H 260" fill="none" stroke="#10b981" strokeWidth="2" strokeDasharray="4,2" />
+                          <path d="M 20 45 H 105" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" strokeDasharray="4,2" />
+                          <path d="M 175 45 H 260" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2" strokeDasharray="4,2" />
                           
-                          <text x="50" y="38" fill="#475569" fontSize="6.5" fontWeight="bold">Outbound Request</text>
-                          <text x="215" y="38" fill="#047857" fontSize="6.5" fontWeight="bold">Stateful Translation</text>
+                          <text x="50" y="38" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">Outbound Request</text>
+                          <text x="215" y="38" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold">Stateful Translation</text>
                         </svg>
                       </div>
                     </div>
@@ -3280,48 +3563,48 @@ export default function NetworkingVPCVisualizer() {
                         <svg className="w-full max-w-[280px] h-[140px]" viewBox="0 0 280 140">
                           {/* Client Node */}
                           <g transform="translate(10, 55)">
-                            <rect x="0" y="0" width="30" height="24" rx="4" fill="#1e293b" />
-                            <Terminal className="w-3 h-3 text-slate-300" x="9" y="5" />
+                            <rect x="0" y="0" width="30" height="24" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1" />
+                            <Terminal className="w-3 h-3 text-slate-300" style={{ color: 'var(--da-code-text)' }} x="9" y="5" />
                           </g>
 
                           {/* Public Subnet Box */}
-                          <rect x="55" y="15" width="80" height="110" rx="8" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,2" />
-                          <text x="60" y="25" fill="#047857" fontSize="5.5" fontWeight="bold">Public Subnet</text>
+                          <rect x="55" y="15" width="80" height="110" rx="8" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" strokeDasharray="3,2" />
+                          <text x="60" y="25" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold">Public Subnet</text>
 
                           {/* Bastion Node */}
                           <g transform="translate(70, 50)" className={bastionSimStep === 3 || bastionSimStep === 4 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="50" height="30" rx="6" fill={bastionSimStep >= 3 ? '#ecfdf5' : '#ffffff'} stroke={bastionSimStep >= 3 ? '#10b981' : '#94a3b8'} strokeWidth="1.8" />
-                            <text x="25" y="14" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Bastion</text>
-                            <text x="25" y="24" fill="#047857" fontSize="5" fontWeight="black" textAnchor="middle">Port 22</text>
+                            <rect x="0" y="0" width="50" height="30" rx="6" fill={bastionSimStep >= 3 ? 'var(--da-svg-green-bg)' : 'var(--da-card-bg)'} stroke={bastionSimStep >= 3 ? 'var(--da-svg-green-border)' : 'var(--da-text-muted)'} strokeWidth="1.8" />
+                            <text x="25" y="14" fill="var(--da-text-title)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Bastion</text>
+                            <text x="25" y="24" fill="var(--da-svg-green-text)" fontSize="5" fontWeight="black" textAnchor="middle">Port 22</text>
                           </g>
 
                           {/* Private Subnet Box */}
-                          <rect x="150" y="15" width="120" height="110" rx="8" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" />
-                          <text x="155" y="25" fill="#b91c1c" fontSize="5.5" fontWeight="bold">Private Subnet</text>
+                          <rect x="150" y="15" width="120" height="110" rx="8" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="3,2" />
+                          <text x="155" y="25" fill="var(--da-svg-red-text)" fontSize="5.5" fontWeight="bold">Private Subnet</text>
 
                           {/* Private EC2 */}
                           <g transform="translate(165, 50)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="45" height="30" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="1.8" />
-                            <text x="22.5" y="14" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
-                            <text x="22.5" y="24" fill="#b91c1c" fontSize="5.5" textAnchor="middle">SG: Allow Hop</text>
+                            <rect x="0" y="0" width="45" height="30" rx="6" fill={bastionSimStep >= 6 ? 'var(--da-svg-red-bg)' : 'var(--da-card-bg)'} stroke={bastionSimStep >= 6 ? 'var(--da-svg-red-border)' : 'var(--da-text-muted)'} strokeWidth="1.8" />
+                            <text x="22.5" y="14" fill="var(--da-text-title)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
+                            <text x="22.5" y="24" fill="var(--da-svg-red-text)" fontSize="5.5" textAnchor="middle">SG: Allow Hop</text>
                           </g>
 
                           {/* Multi target node if applicable */}
                           {bastionTargetMode === 'multi' && (
                             <g transform="translate(220, 50)" className={bastionSimStep === 6 ? 'da-sim-node-active' : ''}>
-                              <rect x="0" y="0" width="45" height="30" rx="6" fill={bastionSimStep >= 6 ? '#fef2f2' : '#ffffff'} stroke={bastionSimStep >= 6 ? '#ef4444' : '#94a3b8'} strokeWidth="1.8" />
-                              <text x="22.5" y="14" fill="#1e293b" fontSize="6" fontWeight="bold" textAnchor="middle">Database</text>
-                              <text x="22.5" y="24" fill="#b91c1c" fontSize="5" textAnchor="middle">Port 3306</text>
+                              <rect x="0" y="0" width="45" height="30" rx="6" fill={bastionSimStep >= 6 ? 'var(--da-svg-red-bg)' : 'var(--da-card-bg)'} stroke={bastionSimStep >= 6 ? 'var(--da-svg-red-border)' : 'var(--da-text-muted)'} strokeWidth="1.8" />
+                              <text x="22.5" y="14" fill="var(--da-text-title)" fontSize="6" fontWeight="bold" textAnchor="middle">Database</text>
+                              <text x="22.5" y="24" fill="var(--da-svg-red-text)" fontSize="5" textAnchor="middle">Port 3306</text>
                             </g>
                           )}
 
                           {/* Sim Flow lines */}
-                          {bastionSimStep === 1 && <line x1="40" y1="67" x2="68" y2="67" stroke="#3b82f6" strokeWidth="2.5" className="da-flow-fast" />}
-                          {bastionSimStep === 2 && <line x1="40" y1="67" x2="68" y2="67" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />}
+                          {bastionSimStep === 1 && <line x1="40" y1="67" x2="68" y2="67" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" className="da-flow-fast" />}
+                          {bastionSimStep === 2 && <line x1="40" y1="67" x2="68" y2="67" stroke="var(--da-svg-green-border)" strokeWidth="2.5" className="da-flow-fast" />}
                           {bastionSimStep === 5 && (
                             <>
-                              <path d="M 120 67 H 165" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="da-flow-fast" />
-                              {bastionTargetMode === 'multi' && <path d="M 210 67 H 220" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="da-flow-fast" />}
+                              <path d="M 120 67 H 165" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" className="da-flow-fast" />
+                              {bastionTargetMode === 'multi' && <path d="M 210 67 H 220" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" className="da-flow-fast" />}
                             </>
                           )}
                         </svg>
@@ -3404,19 +3687,19 @@ export default function NetworkingVPCVisualizer() {
                       <div className="flex justify-center my-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <svg className="w-full max-w-[280px] h-[100px]" viewBox="0 0 280 100">
                           {/* Private instance */}
-                          <rect x="10" y="30" width="55" height="40" rx="6" fill="#f8fafc" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="37.5" y="55" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
+                          <rect x="10" y="30" width="55" height="40" rx="6" fill="var(--da-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="37.5" y="55" fill="var(--da-text-title)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
 
                           {/* NAT EC2 */}
-                          <line x1="65" y1="50" x2="110" y2="50" stroke="#f59e0b" strokeWidth="2.5" className="da-flow-fast" />
-                          <rect x="110" y="25" width="60" height="50" rx="8" fill="#fffbeb" stroke="#f59e0b" strokeWidth="2" />
-                          <text x="140" y="48" fill="#b45309" fontSize="7" fontWeight="black" textAnchor="middle">NAT Instance</text>
-                          <text x="140" y="60" fill="#7f1d1d" fontSize="5.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
+                          <line x1="65" y1="50" x2="110" y2="50" stroke="var(--da-svg-amber-border)" strokeWidth="2.5" className="da-flow-fast" />
+                          <rect x="110" y="25" width="60" height="50" rx="8" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                          <text x="140" y="48" fill="var(--da-svg-amber-text)" fontSize="7" fontWeight="black" textAnchor="middle">NAT Instance</text>
+                          <text x="140" y="60" fill="var(--da-svg-red-text)" fontSize="5.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
 
                           {/* IGW */}
-                          <line x1="170" y1="50" x2="220" y2="50" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <rect x="220" y="30" width="50" height="40" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="245" y="55" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">IGW Router</text>
+                          <line x1="170" y1="50" x2="220" y2="50" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <rect x="220" y="30" width="50" height="40" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="245" y="55" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">IGW Router</text>
                         </svg>
                       </div>
 
@@ -3521,39 +3804,39 @@ export default function NetworkingVPCVisualizer() {
                         <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
                           {/* Private EC2 Node */}
                           <g transform="translate(10, 45)" className={natSimStep === 1 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="50" height="30" rx="4" fill={natSimStep >= 1 ? '#eff6ff' : '#ffffff'} stroke="#3b82f6" strokeWidth="1.5" />
-                            <text x="25" y="14" fill="#1e293b" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
-                            <text x="25" y="24" fill="#64748b" fontSize="5.5" textAnchor="middle">10.0.2.80</text>
+                            <rect x="0" y="0" width="50" height="30" rx="4" fill={natSimStep >= 1 ? 'var(--da-svg-indigo-bg)' : 'var(--da-card-bg)'} stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="25" y="14" fill="var(--da-text-title)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Private EC2</text>
+                            <text x="25" y="24" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">10.0.2.80</text>
                           </g>
 
                           {/* Managed NAT Gateway */}
                           {natEgressMode === 'gateway' ? (
                             <g transform="translate(100, 40)" className={natSimStep === 3 ? 'da-sim-node-active' : ''}>
-                              <rect x="0" y="0" width="70" height="40" rx="6" fill={natSimStep >= 3 ? '#ecfdf5' : '#f8fafc'} stroke="#10b981" strokeWidth="2" />
-                              <text x="35" y="16" fill="#047857" fontSize="7" fontWeight="black" textAnchor="middle">NAT Gateway</text>
-                              <text x="35" y="26" fill="#065f46" fontSize="5" fontWeight="bold" textAnchor="middle">Managed Appliance</text>
-                              <text x="35" y="34" fill="#4b5563" fontSize="5" fontStyle="italic" textAnchor="middle">EIP Attached</text>
+                              <rect x="0" y="0" width="70" height="40" rx="6" fill={natSimStep >= 3 ? 'var(--da-svg-green-bg)' : 'var(--da-bg)'} stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                              <text x="35" y="16" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="black" textAnchor="middle">NAT Gateway</text>
+                              <text x="35" y="26" fill="var(--da-svg-green-text)" fontSize="5" fontWeight="bold" textAnchor="middle">Managed Appliance</text>
+                              <text x="35" y="34" fill="var(--da-text-muted)" fontSize="5" fontStyle="italic" textAnchor="middle">EIP Attached</text>
                             </g>
                           ) : (
                             <g transform="translate(100, 40)" className={natSimStep === 3 ? 'da-sim-node-active' : ''}>
-                              <rect x="0" y="0" width="70" height="40" rx="6" fill={natSimStep >= 3 ? '#fffbeb' : '#f8fafc'} stroke="#f59e0b" strokeWidth="1.8" />
-                              <text x="35" y="16" fill="#b45309" fontSize="7.5" fontWeight="black" textAnchor="middle">NAT Instance</text>
-                              <text x="35" y="26" fill="#d97706" fontSize="5.5" fontWeight="bold" textAnchor="middle">EC2 AMI Node</text>
-                              <text x="35" y="34" fill="#7f1d1d" fontSize="5.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
+                              <rect x="0" y="0" width="70" height="40" rx="6" fill={natSimStep >= 3 ? 'var(--da-svg-amber-bg)' : 'var(--da-bg)'} stroke="var(--da-svg-amber-border)" strokeWidth="1.8" />
+                              <text x="35" y="16" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">NAT Instance</text>
+                              <text x="35" y="26" fill="var(--da-svg-amber-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">EC2 AMI Node</text>
+                              <text x="35" y="34" fill="var(--da-svg-red-text)" fontSize="5.5" fontWeight="black" textAnchor="middle">Disable Src/Dest!</text>
                             </g>
                           )}
 
                           {/* Internet Gateway */}
                           <g transform="translate(210, 45)" className={natSimStep === 4 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="60" height="30" rx="6" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
-                            <text x="30" y="14" fill="#1e3a8a" fontSize="7" fontWeight="black" textAnchor="middle">IGW Router</text>
-                            <text x="30" y="24" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">0.0.0.0/0 OK</text>
+                            <rect x="0" y="0" width="60" height="30" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="30" y="14" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="black" textAnchor="middle">IGW Router</text>
+                            <text x="30" y="24" fill="var(--da-svg-indigo-border)" fontSize="5.5" fontWeight="bold" textAnchor="middle">0.0.0.0/0 OK</text>
                           </g>
 
                           {/* Dynamic route flow path lines */}
-                          {natSimStep === 1 && <line x1="60" y1="60" x2="100" y2="60" stroke="#2563eb" strokeWidth="2.5" className="da-flow-fast" />}
-                          {natSimStep === 2 && <line x1="60" y1="60" x2="100" y2="60" stroke="#d97706" strokeWidth="2.5" className="da-flow-fast" />}
-                          {natSimStep === 3 && <line x1="170" y1="60" x2="210" y2="60" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />}
+                          {natSimStep === 1 && <line x1="60" y1="60" x2="100" y2="60" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" className="da-flow-fast" />}
+                          {natSimStep === 2 && <line x1="60" y1="60" x2="100" y2="60" stroke="var(--da-svg-amber-border)" strokeWidth="2.5" className="da-flow-fast" />}
+                          {natSimStep === 3 && <line x1="170" y1="60" x2="210" y2="60" stroke="var(--da-svg-green-border)" strokeWidth="2.5" className="da-flow-fast" />}
                         </svg>
                       </div>
 
@@ -3645,40 +3928,40 @@ export default function NetworkingVPCVisualizer() {
                       <div className="w-full flex-grow flex items-center justify-center py-2">
                         <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
                           {/* Subnet border Box */}
-                          <rect x="65" y="10" width="200" height="100" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="4,2" />
+                          <rect x="65" y="10" width="200" height="100" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="4,2" />
                           
                           {/* Client Node */}
                           <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="35" height="24" rx="4" fill="#1e293b" />
-                            <text x="17.5" y="15" fill="#cbd5e1" fontSize="5.5" fontWeight="bold" textAnchor="middle">Client Terminal</text>
+                            <rect x="0" y="0" width="35" height="24" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1" />
+                            <text x="17.5" y="15" fill="var(--da-code-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Client Terminal</text>
                           </g>
 
                           {/* NACL Gate Node */}
                           <g transform="translate(75, 40)" className={naclSimStep === 2 || (naclSimStep === 5 && !naclReturnAllowed) ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="50" height="35" rx="4" fill={naclSimStep >= 2 ? '#ecfdf5' : '#f8fafc'} stroke="#3b82f6" strokeWidth="1.8" />
-                            <text x="25" y="14" fill="#1e3a8a" fontSize="6.5" fontWeight="black" textAnchor="middle">Stateless NACL</text>
-                            <text x="25" y="24" fill="#b91c1c" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rule 100</text>
+                            <rect x="0" y="0" width="50" height="35" rx="4" fill={naclSimStep >= 2 ? 'var(--da-svg-green-bg)' : 'var(--da-bg)'} stroke="var(--da-svg-indigo-border)" strokeWidth="1.8" />
+                            <text x="25" y="14" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">Stateless NACL</text>
+                            <text x="25" y="24" fill="var(--da-svg-red-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rule 100</text>
                           </g>
 
                           {/* Security Group */}
                           <g transform="translate(180, 40)" className={naclSimStep === 3 || naclSimStep === 4 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="60" height="35" rx="6" fill={naclSimStep >= 3 ? '#f0fdf4' : '#ffffff'} stroke="#10b981" strokeWidth="1.8" />
-                            <text x="30" y="14" fill="#065f46" fontSize="6.5" fontWeight="black" textAnchor="middle">Stateful SG</text>
-                            <text x="30" y="24" fill="#1e293b" fontSize="5.5" textAnchor="middle">EC2 Port 80</text>
+                            <rect x="0" y="0" width="60" height="35" rx="6" fill={naclSimStep >= 3 ? 'var(--da-svg-green-bg)' : 'var(--da-card-bg)'} stroke="var(--da-svg-green-border)" strokeWidth="1.8" />
+                            <text x="30" y="14" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">Stateful SG</text>
+                            <text x="30" y="24" fill="var(--da-text-title)" fontSize="5.5" textAnchor="middle">EC2 Port 80</text>
                           </g>
 
                           {/* Outbound path lines */}
-                          {naclSimStep === 1 && <path d="M 45 57 H 75" fill="none" stroke="#2563eb" strokeWidth="2" className="da-flow-fast" />}
-                          {naclSimStep === 2 && <path d="M 125 57 H 180" fill="none" stroke="#2563eb" strokeWidth="2" className="da-flow-fast" />}
-                          {naclSimStep === 4 && <path d="M 180 65 H 125" fill="none" stroke="#10b981" strokeWidth="2" className="da-flow-fast" />}
+                          {naclSimStep === 1 && <path d="M 45 57 H 75" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" className="da-flow-fast" />}
+                          {naclSimStep === 2 && <path d="M 125 57 H 180" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="2" className="da-flow-fast" />}
+                          {naclSimStep === 4 && <path d="M 180 65 H 125" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2" className="da-flow-fast" />}
                           {naclSimStep === 5 && (
                             <>
                               {naclReturnAllowed ? (
-                                <path d="M 75 65 H 45" fill="none" stroke="#10b981" strokeWidth="2" className="da-flow-fast" />
+                                <path d="M 75 65 H 45" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2" className="da-flow-fast" />
                               ) : (
                                 <g>
-                                  <line x1="100" y1="52" x2="100" y2="70" stroke="#f43f5e" strokeWidth="3.5" />
-                                  <text x="100" y="85" fill="#e11d48" fontSize="6.5" fontWeight="black" textAnchor="middle" className="animate-bounce">Dropped!</text>
+                                  <line x1="100" y1="52" x2="100" y2="70" stroke="var(--da-svg-red-border)" strokeWidth="3.5" />
+                                  <text x="100" y="85" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="black" textAnchor="middle" className="animate-bounce">Dropped!</text>
                                 </g>
                               )}
                             </>
@@ -3940,22 +4223,22 @@ export default function NetworkingVPCVisualizer() {
                       <div className="flex justify-center my-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
                         <svg className="w-full max-w-[280px] h-[100px]" viewBox="0 0 280 100">
                           {/* VPC-A */}
-                          <rect x="10" y="30" width="45" height="40" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="32.5" y="55" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">VPC A</text>
+                          <rect x="10" y="30" width="45" height="40" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="32.5" y="55" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">VPC A</text>
 
                           {/* VPC-B */}
-                          <line x1="55" y1="50" x2="110" y2="50" stroke="#10b981" strokeWidth="2.5" className="da-flow-fast" />
-                          <rect x="110" y="25" width="55" height="50" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="2" />
-                          <text x="137.5" y="55" fill="#065f46" fontSize="6.5" fontWeight="black" textAnchor="middle">VPC B</text>
+                          <line x1="55" y1="50" x2="110" y2="50" stroke="var(--da-svg-green-border)" strokeWidth="2.5" className="da-flow-fast" />
+                          <rect x="110" y="25" width="55" height="50" rx="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                          <text x="137.5" y="55" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">VPC B</text>
 
                           {/* VPC-C */}
-                          <line x1="165" y1="50" x2="220" y2="50" stroke="#f43f5e" strokeWidth="2.5" />
-                          <rect x="220" y="30" width="45" height="40" rx="6" fill="#fff5f5" stroke="#f43f5e" strokeWidth="1.5" />
-                          <text x="242.5" y="55" fill="#e53e3e" fontSize="6.5" fontWeight="bold" textAnchor="middle">VPC C</text>
+                          <line x1="165" y1="50" x2="220" y2="50" stroke="var(--da-svg-red-border)" strokeWidth="2.5" />
+                          <rect x="220" y="30" width="45" height="40" rx="6" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1.5" />
+                          <text x="242.5" y="55" fill="var(--da-svg-red-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">VPC C</text>
 
                           {/* Drop Icon */}
-                          <line x1="190" y1="40" x2="197" y2="60" stroke="#ef4444" strokeWidth="3" />
-                          <line x1="197" y1="40" x2="190" y2="60" stroke="#ef4444" strokeWidth="3" />
+                          <line x1="190" y1="40" x2="197" y2="60" stroke="var(--da-svg-red-border)" strokeWidth="3" />
+                          <line x1="197" y1="40" x2="190" y2="60" stroke="var(--da-svg-red-border)" strokeWidth="3" />
                         </svg>
                       </div>
 
@@ -4122,29 +4405,29 @@ export default function NetworkingVPCVisualizer() {
                         <svg className="w-full max-w-[280px] h-[110px]" viewBox="0 0 280 110">
                           {/* EC2 Target */}
                           <g transform="translate(10, 40)">
-                            <rect x="0" y="0" width="55" height="30" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.8" />
-                            <text x="27.5" y="14" fill="#1e3a8a" fontSize="6.5" fontWeight="bold" textAnchor="middle">Prod EC2</text>
-                            <text x="27.5" y="24" fill="#2563eb" fontSize="5.5" textAnchor="middle">ENI Target</text>
+                            <rect x="0" y="0" width="55" height="30" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.8" />
+                            <text x="27.5" y="14" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Prod EC2</text>
+                            <text x="27.5" y="24" fill="var(--da-svg-indigo-border)" fontSize="5.5" textAnchor="middle">ENI Target</text>
                           </g>
 
                           {/* Primary Egress Router */}
                           <g transform="translate(110, 10)">
-                            <rect x="0" y="0" width="50" height="24" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                            <text x="25" y="14" fill="#475569" fontSize="6" fontWeight="bold" textAnchor="middle">Internet IGW</text>
+                            <rect x="0" y="0" width="50" height="24" rx="4" fill="var(--da-bg)" stroke="var(--da-text-muted)" strokeWidth="1.5" />
+                            <text x="25" y="14" fill="var(--da-text-muted)" fontSize="6" fontWeight="bold" textAnchor="middle">Internet IGW</text>
                           </g>
 
                           {/* Mirrored packet collector */}
                           <g transform="translate(195, 65)" className={mirrorEnabled ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="70" height="35" rx="6" fill={mirrorEnabled ? '#e0e7ff' : '#ffffff'} stroke={mirrorEnabled ? '#6366f1' : '#94a3b8'} strokeWidth="2" />
-                            <text x="35" y="14" fill="#1e293b" fontSize="6" fontWeight="black" textAnchor="middle">IDS Collector</text>
-                            <text x="35" y="24" fill="#4f46e5" fontSize="5" fontWeight="bold" textAnchor="middle">UDP Port 4789</text>
+                            <rect x="0" y="0" width="70" height="35" rx="6" fill={mirrorEnabled ? 'var(--da-svg-purple-bg)' : 'var(--da-card-bg)'} stroke={mirrorEnabled ? 'var(--da-svg-purple-border)' : 'var(--da-text-muted)'} strokeWidth="2" />
+                            <text x="35" y="14" fill="var(--da-text-title)" fontSize="6" fontWeight="black" textAnchor="middle">IDS Collector</text>
+                            <text x="35" y="24" fill="var(--da-svg-purple-text)" fontSize="5" fontWeight="bold" textAnchor="middle">UDP Port 4789</text>
                           </g>
 
                           {/* Connection paths */}
-                          <line x1="65" y1="55" x2="110" y2="22" stroke="#2563eb" strokeWidth="2" className="da-flow-fast" />
+                          <line x1="65" y1="55" x2="110" y2="22" stroke="var(--da-svg-indigo-border)" strokeWidth="2" className="da-flow-fast" />
                           
                           {mirrorEnabled && (
-                            <line x1="65" y1="55" x2="195" y2="82" stroke="#6366f1" strokeWidth="2.5" className="da-flow-fast" />
+                            <line x1="65" y1="55" x2="195" y2="82" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" className="da-flow-fast" />
                           )}
                         </svg>
                       </div>
@@ -4233,25 +4516,25 @@ export default function NetworkingVPCVisualizer() {
                         <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
                           {/* Corporate CGW */}
                           <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="45" height="30" rx="4" fill="#1e293b" />
-                            <text x="22.5" y="18" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Corp CGW</text>
+                            <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1" />
+                            <text x="22.5" y="18" fill="var(--da-code-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Corp CGW</text>
                           </g>
 
                           {/* Virtual Private Gateway */}
                           <g transform="translate(225, 45)">
-                            <rect x="0" y="0" width="45" height="30" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                            <text x="22.5" y="18" fill="#1e3a8a" fontSize="7.5" fontWeight="bold" textAnchor="middle">VPC VGW</text>
+                            <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="22.5" y="18" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">VPC VGW</text>
                           </g>
 
                           {/* Tunnel A */}
                           <path
                             d="M 55 52 Q 140 20 225 52"
                             fill="none"
-                            stroke={tunnelAActive ? '#10b981' : '#ef4444'}
+                            stroke={tunnelAActive ? 'var(--da-svg-green-border)' : 'var(--da-svg-red-border)'}
                             strokeWidth="2.5"
                             className={tunnelAActive ? 'da-flow-fast' : ''}
                           />
-                          <text x="140" y="26" fill={tunnelAActive ? '#047857' : '#b91c1c'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                          <text x="140" y="26" fill={tunnelAActive ? 'var(--da-svg-green-text)' : 'var(--da-svg-red-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
                             IPSec Tunnel A
                           </text>
 
@@ -4259,11 +4542,11 @@ export default function NetworkingVPCVisualizer() {
                           <path
                             d="M 55 68 Q 140 100 225 68"
                             fill="none"
-                            stroke={tunnelBActive ? '#10b981' : '#ef4444'}
+                            stroke={tunnelBActive ? 'var(--da-svg-green-border)' : 'var(--da-svg-red-border)'}
                             strokeWidth="2.5"
                             className={!tunnelAActive && tunnelBActive ? 'da-flow-fast' : ''}
                           />
-                          <text x="140" y="104" fill={tunnelBActive ? '#047857' : '#b91c1c'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                          <text x="140" y="104" fill={tunnelBActive ? 'var(--da-svg-green-text)' : 'var(--da-svg-red-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
                             IPSec Tunnel B
                           </text>
                         </svg>
@@ -4335,33 +4618,33 @@ export default function NetworkingVPCVisualizer() {
                         <svg className="w-full max-w-[280px] h-[130px]" viewBox="0 0 280 130">
                           {/* Branch Spoke A */}
                           <g transform="translate(10, 20)">
-                            <rect x="0" y="0" width="45" height="24" rx="4" fill="#1e293b" />
-                            <text x="22.5" y="15" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spoke A</text>
+                            <rect x="0" y="0" width="45" height="24" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1" />
+                            <text x="22.5" y="15" fill="var(--da-code-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spoke A</text>
                           </g>
 
                           {/* Branch Spoke B */}
                           <g transform="translate(10, 85)">
-                            <rect x="0" y="0" width="45" height="24" rx="4" fill="#1e293b" />
-                            <text x="22.5" y="15" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spoke B</text>
+                            <rect x="0" y="0" width="45" height="24" rx="4" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1" />
+                            <text x="22.5" y="15" fill="var(--da-code-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spoke B</text>
                           </g>
 
                           {/* Central VGW Hub */}
                           <g transform="translate(180, 50)" className={cloudHubSimStep > 0 ? 'da-sim-node-active' : ''}>
-                            <rect x="0" y="0" width="65" height="35" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
-                            <text x="32.5" y="16" fill="#1e3a8a" fontSize="7" fontWeight="black" textAnchor="middle">VGW Hub</text>
-                            <text x="32.5" y="26" fill="#2563eb" fontSize="5" fontWeight="black" textAnchor="middle">AWS CloudHub</text>
+                            <rect x="0" y="0" width="65" height="35" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="2.5" />
+                            <text x="32.5" y="16" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="black" textAnchor="middle">VGW Hub</text>
+                            <text x="32.5" y="26" fill="var(--da-svg-indigo-border)" fontSize="5" fontWeight="black" textAnchor="middle">AWS CloudHub</text>
                           </g>
 
                           {/* Tunnel paths */}
-                          <line x1="55" y1="32" x2="180" y2="60" stroke="#cbd5e1" strokeWidth="2.2" strokeDasharray="3,3" />
-                          <line x1="55" y1="97" x2="180" y2="75" stroke="#cbd5e1" strokeWidth="2.2" strokeDasharray="3,3" />
+                          <line x1="55" y1="32" x2="180" y2="60" stroke="var(--da-card-border)" strokeWidth="2.2" strokeDasharray="3,3" />
+                          <line x1="55" y1="97" x2="180" y2="75" stroke="var(--da-card-border)" strokeWidth="2.2" strokeDasharray="3,3" />
 
                           {/* Active trace overrides */}
                           {cloudHubSimStep === 1 && (
-                            <path d="M 55 32 L 180 60" fill="none" stroke="#2563eb" strokeWidth="3.5" className="da-flow-fast" />
+                            <path d="M 55 32 L 180 60" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="3.5" className="da-flow-fast" />
                           )}
                           {cloudHubSimStep === 2 && (
-                            <path d="M 180 75 L 55 97" fill="none" stroke="#10b981" strokeWidth="3.5" className="da-flow-fast" />
+                            <path d="M 180 75 L 55 97" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="3.5" className="da-flow-fast" />
                           )}
                         </svg>
                       </div>
@@ -4536,40 +4819,40 @@ export default function NetworkingVPCVisualizer() {
                       <div className="w-full flex-grow flex items-center justify-center py-2">
                         <svg className="w-full max-w-[280px] h-[120px]" viewBox="0 0 280 120">
                           {/* Spokes */}
-                          <rect x="10" y="15" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="30" y="29" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPC A</text>
+                          <rect x="10" y="15" width="40" height="24" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="30" y="29" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">VPC A</text>
 
-                          <rect x="10" y="80" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="30" y="94" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPC B</text>
+                          <rect x="10" y="80" width="40" height="24" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="30" y="94" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">VPC B</text>
 
-                          <rect x="230" y="15" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="250" y="29" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPC C</text>
+                          <rect x="230" y="15" width="40" height="24" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="250" y="29" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">VPC C</text>
 
-                          <rect x="230" y="80" width="40" height="24" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="250" y="94" fill="#1e3a8a" fontSize="6" fontWeight="bold" textAnchor="middle">VPN Spoke</text>
+                          <rect x="230" y="80" width="40" height="24" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="250" y="94" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">VPN Spoke</text>
 
                           {tgwMeshMode ? (
                             <>
                               {/* Transit Hub */}
-                              <circle cx="140" cy="60" r="18" fill="#eff6ff" stroke="#6366f1" strokeWidth="2.5" className="da-sim-node-active" />
-                              <text x="140" y="63" fill="#4f46e5" fontSize="7.5" fontWeight="black" textAnchor="middle">TGW Hub</text>
+                              <circle cx="140" cy="60" r="18" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" className="da-sim-node-active" />
+                              <text x="140" y="63" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">TGW Hub</text>
 
                               {/* Connections */}
-                              <line x1="50" y1="27" x2="122" y2="60" stroke="#6366f1" strokeWidth="1.5" className="da-flow-fast" />
-                              <line x1="50" y1="92" x2="122" y2="60" stroke="#6366f1" strokeWidth="1.5" />
-                              <line x1="230" y1="27" x2="158" y2="60" stroke="#6366f1" strokeWidth="1.5" />
-                              <line x1="230" y1="92" x2="158" y2="60" stroke="#6366f1" strokeWidth="1.5" />
+                              <line x1="50" y1="27" x2="122" y2="60" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" className="da-flow-fast" />
+                              <line x1="50" y1="92" x2="122" y2="60" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                              <line x1="230" y1="27" x2="158" y2="60" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                              <line x1="230" y1="92" x2="158" y2="60" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
                             </>
                           ) : (
                             <>
                               {/* Peering Mesh chaos */}
-                              <line x1="50" y1="27" x2="230" y2="27" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
-                              <line x1="50" y1="92" x2="230" y2="92" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
-                              <line x1="30" y1="39" x2="30" y2="80" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
-                              <line x1="250" y1="39" x2="250" y2="80" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
-                              <line x1="50" y1="27" x2="230" y2="92" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
-                              <line x1="50" y1="92" x2="230" y2="27" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2,2" />
-                              <text x="140" y="63" fill="#e11d48" fontSize="8" fontWeight="black" textAnchor="middle">Complexity Chaos</text>
+                              <line x1="50" y1="27" x2="230" y2="27" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="50" y1="92" x2="230" y2="92" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="30" y1="39" x2="30" y2="80" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="250" y1="39" x2="250" y2="80" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="50" y1="27" x2="230" y2="92" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <line x1="50" y1="92" x2="230" y2="27" stroke="var(--da-svg-red-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                              <text x="140" y="63" fill="var(--da-svg-red-text)" fontSize="8" fontWeight="black" textAnchor="middle">Complexity Chaos</text>
                             </>
                           )}
                         </svg>
@@ -4879,7 +5162,7 @@ export default function NetworkingVPCVisualizer() {
               {/* Side-by-side Cards & Live Comparison */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 {/* Standard Architecture */}
-                <div className="lg:col-span-5 bg-white border border-rose-100 hover:border-rose-300 rounded-2xl p-6 shadow-sm flex flex-col text-left transition-all duration-300 relative group overflow-hidden">
+                <div className="lg:col-span-5 da-card-costly flex flex-col text-left transition-all duration-300 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl pointer-events-none" />
                   <div className="flex justify-between items-center mb-4">
                     <span className="px-2.5 py-1 bg-rose-50 text-rose-700 text-[10px] font-bold tracking-wider uppercase rounded-full border border-rose-200">
@@ -4895,7 +5178,7 @@ export default function NetworkingVPCVisualizer() {
                   </p>
 
                   <div className="space-y-4 flex-grow">
-                    <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl space-y-2">
+                    <div className="da-cost-box-costly space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-600 font-medium">S3 Egress + Processing:</span>
                         <span className="text-slate-800 font-bold font-mono">
@@ -4907,7 +5190,7 @@ export default function NetworkingVPCVisualizer() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl space-y-2">
+                    <div className="da-cost-box-costly space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-600 font-medium">Multi-AZ NAT Hours (3 AZs):</span>
                         <span className="text-slate-800 font-bold font-mono">
@@ -4919,7 +5202,7 @@ export default function NetworkingVPCVisualizer() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-rose-50/50 border border-rose-100/50 rounded-xl space-y-2">
+                    <div className="da-cost-box-costly space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-600 font-medium">Firewall Hours &amp; Processing:</span>
                         <span className="text-slate-800 font-bold font-mono">
@@ -4984,7 +5267,7 @@ export default function NetworkingVPCVisualizer() {
                 </div>
 
                 {/* Optimized Architecture */}
-                <div className="lg:col-span-5 bg-gradient-to-br from-emerald-50/30 to-teal-50/10 border-2 border-emerald-500 hover:border-emerald-600 rounded-2xl p-6 shadow-md flex flex-col text-left transition-all duration-300 relative group overflow-hidden">
+                <div className="lg:col-span-5 da-card-savings flex flex-col text-left transition-all duration-300 relative group overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
                   <div className="flex justify-between items-center mb-4">
                     <span className="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-bold tracking-wider uppercase rounded-full shadow-sm">
@@ -5000,7 +5283,7 @@ export default function NetworkingVPCVisualizer() {
                   </p>
 
                   <div className="space-y-4 flex-grow">
-                    <div className="p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl space-y-2">
+                    <div className="da-cost-box-savings space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-600 font-medium">S3 Gateway Endpoint:</span>
                         <span className="text-emerald-700 font-bold font-mono">
@@ -5012,7 +5295,7 @@ export default function NetworkingVPCVisualizer() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl space-y-2">
+                    <div className="da-cost-box-savings space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-600 font-medium">VPC Endpoints (Internal):</span>
                         <span className="text-slate-800 font-bold font-mono">
@@ -5024,7 +5307,7 @@ export default function NetworkingVPCVisualizer() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl space-y-2">
+                    <div className="da-cost-box-savings space-y-2">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-600 font-medium">Optimized Firewall Coverage:</span>
                         <span className="text-slate-800 font-bold font-mono">
@@ -5295,15 +5578,15 @@ export default function NetworkingVPCVisualizer() {
 
               {/* Simplified Compact Cost Chart & Recommendations */}
               <div className="lg:col-span-8 space-y-6">
-                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                <div className="da-card p-6 text-left relative overflow-hidden">
                   <div className="absolute top-3 right-3 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase">Live Cost engine</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-[9px] font-black tracking-widest text-slate-500 uppercase">Live Cost engine</span>
                   </div>
 
-                  <h3 className="text-sm font-extrabold text-slate-200 mb-2">Interactive Pathway Cost Comparison</h3>
-                  <p className="text-xs text-slate-400 mb-6">
-                    See how your monthly data volume of <span className="text-sky-400 font-bold">{costDataGb} GB</span> is billed across different network paths. Click on any route below to set it as your target destination path.
+                  <h3 className="text-sm font-extrabold mb-2">Interactive Pathway Cost Comparison</h3>
+                  <p className="text-xs mb-6">
+                    See how your monthly data volume of <span className="text-sky-600 dark:text-sky-400 font-bold">{costDataGb} GB</span> is billed across different network paths. Click on any route below to set it as your target destination path.
                   </p>
                   
                   {/* Dynamic cost bars list */}
@@ -5363,36 +5646,34 @@ export default function NetworkingVPCVisualizer() {
                         <div 
                           key={route.key}
                           onClick={() => setCostDest(route.key as any)}
-                          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                            isSelected 
-                              ? 'bg-slate-800/80 border-emerald-500/60 shadow-lg shadow-emerald-950/20' 
-                              : 'bg-slate-950/40 border-slate-800/60 hover:bg-slate-900/40 hover:border-slate-700'
+                          className={`p-3.5 rounded-xl transition-all cursor-pointer da-cost-row ${
+                            isSelected ? 'da-selected' : ''
                           }`}
                         >
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className={`text-xs font-bold ${isSelected ? 'text-emerald-400' : 'text-slate-200'}`}>
+                                <span className="da-route-name text-xs font-bold">
                                   {route.name}
                                 </span>
                                 {isSelected && (
-                                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0.2 rounded font-black tracking-wider uppercase">
+                                  <span className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 text-[9px] px-1.5 py-0.2 rounded font-black tracking-wider uppercase da-badge-emerald">
                                     Selected
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[10px] text-slate-400 block mt-0.5 leading-tight">{route.desc}</span>
+                              <span className="da-route-desc text-[10px] block mt-0.5 leading-tight">{route.desc}</span>
                             </div>
                             <div className="text-right">
-                              <span className="text-xs font-extrabold text-white block">
-                                ${total.toFixed(2)} <span className="text-[9px] text-slate-500 font-normal">/mo</span>
+                              <span className="da-route-total text-xs font-extrabold block">
+                                ${total.toFixed(2)} <span className="text-[9px] font-normal da-route-rate">/mo</span>
                               </span>
-                              <span className="text-[9px] text-slate-400">{route.badge}</span>
+                              <span className="da-route-rate text-[9px]">{route.badge}</span>
                             </div>
                           </div>
 
                           {/* Cost Bar */}
-                          <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                          <div className="w-full h-2 da-cost-bar-bg rounded-full overflow-hidden">
                             <div 
                               className={`h-full rounded-full bg-gradient-to-r ${route.color} transition-all duration-500`}
                               style={{ width: `${percentage}%` }}
@@ -5405,31 +5686,31 @@ export default function NetworkingVPCVisualizer() {
                 </div>
 
                 {/* Compact Cost Takeaway Bullet Points */}
-                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-3 border-b border-slate-800 pb-2">
-                    <Info className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">
+                <div className="da-card text-left p-5">
+                  <div className="flex items-center gap-2 mb-3 border-b border-slate-200 pb-2">
+                    <Info className="w-4 h-4 text-emerald-500" />
+                    <h3 className="text-xs font-black uppercase tracking-wider">
                       Architect's Cost Optimization Rules
                     </h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
                     <div className="space-y-2">
                       <div className="flex gap-2">
-                        <span className="text-emerald-400 font-bold">1.</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">1.</span>
                         <p><strong>Keep traffic within the same AZ</strong>: If instances communicate over Private IPs in the same Availability Zone, transit is <strong>100% free</strong>.</p>
                       </div>
                       <div className="flex gap-2">
-                        <span className="text-emerald-400 font-bold">2.</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">2.</span>
                         <p><strong>Avoid Elastic IPs for local traffic</strong>: Routing via Public/Elastic IPs loops traffic to public AWS edge routers, charging you <strong>$0.02/GB</strong> even in the same AZ!</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex gap-2">
-                        <span className="text-emerald-400 font-bold">3.</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">3.</span>
                         <p><strong>Optimize cross-AZ routes</strong>: If you must cross AZs, stick to <strong>Private IPs</strong> to reduce fees to the minimum <strong>$0.01/GB</strong> standard transfer rate.</p>
                       </div>
                       <div className="flex gap-2">
-                        <span className="text-emerald-400 font-bold">4.</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">4.</span>
                         <p><strong>Limit Internet Egress</strong>: Direct egress to the internet carries a premium rate of <strong>$0.09/GB</strong>. Use caching networks or VPC Endpoint routes where possible.</p>
                       </div>
                     </div>
@@ -5547,75 +5828,75 @@ export default function NetworkingVPCVisualizer() {
 
               {/* Results dashboard & Logs */}
               <div className="lg:col-span-8 space-y-6">
-                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                <div className="da-card p-6 text-left relative overflow-hidden">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">S3 Egress Topology Route</h3>
 
-                  <div className="h-44 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-center p-4 relative">
+                  <div className="h-44 da-svg-bg rounded-xl flex items-center justify-center p-4 relative border border-slate-200/60">
                     {/* Render custom S3 egress pipeline */}
                     <svg viewBox="0 0 700 200" className="w-full h-full font-semibold">
                       {/* Left: Amazon S3 Bucket */}
                       <g transform="translate(100, 100)">
-                        <rect x="-35" y="-35" width="70" height="70" rx="10" fill="#2563eb" stroke="#3b82f6" strokeWidth="2" />
-                        <text y="5" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold">Amazon S3</text>
+                        <rect x="-35" y="-35" width="70" height="70" rx="10" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="var(--da-svg-indigo-text)" fontSize="10" fontWeight="bold">Amazon S3</text>
                       </g>
 
                       {/* Middle: Optional CloudFront Edge */}
                       {s3EgressRoute === 'cloudfront' ? (
                         <g transform="translate(350, 100)">
-                          <polygon points="0,-40 40,0 0,40 -40,0" fill="#7c3aed" stroke="#8b5cf6" strokeWidth="2" className="animate-pulse" />
-                          <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">CloudFront Edge</text>
+                          <polygon points="0,-40 40,0 0,40 -40,0" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2" className="animate-pulse" />
+                          <text y="5" textAnchor="middle" fill="var(--da-svg-purple-text)" fontSize="9" fontWeight="bold">CloudFront Edge</text>
                         </g>
                       ) : s3EgressRoute === 'accelerator' ? (
                         <g transform="translate(350, 100)">
-                          <polygon points="0,-40 40,0 0,40 -40,0" fill="#e11d48" stroke="#f43f5e" strokeWidth="2" />
-                          <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">Transfer Accel</text>
+                          <polygon points="0,-40 40,0 0,40 -40,0" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="2" />
+                          <text y="5" textAnchor="middle" fill="var(--da-svg-red-text)" fontSize="9" fontWeight="bold">Transfer Accel</text>
                         </g>
                       ) : (
                         <g transform="translate(350, 100)">
-                          <circle r="10" fill="#475569" />
-                          <text y="25" textAnchor="middle" fill="#94a3b8" fontSize="9" fontWeight="bold">Direct Transit</text>
+                          <circle r="10" fill="var(--da-bg)" stroke="var(--da-text-muted)" strokeWidth="1" />
+                          <text x="0" y="25" textAnchor="middle" fill="var(--da-text-muted)" fontSize="9" fontWeight="bold">Direct Transit</text>
                         </g>
                       )}
 
                       {/* Connectors */}
-                      <path d="M 135 100 L 310 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      <path d="M 135 100 L 310 100" fill="none" stroke="var(--da-text-muted)" strokeWidth="2" strokeDasharray="5,5" />
                       {s3SimState === 'running' && (
-                        <path d="M 135 100 L 310 100" fill="none" stroke="#2563eb" strokeWidth="3" className="r53-flow-blue" />
+                        <path d="M 135 100 L 310 100" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="3" className="r53-flow-blue" />
                       )}
 
-                      <path d="M 390 100 L 565 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      <path d="M 390 100 L 565 100" fill="none" stroke="var(--da-text-muted)" strokeWidth="2" strokeDasharray="5,5" />
                       {s3SimState === 'running' && (
-                        <path d="M 390 100 L 565 100" fill="none" stroke="#10b981" strokeWidth="3" className="r53-flow-orange" />
+                        <path d="M 390 100 L 565 100" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="3" className="r53-flow-orange" />
                       )}
 
                       {/* Right: Client / Destination */}
                       <g transform="translate(600, 100)">
-                        <circle r="35" fill="#111827" stroke="#10b981" strokeWidth="2" />
-                        <text y="5" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold">Public Client</text>
+                        <circle r="35" fill="var(--da-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="var(--da-svg-green-text)" fontSize="10" fontWeight="bold">Public Client</text>
                       </g>
                     </svg>
                   </div>
 
                   {/* Calculations breakdown cards */}
                   <div className="grid grid-cols-3 gap-4 mt-6">
-                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-slate-400 block uppercase">Route Chosen</span>
-                      <span className="text-xs font-bold text-sky-400 mt-2.5 block uppercase tracking-wider">
+                    <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-500 block uppercase">Route Chosen</span>
+                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-2.5 block uppercase tracking-wider">
                         {s3EgressRoute === 'direct' && 'Direct Egress'}
                         {s3EgressRoute === 'cloudfront' && 'CloudFront Caching'}
                         {s3EgressRoute === 'accelerator' && 'Edge Acceleration'}
                         {s3EgressRoute === 'crr' && 'Disaster Recovery'}
                       </span>
                     </div>
-                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-slate-400 block uppercase">Egress Surcharge Rate</span>
-                      <span className="text-xl font-bold text-amber-400 mt-1 block">
+                    <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-500 block uppercase">Egress Surcharge Rate</span>
+                      <span className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1 block">
                         ${s3EgressRoute === 'direct' ? '0.090' : s3EgressRoute === 'cloudfront' ? '0.085' : s3EgressRoute === 'accelerator' ? '0.130' : '0.020'}/GB
                       </span>
                     </div>
-                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-slate-400 block uppercase">Estimated Charge</span>
-                      <span className="text-xl font-bold text-emerald-400 mt-1 block">
+                    <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-500 block uppercase">Estimated Charge</span>
+                      <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">
                         ${(s3DataGb * (s3EgressRoute === 'direct' ? 0.09 : s3EgressRoute === 'cloudfront' ? 0.085 : s3EgressRoute === 'accelerator' ? 0.13 : 0.02)).toFixed(2)}
                       </span>
                     </div>
@@ -5623,15 +5904,15 @@ export default function NetworkingVPCVisualizer() {
                 </div>
 
                 {/* S3 logs console */}
-                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <div className="da-card text-left p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                    <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2">
                       <Activity className="w-4 h-4 text-emerald-500" /> S3 Dynamic Routing Console Trace
                     </h3>
-                    <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">STDOUT</span>
+                    <span className="text-[9px] bg-slate-250 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-mono">STDOUT</span>
                   </div>
 
-                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-2 bg-slate-950/80 rounded-lg">
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-4 acad-terminal rounded-lg">
                     {s3Logs.length === 0 ? (
                       <div className="text-slate-500 italic text-center pt-16">
                         Console traces idle. Choose a routing strategy and click "Simulate Egress &amp; Validate" to watch pipeline logic live.
@@ -5717,86 +5998,86 @@ export default function NetworkingVPCVisualizer() {
 
               {/* Visual Breakdown comparison */}
               <div className="lg:col-span-8 space-y-6">
-                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                <div className="da-card p-6 text-left relative overflow-hidden">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">Interactive Architecture Cost Comparison</h3>
 
                   {/* Architecture comparison box */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Path A: NAT Gateway */}
-                    <div className="border border-rose-950 bg-rose-950/20 p-4 rounded-xl space-y-3">
+                    <div className="border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/20 p-4 rounded-xl space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] bg-rose-900 text-rose-200 px-2 py-0.5 rounded font-black">PATH A: NAT GATEWAY</span>
-                        <span className="text-xs font-bold text-rose-400">Expensive Path</span>
+                        <span className="text-[10px] bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-200 px-2 py-0.5 rounded font-black">PATH A: NAT GATEWAY</span>
+                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400">Expensive Path</span>
                       </div>
 
-                      <div className="space-y-1 mt-2 text-xs">
-                        <div className="flex justify-between text-slate-400">
+                      <div className="space-y-1 mt-2 text-xs text-slate-700">
+                        <div className="flex justify-between">
                           <span>Hourly NAT Fee:</span>
-                          <span className="font-bold text-white">${(natHours * 0.045).toFixed(2)} USD</span>
+                          <span className="font-bold">${(natHours * 0.045).toFixed(2)} USD</span>
                         </div>
                         <div className="text-[10px] text-slate-500 leading-none">({natHours} hrs @ $0.045/hr)</div>
 
-                        <div className="flex justify-between text-slate-400 mt-1">
+                        <div className="flex justify-between mt-1">
                           <span>Data Processing Fee:</span>
-                          <span className="font-bold text-white">${(natDataGb * 0.045).toFixed(2)} USD</span>
+                          <span className="font-bold">${(natDataGb * 0.045).toFixed(2)} USD</span>
                         </div>
                         <div className="text-[10px] text-slate-500 leading-none">({natDataGb} GB processed @ $0.045/GB)</div>
 
-                        <div className="border-t border-rose-900 mt-3 pt-2 flex justify-between text-sm font-extrabold">
-                          <span className="text-slate-300">Total Month:</span>
-                          <span className="text-rose-400">${(natHours * 0.045 + natDataGb * 0.045).toFixed(2)}</span>
+                        <div className="border-t border-rose-200 dark:border-rose-900 mt-3 pt-2 flex justify-between text-sm font-extrabold">
+                          <span>Total Month:</span>
+                          <span className="text-rose-600 dark:text-rose-400">${(natHours * 0.045 + natDataGb * 0.045).toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Path B: S3 Gateway Endpoint */}
-                    <div className="border border-emerald-950 bg-emerald-950/20 p-4 rounded-xl space-y-3">
+                    <div className="border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 rounded-xl space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded font-black">PATH B: S3 GATEWAY ENDPOINT</span>
-                        <span className="text-xs font-bold text-emerald-400 font-extrabold flex items-center gap-1">🟢 100% FREE</span>
+                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-0.5 rounded font-black">PATH B: S3 GATEWAY ENDPOINT</span>
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">🟢 100% FREE</span>
                       </div>
 
-                      <div className="space-y-1 mt-2 text-xs">
-                        <div className="flex justify-between text-slate-400">
+                      <div className="space-y-1 mt-2 text-xs text-slate-700">
+                        <div className="flex justify-between">
                           <span>Hourly VPCE Fee:</span>
-                          <span className="font-bold text-emerald-400">$0.00 USD</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">$0.00 USD</span>
                         </div>
                         <div className="text-[10px] text-slate-500 leading-none">(No hourly charges)</div>
 
-                        <div className="flex justify-between text-slate-400 mt-1">
+                        <div className="flex justify-between mt-1">
                           <span>Data Processing Fee:</span>
-                          <span className="font-bold text-emerald-400">$0.00 USD</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">$0.00 USD</span>
                         </div>
                         <div className="text-[10px] text-slate-500 leading-none">(No GB processing fees)</div>
 
-                        <div className="border-t border-emerald-900 mt-3 pt-2 flex justify-between text-sm font-extrabold">
-                          <span className="text-slate-300">Total Month:</span>
-                          <span className="text-emerald-400">$0.00</span>
+                        <div className="border-t border-emerald-200 dark:border-emerald-900 mt-3 pt-2 flex justify-between text-sm font-extrabold">
+                          <span>Total Month:</span>
+                          <span className="text-emerald-600 dark:text-emerald-400">$0.00</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Savings summary */}
-                  <div className="bg-emerald-950/40 border border-emerald-800 rounded-xl p-4 mt-6 text-center">
-                    <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-widest block">Potential Monthly Cost Savings</span>
-                    <span className="text-3xl font-black text-emerald-300 block mt-1">
+                  <div className="bg-emerald-100/40 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl p-4 mt-6 text-center">
+                    <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block">Potential Monthly Cost Savings</span>
+                    <span className="text-3xl font-black text-emerald-600 dark:text-emerald-300 block mt-1">
                       ${(natHours * 0.045 + natDataGb * 0.045).toFixed(2)} USD
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-1 block">Based on S3 routing modifications. 100% zero-cost networking.</span>
+                    <span className="text-[10px] text-slate-500 mt-1 block">Based on S3 routing modifications. 100% zero-cost networking.</span>
                   </div>
                 </div>
 
                 {/* NAT logs console */}
-                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <div className="da-card text-left p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                    <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2">
                       <Activity className="w-4 h-4 text-emerald-500" /> Route Table savings simulator trace
                     </h3>
-                    <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">STDOUT</span>
+                    <span className="text-[9px] bg-slate-250 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-mono">STDOUT</span>
                   </div>
 
-                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-2 bg-slate-950/80 rounded-lg">
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-4 acad-terminal rounded-lg">
                     {natChallengeLogs.length === 0 ? (
                       <div className="text-slate-500 italic text-center pt-16">
                         Savings calculations idle. Adjust configurations and click "Compare Paths &amp; Compute Savings" to initiate comparative cost telemetry.
@@ -5894,77 +6175,77 @@ export default function NetworkingVPCVisualizer() {
 
               {/* Firewall Security Shield Visual Dashboard */}
               <div className="lg:col-span-8 space-y-6">
-                <div className="da-card p-6 text-left relative overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-white">
+                <div className="da-card p-6 text-left relative overflow-hidden">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-6">AWS Network Firewall Security Shield</h3>
 
-                  <div className="h-44 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-center p-4 relative">
+                  <div className="h-44 da-svg-bg rounded-xl flex items-center justify-center p-4 relative border border-slate-200/60">
                     <svg viewBox="0 0 700 200" className="w-full h-full font-semibold">
                       {/* Left: Traffic Source */}
                       <g transform="translate(100, 100)">
-                        <circle r="30" fill="#475569" stroke="#94a3b8" strokeWidth="2" />
-                        <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">
+                        <circle r="30" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold">
                           {firewallTrafficSource.toUpperCase()}
                         </text>
                       </g>
 
                       {/* Path to Shield */}
-                      <path d="M 130 100 L 310 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      <path d="M 130 100 L 310 100" fill="none" stroke="var(--da-text-muted)" strokeWidth="2" strokeDasharray="5,5" />
                       {firewallSimState === 'running' && (
-                        <path d="M 130 100 L 310 100" fill="none" stroke="#e11d48" strokeWidth="3" className="r53-flow-orange" />
+                        <path d="M 130 100 L 310 100" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="3" className="r53-flow-orange" />
                       )}
 
                       {/* Middle: Network Firewall Shield */}
                       <g transform="translate(350, 100)">
                         {firewallActive ? (
                           <>
-                            <polygon points="0,-45 40,-15 40,30 0,55 -40,30 -40,-15" fill="#581c87" stroke="#a855f7" strokeWidth="3" className="animate-pulse" />
-                            <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">AWS Firewall</text>
+                            <polygon points="0,-45 40,-15 40,30 0,55 -40,30 -40,-15" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="3" className="animate-pulse" />
+                            <text y="5" textAnchor="middle" fill="var(--da-svg-purple-text)" fontSize="9" fontWeight="bold">AWS Firewall</text>
                           </>
                         ) : (
                           <>
-                            <polygon points="0,-45 40,-15 40,30 0,55 -40,30 -40,-15" fill="#450a0a" stroke="#f43f5e" strokeWidth="1" />
-                            <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">Bypassed (Risk)</text>
+                            <polygon points="0,-45 40,-15 40,30 0,55 -40,30 -40,-15" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1" />
+                            <text y="5" textAnchor="middle" fill="var(--da-svg-red-text)" fontSize="9" fontWeight="bold">Bypassed (Risk)</text>
                           </>
                         )}
                       </g>
 
                       {/* Path to destination subnets */}
-                      <path d="M 390 100 L 570 100" fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="5,5" />
+                      <path d="M 390 100 L 570 100" fill="none" stroke="var(--da-text-muted)" strokeWidth="2" strokeDasharray="5,5" />
                       {firewallSimState === 'running' && firewallActive && firewallRuleAction === 'allow' && (
-                        <path d="M 390 100 L 570 100" fill="none" stroke="#10b981" strokeWidth="3" className="r53-flow-green" />
+                        <path d="M 390 100 L 570 100" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="3" className="r53-flow-green" />
                       )}
                       {firewallSimState === 'running' && firewallActive && firewallRuleAction === 'alert' && (
-                        <path d="M 390 100 L 570 100" fill="none" stroke="#f59e0b" strokeWidth="3" className="r53-flow-purple" />
+                        <path d="M 390 100 L 570 100" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="3" className="r53-flow-purple" />
                       )}
 
                       {/* Right: Protected subnet instances */}
                       <g transform="translate(600, 100)">
-                        <rect x="-35" y="-35" width="70" height="70" rx="8" fill="#1e293b" stroke="#10b981" strokeWidth="2" />
-                        <text y="5" textAnchor="middle" fill="#fff" fontSize="9" fontWeight="bold">EC2 Instances</text>
+                        <rect x="-35" y="-35" width="70" height="70" rx="8" fill="var(--da-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                        <text y="5" textAnchor="middle" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="bold">EC2 Instances</text>
                       </g>
                     </svg>
                   </div>
 
                   {/* Operational status indicators */}
                   <div className="grid grid-cols-3 gap-4 mt-6">
-                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-slate-400 block uppercase">IPS Threat Engine</span>
-                      <span className={`text-xs font-bold mt-2.5 block uppercase tracking-wider ${firewallActive ? 'text-emerald-400' : 'text-rose-500 font-extrabold'}`}>
+                    <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-500 block uppercase">IPS Threat Engine</span>
+                      <span className={`text-xs font-bold mt-2.5 block uppercase tracking-wider ${firewallActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400 font-extrabold'}`}>
                         {firewallActive ? '🛡️ Stateful Shield' : '⚠️ Disabled'}
                       </span>
                     </div>
-                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-slate-400 block uppercase">Assigned Rule</span>
-                      <span className="text-xs font-bold text-amber-400 mt-2.5 block uppercase tracking-wider">
+                    <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-500 block uppercase">Assigned Rule</span>
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-2.5 block uppercase tracking-wider">
                         {firewallRuleAction.toUpperCase()} Action
                       </span>
                     </div>
-                    <div className="bg-slate-950 p-4 border border-slate-800 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-slate-400 block uppercase">Packet Verdict</span>
+                    <div className="bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">
+                      <span className="text-[10px] font-black text-slate-500 block uppercase">Packet Verdict</span>
                       <span className={`text-xs font-bold mt-2.5 block uppercase tracking-wider ${
-                        !firewallActive ? 'text-rose-500' :
-                        firewallRuleAction === 'allow' ? 'text-emerald-400' :
-                        firewallRuleAction === 'drop' ? 'text-rose-400 font-black' : 'text-amber-400'
+                        !firewallActive ? 'text-rose-600 dark:text-rose-400' :
+                        firewallRuleAction === 'allow' ? 'text-emerald-600 dark:text-emerald-400' :
+                        firewallRuleAction === 'drop' ? 'text-rose-600 dark:text-rose-400 font-black' : 'text-amber-600 dark:text-amber-400'
                       }`}>
                         {!firewallActive ? 'PASSED (UNCHECKED)' : firewallRuleAction === 'allow' ? 'ACCEPT (ROUTED)' : firewallRuleAction === 'drop' ? 'DROP (BLOCKED)' : 'ALERT (ROUTED)'}
                       </span>
@@ -5973,15 +6254,15 @@ export default function NetworkingVPCVisualizer() {
                 </div>
 
                 {/* Firewall logs console */}
-                <div className="da-card text-left bg-slate-900 border border-slate-800 text-slate-200 p-5 rounded-2xl">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <div className="da-card text-left p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                    <h3 className="text-xs font-black uppercase tracking-wider flex items-center gap-2">
                       <Activity className="w-4 h-4 text-emerald-500" /> Stateful Firewall Policy logs
                     </h3>
-                    <span className="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">FIREWALL_ALERT</span>
+                    <span className="text-[9px] bg-slate-250 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-mono">FIREWALL_ALERT</span>
                   </div>
 
-                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-2 bg-slate-950/80 rounded-lg">
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[11px] p-4 acad-terminal rounded-lg">
                     {firewallLogs.length === 0 ? (
                       <div className="text-slate-500 italic text-center pt-16">
                         Policy traces idle. Adjust source packet triggers and click "Simulate Packet Ingress" to test deep security filters.

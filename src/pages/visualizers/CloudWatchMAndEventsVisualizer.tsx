@@ -38,6 +38,28 @@ interface MetricPoint {
 
 export default function CloudWatchMAndEventsVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [isDark, setIsDark] = useState<boolean>(
+    typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
+    // Check initial state
+    setIsDark(document.documentElement.classList.contains('dark'));
+
+    // Set up observer to watch for theme switches on <html> element
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // ==========================================
   // TAB 1 STATE: Comparison Matrix Toggle
@@ -587,244 +609,380 @@ export default function CloudWatchMAndEventsVisualizer() {
   };
 
   return (
-    <div className="da-container animate-fadeIn">
+    <div className="cw-container animate-fadeIn">
       {/* isolated isolated visualizer styling */}
       <style>{`
-        .da-container {
+        .cw-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-          color: #1e293b;
-          background-color: #f8fafc;
+          color: var(--cw-text);
+          background-color: var(--cw-bg);
           padding: 24px;
           border-radius: 16px;
+          transition: all 0.25s ease;
+
+          /* Light Mode Colors */
+          --cw-bg: #f8fafc;
+          --cw-text: #1e293b;
+          --cw-text-title: #0f172a;
+          --cw-text-muted: #475569;
+          --cw-card-bg: rgba(255, 255, 255, 0.75);
+          --cw-card-border: rgba(226, 232, 240, 0.85);
+          --cw-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          
+          --cw-tab-bg: rgba(255, 255, 255, 0.85);
+          --cw-tab-border: rgba(226, 232, 240, 0.85);
+          --cw-tab-text: #475569;
+          --cw-tab-hover-bg: #f8fafc;
+          --cw-tab-hover-border: #cbd5e1;
+          --cw-tab-hover-text: #1e293b;
+          
+          --cw-input-bg: #ffffff;
+          --cw-input-color: #0f172a;
+          --cw-input-border: rgba(226, 232, 240, 0.85);
+          
+          --cw-btn-sec-bg: #ffffff;
+          --cw-btn-sec-color: #334155;
+          --cw-btn-sec-border: #cbd5e1;
+          --cw-btn-sec-hover-bg: #f1f5f9;
+          
+          --cw-code-bg: #090d16;
+          --cw-code-border: #1e293b;
+          --cw-code-text: #94a3b8;
+          
+          --cw-table-border: rgba(226, 232, 240, 0.85);
+          --cw-table-th-bg: #f8fafc;
+          --cw-table-th-text: #475569;
+          --cw-table-td-text: #334155;
+          --cw-table-hover-bg: #f8fafc;
+
+          --cw-main-content-bg: #ffffff;
+          --cw-main-content-border: #e2e8f0;
+
+          /* SVG standard colors */
+          --cw-svg-bg: #f8fafc;
+          --cw-svg-grid: radial-gradient(rgba(99, 102, 241, 0.08) 1.5px, transparent 1.5px);
+          --cw-svg-text-dark: #1e293b;
+          --cw-svg-text-light: #ffffff;
+          
+          --cw-svg-indigo-bg: #e0e7ff;
+          --cw-svg-indigo-border: #6366f1;
+          --cw-svg-indigo-text: #4f46e5;
+          
+          --cw-svg-green-bg: #effaf3;
+          --cw-svg-green-border: #10b981;
+          --cw-svg-green-text: #15803d;
+          
+          --cw-svg-red-bg: #fdf2f2;
+          --cw-svg-red-border: #ef4444;
+          --cw-svg-red-text: #b91c1c;
+          
+          --cw-svg-purple-bg: #faf5ff;
+          --cw-svg-purple-border: #a855f7;
+          --cw-svg-purple-text: #7e22ce;
+          
+          --cw-svg-amber-bg: #fff7ed;
+          --cw-svg-amber-border: #ea580c;
+          --cw-svg-amber-text: #c2410c;
+
+          --cw-svg-node-fill: #ffffff;
+          --cw-svg-node-border: #cbd5e1;
         }
-        .da-card {
-          background: rgba(255, 255, 255, 0.75);
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+
+        .dark .cw-container {
+          background-color: #020617 !important;
+          color: #cbd5e1 !important;
+
+          /* Dark Mode Colors */
+          --cw-bg: #020617;
+          --cw-text: #cbd5e1;
+          --cw-text-title: #ffffff;
+          --cw-text-muted: #94a3b8;
+          --cw-card-bg: rgba(15, 23, 42, 0.75);
+          --cw-card-border: rgba(51, 65, 85, 0.6);
+          --cw-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --cw-tab-bg: rgba(15, 23, 42, 0.6);
+          --cw-tab-border: rgba(51, 65, 85, 0.6);
+          --cw-tab-text: #94a3b8;
+          --cw-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --cw-tab-hover-border: rgba(51, 65, 85, 0.6);
+          --cw-tab-hover-text: #f8fafc;
+          
+          --cw-input-bg: #0f172a;
+          --cw-input-color: #f1f5f9;
+          --cw-input-border: rgba(51, 65, 85, 0.8);
+          
+          --cw-btn-sec-bg: rgba(15, 23, 42, 0.8);
+          --cw-btn-sec-color: #cbd5e1;
+          --cw-btn-sec-border: rgba(51, 65, 85, 0.6);
+          --cw-btn-sec-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --cw-code-bg: #020617;
+          --cw-code-border: rgba(51, 65, 85, 0.6);
+          --cw-code-text: #38bdf8;
+          
+          --cw-table-border: rgba(51, 65, 85, 0.6);
+          --cw-table-th-bg: rgba(15, 23, 42, 0.8);
+          --cw-table-th-text: #94a3b8;
+          --cw-table-td-text: #cbd5e1;
+          --cw-table-hover-bg: rgba(30, 41, 59, 0.4);
+
+          --cw-main-content-bg: rgba(15, 23, 42, 0.5);
+          --cw-main-content-border: rgba(51, 65, 85, 0.6);
+
+          /* SVG standard colors */
+          --cw-svg-bg: #020617;
+          --cw-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+          --cw-svg-text-dark: #cbd5e1;
+          --cw-svg-text-light: #ffffff;
+          
+          --cw-svg-indigo-bg: rgba(99, 102, 241, 0.15);
+          --cw-svg-indigo-border: rgba(99, 102, 241, 0.5);
+          --cw-svg-indigo-text: #a5b4fc;
+          
+          --cw-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --cw-svg-green-border: rgba(16, 185, 129, 0.4);
+          --cw-svg-green-text: #4ade80;
+          
+          --cw-svg-red-bg: rgba(239, 68, 68, 0.15);
+          --cw-svg-red-border: rgba(239, 68, 68, 0.5);
+          --cw-svg-red-text: #f87171;
+          
+          --cw-svg-purple-bg: rgba(168, 85, 247, 0.15);
+          --cw-svg-purple-border: rgba(168, 85, 247, 0.5);
+          --cw-svg-purple-text: #e9d5ff;
+          
+          --cw-svg-amber-bg: rgba(245, 158, 11, 0.15);
+          --cw-svg-amber-border: rgba(245, 158, 11, 0.5);
+          --cw-svg-amber-text: #fbbf24;
+
+          --cw-svg-node-fill: rgba(15, 23, 42, 0.8);
+          --cw-svg-node-border: rgba(51, 65, 85, 0.8);
+        }
+
+        .cw-card {
+          background: var(--cw-card-bg);
+          border: 1.5px solid var(--cw-card-border);
           border-radius: 16px;
           padding: 24px;
           backdrop-filter: blur(16px);
           margin-bottom: 24px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          box-shadow: var(--cw-card-shadow);
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .da-card:hover {
-          border-color: #0ea5e9;
-          box-shadow: 0 12px 24px -4px rgba(14, 165, 233, 0.08), 0 4px 12px -2px rgba(14, 165, 233, 0.03);
+        .cw-card:hover {
+          border-color: #6366f1;
+          box-shadow: 0 12px 24px -4px rgba(99, 102, 241, 0.08), 0 4px 12px -2px rgba(99, 102, 241, 0.03);
           transform: translateY(-1px);
         }
-        .da-card-title {
+        .cw-card-title {
           font-size: 16.5px;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--cw-text-title);
           margin-bottom: 12px;
           display: flex;
           align-items: center;
           gap: 8px;
           letter-spacing: -0.02em;
         }
-        .da-card-desc {
+        .cw-card-desc {
           font-size: 12.5px;
-          color: #475569;
+          color: var(--cw-text-muted);
           line-height: 1.65;
         }
-        .da-tabs {
+        .cw-tabs {
           display: flex;
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--cw-card-border);
           padding-bottom: 10px;
         }
-        .da-tb {
+        .cw-tb {
           display: flex;
           align-items: center;
           gap: 6px;
           padding: 8px 16px;
           border-radius: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--cw-tab-border);
           font-size: 12px;
           font-weight: 600;
-          color: #475569;
-          background: rgba(255, 255, 255, 0.85);
+          color: var(--cw-tab-text);
+          background: var(--cw-tab-bg);
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.15s ease-in-out;
           outline: none;
         }
-        .da-tb:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
+        .cw-tb:hover {
+          background: var(--cw-tab-hover-bg);
+          border-color: var(--cw-tab-hover-border);
+          color: var(--cw-tab-hover-text);
         }
-        .da-tb.da-on {
+        .cw-tb.cw-on {
           background: #6366f1;
           color: #ffffff;
           border-color: #6366f1;
           box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
         }
 
-        .da-svg-bg {
-          background-color: #f8fafc;
-          background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1.5px, transparent 1.5px);
+        .cw-svg-bg {
+          background-color: var(--cw-svg-bg) !important;
+          background-image: var(--cw-svg-grid) !important;
           background-size: 16px 16px;
+          border: 1.5px solid var(--cw-card-border);
         }
         
-        .da-flow-blue {
+        .cw-flow-blue {
           stroke: #3b82f6;
           stroke-dasharray: 6,4;
-          animation: flowDash 1s linear infinite;
+          animation: cwFlowDash 1s linear infinite;
         }
-        .da-flow-green {
+        .cw-flow-green {
           stroke: #10b981;
           stroke-dasharray: 6,4;
-          animation: flowDash 0.8s linear infinite;
+          animation: cwFlowDash 0.8s linear infinite;
         }
-        .da-flow-purple {
+        .cw-flow-purple {
           stroke: #8b5cf6;
           stroke-dasharray: 6,4;
-          animation: flowDash 1.2s linear infinite;
+          animation: cwFlowDash 1.2s linear infinite;
         }
-        .da-flow-orange {
+        .cw-flow-orange {
           stroke: #f97316;
           stroke-dasharray: 6,4;
-          animation: flowDash 1s linear infinite;
+          animation: cwFlowDash 1s linear infinite;
         }
-        @keyframes flowDash {
+        @keyframes cwFlowDash {
           to { stroke-dashoffset: -20; }
         }
 
-        .da-node-btn {
+        .cw-node-btn {
           cursor: pointer;
           transition: all 0.2s ease;
         }
-        .da-node-btn:hover {
+        .cw-node-btn:hover {
           filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3));
           opacity: 0.95;
         }
         
         .pulse-circle {
-          animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+          animation: cwPing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
-        @keyframes ping {
+        @keyframes cwPing {
           75%, 100% {
             transform: scale(2.2);
             opacity: 0;
           }
         }
         .flashing-alarm {
-          animation: flashRed 1s infinite alternate;
+          animation: cwFlashRed 1s infinite alternate;
         }
-        @keyframes flashRed {
+        @keyframes cwFlashRed {
           0% { fill: rgba(239, 68, 68, 0.2); stroke: #ef4444; }
           100% { fill: rgba(239, 68, 68, 0.8); stroke: #ef4444; }
         }
 
-        /* Centralized Dark Mode Overrides for CloudWatchMAndEventsVisualizer.tsx */
-        .dark .da-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
+        /* Scoped styling overrides inside cw-container */
+        .cw-container h1,
+        .cw-container h2,
+        .cw-container h3,
+        .cw-container h4,
+        .cw-container th {
+          color: var(--cw-text-title) !important;
         }
-        .dark .da-card,
-        .dark [class*="da-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        
+        .cw-container p,
+        .cw-container td,
+        .cw-container li {
+          color: var(--cw-text-muted) !important;
         }
-        .dark .da-card b,
-        .dark .da-card strong,
-        .dark .da-card h3,
-        .dark .da-card h4 {
-          color: #ffffff !important;
+
+        .cw-container .text-slate-900,
+        .cw-container .text-slate-800,
+        .cw-container .text-slate-700,
+        .cw-container .text-gray-900,
+        .cw-container .text-indigo-950 {
+          color: var(--cw-text-title) !important;
         }
-        .dark .da-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        
+        .cw-container .text-slate-650,
+        .cw-container .text-slate-600,
+        .cw-container .text-slate-500 {
+          color: var(--cw-text-muted) !important;
         }
-        .dark .da-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
+
+        .cw-container .bg-white {
+          background-color: var(--cw-card-bg) !important;
         }
-        .dark .da-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
+        
+        .cw-container .bg-slate-50,
+        .cw-container .bg-slate-100 {
+          background-color: var(--cw-bg) !important;
         }
-        .dark .da-sec,
-        .dark .da-kk {
-          color: #94a3b8 !important;
+
+        .cw-container .hover\:bg-slate-50:hover,
+        .cw-container .hover\:bg-slate-100:hover,
+        .cw-container .hover\:bg-indigo-50:hover {
+          background-color: var(--cw-tab-hover-bg) !important;
         }
-        .dark .da-log,
-        .dark .da-terminal {
+
+        .cw-container .border-slate-200,
+        .cw-container .border-slate-100,
+        .cw-container .border-slate-150,
+        .cw-container .border-gray-200 {
+          border-color: var(--cw-card-border) !important;
+        }
+
+        .dark .cw-terminal,
+        .dark .cw-log {
           background: #020617 !important;
           border-color: rgba(51, 65, 85, 0.6) !important;
           color: #38bdf8 !important;
         }
-        .dark .da-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+
+        /* Scoped input/form components */
+        .cw-container select,
+        .cw-container input,
+        .cw-container textarea {
+          background-color: var(--cw-input-bg) !important;
+          color: var(--cw-input-color) !important;
+          border: 1.5px solid var(--cw-input-border) !important;
+          border-radius: 8px;
+          outline: none;
+          transition: all 0.2s ease;
         }
-        .dark .da-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
+
+        .cw-container select option {
+          background-color: var(--cw-input-bg) !important;
+          color: var(--cw-input-color) !important;
         }
-        .dark .da-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+
+        .cw-container select:focus,
+        .cw-container input:focus,
+        .cw-container textarea:focus {
+          border-color: #6366f1 !important;
         }
-        .dark ul.da-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst,
-        .dark .da-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst .meta,
-        .dark .da-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .da-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        /* Alert overrides in dark mode */
+        .dark .cw-container .bg-indigo-50 {
+          background-color: rgba(99, 102, 241, 0.15) !important;
+          color: #a5b4fc !important;
         }
         
-        /* Node Status Overrides */
-        .dark .da-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .da-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .da-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .da-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
+        .dark .cw-container .bg-sky-50 {
+          background-color: rgba(14, 165, 233, 0.15) !important;
+          color: #7dd3fc !important;
         }
         
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
+        .dark .cw-container .bg-amber-50 {
+          background-color: rgba(245, 158, 11, 0.15) !important;
+          color: #fef08a !important;
         }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
+
+        .dark .cw-container .bg-rose-50 {
+          background-color: rgba(244, 63, 94, 0.15) !important;
+          color: #fca5a5 !important;
         }
           `}</style>
 
@@ -842,23 +1000,23 @@ export default function CloudWatchMAndEventsVisualizer() {
       </div>
 
       {/* Tab navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
+      <div className="cw-tabs">
+        <button className={`cw-tb ${activeTab === 'intro' ? 'cw-on' : ''}`} onClick={() => setActiveTab('intro')}>
           <BookOpen className="w-4 h-4" /> 1. Choosing Observability vs Auditing
         </button>
-        <button className={`da-tb ${activeTab === 'logs' ? 'da-on' : ''}`} onClick={() => setActiveTab('logs')}>
+        <button className={`cw-tb ${activeTab === 'logs' ? 'cw-on' : ''}`} onClick={() => setActiveTab('logs')}>
           <FileText className="w-4 h-4" /> 2. CloudWatch Logs &amp; Insights
         </button>
-        <button className={`da-tb ${activeTab === 'metrics' ? 'da-on' : ''}`} onClick={() => setActiveTab('metrics')}>
+        <button className={`cw-tb ${activeTab === 'metrics' ? 'cw-on' : ''}`} onClick={() => setActiveTab('metrics')}>
           <Activity className="w-4 h-4" /> 3. Metric Streams &amp; Alarms
         </button>
-        <button className={`da-tb ${activeTab === 'eventbridge' ? 'da-on' : ''}`} onClick={() => setActiveTab('eventbridge')}>
+        <button className={`cw-tb ${activeTab === 'eventbridge' ? 'cw-on' : ''}`} onClick={() => setActiveTab('eventbridge')}>
           <Workflow className="w-4 h-4" /> 4. EventBridge Schema Router
         </button>
-        <button className={`da-tb ${activeTab === 'compliance' ? 'da-on' : ''}`} onClick={() => setActiveTab('compliance')}>
+        <button className={`cw-tb ${activeTab === 'compliance' ? 'cw-on' : ''}`} onClick={() => setActiveTab('compliance')}>
           <Shield className="w-4 h-4" /> 5. CloudTrail &amp; Config Remediation
         </button>
-        <button className={`da-tb ${activeTab === 'matrix' ? 'da-on' : ''}`} onClick={() => setActiveTab('matrix')}>
+        <button className={`cw-tb ${activeTab === 'matrix' ? 'cw-on' : ''}`} onClick={() => setActiveTab('matrix')}>
           <Sliders className="w-4 h-4" /> 6. Observability Comparison &amp; Aggregation Map
         </button>
       </div>
@@ -871,12 +1029,12 @@ export default function CloudWatchMAndEventsVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Architectural Overview Card */}
-            <div className="lg:col-span-5 da-card flex flex-col justify-between text-left">
+            <div className="lg:col-span-5 cw-card flex flex-col justify-between text-left">
               <div>
-                <h3 className="da-card-title text-indigo-700">
+                <h3 className="cw-card-title text-indigo-700">
                   <Sliders className="w-5 h-5" /> AWS Observability vs Compliance Matrix
                 </h3>
-                <p className="da-card-desc mb-5">
+                <p className="cw-card-desc mb-5">
                   AWS provides distinct systems for keeping applications healthy, monitoring operational logs, auditing user commands, and regulating infrastructure configurations.
                 </p>
 
@@ -926,8 +1084,8 @@ export default function CloudWatchMAndEventsVisualizer() {
             </div>
 
             {/* In-depth Dynamic Observability Panels */}
-            <div className="lg:col-span-7 da-card space-y-4 text-left">
-              <h3 className="da-card-title text-slate-800">
+            <div className="lg:col-span-7 cw-card space-y-4 text-left">
+              <h3 className="cw-card-title text-slate-800">
                 <BookOpen className="w-5 h-5 text-indigo-500" /> Deep-Dive: Observability &amp; Event-Driven Architecture
               </h3>
 
@@ -1009,8 +1167,8 @@ export default function CloudWatchMAndEventsVisualizer() {
           </div>
 
           {/* Unified Comparison Matrix Table */}
-          <div className="da-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-6 text-left">
-            <h3 className="da-card-title text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+          <div className="cw-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-6 text-left">
+            <h3 className="cw-card-title text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
               <Database className="w-5 h-5 text-indigo-500" /> CloudWatch vs CloudTrail vs AWS Config Comparison Matrix
             </h3>
             
@@ -1082,11 +1240,11 @@ export default function CloudWatchMAndEventsVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'logs' && (
         <div className="space-y-6">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700">
+          <div className="cw-card text-left">
+            <h2 className="cw-card-title text-indigo-700">
               <FileText className="w-5 h-5" /> CloudWatch Logs, Unified Agent &amp; Insights Sandbox
             </h2>
-            <p className="da-card-desc">
+            <p className="cw-card-desc">
               Applications generate raw files, stdout streams, and error trace lines. The **Unified CloudWatch Agent** collects these logs from EC2, encrypts them, and streams them into **CloudWatch Log Streams**. Use Log Insights to execute aggregates over historical files.
             </p>
           </div>
@@ -1143,89 +1301,89 @@ export default function CloudWatchMAndEventsVisualizer() {
 
               {/* Ingestion SVG Canvas */}
               <div className="w-full h-[240px] rounded-xl border border-slate-200 p-2 relative overflow-hidden flex items-center justify-center shadow-inner bg-slate-50">
-                <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 240">
+                <svg className="w-full h-full max-w-[620px] cw-svg-bg" viewBox="0 0 600 240">
                   <defs>
                     <marker id="log-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cw-svg-node-border)" />
                     </marker>
                   </defs>
 
                   {/* Pipelines paths */}
-                  <path d="M 80 120 H 140" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#log-arrow)" />
-                  <path d="M 230 120 H 270" fill="none" stroke="#94a3b8" strokeWidth="1.5" markerEnd="url(#log-arrow)" />
+                  <path d="M 80 120 H 140" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#log-arrow)" />
+                  <path d="M 230 120 H 270" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#log-arrow)" />
                   
                   {/* Subscription flows */}
-                  <path d="M 370 120 Q 420 60, 480 60" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" markerEnd="url(#log-arrow)" />
-                  <path d="M 370 120 Q 420 180, 480 180" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" markerEnd="url(#log-arrow)" />
+                  <path d="M 370 120 Q 420 60, 480 60" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" strokeDasharray="3 3" markerEnd="url(#log-arrow)" />
+                  <path d="M 370 120 Q 420 180, 480 180" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" strokeDasharray="3 3" markerEnd="url(#log-arrow)" />
 
                   {/* Active Ingestion Flow */}
                   {logsState === 'ingesting' && (
                     <>
-                      <path d="M 80 120 H 140" fill="none" stroke="#6366f1" strokeWidth="3" className="da-flow-blue" />
-                      <path d="M 230 120 H 270" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
-                      <path d="M 370 120 Q 420 60, 480 60" fill="none" stroke="#8b5cf6" strokeWidth="2.5" className="da-flow-purple" />
-                      <path d="M 370 120 Q 420 180, 480 180" fill="none" stroke="#f97316" strokeWidth="2.5" className="da-flow-orange" />
+                      <path d="M 80 120 H 140" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="3" className="cw-flow-blue" />
+                      <path d="M 230 120 H 270" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="3" className="cw-flow-green" />
+                      <path d="M 370 120 Q 420 60, 480 60" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2.5" className="cw-flow-purple" />
+                      <path d="M 370 120 Q 420 180, 480 180" fill="none" stroke="var(--cw-svg-amber-border)" strokeWidth="2.5" className="cw-flow-orange" />
                     </>
                   )}
 
                   {/* Source Node */}
-                  <g transform="translate(10, 85)" className="da-node-btn">
-                    <rect width="70" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#6366f1" strokeWidth="2" />
-                    <text x="35" y="24" fill="#4f46e5" fontSize="8" fontWeight="bold" textAnchor="middle">COMPUTE SOURCE</text>
-                    <rect x="5" y="32" width="60" height="15" rx="3" fill="#e0e7ff" />
-                    <text x="35" y="42" fill="#4f46e5" fontSize="7" fontWeight="bold" textAnchor="middle" style={{ textTransform: 'uppercase' }}>{logSource}</text>
-                    <text x="35" y="60" fill="#64748b" fontSize="6.5" textAnchor="middle">Raw stdout logs</text>
+                  <g transform="translate(10, 85)" className="cw-node-btn">
+                    <rect width="70" height="70" rx="8" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-indigo-border)" strokeWidth="2" />
+                    <text x="35" y="24" fill="var(--cw-svg-indigo-text)" fontSize="8" fontWeight="bold" textAnchor="middle">COMPUTE SOURCE</text>
+                    <rect x="5" y="32" width="60" height="15" rx="3" fill="var(--cw-svg-indigo-bg)" />
+                    <text x="35" y="42" fill="var(--cw-svg-indigo-text)" fontSize="7" fontWeight="bold" textAnchor="middle" style={{ textTransform: 'uppercase' }}>{logSource}</text>
+                    <text x="35" y="60" fill="var(--cw-text-muted)" fontSize="6.5" textAnchor="middle">Raw stdout logs</text>
                   </g>
 
                   {/* Agent Node */}
-                  <g transform="translate(140, 85)" className="da-node-btn">
-                    <rect width="90" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke={agentConfigured ? '#10b981' : '#ef4444'} strokeWidth="2" />
-                    <text x="45" y="22" fill={agentConfigured ? '#047857' : '#b91c1c'} fontSize="8" fontWeight="extrabold" textAnchor="middle">UNIFIED AGENT</text>
-                    <text x="45" y="38" fill="#1e293b" fontSize="7" textAnchor="middle">CloudWatch Daemon</text>
-                    <rect x="8" y="46" width="74" height="15" rx="3" fill={agentConfigured ? '#d1fae5' : '#fee2e2'} />
-                    <text x="45" y="56" fill={agentConfigured ? '#047857' : '#b91c1c'} fontSize="7" fontWeight="extrabold" textAnchor="middle">
+                  <g transform="translate(140, 85)" className="cw-node-btn">
+                    <rect width="90" height="70" rx="8" fill="var(--cw-svg-node-fill)" stroke={agentConfigured ? 'var(--cw-svg-green-border)' : 'var(--cw-svg-red-border)'} strokeWidth="2" />
+                    <text x="45" y="22" fill={agentConfigured ? 'var(--cw-svg-green-text)' : 'var(--cw-svg-red-text)'} fontSize="8" fontWeight="extrabold" textAnchor="middle">UNIFIED AGENT</text>
+                    <text x="45" y="38" fill="var(--cw-svg-text-dark)" fontSize="7" textAnchor="middle">CloudWatch Daemon</text>
+                    <rect x="8" y="46" width="74" height="15" rx="3" fill={agentConfigured ? 'var(--cw-svg-green-bg)' : 'var(--cw-svg-red-bg)'} />
+                    <text x="45" y="56" fill={agentConfigured ? 'var(--cw-svg-green-text)' : 'var(--cw-svg-red-text)'} fontSize="7" fontWeight="extrabold" textAnchor="middle">
                       {agentConfigured ? 'Status: Active' : 'Status: Offline'}
                     </text>
                   </g>
 
                   {/* CloudWatch Logs Node */}
-                  <g transform="translate(270, 75)" className="da-node-btn">
-                    <rect width="100" height="90" rx="12" fill="rgba(255, 255, 255, 0.95)" stroke="#6366f1" strokeWidth="2.5" />
-                    <rect x="5" y="5" width="90" height="16" rx="4" fill="#e0e7ff" />
-                    <text x="50" y="16" fill="#4f46e5" fontSize="8" fontWeight="extrabold" textAnchor="middle">☁️ CLOUDWATCH LOGS</text>
+                  <g transform="translate(270, 75)" className="cw-node-btn">
+                    <rect width="100" height="90" rx="12" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-indigo-border)" strokeWidth="2.5" />
+                    <rect x="5" y="5" width="90" height="16" rx="4" fill="var(--cw-svg-indigo-bg)" />
+                    <text x="50" y="16" fill="var(--cw-svg-indigo-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">☁️ CLOUDWATCH LOGS</text>
                     
-                    <rect x="8" y="28" width="84" height="12" rx="2.5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="14" y="36.5" fill="#475569" fontSize="6.5" fontWeight="bold">LogGroup: /aws/app</text>
+                    <rect x="8" y="28" width="84" height="12" rx="2.5" fill="var(--cw-svg-bg)" stroke="var(--cw-svg-node-border)" strokeWidth="0.5" />
+                    <text x="14" y="36.5" fill="var(--cw-text-muted)" fontSize="6.5" fontWeight="bold">LogGroup: /aws/app</text>
                     
-                    <rect x="8" y="45" width="84" height="12" rx="2.5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
-                    <text x="14" y="53.5" fill="#475569" fontSize="6.5" fontWeight="bold">Stream: i-0912ab8</text>
+                    <rect x="8" y="45" width="84" height="12" rx="2.5" fill="var(--cw-svg-bg)" stroke="var(--cw-svg-node-border)" strokeWidth="0.5" />
+                    <text x="14" y="53.5" fill="var(--cw-text-muted)" fontSize="6.5" fontWeight="bold">Stream: i-0912ab8</text>
 
                     <g transform="translate(10, 64)">
-                      <circle cx="5" cy="5" r="3" fill="#10b981" />
-                      <text x="14" y="8" fill="#64748b" fontSize="7" fontWeight="bold">Ingestion Gateway</text>
+                      <circle cx="5" cy="5" r="3" fill="var(--cw-svg-green-border)" />
+                      <text x="14" y="8" fill="var(--cw-text-muted)" fontSize="7" fontWeight="bold">Ingestion Gateway</text>
                     </g>
                     <g transform="translate(10, 76)">
-                      <circle cx="5" cy="5" r="3" fill="#6366f1" className="pulse-circle" />
-                      <circle cx="5" cy="5" r="3" fill="#6366f1" />
-                      <text x="14" y="20" fill="#4f46e5" fontSize="7" fontWeight="bold" transform="translate(0,-12)">Retention: 30 Days</text>
+                      <circle cx="5" cy="5" r="3" fill="var(--cw-svg-indigo-border)" className="pulse-circle" />
+                      <circle cx="5" cy="5" r="3" fill="var(--cw-svg-indigo-border)" />
+                      <text x="14" y="20" fill="var(--cw-svg-indigo-text)" fontSize="7" fontWeight="bold" transform="translate(0,-12)">Retention: 30 Days</text>
                     </g>
                   </g>
 
                   {/* Export / Subscriptions Target Nodes */}
-                  <g transform="translate(480, 25)" className="da-node-btn">
-                    <rect width="110" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#8b5cf6" strokeWidth="1.5" />
-                    <text x="55" y="20" fill="#6d28d9" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📨 SUBSCRIPTION</text>
-                    <rect x="10" y="28" width="90" height="15" rx="3.5" fill="#faf5ff" />
-                    <text x="55" y="38" fill="#6d28d9" fontSize="7" fontWeight="bold" textAnchor="middle">Lambda/Kinesis</text>
-                    <text x="55" y="56" fill="#64748b" fontSize="7" textAnchor="middle">Near-Real-Time Stream</text>
+                  <g transform="translate(480, 25)" className="cw-node-btn">
+                    <rect width="110" height="70" rx="8" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-purple-border)" strokeWidth="1.5" />
+                    <text x="55" y="20" fill="var(--cw-svg-purple-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📨 SUBSCRIPTION</text>
+                    <rect x="10" y="28" width="90" height="15" rx="3.5" fill="var(--cw-svg-purple-bg)" />
+                    <text x="55" y="38" fill="var(--cw-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Lambda/Kinesis</text>
+                    <text x="55" y="56" fill="var(--cw-text-muted)" fontSize="7" textAnchor="middle">Near-Real-Time Stream</text>
                   </g>
 
-                  <g transform="translate(480, 145)" className="da-node-btn">
-                    <rect width="110" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#f97316" strokeWidth="1.5" />
-                    <text x="55" y="20" fill="#c2410c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 S3 DATA ARCHIVE</text>
-                    <rect x="10" y="28" width="90" height="15" rx="3.5" fill="#fff7ed" />
-                    <text x="55" y="38" fill="#c2410c" fontSize="7" fontWeight="bold" textAnchor="middle">Bulk Logs Export</text>
-                    <text x="55" y="56" fill="#64748b" fontSize="7" textAnchor="middle">Cold storage archive</text>
+                  <g transform="translate(480, 145)" className="cw-node-btn">
+                    <rect width="110" height="70" rx="8" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-amber-border)" strokeWidth="1.5" />
+                    <text x="55" y="20" fill="var(--cw-svg-amber-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 S3 DATA ARCHIVE</text>
+                    <rect x="10" y="28" width="90" height="15" rx="3.5" fill="var(--cw-svg-amber-bg)" />
+                    <text x="55" y="38" fill="var(--cw-svg-amber-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Bulk Logs Export</text>
+                    <text x="55" y="56" fill="var(--cw-text-muted)" fontSize="7" textAnchor="middle">Cold storage archive</text>
                   </g>
                 </svg>
               </div>
@@ -1357,11 +1515,11 @@ export default function CloudWatchMAndEventsVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'metrics' && (
         <div className="space-y-6">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700">
+          <div className="cw-card text-left">
+            <h2 className="cw-card-title text-indigo-700">
               <Activity className="w-5 h-5" /> CloudWatch Metric Streams &amp; Active Alarms Sandbox
             </h2>
-            <p className="da-card-desc">
+            <p className="cw-card-desc">
               Metric Streams let you forward continuous system health counters directly to S3 Data Lakes or external analysis partners (like Datadog/NewRelic) under 1 minute. CloudWatch Alarms inspect these metrics and launch auto-recovery when thresholds are breached.
             </p>
           </div>
@@ -1488,10 +1646,10 @@ export default function CloudWatchMAndEventsVisualizer() {
                           <stop offset="95%" stopColor={alarmState === 'ALARM' ? '#ef4444' : '#6366f1'} stopOpacity={0.0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="time" tick={{ fontSize: 9, fontWeight: 'bold', fill: '#94a3b8' }} stroke="#cbd5e1" />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#94a3b8' }} stroke="#cbd5e1" />
-                      <Tooltip labelClassName="font-mono font-bold text-slate-800" contentStyle={{ fontSize: 10, borderRadius: 8 }} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#f1f5f9'} />
+                      <XAxis dataKey="time" tick={{ fontSize: 9, fontWeight: 'bold', fill: isDark ? '#94a3b8' : '#64748b' }} stroke={isDark ? '#475569' : '#cbd5e1'} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: isDark ? '#94a3b8' : '#64748b' }} stroke={isDark ? '#475569' : '#cbd5e1'} />
+                      <Tooltip labelClassName={isDark ? 'font-mono font-bold text-slate-200' : 'font-mono font-bold text-slate-800'} contentStyle={{ fontSize: 10, borderRadius: 8, backgroundColor: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', color: isDark ? '#f1f5f9' : '#0f172a' }} />
                       <Area type="monotone" dataKey="cpu" stroke={alarmState === 'ALARM' ? '#ef4444' : '#6366f1'} strokeWidth={2.5} fillOpacity={1} fill="url(#colorCpu)" />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -1499,66 +1657,66 @@ export default function CloudWatchMAndEventsVisualizer() {
 
                 {/* Topology SVG map for Alarms actions */}
                 <div className="w-full h-[140px] rounded-xl border border-slate-200 relative flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
-                  <svg className="w-full h-full max-w-[500px]" viewBox="0 0 450 140">
+                  <svg className="w-full h-full max-w-[500px] cw-svg-bg" viewBox="0 0 450 140">
                     <defs>
                       <marker id="al-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#cbd5e1" />
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cw-svg-node-border)" />
                       </marker>
                     </defs>
 
                     {/* Pipelines */}
-                    <path d="M 120 70 H 180" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
-                    <path d="M 220 70 Q 280 30, 320 30" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
-                    <path d="M 220 70 H 320" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
-                    <path d="M 220 70 Q 280 110, 320 110" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
+                    <path d="M 120 70 H 180" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
+                    <path d="M 220 70 Q 280 30, 320 30" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
+                    <path d="M 220 70 H 320" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
+                    <path d="M 220 70 Q 280 110, 320 110" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#al-arrow)" />
 
                     {/* Active flow animations during Alarm */}
                     {alarmState === 'ALARM' && (
                       <>
-                        <path d="M 120 70 H 180" fill="none" stroke="#ef4444" strokeWidth="2.5" className="da-flow-orange" />
-                        <path d="M 220 70 Q 280 30, 320 30" fill="none" stroke="#ef4444" strokeWidth="2.5" className="da-flow-orange" />
-                        <path d="M 220 70 H 320" fill="none" stroke="#ef4444" strokeWidth="2.5" className="da-flow-orange" />
-                        <path d="M 220 70 Q 280 110, 320 110" fill="none" stroke="#ef4444" strokeWidth="2.5" className="da-flow-orange" />
+                        <path d="M 120 70 H 180" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="2.5" className="cw-flow-orange" />
+                        <path d="M 220 70 Q 280 30, 320 30" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="2.5" className="cw-flow-orange" />
+                        <path d="M 220 70 H 320" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="2.5" className="cw-flow-orange" />
+                        <path d="M 220 70 Q 280 110, 320 110" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="2.5" className="cw-flow-orange" />
                       </>
                     )}
 
                     {/* Metrics Stream custom target conduit */}
-                    <path d="M 60 40 Q 60 10, 150 10" fill="none" stroke="#6366f1" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#al-arrow)" />
+                    <path d="M 60 40 Q 60 10, 150 10" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#al-arrow)" />
                     <g transform="translate(150, 0)">
-                      <rect width="110" height="20" rx="4" fill="rgba(224, 231, 255, 0.95)" stroke="#6366f1" strokeWidth="1" />
-                      <text x="55" y="12" fill="#4f46e5" fontSize="7.5" fontWeight="bold" textAnchor="middle">STREAMING TO {metricStreamTarget.toUpperCase()}</text>
+                      <rect width="110" height="20" rx="4" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1" />
+                      <text x="55" y="12" fill="var(--cw-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">STREAMING TO {metricStreamTarget.toUpperCase()}</text>
                     </g>
 
                     {/* Nodes */}
-                    <g transform="translate(10, 40)" className="da-node-btn">
-                      <rect width="110" height="60" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#6366f1" strokeWidth="2" />
-                      <text x="55" y="24" fill="#4f46e5" fontSize="8" fontWeight="bold" textAnchor="middle">📊 CPU METRIC</text>
-                      <text x="55" y="40" fill="#1e293b" fontSize="11" fontWeight="black" textAnchor="middle" className="font-mono">
+                    <g transform="translate(10, 40)" className="cw-node-btn">
+                      <rect width="110" height="60" rx="8" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-indigo-border)" strokeWidth="2" />
+                      <text x="55" y="24" fill="var(--cw-svg-indigo-text)" fontSize="8" fontWeight="bold" textAnchor="middle">📊 CPU METRIC</text>
+                      <text x="55" y="40" fill="var(--cw-svg-text-dark)" fontSize="11" fontWeight="black" textAnchor="middle" className="font-mono">
                         {metricCpuHistory[metricCpuHistory.length - 1].cpu}%
                       </text>
-                      <text x="55" y="50" fill="#64748b" fontSize="6.5" textAnchor="middle">Granularity: 10s</text>
+                      <text x="55" y="50" fill="var(--cw-text-muted)" fontSize="6.5" textAnchor="middle">Granularity: 10s</text>
                     </g>
 
                     {/* Alarm Node */}
-                    <g transform="translate(180, 50)" className="da-node-btn">
-                      <circle cx="20" cy="20" r="16" className={alarmState === 'ALARM' ? 'flashing-alarm' : ''} fill={alarmState === 'ALARM' ? '#ef4444' : '#10b981'} stroke="#ffffff" strokeWidth="2" />
+                    <g transform="translate(180, 50)" className="cw-node-btn">
+                      <circle cx="20" cy="20" r="16" className={alarmState === 'ALARM' ? 'flashing-alarm' : ''} fill={alarmState === 'ALARM' ? 'var(--cw-svg-red-border)' : 'var(--cw-svg-green-border)'} stroke="var(--cw-svg-node-fill)" strokeWidth="2" />
                       <text x="20" y="23" fill="#ffffff" fontSize="10" fontWeight="bold" textAnchor="middle">🔔</text>
                     </g>
 
                     {/* Action Targets */}
-                    <g transform="translate(320, 10)" className="da-node-btn">
-                      <rect width="120" height="30" rx="6" fill="rgba(254, 242, 242, 0.95)" stroke="#ef4444" strokeWidth="1" />
-                      <text x="60" y="18" fill="#b91c1c" fontSize="8" fontWeight="bold" textAnchor="middle">📧 SNS Sysops Topic</text>
+                    <g transform="translate(320, 10)" className="cw-node-btn">
+                      <rect width="120" height="30" rx="6" fill="var(--cw-svg-red-bg)" stroke="var(--cw-svg-red-border)" strokeWidth="1" />
+                      <text x="60" y="18" fill="var(--cw-svg-red-text)" fontSize="8" fontWeight="bold" textAnchor="middle">📧 SNS Sysops Topic</text>
                     </g>
 
-                    <g transform="translate(320, 55)" className="da-node-btn">
-                      <rect width="120" height="30" rx="6" fill="rgba(254, 243, 199, 0.95)" stroke="#d97706" strokeWidth="1" />
-                      <text x="60" y="18" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">📈 EC2 Auto-Scaling</text>
+                    <g transform="translate(320, 55)" className="cw-node-btn">
+                      <rect width="120" height="30" rx="6" fill="var(--cw-svg-amber-bg)" stroke="var(--cw-svg-amber-border)" strokeWidth="1" />
+                      <text x="60" y="18" fill="var(--cw-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">📈 EC2 Auto-Scaling</text>
                     </g>
 
-                    <g transform="translate(320, 100)" className="da-node-btn">
-                      <rect width="120" height="30" rx="6" fill="rgba(240, 253, 244, 0.95)" stroke="#10b981" strokeWidth="1" />
-                      <text x="60" y="18" fill="#047857" fontSize="8" fontWeight="bold" textAnchor="middle">🛠️ SSM Automation</text>
+                    <g transform="translate(320, 100)" className="cw-node-btn">
+                      <rect width="120" height="30" rx="6" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" strokeWidth="1" />
+                      <text x="60" y="18" fill="var(--cw-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">🛠️ SSM Automation</text>
                     </g>
                   </svg>
                 </div>
@@ -1588,11 +1746,11 @@ export default function CloudWatchMAndEventsVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'eventbridge' && (
         <div className="space-y-6">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700">
+          <div className="cw-card text-left">
+            <h2 className="cw-card-title text-indigo-700">
               <Workflow className="w-5 h-5" /> Amazon EventBridge Serverless Event Bus Sandbox
             </h2>
-            <p className="da-card-desc">
+            <p className="cw-card-desc">
               Amazon EventBridge is a serverless event bus that simplifies building event-driven architectures. It receives JSON schemas from AWS services, SaaS partners, or custom apps, matches them against declarative **Rules**, and targets down-stream execution nodes automatically.
             </p>
           </div>
@@ -1666,114 +1824,114 @@ export default function CloudWatchMAndEventsVisualizer() {
                   <svg className="w-full h-full max-w-[480px]" viewBox="0 0 450 200">
                     <defs>
                       <marker id="eb-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#cbd5e1" />
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cw-svg-node-border)" />
                       </marker>
                     </defs>
 
                     {/* Path routing channels */}
-                    <path d="M 80 100 H 140" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#eb-arrow)" />
+                    <path d="M 80 100 H 140" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#eb-arrow)" />
                     
                     {/* Rules splits */}
-                    <path d="M 230 100 L 285 45" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <path d="M 230 100 H 285" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <path d="M 230 100 L 285 155" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <path d="M 230 100 L 285 45" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                    <path d="M 230 100 H 285" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                    <path d="M 230 100 L 285 155" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
 
                     {/* Target channels */}
-                    <path d="M 375 45 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <path d="M 375 100 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <path d="M 375 155 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                    <path d="M 375 45 H 410" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                    <path d="M 375 100 H 410" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                    <path d="M 375 155 H 410" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
 
                     {/* Active lasers during evaluation & routing */}
                     {routerState === 'received' && (
-                      <path d="M 80 100 H 140" fill="none" stroke="#6366f1" strokeWidth="3" className="da-flow-blue" />
+                      <path d="M 80 100 H 140" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="3" className="cw-flow-blue" />
                     )}
 
                     {routerState === 'evaluating' && (
                       <>
-                        <path d="M 80 100 H 140" fill="none" stroke="#6366f1" strokeWidth="2.5" />
-                        <circle cx="185" cy="100" r="28" fill="rgba(99, 102, 241, 0.1)" stroke="#6366f1" className="pulse-circle" strokeWidth="1" />
+                        <path d="M 80 100 H 140" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="2.5" />
+                        <circle cx="185" cy="100" r="28" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" className="pulse-circle" strokeWidth="1" />
                       </>
                     )}
 
                     {routerState === 'routed' && (
                       <>
-                        <path d="M 80 100 H 140" fill="none" stroke="#6366f1" strokeWidth="2" />
+                        <path d="M 80 100 H 140" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="2" />
                         {eventSourceType === 'ec2_state' && (
                           <>
-                            <path d="M 230 100 L 285 45" fill="none" stroke="#a855f7" strokeWidth="2.5" className="da-flow-purple" />
-                            <path d="M 230 100 H 285" fill="none" stroke="#a855f7" strokeWidth="2.5" className="da-flow-purple" />
-                            <path d="M 375 45 H 410" fill="none" stroke="#a855f7" strokeWidth="2" />
-                            <path d="M 375 100 H 410" fill="none" stroke="#a855f7" strokeWidth="2" />
+                            <path d="M 230 100 L 285 45" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2.5" className="cw-flow-purple" />
+                            <path d="M 230 100 H 285" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2.5" className="cw-flow-purple" />
+                            <path d="M 375 45 H 410" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2" />
+                            <path d="M 375 100 H 410" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2" />
                           </>
                         )}
                         {eventSourceType === 's3_api' && (
                           <>
-                            <path d="M 230 100 L 285 155" fill="none" stroke="#10b981" strokeWidth="2.5" className="da-flow-green" />
-                            <path d="M 375 155 H 410" fill="none" stroke="#10b981" strokeWidth="2" />
+                            <path d="M 230 100 L 285 155" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="2.5" className="cw-flow-green" />
+                            <path d="M 375 155 H 410" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="2" />
                           </>
                         )}
                         {eventSourceType === 'custom_order' && (
                           <>
-                            <path d="M 230 100 H 285" fill="none" stroke="#f97316" strokeWidth="2.5" className="da-flow-orange" />
-                            <path d="M 375 100 H 410" fill="none" stroke="#f97316" strokeWidth="2" />
+                            <path d="M 230 100 H 285" fill="none" stroke="var(--cw-svg-amber-border)" strokeWidth="2.5" className="cw-flow-orange" />
+                            <path d="M 375 100 H 410" fill="none" stroke="var(--cw-svg-amber-border)" strokeWidth="2" />
                           </>
                         )}
                       </>
                     )}
 
                     {/* Source Node */}
-                    <g transform="translate(10, 75)" className="da-node-btn">
-                      <rect width="70" height="50" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#6366f1" strokeWidth="1.5" />
-                      <text x="35" y="24" fill="#4f46e5" fontSize="8" fontWeight="bold" textAnchor="middle">🗳️ SOURCE</text>
-                      <text x="35" y="38" fill="#64748b" fontSize="7" textAnchor="middle" style={{ textTransform: 'uppercase' }}>{eventSourceType.split('_')[0]}</text>
+                    <g transform="translate(10, 75)" className="cw-node-btn">
+                      <rect width="70" height="50" rx="6" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.5" />
+                      <text x="35" y="24" fill="var(--cw-svg-indigo-text)" fontSize="8" fontWeight="bold" textAnchor="middle">🗳️ SOURCE</text>
+                      <text x="35" y="38" fill="var(--cw-text-muted)" fontSize="7" textAnchor="middle" style={{ textTransform: 'uppercase' }}>{eventSourceType.split('_')[0]}</text>
                     </g>
 
                     {/* Event Bus Coordinator */}
-                    <g transform="translate(140, 65)" className="da-node-btn">
-                      <rect width="90" height="70" rx="10" fill="rgba(255, 255, 255, 0.95)" stroke="#6366f1" strokeWidth="2.5" />
-                      <rect x="5" y="5" width="80" height="15" rx="3.5" fill="#e0e7ff" />
-                      <text x="45" y="16" fill="#4f46e5" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">EVENT BUS</text>
-                      <text x="45" y="38" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">rules match</text>
-                      <text x="45" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Default Bus</text>
+                    <g transform="translate(140, 65)" className="cw-node-btn">
+                      <rect width="90" height="70" rx="10" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-indigo-border)" strokeWidth="2.5" />
+                      <rect x="5" y="5" width="80" height="15" rx="3.5" fill="var(--cw-svg-indigo-bg)" />
+                      <text x="45" y="16" fill="var(--cw-svg-indigo-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">EVENT BUS</text>
+                      <text x="45" y="38" fill="var(--cw-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">rules match</text>
+                      <text x="45" y="52" fill="var(--cw-text-muted)" fontSize="7.5" textAnchor="middle">Default Bus</text>
                     </g>
 
                     {/* Declarative Rules */}
-                    <g transform="translate(285, 25)" className="da-node-btn">
-                      <rect width="90" height="40" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke={matchedRulesList.includes('Ec2TerminationAlert') ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="45" y="18" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">Rule: EC2Term</text>
-                      <text x="45" y="30" fill={matchedRulesList.includes('Ec2TerminationAlert') ? '#7e22ce' : '#64748b'} fontSize="7" fontWeight="bold" textAnchor="middle">
+                    <g transform="translate(285, 25)" className="cw-node-btn">
+                      <rect width="90" height="40" rx="6" fill="var(--cw-svg-node-fill)" stroke={matchedRulesList.includes('Ec2TerminationAlert') ? 'var(--cw-svg-purple-border)' : 'var(--cw-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="45" y="18" fill="var(--cw-svg-text-dark)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Rule: EC2Term</text>
+                      <text x="45" y="30" fill={matchedRulesList.includes('Ec2TerminationAlert') ? 'var(--cw-svg-purple-text)' : 'var(--cw-text-muted)'} fontSize="7" fontWeight="bold" textAnchor="middle">
                         {matchedRulesList.includes('Ec2TerminationAlert') ? '🎯 MATCHED' : 'Skip'}
                       </text>
                     </g>
 
-                    <g transform="translate(285, 80)" className="da-node-btn">
-                      <rect width="90" height="40" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke={
-                        matchedRulesList.includes('HighValueOrderApproveAlert') || matchedRulesList.includes('AutoscalingSyncRule') ? '#8b5cf6' : '#cbd5e1'
+                    <g transform="translate(285, 80)" className="cw-node-btn">
+                      <rect width="90" height="40" rx="6" fill="var(--cw-svg-node-fill)" stroke={
+                        matchedRulesList.includes('HighValueOrderApproveAlert') || matchedRulesList.includes('AutoscalingSyncRule') ? 'var(--cw-svg-purple-border)' : 'var(--cw-svg-node-border)'
                       } strokeWidth="1.5" />
-                      <text x="45" y="18" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">Rule: HighValOrder</text>
+                      <text x="45" y="18" fill="var(--cw-svg-text-dark)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Rule: HighValOrder</text>
                       <text x="45" y="30" fill={
-                        matchedRulesList.includes('HighValueOrderApproveAlert') || matchedRulesList.includes('AutoscalingSyncRule') ? '#6d28d9' : '#64748b'
+                        matchedRulesList.includes('HighValueOrderApproveAlert') || matchedRulesList.includes('AutoscalingSyncRule') ? 'var(--cw-svg-purple-text)' : 'var(--cw-text-muted)'
                       } fontSize="7" fontWeight="bold" textAnchor="middle">
                         {matchedRulesList.includes('HighValueOrderApproveAlert') || matchedRulesList.includes('AutoscalingSyncRule') ? '🎯 MATCHED' : 'Skip'}
                       </text>
                     </g>
 
-                    <g transform="translate(285, 135)" className="da-node-btn">
-                      <rect width="90" height="40" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke={matchedRulesList.includes('InvoiceIngestPipeline') ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="45" y="18" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">Rule: S3Invoice</text>
-                      <text x="45" y="30" fill={matchedRulesList.includes('InvoiceIngestPipeline') ? '#047857' : '#64748b'} fontSize="7" fontWeight="bold" textAnchor="middle">
+                    <g transform="translate(285, 135)" className="cw-node-btn">
+                      <rect width="90" height="40" rx="6" fill="var(--cw-svg-node-fill)" stroke={matchedRulesList.includes('InvoiceIngestPipeline') ? 'var(--cw-svg-green-border)' : 'var(--cw-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="45" y="18" fill="var(--cw-svg-text-dark)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Rule: S3Invoice</text>
+                      <text x="45" y="30" fill={matchedRulesList.includes('InvoiceIngestPipeline') ? 'var(--cw-svg-green-text)' : 'var(--cw-text-muted)'} fontSize="7" fontWeight="bold" textAnchor="middle">
                         {matchedRulesList.includes('InvoiceIngestPipeline') ? '🎯 MATCHED' : 'Skip'}
                       </text>
                     </g>
 
                     {/* Routing Target Outlets */}
-                    <circle cx="420" cy="45" r="10" fill="#a855f7" stroke="#ffffff" strokeWidth="1.5" className="da-node-btn" />
+                    <circle cx="420" cy="45" r="10" fill="var(--cw-svg-purple-border)" stroke="var(--cw-svg-node-fill)" strokeWidth="1.5" className="cw-node-btn" />
                     <text x="420" y="48" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">λ</text>
 
-                    <circle cx="420" cy="100" r="10" fill="#f97316" stroke="#ffffff" strokeWidth="1.5" className="da-node-btn" />
+                    <circle cx="420" cy="100" r="10" fill="var(--cw-svg-amber-border)" stroke="var(--cw-svg-node-fill)" strokeWidth="1.5" className="cw-node-btn" />
                     <text x="420" y="103" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">🔔</text>
 
-                    <circle cx="420" cy="155" r="10" fill="#10b981" stroke="#ffffff" strokeWidth="1.5" className="da-node-btn" />
+                    <circle cx="420" cy="155" r="10" fill="var(--cw-svg-green-border)" stroke="var(--cw-svg-node-fill)" strokeWidth="1.5" className="cw-node-btn" />
                     <text x="420" y="158" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">⚙️</text>
                   </svg>
                 </div>
@@ -1803,11 +1961,11 @@ export default function CloudWatchMAndEventsVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'compliance' && (
         <div className="space-y-6">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700">
+          <div className="cw-card text-left">
+            <h2 className="cw-card-title text-indigo-700">
               <Shield className="w-5 h-5" /> Governance Sandbox: CloudTrail API Auditing vs AWS Config Continuous Compliance
             </h2>
-            <p className="da-card-desc">
+            <p className="cw-card-desc">
               Understand how AWS auditing operates. **CloudTrail** records API control plane events to audit user actions. **AWS Config** tracks resource inventory configuration states, checks continuous compliance policies, and triggers System Manager (SSM) auto-remediations.
             </p>
           </div>
@@ -1901,95 +2059,95 @@ export default function CloudWatchMAndEventsVisualizer() {
 
                 {/* CloudTrail vs Config visual topology */}
                 <div className="w-full h-[220px] rounded-xl border border-slate-200 relative flex items-center justify-center shadow-inner bg-slate-50 overflow-hidden">
-                  <svg className="w-full h-full max-w-[500px]" viewBox="0 0 450 200">
+                  <svg className="w-full h-full max-w-[500px] cw-svg-bg" viewBox="0 0 450 200">
                     <defs>
                       <marker id="au-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#cbd5e1" />
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--cw-svg-node-border)" />
                       </marker>
                     </defs>
 
                     {/* Pathways */}
                     {/* User API dispatch */}
-                    <path d="M 75 100 H 130" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#au-arrow)" />
+                    <path d="M 75 100 H 130" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#au-arrow)" />
                     
                     {/* CloudTrail splits */}
-                    <path d="M 210 100 Q 250 45, 290 45" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#au-arrow)" />
+                    <path d="M 210 100 Q 250 45, 290 45" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#au-arrow)" />
                     {/* Config splits */}
-                    <path d="M 210 100 Q 250 155, 290 155" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#au-arrow)" />
+                    <path d="M 210 100 Q 250 155, 290 155" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" markerEnd="url(#au-arrow)" />
 
                     {/* Remediation conduit */}
-                    <path d="M 370 155 Q 310 185, 210 185" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
-                    <path d="M 210 185 Q 110 185, 75 105" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3 3" />
+                    <path d="M 370 155 Q 310 185, 210 185" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" strokeDasharray="3 3" />
+                    <path d="M 210 185 Q 110 185, 75 105" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" strokeDasharray="3 3" />
 
                     {/* Active conduits during auditing */}
                     {complianceState === 'api_call' && (
-                      <path d="M 75 100 H 130" fill="none" stroke="#6366f1" strokeWidth="3" className="da-flow-blue" />
+                      <path d="M 75 100 H 130" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="3" className="cw-flow-blue" />
                     )}
 
                     {complianceState === 'cloudtrail_log' && (
-                      <path d="M 210 100 Q 250 45, 290 45" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                      <path d="M 210 100 Q 250 45, 290 45" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="3" className="cw-flow-green" />
                     )}
 
                     {complianceState === 'config_eval' && (
-                      <path d="M 210 100 Q 250 155, 290 155" fill="none" stroke="#f97316" strokeWidth="3" className="da-flow-orange" />
+                      <path d="M 210 100 Q 250 155, 290 155" fill="none" stroke="var(--cw-svg-amber-border)" strokeWidth="3" className="cw-flow-orange" />
                     )}
 
                     {complianceState === 'non_compliant' && (
                       <>
-                        <path d="M 210 100 Q 250 155, 290 155" fill="none" stroke="#ef4444" strokeWidth="3" />
-                        <circle cx="330" cy="155" r="28" fill="none" stroke="#ef4444" strokeWidth="1.5" className="pulse-circle" />
+                        <path d="M 210 100 Q 250 155, 290 155" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="3" />
+                        <circle cx="330" cy="155" r="28" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="1.5" className="pulse-circle" />
                       </>
                     )}
 
                     {complianceState === 'remediating' && (
                       <>
-                        <path d="M 370 155 Q 310 185, 210 185" fill="none" stroke="#8b5cf6" strokeWidth="2.5" className="da-flow-purple" />
-                        <path d="M 210 185 Q 110 185, 75 105" fill="none" stroke="#8b5cf6" strokeWidth="2.5" className="da-flow-purple" />
+                        <path d="M 370 155 Q 310 185, 210 185" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2.5" className="cw-flow-purple" />
+                        <path d="M 210 185 Q 110 185, 75 105" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="2.5" className="cw-flow-purple" />
                       </>
                     )}
 
                     {/* Nodes */}
-                    <g transform="translate(10, 75)" className="da-node-btn">
-                      <rect width="65" height="50" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#6366f1" strokeWidth="2" />
-                      <text x="32.5" y="22" fill="#4f46e5" fontSize="8" fontWeight="bold" textAnchor="middle">📱 USER API</text>
-                      <text x="32.5" y="36" fill="#1e293b" fontSize="7" textAnchor="middle">alice_sec</text>
-                      <text x="32.5" y="44" fill="#64748b" fontSize="6.5" fontStyle="italic" textAnchor="middle">PutBucketPolicy</text>
+                    <g transform="translate(10, 75)" className="cw-node-btn">
+                      <rect width="65" height="50" rx="6" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-indigo-border)" strokeWidth="2" />
+                      <text x="32.5" y="22" fill="var(--cw-svg-indigo-text)" fontSize="8" fontWeight="bold" textAnchor="middle">📱 USER API</text>
+                      <text x="32.5" y="36" fill="var(--cw-svg-text-dark)" fontSize="7" textAnchor="middle">alice_sec</text>
+                      <text x="32.5" y="44" fill="var(--cw-text-muted)" fontSize="6.5" fontStyle="italic" textAnchor="middle">PutBucketPolicy</text>
                     </g>
 
-                    <g transform="translate(130, 75)" className="da-node-btn">
-                      <rect width="80" height="50" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#cbd5e1" strokeWidth="1.5" />
-                      <text x="40" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">AWS Bucket</text>
-                      <text x="40" y="38" fill="#64748b" fontSize="7.5" textAnchor="middle">Target S3 Pool</text>
+                    <g transform="translate(130, 75)" className="cw-node-btn">
+                      <rect width="80" height="50" rx="8" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                      <text x="40" y="24" fill="var(--cw-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">AWS Bucket</text>
+                      <text x="40" y="38" fill="var(--cw-text-muted)" fontSize="7.5" textAnchor="middle">Target S3 Pool</text>
                     </g>
 
                     {/* CloudTrail logging node */}
-                    <g transform="translate(290, 15)" className="da-node-btn">
-                      <rect width="115" height="60" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#10b981" strokeWidth="2" />
-                      <rect x="5" y="5" width="105" height="15" rx="3" fill="#d1fae5" />
-                      <text x="57.5" y="15" fill="#047857" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📑 CLOUDTRAIL AUDIT</text>
-                      <text x="57.5" y="36" fill="#1e293b" fontSize="7" textAnchor="middle">API management log</text>
-                      <text x="57.5" y="48" fill="#64748b" fontSize="6.5" fontStyle="italic" textAnchor="middle">s3://central-trails/</text>
+                    <g transform="translate(290, 15)" className="cw-node-btn">
+                      <rect width="115" height="60" rx="8" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-green-border)" strokeWidth="2" />
+                      <rect x="5" y="5" width="105" height="15" rx="3" fill="var(--cw-svg-green-bg)" />
+                      <text x="57.5" y="15" fill="var(--cw-svg-green-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📑 CLOUDTRAIL AUDIT</text>
+                      <text x="57.5" y="36" fill="var(--cw-svg-text-dark)" fontSize="7" textAnchor="middle">API management log</text>
+                      <text x="57.5" y="48" fill="var(--cw-text-muted)" fontSize="6.5" fontStyle="italic" textAnchor="middle">s3://central-trails/</text>
                     </g>
 
                     {/* AWS Config Compliance node */}
-                    <g transform="translate(290, 125)" className="da-node-btn">
-                      <rect width="115" height="60" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke={
-                        complianceState === 'non_compliant' || complianceState === 'remediating' ? '#ef4444' :
-                        complianceState === 'compliant' ? '#10b981' : '#f59e0b'
+                    <g transform="translate(290, 125)" className="cw-node-btn">
+                      <rect width="115" height="60" rx="8" fill="var(--cw-svg-node-fill)" stroke={
+                        complianceState === 'non_compliant' || complianceState === 'remediating' ? 'var(--cw-svg-red-border)' :
+                        complianceState === 'compliant' ? 'var(--cw-svg-green-border)' : 'var(--cw-svg-amber-border)'
                       } strokeWidth="2" />
                       <rect x="5" y="5" width="105" height="15" rx="3" fill={
-                        complianceState === 'non_compliant' || complianceState === 'remediating' ? '#fee2e2' :
-                        complianceState === 'compliant' ? '#d1fae5' : '#fef3c7'
+                        complianceState === 'non_compliant' || complianceState === 'remediating' ? 'var(--cw-svg-red-bg)' :
+                        complianceState === 'compliant' ? 'var(--cw-svg-green-bg)' : 'var(--cw-svg-amber-bg)'
                       } />
                       <text x="57.5" y="15" fill={
-                        complianceState === 'non_compliant' || complianceState === 'remediating' ? '#b91c1c' :
-                        complianceState === 'compliant' ? '#047857' : '#b45309'
+                        complianceState === 'non_compliant' || complianceState === 'remediating' ? 'var(--cw-svg-red-text)' :
+                        complianceState === 'compliant' ? 'var(--cw-svg-green-text)' : 'var(--cw-svg-amber-text)'
                       } fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🛡️ AWS CONFIG compliance</text>
                       
-                      <text x="57.5" y="36" fill="#1e293b" fontSize="7.5" textAnchor="middle">Rule: s3-public-prohibited</text>
+                      <text x="57.5" y="36" fill="var(--cw-svg-text-dark)" fontSize="7.5" textAnchor="middle">Rule: s3-public-prohibited</text>
                       <text x="57.5" y="48" fill={
-                        complianceState === 'non_compliant' || complianceState === 'remediating' ? '#b91c1c' :
-                        complianceState === 'compliant' ? '#047857' : '#b45309'
+                        complianceState === 'non_compliant' || complianceState === 'remediating' ? 'var(--cw-svg-red-text)' :
+                        complianceState === 'compliant' ? 'var(--cw-svg-green-text)' : 'var(--cw-svg-amber-text)'
                       } fontSize="7.5" fontWeight="extrabold" textAnchor="middle">
                         {complianceState === 'non_compliant' ? '❌ NON_COMPLIANT' :
                          complianceState === 'compliant' ? '✅ COMPLIANT' : 'Evaluating...'}
@@ -2041,11 +2199,11 @@ export default function CloudWatchMAndEventsVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'matrix' && (
         <div className="space-y-6">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700">
+          <div className="cw-card text-left">
+            <h2 className="cw-card-title text-indigo-700">
               <Sliders className="w-5 h-5" /> Architectural Comparative Matrix &amp; Aggregation Sandbox
             </h2>
-            <p className="da-card-desc">
+            <p className="cw-card-desc">
               Examine the differences between core observability topics. Choose a comparative dimension on the left to see memory mnemonics, strict performance grids, code policies, and a state-driven dynamic topological diagram.
             </p>
           </div>
@@ -2275,7 +2433,7 @@ export default function CloudWatchMAndEventsVisualizer() {
                 <p className="text-[11px] text-slate-500">Interactive live schematic showing telemetry paths, data shapes, and gatekeepers</p>
               </div>
 
-              <div className="w-full h-[280px] bg-slate-50 border border-slate-200 rounded-xl relative overflow-hidden flex items-center justify-center da-svg-bg">
+              <div className="w-full h-[280px] bg-slate-50 border border-slate-200 rounded-xl relative overflow-hidden flex items-center justify-center cw-svg-bg">
                 {/* Visual indicator alert badges */}
                 {matrixSimState === 'running' && (
                   <span className="absolute top-3 left-3 bg-sky-100 border border-sky-300 text-sky-700 font-extrabold text-[9px] px-2 py-0.5 rounded animate-pulse select-none z-10">
@@ -2296,16 +2454,16 @@ export default function CloudWatchMAndEventsVisualizer() {
                 <svg className="w-full h-full" viewBox="0 0 280 180">
                   <defs>
                     <marker id="arrow-matrix" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--cw-svg-node-border)" />
                     </marker>
                     <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#2563eb" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--cw-svg-indigo-border)" />
                     </marker>
                     <marker id="arrow-rose" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#dc2626" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--cw-svg-red-border)" />
                     </marker>
                     <marker id="arrow-emerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#059669" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--cw-svg-green-border)" />
                     </marker>
                   </defs>
 
@@ -2314,54 +2472,54 @@ export default function CloudWatchMAndEventsVisualizer() {
                     <g>
                       {/* Left: 4 Sources */}
                       <g transform="translate(15, 10)">
-                        <rect x="0" y="0" width="60" height="22" rx="4" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1" />
-                        <text x="30" y="14" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">🌐 VPC Flow</text>
-                        <path d="M 60 11 L 100 50" fill="none" stroke="#94a3b8" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
-                        {matrixSimState === 'running' && <circle r="2.5" fill="#3b82f6"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 60 11 L 100 50" /></circle>}
+                        <rect x="0" y="0" width="60" height="22" rx="4" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1" />
+                        <text x="30" y="14" fill="var(--cw-svg-text-dark)" fontSize="7" fontWeight="bold" textAnchor="middle">🌐 VPC Flow</text>
+                        <path d="M 60 11 L 100 50" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
+                        {matrixSimState === 'running' && <circle r="2.5" fill="var(--cw-svg-indigo-border)"><animateMotion dur="1.5s" repeatCount="indefinite" path="M 60 11 L 100 50" /></circle>}
                       </g>
 
                       <g transform="translate(15, 45)">
-                        <rect x="0" y="0" width="60" height="22" rx="4" fill="#faf5ff" stroke="#c084fc" strokeWidth="1" />
-                        <text x="30" y="14" fill="#6b21a8" fontSize="7" fontWeight="bold" textAnchor="middle">📲 API Gateway</text>
-                        <path d="M 60 11 L 100 20" fill="none" stroke="#c084fc" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
-                        {matrixSimState === 'running' && <circle r="2.5" fill="#9333ea"><animateMotion dur="1.2s" repeatCount="indefinite" path="M 60 11 L 100 20" /></circle>}
+                        <rect x="0" y="0" width="60" height="22" rx="4" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" strokeWidth="1" />
+                        <text x="30" y="14" fill="var(--cw-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">📲 API Gateway</text>
+                        <path d="M 60 11 L 100 20" fill="none" stroke="var(--cw-svg-purple-border)" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
+                        {matrixSimState === 'running' && <circle r="2.5" fill="var(--cw-svg-purple-border)"><animateMotion dur="1.2s" repeatCount="indefinite" path="M 60 11 L 100 20" /></circle>}
                       </g>
 
                       <g transform="translate(15, 80)">
-                        <rect x="0" y="0" width="60" height="22" rx="4" fill="#fffbeb" stroke="#fcd34d" strokeWidth="1" />
-                        <text x="30" y="14" fill="#92400e" fontSize="7" fontWeight="bold" textAnchor="middle">🗄️ Route 53 DNS</text>
-                        <path d="M 60 11 L 100 -10" fill="none" stroke="#fcd34d" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
-                        {matrixSimState === 'running' && <circle r="2.5" fill="#d97706"><animateMotion dur="1.4s" repeatCount="indefinite" path="M 60 11 L 100 -10" /></circle>}
+                        <rect x="0" y="0" width="60" height="22" rx="4" fill="var(--cw-svg-amber-bg)" stroke="var(--cw-svg-amber-border)" strokeWidth="1" />
+                        <text x="30" y="14" fill="var(--cw-svg-amber-text)" fontSize="7" fontWeight="bold" textAnchor="middle">🗄️ Route 53 DNS</text>
+                        <path d="M 60 11 L 100 -10" fill="none" stroke="var(--cw-svg-amber-border)" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
+                        {matrixSimState === 'running' && <circle r="2.5" fill="var(--cw-svg-amber-border)"><animateMotion dur="1.4s" repeatCount="indefinite" path="M 60 11 L 100 -10" /></circle>}
                       </g>
 
                       <g transform="translate(15, 115)">
-                        <rect x="0" y="0" width="60" height="22" rx="4" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" />
-                        <text x="30" y="14" fill="#0f766e" fontSize="7" fontWeight="extrabold" textAnchor="middle">📑 CloudTrail</text>
-                        <path d="M 60 11 L 100 -40" fill="none" stroke="#0d9488" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
-                        {matrixSimState === 'running' && <circle r="2.5" fill="#0d9488"><animateMotion dur="1.1s" repeatCount="indefinite" path="M 60 11 L 100 -40" /></circle>}
+                        <rect x="0" y="0" width="60" height="22" rx="4" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" strokeWidth="1.5" />
+                        <text x="30" y="14" fill="var(--cw-svg-green-text)" fontSize="7" fontWeight="extrabold" textAnchor="middle">📑 CloudTrail</text>
+                        <path d="M 60 11 L 100 -40" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
+                        {matrixSimState === 'running' && <circle r="2.5" fill="var(--cw-svg-green-border)"><animateMotion dur="1.1s" repeatCount="indefinite" path="M 60 11 L 100 -40" /></circle>}
                       </g>
 
                       {/* Middle: CloudWatch Logs Hub */}
                       <g transform="translate(115, 50)">
-                        <rect x="0" y="0" width="55" height="40" rx="6" fill="#e0e7ff" stroke="#6366f1" strokeWidth="1.5" />
-                        <text x="27.5" y="16" fill="#312e81" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📈 CloudWatch</text>
-                        <text x="27.5" y="27" fill="#4338ca" fontSize="6.5" fontWeight="bold" textAnchor="middle">Logs Hub</text>
-                        {matrixSimState === 'running' && <rect x="-2" y="-2" width="59" height="44" rx="8" fill="none" stroke="#6366f1" strokeWidth="1.5" className="pulse-circle" style={{ transformOrigin: '27.5px 20px' }} />}
+                        <rect x="0" y="0" width="55" height="40" rx="6" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.5" />
+                        <text x="27.5" y="16" fill="var(--cw-svg-indigo-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📈 CloudWatch</text>
+                        <text x="27.5" y="27" fill="var(--cw-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Logs Hub</text>
+                        {matrixSimState === 'running' && <rect x="-2" y="-2" width="59" height="44" rx="8" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.5" className="pulse-circle" style={{ transformOrigin: '27.5px 20px' }} />}
                       </g>
 
                       {/* Right: Streams & Encryption */}
                       <g transform="translate(195, 48)">
-                        <path d="M -25 22 L 0 0" fill="none" stroke="#6366f1" strokeWidth="1.2" markerEnd="url(#arrow-matrix)" />
-                        <path d="M -25 22 L 0 35" fill="none" stroke="#6366f1" strokeWidth="1.2" markerEnd="url(#arrow-matrix)" />
+                        <path d="M -25 22 L 0 0" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.2" markerEnd="url(#arrow-matrix)" />
+                        <path d="M -25 22 L 0 35" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.2" markerEnd="url(#arrow-matrix)" />
 
                         <g transform="translate(0, -10)">
-                          <rect x="0" y="0" width="65" height="18" rx="3" fill="#e0f2fe" stroke="#0369a1" strokeWidth="1" />
-                          <text x="32.5" y="11" fill="#0369a1" fontSize="6.5" fontWeight="bold" textAnchor="middle">🔒 Encrypted Stream</text>
+                          <rect x="0" y="0" width="65" height="18" rx="3" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1" />
+                          <text x="32.5" y="11" fill="var(--cw-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🔒 Encrypted Stream</text>
                         </g>
 
                         <g transform="translate(0, 25)">
-                          <rect x="0" y="0" width="65" height="18" rx="3" fill="#ccfbf1" stroke="#0f766e" strokeWidth="1" />
-                          <text x="32.5" y="11" fill="#0f766e" fontSize="6.5" fontWeight="bold" textAnchor="middle">🗂️ Log Group Folder</text>
+                          <rect x="0" y="0" width="65" height="18" rx="3" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" strokeWidth="1" />
+                          <text x="32.5" y="11" fill="var(--cw-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🗂️ Log Group Folder</text>
                         </g>
                       </g>
                     </g>
@@ -2372,31 +2530,31 @@ export default function CloudWatchMAndEventsVisualizer() {
                     <g>
                       {/* Left: EC2 Host */}
                       <g transform="translate(10, 10)">
-                        <rect x="0" y="0" width="115" height="135" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                        <text x="57.5" y="12" fill="#475569" fontSize="7" fontWeight="extrabold" textAnchor="middle">💻 EC2 Server Host</text>
+                        <rect x="0" y="0" width="115" height="135" rx="6" fill="var(--cw-svg-bg)" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                        <text x="57.5" y="12" fill="var(--cw-svg-text-dark)" fontSize="7" fontWeight="extrabold" textAnchor="middle">💻 EC2 Server Host</text>
 
                         {/* Sub-node A: Application logs */}
                         <g transform="translate(10, 20)">
-                          <rect x="0" y="0" width="95" height="20" rx="3" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" />
-                          <text x="47.5" y="13" fill="#334155" fontSize="6.5" fontWeight="semibold" textAnchor="middle">📦 Node.js App (syslog)</text>
+                          <rect x="0" y="0" width="95" height="20" rx="3" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1" />
+                          <text x="47.5" y="13" fill="var(--cw-svg-text-dark)" fontSize="6.5" fontWeight="semibold" textAnchor="middle">📦 Node.js App (syslog)</text>
                         </g>
 
                         {/* Sub-node B: Legacy Agent */}
                         <g transform="translate(10, 50)">
-                          <rect x="0" y="0" width="95" height="20" rx="3" fill="#fef2f2" stroke="#fca5a5" strokeWidth="1" />
-                          <text x="47.5" y="11" fill="#991b1b" fontSize="6" fontWeight="extrabold" textAnchor="middle">🔴 Legacy Agent (Deprecated)</text>
-                          <text x="47.5" y="17" fill="#b91c1c" fontSize="5" textAnchor="middle">Tails files only</text>
-                          <path d="M 95 10 L 135 40" fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
+                          <rect x="0" y="0" width="95" height="20" rx="3" fill="var(--cw-svg-red-bg)" stroke="var(--cw-svg-red-border)" strokeWidth="1" />
+                          <text x="47.5" y="11" fill="var(--cw-svg-red-text)" fontSize="6" fontWeight="extrabold" textAnchor="middle">🔴 Legacy Agent (Deprecated)</text>
+                          <text x="47.5" y="17" fill="var(--cw-svg-red-text)" fontSize="5" textAnchor="middle">Tails files only</text>
+                          <path d="M 95 10 L 135 40" fill="none" stroke="var(--cw-svg-red-border)" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
                         </g>
 
                         {/* Sub-node C: Unified CloudWatch Agent */}
                         <g transform="translate(10, 85)">
-                          <rect x="0" y="0" width="95" height="38" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                          <text x="47.5" y="11" fill="#065f46" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">🟢 Unified CW Agent</text>
-                          <text x="47.5" y="21" fill="#047857" fontSize="5.5" textAnchor="middle">📂 App logs + OS CPU/Disk</text>
-                          <text x="47.5" y="31" fill="#065f46" fontSize="5" textAnchor="middle">Aggregates Performance</text>
-                          <path d="M 95 18 L 135 25" fill="none" stroke="#10b981" strokeWidth="1.2" markerEnd="url(#arrow-matrix)" />
-                          {matrixSimState === 'running' && <circle r="2.5" fill="#34d399"><animateMotion dur="1s" repeatCount="indefinite" path="M 95 18 L 135 25" /></circle>}
+                          <rect x="0" y="0" width="95" height="38" rx="4" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" strokeWidth="1.5" />
+                          <text x="47.5" y="11" fill="var(--cw-svg-green-text)" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">🟢 Unified CW Agent</text>
+                          <text x="47.5" y="21" fill="var(--cw-svg-green-text)" fontSize="5.5" textAnchor="middle">📂 App logs + OS CPU/Disk</text>
+                          <text x="47.5" y="31" fill="var(--cw-svg-green-text)" fontSize="5" textAnchor="middle">Aggregates Performance</text>
+                          <path d="M 95 18 L 135 25" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="1.2" markerEnd="url(#arrow-matrix)" />
+                          {matrixSimState === 'running' && <circle r="2.5" fill="var(--cw-svg-green-border)"><animateMotion dur="1s" repeatCount="indefinite" path="M 95 18 L 135 25" /></circle>}
                         </g>
                       </g>
 
@@ -2404,32 +2562,32 @@ export default function CloudWatchMAndEventsVisualizer() {
                       <g transform="translate(145, 10)">
                         {/* Other Out-of-box Sources */}
                         <g transform="translate(0, 0)">
-                          <rect x="0" y="0" width="115" height="45" rx="5" fill="#faf5ff" stroke="#d8b4fe" strokeWidth="1" />
-                          <text x="57.5" y="12" fill="#5b21b6" fontSize="7" fontWeight="bold" textAnchor="middle">🚀 Native Telemetry Ingest</text>
+                          <rect x="0" y="0" width="115" height="45" rx="5" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" strokeWidth="1" />
+                          <text x="57.5" y="12" fill="var(--cw-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">🚀 Native Telemetry Ingest</text>
                           
                           <g transform="translate(5, 18)">
-                            <rect x="0" y="0" width="30" height="20" rx="2" fill="#ffffff" stroke="#c7d2fe" />
-                            <text x="15" y="12" fill="#4338ca" fontSize="5" fontWeight="bold" textAnchor="middle">EB App</text>
+                            <rect x="0" y="0" width="30" height="20" rx="2" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-purple-border)" />
+                            <text x="15" y="12" fill="var(--cw-svg-purple-text)" fontSize="5" fontWeight="bold" textAnchor="middle">EB App</text>
                           </g>
                           <g transform="translate(42, 18)">
-                            <rect x="0" y="0" width="30" height="20" rx="2" fill="#ffffff" stroke="#c7d2fe" />
-                            <text x="15" y="12" fill="#4338ca" fontSize="5" fontWeight="bold" textAnchor="middle">ECS Cont.</text>
+                            <rect x="0" y="0" width="30" height="20" rx="2" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-purple-border)" />
+                            <text x="15" y="12" fill="var(--cw-svg-purple-text)" fontSize="5" fontWeight="bold" textAnchor="middle">ECS Cont.</text>
                           </g>
                           <g transform="translate(80, 18)">
-                            <rect x="0" y="0" width="30" height="20" rx="2" fill="#ffffff" stroke="#c7d2fe" />
-                            <text x="15" y="12" fill="#4338ca" fontSize="5" fontWeight="bold" textAnchor="middle">Lambda</text>
+                            <rect x="0" y="0" width="30" height="20" rx="2" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-purple-border)" />
+                            <text x="15" y="12" fill="var(--cw-svg-purple-text)" fontSize="5" fontWeight="bold" textAnchor="middle">Lambda</text>
                           </g>
                         </g>
 
                         {/* Central Storage */}
                         <g transform="translate(5, 65)">
-                          <rect x="0" y="0" width="110" height="60" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="55" y="15" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">📁 CloudWatch</text>
-                          <text x="55" y="27" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">Log Groups</text>
+                          <rect x="0" y="0" width="110" height="60" rx="6" fill="var(--cw-svg-bg)" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                          <text x="55" y="15" fill="var(--cw-svg-text-dark)" fontSize="7.5" fontWeight="bold" textAnchor="middle">📁 CloudWatch</text>
+                          <text x="55" y="27" fill="var(--cw-svg-text-dark)" fontSize="7" fontWeight="bold" textAnchor="middle">Log Groups</text>
                           
                           <g transform="translate(8, 34)">
-                            <rect x="0" y="0" width="94" height="20" rx="2" fill="#e0f2fe" stroke="#0ea5e9" />
-                            <text x="47" y="12" fill="#0369a1" fontSize="5.5" fontWeight="extrabold" textAnchor="middle">🔒 Encrypted by Default</text>
+                            <rect x="0" y="0" width="94" height="20" rx="2" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" />
+                            <text x="47" y="12" fill="var(--cw-svg-indigo-text)" fontSize="5.5" fontWeight="extrabold" textAnchor="middle">🔒 Encrypted by Default</text>
                           </g>
                         </g>
                       </g>
@@ -2441,76 +2599,76 @@ export default function CloudWatchMAndEventsVisualizer() {
                     <g>
                       {/* Left: CloudWatch Logs Hub */}
                       <g transform="translate(10, 50)">
-                        <rect x="0" y="0" width="55" height="60" rx="6" fill="#e0e7ff" stroke="#6366f1" strokeWidth="1.5" />
-                        <text x="27.5" y="18" fill="#312e81" fontSize="8" fontWeight="bold" textAnchor="middle">📈 CW</text>
-                        <text x="27.5" y="32" fill="#312e81" fontSize="7.5" fontWeight="bold" textAnchor="middle">Logs</text>
-                        <text x="27.5" y="47" fill="#4338ca" fontSize="6" fontWeight="bold" textAnchor="middle">Ingest Hub</text>
+                        <rect x="0" y="0" width="55" height="60" rx="6" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.5" />
+                        <text x="27.5" y="18" fill="var(--cw-svg-indigo-text)" fontSize="8" fontWeight="bold" textAnchor="middle">📈 CW</text>
+                        <text x="27.5" y="32" fill="var(--cw-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Logs</text>
+                        <text x="27.5" y="47" fill="var(--cw-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Ingest Hub</text>
                       </g>
 
                       {/* TOP PATH: S3 Export (createExportTask) - Late (12h) */}
                       <g transform="translate(80, 25)">
-                        <path d="M -15 35 L 5 -7.5 L 15 -7.5" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
+                        <path d="M -15 35 L 5 -7.5 L 15 -7.5" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
                         
                         <g transform="translate(15, -20)">
-                          <rect x="0" y="0" width="85" height="25" rx="4" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1.2" />
-                          <text x="42.5" y="10" fill="#78350f" fontSize="6.5" fontWeight="bold" textAnchor="middle">⏳ S3 Export Task</text>
-                          <text x="42.5" y="18" fill="#b45309" fontSize="5.5" fontWeight="extrabold" textAnchor="middle">⚠️ Latency: Up to 12 Hours</text>
+                          <rect x="0" y="0" width="85" height="25" rx="4" fill="var(--cw-svg-amber-bg)" stroke="var(--cw-svg-amber-border)" strokeWidth="1.2" />
+                          <text x="42.5" y="10" fill="var(--cw-svg-amber-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">⏳ S3 Export Task</text>
+                          <text x="42.5" y="18" fill="var(--cw-svg-amber-text)" fontSize="5.5" fontWeight="extrabold" textAnchor="middle">⚠️ Latency: Up to 12 Hours</text>
                           
                           {matrixSimState === 'running' && (
-                            <circle cx="75" cy="12" r="3" fill="#ef4444" className="pulse-circle" />
+                            <circle cx="75" cy="12" r="3" fill="var(--cw-svg-red-border)" className="pulse-circle" />
                           )}
                         </g>
 
                         <g transform="translate(115, -20)">
-                          <path d="M -15 12.5 L 0 12.5" fill="none" stroke="#94a3b8" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
-                          <rect x="0" y="0" width="45" height="25" rx="4" fill="#f8fafc" stroke="#64748b" strokeWidth="1" />
-                          <text x="22.5" y="15" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">🗄️ S3 Cold</text>
+                          <path d="M -15 12.5 L 0 12.5" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
+                          <rect x="0" y="0" width="45" height="25" rx="4" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1" />
+                          <text x="22.5" y="15" fill="var(--cw-text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">🗄️ S3 Cold</text>
                         </g>
                       </g>
 
                       {/* BOTTOM PATH: Real-Time Subscriptions - Fast (<50ms) */}
                       <g transform="translate(80, 85)">
-                        <path d="M -15 -10 L 5 15 L 15 15" fill="none" stroke="#059669" strokeWidth="1.5" markerEnd="url(#arrow-emerald)" />
+                        <path d="M -15 -10 L 5 15 L 15 15" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="1.5" markerEnd="url(#arrow-emerald)" />
                         {matrixSimState === 'running' && (
-                          <circle r="2.5" fill="#10b981"><animateMotion dur="0.8s" repeatCount="indefinite" path="M -15 -10 L 5 15 L 15 15" /></circle>
+                          <circle r="2.5" fill="var(--cw-svg-green-border)"><animateMotion dur="0.8s" repeatCount="indefinite" path="M -15 -10 L 5 15 L 15 15" /></circle>
                         )}
 
                         {/* Subscription Filter Gate */}
                         <g transform="translate(15, 0)">
-                          <rect x="0" y="0" width="85" height="35" rx="4" fill="#ecfdf5" stroke="#059669" strokeWidth="1.2" />
-                          <text x="42.5" y="11" fill="#065f46" fontSize="7" fontWeight="extrabold" textAnchor="middle">⚡ Subscription Filter</text>
-                          <text x="42.5" y="21" fill="#047857" fontSize="6" fontWeight="bold" textAnchor="middle">Pattern: {"{ $.level = \"ERROR\" }"}</text>
-                          <text x="42.5" y="29" fill="#065f46" fontSize="5.5" textAnchor="middle">Ingest Latency: &lt; 50ms</text>
+                          <rect x="0" y="0" width="85" height="35" rx="4" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" strokeWidth="1.2" />
+                          <text x="42.5" y="11" fill="var(--cw-svg-green-text)" fontSize="7" fontWeight="extrabold" textAnchor="middle">⚡ Subscription Filter</text>
+                          <text x="42.5" y="21" fill="var(--cw-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Pattern: {"{ $.level = \"ERROR\" }"}</text>
+                          <text x="42.5" y="29" fill="var(--cw-svg-green-text)" fontSize="5.5" textAnchor="middle">Ingest Latency: &lt; 50ms</text>
                         </g>
 
                         {/* Streams Fan-out */}
                         <g transform="translate(115, 0)">
                           {/* Arrows fanning out */}
-                          <path d="M -15 17 L 0 -22" fill="none" stroke="#059669" strokeWidth="1" markerEnd="url(#arrow-emerald)" />
-                          <path d="M -15 17 L 0 17" fill="none" stroke="#059669" strokeWidth="1" markerEnd="url(#arrow-emerald)" />
-                          <path d="M -15 17 L 0 55" fill="none" stroke="#059669" strokeWidth="1" markerEnd="url(#arrow-emerald)" />
+                          <path d="M -15 17 L 0 -22" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="1" markerEnd="url(#arrow-emerald)" />
+                          <path d="M -15 17 L 0 17" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="1" markerEnd="url(#arrow-emerald)" />
+                          <path d="M -15 17 L 0 55" fill="none" stroke="var(--cw-svg-green-border)" strokeWidth="1" markerEnd="url(#arrow-emerald)" />
 
                           {matrixSimState === 'running' && (
                             <g>
-                              <circle r="2" fill="#10b981"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -15 17 L 0 -22" /></circle>
-                              <circle r="2" fill="#10b981"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -15 17 L 0 17" /></circle>
-                              <circle r="2" fill="#10b981"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -15 17 L 0 55" /></circle>
+                              <circle r="2" fill="var(--cw-svg-green-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -15 17 L 0 -22" /></circle>
+                              <circle r="2" fill="var(--cw-svg-green-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -15 17 L 0 17" /></circle>
+                              <circle r="2" fill="var(--cw-svg-green-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -15 17 L 0 55" /></circle>
                             </g>
                           )}
 
                           <g transform="translate(0, -35)">
-                            <rect x="0" y="0" width="60" height="18" rx="2" fill="#ecfdf5" stroke="#059669" />
-                            <text x="30" y="11" fill="#065f46" fontSize="5.5" fontWeight="bold" textAnchor="middle">⚙️ Lambda</text>
+                            <rect x="0" y="0" width="60" height="18" rx="2" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" />
+                            <text x="30" y="11" fill="var(--cw-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">⚙️ Lambda</text>
                           </g>
 
                           <g transform="translate(0, 8)">
-                            <rect x="0" y="0" width="60" height="18" rx="2" fill="#e0e7ff" stroke="#6366f1" />
-                            <text x="30" y="11" fill="#312e81" fontSize="5.5" fontWeight="bold" textAnchor="middle">🌊 Kinesis KDS</text>
+                            <rect x="0" y="0" width="60" height="18" rx="2" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" />
+                            <text x="30" y="11" fill="var(--cw-svg-indigo-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">🌊 Kinesis KDS</text>
                           </g>
 
                           <g transform="translate(0, 48)">
-                            <rect x="0" y="0" width="60" height="18" rx="2" fill="#f5f3ff" stroke="#7c3aed" />
-                            <text x="30" y="11" fill="#581c87" fontSize="5.5" fontWeight="bold" textAnchor="middle">🔥 Kinesis KDF</text>
+                            <rect x="0" y="0" width="60" height="18" rx="2" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" />
+                            <text x="30" y="11" fill="var(--cw-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">🔥 Kinesis KDF</text>
                           </g>
                         </g>
                       </g>
@@ -2522,65 +2680,65 @@ export default function CloudWatchMAndEventsVisualizer() {
                     <g>
                       {/* Left: AWS Resources metrics generator */}
                       <g transform="translate(10, 50)">
-                        <rect x="0" y="0" width="55" height="60" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                        <text x="27.5" y="18" fill="#334155" fontSize="8.5" fontWeight="bold" textAnchor="middle">⚙️ AWS</text>
-                        <text x="27.5" y="32" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">Resources</text>
-                        <text x="27.5" y="47" fill="#475569" fontSize="5.5" textAnchor="middle">Telemetry data</text>
+                        <rect x="0" y="0" width="55" height="60" rx="6" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                        <text x="27.5" y="18" fill="var(--cw-svg-text-dark)" fontSize="8.5" fontWeight="bold" textAnchor="middle">⚙️ AWS</text>
+                        <text x="27.5" y="32" fill="var(--cw-svg-text-dark)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Resources</text>
+                        <text x="27.5" y="47" fill="var(--cw-text-muted)" fontSize="5.5" textAnchor="middle">Telemetry data</text>
                       </g>
 
                       {/* TOP PATH: Standard Polling (GetMetricData API) */}
                       <g transform="translate(80, 25)">
-                        <path d="M -15 35 L 5 -8 L 15 -8" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
+                        <path d="M -15 35 L 5 -8 L 15 -8" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" strokeDasharray="3,2" markerEnd="url(#arrow-matrix)" />
                         
                         <g transform="translate(15, -20)">
-                          <rect x="0" y="0" width="85" height="24" rx="4" fill="#f1f5f9" stroke="#64748b" strokeWidth="1.2" />
-                          <text x="42.5" y="10" fill="#334155" fontSize="6.5" fontWeight="bold" textAnchor="middle">📊 getMetricData API</text>
-                          <text x="42.5" y="18" fill="#475569" fontSize="5.5" textAnchor="middle">Pull: 1-5 minutes delay</text>
+                          <rect x="0" y="0" width="85" height="24" rx="4" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1.2" />
+                          <text x="42.5" y="10" fill="var(--cw-svg-text-dark)" fontSize="6.5" fontWeight="bold" textAnchor="middle">📊 getMetricData API</text>
+                          <text x="42.5" y="18" fill="var(--cw-text-muted)" fontSize="5.5" textAnchor="middle">Pull: 1-5 minutes delay</text>
                           {matrixSimState === 'running' && (
-                            <text x="75" y="15" fill="#d97706" fontSize="7" className="animate-spin" style={{ transformOrigin: '75px 13px' }}>⚙️</text>
+                            <text x="75" y="15" fill="var(--cw-svg-amber-text)" fontSize="7" className="animate-spin" style={{ transformOrigin: '75px 13px' }}>⚙️</text>
                           )}
                         </g>
 
                         <g transform="translate(115, -20)">
-                          <path d="M -15 12 L 0 12" fill="none" stroke="#94a3b8" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
-                          <rect x="0" y="0" width="45" height="24" rx="4" fill="#faf5ff" stroke="#c084fc" strokeWidth="1" />
-                          <text x="22.5" y="15" fill="#6b21a8" fontSize="7" fontWeight="bold" textAnchor="middle">📈 Console</text>
+                          <path d="M -15 12 L 0 12" fill="none" stroke="var(--cw-svg-node-border)" strokeWidth="1" markerEnd="url(#arrow-matrix)" />
+                          <rect x="0" y="0" width="45" height="24" rx="4" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" strokeWidth="1" />
+                          <text x="22.5" y="15" fill="var(--cw-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">📈 Console</text>
                         </g>
                       </g>
 
                       {/* BOTTOM PATH: Metric Streams (Push) */}
                       <g transform="translate(80, 85)">
-                        <path d="M -15 -10 L 5 15 L 15 15" fill="none" stroke="#2563eb" strokeWidth="1.5" markerEnd="url(#arrow-blue)" />
+                        <path d="M -15 -10 L 5 15 L 15 15" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.5" markerEnd="url(#arrow-blue)" />
                         {matrixSimState === 'running' && (
-                          <circle r="2.5" fill="#3b82f6"><animateMotion dur="0.7s" repeatCount="indefinite" path="M -15 -10 L 5 15 L 15 15" /></circle>
+                          <circle r="2.5" fill="var(--cw-svg-indigo-border)"><animateMotion dur="0.7s" repeatCount="indefinite" path="M -15 -10 L 5 15 L 15 15" /></circle>
                         )}
 
                         <g transform="translate(15, 0)">
-                          <rect x="0" y="0" width="85" height="34" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.2" />
-                          <text x="42.5" y="11" fill="#1e3a8a" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🌊 Metric Stream</text>
-                          <text x="42.5" y="21" fill="#1d4ed8" fontSize="6" fontWeight="bold" textAnchor="middle">Push Mode: &lt; 3s delay</text>
-                          <text x="42.5" y="29" fill="#1e40af" fontSize="5.5" textAnchor="middle">Filter namespaces (EC2)</text>
+                          <rect x="0" y="0" width="85" height="34" rx="4" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1.2" />
+                          <text x="42.5" y="11" fill="var(--cw-svg-indigo-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🌊 Metric Stream</text>
+                          <text x="42.5" y="21" fill="var(--cw-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Push Mode: &lt; 3s delay</text>
+                          <text x="42.5" y="29" fill="var(--cw-svg-indigo-text)" fontSize="5.5" textAnchor="middle">Filter namespaces (EC2)</text>
                         </g>
 
                         <g transform="translate(115, 0)">
-                          <path d="M -15 17 L 0 0" fill="none" stroke="#2563eb" strokeWidth="1" markerEnd="url(#arrow-blue)" />
-                          <path d="M -15 17 L 0 35" fill="none" stroke="#2563eb" strokeWidth="1" markerEnd="url(#arrow-blue)" />
+                          <path d="M -15 17 L 0 0" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1" markerEnd="url(#arrow-blue)" />
+                          <path d="M -15 17 L 0 35" fill="none" stroke="var(--cw-svg-indigo-border)" strokeWidth="1" markerEnd="url(#arrow-blue)" />
 
                           {matrixSimState === 'running' && (
                             <g>
-                              <circle r="2" fill="#3b82f6"><animateMotion dur="0.8s" repeatCount="indefinite" path="M -15 17 L 0 0" /></circle>
-                              <circle r="2" fill="#3b82f6"><animateMotion dur="0.8s" repeatCount="indefinite" path="M -15 17 L 0 35" /></circle>
+                              <circle r="2" fill="var(--cw-svg-indigo-border)"><animateMotion dur="0.8s" repeatCount="indefinite" path="M -15 17 L 0 0" /></circle>
+                              <circle r="2" fill="var(--cw-svg-indigo-border)"><animateMotion dur="0.8s" repeatCount="indefinite" path="M -15 17 L 0 35" /></circle>
                             </g>
                           )}
 
                           <g transform="translate(0, -10)">
-                            <rect x="0" y="0" width="60" height="20" rx="3" fill="#e0f2fe" stroke="#0ea5e9" strokeWidth="1" />
-                            <text x="30" y="12" fill="#0369a1" fontSize="6" fontWeight="bold" textAnchor="middle">🔥 Kinesis KDF</text>
+                            <rect x="0" y="0" width="60" height="20" rx="3" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1" />
+                            <text x="30" y="12" fill="var(--cw-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">🔥 Kinesis KDF</text>
                           </g>
 
                           <g transform="translate(0, 25)">
-                            <rect x="0" y="0" width="60" height="20" rx="3" fill="#fdf4ff" stroke="#c084fc" strokeWidth="1" />
-                            <text x="30" y="12" fill="#701a75" fontSize="6.5" fontWeight="bold" textAnchor="middle">📊 Datadog/Splunk</text>
+                            <rect x="0" y="0" width="60" height="20" rx="3" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" strokeWidth="1" />
+                            <text x="30" y="12" fill="var(--cw-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">📊 Datadog/Splunk</text>
                           </g>
                         </g>
                       </g>
@@ -2592,93 +2750,93 @@ export default function CloudWatchMAndEventsVisualizer() {
                     <g>
                       {/* Left: 3 Sender Accounts */}
                       <g transform="translate(10, 15)">
-                        <rect x="0" y="0" width="75" height="135" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                        <text x="37.5" y="12" fill="#475569" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">📤 SENDER REGION</text>
+                        <rect x="0" y="0" width="75" height="135" rx="5" fill="var(--cw-svg-bg)" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                        <text x="37.5" y="12" fill="var(--cw-svg-text-dark)" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">📤 SENDER REGION</text>
 
                         {/* Account A */}
                         <g transform="translate(5, 18)">
-                          <rect x="0" y="0" width="65" height="22" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                          <text x="32.5" y="14" fill="#334155" fontSize="6" fontWeight="bold" textAnchor="middle">A: /aws/ec2/prod</text>
-                          <path d="M 65 11 L 110 50" fill="none" stroke={matrixSimState === 'failed' ? '#ef4444' : '#10b981'} strokeWidth="1" markerEnd={matrixSimState === 'failed' ? 'url(#arrow-rose)' : 'url(#arrow-emerald)'} />
+                          <rect x="0" y="0" width="65" height="22" rx="3" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1" />
+                          <text x="32.5" y="14" fill="var(--cw-svg-text-dark)" fontSize="6" fontWeight="bold" textAnchor="middle">A: /aws/ec2/prod</text>
+                          <path d="M 65 11 L 110 50" fill="none" stroke={matrixSimState === 'failed' ? 'var(--cw-svg-red-border)' : 'var(--cw-svg-green-border)'} strokeWidth="1" markerEnd={matrixSimState === 'failed' ? 'url(#arrow-rose)' : 'url(#arrow-emerald)'} />
                         </g>
 
                         {/* Account B */}
                         <g transform="translate(5, 50)">
-                          <rect x="0" y="0" width="65" height="22" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                          <text x="32.5" y="14" fill="#334155" fontSize="6" fontWeight="bold" textAnchor="middle">B: /aws/lambda/pay</text>
-                          <path d="M 65 11 L 110 12" fill="none" stroke={matrixSimState === 'failed' ? '#ef4444' : '#10b981'} strokeWidth="1" markerEnd={matrixSimState === 'failed' ? 'url(#arrow-rose)' : 'url(#arrow-emerald)'} />
+                          <rect x="0" y="0" width="65" height="22" rx="3" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1" />
+                          <text x="32.5" y="14" fill="var(--cw-svg-text-dark)" fontSize="6" fontWeight="bold" textAnchor="middle">B: /aws/lambda/pay</text>
+                          <path d="M 65 11 L 110 12" fill="none" stroke={matrixSimState === 'failed' ? 'var(--cw-svg-red-border)' : 'var(--cw-svg-green-border)'} strokeWidth="1" markerEnd={matrixSimState === 'failed' ? 'url(#arrow-rose)' : 'url(#arrow-emerald)'} />
                         </g>
 
                         {/* Account C */}
                         <g transform="translate(5, 82)">
-                          <rect x="0" y="0" width="65" height="22" rx="3" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                          <text x="32.5" y="14" fill="#334155" fontSize="6" fontWeight="bold" textAnchor="middle">C: /aws/rds/core</text>
-                          <path d="M 65 11 L 110 -25" fill="none" stroke={matrixSimState === 'failed' ? '#ef4444' : '#10b981'} strokeWidth="1" markerEnd={matrixSimState === 'failed' ? 'url(#arrow-rose)' : 'url(#arrow-emerald)'} />
+                          <rect x="0" y="0" width="65" height="22" rx="3" fill="var(--cw-svg-node-fill)" stroke="var(--cw-svg-node-border)" strokeWidth="1" />
+                          <text x="32.5" y="14" fill="var(--cw-svg-text-dark)" fontSize="6" fontWeight="bold" textAnchor="middle">C: /aws/rds/core</text>
+                          <path d="M 65 11 L 110 -25" fill="none" stroke={matrixSimState === 'failed' ? 'var(--cw-svg-red-border)' : 'var(--cw-svg-green-border)'} strokeWidth="1" markerEnd={matrixSimState === 'failed' ? 'url(#arrow-rose)' : 'url(#arrow-emerald)'} />
                         </g>
 
                         {/* IAM Sender Role indicator */}
                         <g transform="translate(5, 114)">
-                          <rect x="0" y="0" width="65" height="14" rx="2" fill="#f5f3ff" stroke="#c084fc" />
-                          <text x="32.5" y="9" fill="#6b21a8" fontSize="5" fontWeight="bold" textAnchor="middle">🔑 IAM Sender Role</text>
+                          <rect x="0" y="0" width="65" height="14" rx="2" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" />
+                          <text x="32.5" y="9" fill="var(--cw-svg-purple-text)" fontSize="5" fontWeight="bold" textAnchor="middle">🔑 IAM Sender Role</text>
                         </g>
                       </g>
 
                       {/* Account Boundary Dotted Line */}
-                      <line x1="95" y1="5" x2="95" y2="155" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                      <text x="95" y="165" fill="#64748b" fontSize="5" fontWeight="extrabold" textAnchor="middle">AWS BOUNDARY</text>
+                      <line x1="95" y1="5" x2="95" y2="155" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                      <text x="95" y="165" fill="var(--cw-text-muted)" fontSize="5" fontWeight="extrabold" textAnchor="middle">AWS BOUNDARY</text>
 
                       {/* Middle Gatekeeper Shield */}
                       <g transform="translate(102, 50)">
-                        <circle cx="15" cy="15" r="14" fill={matrixPolicyCorrect ? '#ecfdf5' : '#fef2f2'} stroke={matrixPolicyCorrect ? '#10b981' : '#ef4444'} strokeWidth="2" />
+                        <circle cx="15" cy="15" r="14" fill={matrixPolicyCorrect ? 'var(--cw-svg-green-bg)' : 'var(--cw-svg-red-bg)'} stroke={matrixPolicyCorrect ? 'var(--cw-svg-green-border)' : 'var(--cw-svg-red-border)'} strokeWidth="2" />
                         <text x="15" y="19" fill="#ffffff" fontSize="11" textAnchor="middle" className={matrixSimState === 'failed' ? 'animate-pulse' : ''}>
                           {matrixPolicyCorrect ? '🛡' : '🚨'}
                         </text>
                         
-                        <text x="15" y="38" fill={matrixPolicyCorrect ? '#065f46' : '#991b1b'} fontSize="5.5" fontWeight="extrabold" textAnchor="middle">
+                        <text x="15" y="38" fill={matrixPolicyCorrect ? 'var(--cw-svg-green-text)' : 'var(--cw-svg-red-text)'} fontSize="5.5" fontWeight="extrabold" textAnchor="middle">
                           {matrixPolicyCorrect ? 'Allowed' : '403 Denied'}
                         </text>
 
                         {matrixSimState === 'running' && matrixPolicyCorrect && (
                           <g>
-                            <circle r="2" fill="#10b981"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 12 L 15 15" /></circle>
-                            <circle r="2" fill="#10b981"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 -20 L 15 15" /></circle>
-                            <circle r="2" fill="#10b981"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 44 L 15 15" /></circle>
+                            <circle r="2" fill="var(--cw-svg-green-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 12 L 15 15" /></circle>
+                            <circle r="2" fill="var(--cw-svg-green-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 -20 L 15 15" /></circle>
+                            <circle r="2" fill="var(--cw-svg-green-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 44 L 15 15" /></circle>
                           </g>
                         )}
                         {matrixSimState === 'running' && !matrixPolicyCorrect && (
                           <g>
-                            <circle r="2" fill="#ef4444"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 12 L 15 15" /></circle>
-                            <circle r="2" fill="#ef4444"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 -20 L 15 15" /></circle>
-                            <circle r="2" fill="#ef4444"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 44 L 15 15" /></circle>
+                            <circle r="2" fill="var(--cw-svg-red-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 12 L 15 15" /></circle>
+                            <circle r="2" fill="var(--cw-svg-red-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 -20 L 15 15" /></circle>
+                            <circle r="2" fill="var(--cw-svg-red-border)"><animateMotion dur="0.9s" repeatCount="indefinite" path="M -27 44 L 15 15" /></circle>
                           </g>
                         )}
                       </g>
 
                       {/* Right: Recipient Monitoring Account Central Hub */}
                       <g transform="translate(150, 15)">
-                        <rect x="0" y="0" width="120" height="135" rx="5" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                        <text x="60" y="12" fill="#0369a1" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">📥 RECIPIENT ACCOUNT</text>
+                        <rect x="0" y="0" width="120" height="135" rx="5" fill="var(--cw-svg-bg)" stroke="var(--cw-svg-node-border)" strokeWidth="1.5" />
+                        <text x="60" y="12" fill="var(--cw-svg-text-dark)" fontSize="6.5" fontWeight="extrabold" textAnchor="middle">📥 RECIPIENT ACCOUNT</text>
 
                         {/* Central Destination Ingest */}
                         <g transform="translate(12, 18)">
-                          <rect x="0" y="0" width="96" height="24" rx="3" fill="#e0e7ff" stroke="#6366f1" strokeWidth="1" />
-                          <text x="48" y="11" fill="#312e81" fontSize="6" fontWeight="extrabold" textAnchor="middle">💼 Central KDS Ingest</text>
-                          <text x="48" y="20" fill="#4338ca" fontSize="5" textAnchor="middle">Stream central-logs-kds</text>
+                          <rect x="0" y="0" width="96" height="24" rx="3" fill="var(--cw-svg-indigo-bg)" stroke="var(--cw-svg-indigo-border)" strokeWidth="1" />
+                          <text x="48" y="11" fill="var(--cw-svg-indigo-text)" fontSize="6" fontWeight="extrabold" textAnchor="middle">💼 Central KDS Ingest</text>
+                          <text x="48" y="20" fill="var(--cw-svg-indigo-text)" fontSize="5" textAnchor="middle">Stream central-logs-kds</text>
                         </g>
 
                         {/* Buffering KDF */}
                         <g transform="translate(12, 52)">
-                          <rect x="0" y="0" width="96" height="24" rx="3" fill="#fdf4ff" stroke="#d946ef" strokeWidth="1" />
-                          <text x="48" y="11" fill="#701a75" fontSize="6" fontWeight="extrabold" textAnchor="middle">🔥 Central Firehose KDF</text>
-                          <text x="48" y="20" fill="#a21caf" fontSize="5" textAnchor="middle">Buffers logs in batches</text>
+                          <rect x="0" y="0" width="96" height="24" rx="3" fill="var(--cw-svg-purple-bg)" stroke="var(--cw-svg-purple-border)" strokeWidth="1" />
+                          <text x="48" y="11" fill="var(--cw-svg-purple-text)" fontSize="6" fontWeight="extrabold" textAnchor="middle">🔥 Central Firehose KDF</text>
+                          <text x="48" y="20" fill="var(--cw-svg-purple-text)" fontSize="5" textAnchor="middle">Buffers logs in batches</text>
                         </g>
 
                         {/* Central storage */}
                         <g transform="translate(12, 86)">
-                          <rect x="0" y="0" width="96" height="38" rx="4" fill="#ecfdf5" stroke="#059669" strokeWidth="1" />
-                          <text x="48" y="12" fill="#065f46" fontSize="7.5" fontWeight="bold" textAnchor="middle">🗄️ Central Logging Lake</text>
-                          <text x="48" y="23" fill="#047857" fontSize="6" fontWeight="extrabold" textAnchor="middle">s3://corporate-logs-lake/</text>
-                          <text x="48" y="32" fill="#065f46" fontSize="5" textAnchor="middle">WORM Retention &amp; KMS Keys</text>
+                          <rect x="0" y="0" width="96" height="38" rx="4" fill="var(--cw-svg-green-bg)" stroke="var(--cw-svg-green-border)" strokeWidth="1" />
+                          <text x="48" y="12" fill="var(--cw-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">🗄️ Central Logging Lake</text>
+                          <text x="48" y="23" fill="var(--cw-svg-green-text)" fontSize="6" fontWeight="extrabold" textAnchor="middle">s3://corporate-logs-lake/</text>
+                          <text x="48" y="32" fill="var(--cw-svg-green-text)" fontSize="5" textAnchor="middle">WORM Retention &amp; KMS Keys</text>
                         </g>
                       </g>
                     </g>
@@ -2821,7 +2979,7 @@ export default function CloudWatchMAndEventsVisualizer() {
           </div>
 
           {/* Terminal trace console */}
-          <div className="da-card bg-slate-950 border border-slate-900 rounded-2xl p-4 text-left shadow-lg">
+          <div className="cw-card bg-slate-950 border border-slate-900 rounded-2xl p-4 text-left shadow-lg">
             <h3 className="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1.5 font-mono">
               <Terminal className="w-4 h-4 text-slate-450" /> TELEMETRY AGGREGATOR SIMULATOR TRACE LOGS
             </h3>

@@ -462,19 +462,19 @@ export default function DisasterRecoveryVisualizer() {
       {styleBlock()}
 
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-800 mb-6 text-left">
         <div className="flex items-center gap-3">
           <span className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-500/20 animate-pulse">
             <RefreshCw className="w-6 h-6 stroke-[2]" />
           </span>
           <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               AWS Disaster Recovery &amp; Migration Workbench
-              <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200 uppercase tracking-widest font-mono">
+              <span className="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 uppercase tracking-widest font-mono">
                 SaaS Academy
               </span>
             </h1>
-            <p className="text-xs text-slate-500 mt-0.5">Covering DR strategy planning, DMS database continuous replication, Multi-Region Active failovers, and AWS Backup Vault Lock ransomware resilience.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Covering DR strategy planning, DMS database continuous replication, Multi-Region Active failovers, and AWS Backup Vault Lock ransomware resilience.</p>
           </div>
         </div>
       </div>
@@ -509,10 +509,10 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Sidebar Controls */}
-            <div className="lg:col-span-5 da-card bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between text-left">
+            <div className="lg:col-span-5 da-card flex flex-col justify-between text-left">
               <div>
-                <h3 className="da-card-title text-indigo-700">
-                  <Sliders className="w-5 h-5 text-indigo-500" /> RTO / RPO Target Calibration
+                <h3 className="da-card-title text-indigo-700 dark:text-indigo-400">
+                  <Sliders className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> RTO / RPO Target Calibration
                 </h3>
                 <p className="da-card-desc mb-6">
                   Adjust the Recovery Time Objective (RTO) and Recovery Point Objective (RPO) sliders to immediately map the matching AWS architectural blueprint, estimating backup infrastructure monthly hosting overhead vs estimated downtime losses.
@@ -716,16 +716,16 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Dynamic Interactive Cost Comparison Bars */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4 text-xs">
-                <span className="font-extrabold text-slate-800 block">Financial Tradeoff Analysis (Monthly Budget Breakdown)</span>
+              <div className="da-inner-card border rounded-2xl p-5 space-y-4 text-xs">
+                <span className="font-extrabold text-slate-800 dark:text-slate-200 block">Financial Tradeoff Analysis (Monthly Budget Breakdown)</span>
                 
                 {/* Cost Bar 1 */}
                 <div className="space-y-1">
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-600">AWS Infrastructure Running Costs:</span>
-                    <span className="text-indigo-600 font-mono font-bold">${getMonthlyInfraCost().toLocaleString()} / mo</span>
+                    <span className="text-slate-655 dark:text-slate-400">AWS Infrastructure Running Costs:</span>
+                    <span className="text-indigo-650 dark:text-indigo-400 font-mono font-bold">${getMonthlyInfraCost().toLocaleString()} / mo</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
                     <div 
                       className="bg-indigo-600 h-full rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${Math.min((getMonthlyInfraCost() / 9500) * 100, 100)}%` }}
@@ -736,10 +736,10 @@ export default function DisasterRecoveryVisualizer() {
                 {/* Cost Bar 2 */}
                 <div className="space-y-1">
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-600">Disaster Exposure Cost Risk (Based on RTO):</span>
-                    <span className="text-rose-600 font-mono font-bold">${getEstimatedDowntimeCost().toLocaleString()} / incident</span>
+                    <span className="text-slate-655 dark:text-slate-400">Disaster Exposure Cost Risk (Based on RTO):</span>
+                    <span className="text-rose-600 dark:text-rose-400 font-mono font-bold">${getEstimatedDowntimeCost().toLocaleString()} / incident</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
                     <div 
                       className="bg-rose-500 h-full rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${Math.min((getEstimatedDowntimeCost() / 240000) * 100, 100)}%` }}
@@ -747,8 +747,8 @@ export default function DisasterRecoveryVisualizer() {
                   </div>
                 </div>
 
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl leading-relaxed text-slate-500 text-[11px]">
-                  <strong>💡 Architectural Rule of Thumb:</strong> As RPO and RTO approach zero, your monthly infrastructure running costs increase exponentially because you replicate full-scale active database and application clusters in the standby region.
+                <div className="p-3 da-svg-bg border rounded-xl leading-relaxed text-slate-500 dark:text-slate-400 text-[11px]">
+                  <strong className="text-slate-900 dark:text-white">💡 Architectural Rule of Thumb:</strong> As RPO and RTO approach zero, your monthly infrastructure running costs increase exponentially because you replicate full-scale active database and application clusters in the standby region.
                 </div>
               </div>
             </div>
@@ -762,9 +762,9 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'multiregion' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
-            <h2 className="da-card-title text-indigo-700">
-              <Globe className="w-5 h-5 text-indigo-500" /> AWS Multi-Region Failover Architecture Simulator
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
+              <Globe className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> AWS Multi-Region Failover Architecture Simulator
             </h2>
             <p className="da-card-desc">
               Trigger a simulated primary region failure inside <strong>us-east-1</strong>. Witness Route 53 redirection telemetry, automated database promotions, and scaled-down EC2 scaling operations inside <strong>eu-west-1</strong>.
@@ -774,9 +774,9 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Sidebar Controller */}
-            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 da-inner-card border rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div>
-                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Select Failover Strategy:</span>
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">1. Select Failover Strategy:</span>
                 <select 
                   value={failoverScenario} 
                   onChange={(e) => setFailoverScenario(e.target.value as any)}
@@ -951,9 +951,9 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'dms' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
-            <h2 className="da-card-title text-indigo-700">
-              <Database className="w-5 h-5 text-indigo-500" /> Database Migration Service (DMS) &amp; Replication Engine
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
+              <Database className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Database Migration Service (DMS) &amp; Replication Engine
             </h2>
             <p className="da-card-desc">
               AWS DMS migrates relational databases (Oracle, MySQL, SQL Server) to AWS securely. Replicate databases dynamically with <strong>Continuous Replication (CDC)</strong> and simulate **Multi-AZ Replication Failover** parameters.
@@ -963,25 +963,37 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Sidebar Controls */}
-            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 da-inner-card border rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div>
-                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Migration Mode Selection:</span>
-                <div className="flex bg-slate-100 p-0.5 rounded-lg text-xs mb-4">
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">1. Migration Mode Selection:</span>
+                <div className="flex bg-slate-100 dark:bg-slate-900 border dark:border-slate-800 p-0.5 rounded-lg text-xs mb-4">
                   <button
                     onClick={() => setDmsMode('full_load')}
-                    className={`flex-1 py-1 rounded-md font-bold transition-all ${dmsMode === 'full_load' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
+                    className={`flex-1 py-1 rounded-md font-bold transition-all ${
+                      dmsMode === 'full_load'
+                        ? 'bg-white dark:bg-slate-800 shadow text-indigo-650 dark:text-indigo-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-755 dark:hover:text-slate-300'
+                    }`}
                   >
                     Full Load
                   </button>
                   <button
                     onClick={() => setDmsMode('cdc')}
-                    className={`flex-1 py-1 rounded-md font-bold transition-all ${dmsMode === 'cdc' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
+                    className={`flex-1 py-1 rounded-md font-bold transition-all ${
+                      dmsMode === 'cdc'
+                        ? 'bg-white dark:bg-slate-800 shadow text-indigo-650 dark:text-indigo-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-755 dark:hover:text-slate-300'
+                    }`}
                   >
                     Load &amp; CDC
                   </button>
                   <button
                     onClick={() => setDmsMode('multi_az')}
-                    className={`flex-1 py-1 rounded-md font-bold transition-all ${dmsMode === 'multi_az' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
+                    className={`flex-1 py-1 rounded-md font-bold transition-all ${
+                      dmsMode === 'multi_az'
+                        ? 'bg-white dark:bg-slate-800 shadow text-indigo-650 dark:text-indigo-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-755 dark:hover:text-slate-300'
+                    }`}
                   >
                     Multi-AZ Task
                   </button>
@@ -1147,9 +1159,9 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'backup' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
-            <h2 className="da-card-title text-indigo-700">
-              <Shield className="w-5 h-5 text-indigo-500" /> AWS Backup Vault Lock Ransomware Sandbox
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
+              <Shield className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> AWS Backup Vault Lock Ransomware Sandbox
             </h2>
             <p className="da-card-desc">
               Understand how AWS Backup Vault Lock guards backups. Toggle between <strong>Governance Mode</strong> and <strong>Compliance Mode (Enforced Lock)</strong>, then trigger a simulated ransomware attack to evaluate resilience.
@@ -1159,43 +1171,43 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Sidebar Controls */}
-            <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 da-inner-card border rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div>
-                <span className="text-xs font-extrabold text-slate-800 block mb-2">1. Backup Vault Lock Strategy:</span>
+                <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">1. Backup Vault Lock Strategy:</span>
                 <div className="space-y-2 mb-4">
-                  <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-semibold cursor-pointer select-none">
                     <input
                       type="radio"
                       name="vaultLock"
                       checked={vaultLockMode === 'none'}
                       onChange={() => setVaultLockMode('none')}
-                      className="text-indigo-600 accent-indigo-600"
+                      className="text-indigo-600 accent-indigo-600 dark:accent-indigo-500"
                     />
                     🔓 No Lock (Standard Unprotected Vault)
                   </label>
-                  <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-semibold cursor-pointer select-none">
                     <input
                       type="radio"
                       name="vaultLock"
                       checked={vaultLockMode === 'governance'}
                       onChange={() => setVaultLockMode('governance')}
-                      className="text-indigo-600 accent-indigo-600"
+                      className="text-indigo-600 accent-indigo-600 dark:accent-indigo-500"
                     />
                     🛡️ Governance Mode (Administrator can bypass)
                   </label>
-                  <label className="flex items-center gap-2 text-xs text-slate-700 font-semibold cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-semibold cursor-pointer select-none">
                     <input
                       type="radio"
                       name="vaultLock"
                       checked={vaultLockMode === 'compliance'}
                       onChange={() => setVaultLockMode('compliance')}
-                      className="text-indigo-600 accent-indigo-600"
+                      className="text-indigo-600 accent-indigo-600 dark:accent-indigo-500"
                     />
                     🔒 Compliance Mode (Zero-trust enforce Lock)
                   </label>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-xl text-[10px] text-slate-500 leading-relaxed border border-slate-200">
+                <div className="p-3 da-svg-bg rounded-xl text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed border border-slate-200 dark:border-slate-800">
                   {vaultLockMode === 'none' && '⚠️ BACKUPS AT RISK: A compromised root key or malicious hacker can delete recovery points immediately, leading to total data loss.'}
                   {vaultLockMode === 'governance' && 'ℹ️ GOVERNANCE: Deletions are blocked for standard users, but authorized administrators with explicit credentials can delete recovery points or remove lock.'}
                   {vaultLockMode === 'compliance' && '🚀 ZERO-TRUST: Compliance mode locks the vault hardware. No user (including the Account Creator or AWS Support) can delete recovery points until retention windows expire!'}
@@ -1343,20 +1355,20 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'playbook' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card bg-white border border-slate-200 rounded-2xl p-5 shadow-sm text-left">
-            <h2 className="da-card-title text-indigo-700">
-              <BookOpen className="w-5 h-5 text-indigo-500" /> Architect's Disaster Recovery Playbook &amp; Strategy Tips
+          <div className="da-card text-left">
+            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
+              <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Architect's Disaster Recovery Playbook &amp; Strategy Tips
             </h2>
             <p className="da-card-desc">
               Master disaster recovery governance, database migration schemas conversions, and cost optimization trade-offs under AWS best practices.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-700 leading-relaxed">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-755 dark:text-slate-350 leading-relaxed">
             
             {/* Box 1 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+            <div className="da-card text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 📂 1. Schema Migration &amp; AWS SCT
               </h4>
               <p>
@@ -1370,8 +1382,8 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Box 2 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+            <div className="da-card text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 🛢️ 2. RDS &amp; Aurora Global Database DR
               </h4>
               <p>
@@ -1385,8 +1397,8 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Box 3 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+            <div className="da-card text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 🔒 3. AWS Backup Vault Lock Best Practices
               </h4>
               <p>
@@ -1400,8 +1412,8 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Box 4 */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">
+            <div className="da-card text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 🌐 4. Hybrid On-Premise Migration Strategy
               </h4>
               <p>
@@ -1419,11 +1431,11 @@ export default function DisasterRecoveryVisualizer() {
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
           
-          <div className="card text-left">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
-              <BookOpen className="w-5 h-5 text-indigo-600" /> Disaster Recovery &amp; Database Migration Notes
+          <div className="da-card text-left">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
+              <BookOpen className="w-5 h-5 text-indigo-650 dark:text-indigo-400" /> Disaster Recovery &amp; Database Migration Notes
             </h2>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+            <p className="text-xs text-slate-650 dark:text-slate-400 mt-1.5 leading-relaxed font-sans font-semibold">
               Explore Disaster Recovery metrics (RTO/RPO), AWS Database Migration Service (DMS) continuous replication, Schema Conversion Tool (SCT), and Backup Vault Lock governance strategies.
             </p>
           </div>
@@ -1453,7 +1465,7 @@ export default function DisasterRecoveryVisualizer() {
                     {expandedCategory === 'fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'fundamentals' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setSelectedNote('rto_rpo')}
                         className={`acad-dir-item-btn ${selectedNote === 'rto_rpo' ? 'acad-active' : ''}`}
@@ -1489,7 +1501,7 @@ export default function DisasterRecoveryVisualizer() {
                     {expandedCategory === 'failover' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'failover' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setSelectedNote('failover_routing')}
                         className={`acad-dir-item-btn ${selectedNote === 'failover_routing' ? 'acad-active' : ''}`}
@@ -1525,7 +1537,7 @@ export default function DisasterRecoveryVisualizer() {
                     {expandedCategory === 'governance' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'governance' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setSelectedNote('dms_replication')}
                         className={`acad-dir-item-btn ${selectedNote === 'dms_replication' ? 'acad-active' : ''}`}
@@ -1561,7 +1573,7 @@ export default function DisasterRecoveryVisualizer() {
                     {expandedCategory === 'migration_suite' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'migration_suite' && (
-                    <div className="bg-slate-50/50 py-1">
+                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1">
                       <button 
                         onClick={() => setSelectedNote('mgn_ads')}
                         className={`acad-dir-item-btn ${selectedNote === 'mgn_ads' ? 'acad-active' : ''}`}
@@ -1629,13 +1641,13 @@ export default function DisasterRecoveryVisualizer() {
                         <tbody>
                           <tr>
                             <td className="font-extrabold">Definition</td>
-                            <td className="text-slate-600">Maximum tolerable data loss margin</td>
-                            <td className="text-slate-600">Maximum tolerable downtime duration</td>
+                            <td className="text-slate-600 dark:text-slate-350">Maximum tolerable data loss margin</td>
+                            <td className="text-slate-600 dark:text-slate-350">Maximum tolerable downtime duration</td>
                           </tr>
                           <tr>
                             <td className="font-extrabold">Focus Area</td>
-                            <td className="text-blue-700 font-semibold">Databases &amp; Backups frequency</td>
-                            <td className="text-indigo-700 font-semibold">Infrastructure spin-up &amp; routing</td>
+                            <td className="text-blue-700 dark:text-blue-400 font-semibold">Databases &amp; Backups frequency</td>
+                            <td className="text-indigo-700 dark:text-indigo-400 font-semibold">Infrastructure spin-up &amp; routing</td>
                           </tr>
                           <tr>
                             <td className="font-extrabold">Measured In</td>
@@ -1644,8 +1656,8 @@ export default function DisasterRecoveryVisualizer() {
                           </tr>
                           <tr>
                             <td className="font-extrabold">Cost Dependency</td>
-                            <td className="text-emerald-700 font-bold">Continuous replication cost</td>
-                            <td className="text-emerald-700 font-bold">Standby resources provisioning cost</td>
+                            <td className="text-emerald-700 dark:text-emerald-400 font-bold">Continuous replication cost</td>
+                            <td className="text-emerald-700 dark:text-emerald-400 font-bold">Standby resources provisioning cost</td>
                           </tr>
                         </tbody>
                       </table>
@@ -1662,40 +1674,40 @@ export default function DisasterRecoveryVisualizer() {
                         <p className="text-[11px] text-slate-500 mt-0.5">Understand where RPO and RTO apply relative to a disaster event</p>
                       </div>
 
-                      <div className="w-full py-4 bg-white rounded-xl border border-slate-100 flex items-center justify-center">
+                      <div className="w-full py-4 rounded-xl border border-slate-100 flex items-center justify-center da-svg-bg">
                         <svg className="w-full max-w-[360px] h-[180px]" viewBox="0 0 360 180">
                           {/* Timeline horizontal line */}
-                          <line x1="20" y1="90" x2="340" y2="90" stroke="#cbd5e1" strokeWidth="3" />
+                          <line x1="20" y1="90" x2="340" y2="90" stroke="var(--da-card-border)" strokeWidth="3" />
                           
                           {/* Events nodes */}
                           {/* 1. Last Backup Commit */}
-                          <circle cx="60" cy="90" r="6" fill="#3b82f6" />
-                          <text x="60" y="65" fill="#1e3a8a" fontSize="7.5" fontWeight="bold" textAnchor="middle">Last Backup Commit</text>
-                          <text x="60" y="75" fill="#64748b" fontSize="6.5" textAnchor="middle">12:00 PM</text>
+                          <circle cx="60" cy="90" r="6" fill="var(--da-svg-indigo-border)" />
+                          <text x="60" y="65" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Last Backup Commit</text>
+                          <text x="60" y="75" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">12:00 PM</text>
 
                           {/* 2. Disaster Event */}
-                          <circle cx="180" cy="90" r="8" fill="#ef4444" className="dr-node-glow" />
-                          <text x="180" y="65" fill="#991b1b" fontSize="8" fontWeight="black" textAnchor="middle">💥 DISASTER EVENT</text>
-                          <text x="180" y="75" fill="#ef4444" fontSize="7" fontWeight="bold" textAnchor="middle">1:00 PM</text>
+                          <circle cx="180" cy="90" r="8" fill="var(--da-svg-red-border)" className="dr-node-glow" />
+                          <text x="180" y="65" fill="var(--da-svg-red-text)" fontSize="8" fontWeight="black" textAnchor="middle">💥 DISASTER EVENT</text>
+                          <text x="180" y="75" fill="var(--da-svg-red-border)" fontSize="7" fontWeight="bold" textAnchor="middle">1:00 PM</text>
 
                           {/* 3. Restoration Point */}
-                          <circle cx="300" cy="90" r="6" fill="#10b981" />
-                          <text x="300" y="65" fill="#065f46" fontSize="7.5" fontWeight="bold" textAnchor="middle">System Restored</text>
-                          <text x="300" y="75" fill="#64748b" fontSize="6.5" textAnchor="middle">5:00 PM</text>
+                          <circle cx="300" cy="90" r="6" fill="var(--da-svg-green-border)" />
+                          <text x="300" y="65" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">System Restored</text>
+                          <text x="300" y="75" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">5:00 PM</text>
 
                           {/* RPO Bracket line */}
-                          <path d="M 60 110 H 180" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <path d="M 60 106 V 114" stroke="#3b82f6" strokeWidth="1.5" />
-                          <path d="M 180 106 V 114" stroke="#3b82f6" strokeWidth="1.5" />
-                          <text x="120" y="125" fill="#1d4ed8" fontSize="8" fontWeight="black" textAnchor="middle">RPO (Data Loss)</text>
-                          <text x="120" y="135" fill="#4b5563" fontSize="6.5" textAnchor="middle">Margin: 60 Minutes</text>
+                          <path d="M 60 110 H 180" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <path d="M 60 106 V 114" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <path d="M 180 106 V 114" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                          <text x="120" y="125" fill="var(--da-svg-indigo-text)" fontSize="8" fontWeight="black" textAnchor="middle">RPO (Data Loss)</text>
+                          <text x="120" y="135" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">Margin: 60 Minutes</text>
 
                           {/* RTO Bracket line */}
-                          <path d="M 180 110 H 300" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <path d="M 180 106 V 114" stroke="#10b981" strokeWidth="1.5" />
-                          <path d="M 300 106 V 114" stroke="#10b981" strokeWidth="1.5" />
-                          <text x="240" y="125" fill="#047857" fontSize="8" fontWeight="black" textAnchor="middle">RTO (Downtime)</text>
-                          <text x="240" y="135" fill="#4b5563" fontSize="6.5" textAnchor="middle">Duration: 4 Hours</text>
+                          <path d="M 180 110 H 300" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                          <path d="M 180 106 V 114" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <path d="M 300 106 V 114" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="240" y="125" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="black" textAnchor="middle">RTO (Downtime)</text>
+                          <text x="240" y="135" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">Duration: 4 Hours</text>
                         </svg>
                       </div>
 
@@ -1728,13 +1740,13 @@ export default function DisasterRecoveryVisualizer() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-550 dark:text-slate-400 leading-relaxed">
                     AWS categorizes disaster recovery strategies into four distinct archetypes. Selecting a strategy is a trade-off between the Cost of Infrastructure and the Cost of Downtime. Explore the architectures below:
                   </p>
 
                   <div className="space-y-4">
                     {/* Inner strategy tab switcher */}
-                    <div className="flex flex-wrap gap-2 mb-4 bg-slate-100 p-1.5 rounded-xl border border-slate-200 w-fit">
+                    <div className="flex flex-wrap gap-2 mb-4 da-inner-card p-1.5 rounded-xl border w-fit">
                       {(['backup', 'pilot', 'warm', 'hot'] as const).map((strat) => (
                         <button
                           key={strat}
@@ -1742,7 +1754,7 @@ export default function DisasterRecoveryVisualizer() {
                           className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all select-none ${
                             activeStrategyTab === strat
                               ? 'bg-indigo-600 text-white shadow-md'
-                              : 'text-slate-600 hover:bg-slate-200'
+                              : 'text-slate-650 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-800'
                           }`}
                         >
                           {strat === 'backup' && '💾 Backup & Restore'}
@@ -1756,40 +1768,40 @@ export default function DisasterRecoveryVisualizer() {
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                       
                       <div className="md:col-span-7 flex flex-col justify-between">
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 text-xs leading-relaxed text-slate-700">
+                        <div className="da-inner-card border rounded-xl p-4 space-y-3 text-xs leading-relaxed text-slate-700 dark:text-slate-350">
                           {activeStrategyTab === 'backup' && (
                             <div>
-                              <strong className="text-blue-700 block text-sm mb-1">💾 Backup &amp; Restore Strategy (Highest RTO/RPO)</strong>
+                              <strong className="text-blue-700 dark:text-blue-400 block text-sm mb-1">💾 Backup &amp; Restore Strategy (Highest RTO/RPO)</strong>
                               Daily or hourly snapshots and database transactions are stored securely in Amazon S3. In the recovery region, the compute environment is entirely <strong>Cold (0 active servers)</strong>. During disaster recovery, standard scripts provision network infrastructure, deploy server templates (AMIs), and restore backups from S3.
-                              <div className="mt-2 text-[10.5px] text-slate-500">
+                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
                                 <strong>RPO:</strong> &lt; 24 hours | <strong>RTO:</strong> &lt; 24 hours | <strong>Cost:</strong> Minimal ($)
                               </div>
                             </div>
                           )}
                           {activeStrategyTab === 'pilot' && (
                             <div>
-                              <strong className="text-indigo-700 block text-sm mb-1">🔥 Pilot Light Strategy (Low Cost Standby)</strong>
+                              <strong className="text-indigo-700 dark:text-indigo-400 block text-sm mb-1">🔥 Pilot Light Strategy (Low Cost Standby)</strong>
                               The databases and persistent storages are <strong>actively running</strong> in the standby region to replicate data in real time. However, application servers and other components are completely turned off or unprovisioned.
                               When a failover triggers, we quickly boot standby EC2 instances from AMIs and map endpoints.
-                              <div className="mt-2 text-[10.5px] text-slate-500">
+                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
                                 <strong>RPO:</strong> &lt; 60 mins | <strong>RTO:</strong> &lt; 4 hours | <strong>Cost:</strong> Low ($$)
                               </div>
                             </div>
                           )}
                           {activeStrategyTab === 'warm' && (
                             <div>
-                              <strong className="text-purple-700 block text-sm mb-1">⛅ Warm Standby Strategy (Scaled Down Fleet)</strong>
+                              <strong className="text-purple-700 dark:text-purple-400 block text-sm mb-1">⛅ Warm Standby Strategy (Scaled Down Fleet)</strong>
                               A scaled-down but <strong>fully functional</strong> copy of the primary infrastructure runs in the secondary region. Web servers are active (e.g. running 1 instance instead of 4), and database replication is live. Upon failover, the system automatically triggers an Auto Scaling Group scale-up rule to expand computing to full production size, resulting in sub-hour RTO.
-                              <div className="mt-2 text-[10.5px] text-slate-500">
+                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
                                 <strong>RPO:</strong> &lt; 15 mins | <strong>RTO:</strong> &lt; 1 hour | <strong>Cost:</strong> Medium ($$$)
                               </div>
                             </div>
                           )}
                           {activeStrategyTab === 'hot' && (
                             <div>
-                              <strong className="text-rose-700 block text-sm mb-1">⚡ Multi-Site Active-Active (Zero Downtime)</strong>
+                              <strong className="text-rose-700 dark:text-rose-400 block text-sm mb-1">⚡ Multi-Site Active-Active (Zero Downtime)</strong>
                               Two fully operational, mirrored environments handle traffic concurrently in both regions. Route 53 utilizes Anycast latency routing to split traffic between Region A and Region B. Database replication is handled at the hardware physical layer (e.g. Aurora Global Database), guaranteeing sub-second replication and immediate RTO failovers.
-                              <div className="mt-2 text-[10.5px] text-slate-500">
+                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
                                 <strong>RPO:</strong> Near-Zero | <strong>RTO:</strong> Near-Zero | <strong>Cost:</strong> Extreme ($$$$)
                               </div>
                             </div>
@@ -1802,117 +1814,117 @@ export default function DisasterRecoveryVisualizer() {
                         </div>
                       </div>
 
-                      <div className="md:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-center items-center shadow-inner relative overflow-hidden min-h-[220px]">
-                        <span className="absolute top-2 left-3 text-[9px] font-black text-indigo-400 uppercase tracking-widest">Architectural Blueprint</span>
+                      <div className="md:col-span-5 acad-sim-diagram flex flex-col justify-center items-center relative overflow-hidden min-h-[220px] da-svg-bg border border-slate-200">
+                        <span className="absolute top-2 left-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Architectural Blueprint</span>
                         
                         {activeStrategyTab === 'backup' && (
                           <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
                             {/* Region A (Primary: Active) */}
-                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="100" y="42" fill="#93c5fd" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
+                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <text x="100" y="42" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
                             
                             {/* Active Compute */}
-                            <rect x="25" y="55" width="60" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="55" y="70" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Web Server</text>
-                            <text x="55" y="79" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Live</text>
+                            <rect x="25" y="55" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="55" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Web Server</text>
+                            <text x="55" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Live</text>
 
                             {/* Active Database */}
-                            <rect x="115" y="55" width="60" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="145" y="70" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Primary DB</text>
-                            <text x="145" y="79" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Active</text>
+                            <rect x="115" y="55" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="145" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Primary DB</text>
+                            <text x="145" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Active</text>
 
                             {/* Cloud S3 */}
-                            <rect x="65" y="115" width="80" height="30" rx="4" fill="#1e293b" stroke="#818cf8" strokeWidth="1.2" />
-                            <text x="105" y="130" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Amazon S3</text>
-                            <text x="105" y="139" fill="#818cf8" fontSize="6.5" fontWeight="bold" textAnchor="middle">Snapshots OK</text>
+                            <rect x="65" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="105" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Amazon S3</text>
+                            <text x="105" y="139" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Snapshots OK</text>
 
                             {/* Region B (Secondary: Cold) */}
-                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="#475569" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="320" y="42" fill="#94a3b8" fontSize="9" fontWeight="bold" textAnchor="middle">Secondary (Cold DR)</text>
+                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <text x="320" y="42" fill="var(--da-text-muted)" fontSize="9" fontWeight="bold" textAnchor="middle">Secondary (Cold DR)</text>
 
                             {/* Cold Compute Silhouette */}
-                            <rect x="245" y="55" width="60" height="30" rx="4" fill="#0f172a" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3" />
-                            <text x="275" y="74" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 (Cold)</text>
+                            <rect x="245" y="55" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" strokeDasharray="3,3" />
+                            <text x="275" y="74" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 (Cold)</text>
 
                             {/* Cold Storage / DB S3 replica */}
-                            <rect x="280" y="115" width="80" height="30" rx="4" fill="#0f172a" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3" />
-                            <text x="320" y="134" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">S3 Standby</text>
+                            <rect x="280" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" strokeDasharray="3,3" />
+                            <text x="320" y="134" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">S3 Standby</text>
 
                             {/* DB Backup Cross Region replication pipeline */}
-                            <path d="M 145 130 H 280" fill="none" stroke="#818cf8" strokeWidth="1.5" strokeDasharray="4,4" className="dr-flow-blue" />
-                            <text x="212.5" y="122" fill="#818cf8" fontSize="7.5" fontWeight="bold" textAnchor="middle">Snapshot Copy</text>
+                            <path d="M 145 130 H 280" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="4,4" className="dr-flow-blue" />
+                            <text x="212.5" y="122" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Snapshot Copy</text>
                           </svg>
                         )}
 
                         {activeStrategyTab === 'pilot' && (
                           <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
                             {/* Region A (Primary: Active) */}
-                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="100" y="42" fill="#93c5fd" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
+                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <text x="100" y="42" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
                             
                             {/* Web App */}
-                            <rect x="65" y="55" width="80" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="105" y="70" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Web Server</text>
-                            <text x="105" y="79" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Running</text>
+                            <rect x="65" y="55" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="105" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Web Server</text>
+                            <text x="105" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Running</text>
 
                             {/* DB Primary */}
-                            <rect x="65" y="115" width="80" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="105" y="130" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Writer</text>
-                            <text x="105" y="139" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Read/Write</text>
+                            <rect x="65" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="105" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Writer</text>
+                            <text x="105" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Read/Write</text>
 
-                            {/* Region B (Pilot Light Secondary) */}
-                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="320" y="42" fill="#34d399" fontSize="9" fontWeight="bold" textAnchor="middle">Pilot Light (eu-west-1)</text>
+                            {/* Region B (Secondary: Pilot Light) */}
+                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <text x="320" y="42" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Pilot Light (eu-west-1)</text>
 
                             {/* EC2 dormant (ASG templates ready, 0 instances) */}
-                            <rect x="280" y="55" width="80" height="30" rx="4" fill="#0f172a" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3" />
-                            <text x="320" y="70" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">Compute (ASG=0)</text>
-                            <text x="320" y="79" fill="#fb923c" fontSize="6" fontWeight="bold" textAnchor="middle">💤 Cold AMI</text>
+                            <rect x="280" y="55" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" strokeDasharray="3,3" />
+                            <text x="320" y="70" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">Compute (ASG=0)</text>
+                            <text x="320" y="79" fill="var(--da-svg-amber-text)" fontSize="6" fontWeight="bold" textAnchor="middle">💤 Cold AMI</text>
 
                             {/* DB Active Replica */}
-                            <rect x="280" y="115" width="80" height="30" rx="4" fill="#064e3b" stroke="#10b981" strokeWidth="1.2" />
-                            <text x="320" y="130" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Standby</text>
-                            <text x="320" y="139" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 Live Replica</text>
+                            <rect x="280" y="115" width="80" height="30" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="320" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Standby</text>
+                            <text x="320" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 Live Replica</text>
 
                             {/* Replication line */}
-                            <path d="M 145 130 H 280" fill="none" stroke="#10b981" strokeWidth="1.5" className="dr-flow-green" />
-                            <text x="212.5" y="122" fill="#10b981" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active DB Sync</text>
+                            <path d="M 145 130 H 280" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" className="dr-flow-green" />
+                            <text x="212.5" y="122" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active DB Sync</text>
                           </svg>
                         )}
 
                         {activeStrategyTab === 'warm' && (
                           <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
                             {/* Region A (Primary: Active) */}
-                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="100" y="42" fill="#93c5fd" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
+                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <text x="100" y="42" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
 
                             {/* Web App */}
-                            <rect x="65" y="55" width="80" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="105" y="70" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Active Fleet (N=4)</text>
-                            <text x="105" y="79" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Running</text>
+                            <rect x="65" y="55" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="105" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Active Fleet (N=4)</text>
+                            <text x="105" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Running</text>
 
                             {/* DB Primary */}
-                            <rect x="65" y="115" width="80" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="105" y="130" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Primary Writer</text>
-                            <text x="105" y="139" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Read/Write</text>
+                            <rect x="65" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="105" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Primary Writer</text>
+                            <text x="105" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Read/Write</text>
 
                             {/* Region B (Warm Standby Secondary) */}
-                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="320" y="42" fill="#c084fc" fontSize="9" fontWeight="bold" textAnchor="middle">Warm Standby (eu-west-1)</text>
+                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <text x="320" y="42" fill="var(--da-svg-purple-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Warm Standby (eu-west-1)</text>
 
                             {/* EC2 warm compute */}
-                            <rect x="280" y="55" width="80" height="30" rx="4" fill="#2e1065" stroke="#a78bfa" strokeWidth="1.2" />
-                            <text x="320" y="70" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">EC2 Warm (N=1)</text>
-                            <text x="320" y="79" fill="#c084fc" fontSize="6" fontWeight="bold" textAnchor="middle">⛅ Active Minimal</text>
+                            <rect x="280" y="55" width="80" height="30" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.2" />
+                            <text x="320" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">EC2 Warm (N=1)</text>
+                            <text x="320" y="79" fill="var(--da-svg-purple-text)" fontSize="6" fontWeight="bold" textAnchor="middle">⛅ Active Minimal</text>
 
                             {/* DB Active Replica */}
-                            <rect x="280" y="115" width="80" height="30" rx="4" fill="#064e3b" stroke="#10b981" strokeWidth="1.2" />
-                            <text x="320" y="130" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Standby</text>
-                            <text x="320" y="139" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 Live Replica</text>
+                            <rect x="280" y="115" width="80" height="30" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="320" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Standby</text>
+                            <text x="320" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 Live Replica</text>
 
                             {/* Replication line */}
-                            <path d="M 145 130 H 280" fill="none" stroke="#10b981" strokeWidth="1.5" className="dr-flow-green" />
-                            <text x="212.5" y="122" fill="#10b981" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active DB Sync</text>
+                            <path d="M 145 130 H 280" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" className="dr-flow-green" />
+                            <text x="212.5" y="122" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active DB Sync</text>
                           </svg>
                         )}
 
@@ -1920,45 +1932,45 @@ export default function DisasterRecoveryVisualizer() {
                           <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
                             {/* Route 53 Anycast */}
                             <g transform="translate(180, 5)">
-                              <rect x="0" y="0" width="60" height="20" rx="3" fill="#0f172a" stroke="#0284c7" strokeWidth="1" />
-                              <text x="30" y="12" fill="#38bdf8" fontSize="7" fontWeight="bold" textAnchor="middle">Route 53</text>
+                              <rect x="0" y="0" width="60" height="20" rx="3" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1" />
+                              <text x="30" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Route 53</text>
                             </g>
 
                             {/* Region A (Active Mirror) */}
-                            <rect x="10" y="45" width="180" height="130" rx="8" fill="none" stroke="#3b82f6" strokeWidth="1.5" />
-                            <text x="100" y="60" fill="#93c5fd" fontSize="7.5" fontWeight="black" textAnchor="middle">Active us-east-1 (50%)</text>
+                            <rect x="10" y="45" width="180" height="130" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="100" y="60" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Active us-east-1 (50%)</text>
 
                             {/* Web nodes */}
-                            <rect x="25" y="75" width="60" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="55" y="90" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">App Fleet</text>
-                            <text x="55" y="99" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">● Active</text>
+                            <rect x="25" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="55" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">App Fleet</text>
+                            <text x="55" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active</text>
 
                             {/* Storage database */}
-                            <rect x="115" y="75" width="60" height="30" rx="4" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.2" />
-                            <text x="145" y="90" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Aurora Volume</text>
-                            <text x="145" y="99" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">● Active-Active</text>
+                            <rect x="115" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
+                            <text x="145" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Aurora Volume</text>
+                            <text x="145" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active-Active</text>
 
                             {/* Region B (Active Mirror) */}
-                            <rect x="230" y="45" width="180" height="130" rx="8" fill="none" stroke="#10b981" strokeWidth="1.5" />
-                            <text x="320" y="60" fill="#34d399" fontSize="7.5" fontWeight="black" textAnchor="middle">Active eu-west-1 (50%)</text>
+                            <rect x="230" y="45" width="180" height="130" rx="8" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                            <text x="320" y="60" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Active eu-west-1 (50%)</text>
 
                             {/* Web nodes */}
-                            <rect x="245" y="75" width="60" height="30" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1.2" />
-                            <text x="275" y="90" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">App Fleet</text>
-                            <text x="275" y="99" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">● Active</text>
+                            <rect x="245" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="275" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">App Fleet</text>
+                            <text x="275" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active</text>
 
                             {/* Storage database */}
-                            <rect x="335" y="75" width="60" height="30" rx="4" fill="#1e293b" stroke="#10b981" strokeWidth="1.2" />
-                            <text x="365" y="90" fill="#ffffff" fontSize="7" fontWeight="bold" textAnchor="middle">Aurora Volume</text>
-                            <text x="365" y="99" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">● Active-Active</text>
+                            <rect x="335" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="365" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Aurora Volume</text>
+                            <text x="365" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active-Active</text>
 
                             {/* Anycast Flow lines */}
                             <path d="M 180 15 L 100 45" fill="none" className="dr-flow-blue" strokeWidth="1.5" />
                             <path d="M 240 15 L 320 45" fill="none" className="dr-flow-blue" strokeWidth="1.5" />
 
                             {/* NVMe physical block sync pipeline */}
-                            <path d="M 175 90 H 335" fill="none" stroke="#10b981" strokeWidth="2.5" className="dr-flow-green" />
-                            <text x="255" y="82" fill="#34d399" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync Mirror</text>
+                            <path d="M 175 90 H 335" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2.5" className="dr-flow-green" />
+                            <text x="255" y="82" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync Mirror</text>
                           </svg>
                         )}
                       </div>
@@ -2016,30 +2028,42 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-6 bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-2xl min-h-[320px]">
+                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[320px]">
                       <div>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider">AWS FIS Chaos Sandbox Terminal</span>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Select a failure drill and trigger the automated attack simulator</p>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">AWS FIS Chaos Sandbox Terminal</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Select a failure drill and trigger the automated attack simulator</p>
                       </div>
 
                       <div className="space-y-2 mt-4">
-                        <span className="text-[9.5px] font-extrabold text-slate-400 block uppercase tracking-wider">Select Chaos Target Vector:</span>
+                        <span className="text-[9.5px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">Select Chaos Target Vector:</span>
                         <div className="grid grid-cols-3 gap-1">
                           <button
                             onClick={() => setChaosSimType('rds_failover')}
-                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${chaosSimType === 'rds_failover' ? 'bg-indigo-900/40 border-indigo-500 text-indigo-200' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
+                              chaosSimType === 'rds_failover'
+                                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-200'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
+                            }`}
                           >
                             🛢️ RDS Failover
                           </button>
                           <button
                             onClick={() => setChaosSimType('az_blackhole')}
-                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${chaosSimType === 'az_blackhole' ? 'bg-indigo-900/40 border-indigo-500 text-indigo-200' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
+                              chaosSimType === 'az_blackhole'
+                                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-200'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
+                            }`}
                           >
                             🔌 AZ Blackhole
                           </button>
                           <button
                             onClick={() => setChaosSimType('dns_split_brain')}
-                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${chaosSimType === 'dns_split_brain' ? 'bg-indigo-900/40 border-indigo-500 text-indigo-200' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
+                              chaosSimType === 'dns_split_brain'
+                                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-200'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
+                            }`}
                           >
                             🌐 DNS Brain
                           </button>
@@ -2047,7 +2071,7 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
 
                       {/* Blinking Retro Terminal Console Output */}
-                      <div className="bg-black border border-slate-900 rounded-xl p-3 h-32 overflow-y-auto text-[10px] font-mono leading-relaxed text-emerald-400 shadow-inner mt-3">
+                      <div className="bg-slate-950 border border-slate-900 dark:border-slate-800 rounded-xl p-3 h-32 overflow-y-auto text-[10px] font-mono leading-relaxed text-emerald-400 shadow-inner mt-3">
                         {chaosConsoleLogs.length === 0 ? (
                           <div className="text-slate-500 italic py-6 text-center">
                             Console idle. Ready for FIS Injection.<br />
@@ -2068,7 +2092,11 @@ export default function DisasterRecoveryVisualizer() {
                       <button
                         onClick={runChaosSimulation}
                         disabled={chaosSimStatus === 'running'}
-                        className={`w-full font-black text-xs py-2 rounded-xl mt-3 transition-all flex items-center justify-center gap-1.5 shadow-md ${chaosSimStatus === 'running' ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-950/20'}`}
+                        className={`w-full font-black text-xs py-2 rounded-xl mt-3 transition-all flex items-center justify-center gap-1.5 shadow-md ${
+                          chaosSimStatus === 'running'
+                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                            : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm'
+                        }`}
                       >
                         <Zap className="w-4 h-4" /> {chaosSimStatus === 'running' ? 'Injecting Fault...' : '⚡ Inject Chaos Simulation'}
                       </button>
@@ -2134,19 +2162,19 @@ export default function DisasterRecoveryVisualizer() {
                         <p className="text-[11px] text-slate-500 mt-0.5">Route 53 re-routing active traffic around degraded Region A</p>
                       </div>
 
-                      <div className="w-full bg-slate-900 rounded-xl p-4 flex items-center justify-center">
+                      <div className="w-full rounded-xl p-4 flex items-center justify-center da-svg-bg border border-slate-200">
                         <svg className="w-full max-w-[340px] h-[190px]" viewBox="0 0 340 190">
                           {/* Client node */}
                           <g transform="translate(140, 10)">
-                            <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.2" />
-                            <text x="30" y="15" fill="#0f172a" fontSize="7" fontWeight="bold" textAnchor="middle">Global Clients</text>
+                            <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
+                            <text x="30" y="15" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Global Clients</text>
                           </g>
 
                           {/* Route 53 Edge Node */}
                           <g transform="translate(125, 60)">
-                            <rect x="0" y="0" width="90" height="30" rx="4" fill="#e0f2fe" stroke="#0284c7" strokeWidth="1.5" />
-                            <text x="45" y="18" fill="#0369a1" fontSize="8" fontWeight="black" textAnchor="middle">Route 53 Edge</text>
-                            <text x="45" y="26" fill="#0369a1" fontSize="5.5" fontWeight="bold" textAnchor="middle">TTL: 10s Active</text>
+                            <rect x="0" y="0" width="90" height="30" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="45" y="18" fill="var(--da-svg-indigo-text)" fontSize="8" fontWeight="black" textAnchor="middle">Route 53 Edge</text>
+                            <text x="45" y="26" fill="var(--da-svg-indigo-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">TTL: 10s Active</text>
                           </g>
 
                           {/* Client to Route 53 Conduit */}
@@ -2154,25 +2182,25 @@ export default function DisasterRecoveryVisualizer() {
 
                           {/* Region A Node (DEGRADED) */}
                           <g transform="translate(15, 130)">
-                            <rect x="0" y="0" width="110" height="45" rx="4" fill="#fee2e2" stroke="#f87171" strokeWidth="1.2" />
-                            <text x="55" y="15" fill="#991b1b" fontSize="7.5" fontWeight="black" textAnchor="middle">Region A (us-east-1)</text>
-                            <rect x="25" y="24" width="60" height="12" rx="2" fill="#ef4444" />
+                            <rect x="0" y="0" width="110" height="45" rx="4" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1.2" />
+                            <text x="55" y="15" fill="var(--da-svg-red-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Region A (us-east-1)</text>
+                            <rect x="25" y="24" width="60" height="12" rx="2" fill="var(--da-svg-red-border)" />
                             <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚠️ UNHEALTHY</text>
                           </g>
 
                           {/* Region B (HEALTHY STANDBY) */}
                           <g transform="translate(215, 130)">
-                            <rect x="0" y="0" width="110" height="45" rx="4" fill="#d1fae5" stroke="#34d399" strokeWidth="1.2" />
-                            <text x="55" y="15" fill="#065f46" fontSize="7.5" fontWeight="black" textAnchor="middle">Region B (eu-west-1)</text>
-                            <rect x="25" y="24" width="60" height="12" rx="2" fill="#10b981" />
+                            <rect x="0" y="0" width="110" height="45" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="55" y="15" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Region B (eu-west-1)</text>
+                            <rect x="25" y="24" width="60" height="12" rx="2" fill="var(--da-svg-green-border)" />
                             <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 ACTIVE STANDBY</text>
                           </g>
 
                           {/* Conduit paths */}
                           {/* Route 53 to Region A (Blocked) */}
-                          <path d="M 145 90 H 70 V 130" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="3,3" />
+                          <path d="M 145 90 H 70 V 130" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2" strokeDasharray="3,3" />
                           <g transform="translate(95, 95)">
-                            <circle cx="8" cy="8" r="8" fill="#ef4444" />
+                            <circle cx="8" cy="8" r="8" fill="var(--da-svg-red-border)" />
                             <text x="8" y="11" fill="#ffffff" fontSize="9.5" fontWeight="black" textAnchor="middle">×</text>
                           </g>
 
@@ -2237,35 +2265,35 @@ export default function DisasterRecoveryVisualizer() {
                         <p className="text-[11px] text-slate-500 mt-0.5">Continuous block transfers bypass SQL execution overheads</p>
                       </div>
 
-                      <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center">
+                      <div className="w-full rounded-xl p-4 flex flex-col items-center justify-center da-svg-bg border border-slate-200">
                         <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
                           {/* Region 1 Storage Node */}
                           <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="110" height="70" rx="6" fill="#eef2ff" stroke="#4f46e5" strokeWidth="1.5" />
-                            <text x="55" y="15" fill="#312e81" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary Cluster</text>
-                            <text x="55" y="25" fill="#4338ca" fontSize="6.5" fontWeight="bold" textAnchor="middle">us-east-1</text>
+                            <rect x="0" y="0" width="110" height="70" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="55" y="15" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary Cluster</text>
+                            <text x="55" y="25" fill="var(--da-svg-indigo-text)" fontSize="6.5" opacity="0.8" fontWeight="bold" textAnchor="middle">us-east-1</text>
                             
-                            <rect x="10" y="34" width="90" height="28" rx="2" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                            <text x="55" y="44" fill="#0f172a" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
-                            <text x="55" y="54" fill="#2563eb" fontSize="6" fontWeight="bold" textAnchor="middle">Active Writes OK</text>
+                            <rect x="10" y="34" width="90" height="28" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                            <text x="55" y="44" fill="var(--da-text-title)" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
+                            <text x="55" y="54" fill="var(--da-svg-indigo-border)" fontSize="6" fontWeight="bold" textAnchor="middle">Active Writes OK</text>
                           </g>
 
                           {/* Region 2 Storage Node */}
                           <g transform="translate(220, 45)">
-                            <rect x="0" y="0" width="110" height="70" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                            <text x="55" y="15" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">Standby Cluster</text>
-                            <text x="55" y="25" fill="#64748b" fontSize="6.5" fontWeight="bold" textAnchor="middle">eu-west-1</text>
+                            <rect x="0" y="0" width="110" height="70" rx="6" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.5" />
+                            <text x="55" y="15" fill="var(--da-text-title)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Standby Cluster</text>
+                            <text x="55" y="25" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold" textAnchor="middle">eu-west-1</text>
                             
-                            <rect x="10" y="34" width="90" height="28" rx="2" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1" />
-                            <text x="55" y="44" fill="#64748b" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
-                            <text x="55" y="54" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">Replica Read OK</text>
+                            <rect x="10" y="34" width="90" height="28" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                            <text x="55" y="44" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
+                            <text x="55" y="54" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Replica Read OK</text>
                           </g>
 
                           {/* Replication Conduit arrow */}
                           <path d="M 120 80 H 220" fill="none" className="dr-flow-green" strokeWidth="3.5" />
                           
-                          <text x="170" y="65" fill="#059669" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync</text>
-                          <text x="170" y="73" fill="#64748b" fontSize="6" fontWeight="bold" textAnchor="middle">Lag &lt; 900ms</text>
+                          <text x="170" y="65" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync</text>
+                          <text x="170" y="73" fill="var(--da-text-muted)" fontSize="6" fontWeight="bold" textAnchor="middle">Lag &lt; 900ms</text>
                         </svg>
                       </div>
 
@@ -2318,35 +2346,35 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-6 bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-2xl min-h-[300px]">
+                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider">Hybrid Backup Flow Topology</span>
-                        <p className="text-[11px] text-slate-400 mt-0.5">On-premises VMs replicating snapshots directly to immutable cloud vaults</p>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Hybrid Backup Flow Topology</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">On-premises VMs replicating snapshots directly to immutable cloud vaults</p>
                       </div>
 
-                      <div className="w-full bg-slate-950 rounded-xl p-3 flex items-center justify-center">
+                      <div className="w-full rounded-xl p-3 flex items-center justify-center da-svg-bg border border-slate-200">
                         <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 340 170">
                           {/* On Premises Datacenter */}
-                          <rect x="5" y="25" width="105" height="120" rx="5" fill="#1e293b" stroke="#475569" strokeWidth="1.2" />
-                          <text x="57.5" y="38" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle">On-Premises Data</text>
+                          <rect x="5" y="25" width="105" height="120" rx="5" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
+                          <text x="57.5" y="38" fill="var(--da-text-title)" fontSize="8" fontWeight="bold" textAnchor="middle">On-Premises Data</text>
                           
-                          <rect x="15" y="55" width="85" height="26" rx="3" fill="#0f172a" stroke="#cbd5e1" strokeWidth="1" />
-                          <text x="57.5" y="71" fill="#cbd5e1" fontSize="7" fontWeight="bold" textAnchor="middle">VMware ESXi Cluster</text>
+                          <rect x="15" y="55" width="85" height="26" rx="3" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                          <text x="57.5" y="71" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">VMware ESXi Cluster</text>
 
-                          <rect x="15" y="90" width="85" height="26" rx="3" fill="#111827" stroke="#fb923c" strokeWidth="1" />
-                          <text x="57.5" y="106" fill="#fb923c" fontSize="7" fontWeight="bold" textAnchor="middle">Backup Gateway</text>
+                          <rect x="15" y="90" width="85" height="26" rx="3" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1" />
+                          <text x="57.5" y="106" fill="var(--da-svg-amber-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Backup Gateway</text>
 
                           {/* Network connection */}
                           <path d="M 110 103 H 220" fill="none" className="dr-flow-blue" strokeWidth="2.5" />
-                          <text x="165" y="93" fill="#60a5fa" fontSize="7" fontWeight="black" textAnchor="middle">IPSec / DX Link</text>
+                          <text x="165" y="93" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="black" textAnchor="middle">IPSec / DX Link</text>
 
                           {/* AWS Cloud */}
-                          <rect x="220" y="25" width="115" height="120" rx="5" fill="#065f46" stroke="#047857" strokeWidth="1.2" />
-                          <text x="277.5" y="38" fill="#a7f3d0" fontSize="8" fontWeight="bold" textAnchor="middle">AWS Cloud Region</text>
+                          <rect x="220" y="25" width="115" height="120" rx="5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                          <text x="277.5" y="38" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">AWS Cloud Region</text>
 
-                          <rect x="230" y="55" width="95" height="30" rx="3" fill="#022c22" stroke="#10b981" strokeWidth="1.2" />
-                          <text x="277.5" y="70" fill="#ffffff" fontSize="7" fontWeight="black" textAnchor="middle">Backup Vault</text>
-                          <text x="277.5" y="79" fill="#10b981" fontSize="6.5" fontWeight="bold" textAnchor="middle">🔒 Locked WORM</text>
+                          <rect x="230" y="55" width="95" height="30" rx="3" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                          <text x="277.5" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="black" textAnchor="middle">Backup Vault</text>
+                          <text x="277.5" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🔒 Locked WORM</text>
                         </svg>
                       </div>
 
@@ -2387,14 +2415,14 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
                     {/* Left Column: Interactive compatibility matrix */}
-                    <div className="md:col-span-6 space-y-4 text-xs text-slate-700 leading-relaxed">
+                    <div className="md:col-span-6 space-y-4 text-xs text-slate-700 dark:text-slate-350 leading-relaxed">
                       
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                        <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest block">DMS Migration Pair Compatibility Matrix</span>
+                      <div className="da-inner-card border rounded-xl p-4 space-y-3">
+                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">DMS Migration Pair Compatibility Matrix</span>
                         
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[10px] font-extrabold text-slate-500 block mb-1">1. Select Source DB:</label>
+                            <label className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 block mb-1">1. Select Source DB:</label>
                             <select
                               value={dmsMatrixSource}
                               onChange={(e) => setDmsMatrixSource(e.target.value)}
@@ -2409,7 +2437,7 @@ export default function DisasterRecoveryVisualizer() {
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-extrabold text-slate-500 block mb-1">2. Select Target DB:</label>
+                            <label className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 block mb-1">2. Select Target DB:</label>
                             <select
                               value={dmsMatrixTarget}
                               onChange={(e) => setDmsMatrixTarget(e.target.value)}
@@ -2425,20 +2453,20 @@ export default function DisasterRecoveryVisualizer() {
                         </div>
 
                         {/* Calculated Compatibility Card */}
-                        <div className="bg-white border border-slate-150 p-2.5 rounded-lg text-[10.5px] leading-relaxed text-slate-600">
+                        <div className="da-svg-bg border p-2.5 rounded-lg text-[10.5px] leading-relaxed text-slate-600 dark:text-slate-300">
                           {dmsMatrixSource === dmsMatrixTarget || 
                           (dmsMatrixSource === 'mysql' && dmsMatrixTarget === 'aurora') ||
                           (dmsMatrixSource === 'postgres' && dmsMatrixTarget === 'rds_pg') ? (
                             <div>
-                              <span className="text-emerald-700 font-extrabold block">✅ HOMOGENEOUS MIGRATION PATH</span>
+                              <span className="text-emerald-700 dark:text-emerald-400 font-extrabold block">✅ HOMOGENEOUS MIGRATION PATH</span>
                               Engines are highly compatible. Schema conversion is NOT required. You can load DDL tables directly using AWS DMS with high structural conversion rates.
-                              <span className="block mt-1 font-bold text-slate-700">Recommended CDC Mode: Native Replication Logs</span>
+                              <span className="block mt-1 font-bold text-slate-700 dark:text-slate-200">Recommended CDC Mode: Native Replication Logs</span>
                             </div>
                           ) : (
                             <div>
-                              <span className="text-indigo-700 font-extrabold block">🔄 HETEROGENEOUS MIGRATION PATH</span>
+                              <span className="text-indigo-700 dark:text-indigo-400 font-extrabold block">🔄 HETEROGENEOUS MIGRATION PATH</span>
                               Engines are completely different! **AWS Schema Conversion Tool (SCT)** MUST be executed first to parse legacy procedures/triggers into compatible dialects.
-                              <span className="block mt-1 font-bold text-slate-700">
+                              <span className="block mt-1 font-bold text-slate-700 dark:text-slate-200">
                                 {dmsMatrixSource === 'oracle' && 'CDC mechanism: Oracle Redo Logs via LogMiner or Binary Reader.'}
                                 {dmsMatrixSource === 'sqlserver' && 'CDC mechanism: MS-CDC (Microsoft Change Data Capture).'}
                                 {dmsMatrixSource === 'mysql' && 'CDC mechanism: MySQL Binary Logs (row-based binlog).'}
@@ -2457,48 +2485,48 @@ export default function DisasterRecoveryVisualizer() {
                     </div>
 
                     {/* Right Column: Flowchart SVG with play-pause animation toggle */}
-                    <div className="md:col-span-6 bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-inner relative overflow-hidden min-h-[300px]">
+                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px] relative overflow-hidden">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider">Change Data Capture (CDC) Pipeline</span>
-                          <p className="text-[11px] text-slate-400 mt-0.5">Real-time log-scraping and delivery parser channel</p>
+                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Change Data Capture (CDC) Pipeline</span>
+                          <p className="text-[11px] text-slate-500 mt-0.5">Real-time log-scraping and delivery parser channel</p>
                         </div>
                         <button
                           onClick={() => setIsCdcAnimating(!isCdcAnimating)}
-                          className="bg-slate-800 hover:bg-slate-750 border border-slate-700 px-2 py-1 rounded text-[10px] font-black text-white transition-all select-none"
+                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black transition-all select-none shadow-sm"
                         >
                           {isCdcAnimating ? '⏸️ Pause CDC' : '▶️ Play CDC Stream'}
                         </button>
                       </div>
 
-                      <div className="w-full bg-slate-950 rounded-xl p-4 flex items-center justify-center my-4">
+                      <div className="w-full rounded-xl p-4 flex items-center justify-center my-4 da-svg-bg border border-slate-200">
                         <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
                           {/* Source Database */}
                           <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="80" height="60" rx="4" fill="#1e293b" stroke="#475569" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
-                            <text x="40" y="24" fill="#94a3b8" fontSize="6" textAnchor="middle">Oracle/MySQL</text>
+                            <rect x="0" y="0" width="80" height="60" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
+                            <text x="40" y="16" fill="var(--da-text-title)" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
+                            <text x="40" y="24" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Oracle/MySQL</text>
                             
-                            <rect x="8" y="34" width="64" height="18" rx="2" fill="#0f172a" stroke="#cbd5e1" strokeWidth="1" />
-                            <text x="40" y="46" fill="#cbd5e1" fontSize="6.5" fontWeight="bold" textAnchor="middle">Redo/Binlogs</text>
+                            <rect x="8" y="34" width="64" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                            <text x="40" y="46" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Redo/Binlogs</text>
                           </g>
 
                           {/* DMS Replication Node */}
                           <g transform="translate(125, 45)">
-                            <rect x="0" y="0" width="90" height="60" rx="6" fill="#1e1b4b" stroke="#3b82f6" strokeWidth="1.5" />
-                            <text x="45" y="16" fill="#93c5fd" fontSize="7.5" fontWeight="black" textAnchor="middle">AWS DMS</text>
-                            <text x="45" y="24" fill="#6366f1" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Host</text>
-                            <rect x="15" y="34" width="60" height="18" rx="2" fill="#3b82f6" />
+                            <rect x="0" y="0" width="90" height="60" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="45" y="16" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">AWS DMS</text>
+                            <text x="45" y="24" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Host</text>
+                            <rect x="15" y="34" width="60" height="18" rx="2" fill="var(--da-svg-indigo-border)" />
                             <text x="45" y="46" fill="#ffffff" fontSize="6.5" fontWeight="black" textAnchor="middle">CDC Parser</text>
                           </g>
 
                           {/* Target Aurora DB */}
                           <g transform="translate(250, 45)">
-                            <rect x="0" y="0" width="80" height="60" rx="4" fill="#064e3b" stroke="#047857" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Target Aurora</text>
-                            <text x="40" y="24" fill="#a7f3d0" fontSize="6" textAnchor="middle">AWS Cloud</text>
-                            <rect x="15" y="34" width="50" height="18" rx="1.5" fill="#d1fae5" />
-                            <text x="40" y="46" fill="#065f46" fontSize="6.5" fontWeight="bold" textAnchor="middle">SQL Tables</text>
+                            <rect x="0" y="0" width="80" height="60" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Target Aurora</text>
+                            <text x="40" y="24" fill="var(--da-svg-green-text)" opacity="0.8" fontSize="6" textAnchor="middle">AWS Cloud</text>
+                            <rect x="15" y="34" width="50" height="18" rx="1.5" fill="var(--da-svg-green-border)" />
+                            <text x="40" y="46" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">SQL Tables</text>
                           </g>
 
                           {/* CDC conduits and flying packet dots */}
@@ -2566,44 +2594,44 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-6 bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-inner relative overflow-hidden min-h-[300px]">
+                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px] relative overflow-hidden">
                       <div>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider">Multi-Phase Schema Translation Flow</span>
-                        <p className="text-[11px] text-slate-400 mt-0.5">How SCT converts structures before DMS loads database tables</p>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Multi-Phase Schema Translation Flow</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">How SCT converts structures before DMS loads database tables</p>
                       </div>
 
-                      <div className="w-full bg-slate-950 rounded-xl p-4 flex items-center justify-center my-4">
+                      <div className="w-full rounded-xl p-4 flex items-center justify-center my-4 da-svg-bg border border-slate-200">
                         <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
                           {/* Source Database */}
                           <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="#1e293b" stroke="#cbd5e1" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
-                            <text x="40" y="26" fill="#94a3b8" fontSize="6.5" textAnchor="middle">PL/SQL Schema</text>
+                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
+                            <text x="40" y="16" fill="var(--da-text-title)" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
+                            <text x="40" y="26" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">PL/SQL Schema</text>
                             
-                            <rect x="10" y="38" width="60" height="24" rx="2" fill="#0f172a" stroke="#cbd5e1" strokeWidth="1" />
-                            <text x="40" y="48" fill="#ef4444" fontSize="6" fontWeight="bold" textAnchor="middle">Triggers &amp; Stored</text>
-                            <text x="40" y="56" fill="#ef4444" fontSize="5.5" fontWeight="bold" textAnchor="middle">Procedures</text>
+                            <rect x="10" y="38" width="60" height="24" rx="2" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1" />
+                            <text x="40" y="48" fill="var(--da-svg-red-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Triggers &amp; Stored</text>
+                            <text x="40" y="56" fill="var(--da-svg-red-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Procedures</text>
                           </g>
 
                           {/* SCT Engine */}
                           <g transform="translate(125, 45)">
-                            <rect x="0" y="0" width="90" height="70" rx="6" fill="#1e1b4b" stroke="#8b5cf6" strokeWidth="1.5" />
-                            <text x="45" y="18" fill="#c084fc" fontSize="8" fontWeight="black" textAnchor="middle">AWS SCT</text>
-                            <rect x="15" y="28" width="60" height="34" rx="2" fill="#5b21b6" />
-                            <text x="45" y="40" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Translation</text>
-                            <text x="45" y="49" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Engine</text>
-                            <text x="45" y="56" fill="#a78bfa" fontSize="5.5" fontWeight="bold" textAnchor="middle">Applying Rules...</text>
+                            <rect x="0" y="0" width="90" height="70" rx="6" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                            <text x="45" y="18" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="black" textAnchor="middle">AWS SCT</text>
+                            <rect x="15" y="28" width="60" height="34" rx="2" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                            <text x="45" y="40" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Translation</text>
+                            <text x="45" y="49" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Engine</text>
+                            <text x="45" y="56" fill="var(--da-svg-purple-text)" opacity="0.8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Applying Rules...</text>
                           </g>
 
                           {/* Target Database */}
                           <g transform="translate(250, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="#064e3b" stroke="#10b981" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Target DB</text>
-                            <text x="40" y="26" fill="#a7f3d0" fontSize="6.5" textAnchor="middle">PL/pgSQL Schema</text>
+                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Target DB</text>
+                            <text x="40" y="26" fill="var(--da-svg-green-text)" opacity="0.8" fontSize="6.5" textAnchor="middle">PL/pgSQL Schema</text>
                             
-                            <rect x="10" y="38" width="60" height="24" rx="2" fill="#0f2922" stroke="#10b981" strokeWidth="1" />
-                            <text x="40" y="48" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">Converted SQL</text>
-                            <text x="40" y="56" fill="#10b981" fontSize="5.5" fontWeight="bold" textAnchor="middle">DDL Loaded</text>
+                            <rect x="10" y="38" width="60" height="24" rx="2" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                            <text x="40" y="48" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Converted SQL</text>
+                            <text x="40" y="56" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">DDL Loaded</text>
                           </g>
 
                           {/* Flow channels */}
@@ -2677,7 +2705,7 @@ export default function DisasterRecoveryVisualizer() {
                         <p className="text-[11px] text-slate-500 mt-0.5">Attempt to delete immutable backups under Vault Compliance Lock</p>
                       </div>
 
-                      <div className="w-full bg-slate-900 rounded-xl p-4 flex flex-col items-center justify-center space-y-4">
+                      <div className="w-full rounded-xl p-4 flex flex-col items-center justify-center space-y-4 da-svg-bg border border-slate-200">
                         <div className="flex items-center gap-3 bg-red-950/80 border border-red-800/40 p-3 rounded-lg w-full">
                           <span className="p-1.5 bg-red-900 rounded text-red-200">
                             <AlertTriangle className="w-4 h-4 stroke-[2]" />
@@ -2688,11 +2716,11 @@ export default function DisasterRecoveryVisualizer() {
                           </div>
                         </div>
 
-                        <div className="w-12 h-12 bg-emerald-950 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center dr-node-glow">
+                        <div className="w-12 h-12 bg-[var(--da-svg-green-bg)] border border-[var(--da-svg-green-border)] text-[var(--da-svg-green-text)] rounded-full flex items-center justify-center dr-node-glow">
                           <Lock className="w-6 h-6 stroke-[2.5]" />
                         </div>
 
-                        <div className="bg-slate-950 border border-slate-800 p-2.5 rounded-md w-full text-center">
+                        <div className="bg-slate-950 border border-red-900/40 p-2.5 rounded-md w-full text-center">
                           <span className="font-mono text-[10px] text-rose-500 font-extrabold block">🚨 ACCESS DENIED: delete-recovery-point failed</span>
                           <span className="text-[9px] text-slate-400 block mt-0.5">Reason: Vault Lock in Compliance Mode forbids manual deletions.</span>
                         </div>
@@ -2756,47 +2784,47 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-6 bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-2xl min-h-[300px]">
+                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider">AWS MGN Block Replication Pipeline</span>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Streaming continuous host storage sectors into cloud staging subnets</p>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">AWS MGN Block Replication Pipeline</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Streaming continuous host storage sectors into cloud staging subnets</p>
                       </div>
 
-                      <div className="w-full bg-slate-950 rounded-xl p-4 flex items-center justify-center">
+                      <div className="w-full rounded-xl p-4 flex items-center justify-center da-svg-bg border border-slate-200">
                         <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 340 170">
                           {/* On Premises Server */}
                           <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="#1e293b" stroke="#cbd5e1" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Source Server</text>
-                            <text x="40" y="25" fill="#94a3b8" fontSize="6" textAnchor="middle">Physical Host / VM</text>
+                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
+                            <text x="40" y="16" fill="var(--da-text-title)" fontSize="7.5" fontWeight="black" textAnchor="middle">Source Server</text>
+                            <text x="40" y="25" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Physical Host / VM</text>
                             
-                            <rect x="10" y="36" width="60" height="24" rx="2" fill="#0f172a" stroke="#fb923c" strokeWidth="1" />
-                            <text x="40" y="47" fill="#fb923c" fontSize="6.5" fontWeight="bold" textAnchor="middle">Replication Agent</text>
-                            <text x="40" y="55" fill="#fdba74" fontSize="5.5" fontWeight="bold" textAnchor="middle">Block Parser</text>
+                            <rect x="10" y="36" width="60" height="24" rx="2" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1" />
+                            <text x="40" y="47" fill="var(--da-svg-amber-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Replication Agent</text>
+                            <text x="40" y="55" fill="var(--da-svg-amber-text)" opacity="0.8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Block Parser</text>
                           </g>
 
                           {/* AWS MGN Staging Subnet */}
                           <g transform="translate(125, 30)">
-                            <rect x="0" y="0" width="90" height="100" rx="6" fill="#1e1b4b" stroke="#3b82f6" strokeWidth="1.5" />
-                            <text x="45" y="14" fill="#93c5fd" fontSize="7.5" fontWeight="black" textAnchor="middle">MGN Staging Area</text>
-                            <text x="45" y="21" fill="#6366f1" fontSize="5.5" textAnchor="middle">us-east-1a Subnet</text>
+                            <rect x="0" y="0" width="90" height="100" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                            <text x="45" y="14" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">MGN Staging Area</text>
+                            <text x="45" y="21" fill="var(--da-svg-indigo-text)" opacity="0.8" fontSize="5.5" textAnchor="middle">us-east-1a Subnet</text>
                             
-                            <rect x="10" y="32" width="70" height="24" rx="2" fill="#0f172a" stroke="#cbd5e1" strokeWidth="1" />
-                            <text x="45" y="43" fill="#cbd5e1" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Instance</text>
+                            <rect x="10" y="32" width="70" height="24" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                            <text x="45" y="43" fill="var(--da-text-title)" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Instance</text>
 
-                            <rect x="10" y="64" width="70" height="24" rx="2" fill="#0f172a" stroke="#a78bfa" strokeWidth="1" />
-                            <text x="45" y="75" fill="#a78bfa" fontSize="6.5" fontWeight="bold" textAnchor="middle">Staging EBS</text>
-                            <text x="45" y="83" fill="#c084fc" fontSize="5.5" fontWeight="bold" textAnchor="middle">Continuous Copy</text>
+                            <rect x="10" y="64" width="70" height="24" rx="2" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                            <text x="45" y="75" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Staging EBS</text>
+                            <text x="45" y="83" fill="var(--da-svg-purple-text)" opacity="0.8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Continuous Copy</text>
                           </g>
 
                           {/* Launched Target EC2 */}
                           <g transform="translate(250, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="#064e3b" stroke="#10b981" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="#ffffff" fontSize="7.5" fontWeight="black" textAnchor="middle">Target EC2</text>
-                            <text x="40" y="25" fill="#a7f3d0" fontSize="6" textAnchor="middle">Converted VM</text>
-                            <rect x="10" y="36" width="60" height="24" rx="1.5" fill="#d1fae5" />
-                            <text x="40" y="47" fill="#065f46" fontSize="6.5" fontWeight="black" textAnchor="middle">AMI Conversion</text>
-                            <text x="40" y="55" fill="#10b981" fontSize="5.5" fontWeight="bold" textAnchor="middle">● Ready for Cut</text>
+                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
+                            <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Target EC2</text>
+                            <text x="40" y="25" fill="var(--da-svg-green-text)" opacity="0.8" fontSize="6" textAnchor="middle">Converted VM</text>
+                            <rect x="10" y="36" width="60" height="24" rx="1.5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                            <text x="40" y="47" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">AMI Conversion</text>
+                            <text x="40" y="55" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">● Ready for Cut</text>
                           </g>
 
                           {/* Replication pathways */}
@@ -2853,18 +2881,18 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
                     </div>
 
-                    <div className="md:col-span-6 bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col justify-between shadow-2xl min-h-[340px]">
+                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[340px]">
                       <div>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider">Feasibility &amp; ETA Calculator</span>
-                        <p className="text-[11px] text-slate-400 mt-0.5">Determine if physical transport saves time over network streaming</p>
+                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Feasibility &amp; ETA Calculator</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Determine if physical transport saves time over network streaming</p>
                       </div>
 
                       {/* Calculator Sliders */}
                       <div className="space-y-3 mt-3">
                         <div>
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                          <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">
                             <span>📦 Total Dataset Size:</span>
-                            <span className="text-indigo-300 font-extrabold">{calcDataSizeTB} TB</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{calcDataSizeTB} TB</span>
                           </div>
                           <input
                             type="range"
@@ -2872,14 +2900,14 @@ export default function DisasterRecoveryVisualizer() {
                             max="5000"
                             value={calcDataSizeTB}
                             onChange={(e) => setCalcDataSizeTB(Number(e.target.value))}
-                            className="w-full accent-indigo-500 bg-slate-800 h-1 rounded"
+                            className="w-full accent-indigo-600 dark:accent-indigo-500 bg-slate-200 dark:bg-slate-800 h-1 rounded"
                           />
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                          <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">
                             <span>🌐 Available Net Bandwidth:</span>
-                            <span className="text-indigo-300 font-extrabold">
+                            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
                               {calcBandwidthMbps >= 1000 ? `${(calcBandwidthMbps / 1000).toFixed(1)} Gbps` : `${calcBandwidthMbps} Mbps`}
                             </span>
                           </div>
@@ -2890,16 +2918,16 @@ export default function DisasterRecoveryVisualizer() {
                             step="10"
                             value={calcBandwidthMbps}
                             onChange={(e) => setCalcBandwidthMbps(Number(e.target.value))}
-                            className="w-full accent-indigo-500 bg-slate-800 h-1 rounded"
+                            className="w-full accent-indigo-600 dark:accent-indigo-500 bg-slate-200 dark:bg-slate-800 h-1 rounded"
                           />
                         </div>
                       </div>
 
                       {/* Computed Outputs */}
-                      <div className="bg-slate-900 border border-slate-850 p-3 rounded-lg text-[10px] font-mono leading-relaxed text-slate-300 space-y-1.5 mt-3">
+                      <div className="da-svg-bg border p-3 rounded-lg text-[10px] font-mono leading-relaxed text-slate-600 dark:text-slate-350 space-y-1.5 mt-3">
                         <div className="flex justify-between">
                           <span>🌐 Network Transfer (80% Eff):</span>
-                          <span className="text-amber-400 font-extrabold">
+                          <span className="text-amber-600 dark:text-amber-400 font-extrabold">
                             {(() => {
                               const days = (calcDataSizeTB * 8000000) / (calcBandwidthMbps * 0.8) / 86400;
                               if (days < 1) return `${(days * 24).toFixed(1)} hours`;
@@ -2910,10 +2938,10 @@ export default function DisasterRecoveryVisualizer() {
                         </div>
                         <div className="flex justify-between">
                           <span>📦 Physical Snow Family Ingest:</span>
-                          <span className="text-emerald-400 font-extrabold">~7 to 10 days (Est)</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">~7 to 10 days (Est)</span>
                         </div>
-                        <div className="border-t border-slate-800 pt-1.5 text-[9.5px] leading-normal font-sans text-slate-400">
-                          <strong className="text-white block font-bold text-[10px] mb-0.5">🧠 Architect Smart Recommendation:</strong>
+                        <div className="border-t border-slate-200 dark:border-slate-800 pt-1.5 text-[9.5px] leading-normal font-sans text-slate-500 dark:text-slate-400">
+                          <strong className="text-slate-900 dark:text-white block font-bold text-[10px] mb-0.5">🧠 Architect Smart Recommendation:</strong>
                           {(() => {
                             const days = (calcDataSizeTB * 8000000) / (calcBandwidthMbps * 0.8) / 86400;
                             if (days < 5) {
@@ -2948,10 +2976,62 @@ function styleBlock() {
     <style>{`
       .dr-container {
         font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-        color: #1e293b;
-        background-color: #f8fafc;
+        color: var(--da-text);
+        background-color: var(--da-bg);
         padding: 20px;
         border-radius: 16px;
+        transition: all 0.25s ease;
+
+        --da-bg: #f8fafc;
+        --da-text: #1e293b;
+        --da-text-title: #0f172a;
+        --da-text-muted: #475569;
+        --da-card-bg: rgba(255, 255, 255, 0.95);
+        --da-card-border: rgba(226, 232, 240, 0.9);
+        --da-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+        
+        --da-tab-bg: rgba(255, 255, 255, 0.85);
+        --da-tab-border: rgba(226, 232, 240, 0.85);
+        --da-tab-text: #475569;
+        --da-tab-hover-bg: #f8fafc;
+        --da-tab-hover-border: #cbd5e1;
+        --da-tab-hover-text: #1e293b;
+        
+        --da-input-bg: #ffffff;
+        --da-input-color: #0f172a;
+        --da-input-border: rgba(226, 232, 240, 0.85);
+        
+        --da-code-bg: #090d16;
+        --da-code-border: #1e293b;
+        --da-code-text: #cbd5e1;
+        
+        --da-table-border: rgba(226, 232, 240, 0.85);
+        --da-table-th-bg: #f8fafc;
+        --da-table-th-text: #475569;
+        --da-table-td-text: #334155;
+
+        --da-svg-bg: #ffffff;
+        --da-svg-grid: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+        
+        --da-svg-indigo-bg: #eff6ff;
+        --da-svg-indigo-border: #3b82f6;
+        --da-svg-indigo-text: #1e3a8a;
+        
+        --da-svg-green-bg: #f0fdf4;
+        --da-svg-green-border: #10b981;
+        --da-svg-green-text: #065f46;
+        
+        --da-svg-red-bg: #fff5f5;
+        --da-svg-red-border: #f43f5e;
+        --da-svg-red-text: #b91c1c;
+        
+        --da-svg-amber-bg: #fffbeb;
+        --da-svg-amber-border: #fef3c7;
+        --da-svg-amber-text: #b45309;
+
+        --da-svg-purple-bg: #faf5ff;
+        --da-svg-purple-border: #c084fc;
+        --da-svg-purple-text: #6b21a8;
       }
       .da-card {
         background: rgba(255, 255, 255, 0.95);
@@ -3075,8 +3155,9 @@ function styleBlock() {
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
       .acad-dir-header {
-        background: #0f172a;
-        color: #f8fafc;
+        background: var(--da-table-th-bg);
+        color: var(--da-text-title);
+        border-bottom: 1.5px solid var(--da-table-border);
         padding: 16px;
         font-weight: 800;
         font-size: 11px;
@@ -3186,12 +3267,20 @@ function styleBlock() {
         border-bottom: none;
       }
       .acad-sim-diagram {
-        background: #ffffff;
-        border: 1.5px solid #e2e8f0;
+        background: var(--da-card-bg);
+        border: 1.5px solid var(--da-card-border);
         border-radius: 16px;
         padding: 18px;
         box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
         position: relative;
+      }
+      .da-svg-bg {
+        background-color: var(--da-svg-bg) !important;
+        border-color: var(--da-card-border) !important;
+      }
+      .da-inner-card {
+        background-color: var(--da-bg) !important;
+        border-color: var(--da-card-border) !important;
       }
       .acad-terminal {
         background: #090d16;
@@ -3213,9 +3302,60 @@ function styleBlock() {
       }
 
         /* Centralized Dark Mode Overrides for DisasterRecoveryVisualizer.tsx */
-        .dark .da-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
+        .dark .dr-container {
+          background-color: #020617 !important;
+          color: #cbd5e1 !important;
+
+          --da-bg: #020617;
+          --da-text: #cbd5e1;
+          --da-text-title: #ffffff;
+          --da-text-muted: #94a3b8;
+          --da-card-bg: rgba(15, 23, 42, 0.75);
+          --da-card-border: rgba(51, 65, 85, 0.6);
+          --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --da-tab-bg: rgba(15, 23, 42, 0.6);
+          --da-tab-border: rgba(51, 65, 85, 0.6);
+          --da-tab-text: #94a3b8;
+          --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --da-tab-hover-border: rgba(51, 65, 85, 0.6);
+          --da-tab-hover-text: #f8fafc;
+          
+          --da-input-bg: #0f172a;
+          --da-input-color: #f1f5f9;
+          --da-input-border: rgba(51, 65, 85, 0.8);
+          
+          --da-code-bg: #020617;
+          --da-code-border: rgba(51, 65, 85, 0.6);
+          --da-code-text: #38bdf8;
+          
+          --da-table-border: rgba(51, 65, 85, 0.6);
+          --da-table-th-bg: rgba(15, 23, 42, 0.8);
+          --da-table-th-text: #94a3b8;
+          --da-table-td-text: #cbd5e1;
+
+          --da-svg-bg: #020617;
+          --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+          
+          --da-svg-indigo-bg: rgba(59, 130, 246, 0.15);
+          --da-svg-indigo-border: rgba(59, 130, 246, 0.5);
+          --da-svg-indigo-text: #60a5fa;
+          
+          --da-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --da-svg-green-border: rgba(16, 185, 129, 0.5);
+          --da-svg-green-text: #4ade80;
+          
+          --da-svg-red-bg: rgba(244, 63, 94, 0.15);
+          --da-svg-red-border: rgba(244, 63, 94, 0.5);
+          --da-svg-red-text: #f87171;
+          
+          --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
+          --da-svg-amber-border: rgba(245, 158, 11, 0.5);
+          --da-svg-amber-text: #fbbf24;
+
+          --da-svg-purple-bg: rgba(192, 132, 252, 0.15);
+          --da-svg-purple-border: rgba(192, 132, 252, 0.5);
+          --da-svg-purple-text: #c084fc;
         }
         .dark .da-card,
         .dark [class*="da-card"] {
@@ -3324,9 +3464,9 @@ function styleBlock() {
           border-color: rgba(51, 65, 85, 0.6) !important;
         }
         .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+          background: var(--da-table-th-bg) !important;
+          color: var(--da-text-title) !important;
+          border-bottom-color: var(--da-table-border) !important;
         }
         .dark .acad-dir-folder-btn {
           background: rgba(15, 23, 42, 0.7) !important;

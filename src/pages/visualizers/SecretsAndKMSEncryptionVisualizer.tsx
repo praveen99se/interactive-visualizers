@@ -386,23 +386,131 @@ export default function SecretsAndKMSEncryptionVisualizer() {
 
   return (
     <div className="da-container animate-fadeIn">
-      {/* Isolated visualizer styles */}
       <style>{`
         .da-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-          color: #1e293b;
-          background-color: #f8fafc;
+          color: var(--da-text);
+          background-color: var(--da-bg);
           padding: 20px;
           border-radius: 16px;
+          transition: all 0.25s ease;
+
+          --da-bg: #f8fafc;
+          --da-text: #1e293b;
+          --da-text-title: #0f172a;
+          --da-text-muted: #475569;
+          --da-card-bg: rgba(255, 255, 255, 0.75);
+          --da-card-border: rgba(226, 232, 240, 0.85);
+          --da-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          
+          --da-tab-bg: rgba(255, 255, 255, 0.85);
+          --da-tab-border: rgba(226, 232, 240, 0.85);
+          --da-tab-text: #475569;
+          --da-tab-hover-bg: #f8fafc;
+          --da-tab-hover-border: #cbd5e1;
+          --da-tab-hover-text: #1e293b;
+          
+          --da-input-bg: #ffffff;
+          --da-input-color: #0f172a;
+          --da-input-border: rgba(226, 232, 240, 0.85);
+          
+          --da-code-bg: #090d16;
+          --da-code-border: #1e293b;
+          --da-code-text: #94a3b8;
+          
+          --da-table-border: rgba(226, 232, 240, 0.85);
+          --da-table-th-bg: #f8fafc;
+          --da-table-th-text: #475569;
+          --da-table-td-text: #334155;
+
+          --da-svg-bg: #ffffff;
+          --da-svg-grid: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          
+          --da-svg-indigo-bg: #eff6ff;
+          --da-svg-indigo-border: #3b82f6;
+          --da-svg-indigo-text: #1e3a8a;
+          
+          --da-svg-green-bg: #f0fdf4;
+          --da-svg-green-border: #10b981;
+          --da-svg-green-text: #065f46;
+          
+          --da-svg-red-bg: #fee2e2;
+          --da-svg-red-border: #f43f5e;
+          --da-svg-red-text: #991b1b;
+          
+          --da-svg-amber-bg: #fffbeb;
+          --da-svg-amber-border: #d97706;
+          --da-svg-amber-text: #78350f;
+          
+          --da-svg-purple-bg: #faf5ff;
+          --da-svg-purple-border: #c084fc;
+          --da-svg-purple-text: #6b21a8;
         }
+
+        .dark .da-container {
+          background-color: #020617 !important;
+          color: #cbd5e1 !important;
+
+          --da-bg: #020617;
+          --da-text: #cbd5e1;
+          --da-text-title: #ffffff;
+          --da-text-muted: #94a3b8;
+          --da-card-bg: rgba(15, 23, 42, 0.75);
+          --da-card-border: rgba(51, 65, 85, 0.6);
+          --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --da-tab-bg: rgba(15, 23, 42, 0.6);
+          --da-tab-border: rgba(51, 65, 85, 0.6);
+          --da-tab-text: #94a3b8;
+          --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --da-tab-hover-border: rgba(51, 65, 85, 0.6);
+          --da-tab-hover-text: #f8fafc;
+          
+          --da-input-bg: #0f172a;
+          --da-input-color: #f1f5f9;
+          --da-input-border: rgba(51, 65, 85, 0.8);
+          
+          --da-code-bg: #020617;
+          --da-code-border: rgba(51, 65, 85, 0.6);
+          --da-code-text: #38bdf8;
+          
+          --da-table-border: rgba(51, 65, 85, 0.6);
+          --da-table-th-bg: rgba(15, 23, 42, 0.8);
+          --da-table-th-text: #94a3b8;
+          --da-table-td-text: #cbd5e1;
+
+          --da-svg-bg: #020617;
+          --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+          
+          --da-svg-indigo-bg: rgba(59, 130, 246, 0.15);
+          --da-svg-indigo-border: rgba(59, 130, 246, 0.5);
+          --da-svg-indigo-text: #60a5fa;
+          
+          --da-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --da-svg-green-border: rgba(16, 185, 129, 0.4);
+          --da-svg-green-text: #4ade80;
+          
+          --da-svg-red-bg: rgba(244, 63, 94, 0.15);
+          --da-svg-red-border: rgba(244, 63, 94, 0.5);
+          --da-svg-red-text: #f87171;
+          
+          --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
+          --da-svg-amber-border: rgba(245, 158, 11, 0.5);
+          --da-svg-amber-text: #fbbf24;
+          
+          --da-svg-purple-bg: rgba(168, 85, 247, 0.15);
+          --da-svg-purple-border: rgba(168, 85, 247, 0.4);
+          --da-svg-purple-text: #c084fc;
+        }
+
         .da-card {
-          background: rgba(255, 255, 255, 0.95);
-          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
           margin-bottom: 20px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
-          transition: all 0.2s ease-in-out;
+          box-shadow: var(--da-card-shadow);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-card:hover {
           border-color: #3b82f6;
@@ -411,7 +519,7 @@ export default function SecretsAndKMSEncryptionVisualizer() {
         .da-card-title {
           font-size: 17px;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--da-text-title);
           margin-bottom: 10px;
           display: flex;
           align-items: center;
@@ -419,7 +527,7 @@ export default function SecretsAndKMSEncryptionVisualizer() {
         }
         .da-card-desc {
           font-size: 13px;
-          color: #475569;
+          color: var(--da-text-muted);
           line-height: 1.6;
         }
         .da-tabs {
@@ -427,7 +535,7 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--da-card-border);
           padding-bottom: 10px;
         }
         .da-tb {
@@ -436,20 +544,20 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           gap: 6px;
           padding: 8px 16px;
           border-radius: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--da-tab-border);
           font-size: 12px;
           font-weight: 600;
-          color: #475569;
-          background: rgba(255, 255, 255, 0.85);
+          color: var(--da-tab-text);
+          background: var(--da-tab-bg);
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.15s ease-in-out;
           outline: none;
         }
         .da-tb:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          border-color: var(--da-tab-hover-border);
+          color: var(--da-tab-hover-text);
         }
         .da-tb.da-on {
           background: #2563eb;
@@ -459,9 +567,10 @@ export default function SecretsAndKMSEncryptionVisualizer() {
         }
 
         .da-svg-bg {
-          background-color: #ffffff;
-          background-image: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          background-color: var(--da-svg-bg) !important;
+          background-image: var(--da-svg-grid) !important;
           background-size: 16px 16px;
+          border: 1.5px solid var(--da-card-border);
         }
         
         .da-flow-blue {
@@ -501,13 +610,12 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           }
         }
 
-        /* Modern Learning Center styles */
         .da-edu-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+          box-shadow: var(--da-card-shadow);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-edu-card:hover {
@@ -516,17 +624,16 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           border-color: #bfdbfe;
         }
         
-        /* Premium Academy Directory Styles */
         .acad-dir-container {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--da-card-shadow);
         }
         .acad-dir-header {
-          background: #0f172a;
-          color: #f8fafc;
+          background: var(--da-input-bg);
+          color: var(--da-text-title);
           padding: 16px;
           font-weight: 800;
           font-size: 11px;
@@ -535,6 +642,7 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           display: flex;
           align-items: center;
           gap: 8px;
+          border-bottom: 1px solid var(--da-card-border);
         }
         .acad-dir-folder-btn {
           width: 100%;
@@ -542,18 +650,18 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          background: var(--da-bg);
+          border-bottom: 1px solid var(--da-card-border);
           font-size: 10px;
           font-weight: 850;
-          color: #475569;
+          color: var(--da-text-muted);
           text-transform: uppercase;
           letter-spacing: 0.04em;
           transition: all 0.2s ease;
         }
         .acad-dir-folder-btn:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          color: var(--da-text-title);
         }
         .acad-dir-item-btn {
           width: 105%;
@@ -563,34 +671,34 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           padding: 10px 18px;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: var(--da-text-muted);
           border-left: 3px solid transparent;
-          background: #ffffff;
+          background: var(--da-card-bg);
           transition: all 0.15s ease;
           text-align: left;
         }
         .acad-dir-item-btn:hover {
-          background: #f8fafc;
+          background: var(--da-tab-hover-bg);
           color: #2563eb;
-          border-left-color: #cbd5e1;
+          border-left-color: var(--da-card-border);
         }
         .acad-dir-item-btn.acad-active {
-          background: #eff6ff;
-          color: #1e40af;
-          border-left-color: #2563eb;
+          background: var(--da-svg-indigo-bg);
+          color: var(--da-svg-indigo-text);
+          border-left-color: var(--da-svg-indigo-border);
           font-weight: 800;
         }
         .acad-detail-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           padding: 28px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+          box-shadow: var(--da-card-shadow);
         }
         .acad-hero-badge {
-          background: #eff6ff;
-          border: 1.5px solid #bfdbfe;
-          color: #1e40af;
+          background: var(--da-svg-indigo-bg);
+          border: 1.5px solid var(--da-svg-indigo-border);
+          color: var(--da-svg-indigo-text);
           font-size: 9.5px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -602,13 +710,13 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           gap: 5px;
         }
         .acad-takeaway-box {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border-left: 4px solid #2563eb;
+          background: var(--da-bg);
+          border-left: 4px solid var(--da-svg-indigo-border);
           border-radius: 12px;
           padding: 18px;
           font-size: 12px;
           line-height: 1.6;
-          color: #475569;
+          color: var(--da-text-muted);
           font-weight: 600;
         }
         .acad-table {
@@ -617,39 +725,39 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           font-size: 12px;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--da-table-border);
         }
         .acad-table th {
-          background: #f8fafc;
-          color: #334155;
+          background: var(--da-table-th-bg);
+          color: var(--da-table-th-text);
           font-weight: 800;
           padding: 12px 14px;
-          border-bottom: 1.5px solid #e2e8f0;
+          border-bottom: 1.5px solid var(--da-table-border);
           text-align: left;
         }
         .acad-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid #f1f5f9;
-          color: #475569;
+          border-bottom: 1px solid var(--da-table-border);
+          color: var(--da-table-td-text);
         }
         .acad-table tr:last-child td {
           border-bottom: none;
         }
         .acad-sim-diagram {
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 18px;
           box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
           position: relative;
         }
         .acad-terminal {
-          background: #090d16;
-          border: 1px solid #1e293b;
+          background: var(--da-code-bg);
+          border: 1px solid var(--da-code-border);
           border-radius: 12px;
           padding: 14px;
           font-family: 'Fira Code', 'Courier New', Courier, monospace;
-          color: #cbd5e1;
+          color: var(--da-code-text);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
           position: relative;
         }
@@ -682,171 +790,107 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           color: #ffffff;
         }
 
-        /* Centralized Dark Mode Overrides for SecretsAndKMSEncryptionVisualizer.tsx */
-        .dark .da-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-card,
-        .dark [class*="da-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
-        .dark .da-card b,
-        .dark .da-card strong,
-        .dark .da-card h3,
-        .dark .da-card h4 {
-          color: #ffffff !important;
-        }
-        .dark .da-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .da-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .da-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-sec,
-        .dark .da-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .da-log,
-        .dark .da-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .da-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .da-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.da-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst,
-        .dark .da-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst .meta,
-        .dark .da-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .da-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
+        .da-container h1,
+        .da-container h2,
+        .da-container h3,
+        .da-container h4,
+        .da-container th,
+        .da-container .text-slate-900,
+        .da-container .text-slate-800,
+        .da-container .text-gray-900 {
+          color: var(--da-text-title) !important;
         }
         
-        /* Node Status Overrides */
-        .dark .da-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
+        .da-container p,
+        .da-container td,
+        .da-container li,
+        .da-container .text-slate-750,
+        .da-container .text-slate-700,
+        .da-container .text-slate-650,
+        .da-container .text-slate-600,
+        .da-container .text-slate-500,
+        .da-container .text-gray-600,
+        .da-container .text-gray-500 {
+          color: var(--da-text-muted) !important;
         }
-        .dark .da-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .da-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .da-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
+
+        .da-container .bg-white {
+          background-color: var(--da-card-bg) !important;
         }
         
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
+        .da-container .bg-slate-50,
+        .da-container .bg-slate-100 {
+          background-color: var(--da-bg) !important;
         }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
+
+        .da-container .hover\:bg-slate-50:hover,
+        .da-container .hover\:bg-slate-100:hover,
+        .da-container .hover\:bg-blue-50:hover {
+          background-color: var(--da-tab-hover-bg) !important;
         }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        .da-container .border-slate-200,
+        .da-container .border-slate-100,
+        .da-container .border-slate-150,
+        .da-container .border-slate-250,
+        .da-container .border-gray-200 {
+          border-color: var(--da-card-border) !important;
         }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        /* Scoped input/form components */
+        .da-container select,
+        .da-container input,
+        .da-container textarea {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
+          border: 1.5px solid var(--da-input-border) !important;
+          border-radius: 8px;
+          outline: none;
+          transition: all 0.2s ease;
         }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        .da-container select option {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
         }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
+
+        .da-container select:focus,
+        .da-container input:focus,
+        .da-container textarea:focus {
+          border-color: #2563eb !important;
         }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
+
+        /* Alert overrides in dark mode */
+        .dark .da-container .bg-blue-50 {
+          background-color: rgba(37, 99, 235, 0.15) !important;
+          color: #a5b4fc !important;
         }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
+        
+        .dark .da-container .bg-sky-50 {
+          background-color: rgba(14, 165, 233, 0.15) !important;
+          color: #7dd3fc !important;
         }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
+        
+        .dark .da-container .bg-amber-50 {
+          background-color: rgba(245, 158, 11, 0.15) !important;
+          color: #fef08a !important;
         }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        .dark .da-container .bg-rose-50 {
+          background-color: rgba(244, 63, 94, 0.15) !important;
+          color: #fca5a5 !important;
         }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        
+        .dark .da-container .bg-red-50 {
+          background-color: rgba(239, 68, 68, 0.15) !important;
+          color: #fca5a5 !important;
         }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+        
+        .dark .da-container .bg-green-50 {
+          background-color: rgba(16, 185, 129, 0.15) !important;
+          color: #86efac !important;
         }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-              `}</style>
+      `}</style>
 
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
@@ -894,7 +938,7 @@ export default function SecretsAndKMSEncryptionVisualizer() {
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
           
-          <div className="card text-left">
+          <div className="da-card text-left">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
               <Key className="w-5 h-5 text-indigo-600" /> AWS Secrets &amp; KMS Cryptographic Notes
             </h2>
@@ -1758,38 +1802,38 @@ export default function SecretsAndKMSEncryptionVisualizer() {
               <div className="w-full flex-grow flex items-center justify-center">
                 <svg className="w-full h-full min-h-[140px]" viewBox="0 0 280 120">
                   {/* Key policy check flow */}
-                  <path d="M 50 60 H 130" fill="none" stroke="#64748b" strokeWidth="1.5" className={kmsState === 'rotating' ? 'da-flow-blue' : ''} />
-                  <path d="M 190 60 H 260" fill="none" stroke="#64748b" strokeWidth="1.5" className={kmsState === 'rotating' ? 'da-flow-green' : ''} />
+                  <path d="M 50 60 H 130" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" className={kmsState === 'rotating' ? 'da-flow-blue' : ''} />
+                  <path d="M 190 60 H 260" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" className={kmsState === 'rotating' ? 'da-flow-green' : ''} />
 
                   {/* KMS CMK Ring Node */}
                   <g transform="translate(10, 35)">
-                    <rect x="0" y="0" width="55" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="27.5" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">KMS</text>
-                    <text x="27.5" y="27" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">HSM Ring</text>
-                    <text x="27.5" y="38" fill="#94a3b8" fontSize="5.5" textAnchor="middle">FIPS 140-2</text>
+                    <rect x="0" y="0" width="55" height="50" rx="6" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1.5" />
+                    <text x="27.5" y="16" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">KMS</text>
+                    <text x="27.5" y="27" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">HSM Ring</text>
+                    <text x="27.5" y="38" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">FIPS 140-2</text>
                   </g>
 
                   {/* Backing Key Material block */}
                   <g transform="translate(130, 35)">
                     <rect x="0" y="0" width="60" height="50" rx="6" 
-                      fill={policySetup === 'lockout' ? '#fef2f2' : '#f0fdf4'} 
-                      stroke={policySetup === 'lockout' ? '#ef4444' : '#10b981'} 
+                      fill={policySetup === 'lockout' ? 'var(--da-svg-red-bg)' : 'var(--da-svg-green-bg)'} 
+                      stroke={policySetup === 'lockout' ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} 
                       strokeWidth="1.5" />
-                    <text x="30" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Backing Key</text>
-                    <text x="30" y="27" fill="#64748b" fontSize="5.5" textAnchor="middle">
+                    <text x="30" y="16" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Backing Key</text>
+                    <text x="30" y="27" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">
                       {keyOrigin === 'aws' ? 'Managed' : keyOrigin === 'customer' ? 'CMK Material' : 'Imported BYOK'}
                     </text>
-                    <text x="30" y="38" fill={policySetup === 'lockout' ? '#dc2626' : '#16a34a'} fontSize="6.5" fontWeight="extrabold" textAnchor="middle">
+                    <text x="30" y="38" fill={policySetup === 'lockout' ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="6.5" fontWeight="extrabold" textAnchor="middle">
                       {policySetup === 'lockout' ? '🔒 LOCKED' : '🟢 ACTIVE'}
                     </text>
                   </g>
 
                   {/* Data files target block */}
                   <g transform="translate(210, 35)">
-                    <rect x="0" y="0" width="60" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="30" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Payload</text>
-                    <text x="30" y="27" fill="#64748b" fontSize="5" textAnchor="middle">Target Storage</text>
-                    <text x="30" y="38" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                    <rect x="0" y="0" width="60" height="50" rx="6" fill="var(--da-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                    <text x="30" y="16" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Payload</text>
+                    <text x="30" y="27" fill="var(--da-text-muted)" fontSize="5" textAnchor="middle">Target Storage</text>
+                    <text x="30" y="38" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">
                       {keyType === 'symmetric' ? 'AES-GCM' : keyType === 'asymmetric' ? 'RSA/ECC' : 'HMAC'}
                     </text>
                   </g>
@@ -1898,39 +1942,39 @@ export default function SecretsAndKMSEncryptionVisualizer() {
                 <svg className="w-full h-full min-h-[160px]" viewBox="0 0 320 160">
                   <defs>
                     <marker id="arrow-sync" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--da-text-muted)" />
                     </marker>
                   </defs>
 
                   {/* Flow lines */}
                   {/* Client -> KMS */}
-                  <path d="M 60 40 Q 115 15 170 30" fill="none" stroke="#2563eb" strokeWidth="1.5" className={envelopeState === 'generating' ? 'da-flow-blue' : ''} markerEnd="url(#arrow-sync)" />
+                  <path d="M 60 40 Q 115 15 170 30" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" className={envelopeState === 'generating' ? 'da-flow-blue' : ''} markerEnd="url(#arrow-sync)" />
                   {/* KMS -> Client */}
-                  <path d="M 170 50 Q 115 65 60 80" fill="none" stroke="#10b981" strokeWidth="1.5" className={envelopeState === 'generating' ? 'da-flow-green' : ''} markerEnd="url(#arrow-sync)" />
+                  <path d="M 170 50 Q 115 65 60 80" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" className={envelopeState === 'generating' ? 'da-flow-green' : ''} markerEnd="url(#arrow-sync)" />
 
                   {/* Client Local Node */}
                   <g transform="translate(10, 45)">
-                    <rect x="0" y="0" width="55" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="27.5" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Client App</text>
-                    <text x="27.5" y="27" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Environment</text>
-                    <text x="27.5" y="38" fill="#2563eb" fontSize="5.5" fontWeight="bold" textAnchor="middle">Local RAM</text>
+                    <rect x="0" y="0" width="55" height="50" rx="6" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1.5" />
+                    <text x="27.5" y="16" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Client App</text>
+                    <text x="27.5" y="27" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Environment</text>
+                    <text x="27.5" y="38" fill="var(--da-svg-indigo-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Local RAM</text>
                   </g>
 
                   {/* KMS HSM Core */}
                   <g transform="translate(170, 15)">
-                    <rect x="0" y="0" width="70" height="40" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                    <text x="35" y="14" fill="#78350f" fontSize="7.5" fontWeight="bold" textAnchor="middle">KMS Service</text>
-                    <text x="35" y="23" fill="#b45309" fontSize="5.5" textAnchor="middle">HSM Core</text>
-                    <text x="35" y="31" fill="#d97706" fontSize="5.5" fontWeight="bold" textAnchor="middle">alias/master-key</text>
+                    <rect x="0" y="0" width="70" height="40" rx="6" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                    <text x="35" y="14" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">KMS Service</text>
+                    <text x="35" y="23" fill="var(--da-svg-amber-text)" fontSize="5.5" textAnchor="middle">HSM Core</text>
+                    <text x="35" y="31" fill="var(--da-svg-amber-border)" fontSize="5.5" fontWeight="bold" textAnchor="middle">alias/master-key</text>
                   </g>
 
                   {/* Encryption workflow outputs */}
                   {encryptedDataKey && (
                     <g transform="translate(130, 95)" className="animate-fadeIn">
-                      <rect x="0" y="0" width="125" height="35" rx="4" fill="#fff5f5" stroke="#f87171" strokeWidth="1" />
-                      <text x="62.5" y="12" fill="#991b1b" fontSize="6" fontWeight="bold" textAnchor="middle">📄 METADATA PACKAGE STORE</text>
-                      <text x="6" y="20" fill="#7f1d1d" fontSize="5" className="font-mono">Cipher Key: {encryptedDataKey}</text>
-                      <text x="6" y="28" fill="#475569" fontSize="4.5">Stores locally alongside Base64 encrypted cipher</text>
+                      <rect x="0" y="0" width="125" height="35" rx="4" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1" />
+                      <text x="62.5" y="12" fill="var(--da-svg-red-text)" fontSize="6" fontWeight="bold" textAnchor="middle">📄 METADATA PACKAGE STORE</text>
+                      <text x="6" y="20" fill="var(--da-svg-red-text)" fontSize="5" className="font-mono">Cipher Key: {encryptedDataKey}</text>
+                      <text x="6" y="28" fill="var(--da-text-muted)" fontSize="4.5">Stores locally alongside Base64 encrypted cipher</text>
                     </g>
                   )}
                 </svg>
@@ -2128,40 +2172,40 @@ export default function SecretsAndKMSEncryptionVisualizer() {
                 <svg className="w-full min-w-[320px] h-[180px]" viewBox="0 0 320 180">
                   <defs>
                     <marker id="arrow-rep" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--da-text-muted)" />
                     </marker>
                   </defs>
 
                   {/* Flow pipeline */}
                   {/* us-east-1 -> eu-west-1 */}
-                  <path d="M 100 90 H 220" fill="none" stroke="#64748b" strokeWidth="2" className={replicationState === 'running' ? 'da-flow-blue' : ''} />
+                  <path d="M 100 90 H 220" fill="none" stroke="var(--da-text-muted)" strokeWidth="2" className={replicationState === 'running' ? 'da-flow-blue' : ''} />
 
                   {/* Regional Boundary Split */}
-                  <line x1="160" y1="10" x2="160" y2="170" stroke="#cbd5e1" strokeDasharray="3,3" />
-                  <text x="140" y="20" fill="#94a3b8" fontSize="7" fontWeight="bold" textAnchor="end">Region: us-east-1</text>
-                  <text x="180" y="20" fill="#94a3b8" fontSize="7" fontWeight="bold" textAnchor="start">Region: eu-west-1</text>
+                  <line x1="160" y1="10" x2="160" y2="170" stroke="var(--da-card-border)" strokeDasharray="3,3" />
+                  <text x="140" y="20" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="end">Region: us-east-1</text>
+                  <text x="180" y="20" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="start">Region: eu-west-1</text>
 
                   {/* Primary Node (us-east-1) */}
                   <g transform="translate(15, 60)">
-                    <rect x="0" y="0" width="80" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="40" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary DB</text>
-                    <text x="40" y="27" fill="#a855f7" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                    <rect x="0" y="0" width="80" height="50" rx="6" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1.5" />
+                    <text x="40" y="16" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary DB</text>
+                    <text x="40" y="27" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">
                       {globalScenario === 'dynamodb' ? 'mrk-9b8a7c6...' : 'key-us-regional'}
                     </text>
-                    <text x="40" y="38" fill="#10b981" fontSize="6" fontWeight="bold" textAnchor="middle">🟢 Encrypted</text>
+                    <text x="40" y="38" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">🟢 Encrypted</text>
                   </g>
 
                   {/* Replica Node (eu-west-1) */}
                   <g transform="translate(225, 60)">
                     <rect x="0" y="0" width="80" height="50" rx="6" 
-                      fill={replicationState === 'failed' ? '#fff1f2' : '#f0fdf4'} 
-                      stroke={replicationState === 'failed' ? '#f43f5e' : '#10b981'} 
+                      fill={replicationState === 'failed' ? 'var(--da-svg-red-bg)' : 'var(--da-svg-green-bg)'} 
+                      stroke={replicationState === 'failed' ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} 
                       strokeWidth="1.5" />
-                    <text x="40" y="16" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">Replica DB</text>
-                    <text x="40" y="27" fill="#a855f7" fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                    <text x="40" y="16" fill="var(--da-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Replica DB</text>
+                    <text x="40" y="27" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">
                       {globalScenario === 'dynamodb' ? 'mrk-9b8a7c6...' : 'key-eu-regional'}
                     </text>
-                    <text x="40" y="38" fill={replicationState === 'failed' ? '#e11d48' : '#16a34a'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                    <text x="40" y="38" fill={replicationState === 'failed' ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
                       {replicationState === 'failed' ? '❌ Key Denied' : '🟢 Decrypted Local'}
                     </text>
                   </g>
@@ -2289,42 +2333,42 @@ export default function SecretsAndKMSEncryptionVisualizer() {
               <div className="w-full flex-grow flex items-center justify-center overflow-x-auto">
                 <svg className="w-full min-w-[340px] h-[180px]" viewBox="0 0 340 180">
                   {/* Account borders */}
-                  <rect x="5" y="10" width="155" height="160" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4,4" />
-                  <text x="15" y="22" fill="#94a3b8" fontSize="6.5" fontWeight="bold">Source: Account A</text>
+                  <rect x="5" y="10" width="155" height="160" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <text x="15" y="22" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">Source: Account A</text>
 
-                  <rect x="175" y="10" width="160" height="160" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4,4" />
-                  <text x="185" y="22" fill="#94a3b8" fontSize="6.5" fontWeight="bold">Target: Account B</text>
+                  <rect x="175" y="10" width="160" height="160" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <text x="185" y="22" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">Target: Account B</text>
 
                   {/* Flow pipeline */}
-                  <path d="M 65 90 H 220" fill="none" stroke="#64748b" strokeWidth="2" className={bootState === 'booting' ? 'da-flow-blue' : ''} />
+                  <path d="M 65 90 H 220" fill="none" stroke="var(--da-text-muted)" strokeWidth="2" className={bootState === 'booting' ? 'da-flow-blue' : ''} />
 
                   {/* Account A KMS CMK Key */}
                   <g transform="translate(15, 65)">
-                    <rect x="0" y="0" width="55" height="40" rx="4" fill="#eff6ff" stroke="#2563eb" strokeWidth="1.5" />
-                    <text x="27.5" y="14" fill="#1e3a8a" fontSize="7" fontWeight="bold" textAnchor="middle">Account A</text>
-                    <text x="27.5" y="23" fill="#2563eb" fontSize="6.5" fontWeight="bold" textAnchor="middle">Custom Key</text>
-                    <text x="27.5" y="32" fill="#1d4ed8" fontSize="5.5" textAnchor="middle">
+                    <rect x="0" y="0" width="55" height="40" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                    <text x="27.5" y="14" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Account A</text>
+                    <text x="27.5" y="23" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Custom Key</text>
+                    <text x="27.5" y="32" fill="var(--da-svg-indigo-text)" fontSize="5.5" textAnchor="middle">
                       {crossAccountPolicy === 'allowed' ? '🔓 Shared Policy' : '🔒 Denied'}
                     </text>
                   </g>
 
                   {/* Account A shared AMI */}
                   <g transform="translate(95, 65)">
-                    <rect x="0" y="0" width="50" height="40" rx="4" fill="#ffffff" stroke="#64748b" strokeWidth="1" />
-                    <text x="25" y="14" fill="#334155" fontSize="7.5" fontWeight="bold" textAnchor="middle">Shared AMI</text>
-                    <text x="25" y="23" fill="#475569" fontSize="5.5" textAnchor="middle">EBS Snap</text>
-                    <text x="25" y="32" fill="#94a3b8" fontSize="5" textAnchor="middle">AMI-09876</text>
+                    <rect x="0" y="0" width="50" height="40" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                    <text x="25" y="14" fill="var(--da-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Shared AMI</text>
+                    <text x="25" y="23" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">EBS Snap</text>
+                    <text x="25" y="32" fill="var(--da-text-muted)" fontSize="5" textAnchor="middle">AMI-09876</text>
                   </g>
 
                   {/* Account B Target Instance */}
                   <g transform="translate(225, 65)">
                     <rect x="0" y="0" width="95" height="40" rx="4" 
-                      fill={bootState === 'failed' ? '#fff1f2' : bootState === 'success' ? '#f0fdf4' : '#ffffff'} 
-                      stroke={bootState === 'failed' ? '#f43f5e' : bootState === 'success' ? '#10b981' : '#94a3b8'} 
+                      fill={bootState === 'failed' ? 'var(--da-svg-red-bg)' : bootState === 'success' ? 'var(--da-svg-green-bg)' : 'var(--da-bg)'} 
+                      stroke={bootState === 'failed' ? 'var(--da-svg-red-border)' : bootState === 'success' ? 'var(--da-svg-green-border)' : 'var(--da-card-border)'} 
                       strokeWidth="1.5" />
-                    <text x="47.5" y="14" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">Launched EC2</text>
-                    <text x="47.5" y="23" fill="#64748b" fontSize="5.5" textAnchor="middle">From Shared AMI</text>
-                    <text x="47.5" y="32" fill={bootState === 'failed' ? '#dc2626' : bootState === 'success' ? '#16a34a' : '#2563eb'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                    <text x="47.5" y="14" fill="var(--da-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Launched EC2</text>
+                    <text x="47.5" y="23" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">From Shared AMI</text>
+                    <text x="47.5" y="32" fill={bootState === 'failed' ? 'var(--da-svg-red-text)' : bootState === 'success' ? 'var(--da-svg-green-text)' : 'var(--da-svg-indigo-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
                       {bootState === 'idle' ? 'STANDBY' : bootState === 'booting' ? 'LAUNCHING...' : bootState === 'failed' ? '❌ CRASHED' : '🟢 RUNNING'}
                     </text>
                   </g>

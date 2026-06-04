@@ -373,19 +373,128 @@ export default function NetworkAndEdgeSecurityVisualizer() {
       <style>{`
         .da-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-          color: #1e293b;
-          background-color: #f8fafc;
+          color: var(--da-text);
+          background-color: var(--da-bg);
           padding: 20px;
           border-radius: 16px;
+          transition: all 0.25s ease;
+
+          --da-bg: #f8fafc;
+          --da-text: #1e293b;
+          --da-text-title: #0f172a;
+          --da-text-muted: #475569;
+          --da-card-bg: rgba(255, 255, 255, 0.75);
+          --da-card-border: rgba(226, 232, 240, 0.85);
+          --da-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          
+          --da-tab-bg: rgba(255, 255, 255, 0.85);
+          --da-tab-border: rgba(226, 232, 240, 0.85);
+          --da-tab-text: #475569;
+          --da-tab-hover-bg: #f8fafc;
+          --da-tab-hover-border: #cbd5e1;
+          --da-tab-hover-text: #1e293b;
+          
+          --da-input-bg: #ffffff;
+          --da-input-color: #0f172a;
+          --da-input-border: rgba(226, 232, 240, 0.85);
+          
+          --da-code-bg: #090d16;
+          --da-code-border: #1e293b;
+          --da-code-text: #94a3b8;
+          
+          --da-table-border: rgba(226, 232, 240, 0.85);
+          --da-table-th-bg: #f8fafc;
+          --da-table-th-text: #475569;
+          --da-table-td-text: #334155;
+
+          --da-svg-bg: #ffffff;
+          --da-svg-grid: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          
+          --da-svg-indigo-bg: #eff6ff;
+          --da-svg-indigo-border: #3b82f6;
+          --da-svg-indigo-text: #1e3a8a;
+          
+          --da-svg-green-bg: #f0fdf4;
+          --da-svg-green-border: #10b981;
+          --da-svg-green-text: #065f46;
+          
+          --da-svg-red-bg: #fee2e2;
+          --da-svg-red-border: #f43f5e;
+          --da-svg-red-text: #991b1b;
+          
+          --da-svg-amber-bg: #fffbeb;
+          --da-svg-amber-border: #d97706;
+          --da-svg-amber-text: #78350f;
+
+          --da-svg-purple-bg: #faf5ff;
+          --da-svg-purple-border: #c084fc;
+          --da-svg-purple-text: #6b21a8;
         }
+
+        .dark .da-container {
+          background-color: #020617 !important;
+          color: #cbd5e1 !important;
+
+          --da-bg: #020617;
+          --da-text: #cbd5e1;
+          --da-text-title: #ffffff;
+          --da-text-muted: #94a3b8;
+          --da-card-bg: rgba(15, 23, 42, 0.75);
+          --da-card-border: rgba(51, 65, 85, 0.6);
+          --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --da-tab-bg: rgba(15, 23, 42, 0.6);
+          --da-tab-border: rgba(51, 65, 85, 0.6);
+          --da-tab-text: #94a3b8;
+          --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --da-tab-hover-border: rgba(51, 65, 85, 0.6);
+          --da-tab-hover-text: #f8fafc;
+          
+          --da-input-bg: #0f172a;
+          --da-input-color: #f1f5f9;
+          --da-input-border: rgba(51, 65, 85, 0.8);
+          
+          --da-code-bg: #020617;
+          --da-code-border: rgba(51, 65, 85, 0.6);
+          --da-code-text: #38bdf8;
+          
+          --da-table-border: rgba(51, 65, 85, 0.6);
+          --da-table-th-bg: rgba(15, 23, 42, 0.8);
+          --da-table-th-text: #94a3b8;
+          --da-table-td-text: #cbd5e1;
+
+          --da-svg-bg: #020617;
+          --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+          
+          --da-svg-indigo-bg: rgba(59, 130, 246, 0.15);
+          --da-svg-indigo-border: rgba(59, 130, 246, 0.5);
+          --da-svg-indigo-text: #60a5fa;
+          
+          --da-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --da-svg-green-border: rgba(16, 185, 129, 0.4);
+          --da-svg-green-text: #4ade80;
+          
+          --da-svg-red-bg: rgba(244, 63, 94, 0.15);
+          --da-svg-red-border: rgba(244, 63, 94, 0.5);
+          --da-svg-red-text: #f87171;
+          
+          --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
+          --da-svg-amber-border: rgba(245, 158, 11, 0.5);
+          --da-svg-amber-text: #fbbf24;
+
+          --da-svg-purple-bg: rgba(168, 85, 247, 0.15);
+          --da-svg-purple-border: rgba(168, 85, 247, 0.4);
+          --da-svg-purple-text: #c084fc;
+        }
+
         .da-card {
-          background: rgba(255, 255, 255, 0.95);
-          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
           margin-bottom: 20px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
-          transition: all 0.2s ease-in-out;
+          box-shadow: var(--da-card-shadow);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-card:hover {
           border-color: #3b82f6;
@@ -394,7 +503,7 @@ export default function NetworkAndEdgeSecurityVisualizer() {
         .da-card-title {
           font-size: 17px;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--da-text-title);
           margin-bottom: 10px;
           display: flex;
           align-items: center;
@@ -402,7 +511,7 @@ export default function NetworkAndEdgeSecurityVisualizer() {
         }
         .da-card-desc {
           font-size: 13px;
-          color: #475569;
+          color: var(--da-text-muted);
           line-height: 1.6;
         }
         .da-tabs {
@@ -410,7 +519,7 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--da-card-border);
           padding-bottom: 10px;
         }
         .da-tb {
@@ -419,20 +528,20 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           gap: 6px;
           padding: 8px 16px;
           border-radius: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--da-tab-border);
           font-size: 12px;
           font-weight: 600;
-          color: #475569;
-          background: rgba(255, 255, 255, 0.85);
+          color: var(--da-tab-text);
+          background: var(--da-tab-bg);
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.15s ease-in-out;
           outline: none;
         }
         .da-tb:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          border-color: var(--da-tab-hover-border);
+          color: var(--da-tab-hover-text);
         }
         .da-tb.da-on {
           background: #2563eb;
@@ -442,9 +551,10 @@ export default function NetworkAndEdgeSecurityVisualizer() {
         }
 
         .da-svg-bg {
-          background-color: #ffffff;
-          background-image: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+          background-color: var(--da-svg-bg) !important;
+          background-image: var(--da-svg-grid) !important;
           background-size: 16px 16px;
+          border: 1.5px solid var(--da-card-border);
         }
         
         .da-flow-blue {
@@ -484,13 +594,12 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           }
         }
 
-        /* Modern Architect Learning Center styles */
         .da-edu-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+          box-shadow: var(--da-card-shadow);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-edu-card:hover {
@@ -499,17 +608,16 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           border-color: #bfdbfe;
         }
         
-        /* Premium Academy Directory Styles */
         .acad-dir-container {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          box-shadow: var(--da-card-shadow);
         }
         .acad-dir-header {
-          background: #0f172a;
-          color: #f8fafc;
+          background: var(--da-input-bg);
+          color: var(--da-text-title);
           padding: 16px;
           font-weight: 800;
           font-size: 11px;
@@ -518,6 +626,7 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           display: flex;
           align-items: center;
           gap: 8px;
+          border-bottom: 1px solid var(--da-card-border);
         }
         .acad-dir-folder-btn {
           width: 100%;
@@ -525,18 +634,18 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          background: var(--da-bg);
+          border-bottom: 1px solid var(--da-card-border);
           font-size: 10px;
           font-weight: 850;
-          color: #475569;
+          color: var(--da-text-muted);
           text-transform: uppercase;
           letter-spacing: 0.04em;
           transition: all 0.2s ease;
         }
         .acad-dir-folder-btn:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          color: var(--da-text-title);
         }
         .acad-dir-item-btn {
           width: 105%;
@@ -546,34 +655,34 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           padding: 10px 18px;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: var(--da-text-muted);
           border-left: 3px solid transparent;
-          background: #ffffff;
+          background: var(--da-card-bg);
           transition: all 0.15s ease;
           text-align: left;
         }
         .acad-dir-item-btn:hover {
-          background: #f8fafc;
+          background: var(--da-tab-hover-bg);
           color: #2563eb;
-          border-left-color: #cbd5e1;
+          border-left-color: var(--da-card-border);
         }
         .acad-dir-item-btn.acad-active {
-          background: #eff6ff;
-          color: #1e40af;
-          border-left-color: #2563eb;
+          background: var(--da-svg-indigo-bg);
+          color: var(--da-svg-indigo-text);
+          border-left-color: var(--da-svg-indigo-border);
           font-weight: 800;
         }
         .acad-detail-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
           border-radius: 16px;
           padding: 28px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+          box-shadow: var(--da-card-shadow);
         }
         .acad-hero-badge {
-          background: #eff6ff;
-          border: 1.5px solid #bfdbfe;
-          color: #1e40af;
+          background: var(--da-svg-indigo-bg);
+          border: 1.5px solid var(--da-svg-indigo-border);
+          color: var(--da-svg-indigo-text);
           font-size: 9.5px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -585,13 +694,13 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           gap: 5px;
         }
         .acad-takeaway-box {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border-left: 4px solid #2563eb;
+          background: var(--da-bg);
+          border-left: 4px solid var(--da-svg-indigo-border);
           border-radius: 12px;
           padding: 18px;
           font-size: 12px;
           line-height: 1.6;
-          color: #475569;
+          color: var(--da-text-muted);
           font-weight: 600;
         }
         .acad-table {
@@ -600,39 +709,39 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           font-size: 12px;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--da-table-border);
         }
         .acad-table th {
-          background: #f8fafc;
-          color: #334155;
+          background: var(--da-table-th-bg);
+          color: var(--da-table-th-text);
           font-weight: 800;
           padding: 12px 14px;
-          border-bottom: 1.5px solid #e2e8f0;
+          border-bottom: 1.5px solid var(--da-table-border);
           text-align: left;
         }
         .acad-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid #f1f5f9;
-          color: #475569;
+          border-bottom: 1px solid var(--da-table-border);
+          color: var(--da-table-td-text);
         }
         .acad-table tr:last-child td {
           border-bottom: none;
         }
         .acad-sim-diagram {
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 18px;
           box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
           position: relative;
         }
         .acad-terminal {
-          background: #090d16;
-          border: 1px solid #1e293b;
+          background: var(--da-code-bg);
+          border: 1px solid var(--da-code-border);
           border-radius: 12px;
           padding: 14px;
           font-family: 'Fira Code', 'Courier New', Courier, monospace;
-          color: #cbd5e1;
+          color: var(--da-code-text);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
           position: relative;
         }
@@ -665,171 +774,108 @@ export default function NetworkAndEdgeSecurityVisualizer() {
           color: #ffffff;
         }
 
-        /* Centralized Dark Mode Overrides for NetworkAndEdgeSecurityVisualizer.tsx */
-        .dark .da-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-card,
-        .dark [class*="da-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
-        .dark .da-card b,
-        .dark .da-card strong,
-        .dark .da-card h3,
-        .dark .da-card h4 {
-          color: #ffffff !important;
-        }
-        .dark .da-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .da-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .da-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-sec,
-        .dark .da-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .da-log,
-        .dark .da-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .da-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .da-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.da-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst,
-        .dark .da-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst .meta,
-        .dark .da-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .da-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
+        .da-container h1,
+        .da-container h2,
+        .da-container h3,
+        .da-container h4,
+        .da-container th,
+        .da-container .text-slate-900,
+        .da-container .text-slate-850,
+        .da-container .text-slate-800,
+        .da-container .text-gray-900 {
+          color: var(--da-text-title) !important;
         }
         
-        /* Node Status Overrides */
-        .dark .da-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
+        .da-container p,
+        .da-container td,
+        .da-container li,
+        .da-container .text-slate-750,
+        .da-container .text-slate-700,
+        .da-container .text-slate-650,
+        .da-container .text-slate-600,
+        .da-container .text-slate-500,
+        .da-container .text-gray-600,
+        .da-container .text-gray-500 {
+          color: var(--da-text-muted) !important;
         }
-        .dark .da-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .da-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .da-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
+
+        .da-container .bg-white {
+          background-color: var(--da-card-bg) !important;
         }
         
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
+        .da-container .bg-slate-50,
+        .da-container .bg-slate-100 {
+          background-color: var(--da-bg) !important;
         }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
+
+        .da-container .hover\:bg-slate-50:hover,
+        .da-container .hover\:bg-slate-100:hover,
+        .da-container .hover\:bg-blue-50:hover {
+          background-color: var(--da-tab-hover-bg) !important;
         }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        .da-container .border-slate-200,
+        .da-container .border-slate-100,
+        .da-container .border-slate-150,
+        .da-container .border-slate-250,
+        .da-container .border-gray-200 {
+          border-color: var(--da-card-border) !important;
         }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        /* Scoped input/form components */
+        .da-container select,
+        .da-container input,
+        .da-container textarea {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
+          border: 1.5px solid var(--da-input-border) !important;
+          border-radius: 8px;
+          outline: none;
+          transition: all 0.2s ease;
         }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        .da-container select option {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
         }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
+
+        .da-container select:focus,
+        .da-container input:focus,
+        .da-container textarea:focus {
+          border-color: #2563eb !important;
         }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
+
+        /* Alert overrides in dark mode */
+        .dark .da-container .bg-blue-50 {
+          background-color: rgba(37, 99, 235, 0.15) !important;
+          color: #a5b4fc !important;
         }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
+        
+        .dark .da-container .bg-sky-50 {
+          background-color: rgba(14, 165, 233, 0.15) !important;
+          color: #7dd3fc !important;
         }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
+        
+        .dark .da-container .bg-amber-50 {
+          background-color: rgba(245, 158, 11, 0.15) !important;
+          color: #fef08a !important;
         }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        .dark .da-container .bg-rose-50 {
+          background-color: rgba(244, 63, 94, 0.15) !important;
+          color: #fca5a5 !important;
         }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        
+        .dark .da-container .bg-red-50 {
+          background-color: rgba(239, 68, 68, 0.15) !important;
+          color: #fca5a5 !important;
         }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
+        
+        .dark .da-container .bg-green-50 {
+          background-color: rgba(16, 185, 129, 0.15) !important;
+          color: #86efac !important;
         }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-              `}</style>
+      `}</style>
 
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
@@ -877,7 +923,7 @@ export default function NetworkAndEdgeSecurityVisualizer() {
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
           
-          <div className="card text-left">
+          <div className="da-card text-left">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
               <Shield className="w-5 h-5 text-indigo-600" /> Network &amp; Edge Security Architect Notes
             </h2>
@@ -1643,40 +1689,40 @@ export default function NetworkAndEdgeSecurityVisualizer() {
                 <svg className="w-full h-full min-h-[160px]" viewBox="0 0 320 160">
                   <defs>
                     <marker id="arrow-acm" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--da-text-muted)" />
                     </marker>
                   </defs>
 
                   {/* Flow links */}
                   {/* ACM -> EventBridge */}
-                  <path d="M 60 40 Q 115 25 170 40" fill="none" stroke="#64748b" strokeWidth="1.5" className={acmEvalStep >= 2 ? 'da-flow-blue' : ''} markerEnd="url(#arrow-acm)" />
+                  <path d="M 60 40 Q 115 25 170 40" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" className={acmEvalStep >= 2 ? 'da-flow-blue' : ''} markerEnd="url(#arrow-acm)" />
                   {/* Config -> EventBridge */}
-                  <path d="M 60 110 Q 115 125 170 110" fill="none" stroke="#64748b" strokeWidth="1.5" className={acmEvalStep >= 1 ? 'da-flow-blue' : ''} markerEnd="url(#arrow-acm)" />
+                  <path d="M 60 110 Q 115 125 170 110" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" className={acmEvalStep >= 1 ? 'da-flow-blue' : ''} markerEnd="url(#arrow-acm)" />
                   {/* EventBridge -> Lambda/SNS/SQS targets */}
-                  <path d="M 230 75 L 265 75" fill="none" stroke="#10b981" strokeWidth="2" className={acmEvalStep >= 3 && certType === 'import' ? 'da-flow-green' : ''} markerEnd="url(#arrow-acm)" />
+                  <path d="M 230 75 L 265 75" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2" className={acmEvalStep >= 3 && certType === 'import' ? 'da-flow-green' : ''} markerEnd="url(#arrow-acm)" />
 
                   {/* ACM Source Node */}
                   <g transform="translate(10, 20)">
-                    <rect x="0" y="0" width="50" height="40" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="25" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">ACM</text>
-                    <text x="25" y="27" fill="#cbd5e1" fontSize="5.5" textAnchor="middle">Certs Store</text>
-                    <text x="25" y="35" fill="#a855f7" fontSize="5.5" fontWeight="bold" textAnchor="middle">SSL/TLS</text>
+                    <rect x="0" y="0" width="50" height="40" rx="6" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1.5" />
+                    <text x="25" y="16" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">ACM</text>
+                    <text x="25" y="27" fill="var(--da-code-text)" fontSize="5.5" textAnchor="middle">Certs Store</text>
+                    <text x="25" y="35" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">SSL/TLS</text>
                   </g>
 
                   {/* AWS Config Compliance check */}
                   <g transform="translate(10, 95)">
-                    <rect x="0" y="0" width="50" height="40" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" />
-                    <text x="25" y="16" fill="#6b21a8" fontSize="7" fontWeight="bold" textAnchor="middle">AWS Config</text>
-                    <text x="25" y="27" fill="#a855f7" fontSize="5" textAnchor="middle">managed check</text>
-                    <text x="25" y="35" fill="#6b21a8" fontSize="5" fontWeight="bold" textAnchor="middle">acm-check</text>
+                    <rect x="0" y="0" width="50" height="40" rx="6" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                    <text x="25" y="16" fill="var(--da-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">AWS Config</text>
+                    <text x="25" y="27" fill="var(--da-svg-purple-text)" fontSize="5" textAnchor="middle">managed check</text>
+                    <text x="25" y="35" fill="var(--da-svg-purple-text)" fontSize="5" fontWeight="bold" textAnchor="middle">acm-check</text>
                   </g>
 
                   {/* EventBridge Bus */}
                   <g transform="translate(170, 50)">
-                    <rect x="0" y="0" width="60" height="50" rx="6" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                    <text x="30" y="16" fill="#78350f" fontSize="7" fontWeight="bold" textAnchor="middle">EventBridge</text>
-                    <text x="30" y="27" fill="#b45309" fontSize="6" textAnchor="middle">Bus route</text>
-                    <text x="30" y="38" fill="#d97706" fontSize="5.5" fontWeight="bold" textAnchor="middle">
+                    <rect x="0" y="0" width="60" height="50" rx="6" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                    <text x="30" y="16" fill="var(--da-svg-amber-text)" fontSize="7" fontWeight="bold" textAnchor="middle">EventBridge</text>
+                    <text x="30" y="27" fill="var(--da-svg-amber-text)" fontSize="6" textAnchor="middle">Bus route</text>
+                    <text x="30" y="38" fill="var(--da-svg-amber-border)" fontSize="5.5" fontWeight="bold" textAnchor="middle">
                       {acmEvalStep >= 2 ? 'Events active' : 'Standby'}
                     </text>
                   </g>
@@ -1684,12 +1730,12 @@ export default function NetworkAndEdgeSecurityVisualizer() {
                   {/* Target SNS Alerts */}
                   <g transform="translate(265, 55)">
                     <rect x="0" y="0" width="50" height="40" rx="6" 
-                      fill={certType === 'import' && acmEvalStep === 3 ? '#fff1f2' : '#f0fdf4'} 
-                      stroke={certType === 'import' && acmEvalStep === 3 ? '#f43f5e' : '#10b981'} 
+                      fill={certType === 'import' && acmEvalStep === 3 ? 'var(--da-svg-red-bg)' : 'var(--da-svg-green-bg)'} 
+                      stroke={certType === 'import' && acmEvalStep === 3 ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} 
                       strokeWidth="1.5" />
-                    <text x="25" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Targets</text>
-                    <text x="25" y="25" fill="#64748b" fontSize="5.5" textAnchor="middle">Lambda/SNS</text>
-                    <text x="25" y="34" fill={certType === 'import' && acmEvalStep === 3 ? '#e11d48' : '#16a34a'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                    <text x="25" y="16" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Targets</text>
+                    <text x="25" y="25" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">Lambda/SNS</text>
+                    <text x="25" y="34" fill={certType === 'import' && acmEvalStep === 3 ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
                       {certType === 'import' && acmEvalStep === 3 ? '🚨 ALARM' : '🟢 Secure'}
                     </text>
                   </g>
@@ -2035,66 +2081,66 @@ export default function NetworkAndEdgeSecurityVisualizer() {
                 <svg className="w-full min-w-[540px] h-[260px]" viewBox="0 0 540 260">
                   <defs>
                     <marker id="arrow-ddos" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--da-text-muted)" />
                     </marker>
                   </defs>
 
                   {/* Operational Tier boundaries */}
-                  <rect x="5" y="10" width="165" height="240" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="15" y="24" fill="#94a3b8" fontSize="6.5" fontWeight="bold">AWS Edge Services</text>
+                  <rect x="5" y="10" width="165" height="240" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="15" y="24" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">AWS Edge Services</text>
 
-                  <rect x="180" y="10" width="180" height="240" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="190" y="24" fill="#94a3b8" fontSize="6.5" fontWeight="bold">AWS Regional public/private subnets</text>
+                  <rect x="180" y="10" width="180" height="240" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="190" y="24" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">AWS Regional public/private subnets</text>
 
-                  <rect x="370" y="10" width="165" height="240" rx="8" fill="none" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="380" y="24" fill="#94a3b8" fontSize="6.5" fontWeight="bold">Corporate Data Center</text>
+                  <rect x="370" y="10" width="165" height="240" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="380" y="24" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold">Corporate Data Center</text>
 
                   {/* Flow conduits */}
                   {/* Edge -> Region */}
                   <path d="M 125 130 H 220" fill="none" 
                     className={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'da-flow-rose' : ddosTrafficState === 'attack' && ddosMitigation === 'shield_advanced' ? 'da-flow-green' : 'da-flow-blue'} 
-                    stroke={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '#f43f5e' : '#cbd5e1'} strokeWidth="2" />
+                    stroke={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-border)' : 'var(--da-card-border)'} strokeWidth="2" />
                   
                   {/* Region -> Private ASG */}
                   <path d="M 270 130 H 300" fill="none" 
                     className={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'da-flow-rose' : 'da-flow-blue'} 
-                    stroke="#cbd5e1" strokeWidth="1.5" />
+                    stroke="var(--da-card-border)" strokeWidth="1.5" />
 
                   {/* Private Transit Gateway -> Corporate datacenter */}
-                  <path d="M 335 200 H 425" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="4,4" />
+                  <path d="M 335 200 H 425" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" strokeDasharray="4,4" />
 
                   {/* 1. AWS Edge Services nodes */}
                   {/* Route 53 */}
                   <g transform="translate(15, 45)">
-                    <rect x="0" y="0" width="105" height="26" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="52.5" y="15" fill="#1e3a8a" fontSize="7" fontWeight="bold" textAnchor="middle">Route 53 DNS</text>
+                    <rect x="0" y="0" width="105" height="26" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                    <text x="52.5" y="15" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Route 53 DNS</text>
                   </g>
                   {/* CloudFront Edge CDN */}
                   <g transform="translate(15, 85)">
-                    <rect x="0" y="0" width="105" height="26" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="52.5" y="15" fill="#1e3a8a" fontSize="7" fontWeight="bold" textAnchor="middle">CloudFront CDN</text>
+                    <rect x="0" y="0" width="105" height="26" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                    <text x="52.5" y="15" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="bold" textAnchor="middle">CloudFront CDN</text>
                   </g>
                   {/* Edge WAF */}
                   <g transform="translate(15, 125)">
                     <rect x="0" y="0" width="105" height="26" rx="4" 
-                      fill={ddosMitigation === 'shield_advanced' ? '#ecfdf5' : '#ffffff'} 
-                      stroke={ddosMitigation === 'shield_advanced' ? '#10b981' : '#cbd5e1'} strokeWidth="1.5" />
-                    <text x="52.5" y="15" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">Edge WAF Rules</text>
+                      fill={ddosMitigation === 'shield_advanced' ? 'var(--da-svg-green-bg)' : 'var(--da-bg)'} 
+                      stroke={ddosMitigation === 'shield_advanced' ? 'var(--da-svg-green-border)' : 'var(--da-card-border)'} strokeWidth="1.5" />
+                    <text x="52.5" y="15" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Edge WAF Rules</text>
                   </g>
                   {/* Global Accelerator */}
                   <g transform="translate(15, 165)">
-                    <rect x="0" y="0" width="105" height="26" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="52.5" y="15" fill="#1e3a8a" fontSize="7" fontWeight="bold" textAnchor="middle">Global Accelerator</text>
+                    <rect x="0" y="0" width="105" height="26" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
+                    <text x="52.5" y="15" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Global Accelerator</text>
                   </g>
 
                   {/* 2. AWS Region public/private nodes */}
                   {/* Public ALB */}
                   <g transform="translate(195, 80)">
                     <rect x="0" y="0" width="70" height="35" rx="4" 
-                      fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '#fff1f2' : '#ffffff'} 
-                      stroke={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '#f43f5e' : '#cbd5e1'} strokeWidth="1.5" />
-                    <text x="35" y="15" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">Public ALB</text>
-                    <text x="35" y="26" fill="#ef4444" fontSize="5.5" fontWeight="bold" textAnchor="middle">
+                      fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-bg)' : 'var(--da-bg)'} 
+                      stroke={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-border)' : 'var(--da-card-border)'} strokeWidth="1.5" />
+                    <text x="35" y="15" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Public ALB</text>
+                    <text x="35" y="26" fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="5.5" fontWeight="bold" textAnchor="middle">
                       {ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '🔥 Saturated' : '🟢 Healthy'}
                     </text>
                   </g>
@@ -2102,32 +2148,32 @@ export default function NetworkAndEdgeSecurityVisualizer() {
                   {/* Private ASG EC2 */}
                   <g transform="translate(285, 125)">
                     <rect x="0" y="0" width="70" height="50" rx="4" 
-                      fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '#fff1f2' : '#ffffff'} 
-                      stroke={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '#f43f5e' : '#cbd5e1'} strokeWidth="1.5" />
-                    <text x="35" y="18" fill="#1e293b" fontSize="7" fontWeight="bold" textAnchor="middle">Private ASG</text>
-                    <text x="35" y="30" fill="#64748b" fontSize="5.5" textAnchor="middle">Compute Cluster</text>
-                    <text x="35" y="41" fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '#dc2626' : '#16a34a'} fontSize="6" fontWeight="bold" textAnchor="middle">
+                      fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-bg)' : 'var(--da-bg)'} 
+                      stroke={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-border)' : 'var(--da-card-border)'} strokeWidth="1.5" />
+                    <text x="35" y="18" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Private ASG</text>
+                    <text x="35" y="30" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">Compute Cluster</text>
+                    <text x="35" y="41" fill={ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="6" fontWeight="bold" textAnchor="middle">
                       {ddosTrafficState === 'attack' && ddosMitigation !== 'shield_advanced' ? '❌ 100% CPU' : '🟢 Healthy'}
                     </text>
                   </g>
 
                   {/* AWS Transit Gateway */}
                   <g transform="translate(285, 185)">
-                    <rect x="0" y="0" width="70" height="28" rx="4" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.2" />
-                    <text x="35" y="16" fill="#6b21a8" fontSize="6.5" fontWeight="bold" textAnchor="middle">Transit Gateway</text>
+                    <rect x="0" y="0" width="70" height="28" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.2" />
+                    <text x="35" y="16" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Transit Gateway</text>
                   </g>
 
                   {/* 3. Corporate Data Center */}
                   {/* Corporate Data Center Host */}
                   <g transform="translate(385, 80)">
-                    <rect x="0" y="0" width="130" height="35" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="65" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Corporate Data Center</text>
-                    <text x="65" y="26" fill="#64748b" fontSize="5.5" textAnchor="middle">Customer Gateway</text>
+                    <rect x="0" y="0" width="130" height="35" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                    <text x="65" y="16" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Corporate Data Center</text>
+                    <text x="65" y="26" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">Customer Gateway</text>
                   </g>
                   {/* Transit endpoint DX/VPN */}
                   <g transform="translate(385, 185)">
-                    <rect x="0" y="0" width="130" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="65" y="17" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Direct Connect (DX) / VPN</text>
+                    <rect x="0" y="0" width="130" height="28" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
+                    <text x="65" y="17" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Direct Connect (DX) / VPN</text>
                   </g>
                 </svg>
               </div>
@@ -2259,31 +2305,31 @@ export default function NetworkAndEdgeSecurityVisualizer() {
                 <svg className="w-full h-full min-h-[160px]" viewBox="0 0 280 120">
                   <defs>
                     <marker id="arrow-scan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8" />
+                      <path d="M 0 2 L 8 5 L 0 8 z" fill="var(--da-text-muted)" />
                     </marker>
                   </defs>
 
                   {/* Flow pipeline */}
-                  <path d="M 70 60 H 140" fill="none" stroke="#64748b" strokeWidth="1.5" className={scannerState === 'scanning' ? 'da-flow-blue' : ''} />
-                  <path d="M 200 60 H 265" fill="none" stroke="#cbd5e1" strokeWidth="1.5" className={scannerState === 'alert' ? 'da-flow-rose' : ''} />
+                  <path d="M 70 60 H 140" fill="none" stroke="var(--da-text-muted)" strokeWidth="1.5" className={scannerState === 'scanning' ? 'da-flow-blue' : ''} />
+                  <path d="M 200 60 H 265" fill="none" stroke="var(--da-card-border)" strokeWidth="1.5" className={scannerState === 'alert' ? 'da-flow-rose' : ''} />
 
                   {/* Left: AWS Resources target */}
                   <g transform="translate(15, 35)">
-                    <rect x="0" y="0" width="55" height="50" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.5" />
-                    <text x="27.5" y="16" fill="#cbd5e1" fontSize="7.5" fontWeight="bold" textAnchor="middle">Target</text>
-                    <text x="27.5" y="27" fill="#cbd5e1" fontSize="7" fontWeight="bold" textAnchor="middle">Resource</text>
-                    <text x="27.5" y="38" fill="#94a3b8" fontSize="5.5" textAnchor="middle">EC2/S3/VPC</text>
+                    <rect x="0" y="0" width="55" height="50" rx="6" fill="var(--da-code-bg)" stroke="var(--da-code-border)" strokeWidth="1.5" />
+                    <text x="27.5" y="16" fill="var(--da-code-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Target</text>
+                    <text x="27.5" y="27" fill="var(--da-code-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Resource</text>
+                    <text x="27.5" y="38" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">EC2/S3/VPC</text>
                   </g>
 
                   {/* Center: Intelligent security scanner */}
                   <g transform="translate(140, 35)">
                     <rect x="0" y="0" width="60" height="50" rx="6" 
-                      fill={scannerState === 'alert' ? '#fff1f2' : '#f8fafc'} 
-                      stroke={scannerState === 'alert' ? '#f43f5e' : '#cbd5e1'} 
+                      fill={scannerState === 'alert' ? 'var(--da-svg-red-bg)' : 'var(--da-bg)'} 
+                      stroke={scannerState === 'alert' ? 'var(--da-svg-red-border)' : 'var(--da-card-border)'} 
                       strokeWidth="1.5" />
-                    <text x="30" y="16" fill="#334155" fontSize="7" fontWeight="bold" textAnchor="middle">Security</text>
-                    <text x="30" y="25" fill="#64748b" fontSize="5.5" textAnchor="middle">Scanner</text>
-                    <text x="30" y="36" fill={scannerState === 'alert' ? '#dc2626' : '#2563eb'} fontSize="6.5" fontWeight="extrabold" textAnchor="middle">
+                    <text x="30" y="16" fill="var(--da-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Security</text>
+                    <text x="30" y="25" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">Scanner</text>
+                    <text x="30" y="36" fill={scannerState === 'alert' ? 'var(--da-svg-red-text)' : 'var(--da-svg-indigo-text)'} fontSize="6.5" fontWeight="extrabold" textAnchor="middle">
                       {scannerType === 'guardduty' ? 'GuardDuty' : scannerType === 'inspector' ? 'Inspector' : 'Macie'}
                     </text>
                   </g>
@@ -2291,12 +2337,12 @@ export default function NetworkAndEdgeSecurityVisualizer() {
                   {/* Right: Security findings database */}
                   <g transform="translate(225, 35)">
                     <rect x="0" y="0" width="45" height="50" rx="6" 
-                      fill={scannerState === 'alert' ? '#fee2e2' : '#e2e8f0'} 
-                      stroke={scannerState === 'alert' ? '#ef4444' : '#cbd5e1'} 
+                      fill={scannerState === 'alert' ? 'var(--da-svg-red-bg)' : 'var(--da-card-border)'} 
+                      stroke={scannerState === 'alert' ? 'var(--da-svg-red-border)' : 'var(--da-card-border)'} 
                       strokeWidth="1.5" />
-                    <text x="22.5" y="16" fill="#334155" fontSize="6.5" fontWeight="bold" textAnchor="middle">Alert</text>
-                    <text x="22.5" y="27" fill="#64748b" fontSize="5.5" textAnchor="middle">Event</text>
-                    <text x="22.5" y="38" fill="#475569" fontSize="6" fontWeight="bold" textAnchor="middle">
+                    <text x="22.5" y="16" fill="var(--da-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Alert</text>
+                    <text x="22.5" y="27" fill="var(--da-text-muted)" fontSize="5.5" textAnchor="middle">Event</text>
+                    <text x="22.5" y="38" fill="var(--da-text-muted)" fontSize="6" fontWeight="bold" textAnchor="middle">
                       {scannerState === 'alert' ? 'DISPATCHED' : 'STANDBY'}
                     </text>
                   </g>
