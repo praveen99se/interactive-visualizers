@@ -1155,6 +1155,40 @@ export default function LoadBalancerVisualizer() {
           border-color: #7c3aed !important;
           box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
         }
+
+        /* Integration Scenario Buttons Custom Coloring (Light Mode) */
+        .anl-btn-scenario-alb:not(.anl-on-alb) {
+          background: #fff7ed !important;
+          color: #ea580c !important;
+          border-color: #ffedd5 !important;
+        }
+        .anl-btn-scenario-alb:not(.anl-on-alb):hover {
+          background: #ffedd5 !important;
+          border-color: #fed7aa !important;
+          color: #c2410c !important;
+        }
+
+        .anl-btn-scenario-nlb:not(.anl-on-nlb) {
+          background: #f0f9ff !important;
+          color: #0284c7 !important;
+          border-color: #e0f2fe !important;
+        }
+        .anl-btn-scenario-nlb:not(.anl-on-nlb):hover {
+          background: #e0f2fe !important;
+          border-color: #bae6fd !important;
+          color: #0369a1 !important;
+        }
+
+        .anl-btn-scenario-gwlb:not(.anl-on-gwlb) {
+          background: #faf5ff !important;
+          color: #7c3aed !important;
+          border-color: #f3e8ff !important;
+        }
+        .anl-btn-scenario-gwlb:not(.anl-on-gwlb):hover {
+          background: #f3e8ff !important;
+          border-color: #e9d5ff !important;
+          color: #6d28d9 !important;
+        }
         
         /* Blueprint dot-grid backdrop style */
         .anl-svg-bg {
@@ -1483,6 +1517,40 @@ export default function LoadBalancerVisualizer() {
           border-color: #6d28d9 !important;
           color: #ffffff !important;
           box-shadow: 0 2px 6px rgba(109, 40, 217, 0.4) !important;
+        }
+
+        /* Integration Scenario Buttons Custom Coloring (Dark Mode) */
+        .dark .anl-btn-scenario-alb:not(.anl-on-alb) {
+          background: rgba(234, 88, 12, 0.1) !important;
+          color: #f97316 !important;
+          border-color: rgba(234, 88, 12, 0.25) !important;
+        }
+        .dark .anl-btn-scenario-alb:not(.anl-on-alb):hover {
+          background: rgba(234, 88, 12, 0.2) !important;
+          border-color: rgba(234, 88, 12, 0.4) !important;
+          color: #fdba74 !important;
+        }
+
+        .dark .anl-btn-scenario-nlb:not(.anl-on-nlb) {
+          background: rgba(2, 132, 199, 0.1) !important;
+          color: #38bdf8 !important;
+          border-color: rgba(2, 132, 199, 0.25) !important;
+        }
+        .dark .anl-btn-scenario-nlb:not(.anl-on-nlb):hover {
+          background: rgba(2, 132, 199, 0.2) !important;
+          border-color: rgba(2, 132, 199, 0.4) !important;
+          color: #7dd3fc !important;
+        }
+
+        .dark .anl-btn-scenario-gwlb:not(.anl-on-gwlb) {
+          background: rgba(124, 58, 237, 0.1) !important;
+          color: #a78bfa !important;
+          border-color: rgba(124, 58, 237, 0.25) !important;
+        }
+        .dark .anl-btn-scenario-gwlb:not(.anl-on-gwlb):hover {
+          background: rgba(124, 58, 237, 0.2) !important;
+          border-color: rgba(124, 58, 237, 0.4) !important;
+          color: #c084fc !important;
         }
         .dark .anl-met {
           background: rgba(15, 23, 42, 0.6) !important;
@@ -2961,21 +3029,21 @@ Target Server Index:
               {/* Scenario Toggles */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
                 <button
-                  className={`anl-btn ${infraScenario === 'alb_ingress' ? 'anl-on-alb' : ''}`}
+                  className={`anl-btn anl-btn-scenario-alb ${infraScenario === 'alb_ingress' ? 'anl-on-alb' : ''}`}
                   onClick={() => handleScenarioChange('alb_ingress')}
                   style={{ fontWeight: 'bold' }}
                 >
                   🍔 Public ALB Ingress (L7)
                 </button>
                 <button
-                  className={`anl-btn ${infraScenario === 'nlb_throughput' ? 'anl-on-nlb' : ''}`}
+                  className={`anl-btn anl-btn-scenario-nlb ${infraScenario === 'nlb_throughput' ? 'anl-on-nlb' : ''}`}
                   onClick={() => handleScenarioChange('nlb_throughput')}
                   style={{ fontWeight: 'bold' }}
                 >
                   🔢 NLB Throughput (L4)
                 </button>
                 <button
-                  className={`anl-btn ${infraScenario === 'privatelink' ? 'anl-on-gwlb' : ''}`}
+                  className={`anl-btn anl-btn-scenario-gwlb ${infraScenario === 'privatelink' ? 'anl-on-gwlb' : ''}`}
                   onClick={() => handleScenarioChange('privatelink')}
                   style={{ fontWeight: 'bold' }}
                 >
@@ -2989,7 +3057,7 @@ Target Server Index:
                 {/* Left: Dynamic Widescreen SVG Map */}
                 <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
                   <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 'bold', textTransform: 'uppercase', color: activeColor }}>
                       🔍 {currentScenarioTitle}
                     </span>
                     <span style={{ fontSize: '11px', color: activeColor, fontWeight: 'bold' }}>
