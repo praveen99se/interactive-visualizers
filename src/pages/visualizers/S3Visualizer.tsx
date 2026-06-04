@@ -1492,18 +1492,165 @@ export default function S3Visualizer() {
   };
 
   return (
-    <div style={{ fontSize: '13.5px' }}>
+    <div className="s3-container" style={{ fontSize: '13.5px' }}>
       <style>{`
+        .s3-container {
+          font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+          color: var(--color-text-primary, #1e293b);
+
+          /* Theme Variables (Light mode default) */
+          --s3-bg: rgba(255, 255, 255, 0.75);
+          --s3-card-bg: rgba(255, 255, 255, 0.75);
+          --s3-card-border: rgba(226, 232, 240, 0.8);
+          --s3-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+          
+          --color-text-primary: #1e293b;
+          --color-text-secondary: #475569;
+          --color-text-tertiary: #64748b;
+          --color-border-secondary: #cbd5e1;
+          --color-border-tertiary: #e2e8f0;
+          --color-background-primary: #ffffff;
+          --color-background-secondary: #f8fafc;
+          --color-background-tertiary: #f1f5f9;
+          
+          --s3-tab-bg: rgba(255, 255, 255, 0.6);
+          --s3-tab-hover-bg: rgba(241, 245, 249, 0.8);
+          
+          --s3-btn-bg: rgba(255, 255, 255, 0.8);
+          --s3-btn-hover-bg: #f8fafc;
+          
+          --s3-terminal-bg: #0a0d16;
+          --s3-terminal-border: #1e293b;
+          --s3-terminal-color: #34d399;
+          
+          --s3-svg-grid-line: #e2e8f0;
+          --s3-svg-line-stroke: #cbd5e1;
+          
+          --s3-metric-card-bg: rgba(241, 245, 249, 0.3);
+          --s3-metric-card-border: #cbd5e1;
+          
+          --color-red: #dc2626;
+          --color-amber: #d97706;
+          --color-green: #16a34a;
+          --color-blue: #2563eb;
+          --color-purple: #7c3aed;
+
+          --s3-success-bg: #f0fdf4;
+          --s3-success-border: #bbf7d0;
+          --s3-success-text: #166534;
+          --s3-success-text-bold: #14532d;
+          --s3-error-bg: #fef2f2;
+          --s3-error-border: #fecaca;
+          --s3-error-text: #991b1b;
+          --s3-error-text-bold: #7f1d1d;
+
+          --s3-btn-active-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          --s3-btn-active-border: #059669;
+
+          /* Gradient stops - Light Mode */
+          --s3-grad-client-start: #ffffff;
+          --s3-grad-client-end: #f0f9ff;
+          --s3-grad-engine-start: #ecfdf5;
+          --s3-grad-engine-end: #d1fae5;
+          --s3-grad-disk-start: #f8fafc;
+          --s3-grad-disk-end: #f1f5f9;
+          --s3-grad-kms-start: #f0fdfa;
+          --s3-grad-kms-end: #e0f2fe;
+          --s3-grad-hsm-start: #fffbeb;
+          --s3-grad-hsm-end: #fef3c7;
+          --s3-grad-purple-start: #ffffff;
+          --s3-grad-purple-end: #faf5ff;
+          --s3-grad-ssec-engine-start: #faf5ff;
+          --s3-grad-ssec-engine-end: #f3e8ff;
+          --s3-grad-dsse-engine-start: #fff7ed;
+          --s3-grad-dsse-engine-end: #fed7aa;
+          --s3-grad-orange-start: #fff7ed;
+          --s3-grad-orange-end: #ffedd5;
+        }
+
+        .dark .s3-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+
+          --s3-bg: #020617;
+          --s3-card-bg: rgba(15, 23, 42, 0.75);
+          --s3-card-border: rgba(51, 65, 85, 0.6);
+          --s3-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --color-text-primary: #f8fafc;
+          --color-text-secondary: #94a3b8;
+          --color-text-tertiary: #64748b;
+          --color-border-secondary: rgba(51, 65, 85, 0.6);
+          --color-border-tertiary: rgba(51, 65, 85, 0.6);
+          --color-background-primary: #0f172a;
+          --color-background-secondary: #0b0f19;
+          --color-background-tertiary: #1e293b;
+          
+          --s3-tab-bg: rgba(15, 23, 42, 0.6);
+          --s3-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --s3-btn-bg: rgba(15, 23, 42, 0.8);
+          --s3-btn-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --s3-terminal-bg: #020617;
+          --s3-terminal-border: rgba(51, 65, 85, 0.6);
+          --s3-terminal-color: #38bdf8;
+          
+          --s3-svg-grid-line: rgba(51, 65, 85, 0.5);
+          --s3-svg-line-stroke: rgba(100, 116, 139, 0.5);
+          
+          --s3-metric-card-bg: rgba(15, 23, 42, 0.6);
+          --s3-metric-card-border: rgba(51, 65, 85, 0.6);
+          
+          --color-red: #f87171;
+          --color-amber: #fbbf24;
+          --color-green: #4ade80;
+          --color-blue: #60a5fa;
+          --color-purple: #a78bfa;
+
+          --s3-success-bg: rgba(22, 163, 74, 0.1);
+          --s3-success-border: rgba(74, 222, 128, 0.2);
+          --s3-success-text: #86efac;
+          --s3-success-text-bold: #4ade80;
+          --s3-error-bg: rgba(239, 68, 68, 0.1);
+          --s3-error-border: rgba(248, 113, 113, 0.2);
+          --s3-error-text: #fca5a5;
+          --s3-error-text-bold: #f87171;
+
+          --s3-btn-active-bg: linear-gradient(135deg, #059669 0%, #047857 100%);
+          --s3-btn-active-border: #047857;
+
+          /* Gradient stops - Dark Mode */
+          --s3-grad-client-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-client-end: rgba(37, 99, 235, 0.15);
+          --s3-grad-engine-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-engine-end: rgba(22, 163, 74, 0.15);
+          --s3-grad-disk-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-disk-end: rgba(71, 85, 105, 0.15);
+          --s3-grad-kms-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-kms-end: rgba(14, 165, 233, 0.15);
+          --s3-grad-hsm-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-hsm-end: rgba(217, 119, 6, 0.15);
+          --s3-grad-purple-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-purple-end: rgba(124, 58, 237, 0.15);
+          --s3-grad-ssec-engine-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-ssec-engine-end: rgba(168, 85, 247, 0.15);
+          --s3-grad-dsse-engine-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-dsse-engine-end: rgba(234, 88, 12, 0.15);
+          --s3-grad-orange-start: rgba(15, 23, 42, 0.85);
+          --s3-grad-orange-end: rgba(249, 115, 22, 0.15);
+        }
+
         /* Glowing Pipeline Animations */
         @keyframes s3Flow {
           from { stroke-dashoffset: 24; }
           to { stroke-dashoffset: 0; }
         }
-        .s3-flow-blue { stroke: #3b82f6; stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.4)); }
-        .s3-flow-orange { stroke: #f97316; stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.4)); }
-        .s3-flow-green { stroke: #22c55e; stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4)); }
-        .s3-flow-purple { stroke: #a855f7; stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(168, 85, 247, 0.4)); }
-        .s3-flow-red { stroke: #ef4444; stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.4)); }
+        .s3-flow-blue { stroke: var(--color-blue); stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.4)); }
+        .s3-flow-orange { stroke: var(--color-amber); stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.4)); }
+        .s3-flow-green { stroke: var(--color-green); stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.4)); }
+        .s3-flow-purple { stroke: var(--color-purple); stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(168, 85, 247, 0.4)); }
+        .s3-flow-red { stroke: var(--color-red); stroke-dasharray: 6,4; animation: s3Flow 1.2s linear infinite; stroke-width: 2.5px; filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.4)); }
         .s3-pulse-active { animation: s3Pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes s3Pulse {
           0%, 100% { opacity: 1; transform: scale(1); }
@@ -1512,43 +1659,38 @@ export default function S3Visualizer() {
         .s3-node-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
         .s3-node-btn:hover { filter: brightness(0.96) drop-shadow(0 4px 12px rgba(148, 163, 184, 0.15)); }
 
-        .s3-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .s3-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: rgba(255, 255, 255, 0.6); color: var(--color-text-secondary, #475569); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
-        .s3-tb:hover { background: rgba(241, 245, 249, 0.8); color: var(--color-text-primary, #1e293b); transform: translateY(-1px); }
-        .s3-tb.s3-on { background: #10b981; color: #fff; border-color: #10b981; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2), 0 2px 4px -2px rgba(16, 185, 129, 0.2); }
+        .s3-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 10px; }
+        .s3-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--s3-tab-bg); color: var(--color-text-secondary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
+        .s3-tb:hover { background: var(--s3-tab-hover-bg); color: var(--color-text-primary); transform: translateY(-1px); }
+        .s3-tb.s3-on { background: var(--s3-btn-active-bg); color: #fff; border-color: var(--s3-btn-active-border); font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
         
-        .s3-card { border: 1.5px solid rgba(226, 232, 240, 0.8); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.6); margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: #1e293b; }
-        .s3-sec { font-size: 12.5px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
+        .s3-card { border: 1.5px solid var(--s3-card-border); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: var(--s3-card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--s3-card-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: var(--color-text-primary); }
+        .s3-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
         .s3-sec:first-child { margin-top: 0; }
         .s3-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         .s3-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .s3-kv { display: flex; gap: 8px; font-size: 13px; margin: 6px 0; align-items: baseline; }
-        .s3-kk { min-width: 160px; color: #475569; flex-shrink: 0; font-weight: 500; }
+        .s3-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; font-weight: 500; }
         .s3-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
         
-        .s3-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary, #cbd5e1); background: rgba(255, 255, 255, 0.8); color: #1e293b; cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
-        .s3-btn:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .s3-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary); background: var(--s3-btn-bg); color: var(--color-text-primary); cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
+        .s3-btn:hover:not(:disabled) { background: var(--s3-btn-hover-bg); border-color: var(--color-border-secondary); transform: translateY(-1px); }
         .s3-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .s3-btn.s3-on { background: #10b981; color: #fff; border-color: #10b981; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.15); }
+        .s3-btn.s3-on { background: var(--s3-btn-active-bg); color: #fff; border-color: var(--s3-btn-active-border); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
         
-        .s3-terminal { background: #0a0d16; color: #34d399; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
-        .s3-svg-bg { background-color: #fafbfd; background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid rgba(226, 232, 240, 0.8); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
-        
-        /* Visually stunning Deep Dive layouts */
-        .s3-grid-edu { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 18px; }
-        
-        .s3-edu-card-new { 
-          background: rgba(255, 255, 255, 0.8); 
-          border: 1.5px solid rgba(226, 232, 240, 0.8); 
-          border-top: 4px solid var(--theme-color, #10b981); 
+        .s3-terminal { background: var(--s3-terminal-bg); color: var(--s3-terminal-color); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid var(--s3-terminal-border); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 200px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+        .s3-svg-bg { background-color: var(--s3-bg); background-image: radial-gradient(var(--s3-svg-grid-line) 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid var(--s3-card-border); box-shadow: inset         .s3-edu-card-new { 
+          background: var(--s3-card-bg); 
+          border: 1.5px solid var(--s3-card-border); 
+          border-top: 4px solid var(--theme-color, var(--color-green)); 
           padding: 16px 18px; 
           border-radius: 8px; 
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+          box-shadow: var(--s3-card-shadow);
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .s3-edu-card-new:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+          box-shadow: var(--s3-card-shadow);
         }
         
         .s3-pill-badge {
@@ -1566,9 +1708,9 @@ export default function S3Visualizer() {
         .s3-pill-why { background: #eff6ff; color: #1e40af; border: 0.5px solid #bfdbfe; }
         .s3-pill-how { background: #fffbeb; color: #92400e; border: 0.5px solid #fef3c7; }
         .s3-pill-benefits { background: #ecfdf5; color: #065f46; border: 0.5px solid #a7f3d0; }
-        [data-theme='dark'] .s3-pill-why { background: #1e3a8a; color: #93c5fd; border-color: #1e40af; }
-        [data-theme='dark'] .s3-pill-how { background: #78350f; color: #fde68a; border-color: #92400e; }
-        [data-theme='dark'] .s3-pill-benefits { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
+        .dark .s3-pill-why { background: #1e3a8a; color: #93c5fd; border-color: #1e40af; }
+        .dark .s3-pill-how { background: #78350f; color: #fde68a; border-color: #92400e; }
+        .dark .s3-pill-benefits { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
         
         .s3-hl-cyan { background: rgba(6, 182, 212, 0.15); color: #0891b2; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
         .s3-hl-orange { background: rgba(245, 158, 11, 0.15); color: #d97706; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
@@ -1579,94 +1721,110 @@ export default function S3Visualizer() {
         
         .s3-desc-mute { color: var(--color-text-secondary); font-size: 11.5px; font-style: italic; opacity: 0.95; font-weight: normal; background: none; padding: 0; }
         
-        [data-theme='dark'] .s3-hl-cyan { background: rgba(6, 182, 212, 0.25); color: #22d3ee; }
-        [data-theme='dark'] .s3-hl-orange { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
-        [data-theme='dark'] .s3-hl-green { background: rgba(16, 185, 129, 0.25); color: #34d399; }
-        [data-theme='dark'] .s3-hl-indigo { background: rgba(99, 102, 241, 0.25); color: #818cf8; }
-        [data-theme='dark'] .s3-hl-purple { background: rgba(168, 85, 247, 0.25); color: #c084fc; }
-        [data-theme='dark'] .s3-hl-pink { background: rgba(236, 72, 153, 0.25); color: #f472b6; }
+        .dark .s3-hl-cyan { background: rgba(6, 182, 212, 0.25); color: #22d3ee; }
+        .dark .s3-hl-orange { background: rgba(245, 158, 11, 0.25); color: #fbbf24; }
+        .dark .s3-hl-green { background: rgba(16, 185, 129, 0.25); color: #34d399; }
+        .dark .s3-hl-indigo { background: rgba(99, 102, 241, 0.25); color: #818cf8; }
+        .dark .s3-hl-purple { background: rgba(168, 85, 247, 0.25); color: #c084fc; }
+        .dark .s3-hl-pink { background: rgba(236, 72, 153, 0.25); color: #f472b6; }
 
+ 
         /* Unified Dropdown Selection Visual Cues */
-        .s3-card select {
-          border: 1.5px solid #cbd5e1 !important;
+        .s3-container select {
+          border: 1.5px solid var(--color-border-secondary) !important;
           border-radius: 8px;
           padding: 6px 12px;
-          background: rgba(255, 255, 255, 0.85);
-          color: #1e293b;
+          background: var(--s3-card-bg) !important;
+          color: var(--color-text-primary) !important;
           font-weight: 500;
           outline: none;
           transition: all 0.2s;
+          appearance: none;
+          -webkit-appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+          background-repeat: no-repeat !important;
+          background-position: right 8px center !important;
+          background-size: 14px !important;
+          padding-right: 30px !important;
         }
-        .s3-card select:focus {
-          border-color: #10b981 !important;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+        .s3-container select:focus {
+          border-color: var(--color-green) !important;
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
         }
-        .s3-card select.s3-highlight {
-          border: 1.5px solid #f59e0b !important;
+        .s3-container select.s3-highlight {
+          border: 1.5px solid var(--color-amber) !important;
           box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
         }
-        .s3-card input[type="text"] {
-          border: 1.5px solid #cbd5e1;
+        .s3-container select option {
+          background: #ffffff !important;
+          color: #1e293b !important;
+        }
+        .dark .s3-container select option {
+          background: #0f172a !important;
+          color: #f8fafc !important;
+        }
+        .s3-container input[type="text"] {
+          border: 1.5px solid var(--color-border-secondary);
           border-radius: 8px;
           padding: 6px 10px;
-          background: rgba(255, 255, 255, 0.85);
-          color: #1e293b;
+          background: var(--s3-bg);
+          color: var(--color-text-primary);
           outline: none;
           transition: all 0.2s;
         }
-        .s3-card input[type="text"]:focus {
-          border-color: #10b981;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        .s3-container input[type="text"]:focus {
+          border-color: var(--color-green);
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
         }
-        .s3-card input[type="range"] {
-          accent-color: #10b981;
-          background: #cbd5e1;
+        .s3-container input[type="range"] {
+          accent-color: var(--color-green);
+          background: var(--color-border-secondary);
           height: 6px;
           border-radius: 3px;
         }
-
-        .s3-card textarea {
-          background: #0a0d16;
-          color: #e2e8f0;
-          font-family: 'JetBrains Mono', monospace;
-          font-size: 11.5px;
-          border: 1.5px solid #cbd5e1;
-          border-radius: 8px;
-          padding: 10px;
-          width: 100%;
-          outline: none;
-          transition: all 0.2s;
+ 
+        .s3-container textarea {
+          background: var(--s3-terminal-bg) !important;
+          color: var(--s3-terminal-color) !important;
+          font-family: 'JetBrains Mono', monospace !important;
+          font-size: 11.5px !important;
+          border: 1.5px solid var(--color-border-secondary) !important;
+          border-radius: 8px !important;
+          padding: 10px !important;
+          width: 100% !important;
+          outline: none !important;
+          transition: all 0.2s !important;
         }
-        .s3-card textarea:focus {
-          border-color: #10b981;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        .s3-container textarea:focus {
+          border-color: var(--color-green);
+          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
         }
-
+ 
         .s3-g-circle {
           stroke-dasharray: 251.2;
           stroke-dashoffset: 251.2;
           animation: draw 2s linear forwards infinite;
         }
-
+ 
         @keyframes draw {
           to { stroke-dashoffset: 0; }
         }
         @keyframes pulse-red {
-          from { box-shadow: 0 0 4px rgba(220, 38, 38, 0.2); background: #fef2f2; }
-          to { box-shadow: 0 0 16px rgba(220, 38, 38, 0.55); background: #fee2e2; }
+          from { box-shadow: 0 0 4px rgba(220, 38, 38, 0.2); background: var(--s3-error-bg); }
+          to { box-shadow: 0 0 16px rgba(220, 38, 38, 0.55); background: var(--s3-error-bg); }
         }
-
+ 
         /* Premium Academy Directory Styles */
         .acad-dir-container {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--s3-card-bg);
+          border: 1px solid var(--s3-card-border);
           border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .acad-dir-header {
-          background: #0f172a;
-          color: #f8fafc;
+          background: var(--s3-terminal-border);
+          color: var(--color-text-primary);
           padding: 16px;
           font-weight: 800;
           font-size: 11px;
@@ -1682,11 +1840,11 @@ export default function S3Visualizer() {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
-          border-bottom: 1px solid #e2e8f0;
+          background: var(--s3-metric-card-bg);
+          border-bottom: 1px solid var(--s3-card-border);
           font-size: 10px;
           font-weight: 850;
-          color: #475569;
+          color: var(--color-text-secondary);
           text-transform: uppercase;
           letter-spacing: 0.04em;
           transition: all 0.2s ease;
@@ -1696,8 +1854,8 @@ export default function S3Visualizer() {
           cursor: pointer;
         }
         .acad-dir-folder-btn:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--s3-tab-hover-bg);
+          color: var(--color-text-primary);
         }
         .acad-dir-item-btn {
           width: 100%;
@@ -1707,38 +1865,38 @@ export default function S3Visualizer() {
           padding: 10px 18px;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: var(--color-text-secondary);
           border-top: none;
           border-right: none;
           border-bottom: none;
           border-left: 3px solid transparent;
-          background: #ffffff;
+          background: var(--s3-card-bg);
           transition: all 0.15s ease;
           text-align: left;
           cursor: pointer;
         }
         .acad-dir-item-btn:hover {
-          background: #f8fafc;
-          color: #10b981;
-          border-left-color: #cbd5e1;
+          background: var(--s3-tab-hover-bg);
+          color: var(--color-green);
+          border-left-color: var(--color-border-secondary);
         }
         .acad-dir-item-btn.acad-active {
-          background: #ecfdf5;
-          color: #065f46;
-          border-left-color: #10b981;
+          background: var(--s3-success-bg);
+          color: var(--s3-success-text-bold);
+          border-left-color: var(--color-green);
           font-weight: 800;
         }
         .acad-detail-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--s3-card-bg);
+          border: 1px solid var(--s3-card-border);
           border-radius: 16px;
           padding: 28px;
           box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
         }
         .acad-hero-badge {
-          background: #ecfdf5;
-          border: 1.5px solid #a7f3d0;
-          color: #065f46;
+          background: var(--s3-success-bg);
+          border: 1.5px solid var(--s3-success-border);
+          color: var(--s3-success-text-bold);
           font-size: 9.5px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -1750,13 +1908,13 @@ export default function S3Visualizer() {
           gap: 5px;
         }
         .acad-takeaway-box {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border-left: 4px solid #10b981;
+          background: var(--s3-metric-card-bg);
+          border-left: 4px solid var(--color-green);
           border-radius: 12px;
           padding: 18px;
           font-size: 12px;
           line-height: 1.6;
-          color: #475569;
+          color: var(--color-text-secondary);
           font-weight: 600;
         }
         .acad-table {
@@ -1765,205 +1923,41 @@ export default function S3Visualizer() {
           font-size: 12px;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--s3-card-border);
         }
         .acad-table th {
-          background: #f8fafc;
-          color: #334155;
+          background: var(--s3-metric-card-bg);
+          color: var(--color-text-primary);
           font-weight: 800;
           padding: 12px 14px;
-          border-bottom: 1.5px solid #e2e8f0;
+          border-bottom: 1.5px solid var(--s3-card-border);
           text-align: left;
         }
         .acad-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid #f1f5f9;
-          color: #475569;
+          border-bottom: 1px solid var(--s3-card-border);
+          color: var(--color-text-secondary);
         }
         .acad-table tr:last-child td {
           border-bottom: none;
         }
         .acad-sim-diagram {
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--s3-card-bg);
+          border: 1.5px solid var(--s3-card-border);
           border-radius: 16px;
           padding: 18px;
           box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
           position: relative;
         }
         .acad-terminal {
-          background: #090d16;
-          border: 1px solid #1e293b;
+          background: var(--s3-terminal-bg);
+          border: 1px solid var(--s3-terminal-border);
           border-radius: 12px;
           padding: 14px;
           font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
-          color: #cbd5e1;
+          color: var(--color-text-primary);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
-
-        /* Centralized Dark Mode Overrides for S3Visualizer.tsx */
-        .dark .s3-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
-        }
-        .dark .s3-card,
-        .dark [class*="s3-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
-        .dark .s3-card b,
-        .dark .s3-card strong,
-        .dark .s3-card h3,
-        .dark .s3-card h4 {
-          color: #ffffff !important;
-        }
-        .dark .s3-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .s3-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .s3-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .s3-sec,
-        .dark .s3-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .s3-log,
-        .dark .s3-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .s3-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .s3-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .s3-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.s3-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .s3-inst,
-        .dark .s3-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .s3-inst .meta,
-        .dark .s3-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .s3-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        
-        /* Node Status Overrides */
-        .dark .s3-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .s3-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .s3-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .s3-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
-        }
-        
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
-        }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-        }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
-        }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
         }
               `}</style>
 
@@ -1996,10 +1990,10 @@ export default function S3Visualizer() {
           <div className="space-y-6 animate-fadeIn text-left" style={{ marginTop: '16px' }}>
             
             <div className="card text-left">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-display">
                 <BookOpen className="w-5 h-5 text-indigo-600" /> S3 Storage &amp; Security Notes
               </h2>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-sans font-semibold">
                 Learn about Amazon S3 storage classes, cross-region replication architecture, Multi-Region Access Points, object versioning, and bucket policies to secure data at rest.
               </p>
             </div>
@@ -2029,7 +2023,7 @@ export default function S3Visualizer() {
                       {expandedCategory === 's3_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 's3_fundamentals' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
                         <button 
                           onClick={() => setSelectedNote('s3_namespace')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_namespace' ? 'acad-active' : ''}`}
@@ -2065,7 +2059,7 @@ export default function S3Visualizer() {
                       {expandedCategory === 's3_data_management' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 's3_data_management' && (
-                      <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                      <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
                         <button 
                           onClick={() => setSelectedNote('s3_versioning')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_versioning' ? 'acad-active' : ''}`}
@@ -2095,7 +2089,7 @@ export default function S3Visualizer() {
                       {expandedCategory === 's3_advanced' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 's3_advanced' && (
-                      <div className="bg-slate-50/50 py-1">
+                      <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1">
                         <button 
                           onClick={() => setSelectedNote('s3_networking')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_networking' ? 'acad-active' : ''}`}
@@ -2135,15 +2129,15 @@ export default function S3Visualizer() {
                 {/* ========================================================================= */}
                 {selectedNote === 's3_namespace' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Namespaces &amp; CORS</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Bucket Namespaces, Static Hosting &amp; CORS</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Bucket Namespaces, Static Hosting &amp; CORS</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 1 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Amazon S3 is a flat key-value store rather than a traditional hierarchical operating system directory tree. Folders are only simulated using key prefix prefixes, allowing it to scale infinitely and support a baseline rate of 3,500 PUT and 5,500 GET requests per second per prefix.
                     </p>
 
@@ -2196,7 +2190,7 @@ export default function S3Visualizer() {
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_namespace_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2218,7 +2212,7 @@ aws s3api put-bucket-cors --bucket my-premium-bucket --cors-configuration '{
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('overview')}
                         className="s3-btn s3-on"
@@ -2235,15 +2229,15 @@ aws s3api put-bucket-cors --bucket my-premium-bucket --cors-configuration '{
                 {/* ========================================================================= */}
                 {selectedNote === 's3_security' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Access Controls</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Identity Policies, Resource Policies &amp; BPA</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Identity Policies, Resource Policies &amp; BPA</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 2 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       S3 access control evaluates identity-based IAM policies, resource-based S3 Bucket policies, and the Block Public Access (BPA) master overrides. S3 processes all active configurations simultaneously to authorize requests.
                     </p>
 
@@ -2296,7 +2290,7 @@ aws s3api put-bucket-cors --bucket my-premium-bucket --cors-configuration '{
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_security_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2333,7 +2327,7 @@ aws s3api put-public-access-block --bucket my-premium-bucket --public-access-blo
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('security')}
                         className="s3-btn s3-on"
@@ -2350,15 +2344,15 @@ aws s3api put-public-access-block --bucket my-premium-bucket --public-access-blo
                 {/* ========================================================================= */}
                 {selectedNote === 's3_encryption' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Encryption</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSE Models, KMS API Quotas &amp; S3 Bucket Keys</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">SSE Models, KMS API Quotas &amp; S3 Bucket Keys</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 3 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       S3 manages data encryption at rest transparently at the storage hardware layer. Use SSE-S3 or SSE-KMS keys, and leverage S3 Bucket Keys to minimize outbound KMS API calls.
                     </p>
 
@@ -2411,7 +2405,7 @@ aws s3api put-public-access-block --bucket my-premium-bucket --public-access-blo
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_encryption_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2434,7 +2428,7 @@ aws s3 cp document.pdf s3://my-premium-bucket/secure-docs/ --sse aws:kms --sse-k
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('encryption')}
                         className="s3-btn s3-on"
@@ -2451,15 +2445,15 @@ aws s3 cp document.pdf s3://my-premium-bucket/secure-docs/ --sse aws:kms --sse-k
                 {/* ========================================================================= */}
                 {selectedNote === 's3_versioning' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Versioning</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Version Stacks, Delete Markers &amp; WORM Object Lock</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Version Stacks, Delete Markers &amp; WORM Object Lock</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 4 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       S3 Object Versioning provides protection against accidental edits or deletions. Objects locks enforce regulatory compliance controls to ensure absolute file immutability.
                     </p>
 
@@ -2512,7 +2506,7 @@ aws s3 cp document.pdf s3://my-premium-bucket/secure-docs/ --sse aws:kms --sse-k
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_versioning_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2528,7 +2522,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('versioning')}
                         className="s3-btn s3-on"
@@ -2545,15 +2539,15 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                 {/* ========================================================================= */}
                 {selectedNote === 's3_storage' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Classes &amp; Lifecycles</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Storage Classes, Lifecycles &amp; Prefix Calculator</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Storage Classes, Lifecycles &amp; Prefix Calculator</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 5 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Optimizing S3 storage classes matches data access patterns to physical hardware pricing. Configure lifecycle policies to transition objects to archive tiers automatically.
                     </p>
 
@@ -2590,9 +2584,9 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                     </div>
 
                     {/* S3 PREFIX CALCULATOR */}
-                    <div className="bg-emerald-50/50 border border-emerald-200/60 rounded-xl p-6 space-y-4">
+                    <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl p-6 space-y-4">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Sliders className="w-5 h-5 text-emerald-600" />
+                        <Sliders className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         <h4 style={{ fontWeight: 'bold', fontSize: '14.5px', color: 'var(--color-text-primary)', margin: 0 }}>
                           S3 Prefix Throughput &amp; Rate Partitioning Calculator
                         </h4>
@@ -2604,7 +2598,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
                         <div className="space-y-2">
                           <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
-                            Number of Prefixes: <span className="text-emerald-700 font-extrabold">{nbPrefixCount}</span>
+                            Number of Prefixes: <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">{nbPrefixCount}</span>
                           </label>
                           <input 
                             type="range" 
@@ -2621,7 +2615,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
 
                         <div className="space-y-2">
                           <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
-                            GET Requests per Prefix: <span className="text-emerald-700 font-extrabold">{nbGetsPerPrefix.toLocaleString()}/sec</span>
+                            GET Requests per Prefix: <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">{nbGetsPerPrefix.toLocaleString()}/sec</span>
                           </label>
                           <input 
                             type="range" 
@@ -2639,7 +2633,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
 
                         <div className="space-y-2">
                           <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
-                            PUT Requests per Prefix: <span className="text-emerald-700 font-extrabold">{nbPutsPerPrefix.toLocaleString()}/sec</span>
+                            PUT Requests per Prefix: <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">{nbPutsPerPrefix.toLocaleString()}/sec</span>
                           </label>
                           <input 
                             type="range" 
@@ -2657,17 +2651,17 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                       </div>
 
                       {/* Calculator Results */}
-                      <div className="bg-white border border-slate-200 rounded-xl p-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* GET capacity check */}
-                        <div style={{ borderRight: '1px solid #e2e8f0', paddingRight: '16px' }} className="space-y-2">
+                        <div style={{ borderRight: '1px solid var(--color-border-tertiary)', paddingRight: '16px' }} className="space-y-2">
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>GET Throughput Status:</span>
                             {nbGetsPerPrefix > 5500 ? (
-                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--s3-error-text-bold)', background: 'var(--s3-error-bg)', border: '1px solid var(--s3-error-border)', padding: '2px 8px', borderRadius: '6px' }}>
                                 ⚠️ Throttling Expected
                               </span>
                             ) : (
-                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669', background: '#ecfdf5', padding: '2px 8px', borderRadius: '6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--s3-success-text-bold)', background: 'var(--s3-success-bg)', border: '1px solid var(--s3-success-border)', padding: '2px 8px', borderRadius: '6px' }}>
                                 ✅ Healthy Load
                               </span>
                             )}
@@ -2679,7 +2673,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                             Aggregate GET Capacity: <strong>{(nbPrefixCount * 5500).toLocaleString()}/sec</strong> across {nbPrefixCount} prefixes.
                           </div>
                           {nbGetsPerPrefix > 5500 && (
-                            <div style={{ fontSize: '11px', color: '#b91c1c' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--color-red)' }}>
                               Individual prefix exceeds 5,500 GETs limit. S3 will return `503 Slow Down` errors. Increase prefix partition paths to distribute request keys.
                             </div>
                           )}
@@ -2690,11 +2684,11 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>PUT Throughput Status:</span>
                             {nbPutsPerPrefix > 3500 ? (
-                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--s3-error-text-bold)', background: 'var(--s3-error-bg)', border: '1px solid var(--s3-error-border)', padding: '2px 8px', borderRadius: '6px' }}>
                                 ⚠️ Throttling Expected
                               </span>
                             ) : (
-                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#059669', background: '#ecfdf5', padding: '2px 8px', borderRadius: '6px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--s3-success-text-bold)', background: 'var(--s3-success-bg)', border: '1px solid var(--s3-success-border)', padding: '2px 8px', borderRadius: '6px' }}>
                                 ✅ Healthy Load
                               </span>
                             )}
@@ -2706,7 +2700,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                             Aggregate PUT Capacity: <strong>{(nbPrefixCount * 3500).toLocaleString()}/sec</strong> across {nbPrefixCount} prefixes.
                           </div>
                           {nbPutsPerPrefix > 3500 && (
-                            <div style={{ fontSize: '11px', color: '#b91c1c' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--color-red)' }}>
                               Individual prefix exceeds 3,500 PUTs limit. S3 will return `503 Slow Down` errors. Distribute objects across more key prefixes.
                             </div>
                           )}
@@ -2732,27 +2726,27 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                                     : 'border-emerald-250 bg-emerald-50/20'
                                 }`}
                                 style={{
-                                  borderColor: isThrottled ? '#fca5a5' : '#a7f3d0',
-                                  backgroundColor: isThrottled ? '#fef2f2' : '#f0fdf4'
+                                  borderColor: isThrottled ? 'var(--s3-error-border)' : 'var(--s3-success-border)',
+                                  backgroundColor: isThrottled ? 'var(--s3-error-bg)' : 'var(--s3-success-bg)'
                                 }}
                               >
-                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: isThrottled ? '#991b1b' : '#065f46', fontFamily: 'monospace' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: isThrottled ? 'var(--s3-error-text-bold)' : 'var(--s3-success-text-bold)', fontFamily: 'monospace' }}>
                                   /partition-{idx + 1}/
                                 </div>
                                 <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                                  GETs: <span style={{ color: isGetsOver ? '#dc2626' : 'var(--color-text-primary)', fontWeight: 'bold' }}>{nbGetsPerPrefix.toLocaleString()}</span>
+                                  GETs: <span style={{ color: isGetsOver ? 'var(--color-red)' : 'var(--color-text-primary)', fontWeight: 'bold' }}>{nbGetsPerPrefix.toLocaleString()}</span>
                                 </div>
                                 <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
-                                  PUTs: <span style={{ color: isPutsOver ? '#dc2626' : 'var(--color-text-primary)', fontWeight: 'bold' }}>{nbPutsPerPrefix.toLocaleString()}</span>
+                                  PUTs: <span style={{ color: isPutsOver ? 'var(--color-red)' : 'var(--color-text-primary)', fontWeight: 'bold' }}>{nbPutsPerPrefix.toLocaleString()}</span>
                                 </div>
-                                <div style={{ fontSize: '9px', fontWeight: 'bold', color: isThrottled ? '#dc2626' : '#059669' }}>
+                                <div style={{ fontSize: '9px', fontWeight: 'bold', color: isThrottled ? 'var(--color-red)' : 'var(--color-green)' }}>
                                   {isThrottled ? '💥 Throttled!' : '🟢 Line Rate OK'}
                                 </div>
                               </div>
                             );
                           })}
                           {nbPrefixCount > 8 && (
-                            <div className="border border-dashed border-slate-300 rounded-lg p-3 flex items-center justify-center bg-slate-50/50 text-[11px] text-slate-500 font-semibold" style={{ minHeight: '80px' }}>
+                            <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-3 flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 text-[11px] text-slate-500 dark:text-slate-400 font-semibold" style={{ minHeight: '80px' }}>
                               + {nbPrefixCount - 8} more partitioned directories
                             </div>
                           )}
@@ -2773,7 +2767,7 @@ aws s3api delete-object --bucket my-premium-bucket --key document.pdf --version-
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_storage_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2802,7 +2796,7 @@ aws s3api put-bucket-lifecycle-configuration --bucket my-premium-bucket --lifecy
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('storage')}
                         className="s3-btn s3-on"
@@ -2819,15 +2813,15 @@ aws s3api put-bucket-lifecycle-configuration --bucket my-premium-bucket --lifecy
                 {/* ========================================================================= */}
                 {selectedNote === 's3_networking' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Networking</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Gateway Endpoints &amp; Subpath Access Points</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Gateway Endpoints &amp; Subpath Access Points</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 6 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Secure your subnet routing path to S3 by routing traffic over Gateway VPC Endpoints, bypassing default internet gateways and public routes.
                     </p>
 
@@ -2880,7 +2874,7 @@ aws s3api put-bucket-lifecycle-configuration --bucket my-premium-bucket --lifecy
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_networking_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2893,7 +2887,7 @@ aws ec2 describe-prefix-lists --filters "Name=prefix-list-name,Values=com.amazon
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('networking')}
                         className="s3-btn s3-on"
@@ -2910,15 +2904,15 @@ aws ec2 describe-prefix-lists --filters "Name=prefix-list-name,Values=com.amazon
                 {/* ========================================================================= */}
                 {selectedNote === 's3_transfer' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Transfer &amp; Replication</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Transfer Acceleration, CRR/SRR &amp; Presigned URLs</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Transfer Acceleration, CRR/SRR &amp; Presigned URLs</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 7 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Optimize data transit rates and security using CloudFront Edge ingestion and secure, temporary presigned URLs. Configure CRR/SRR for automated cross-bucket copies.
                     </p>
 
@@ -2971,7 +2965,7 @@ aws ec2 describe-prefix-lists --filters "Name=prefix-list-name,Values=com.amazon
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_transfer_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -2996,7 +2990,7 @@ aws s3api put-bucket-replication --bucket my-premium-bucket --replication-config
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('transfer')}
                         className="s3-btn s3-on"
@@ -3013,15 +3007,15 @@ aws s3api put-bucket-replication --bucket my-premium-bucket --replication-config
                 {/* ========================================================================= */}
                 {selectedNote === 's3_operations' && (
                   <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                       <div>
                         <span className="acad-hero-badge">S3 Operations &amp; Analytics</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Event Notifications, Batch Jobs &amp; Storage Lens Analytics</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">Event Notifications, Batch Jobs &amp; Storage Lens Analytics</h3>
                       </div>
                       <span className="text-xs font-bold text-slate-400">Concept 8 of 8</span>
                     </div>
 
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                       Optimize administration workloads across millions of objects using asynchronous Event Notifications, fully managed Batch Operations, and organization-wide daily diagnostics via S3 Storage Lens.
                     </p>
 
@@ -3074,7 +3068,7 @@ aws s3api put-bucket-replication --bucket my-premium-bucket --replication-config
                           className="s3-btn"
                           style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
                         >
-                          <Copy className="w-3 h-3 text-slate-500" />
+                          <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                           {copiedNoteId === "s3_operations_cli" ? "Copied!" : "Copy Commands"}
                         </button>
                       </div>
@@ -3094,7 +3088,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                       </pre>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
                       <button 
                         onClick={() => setActiveTab('operations')}
                         className="s3-btn s3-on"
@@ -3125,64 +3119,64 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                 <defs>
                   <filter id="s3-shadow-key" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--s3-terminal-bg)" floodOpacity="0.08" />
                   </filter>
                   <linearGradient id="folder-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f8fafc" />
+                    <stop offset="0%" stopColor="var(--s3-bg)" />
+                    <stop offset="100%" stopColor="var(--s3-tab-hover-bg)" />
                   </linearGradient>
                   <linearGradient id="s3-table-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ecfdf5" />
-                    <stop offset="100%" stopColor="#f0fdf4" />
+                    <stop offset="0%" stopColor="var(--s3-success-bg)" />
+                    <stop offset="100%" stopColor="var(--s3-success-bg)" />
                   </linearGradient>
                   
                   <marker id="arr-repl-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L6,3 z" fill="#10b981" />
+                    <path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)" />
                   </marker>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Left logical client boundary */}
-                <rect x="10" y="10" width="245" height="160" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="18" y="22" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">CLIENT-SIDE LOGICAL VIEW</text>
+                <rect x="10" y="10" width="245" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="18" y="22" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold" letterSpacing="0.05em">CLIENT-SIDE LOGICAL VIEW</text>
 
                 {/* Right S3 engine boundary */}
-                <rect x="310" y="10" width="380" height="160" rx="12" fill="rgba(240, 253, 244, 0.3)" stroke="#10b981" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="320" y="22" fontSize="7" fill="#047857" fontWeight="bold" letterSpacing="0.05em">☁️ PHYSICAL S3 STORAGE ENGINE</text>
+                <rect x="310" y="10" width="380" height="160" rx="12" fill="var(--s3-success-bg)" fillOpacity="0.3" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="320" y="22" fontSize="7" fill="var(--s3-success-text-bold)" fontWeight="bold" letterSpacing="0.05em">☁️ PHYSICAL S3 STORAGE ENGINE</text>
 
                 {/* Logical User Directory Structure (Left Card) */}
-                <rect x="25" y="32" width="215" height="126" rx="8" fill="url(#folder-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-key)" />
-                <text x="38" y="48" fontSize="11" fontWeight="bold" fill="#1e293b">📁 Logical Folder Tree (Mock)</text>
+                <rect x="25" y="32" width="215" height="126" rx="8" fill="url(#folder-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-key)" />
+                <text x="38" y="48" fontSize="11" fontWeight="bold" fill="var(--color-text-primary)">📁 Logical Folder Tree (Mock)</text>
 
-                <text x="48" y="72" fontSize="10.5" fontWeight="500" fill="#475569">📁 assets/</text>
-                <text x="68" y="90" fontSize="10" fontWeight="500" fill="#475569">📁 images/</text>
-                <text x="88" y="108" fontSize="10" fill="#10b981" fontWeight="bold">📄 logo.png</text>
-                <text x="48" y="132" fontSize="10.5" fontWeight="500" fill="#475569">📁 logs/ ➔ 📄 app.log</text>
+                <text x="48" y="72" fontSize="10.5" fontWeight="500" fill="var(--color-text-secondary)">📁 assets/</text>
+                <text x="68" y="90" fontSize="10" fontWeight="500" fill="var(--color-text-secondary)">📁 images/</text>
+                <text x="88" y="108" fontSize="10" fill="var(--color-green)" fontWeight="bold">📄 logo.png</text>
+                <text x="48" y="132" fontSize="10.5" fontWeight="500" fill="var(--color-text-secondary)">📁 logs/ ➔ 📄 app.log</text>
 
                 {/* Flow Arrow */}
                 <path d="M 260 90 L 305 90" fill="none" className="s3-flow-green" markerEnd="url(#arr-repl-green)" />
 
                 {/* S3 Flat Database Index Key-Value store (Right Card) */}
-                <rect x="320" y="32" width="360" height="126" rx="8" fill="url(#s3-table-grad)" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-key)" />
-                <text x="335" y="48" fontSize="11" fontWeight="bold" fill="#047857">🛢️ Actual S3 Flat Key-Value Database Table</text>
+                <rect x="320" y="32" width="360" height="126" rx="8" fill="url(#s3-table-grad)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-key)" />
+                <text x="335" y="48" fontSize="11" fontWeight="bold" fill="var(--s3-success-text-bold)">🛢️ Actual S3 Flat Key-Value Database Table</text>
 
                 {/* Headers */}
-                <rect x="330" y="58" width="340" height="22" fill="#d1fae5" rx="4" />
-                <text x="335" y="72" fontSize="9.5" fontWeight="bold" fill="#047857">Full Object Key String (Flat Prefix + Name)</text>
-                <text x="585" y="72" fontSize="9.5" fontWeight="bold" fill="#047857">Physical Sector</text>
+                <rect x="330" y="58" width="340" height="22" fill="var(--s3-success-border)" rx="4" />
+                <text x="335" y="72" fontSize="9.5" fontWeight="bold" fill="var(--s3-success-text-bold)">Full Object Key String (Flat Prefix + Name)</text>
+                <text x="585" y="72" fontSize="9.5" fontWeight="bold" fill="var(--s3-success-text-bold)">Physical Sector</text>
 
                 {/* Rows */}
-                <text x="335" y="96" fontSize="9" fontFamily="monospace" fontWeight="500" fill="#0f766e">assets/images/logo.png</text>
-                <text x="585" y="96" fontSize="9" fill="#475569" fontWeight="500">Block-A92k-NVMe</text>
+                <text x="335" y="96" fontSize="9" fontFamily="monospace" fontWeight="500" fill="var(--s3-success-text)">assets/images/logo.png</text>
+                <text x="585" y="96" fontSize="9" fill="var(--color-text-secondary)" fontWeight="500">Block-A92k-NVMe</text>
 
-                <text x="335" y="116" fontSize="9" fontFamily="monospace" fontWeight="500" fill="#0f766e">logs/2026/05/sys.log</text>
-                <text x="585" y="116" fontSize="9" fill="#475569" fontWeight="500">Block-B18a-NVMe</text>
+                <text x="335" y="116" fontSize="9" fontFamily="monospace" fontWeight="500" fill="var(--s3-success-text)">logs/2026/05/sys.log</text>
+                <text x="585" y="116" fontSize="9" fill="var(--color-text-secondary)" fontWeight="500">Block-B18a-NVMe</text>
 
-                <text x="335" y="136" fontSize="9" fontFamily="monospace" fontWeight="500" fill="#0f766e">index.html</text>
-                <text x="585" y="136" fontSize="9" fill="#475569" fontWeight="500">Block-C42f-NVMe</text>
+                <text x="335" y="136" fontSize="9" fontFamily="monospace" fontWeight="500" fill="var(--s3-success-text)">index.html</text>
+                <text x="585" y="136" fontSize="9" fill="var(--color-text-secondary)" fontWeight="500">Block-C42f-NVMe</text>
 
-                <line x1="330" y1="103" x2="670" y2="103" stroke="#cbd5e1" strokeWidth="0.75" />
-                <line x1="330" y1="123" x2="670" y2="123" stroke="#cbd5e1" strokeWidth="0.75" />
+                <line x1="330" y1="103" x2="670" y2="103" stroke="var(--s3-card-border)" strokeWidth="0.75" />
+                <line x1="330" y1="123" x2="670" y2="123" stroke="var(--s3-card-border)" strokeWidth="0.75" />
               </svg>
             </div>
 
@@ -3192,10 +3186,10 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               
               {/* Part A: DNS Validator */}
               <div className="s3-card">
-                <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>🪣</span> S3 Bucket DNS Compliancy Validator
                 </div>
-                <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
                   Bucket names must be globally unique across all AWS accounts and regions, conforming to strict DNS rules.
                 </div>
 
@@ -3215,7 +3209,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 {bucketType === 'directory' && (
                   <div style={{ marginBottom: '14px' }}>
                     <label style={{ fontSize: '10.5px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Availability Zone Target Placement:</label>
-                    <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #cbd5e1' }} value={directoryAz} onChange={(e) => {
+                    <select className="s3-card select" style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid var(--color-border-secondary)' }} value={directoryAz} onChange={(e) => {
                       const az = e.target.value as any;
                       setDirectoryAz(az);
                       setBucketNameInput(`my-fast-bucket--${az}--x-s3`);
@@ -3231,7 +3225,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   <input
                     type="text"
                     className="s3-btn"
-                    style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#0f172a', textTransform: 'lowercase', fontFamily: 'monospace', textAlign: 'left', cursor: 'text' }}
+                    style={{ width: '100%', padding: '10px', border: '1.5px solid var(--color-border-secondary)', background: 'var(--s3-bg)', color: 'var(--color-text-primary)', textTransform: 'lowercase', fontFamily: 'monospace', textAlign: 'left', cursor: 'text' }}
                     value={bucketNameInput}
                     onChange={(e) => setBucketNameInput(e.target.value.toLowerCase())}
                     placeholder={bucketType === 'general' ? "e.g. my-cool-bucket" : "e.g. my-fast-bucket--use1-az4--x-s3"}
@@ -3267,13 +3261,13 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11.5px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{isLengthValid ? '🟢' : '❌'}</span>
-                          <span style={{ color: isLengthValid ? '#166534' : '#991b1b' }}>
+                          <span style={{ color: isLengthValid ? 'var(--s3-success-text)' : 'var(--s3-error-text)' }}>
                             Length is between 3 and {bucketType === 'general' ? 63 : 64} characters (Current: {bucketNameInput.length})
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{isCharsValid ? '🟢' : '❌'}</span>
-                          <span style={{ color: isCharsValid ? '#166534' : '#991b1b' }}>
+                          <span style={{ color: isCharsValid ? 'var(--s3-success-text)' : 'var(--s3-error-text)' }}>
                             {bucketType === 'general'
                               ? 'Consists only of lowercase letters, numbers, periods (.), and hyphens (-)'
                               : 'Consists ONLY of lowercase letters, numbers, and hyphens (NO periods allowed!)'
@@ -3282,13 +3276,13 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{isStartEndValid ? '🟢' : '❌'}</span>
-                          <span style={{ color: isStartEndValid ? '#166534' : '#991b1b' }}>
+                          <span style={{ color: isStartEndValid ? 'var(--s3-success-text)' : 'var(--s3-error-text)' }}>
                             Must start and end with a letter or number
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span>{isAdjacentValid ? '🟢' : '❌'}</span>
-                          <span style={{ color: isAdjacentValid ? '#166534' : '#991b1b' }}>
+                          <span style={{ color: isAdjacentValid ? 'var(--s3-success-text)' : 'var(--s3-error-text)' }}>
                             {bucketType === 'general'
                               ? 'No adjacent special symbols `..` or `--` or `.-`'
                               : 'No adjacent special symbols `..` or `--` inside custom prefix'
@@ -3298,14 +3292,14 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         {bucketType === 'general' ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span>{isIpAddressValid ? '🟢' : '❌'}</span>
-                            <span style={{ color: isIpAddressValid ? '#166534' : '#991b1b' }}>
+                            <span style={{ color: isIpAddressValid ? 'var(--s3-success-text)' : 'var(--s3-error-text)' }}>
                               Must not be formatted as an IPv4 address
                             </span>
                           </div>
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span>{isSuffixValid ? '🟢' : '❌'}</span>
-                            <span style={{ color: isSuffixValid ? '#166534' : '#991b1b' }}>
+                            <span style={{ color: isSuffixValid ? 'var(--s3-success-text)' : 'var(--s3-error-text)' }}>
                               Enforces Directory Bucket suffix: `--${directoryAz}--x-s3`
                             </span>
                           </div>
@@ -3319,9 +3313,9 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         textAlign: 'center',
                         fontWeight: 'bold',
                         fontSize: '12px',
-                        background: isDnsCompliant ? '#ecfdf5' : '#fef2f2',
-                        border: isDnsCompliant ? '1px solid #a7f3d0' : '1px solid #fca5a5',
-                        color: isDnsCompliant ? '#065f46' : '#991b1b'
+                        background: isDnsCompliant ? 'var(--s3-success-bg)' : 'var(--s3-error-bg)',
+                        border: isDnsCompliant ? '1.5px solid var(--s3-success-border)' : '1.5px solid var(--s3-error-border)',
+                        color: isDnsCompliant ? 'var(--s3-success-text-bold)' : 'var(--s3-error-text)'
                       }}>
                         {isDnsCompliant 
                           ? `✅ DNS NAMESPACE COMPLIANT (${bucketType === 'general' ? 'GENERAL PURPOSE' : 'DIRECTORY BUCKET'})` 
@@ -3335,10 +3329,10 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               {/* Part B: URL Generator */}
               <div className="s3-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>🔗</span> S3 Endpoint &amp; Object Address URL Generator
                   </div>
-                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
                     {bucketType === 'general' 
                       ? 'Since 2020, S3 deprecates Path-style access in favor of Virtual Hosted-style, allowing DNS subdomain load balancing.'
                       : 'Express One Zone Directory buckets do not support legacy Path-style or standard REST URLs. They use specialized low-latency endpoints.'
@@ -3346,45 +3340,46 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   </div>
 
                   <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>AWS Region</label>
-                      <select className="s3-card select" style={{ width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '6px' }} value={urlRegion} onChange={(e) => setUrlRegion(e.target.value)}>
+                      <select className="s3-btn select" style={{ width: '100%', padding: '6px', border: '1px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--s3-bg)' }} value={urlRegion} onChange={(e) => setUrlRegion(e.target.value)}>
                         <option value="us-east-1">us-east-1 (N. Virginia)</option>
                         <option value="eu-west-1">eu-west-1 (Ireland)</option>
                         <option value="ap-southeast-2">ap-southeast-2 (Sydney)</option>
                       </select>
                     </div>
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Object Key Path</label>
                       <input 
                         type="text" 
                         value={urlKey} 
                         onChange={(e) => setUrlKey(e.target.value)} 
-                        style={{ padding: '6px', fontSize: '12px', width: '100%', border: '1px solid #cbd5e1', borderRadius: '6px' }} 
+                        className="s3-btn"
+                        style={{ padding: '6px', fontSize: '12px', width: '100%', border: '1px solid var(--color-border-secondary)', borderRadius: '6px', background: 'var(--s3-bg)', color: 'var(--color-text-primary)' }} 
                       />
                     </div>
                   </div>
 
                   {/* Generated URLs display */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: '#f8fafc', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--s3-metric-card-bg)', padding: '12px', borderRadius: '10px', border: '1.5px solid var(--s3-card-border)' }}>
                     {bucketType === 'general' ? (
                       <>
                         <div>
-                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#0369a1', textTransform: 'uppercase' }}>✅ Virtual Hosted-Style URL (Standard)</div>
-                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#0f172a', wordBreak: 'break-all', marginTop: '3px' }}>
-                            https://<span style={{ color: '#0891b2', fontWeight: 'bold' }}>{bucketNameInput}</span>.s3.<span style={{ color: '#0284c7', fontWeight: 'bold' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: '#4f46e5', fontWeight: 'bold' }}>{urlKey}</span>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-blue)', textTransform: 'uppercase' }}>✅ Virtual Hosted-Style URL (Standard)</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--color-text-primary)', wordBreak: 'break-all', marginTop: '3px' }}>
+                            https://<span style={{ color: 'var(--color-blue)', fontWeight: 'bold' }}>{bucketNameInput}</span>.s3.<span style={{ color: 'var(--color-blue)', fontWeight: 'bold' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: 'var(--color-purple)', fontWeight: 'bold' }}>{urlKey}</span>
                           </div>
-                          <div style={{ fontSize: '9.5px', color: '#64748b', marginTop: '2px', fontStyle: 'italic' }}>
+                          <div style={{ fontSize: '9.5px', color: 'var(--color-text-secondary)', marginTop: '2px', fontStyle: 'italic' }}>
                             routes subdomain directly to specific S3 frontend DNS server pools for infinite horizontal scaling.
                           </div>
                         </div>
                         
-                        <div style={{ borderTop: '0.5px solid #e2e8f0', paddingTop: '8px' }}>
-                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#991b1b', textTransform: 'uppercase' }}>❌ Path-Style URL (Deprecated since 2020)</div>
-                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#64748b', wordBreak: 'break-all', marginTop: '3px', textDecoration: 'line-through' }}>
-                            https://s3.<span style={{ color: '#0284c7' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: '#0891b2' }}>{bucketNameInput}</span>/<span style={{ color: '#4f46e5' }}>{urlKey}</span>
+                        <div style={{ borderTop: '1.5px solid var(--s3-card-border)', paddingTop: '8px' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-red)', textTransform: 'uppercase' }}>❌ Path-Style URL (Deprecated since 2020)</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--color-text-secondary)', wordBreak: 'break-all', marginTop: '3px', textDecoration: 'line-through' }}>
+                            https://s3.<span style={{ color: 'var(--color-blue)' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: 'var(--color-blue)' }}>{bucketNameInput}</span>/<span style={{ color: 'var(--color-purple)' }}>{urlKey}</span>
                           </div>
-                          <div style={{ fontSize: '9.5px', color: '#991b1b', marginTop: '2px', fontWeight: 600 }}>
+                          <div style={{ fontSize: '9.5px', color: 'var(--color-red)', marginTop: '2px', fontWeight: 600 }}>
                             forces all buckets to share a single DNS namespace, bottlenecking request thresholds!
                           </div>
                         </div>
@@ -3392,21 +3387,21 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     ) : (
                       <>
                         <div>
-                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#15803d', textTransform: 'uppercase' }}>⚡ Directory Bucket High-Performance Endpoint URL</div>
-                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#0f172a', wordBreak: 'break-all', marginTop: '3px' }}>
-                            https://<span style={{ color: '#059669', fontWeight: 'bold' }}>{bucketNameInput}</span>.s3express-<span style={{ color: '#0f766e', fontWeight: 'bold' }}>{directoryAz}</span>.<span style={{ color: '#0284c7', fontWeight: 'bold' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: '#4f46e5', fontWeight: 'bold' }}>{urlKey}</span>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-green)', textTransform: 'uppercase' }}>⚡ Directory Bucket High-Performance Endpoint URL</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--color-text-primary)', wordBreak: 'break-all', marginTop: '3px' }}>
+                            https://<span style={{ color: 'var(--color-green)', fontWeight: 'bold' }}>{bucketNameInput}</span>.s3express-<span style={{ color: 'var(--color-green)', fontWeight: 'bold' }}>{directoryAz}</span>.<span style={{ color: 'var(--color-blue)', fontWeight: 'bold' }}>{urlRegion}</span>.amazonaws.com/<span style={{ color: 'var(--color-purple)', fontWeight: 'bold' }}>{urlKey}</span>
                           </div>
-                          <div style={{ fontSize: '9.5px', color: '#059669', marginTop: '2px', fontWeight: 600 }}>
+                          <div style={{ fontSize: '9.5px', color: 'var(--color-green)', marginTop: '2px', fontWeight: 600 }}>
                             Direct connection into specialized low-latency hypervisor hardware for single-digit ms processing!
                           </div>
                         </div>
 
-                        <div style={{ borderTop: '0.5px solid #e2e8f0', paddingTop: '8px' }}>
-                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#991b1b', textTransform: 'uppercase' }}>❌ Standard REST or Path URLs</div>
-                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#64748b', marginTop: '3px', textDecoration: 'line-through' }}>
+                        <div style={{ borderTop: '1.5px solid var(--s3-card-border)', paddingTop: '8px' }}>
+                          <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-red)', textTransform: 'uppercase' }}>❌ Standard REST or Path URLs</div>
+                          <div style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--color-text-secondary)', marginTop: '3px', textDecoration: 'line-through' }}>
                             https://s3.{urlRegion}.amazonaws.com/{bucketNameInput}
                           </div>
-                          <div style={{ fontSize: '9.5px', color: '#991b1b', marginTop: '2px', fontStyle: 'italic' }}>
+                          <div style={{ fontSize: '9.5px', color: 'var(--color-red)', marginTop: '2px', fontStyle: 'italic' }}>
                             Completely rejected. S3 Directory Buckets reside inside a single AZ and require specialized Zonal routing endpoints.
                           </div>
                         </div>
@@ -3422,36 +3417,36 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
             <div className="s3-card">
               <div className="s3-g2">
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
                     Surviving Datacenter Disasters: Standard 3-AZ Synchronous Writes
                   </div>
-                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.4' }}>
                     S3 standard guarantees <b>99.999999999% (11 9s)</b> durability by synchronously copying object bytes across a minimum of three distinct physically isolated Availability Zones (AZs) before returning 200 OK.
                   </div>
 
                   <div className="s3-g2" style={{ gap: '10px', marginBottom: '12px' }}>
                     <div>
                       <label style={{ fontSize: '10px', display: 'block', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Select Object Payload:</label>
-                      <select value={replicatePayload} onChange={(e) => setReplicatePayload(e.target.value)} style={{ width: '100%', padding: '6px', fontSize: '12px' }}>
+                      <select className="s3-card select" value={replicatePayload} onChange={(e) => setReplicatePayload(e.target.value)} style={{ width: '100%', padding: '6px', fontSize: '12px' }}>
                         <option value="ledger.pdf">ledger.pdf (Corporate ledger - 12.4 MB)</option>
                         <option value="backup.tar">backup.tar (System snapshot - 45.1 MB)</option>
                       </select>
                     </div>
                   </div>
 
-                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#0891b2', color: '#fff' }} onClick={handleReplicationSimulation} disabled={replicateIsRunning}>
+                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: 'var(--color-blue)', color: '#fff', borderColor: 'var(--color-blue)' }} onClick={handleReplicationSimulation} disabled={replicateIsRunning}>
                     {replicateIsRunning ? '⚡ Executing parallel AZ writes...' : '🚀 Ingest PUT Object Payload'}
                   </button>
 
                   <div style={{ marginTop: '12px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Parallel Ingestion Audit logs:</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Parallel Ingestion Audit logs:</div>
                     <div ref={replicateTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
                       {replicateLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting upload replication trigger...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting upload replication trigger...</div>
                       ) : (
                         replicateLogs.map((log, idx) => (
                           <div key={idx} style={{
-                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚡') ? '#eab308' : '#0284c7',
+                            color: log.includes('❌') ? 'var(--color-red)' : log.includes('✅') ? 'var(--color-green)' : log.includes('⚡') ? 'var(--color-amber)' : 'var(--color-blue)',
                             fontFamily: 'monospace',
                             fontSize: '11px',
                             marginBottom: '2px'
@@ -3468,70 +3463,70 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   <svg viewBox="0 0 500 240" width="100%" height="240" className="s3-svg-bg">
                     <defs>
-                      <marker id="arr-repl-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                      <marker id="arr-repl-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)" /></marker>
                     </defs>
 
                     {/* Client Browser */}
-                    <rect x="20" y="85" width="100" height="70" rx="8" fill="rgba(255,255,255,0.75)" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="70" y="105" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
-                    <text x="70" y="122" textAnchor="middle" fontSize="8.5" fontWeight="600" fill="#0891b2">PUT Request</text>
-                    <text x="70" y="140" textAnchor="middle" fontSize="8" fill="#475569" fontFamily="monospace">{replicatePayload}</text>
+                    <rect x="20" y="85" width="100" height="70" rx="8" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1.5" />
+                    <text x="70" y="105" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">💻 Client Browser</text>
+                    <text x="70" y="122" textAnchor="middle" fontSize="8.5" fontWeight="600" fill="var(--color-blue)">PUT Request</text>
+                    <text x="70" y="140" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">{replicatePayload}</text>
 
                     {/* Ingest Gateway */}
-                    <rect x="165" y="85" width="100" height="70" rx="8" fill="rgba(255,255,255,0.85)" stroke="#0891b2" strokeWidth="1.5" />
-                    <text x="215" y="105" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">🪣 Ingest Gateway</text>
-                    <text x="215" y="122" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="600">SSL Handshake</text>
-                    <text x="215" y="138" textAnchor="middle" fontSize="7.5" fill="#0891b2" fontWeight="bold">Parity Engine</text>
+                    <rect x="165" y="85" width="100" height="70" rx="8" fill="var(--s3-card-bg)" stroke="var(--color-blue)" strokeWidth="1.5" />
+                    <text x="215" y="105" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">🪣 Ingest Gateway</text>
+                    <text x="215" y="122" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="600">SSL Handshake</text>
+                    <text x="215" y="138" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Parity Engine</text>
 
                     {/* AZ-1 (Top Right) */}
-                    <rect x="360" y="20" width="120" height="50" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
-                    <text x="420" y="38" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">🏢 AZ-1 ({urlRegion}a)</text>
-                    <text x="420" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#10b981">
+                    <rect x="360" y="20" width="120" height="50" rx="6" fill="var(--s3-card-bg)" stroke={replicateStep >= 3 ? 'var(--color-green)' : 'var(--s3-card-border)'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
+                    <text x="420" y="38" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">🏢 AZ-1 ({urlRegion}a)</text>
+                    <text x="420" y="55" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-green)">
                       {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
                     </text>
 
                     {/* AZ-2 (Middle Right) */}
-                    <rect x="360" y="95" width="120" height="50" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
-                    <text x="420" y="113" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">🏢 AZ-2 ({urlRegion}b)</text>
-                    <text x="420" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#10b981">
+                    <rect x="360" y="95" width="120" height="50" rx="6" fill="var(--s3-card-bg)" stroke={replicateStep >= 3 ? 'var(--color-green)' : 'var(--s3-card-border)'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
+                    <text x="420" y="113" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">🏢 AZ-2 ({urlRegion}b)</text>
+                    <text x="420" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-green)">
                       {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
                     </text>
 
                     {/* AZ-3 (Bottom Right) */}
-                    <rect x="360" y="170" width="120" height="50" rx="6" fill="#ffffff" stroke={replicateStep >= 3 ? '#10b981' : '#cbd5e1'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
-                    <text x="420" y="188" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">🏢 AZ-3 ({urlRegion}c)</text>
-                    <text x="420" y="205" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#10b981">
+                    <rect x="360" y="170" width="120" height="50" rx="6" fill="var(--s3-card-bg)" stroke={replicateStep >= 3 ? 'var(--color-green)' : 'var(--s3-card-border)'} strokeWidth={replicateStep >= 3 ? 2 : 1.5} />
+                    <text x="420" y="188" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">🏢 AZ-3 ({urlRegion}c)</text>
+                    <text x="420" y="205" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-green)">
                       {replicateStep >= 3 ? '✔ COMMITTED' : replicateStep === 2 ? '⏳ WRITING...' : '💤 IDLE'}
                     </text>
 
                     {/* Propagation lines */}
-                    <path d="M 120 120 L 165 120" stroke={replicateStep >= 1 ? '#0891b2' : '#cbd5e1'} strokeWidth="2.5" strokeDasharray={replicateStep === 1 ? "4,4" : "none"} />
+                    <path d="M 120 120 L 165 120" stroke={replicateStep >= 1 ? 'var(--color-blue)' : 'var(--s3-card-border)'} strokeWidth="2.5" strokeDasharray={replicateStep === 1 ? "4,4" : "none"} />
                     
-                    <path d="M 265 110 L 360 45" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
-                    <path d="M 265 120 L 360 120" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
-                    <path d="M 265 130 L 360 195" fill="none" stroke={replicateStep >= 2 ? '#10b981' : '#cbd5e1'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
+                    <path d="M 265 110 L 360 45" fill="none" stroke={replicateStep >= 2 ? 'var(--color-green)' : 'var(--s3-card-border)'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
+                    <path d="M 265 120 L 360 120" fill="none" stroke={replicateStep >= 2 ? 'var(--color-green)' : 'var(--s3-card-border)'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
+                    <path d="M 265 130 L 360 195" fill="none" stroke={replicateStep >= 2 ? 'var(--color-green)' : 'var(--s3-card-border)'} strokeWidth="2" strokeDasharray={replicateStep === 2 ? "4,4" : "none"} />
 
                     {/* Animated packets */}
                     {replicateIsRunning && replicateStep === 1 && (
-                      <circle r="5" fill="#0891b2">
+                      <circle r="5" fill="var(--color-blue)">
                         <animateMotion dur="0.6s" repeatCount="indefinite" path="M 120 120 L 165 120" />
                       </circle>
                     )}
                     {replicateIsRunning && replicateStep === 2 && (
                       <>
-                        <circle r="4.5" fill="#10b981">
+                        <circle r="4.5" fill="var(--color-green)">
                           <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 110 L 360 45" />
                         </circle>
-                        <circle r="4.5" fill="#10b981">
+                        <circle r="4.5" fill="var(--color-green)">
                           <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 120 L 360 120" />
                         </circle>
-                        <circle r="4.5" fill="#10b981">
+                        <circle r="4.5" fill="var(--color-green)">
                           <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 130 L 360 195" />
                         </circle>
                       </>
                     )}
 
-                    <text x="250" y="230" textAnchor="middle" fontSize="9.5" fill={replicateStep === 4 ? '#166534' : '#475569'} fontWeight="bold">
+                    <text x="250" y="230" textAnchor="middle" fontSize="9.5" fill={replicateStep === 4 ? 'var(--s3-success-text-bold)' : 'var(--color-text-secondary)'} fontWeight="bold">
                       {replicateStep === 4 ? '🎉 100% Replicated cross 3 Availability Zones (PUT 200 OK)' : 'Synchronous parallel write replication pipelines'}
                     </text>
                   </svg>
@@ -3544,10 +3539,10 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
             <div className="s3-card">
               <div className="s3-g2">
                 <div>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
                     Atomic Read-After-Write guarantees vs. Legacy Eventual Mirror Delays
                   </div>
-                  <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px', lineHeight: '1.4' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.4' }}>
                     S3 now guarantees <b>Strong read-after-write consistency</b> for PUTs and DELETEs of objects in all regions. Toggling eventual consistency illustrates legacy mirror propagation lags.
                   </div>
 
@@ -3563,21 +3558,21 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     </div>
                   </div>
 
-                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#4f46e5', color: '#fff', borderColor: '#4f46e5' }} onClick={handleConsistencySimulation} disabled={consistencyIsRunning}>
+                  <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: 'var(--color-purple)', color: '#fff', borderColor: 'var(--color-purple)' }} onClick={handleConsistencySimulation} disabled={consistencyIsRunning}>
                     {consistencyIsRunning ? '⚡ Executing concurrent reads/writes...' : '🚀 Trigger Update PUT & Immediate Read GET'}
                   </button>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ background: 'var(--s3-metric-card-bg)', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--s3-card-border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Consistency Verification Trace:</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Consistency Verification Trace:</div>
                     <div ref={consistencyTerminalRef} className="s3-terminal" style={{ height: '120px' }}>
                       {consistencyLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting concurrent transaction trigger...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting concurrent transaction trigger...</div>
                       ) : (
                         consistencyLogs.map((log, idx) => (
                           <div key={idx} style={{
-                            color: log.includes('❌') || log.includes('⚠️') ? '#ef4444' : log.includes('✅') ? '#10b981' : '#334155',
+                            color: log.includes('❌') || log.includes('⚠️') ? 'var(--color-red)' : log.includes('✅') ? 'var(--color-green)' : 'var(--color-text-secondary)',
                             fontFamily: 'monospace',
                             fontSize: '11px',
                             marginBottom: '2px'
@@ -3596,9 +3591,9 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                       borderRadius: '6px',
                       fontSize: '11.5px',
                       fontWeight: 'bold',
-                      background: consistencyMode === 'strong' ? '#ecfdf5' : '#fef2f2',
-                      border: consistencyMode === 'strong' ? '1px solid #a7f3d0' : '1px solid #fca5a5',
-                      color: consistencyMode === 'strong' ? '#065f46' : '#991b1b',
+                      background: consistencyMode === 'strong' ? 'var(--s3-success-bg)' : 'var(--s3-error-bg)',
+                      border: consistencyMode === 'strong' ? '1.5px solid var(--s3-success-border)' : '1.5px solid var(--s3-error-border)',
+                      color: consistencyMode === 'strong' ? 'var(--s3-success-text-bold)' : 'var(--s3-error-text)',
                       textAlign: 'center'
                     }}>
                       {consistencyMode === 'strong' 
@@ -3614,10 +3609,10 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
             <div className="s3-sec">🌐 CORS OPTIONS Preflight Handshake Sandbox</div>
             <div className="s3-g2" style={{ marginBottom: '24px' }}>
               <div className="s3-card">
-                <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#0f172a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>🔒</span> Preflight Parameters Configuration
                 </div>
-                <div style={{ fontSize: '12px', color: '#475569', marginBottom: '16px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
                   Configure incoming HTTP request headers to simulate S3 CORS whitelist evaluation.
                 </div>
 
@@ -3640,17 +3635,17 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   </div>
                 </div>
 
-                <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: '#0891b2', color: '#fff' }} onClick={handleCorsPreflight} disabled={corsAnimationState === 'preflight'}>
+                <button className="s3-btn s3-on" style={{ width: '100%', fontWeight: 'bold', background: 'var(--color-blue)', color: '#fff', borderColor: 'var(--color-blue)' }} onClick={handleCorsPreflight} disabled={corsAnimationState === 'preflight'}>
                   {corsAnimationState === 'preflight' ? '⌛ Preflight OPTIONS Ping Flight...' : '⚡ Test OPTIONS CORS Preflight'}
                 </button>
               </div>
 
-              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ background: 'var(--s3-metric-card-bg)', border: '1.5px solid var(--s3-card-border)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>CORS PREFLIGHT RESULTS CONSOLE:</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>CORS PREFLIGHT RESULTS CONSOLE:</div>
                   <div ref={corsTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
                     {corsLogs.map((log, idx) => (
-                      <div key={idx} style={{ color: log.type === 'success' ? '#16a34a' : log.type === 'error' ? '#dc2626' : '#0284c7', marginBottom: '2px' }}>
+                      <div key={idx} style={{ color: log.type === 'success' ? 'var(--color-green)' : log.type === 'error' ? 'var(--color-red)' : 'var(--color-blue)', marginBottom: '2px' }}>
                         [{log.timestamp}] {log.message}
                       </div>
                     ))}
@@ -3664,9 +3659,9 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     borderRadius: '6px',
                     fontSize: '11.5px',
                     fontWeight: 'bold',
-                    background: corsAnimationState === 'authorized' ? '#ecfdf5' : '#fef2f2',
-                    border: corsAnimationState === 'authorized' ? '1px solid #a7f3d0' : '1px solid #fca5a5',
-                    color: corsAnimationState === 'authorized' ? '#065f46' : '#991b1b',
+                    background: corsAnimationState === 'authorized' ? 'var(--s3-success-bg)' : 'var(--s3-error-bg)',
+                    border: corsAnimationState === 'authorized' ? '1.5px solid var(--s3-success-border)' : '1.5px solid var(--s3-error-border)',
+                    color: corsAnimationState === 'authorized' ? 'var(--s3-success-text-bold)' : 'var(--s3-error-text)',
                     textAlign: 'center'
                   }}>
                     {corsAnimationState === 'preflight' ? '⌛ Dispatching Preflight Ping...' : corsAnimationState === 'authorized' ? '✅ CORS Handshake Accepted! Data flow whitelisted.' : '❌ CORS Handshake Rejected! Browser blocks transfer.'}
@@ -3684,131 +3679,131 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                 <defs>
                   <filter id="s3-shadow-cors" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--s3-terminal-bg)" floodOpacity="0.08" />
                   </filter>
                   <linearGradient id="cors-client-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f0f9ff" />
+                    <stop offset="0%" stopColor="var(--s3-bg)" />
+                    <stop offset="100%" stopColor="var(--s3-tab-hover-bg)" />
                   </linearGradient>
                   <linearGradient id="cors-gate-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ecfeff" />
-                    <stop offset="100%" stopColor="#cffafe" />
+                    <stop offset="0%" stopColor="var(--s3-bg)" />
+                    <stop offset="100%" stopColor="var(--s3-tab-hover-bg)" />
                   </linearGradient>
                   <linearGradient id="cors-bucket-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f0fdf4" />
-                    <stop offset="100%" stopColor="#d1fae5" />
+                    <stop offset="0%" stopColor="var(--s3-success-bg)" />
+                    <stop offset="100%" stopColor="var(--s3-success-bg)" />
                   </linearGradient>
-                  <marker id="arr-repl-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0891b2" /></marker>
+                  <marker id="arr-repl-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)" /></marker>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Public Client Network */}
-                <rect x="10" y="10" width="190" height="160" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="105" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">PUBLIC WEB CLIENT DOMAIN</text>
+                <rect x="10" y="10" width="190" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="105" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold" letterSpacing="0.05em">PUBLIC WEB CLIENT DOMAIN</text>
 
                 {/* AWS S3 Cloud Boundary */}
-                <rect x="250" y="10" width="440" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="470" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS GLOBAL EDGE (S3 CORS FILTER ENGINE)</text>
+                <rect x="250" y="10" width="440" height="160" rx="12" fill="var(--s3-success-bg)" fillOpacity="0.25" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="470" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS GLOBAL EDGE (S3 CORS FILTER ENGINE)</text>
 
                 {/* Client Browser */}
-                <rect x="25" y="32" width="160" height="126" rx="8" fill="url(#cors-client-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-cors)" />
-                <text x="105" y="48" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
-                <text x="105" y="65" textAnchor="middle" fontSize="9" fill="#0891b2" fontWeight="bold">Origin: {corsOriginInput}</text>
-                <text x="105" y="81" textAnchor="middle" fontSize="8" fill="#475569">Sending {corsMethodInput} request</text>
+                <rect x="25" y="32" width="160" height="126" rx="8" fill="url(#cors-client-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-cors)" />
+                <text x="105" y="48" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">💻 Client Browser</text>
+                <text x="105" y="65" textAnchor="middle" fontSize="9" fill="var(--color-blue)" fontWeight="bold">Origin: {corsOriginInput}</text>
+                <text x="105" y="81" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Sending {corsMethodInput} request</text>
                 
-                <rect x="35" y="98" width="140" height="46" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                <text x="105" y="110" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">JS Execution Thread</text>
-                <text x="105" y="122" textAnchor="middle" fontSize="7" fill="#1e40af" fontFamily="monospace">fetch("https://bucket.s3...")</text>
-                <text x="105" y="134" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold">HTTP Method: {corsMethodInput}</text>
+                <rect x="35" y="98" width="140" height="46" rx="4" fill="var(--s3-metric-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                <text x="105" y="110" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">JS Execution Thread</text>
+                <text x="105" y="122" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontFamily="monospace">fetch("https://bucket.s3...")</text>
+                <text x="105" y="134" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">HTTP Method: {corsMethodInput}</text>
 
                 {/* Handshake flow lines */}
                 {/* Line 1: OPTIONS request */}
                 <path id="cors-p1" d="M 185 62 L 270 62" fill="none" 
-                  stroke={corsAnimationState === 'preflight' ? '#f59e0b' : corsAnimationState === 'authorized' ? '#10b981' : corsAnimationState === 'blocked' ? '#ef4444' : '#cbd5e1'} 
+                  stroke={corsAnimationState === 'preflight' ? 'var(--color-amber)' : corsAnimationState === 'authorized' ? 'var(--color-green)' : corsAnimationState === 'blocked' ? 'var(--color-red)' : 'var(--s3-card-border)'} 
                   strokeWidth="2" 
                   className={corsAnimationState === 'preflight' ? 's3-flow-orange' : corsAnimationState === 'authorized' ? 's3-flow-green' : corsAnimationState === 'blocked' ? 's3-flow-red' : undefined} 
                   strokeDasharray="4,4" />
-                <text x="228" y="55" textAnchor="middle" fontSize="8" fontWeight="bold" fill={corsAnimationState === 'preflight' ? '#d97706' : corsAnimationState === 'authorized' ? '#166534' : corsAnimationState === 'blocked' ? '#991b1b' : '#64748b'}>OPTIONS Ping</text>
+                <text x="228" y="55" textAnchor="middle" fontSize="8" fontWeight="bold" fill={corsAnimationState === 'preflight' ? 'var(--color-amber)' : corsAnimationState === 'authorized' ? 'var(--color-green)' : corsAnimationState === 'blocked' ? 'var(--color-red)' : 'var(--color-text-secondary)'}>OPTIONS Ping</text>
 
                 {/* Line 2: OPTIONS Response */}
                 <path id="cors-p2" d="M 270 88 L 185 88" fill="none" 
-                  stroke={corsAnimationState === 'authorized' ? '#10b981' : corsAnimationState === 'blocked' ? '#ef4444' : '#cbd5e1'} 
+                  stroke={corsAnimationState === 'authorized' ? 'var(--color-green)' : corsAnimationState === 'blocked' ? 'var(--color-red)' : 'var(--s3-card-border)'} 
                   strokeWidth="2" 
                   className={corsAnimationState === 'authorized' ? 's3-flow-green' : corsAnimationState === 'blocked' ? 's3-flow-red' : undefined} 
                   strokeDasharray="4,4" />
-                <text x="228" y="101" textAnchor="middle" fontSize="8" fontWeight="bold" fill={corsAnimationState === 'authorized' ? '#166534' : corsAnimationState === 'blocked' ? '#991b1b' : '#64748b'}>Response</text>
+                <text x="228" y="101" textAnchor="middle" fontSize="8" fontWeight="bold" fill={corsAnimationState === 'authorized' ? 'var(--color-green)' : corsAnimationState === 'blocked' ? 'var(--color-red)' : 'var(--color-text-secondary)'}>Response</text>
 
                 {/* Center CORS Gateway Validator */}
-                <rect x="270" y="32" width="160" height="126" rx="8" fill="url(#cors-gate-grad)" stroke="#0891b2" strokeWidth="1.5" filter="url(#s3-shadow-cors)" />
-                <text x="350" y="48" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">🛡️ CORS Firewall Gate</text>
+                <rect x="270" y="32" width="160" height="126" rx="8" fill="url(#cors-gate-grad)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-cors)" />
+                <text x="350" y="48" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">🛡️ CORS Firewall Gate</text>
                 
                 {/* Gate State indicators */}
                 {corsAnimationState === 'idle' && (
                   <>
-                    <circle cx="350" cy="85" r="16" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#475569" fontWeight="bold">⏳</text>
-                    <text x="350" y="122" textAnchor="middle" fontSize="8" fill="#475569">Awaiting preflight trigger</text>
+                    <circle cx="350" cy="85" r="16" fill="var(--s3-metric-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="var(--color-text-secondary)" fontWeight="bold">⏳</text>
+                    <text x="350" y="122" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Awaiting preflight trigger</text>
                   </>
                 )}
                 {corsAnimationState === 'preflight' && (
                   <>
-                    <circle cx="350" cy="85" r="16" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1.5" />
-                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#d97706" fontWeight="bold">⚙️</text>
-                    <text x="350" y="122" textAnchor="middle" fontSize="8.5" fill="#d97706" fontWeight="bold" className="s3-pulse-active">Evaluating CORS...</text>
+                    <circle cx="350" cy="85" r="16" fill="var(--s3-error-bg)" stroke="var(--color-amber)" strokeWidth="1.5" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="var(--color-amber)" fontWeight="bold">⚙️</text>
+                    <text x="350" y="122" textAnchor="middle" fontSize="8.5" fill="var(--color-amber)" fontWeight="bold" className="s3-pulse-active">Evaluating CORS...</text>
                   </>
                 )}
                 {corsAnimationState === 'authorized' && (
                   <>
-                    <circle cx="350" cy="85" r="16" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
-                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#059669" fontWeight="bold">✔</text>
-                    <text x="350" y="122" textAnchor="middle" fontSize="8.5" fill="#059669" fontWeight="bold">ORIGIN ALLOWED</text>
+                    <circle cx="350" cy="85" r="16" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="2" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="var(--s3-success-text-bold)" fontWeight="bold">✔</text>
+                    <text x="350" y="122" textAnchor="middle" fontSize="8.5" fill="var(--s3-success-text-bold)" fontWeight="bold">ORIGIN ALLOWED</text>
                   </>
                 )}
                 {corsAnimationState === 'blocked' && (
                   <>
-                    <circle cx="350" cy="85" r="16" fill="#fef2f2" stroke="#ef4444" strokeWidth="2" />
-                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="#dc2626" fontWeight="bold">✘</text>
-                    <text x="350" y="122" textAnchor="middle" fontSize="8.5" fill="#dc2626" fontWeight="bold">ORIGIN BLOCKED</text>
+                    <circle cx="350" cy="85" r="16" fill="var(--s3-error-bg)" stroke="var(--color-red)" strokeWidth="2" />
+                    <text x="350" y="89" textAnchor="middle" fontSize="10" fill="var(--color-red)" fontWeight="bold">✘</text>
+                    <text x="350" y="122" textAnchor="middle" fontSize="8.5" fill="var(--color-red)" fontWeight="bold">ORIGIN BLOCKED</text>
                   </>
                 )}
 
                 {/* Gateway ➔ S3 Data Path */}
                 <path d="M 430 90 L 500 90" fill="none" 
-                  stroke={corsAnimationState === 'authorized' ? '#10b981' : '#cbd5e1'} 
+                  stroke={corsAnimationState === 'authorized' ? 'var(--color-green)' : 'var(--s3-card-border)'} 
                   strokeWidth="2.5" 
                   className={corsAnimationState === 'authorized' ? 's3-flow-green' : undefined} />
-                <text x="465" y="81" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="bold">Data Tunnel</text>
+                <text x="465" y="81" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">Data Tunnel</text>
 
                 {/* Target S3 Bucket */}
-                <rect x="500" y="32" width="175" height="126" rx="8" fill="url(#cors-bucket-grad)" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-cors)" />
-                <text x="587" y="48" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">🪣 Target S3 Bucket</text>
-                <text x="587" y="62" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace" fontWeight="bold">{bucketNameInput}</text>
+                <rect x="500" y="32" width="175" height="126" rx="8" fill="url(#cors-bucket-grad)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-cors)" />
+                <text x="587" y="48" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--s3-success-text-bold)">🪣 Target S3 Bucket</text>
+                <text x="587" y="62" textAnchor="middle" fontSize="8" fill="var(--s3-success-text-bold)" fontFamily="monospace" fontWeight="bold">{bucketNameInput}</text>
                 
-                <rect x="508" y="74" width="159" height="74" rx="4" fill="rgba(255,255,255,0.75)" stroke="#a7f3d0" strokeWidth="1" />
-                <text x="513" y="85" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="#475569">Configured CORS Rules:</text>
-                <text x="513" y="97" textAnchor="start" fontSize="7" fontFamily="monospace" fill="#0e7490">AllowedOrigin: "https://domain-a.com"</text>
-                <text x="513" y="108" textAnchor="start" fontSize="7" fontFamily="monospace" fill="#0e7490">AllowedMethod: "GET", "PUT", "HEAD"</text>
-                <text x="513" y="119" textAnchor="start" fontSize="7" fontFamily="monospace" fill="#0e7490">ExposeHeaders: "ETag"</text>
-                <text x="513" y="130" textAnchor="start" fontSize="7" fontFamily="monospace" fill="#0e7490">MaxAgeSeconds: 3000</text>
+                <rect x="508" y="74" width="159" height="74" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-success-border)" strokeWidth="1" />
+                <text x="513" y="85" textAnchor="start" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Configured CORS Rules:</text>
+                <text x="513" y="97" textAnchor="start" fontSize="7" fontFamily="monospace" fill="var(--color-blue)">AllowedOrigin: "https://domain-a.com"</text>
+                <text x="513" y="108" textAnchor="start" fontSize="7" fontFamily="monospace" fill="var(--color-blue)">AllowedMethod: "GET", "PUT", "HEAD"</text>
+                <text x="513" y="119" textAnchor="start" fontSize="7" fontFamily="monospace" fill="var(--color-blue)">ExposeHeaders: "ETag"</text>
+                <text x="513" y="130" textAnchor="start" fontSize="7" fontFamily="monospace" fill="var(--color-blue)">MaxAgeSeconds: 3000</text>
 
                 {/* Animated preflight packets */}
                 {corsAnimationState === 'preflight' && (
-                  <circle r="4.5" fill="#f59e0b">
+                  <circle r="4.5" fill="var(--color-amber)">
                     <animateMotion dur="0.8s" repeatCount="indefinite" path="M 185 62 L 270 62" />
                   </circle>
                 )}
                 {corsAnimationState === 'authorized' && (
                   <>
-                    <circle r="4" fill="#10b981">
+                    <circle r="4" fill="var(--color-green)">
                       <animateMotion dur="0.8s" repeatCount="indefinite" path="M 270 88 L 185 88" />
                     </circle>
-                    <circle r="5" fill="#10b981">
+                    <circle r="5" fill="var(--color-green)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 430 90 L 500 90" />
                     </circle>
                   </>
                 )}
                 {corsAnimationState === 'blocked' && (
-                  <circle r="4.5" fill="#ef4444">
+                  <circle r="4.5" fill="var(--color-red)">
                     <animateMotion dur="0.4s" repeatCount="3" path="M 185 62 L 270 62" />
                   </circle>
                 )}
@@ -3817,85 +3812,82 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
           </div>
         )}
 
-        {/* TAB 2: SECURITY */}
+        {/* TAB 2: POLICIES & BPA */}
         {activeTab === 'security' && (
           <div>
-
-
-            {/* 🎨 Architectural SVG */}
-            <div className="s3-sec">S3 Inbound Request Authorization Evaluation Pipeline</div>
+            <div className="s3-sec">🛡️ S3 Inbound Request Authorization Pipeline</div>
             <div className="s3-card" style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                How S3 processes IAM policies, resource statements, and the Block Public Access override master gate.
+                How AWS S3 processes IAM policies, Bucket policies, and Block Public Access (BPA) overrides in series to authorize requests.
               </div>
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                 <defs>
                   <filter id="s3-shadow-sec" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--s3-terminal-bg)" floodOpacity="0.08" />
                   </filter>
                   <linearGradient id="gate-bpa-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fffbeb" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#fef3c7" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="var(--s3-error-bg)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="var(--s3-error-border)" stopOpacity="0.8" />
                   </linearGradient>
                   <linearGradient id="gate-deny-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#faf5ff" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#f3e8ff" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="var(--s3-card-bg)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="var(--s3-metric-card-bg)" stopOpacity="0.8" />
                   </linearGradient>
                   <linearGradient id="gate-allow-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f0fdf4" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#d1fae5" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="var(--s3-success-bg)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="var(--s3-success-border)" stopOpacity="0.8" />
                   </linearGradient>
                   <linearGradient id="ingress-node-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f8fafc" />
+                    <stop offset="0%" stopColor="var(--s3-card-bg)" />
+                    <stop offset="100%" stopColor="var(--s3-bg)" />
                   </linearGradient>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Public Ingress Network */}
-                <rect x="8" y="10" width="122" height="160" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="69" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">INGRESS TRAFFIC</text>
+                <rect x="8" y="10" width="122" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="69" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">INGRESS TRAFFIC</text>
 
                 {/* AWS S3 Policy Engine Layer */}
-                <rect x="140" y="10" width="470" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="375" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS S3 POLICY &amp; SECURITY EVALUATION ENGINE</text>
+                <rect x="140" y="10" width="470" height="160" rx="12" fill="var(--s3-success-bg)" fillOpacity="0.25" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="375" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS S3 POLICY &amp; SECURITY EVALUATION ENGINE</text>
 
                 {/* Result Boundary */}
-                <rect x="620" y="10" width="72" height="160" rx="8" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="656" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">RESULT</text>
+                <rect x="620" y="10" width="72" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="656" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">RESULT</text>
 
                 {/* Client Ingress Request Node */}
-                <rect x="15" y="38" width="105" height="114" rx="8" fill="url(#ingress-node-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-sec)" />
-                <text x="67" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Inbound Req</text>
-                <text x="67" y="78" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600" fontFamily="monospace">GET/PUT Object</text>
+                <rect x="15" y="38" width="105" height="114" rx="8" fill="url(#ingress-node-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-sec)" />
+                <text x="67" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">💻 Inbound Req</text>
+                <text x="67" y="78" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600" fontFamily="monospace">GET/PUT Object</text>
                 
-                <rect x="22" y="90" width="91" height="48" rx="4" fill="#f0f9ff" stroke="#bae6fd" strokeWidth="1" />
-                <text x="67" y="102" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontWeight="bold">Source Channel:</text>
-                <text x="67" y="114" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold" fontFamily="monospace">
+                <rect x="22" y="90" width="91" height="48" rx="4" fill="var(--s3-metric-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                <text x="67" y="102" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Source Channel:</text>
+                <text x="67" y="114" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold" fontFamily="monospace">
                   {ingressTrafficSource === 'internet' ? 'Internet-HTTP' :
                    ingressTrafficSource === 'https_user' ? 'HTTPS-Client' :
                    ingressTrafficSource === 'http_user' ? 'HTTP-Client' : 'AWS-VPC-VPCE'}
                 </text>
-                <text x="67" y="126" textAnchor="middle" fontSize="7.5" fill="#475569">Template: {selectedPolicyTemplate}</text>
+                <text x="67" y="126" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">Template: {selectedPolicyTemplate}</text>
 
                 {/* Path Segment 1 */}
-                <path d="M 120 90 L 150 90" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="s3-flow-blue" />
+                <path d="M 120 90 L 150 90" fill="none" stroke="var(--color-blue)" strokeWidth="2.5" className="s3-flow-blue" />
 
                 {/* Gate 1: BPA Override Shield */}
                 <rect x="150" y="38" width="110" height="114" rx="8" 
-                  fill={selectedPolicyTemplate === 'public' && bpaPolicies ? '#fef2f2' : 'url(#gate-bpa-grad)'} 
-                  stroke={selectedPolicyTemplate === 'public' && bpaPolicies ? '#ef4444' : '#d97706'} 
+                  fill={selectedPolicyTemplate === 'public' && bpaPolicies ? 'var(--s3-error-bg)' : 'url(#gate-bpa-grad)'} 
+                  stroke={selectedPolicyTemplate === 'public' && bpaPolicies ? 'var(--color-red)' : 'var(--color-amber)'} 
                   strokeWidth="1.5" filter="url(#s3-shadow-sec)" />
-                <text x="205" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">Gate 1: BPA</text>
-                <text x="205" y="76" textAnchor="middle" fontSize="8.5" fill="#475569">Block Public</text>
-                <text x="205" y="89" textAnchor="middle" fontSize="8.5" fill="#475569">Access Override</text>
+                <text x="205" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Gate 1: BPA</text>
+                <text x="205" y="76" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">Block Public</text>
+                <text x="205" y="89" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">Access Override</text>
                 
-                <rect x="158" y="102" width="94" height="38" rx="4" fill="#ffffff" fillOpacity="0.8" stroke={selectedPolicyTemplate === 'public' && bpaPolicies ? '#fca5a5' : '#fde68a'} strokeWidth="1" />
+                <rect x="158" y="102" width="94" height="38" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke={selectedPolicyTemplate === 'public' && bpaPolicies ? 'var(--s3-error-border)' : 'var(--color-amber)'} strokeWidth="1" />
                 <text x="205" y="114" textAnchor="middle" fontSize="8" fontWeight="bold" 
-                  fill={selectedPolicyTemplate === 'public' && bpaPolicies ? '#ef4444' : '#10b981'}>
+                  fill={selectedPolicyTemplate === 'public' && bpaPolicies ? 'var(--color-red)' : 'var(--color-green)'}>
                   {selectedPolicyTemplate === 'public' && bpaPolicies ? '❌ BLOCKED' : '🟢 PASSED'}
                 </text>
-                <text x="205" y="126" textAnchor="middle" fontSize="7.5" fill="#64748b">
+                <text x="205" y="126" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">
                   {bpaPolicies ? 'BPA: Enabled' : 'BPA: Disabled'}
                 </text>
 
@@ -3904,7 +3896,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   const isBpaBlocked = selectedPolicyTemplate === 'public' && bpaPolicies;
                   return (
                     <path d="M 260 90 L 310 90" fill="none" 
-                      stroke={isBpaBlocked ? '#cbd5e1' : '#3b82f6'} 
+                      stroke={isBpaBlocked ? 'var(--s3-card-border)' : 'var(--color-blue)'} 
                       strokeWidth="2.5" 
                       className={isBpaBlocked ? undefined : 's3-flow-blue'} />
                   );
@@ -3919,19 +3911,19 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   return (
                     <>
                       <rect x="310" y="38" width="120" height="114" rx="8" 
-                        fill={isBpaBlocked ? '#f1f5f9' : isDenyActive ? '#fef2f2' : 'url(#gate-deny-grad)'} 
-                        stroke={isBpaBlocked ? '#cbd5e1' : isDenyActive ? '#ef4444' : '#a855f7'} 
+                        fill={isBpaBlocked ? 'var(--s3-metric-card-bg)' : isDenyActive ? 'var(--s3-error-bg)' : 'url(#gate-deny-grad)'} 
+                        stroke={isBpaBlocked ? 'var(--s3-card-border)' : isDenyActive ? 'var(--color-red)' : 'var(--color-purple)'} 
                         strokeWidth="1.5" filter="url(#s3-shadow-sec)" />
-                      <text x="370" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">Gate 2: Denies</text>
-                      <text x="370" y="76" textAnchor="middle" fontSize="8.5" fill="#475569">Conditionals</text>
-                      <text x="370" y="89" textAnchor="middle" fontSize="8.5" fill="#475569">&amp; Explicit Deny</text>
+                      <text x="370" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Gate 2: Denies</text>
+                      <text x="370" y="76" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">Conditionals</text>
+                      <text x="370" y="89" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">&amp; Explicit Deny</text>
                       
-                      <rect x="318" y="102" width="104" height="38" rx="4" fill="#ffffff" fillOpacity="0.8" stroke={isDenyActive ? '#fca5a5' : '#e9d5ff'} strokeWidth="1" />
+                      <rect x="318" y="102" width="104" height="38" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke={isDenyActive ? 'var(--s3-error-border)' : 'var(--color-purple)'} strokeWidth="1" />
                       <text x="370" y="114" textAnchor="middle" fontSize="8" fontWeight="bold" 
-                        fill={isBpaBlocked ? '#94a3b8' : isDenyActive ? '#ef4444' : '#10b981'}>
+                        fill={isBpaBlocked ? 'var(--color-text-tertiary)' : isDenyActive ? 'var(--color-red)' : 'var(--color-green)'}>
                         {isBpaBlocked ? '💤 BYPASSED' : isDenyActive ? '❌ DENIED' : '🟢 PASSED'}
                       </text>
-                      <text x="370" y="126" textAnchor="middle" fontSize="7" fill="#64748b">
+                      <text x="370" y="126" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">
                         {isDenyActive ? 'Deny Triggered' : 'No Deny Match'}
                       </text>
                     </>
@@ -3947,7 +3939,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   const isBlocked = isBpaBlocked || isDenyBlocked;
                   return (
                     <path d="M 430 90 L 480 90" fill="none" 
-                      stroke={isBlocked ? '#cbd5e1' : '#3b82f6'} 
+                      stroke={isBlocked ? 'var(--s3-card-border)' : 'var(--color-blue)'} 
                       strokeWidth="2.5" 
                       className={isBlocked ? undefined : 's3-flow-blue'} />
                   );
@@ -3969,19 +3961,19 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   return (
                     <>
                       <rect x="480" y="38" width="120" height="114" rx="8" 
-                        fill={isBlocked ? '#f1f5f9' : isAllowed ? 'url(#gate-allow-grad)' : '#fef2f2'} 
-                        stroke={isBlocked ? '#cbd5e1' : isAllowed ? '#10b981' : '#ef4444'} 
+                        fill={isBlocked ? 'var(--s3-metric-card-bg)' : isAllowed ? 'url(#gate-allow-grad)' : 'var(--s3-error-bg)'} 
+                        stroke={isBlocked ? 'var(--s3-card-border)' : isAllowed ? 'var(--color-green)' : 'var(--color-red)'} 
                         strokeWidth="1.5" filter="url(#s3-shadow-sec)" />
-                      <text x="540" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">Gate 3: Allows</text>
-                      <text x="540" y="76" textAnchor="middle" fontSize="8.5" fill="#475569">Resource Policy</text>
-                      <text x="540" y="89" textAnchor="middle" fontSize="8.5" fill="#475569">Allow Whitelists</text>
+                      <text x="540" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Gate 3: Allows</text>
+                      <text x="540" y="76" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">Resource Policy</text>
+                      <text x="540" y="89" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">Allow Whitelists</text>
                       
-                      <rect x="488" y="102" width="104" height="38" rx="4" fill="#ffffff" fillOpacity="0.8" stroke={isBlocked ? '#cbd5e1' : isAllowed ? '#a7f3d0' : '#fca5a5'} strokeWidth="1" />
+                      <rect x="488" y="102" width="104" height="38" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke={isBlocked ? 'var(--s3-card-border)' : isAllowed ? 'var(--s3-success-border)' : 'var(--s3-error-border)'} strokeWidth="1" />
                       <text x="540" y="114" textAnchor="middle" fontSize="8" fontWeight="bold" 
-                        fill={isBlocked ? '#94a3b8' : isAllowed ? '#10b981' : '#ef4444'}>
+                        fill={isBlocked ? 'var(--color-text-tertiary)' : isAllowed ? 'var(--color-green)' : 'var(--color-red)'}>
                         {isBlocked ? '💤 BYPASSED' : isAllowed ? '🟢 ALLOWED' : '❌ NO MATCH'}
                       </text>
-                      <text x="540" y="126" textAnchor="middle" fontSize="7" fill="#64748b">
+                      <text x="540" y="126" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">
                         {isAllowed ? 'Allow Matched' : 'Implicit Deny'}
                       </text>
                     </>
@@ -4002,7 +3994,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   );
                   return (
                     <path d="M 600 90 L 630 90" fill="none" 
-                      stroke={ingressPacketStatus === 'idle' ? '#cbd5e1' : isAllowed ? '#22c55e' : '#ef4444'} 
+                      stroke={ingressPacketStatus === 'idle' ? 'var(--s3-card-border)' : isAllowed ? 'var(--color-green)' : 'var(--color-red)'} 
                       strokeWidth="2.5" 
                       className={ingressPacketStatus === 'idle' ? undefined : isAllowed ? 's3-flow-green' : 's3-flow-red'} />
                   );
@@ -4023,11 +4015,11 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   return (
                     <>
                       <circle cx="652" cy="90" r="22" 
-                        fill={ingressPacketStatus === 'idle' ? '#f1f5f9' : isAllowed ? '#ecfdf5' : '#fef2f2'} 
-                        stroke={ingressPacketStatus === 'idle' ? '#cbd5e1' : isAllowed ? '#10b981' : '#ef4444'} 
+                        fill={ingressPacketStatus === 'idle' ? 'var(--s3-metric-card-bg)' : isAllowed ? 'var(--s3-success-bg)' : 'var(--s3-error-bg)'} 
+                        stroke={ingressPacketStatus === 'idle' ? 'var(--s3-card-border)' : isAllowed ? 'var(--color-green)' : 'var(--color-red)'} 
                         strokeWidth="2" filter="url(#s3-shadow-sec)" />
                       <text x="652" y="94" textAnchor="middle" fontSize="10.5" fontWeight="bold" 
-                        fill={ingressPacketStatus === 'idle' ? '#475569' : isAllowed ? '#047857' : '#991b1b'}>
+                        fill={ingressPacketStatus === 'idle' ? 'var(--color-text-secondary)' : isAllowed ? 'var(--s3-success-text-bold)' : 'var(--s3-error-text-bold)'}>
                         {ingressPacketStatus === 'idle' ? '⏳' : isAllowed ? '✔ OK' : '✘ Deny'}
                       </text>
                     </>
@@ -4053,7 +4045,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   else if (!isAllowed) motionPath = "M 60 90 L 540 90";
 
                   return (
-                    <circle r="6" fill={isAllowed ? '#10b981' : '#ef4444'}>
+                    <circle r="6" fill={isAllowed ? 'var(--color-green)' : 'var(--color-red)'}>
                       <animateMotion dur="1s" repeatCount="1" fill="freeze" path={motionPath} />
                     </circle>
                   );
@@ -4085,6 +4077,18 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     value={bucketPolicyText}
                     onChange={e => setBucketPolicyText(e.target.value)}
                     rows={12}
+                    style={{
+                      background: 'var(--s3-terminal-bg)',
+                      color: 'var(--s3-terminal-color)',
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '11.5px',
+                      border: '1.5px solid var(--color-border-secondary)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      width: '100%',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
                   />
                   {policyValidationError && (
                     <div style={{ background: '#fef2f2', border: '1px solid #fecaca', padding: '6px 10px', borderRadius: '4px', color: '#b91c1c', fontSize: '11px', fontFamily: 'monospace', marginTop: '6px' }}>
@@ -4098,7 +4102,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
 
                   <div style={{ marginBottom: '10px' }}>
                     <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Select Inbound Connection Source:</label>
-                    <select value={ingressTrafficSource} onChange={e => setIngressTrafficSource(e.target.value as any)} style={{ padding: '4px 8px', fontSize: '11.5px', width: '100%' }}>
+                    <select className="s3-card select" value={ingressTrafficSource} onChange={e => setIngressTrafficSource(e.target.value as any)} style={{ padding: '4px 8px', fontSize: '11.5px', width: '100%' }}>
                       <option value="internet">Global Internet User (HTTP, Unsecured)</option>
                       <option value="https_user">Secure HTTPS User (Global SSL Web Traffic)</option>
                       <option value="http_user">Standard HTTP User (No Secure TLS Transport)</option>
@@ -4154,7 +4158,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                       ) : (
                         policyEvaluationLogs.map((log, idx) => (
                           <div key={idx} style={{
-                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚠️') ? '#f59e0b' : '#38bdf8',
+                            color: log.includes('❌') ? 'var(--color-red)' : log.includes('✅') ? 'var(--color-green)' : log.includes('⚠️') ? 'var(--color-amber)' : 'var(--s3-terminal-color)',
                             fontFamily: 'monospace',
                             fontSize: '11px',
                             marginBottom: '2px'
@@ -4279,8 +4283,8 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
 
                   {/* Horizontal progress steps */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', height: '2px', background: '#334155', zIndex: 1 }} />
-                    <div style={{ position: 'absolute', top: '10px', left: '10px', width: `${((Math.max(1, encryptionStep) - 1) / 4) * 100}%`, height: '2px', background: '#10b981', zIndex: 1, transition: 'width 0.4s' }} />
+                    <div style={{ position: 'absolute', top: '10px', left: '10px', right: '10px', height: '2px', background: 'var(--s3-terminal-border)', zIndex: 1 }} />
+                    <div style={{ position: 'absolute', top: '10px', left: '10px', width: `${((Math.max(1, encryptionStep) - 1) / 4) * 100}%`, height: '2px', background: 'var(--color-green)', zIndex: 1, transition: 'width 0.4s' }} />
 
                     {[
                       { s: 1, text: 'Client' },
@@ -4294,14 +4298,14 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                           width: '22px',
                           height: '22px',
                           borderRadius: '50%',
-                          background: encryptionStep >= step.s ? '#10b981' : '#1e293b',
+                          background: encryptionStep >= step.s ? 'var(--color-green)' : 'var(--s3-terminal-border)',
                           color: '#fff',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: '10.5px',
                           fontWeight: 'bold',
-                          border: '2px solid #334155',
+                          border: '2px solid var(--s3-terminal-border)',
                           transition: 'background 0.3s'
                         }}>
                           {step.s}
@@ -4312,16 +4316,16 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   </div>
 
                   {/* Encryption hex output display */}
-                  <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', marginBottom: '10px', fontSize: '11px', fontFamily: 'monospace' }}>
+                  <div style={{ background: 'var(--s3-terminal-bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--s3-terminal-border)', marginBottom: '10px', fontSize: '11px', fontFamily: 'monospace' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ color: '#94a3b8' }}>Plaintext Key (hypervisor RAM):</span>
-                      <span style={{ color: plaintextKeyHex ? '#f59e0b' : '#ef4444', fontWeight: 'bold' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Plaintext Key (hypervisor RAM):</span>
+                      <span style={{ color: plaintextKeyHex ? 'var(--color-amber)' : 'var(--color-red)', fontWeight: 'bold' }}>
                         {plaintextKeyHex ? plaintextKeyHex.substring(0, 16) + '...' : '[SCRUBBED / ZEROIZED]'}
                       </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#94a3b8' }}>Encrypted Key (sector metadata):</span>
-                      <span style={{ color: encryptedKeyHex ? '#10b981' : '#64748b' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Encrypted Key (sector metadata):</span>
+                      <span style={{ color: encryptedKeyHex ? 'var(--color-green)' : 'var(--color-text-tertiary)' }}>
                         {encryptedKeyHex ? encryptedKeyHex.substring(0, 16) + '...' : '[Awaiting encryption]'}
                       </span>
                     </div>
@@ -4331,11 +4335,11 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Encryption execution Logs:</div>
                     <div ref={encryptionTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
                       {encryptionLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting envelope write simulation...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting envelope write simulation...</div>
                       ) : (
                         encryptionLogs.map((log, idx) => (
                           <div key={idx} style={{
-                            color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚠️') ? '#f59e0b' : '#38bdf8',
+                            color: log.includes('❌') ? 'var(--color-red)' : log.includes('✅') ? 'var(--color-green)' : log.includes('⚠️') ? 'var(--color-amber)' : 'var(--s3-terminal-color)',
                             fontFamily: 'monospace',
                             fontSize: '11px',
                             marginBottom: '2px'
@@ -4368,81 +4372,81 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                   <defs>
                     <filter id="s3-shadow-sse3" x="-10%" y="-10%" width="120%" height="120%">
-                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                     </filter>
                     <linearGradient id="client-sse3-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#f0f9ff" />
+                      <stop offset="0%" stopColor="var(--s3-grad-client-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-client-end)" />
                     </linearGradient>
                     <linearGradient id="engine-sse3-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ecfdf5" />
-                      <stop offset="100%" stopColor="#d1fae5" />
+                      <stop offset="0%" stopColor="var(--s3-grad-engine-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-engine-end)" />
                     </linearGradient>
                     <linearGradient id="disk-sse3-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f8fafc" />
-                      <stop offset="100%" stopColor="#f1f5f9" />
+                      <stop offset="0%" stopColor="var(--s3-grad-disk-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-disk-end)" />
                     </linearGradient>
                   </defs>
 
                   {/* PREMIUM NESTED BOUNDARIES */}
                   {/* Public Client Network */}
-                  <rect x="8" y="10" width="162" height="160" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="89" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">PUBLIC CLIENT NETWORK SUBNET</text>
+                  <rect x="8" y="10" width="162" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="89" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">PUBLIC CLIENT NETWORK SUBNET</text>
 
                   {/* AWS Cloud Core */}
-                  <rect x="180" y="10" width="512" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                  <text x="436" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE REGIONAL INFRASTRUCTURE (SSE-S3 ENGINE)</text>
+                  <rect x="180" y="10" width="512" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="436" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE REGIONAL INFRASTRUCTURE (SSE-S3 ENGINE)</text>
 
                   {/* User Client */}
-                  <rect x="20" y="38" width="138" height="114" rx="8" fill="url(#client-sse3-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-sse3)" />
-                  <text x="89" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="20" y="38" width="138" height="114" rx="8" fill="url(#client-sse3-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-sse3)" />
+                  <text x="89" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">💻 Client Browser</text>
                   
-                  <rect x="28" y="74" width="122" height="64" rx="4" fill="#ffffff" stroke="#bfdbfe" strokeWidth="1" />
-                  <text x="89" y="88" textAnchor="middle" fontSize="8" fill="#1e40af" fontWeight="bold">Ingress Write Command</text>
-                  <text x="89" y="103" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontFamily="monospace">x-amz-server-side-</text>
-                  <text x="89" y="117" textAnchor="middle" fontSize="7.5" fill="#1d4ed8" fontFamily="monospace">encryption: AES-256</text>
+                  <rect x="28" y="74" width="122" height="64" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="89" y="88" textAnchor="middle" fontSize="8" fill="var(--color-blue)" fontWeight="bold">Ingress Write Command</text>
+                  <text x="89" y="103" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontFamily="monospace">x-amz-server-side-</text>
+                  <text x="89" y="117" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontFamily="monospace">encryption: AES-256</text>
 
                   {/* Flow Arrow */}
                   <path d="M 158 90 L 210 90" fill="none" 
                     stroke={encryptionStep === 1 ? '#3b82f6' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep === 1 ? 's3-flow-blue' : undefined} />
-                  <text x="184" y="81" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="bold">Upload</text>
+                  <text x="184" y="81" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">Upload</text>
 
                   {/* S3 Service Node */}
-                  <rect x="210" y="38" width="230" height="114" rx="8" fill="url(#engine-sse3-grad)" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-sse3)" />
-                  <text x="325" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#047857">🪣 S3 Service Engine</text>
-                  <text x="325" y="74" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">AWS-Managed Symmetric Cipher</text>
+                  <rect x="210" y="38" width="230" height="114" rx="8" fill="url(#engine-sse3-grad)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-sse3)" />
+                  <text x="325" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-green)">🪣 S3 Service Engine</text>
+                  <text x="325" y="74" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600">AWS-Managed Symmetric Cipher</text>
                   
-                  <rect x="220" y="86" width="210" height="52" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#a7f3d0" strokeWidth="1" />
-                  <text x="325" y="99" textAnchor="middle" fontSize="8.5" fill="#065f46" fontWeight="bold">S3 Master Key (AES-256 Block)</text>
-                  <text x="325" y="112" textAnchor="middle" fontSize="8" fill="#047857">Plaintext Key Scrubbed from RAM</text>
-                  <text x="325" y="125" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold" fontStyle="italic">🔒 Zero-Footprint Buffer</text>
+                  <rect x="220" y="86" width="210" height="52" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-success-border)" strokeWidth="1" />
+                  <text x="325" y="99" textAnchor="middle" fontSize="8.5" fill="var(--s3-success-text-bold)" fontWeight="bold">S3 Master Key (AES-256 Block)</text>
+                  <text x="325" y="112" textAnchor="middle" fontSize="8" fill="var(--color-green)">Plaintext Key Scrubbed from RAM</text>
+                  <text x="325" y="125" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold" fontStyle="italic">🔒 Zero-Footprint Buffer</text>
 
                   {/* Flow Arrow */}
                   <path d="M 440 90 L 490 90" fill="none" 
                     stroke={encryptionStep >= 2 && encryptionStep <= 4 ? '#22c55e' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep >= 2 && encryptionStep <= 4 ? 's3-flow-green' : undefined} />
-                  <text x="465" y="81" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="bold">Commit</text>
+                  <text x="465" y="81" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">Commit</text>
 
                   {/* S3 Storage Target */}
-                  <rect x="490" y="38" width="190" height="114" rx="8" fill="url(#disk-sse3-grad)" stroke="#475569" strokeWidth="1.5" filter="url(#s3-shadow-sse3)" />
-                  <text x="585" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#334155">🗄️ SSD Target Sector</text>
+                  <rect x="490" y="38" width="190" height="114" rx="8" fill="url(#disk-sse3-grad)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-sse3)" />
+                  <text x="585" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-text-primary)">🗄️ SSD Target Sector</text>
                   
-                  <rect x="498" y="72" width="174" height="66" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="585" y="86" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e293b">🔒 Encrypted Payload Block</text>
-                  <text x="585" y="101" textAnchor="middle" fontSize="7.5" fill="#475569">At-Rest Storage (AES-GCM)</text>
-                  <text x="585" y="116" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Auto-Decryption on Authenticated GET</text>
+                  <rect x="498" y="72" width="174" height="66" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="585" y="86" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-text-primary)">🔒 Encrypted Payload Block</text>
+                  <text x="585" y="101" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">At-Rest Storage (AES-GCM)</text>
+                  <text x="585" y="116" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Auto-Decryption on Authenticated GET</text>
 
                   {/* Active Animation Stream */}
                   {encryptionStep === 1 && (
-                    <circle r="4.5" fill="#3b82f6">
+                    <circle r="4.5" fill="var(--color-blue)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 158 90 L 210 90" />
                     </circle>
                   )}
                   {encryptionStep >= 2 && encryptionStep <= 4 && (
-                    <circle r="4.5" fill="#10b981">
+                    <circle r="4.5" fill="var(--color-green)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 440 90 L 490 90" />
                     </circle>
                   )}
@@ -4453,65 +4457,65 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <svg viewBox="0 0 700 190" width="100%" className="s3-svg-bg">
                   <defs>
                     <filter id="s3-shadow-ssekms" x="-10%" y="-10%" width="120%" height="120%">
-                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                     </filter>
                     <linearGradient id="client-kms-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#f0f9ff" />
+                      <stop offset="0%" stopColor="var(--s3-grad-client-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-client-end)" />
                     </linearGradient>
                     <linearGradient id="engine-kms-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f0fdfa" />
-                      <stop offset="100%" stopColor="#e0f2fe" />
+                      <stop offset="0%" stopColor="var(--s3-grad-kms-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-kms-end)" />
                     </linearGradient>
                     <linearGradient id="hsm-kms-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fffbeb" />
-                      <stop offset="100%" stopColor="#fef3c7" />
+                      <stop offset="0%" stopColor="var(--s3-grad-hsm-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-hsm-end)" />
                     </linearGradient>
                     <linearGradient id="disk-kms-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f0fdf4" />
-                      <stop offset="100%" stopColor="#d1fae5" />
+                      <stop offset="0%" stopColor="var(--s3-card-border)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-engine-end)" />
                     </linearGradient>
                   </defs>
 
                   {/* PREMIUM NESTED BOUNDARIES */}
                   {/* Public Client Network */}
-                  <rect x="8" y="10" width="142" height="170" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="79" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">PUBLIC CLIENT NETWORK</text>
+                  <rect x="8" y="10" width="142" height="170" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="79" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">PUBLIC CLIENT NETWORK</text>
 
                   {/* AWS Cloud Core */}
-                  <rect x="156" y="10" width="536" height="170" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                  <text x="424" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS CLOUD INFRASTRUCTURE (SSE-KMS ENVELOPE INGESTION)</text>
+                  <rect x="156" y="10" width="536" height="170" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="424" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS CLOUD INFRASTRUCTURE (SSE-KMS ENVELOPE INGESTION)</text>
 
                   {/* User Client */}
-                  <rect x="16" y="38" width="126" height="128" rx="8" fill="url(#client-kms-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
-                  <text x="79" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="16" y="38" width="126" height="128" rx="8" fill="url(#client-kms-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
+                  <text x="79" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">💻 Client Browser</text>
                   
-                  <rect x="23" y="74" width="112" height="78" rx="4" fill="#ffffff" stroke="#bfdbfe" strokeWidth="1" />
-                  <text x="79" y="86" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">Ingress Write Request</text>
-                  <text x="79" y="99" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontFamily="monospace">x-amz-server-side-</text>
-                  <text x="79" y="111" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontFamily="monospace">encryption: aws:kms</text>
-                  <text x="79" y="125" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold">Auditable Key Call</text>
-                  <text x="79" y="137" textAnchor="middle" fontSize="6.5" fill="#475569">Max Security Enforced</text>
+                  <rect x="23" y="74" width="112" height="78" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="79" y="86" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Ingress Write Request</text>
+                  <text x="79" y="99" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontFamily="monospace">x-amz-server-side-</text>
+                  <text x="79" y="111" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontFamily="monospace">encryption: aws:kms</text>
+                  <text x="79" y="125" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold">Auditable Key Call</text>
+                  <text x="79" y="137" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)">Max Security Enforced</text>
 
                   {/* Flow Arrow */}
                   <path d="M 142 105 L 180 105" fill="none" 
                     stroke={encryptionStep === 1 ? '#3b82f6' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep === 1 ? 's3-flow-blue' : undefined} />
-                  <text x="161" y="96" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="bold">Upload</text>
+                  <text x="161" y="96" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">Upload</text>
 
                   {/* S3 Service Engine */}
-                  <rect x="180" y="38" width="170" height="128" rx="8" fill="url(#engine-kms-grad)" stroke="#0ea5e9" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
-                  <text x="265" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">🪣 S3 Service Engine</text>
-                  <text x="265" y="72" textAnchor="middle" fontSize="7.5" fill="#475569" fontWeight="600">Requests Envelope Keys</text>
+                  <rect x="180" y="38" width="170" height="128" rx="8" fill="url(#engine-kms-grad)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
+                  <text x="265" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">🪣 S3 Service Engine</text>
+                  <text x="265" y="72" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="600">Requests Envelope Keys</text>
                   
-                  <rect x="188" y="86" width="154" height="66" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#bae6fd" strokeWidth="1" />
-                  <text x="265" y="97" textAnchor="middle" fontSize="7.5" fill="#0ea5e9" fontWeight="bold">GenerateDataKey Async</text>
-                  <text x="265" y="110" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="bold">RAM Plaintext Key Ingest</text>
-                  <text x="265" y="124" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">
+                  <rect x="188" y="86" width="154" height="66" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="265" y="97" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">GenerateDataKey Async</text>
+                  <text x="265" y="110" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">RAM Plaintext Key Ingest</text>
+                  <text x="265" y="124" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">
                     {encryptionStep >= 4 ? '🚫 SCRUBBED &amp; ZEROIZED' : '⏳ CACHED IN MEMORY'}
                   </text>
-                  <text x="265" y="138" textAnchor="middle" fontSize="7" fill="#64748b" fontStyle="italic">RAM erased on disk commit</text>
+                  <text x="265" y="138" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontStyle="italic">RAM erased on disk commit</text>
 
                   {/* S3 to KMS loop */}
                   <path d="M 265 38 L 265 18 L 440 18 L 440 38" fill="none" 
@@ -4519,50 +4523,50 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     strokeWidth="1.5" 
                     className={encryptionStep === 3 ? 's3-flow-orange' : undefined}
                     strokeDasharray="3,3" />
-                  <text x="352" y="13" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">KMS API Call 🔄 (CloudTrail Audited)</text>
+                  <text x="352" y="13" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold">KMS API Call 🔄 (CloudTrail Audited)</text>
 
                   {/* AWS KMS Block */}
-                  <rect x="365" y="38" width="150" height="128" rx="8" fill="url(#hsm-kms-grad)" stroke="#d97706" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
-                  <text x="440" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#b45309">🔑 AWS KMS CMK</text>
-                  <text x="440" y="72" textAnchor="middle" fontSize="8" fill="#78350f" fontWeight="bold">Hardware Security Module</text>
+                  <rect x="365" y="38" width="150" height="128" rx="8" fill="url(#hsm-kms-grad)" stroke="var(--color-amber)" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
+                  <text x="440" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-amber)">🔑 AWS KMS CMK</text>
+                  <text x="440" y="72" textAnchor="middle" fontSize="8" fill="var(--color-amber)" fontWeight="bold">Hardware Security Module</text>
                   
-                  <rect x="373" y="86" width="134" height="66" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#fde68a" strokeWidth="1" />
-                  <text x="440" y="98" textAnchor="middle" fontSize="8" fill="#b45309" fontWeight="bold">FIPS 140-3 HSM Boundary</text>
-                  <text x="440" y="111" textAnchor="middle" fontSize="7.5" fill="#78350f">Generates Plaintext +</text>
-                  <text x="440" y="124" textAnchor="middle" fontSize="7.5" fill="#78350f">Encrypted Data Key pair</text>
-                  <text x="440" y="137" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Symmetric AES-256 Key</text>
+                  <rect x="373" y="86" width="134" height="66" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="440" y="98" textAnchor="middle" fontSize="8" fill="var(--color-amber)" fontWeight="bold">FIPS 140-3 HSM Boundary</text>
+                  <text x="440" y="111" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)">Generates Plaintext +</text>
+                  <text x="440" y="124" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)">Encrypted Data Key pair</text>
+                  <text x="440" y="137" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Symmetric AES-256 Key</text>
 
                   {/* Flow Arrow */}
                   <path d="M 515 105 L 530 105" fill="none" 
                     stroke={encryptionStep === 5 ? '#22c55e' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep === 5 ? 's3-flow-green' : undefined} />
-                  <text x="522" y="96" textAnchor="middle" fontSize="7.5" fill="#cbd5e1" fontWeight="bold">Write</text>
+                  <text x="522" y="96" textAnchor="middle" fontSize="7.5" fill="var(--s3-success-bg)" fontWeight="bold">Write</text>
 
                   {/* Physical disks storage */}
-                  <rect x="530" y="38" width="156" height="128" rx="8" fill="url(#disk-kms-grad)" stroke="#166534" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
-                  <text x="608" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#15803d">🗄️ SSD Target Disk</text>
+                  <rect x="530" y="38" width="156" height="128" rx="8" fill="url(#disk-kms-grad)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-ssekms)" />
+                  <text x="608" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-green)">🗄️ SSD Target Disk</text>
                   
-                  <rect x="538" y="74" width="140" height="78" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#bbf7d0" strokeWidth="1" />
-                  <text x="608" y="87" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#166534">🔒 Double Envelope Sectors</text>
-                  <text x="608" y="100" textAnchor="middle" fontSize="7.5" fill="#475569">1. Ciphertext Payload</text>
-                  <text x="608" y="113" textAnchor="middle" fontSize="7.5" fill="#475569">2. Encrypted Data Key</text>
-                  <text x="608" y="126" textAnchor="middle" fontSize="7" fill="#dc2626" fontWeight="bold">Plaintext RAM scrubbing: OK</text>
-                  <text x="608" y="138" textAnchor="middle" fontSize="7" fill="#15803d" fontStyle="italic">Decryption requires KMS API</text>
+                  <rect x="538" y="74" width="140" height="78" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-success-border)" strokeWidth="1" />
+                  <text x="608" y="87" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--s3-success-text-bold)">🔒 Double Envelope Sectors</text>
+                  <text x="608" y="100" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">1. Ciphertext Payload</text>
+                  <text x="608" y="113" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">2. Encrypted Data Key</text>
+                  <text x="608" y="126" textAnchor="middle" fontSize="7" fill="var(--color-red)" fontWeight="bold">Plaintext RAM scrubbing: OK</text>
+                  <text x="608" y="138" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontStyle="italic">Decryption requires KMS API</text>
 
                   {/* Active Animation Stream */}
                   {encryptionStep === 1 && (
-                    <circle r="4.5" fill="#3b82f6">
+                    <circle r="4.5" fill="var(--color-blue)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 142 105 L 180 105" />
                     </circle>
                   )}
                   {encryptionStep === 3 && (
-                    <circle r="4" fill="#d97706">
+                    <circle r="4" fill="var(--color-amber)">
                       <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 38 L 265 18 L 440 18 L 440 38" />
                     </circle>
                   )}
                   {encryptionStep === 5 && (
-                    <circle r="4.5" fill="#22c55e">
+                    <circle r="4.5" fill="var(--color-green)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 515 105 L 530 105" />
                     </circle>
                   )}
@@ -4573,83 +4577,83 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                   <defs>
                     <filter id="s3-shadow-ssec" x="-10%" y="-10%" width="120%" height="120%">
-                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                     </filter>
                     <linearGradient id="client-ssec-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#faf5ff" />
+                      <stop offset="0%" stopColor="var(--s3-grad-client-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-purple-start)" />
                     </linearGradient>
                     <linearGradient id="engine-ssec-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#faf5ff" />
-                      <stop offset="100%" stopColor="#f3e8ff" />
+                      <stop offset="0%" stopColor="var(--s3-grad-purple-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-ssec-engine-end)" />
                     </linearGradient>
                     <linearGradient id="disk-ssec-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f8fafc" />
-                      <stop offset="100%" stopColor="#f1f5f9" />
+                      <stop offset="0%" stopColor="var(--s3-grad-disk-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-disk-end)" />
                     </linearGradient>
                   </defs>
 
                   {/* PREMIUM NESTED BOUNDARIES */}
                   {/* Public Client Network */}
-                  <rect x="8" y="10" width="168" height="160" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="92" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">PUBLIC CUSTOMER INTERNAL SUBNET</text>
+                  <rect x="8" y="10" width="168" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="92" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">PUBLIC CUSTOMER INTERNAL SUBNET</text>
 
                   {/* AWS Cloud Core */}
-                  <rect x="186" y="10" width="506" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                  <text x="439" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS INFRASTRUCTURE DECOUPLING (SSE-C CUSTOMER KEY ENGINE)</text>
+                  <rect x="186" y="10" width="506" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="439" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS INFRASTRUCTURE DECOUPLING (SSE-C CUSTOMER KEY ENGINE)</text>
 
                   {/* User Client */}
-                  <rect x="20" y="38" width="144" height="114" rx="8" fill="url(#client-ssec-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-ssec)" />
-                  <text x="92" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="20" y="38" width="144" height="114" rx="8" fill="url(#client-ssec-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-ssec)" />
+                  <text x="92" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">💻 Client Browser</text>
                   
-                  <rect x="28" y="74" width="128" height="64" rx="4" fill="#ffffff" stroke="#d8b4fe" strokeWidth="1" />
-                  <text x="92" y="88" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Own AES-256 Symmetric Key</text>
-                  <text x="92" y="103" textAnchor="middle" fontSize="7" fill="#7c3aed" fontFamily="monospace">x-amz-server-side-</text>
-                  <text x="92" y="117" textAnchor="middle" fontSize="7" fill="#7c3aed" fontFamily="monospace">encryption-customer-key</text>
+                  <rect x="28" y="74" width="128" height="64" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="92" y="88" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">Own AES-256 Symmetric Key</text>
+                  <text x="92" y="103" textAnchor="middle" fontSize="7" fill="var(--color-purple)" fontFamily="monospace">x-amz-server-side-</text>
+                  <text x="92" y="117" textAnchor="middle" fontSize="7" fill="var(--color-purple)" fontFamily="monospace">encryption-customer-key</text>
 
                   {/* Flow Arrow */}
                   <path d="M 164 90 L 210 90" fill="none" 
                     stroke={encryptionStep === 1 ? '#8b5cf6' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep === 1 ? 's3-flow-purple' : undefined} />
-                  <text x="187" y="81" textAnchor="middle" fontSize="7.5" fill="#cbd5e1" fontWeight="bold">HTTPS Push</text>
+                  <text x="187" y="81" textAnchor="middle" fontSize="7.5" fill="var(--s3-success-bg)" fontWeight="bold">HTTPS Push</text>
 
                   {/* S3 Service Engine */}
-                  <rect x="210" y="38" width="240" height="114" rx="8" fill="url(#engine-ssec-grad)" stroke="#a855f7" strokeWidth="1.5" filter="url(#s3-shadow-ssec)" />
-                  <text x="330" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#6b21a8">🪣 S3 Service Engine</text>
-                  <text x="330" y="74" textAnchor="middle" fontSize="8" fill="#7c3aed" fontWeight="600">Volatile Memory Decryption Buffer</text>
+                  <rect x="210" y="38" width="240" height="114" rx="8" fill="url(#engine-ssec-grad)" stroke="var(--color-purple)" strokeWidth="1.5" filter="url(#s3-shadow-ssec)" />
+                  <text x="330" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-blue)">🪣 S3 Service Engine</text>
+                  <text x="330" y="74" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="600">Volatile Memory Decryption Buffer</text>
                   
-                  <rect x="220" y="86" width="220" height="52" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#ddd6fe" strokeWidth="1" />
-                  <text x="330" y="99" textAnchor="middle" fontSize="8" fill="#6d28d9" fontWeight="bold">Customer-Provided Key Cached in RAM</text>
-                  <text x="330" y="112" textAnchor="middle" fontSize="8.5" fill="#dc2626" fontWeight="bold">
+                  <rect x="220" y="86" width="220" height="52" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="330" y="99" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">Customer-Provided Key Cached in RAM</text>
+                  <text x="330" y="112" textAnchor="middle" fontSize="8.5" fill="var(--color-red)" fontWeight="bold">
                     {encryptionStep >= 4 ? '💥 VOLATILE BLOCK ZEROIZED' : '⏳ CACHED FOR ENVELOPE WRITE'}
                   </text>
-                  <text x="330" y="125" textAnchor="middle" fontSize="7.5" fill="#475569" fontStyle="italic">AWS never persists SSE-C keys to disk storage</text>
+                  <text x="330" y="125" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontStyle="italic">AWS never persists SSE-C keys to disk storage</text>
 
                   {/* Flow Arrow */}
                   <path d="M 450 90 L 490 90" fill="none" 
                     stroke={encryptionStep >= 2 && encryptionStep <= 4 ? '#a855f7' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep >= 2 && encryptionStep <= 4 ? 's3-flow-purple' : undefined} />
-                  <text x="470" y="81" textAnchor="middle" fontSize="7.5" fill="#cbd5e1" fontWeight="bold">Encrypt</text>
+                  <text x="470" y="81" textAnchor="middle" fontSize="7.5" fill="var(--s3-success-bg)" fontWeight="bold">Encrypt</text>
 
                   {/* S3 Storage Disk */}
-                  <rect x="490" y="38" width="190" height="114" rx="8" fill="url(#disk-ssec-grad)" stroke="#6d28d9" strokeWidth="1.5" filter="url(#s3-shadow-ssec)" />
-                  <text x="585" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#581c87">🗄️ SSD Target Disk</text>
+                  <rect x="490" y="38" width="190" height="114" rx="8" fill="url(#disk-ssec-grad)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-ssec)" />
+                  <text x="585" y="58" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-purple)">🗄️ SSD Target Disk</text>
                   
-                  <rect x="498" y="72" width="174" height="66" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="1" />
-                  <text x="585" y="86" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#6d28d9">🔒 Raw Ciphertext Payload</text>
-                  <text x="585" y="101" textAnchor="middle" fontSize="7.5" fill="#7c3aed">Stored without symmetric key context</text>
-                  <text x="585" y="116" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="bold">(Loss of Customer key = data lost forever)</text>
+                  <rect x="498" y="72" width="174" height="66" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="585" y="86" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-purple)">🔒 Raw Ciphertext Payload</text>
+                  <text x="585" y="101" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)">Stored without symmetric key context</text>
+                  <text x="585" y="116" textAnchor="middle" fontSize="7" fill="var(--color-red)" fontWeight="bold">(Loss of Customer key = data lost forever)</text>
 
                   {/* Active Animation Stream */}
                   {encryptionStep === 1 && (
-                    <circle r="4.5" fill="#7c3aed">
+                    <circle r="4.5" fill="var(--color-purple)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 164 90 L 210 90" />
                     </circle>
                   )}
                   {encryptionStep >= 2 && encryptionStep <= 4 && (
-                    <circle r="4.5" fill="#a855f7">
+                    <circle r="4.5" fill="var(--color-purple)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 450 90 L 490 90" />
                     </circle>
                   )}
@@ -4660,65 +4664,65 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <svg viewBox="0 0 700 190" width="100%" className="s3-svg-bg">
                   <defs>
                     <filter id="s3-shadow-dssekms" x="-10%" y="-10%" width="120%" height="120%">
-                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                     </filter>
                     <linearGradient id="client-dsse-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#fffbeb" />
+                      <stop offset="0%" stopColor="var(--s3-grad-client-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-hsm-start)" />
                     </linearGradient>
                     <linearGradient id="engine-dsse-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fff7ed" />
-                      <stop offset="100%" stopColor="#fed7aa" />
+                      <stop offset="0%" stopColor="var(--s3-grad-orange-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-dsse-engine-end)" />
                     </linearGradient>
                     <linearGradient id="hsm-dsse-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fffbeb" />
-                      <stop offset="100%" stopColor="#fde68a" />
+                      <stop offset="0%" stopColor="var(--s3-grad-hsm-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-hsm-end)" />
                     </linearGradient>
                     <linearGradient id="disk-dsse-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fff7ed" />
-                      <stop offset="100%" stopColor="#ffedd5" />
+                      <stop offset="0%" stopColor="var(--s3-grad-orange-start)" />
+                      <stop offset="100%" stopColor="var(--s3-grad-orange-end)" />
                     </linearGradient>
                   </defs>
 
                   {/* PREMIUM NESTED BOUNDARIES */}
                   {/* Public Client Network */}
-                  <rect x="8" y="10" width="142" height="170" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="79" y="22" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold" letterSpacing="0.05em">PUBLIC CLIENT NETWORK</text>
+                  <rect x="8" y="10" width="142" height="170" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="79" y="22" textAnchor="middle" fontSize="7" fill="var(--color-amber)" fontWeight="bold" letterSpacing="0.05em">PUBLIC CLIENT NETWORK</text>
 
                   {/* AWS Cloud Core */}
-                  <rect x="156" y="10" width="536" height="170" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#ea580c" strokeWidth="1.5" strokeDasharray="6,4" />
-                  <text x="424" y="22" textAnchor="middle" fontSize="7" fill="#b45309" fontWeight="bold" letterSpacing="0.05em">☁️ AWS COMPLIANCE CORE (DSSE-KMS DOUBLE ENVELOPE PIPELINE)</text>
+                  <rect x="156" y="10" width="536" height="170" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="6,4" />
+                  <text x="424" y="22" textAnchor="middle" fontSize="7" fill="var(--color-amber)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS COMPLIANCE CORE (DSSE-KMS DOUBLE ENVELOPE PIPELINE)</text>
 
                   {/* User Client */}
-                  <rect x="16" y="38" width="126" height="128" rx="8" fill="url(#client-dsse-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
-                  <text x="79" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">💻 Client Browser</text>
+                  <rect x="16" y="38" width="126" height="128" rx="8" fill="url(#client-dsse-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
+                  <text x="79" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">💻 Client Browser</text>
                   
-                  <rect x="23" y="74" width="112" height="78" rx="4" fill="#ffffff" stroke="#fed7aa" strokeWidth="1" />
-                  <text x="79" y="86" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">Double Envelope Ingress</text>
-                  <text x="79" y="99" textAnchor="middle" fontSize="7" fill="#b45309" fontFamily="monospace">x-amz-server-side-</text>
-                  <text x="79" y="111" textAnchor="middle" fontSize="7" fill="#b45309" fontFamily="monospace">encryption: aws:kms:dsse</text>
-                  <text x="79" y="125" textAnchor="middle" fontSize="7" fill="#c2410c" fontWeight="bold">FIPS 140-3 Compliant</text>
-                  <text x="79" y="137" textAnchor="middle" fontSize="6.5" fill="#7c2d12">Double Cipher active</text>
+                  <rect x="23" y="74" width="112" height="78" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="79" y="86" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold">Double Envelope Ingress</text>
+                  <text x="79" y="99" textAnchor="middle" fontSize="7" fill="var(--color-amber)" fontFamily="monospace">x-amz-server-side-</text>
+                  <text x="79" y="111" textAnchor="middle" fontSize="7" fill="var(--color-amber)" fontFamily="monospace">encryption: aws:kms:dsse</text>
+                  <text x="79" y="125" textAnchor="middle" fontSize="7" fill="var(--color-red)" fontWeight="bold">FIPS 140-3 Compliant</text>
+                  <text x="79" y="137" textAnchor="middle" fontSize="6.5" fill="var(--color-red)">Double Cipher active</text>
 
                   {/* Flow Arrow */}
                   <path d="M 142 105 L 180 105" fill="none" 
                     stroke={encryptionStep === 1 ? '#ea580c' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep === 1 ? 's3-flow-orange' : undefined} />
-                  <text x="161" y="96" textAnchor="middle" fontSize="7.5" fill="#cbd5e1" fontWeight="bold">Upload</text>
+                  <text x="161" y="96" textAnchor="middle" fontSize="7.5" fill="var(--s3-success-bg)" fontWeight="bold">Upload</text>
 
                   {/* S3 Service Engine */}
-                  <rect x="180" y="38" width="170" height="128" rx="8" fill="url(#engine-dsse-grad)" stroke="#ea580c" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
-                  <text x="265" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#ea580c">🪣 S3 Service Engine</text>
-                  <text x="265" y="72" textAnchor="middle" fontSize="7.5" fill="#7c2d12" fontWeight="600">Requests 2 Distinct CMKs</text>
+                  <rect x="180" y="38" width="170" height="128" rx="8" fill="url(#engine-dsse-grad)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
+                  <text x="265" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-amber)">🪣 S3 Service Engine</text>
+                  <text x="265" y="72" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="600">Requests 2 Distinct CMKs</text>
                   
-                  <rect x="188" y="86" width="154" height="66" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#fed7aa" strokeWidth="1" />
-                  <text x="265" y="97" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">GenerateDataKey x2</text>
-                  <text x="265" y="110" textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">Double Plaintext RAM</text>
-                  <text x="265" y="124" textAnchor="middle" fontSize="7.5" fill="#dc2626" fontWeight="bold">
+                  <rect x="188" y="86" width="154" height="66" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="265" y="97" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold">GenerateDataKey x2</text>
+                  <text x="265" y="110" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold">Double Plaintext RAM</text>
+                  <text x="265" y="124" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">
                     {encryptionStep >= 4 ? '🚫 DUAL SCRUBBED' : '⏳ CACHED IN MEMORY'}
                   </text>
-                  <text x="265" y="138" textAnchor="middle" fontSize="6.5" fill="#9a3412" fontStyle="italic">RAM block doubly-zeroized</text>
+                  <text x="265" y="138" textAnchor="middle" fontSize="6.5" fill="var(--color-red)" fontStyle="italic">RAM block doubly-zeroized</text>
 
                   {/* S3 to KMS loop */}
                   <path d="M 265 38 L 265 18 L 440 18 L 440 38" fill="none" 
@@ -4726,50 +4730,50 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     strokeWidth="1.5" 
                     className={encryptionStep === 3 ? 's3-flow-orange' : undefined}
                     strokeDasharray="3,3" />
-                  <text x="352" y="13" textAnchor="middle" fontSize="7.5" fill="#ea580c" fontWeight="bold">Twin KMS Calls 🔄 (Double HSM Audit)</text>
+                  <text x="352" y="13" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold">Twin KMS Calls 🔄 (Double HSM Audit)</text>
 
                   {/* AWS KMS Block */}
-                  <rect x="365" y="38" width="150" height="128" rx="8" fill="url(#hsm-dsse-grad)" stroke="#d97706" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
-                  <text x="440" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#b45309">🔑 AWS KMS CMKs</text>
-                  <text x="440" y="72" textAnchor="middle" fontSize="8" fill="#78350f" fontWeight="bold">Hardware Security Modules</text>
+                  <rect x="365" y="38" width="150" height="128" rx="8" fill="url(#hsm-dsse-grad)" stroke="var(--color-amber)" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
+                  <text x="440" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-amber)">🔑 AWS KMS CMKs</text>
+                  <text x="440" y="72" textAnchor="middle" fontSize="8" fill="var(--color-amber)" fontWeight="bold">Hardware Security Modules</text>
                   
-                  <rect x="373" y="86" width="134" height="66" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#fde68a" strokeWidth="1" />
-                  <text x="440" y="98" textAnchor="middle" fontSize="8" fill="#b45309" fontWeight="bold">Dual FIPS 140-3 HSMs</text>
-                  <text x="440" y="111" textAnchor="middle" fontSize="7.5" fill="#78350f">Generates 2 Plaintext +</text>
-                  <text x="440" y="124" textAnchor="middle" fontSize="7.5" fill="#78350f">2 Encrypted key wrappers</text>
-                  <text x="440" y="137" textAnchor="middle" fontSize="7" fill="#ea580c" fontWeight="bold">Double Symmetric AES-256</text>
+                  <rect x="373" y="86" width="134" height="66" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="440" y="98" textAnchor="middle" fontSize="8" fill="var(--color-amber)" fontWeight="bold">Dual FIPS 140-3 HSMs</text>
+                  <text x="440" y="111" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)">Generates 2 Plaintext +</text>
+                  <text x="440" y="124" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)">2 Encrypted key wrappers</text>
+                  <text x="440" y="137" textAnchor="middle" fontSize="7" fill="var(--color-amber)" fontWeight="bold">Double Symmetric AES-256</text>
 
                   {/* Flow Arrow */}
                   <path d="M 515 105 L 530 105" fill="none" 
                     stroke={encryptionStep === 5 ? '#ea580c' : '#cbd5e1'} 
                     strokeWidth="2.5" 
                     className={encryptionStep === 5 ? 's3-flow-orange' : undefined} />
-                  <text x="522" y="96" textAnchor="middle" fontSize="7.5" fill="#cbd5e1" fontWeight="bold">Write</text>
+                  <text x="522" y="96" textAnchor="middle" fontSize="7.5" fill="var(--s3-success-bg)" fontWeight="bold">Write</text>
 
                   {/* Physical disks storage */}
-                  <rect x="530" y="38" width="156" height="128" rx="8" fill="url(#disk-dsse-grad)" stroke="#ea580c" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
-                  <text x="608" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#c2410c">🗄️ SSD Target Disk</text>
+                  <rect x="530" y="38" width="156" height="128" rx="8" fill="url(#disk-dsse-grad)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-dssekms)" />
+                  <text x="608" y="58" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-red)">🗄️ SSD Target Disk</text>
                   
-                  <rect x="538" y="74" width="140" height="78" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#fed7aa" strokeWidth="1" />
-                  <text x="608" y="87" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ea580c">🔒 Double AES-GCM Cipher</text>
-                  <text x="608" y="100" textAnchor="middle" fontSize="7" fill="#475569">1. Layer 1 Ciphertext + Key</text>
-                  <text x="608" y="113" textAnchor="middle" fontSize="7" fill="#475569">2. Layer 2 Ciphertext + Key</text>
-                  <text x="608" y="126" textAnchor="middle" fontSize="7.5" fill="#dc2626" fontWeight="bold">FIPS RAM scrubbing: OK</text>
-                  <text x="608" y="138" textAnchor="middle" fontSize="7" fill="#9a3412" fontStyle="italic">Decryption requires twin KMS calls</text>
+                  <rect x="538" y="74" width="140" height="78" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-card-border)" strokeWidth="1" />
+                  <text x="608" y="87" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-amber)">🔒 Double AES-GCM Cipher</text>
+                  <text x="608" y="100" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">1. Layer 1 Ciphertext + Key</text>
+                  <text x="608" y="113" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">2. Layer 2 Ciphertext + Key</text>
+                  <text x="608" y="126" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">FIPS RAM scrubbing: OK</text>
+                  <text x="608" y="138" textAnchor="middle" fontSize="7" fill="var(--color-red)" fontStyle="italic">Decryption requires twin KMS calls</text>
 
                   {/* Active Animation Stream */}
                   {encryptionStep === 1 && (
-                    <circle r="4.5" fill="#ea580c">
+                    <circle r="4.5" fill="var(--color-amber)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 142 105 L 180 105" />
                     </circle>
                   )}
                   {encryptionStep === 3 && (
-                    <circle r="4" fill="#ea580c">
+                    <circle r="4" fill="var(--color-amber)">
                       <animateMotion dur="0.8s" repeatCount="indefinite" path="M 265 38 L 265 18 L 440 18 L 440 38" />
                     </circle>
                   )}
                   {encryptionStep === 5 && (
-                    <circle r="4.5" fill="#ea580c">
+                    <circle r="4.5" fill="var(--color-amber)">
                       <animateMotion dur="0.6s" repeatCount="indefinite" path="M 515 105 L 530 105" />
                     </circle>
                   )}
@@ -4795,69 +4799,69 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg">
                 <defs>
                   <filter id="s3-shadow-vstack" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                   </filter>
                   <linearGradient id="namespace-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f8fafc" />
+                    <stop offset="0%" stopColor="var(--s3-grad-client-start)" />
+                    <stop offset="100%" stopColor="var(--s3-grad-disk-start)" />
                   </linearGradient>
                   <linearGradient id="hdd-stack-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#eef2ff" />
-                    <stop offset="100%" stopColor="#e0e7ff" />
+                    <stop offset="0%" stopColor="var(--s3-card-border)" />
+                    <stop offset="100%" stopColor="var(--s3-card-border)" />
                   </linearGradient>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Logical Namespace Plane */}
-                <rect x="8" y="10" width="224" height="160" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="120" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">LOGICAL BUCKET NAMESPACE PLANE</text>
+                <rect x="8" y="10" width="224" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="120" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">LOGICAL BUCKET NAMESPACE PLANE</text>
 
                 {/* AWS Physical At-Rest Plane */}
-                <rect x="242" y="10" width="450" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="467" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE STORAGE PLANE &amp; WORM GUARD</text>
+                <rect x="242" y="10" width="450" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="467" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE STORAGE PLANE &amp; WORM GUARD</text>
 
                 {/* 1. S3 Logical API Namespace (Left Card) */}
-                <rect x="20" y="38" width="200" height="122" rx="8" fill="url(#namespace-grad)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-vstack)" />
-                <text x="120" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">🔍 S3 API Logical Listing</text>
+                <rect x="20" y="38" width="200" height="122" rx="8" fill="url(#namespace-grad)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-vstack)" />
+                <text x="120" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">🔍 S3 API Logical Listing</text>
                 
                 {(() => {
                   const top = versionStack[0];
                   if (!top) {
                     return (
                       <>
-                        <circle cx="120" cy="98" r="18" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
-                        <text x="120" y="102" textAnchor="middle" fontSize="11" fill="#94a3b8">Empty</text>
+                        <circle cx="120" cy="98" r="18" fill="var(--s3-metric-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
+                        <text x="120" y="102" textAnchor="middle" fontSize="11" fill="var(--color-blue)">Empty</text>
                       </>
                     );
                   }
                   if (top.isDeleteMarker) {
                     return (
                       <>
-                        <rect x="30" y="68" width="180" height="82" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                        <text x="120" y="86" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#b91c1c">🛑 HTTP 404 NOT FOUND</text>
-                        <text x="120" y="104" textAnchor="middle" fontSize="8" fill="#7f1d1d">Active Delete Marker Overlays Stack</text>
-                        <text x="120" y="122" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold" fontStyle="italic">Physical bytes preserved below!</text>
-                        <text x="120" y="136" textAnchor="middle" fontSize="6.5" fill="#991b1b">Listing: file.pdf is Hidden</text>
+                        <rect x="30" y="68" width="180" height="82" rx="6" fill="var(--s3-error-bg)" stroke="var(--color-red)" strokeWidth="1.5" />
+                        <text x="120" y="86" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-red)">🛑 HTTP 404 NOT FOUND</text>
+                        <text x="120" y="104" textAnchor="middle" fontSize="8" fill="var(--color-red)">Active Delete Marker Overlays Stack</text>
+                        <text x="120" y="122" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold" fontStyle="italic">Physical bytes preserved below!</text>
+                        <text x="120" y="136" textAnchor="middle" fontSize="6.5" fill="var(--color-red)">Listing: file.pdf is Hidden</text>
                       </>
                     );
                   }
                   return (
                     <>
-                      <rect x="30" y="68" width="180" height="82" rx="6" fill="#eff6ff" stroke="#0ea5e9" strokeWidth="1.5" />
-                      <text x="120" y="86" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#0369a1">📄 file.pdf (Active Listing)</text>
-                      <text x="120" y="104" textAnchor="middle" fontSize="8" fill="#475569">Current Version ID: {top.id}</text>
-                      <text x="120" y="122" textAnchor="middle" fontSize="8.5" fill="#0284c7" fontWeight="bold">HTTP 200 OK — Ready</text>
-                      <text x="120" y="136" textAnchor="middle" fontSize="6.5" fill="#0369a1">Standard API calls fetch this block</text>
+                      <rect x="30" y="68" width="180" height="82" rx="6" fill="var(--s3-success-bg)" stroke="var(--color-blue)" strokeWidth="1.5" />
+                      <text x="120" y="86" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-blue)">📄 file.pdf (Active Listing)</text>
+                      <text x="120" y="104" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Current Version ID: {top.id}</text>
+                      <text x="120" y="122" textAnchor="middle" fontSize="8.5" fill="var(--color-blue)" fontWeight="bold">HTTP 200 OK — Ready</text>
+                      <text x="120" y="136" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)">Standard API calls fetch this block</text>
                     </>
                   );
                 })()}
 
                 {/* Flow Arrow */}
-                <path d="M 220 98 L 250 98" fill="none" stroke="#6366f1" strokeWidth="2.5" className="s3-flow-blue" />
+                <path d="M 220 98 L 250 98" fill="none" stroke="var(--color-blue)" strokeWidth="2.5" className="s3-flow-blue" />
 
                 {/* 2. Version Storage Stack (Center Card) */}
-                <rect x="250" y="38" width="260" height="122" rx="8" fill="url(#hdd-stack-grad)" stroke="#6366f1" strokeWidth="1.5" filter="url(#s3-shadow-vstack)" />
-                <text x="380" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#312e81">🗄️ Physical S3 Version Stack</text>
+                <rect x="250" y="38" width="260" height="122" rx="8" fill="url(#hdd-stack-grad)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-vstack)" />
+                <text x="380" y="55" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">🗄️ Physical S3 Version Stack</text>
 
                 {(() => {
                   return (
@@ -4878,7 +4882,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         );
                       })}
                       {versionStack.length > 3 && (
-                        <text x="120" y="86" textAnchor="middle" fontSize="7.5" fill="#475569" fontStyle="italic">
+                        <text x="120" y="86" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontStyle="italic">
                           ... and {versionStack.length - 3} older version segment(s) in lower disk sectors
                         </text>
                       )}
@@ -4906,36 +4910,36 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                   return (
                     <g transform="translate(530, 38)">
                       <rect x="0" y="0" width="152" height="122" rx="8" fill={bg} stroke={border} strokeWidth="1.5" filter="url(#s3-shadow-vstack)" />
-                      <text x="76" y="15" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">🛡️ WORM Gate</text>
+                      <text x="76" y="15" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">🛡️ WORM Gate</text>
 
                       {isLocked ? (
                         <>
-                          <rect x="8" y="24" width="136" height="90" rx="6" fill="#ffffff" fillOpacity="0.8" stroke="#ef4444" strokeWidth="1" />
+                          <rect x="8" y="24" width="136" height="90" rx="6" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--color-red)" strokeWidth="1" />
                           <text x="76" y="42" textAnchor="middle" fontSize="18">🔒</text>
-                          <text x="76" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#b91c1c">WORM ACTIVE</text>
-                          <text x="76" y="78" textAnchor="middle" fontSize="7.5" fill="#7f1d1d">
+                          <text x="76" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-red)">WORM ACTIVE</text>
+                          <text x="76" y="78" textAnchor="middle" fontSize="7.5" fill="var(--color-red)">
                             {legalHold ? '⚖️ Legal Hold: ON' : `⏱️ Lock: ${objectLockRetentionDays - simulatedTimeOffsetDays} Days left`}
                           </text>
-                          <text x="76" y="93" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold">DELETIONS BLOCKED</text>
-                          <text x="76" y="105" textAnchor="middle" fontSize="6.5" fill="#991b1b" fontStyle="italic">SEC Rule 17a-4 Compliant</text>
+                          <text x="76" y="93" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">DELETIONS BLOCKED</text>
+                          <text x="76" y="105" textAnchor="middle" fontSize="6.5" fill="var(--color-red)" fontStyle="italic">SEC Rule 17a-4 Compliant</text>
                         </>
                       ) : isExpired ? (
                         <>
-                          <rect x="8" y="24" width="136" height="90" rx="6" fill="#f0f9ff" stroke="#0284c7" strokeWidth="1" />
+                          <rect x="8" y="24" width="136" height="90" rx="6" fill="var(--s3-card-border)" stroke="var(--color-blue)" strokeWidth="1" />
                           <text x="76" y="42" textAnchor="middle" fontSize="18">🔓</text>
-                          <text x="76" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#0369a1">LOCK EXPIRED</text>
-                          <text x="76" y="78" textAnchor="middle" fontSize="7" fill="#475569">Timer hit zero ({simulatedTimeOffsetDays} days)</text>
-                          <text x="76" y="93" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontWeight="bold">Bypasses Allowed</text>
-                          <text x="76" y="105" textAnchor="middle" fontSize="6.5" fill="#475569" fontStyle="italic">Governed by IAM Roles</text>
+                          <text x="76" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-blue)">LOCK EXPIRED</text>
+                          <text x="76" y="78" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)">Timer hit zero ({simulatedTimeOffsetDays} days)</text>
+                          <text x="76" y="93" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Bypasses Allowed</text>
+                          <text x="76" y="105" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontStyle="italic">Governed by IAM Roles</text>
                         </>
                       ) : (
                         <>
-                          <rect x="8" y="24" width="136" height="90" rx="6" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1" />
+                          <rect x="8" y="24" width="136" height="90" rx="6" fill="var(--s3-metric-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" />
                           <text x="76" y="42" textAnchor="middle" fontSize="18">🔓</text>
-                          <text x="76" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#475569">NO WORM RETENTION</text>
-                          <text x="76" y="78" textAnchor="middle" fontSize="7.5" fill="#64748b">No active policy locks</text>
-                          <text x="76" y="93" textAnchor="middle" fontSize="7.5" fill="#10b981" fontWeight="bold">Deletes Authorized</text>
-                          <text x="76" y="105" textAnchor="middle" fontSize="6.5" fill="#64748b" fontStyle="italic">Standard stack checks</text>
+                          <text x="76" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-text-secondary)">NO WORM RETENTION</text>
+                          <text x="76" y="78" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">No active policy locks</text>
+                          <text x="76" y="93" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">Deletes Authorized</text>
+                          <text x="76" y="105" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontStyle="italic">Standard stack checks</text>
                         </>
                       )}
                     </g>
@@ -5088,7 +5092,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
 
                   <div style={{ marginBottom: '10px' }}>
                     <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Active Security Profile:</label>
-                    <select value={wormIdentity} onChange={e => setWormIdentity(e.target.value as any)} style={{ padding: '4px 8px', fontSize: '11.5px', width: '100%' }}>
+                    <select className="s3-card select" value={wormIdentity} onChange={e => setWormIdentity(e.target.value as any)} style={{ padding: '4px 8px', fontSize: '11.5px', width: '100%' }}>
                       <option value="operator">Standard System Operator (Developer Access)</option>
                       <option value="secops">SecOps Compliance Auditor (Admin Bypass Role)</option>
                     </select>
@@ -5129,11 +5133,11 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>🛡️ WORM Integrity Status Audit logs:</div>
                 <div ref={wormTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
                   {wormAuditLogs.length === 0 ? (
-                    <div style={{ color: '#64748b' }}>[idle] Awaiting Write/Delete operations to analyze metadata lock blocks...</div>
+                    <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting Write/Delete operations to analyze metadata lock blocks...</div>
                   ) : (
                     wormAuditLogs.map((log, idx) => (
                       <div key={idx} style={{
-                        color: log.includes('❌') ? '#ef4444' : log.includes('✅') ? '#10b981' : log.includes('⚠️') ? '#f59e0b' : '#38bdf8',
+                        color: log.includes('❌') ? 'var(--color-red)' : log.includes('✅') ? 'var(--color-green)' : log.includes('⚠️') ? 'var(--color-amber)' : 'var(--s3-terminal-color)',
                         fontFamily: 'monospace',
                         fontSize: '11px',
                         marginBottom: '2px'
@@ -5175,61 +5179,61 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <>
                       <defs>
                         <filter id="s3-shadow-lifec" x="-10%" y="-10%" width="120%" height="120%">
-                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                         </filter>
                       </defs>
 
                       {/* PREMIUM NESTED BOUNDARIES */}
                       {/* Hot Tier SSD systems */}
-                      <rect x="8" y="10" width="310" height="160" rx="8" fill="#f0fdf4" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="163" y="22" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold" letterSpacing="0.05em">🔥 ACTIVE HOT DISK SYSTEM PLANE (S3 SSDs)</text>
+                      <rect x="8" y="10" width="310" height="160" rx="8" fill="var(--s3-success-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="163" y="22" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold" letterSpacing="0.05em">🔥 ACTIVE HOT DISK SYSTEM PLANE (S3 SSDs)</text>
 
                       {/* Cold Archive Tape vault systems */}
-                      <rect x="328" y="10" width="364" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="6,4" />
-                      <text x="510" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">📼 COLD TAPE ARCHIVAL VAULT SYSTEMS (GLACIER TAPE PLANE)</text>
+                      <rect x="328" y="10" width="364" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                      <text x="510" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">📼 COLD TAPE ARCHIVAL VAULT SYSTEMS (GLACIER TAPE PLANE)</text>
 
                       {/* Timeline axis line */}
-                      <line x1={startX} y1="90" x2={endX} y2="90" stroke="#cbd5e1" strokeWidth="3" />
-                      <polygon points={`${endX},85 ${endX+10},90 ${endX},95`} fill="#cbd5e1" />
+                      <line x1={startX} y1="90" x2={endX} y2="90" stroke="var(--s3-card-border)" strokeWidth="3" />
+                      <polygon points={`${endX},85 ${endX+10},90 ${endX},95`} fill="var(--s3-success-bg)" />
 
                       {/* Day 0: Standard */}
-                      <circle cx={startX} cy="90" r="8" fill="#10b981" filter="url(#s3-shadow-lifec)" />
-                      <text x={startX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Day 0: Standard</text>
-                      <text x={startX} y="125" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">$0.023 / GB</text>
-                      <rect x={startX - 30} y="40" width="60" height="20" rx="3" fill="#ffffff" fillOpacity="0.9" stroke="#10b981" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
-                      <text x={startX} y="52" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">🔥 Hot Data</text>
+                      <circle cx={startX} cy="90" r="8" fill="var(--color-green)" filter="url(#s3-shadow-lifec)" />
+                      <text x={startX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">Day 0: Standard</text>
+                      <text x={startX} y="125" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600">$0.023 / GB</text>
+                      <rect x={startX - 30} y="40" width="60" height="20" rx="3" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
+                      <text x={startX} y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">🔥 Hot Data</text>
 
                       {/* Day IA: Standard-IA */}
-                      <circle cx={iaX} cy="90" r="8" fill="#f59e0b" filter="url(#s3-shadow-lifec)" />
-                      <text x={iaX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Day {lifecycleIa}: IA</text>
-                      <text x={iaX} y="125" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">$0.0125 / GB</text>
-                      <rect x={iaX - 30} y="40" width="60" height="20" rx="3" fill="#ffffff" fillOpacity="0.9" stroke="#f59e0b" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
-                      <text x={iaX} y="52" textAnchor="middle" fontSize="7.5" fill="#d97706" fontWeight="bold">❄️ Infrequent</text>
+                      <circle cx={iaX} cy="90" r="8" fill="var(--color-amber)" filter="url(#s3-shadow-lifec)" />
+                      <text x={iaX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">Day {lifecycleIa}: IA</text>
+                      <text x={iaX} y="125" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600">$0.0125 / GB</text>
+                      <rect x={iaX - 30} y="40" width="60" height="20" rx="3" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--color-amber)" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
+                      <text x={iaX} y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold">❄️ Infrequent</text>
 
                       {/* Day Glacier: Glacier Deep */}
-                      <circle cx={glacierX} cy="90" r="8" fill="#a855f7" filter="url(#s3-shadow-lifec)" />
-                      <text x={glacierX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Day {lifecycleGlacier}: Glacier</text>
-                      <text x={glacierX} y="125" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="600">$0.00099 / GB</text>
-                      <rect x={glacierX - 30} y="40" width="60" height="20" rx="3" fill="#ffffff" fillOpacity="0.9" stroke="#a855f7" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
-                      <text x={glacierX} y="52" textAnchor="middle" fontSize="7.5" fill="#7c3aed" fontWeight="bold">🕳️ Tape Vault</text>
+                      <circle cx={glacierX} cy="90" r="8" fill="var(--color-purple)" filter="url(#s3-shadow-lifec)" />
+                      <text x={glacierX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">Day {lifecycleGlacier}: Glacier</text>
+                      <text x={glacierX} y="125" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600">$0.00099 / GB</text>
+                      <rect x={glacierX - 30} y="40" width="60" height="20" rx="3" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--color-purple)" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
+                      <text x={glacierX} y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontWeight="bold">🕳️ Tape Vault</text>
 
                       {/* Day Expiration: Expired */}
-                      <circle cx={endX} cy="90" r="8" fill="#ef4444" filter="url(#s3-shadow-lifec)" />
-                      <text x={endX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#b91c1c">Day {lifecycleExpiration}: Expired</text>
-                      <text x={endX} y="125" textAnchor="middle" fontSize="8" fill="#b91c1c" fontWeight="600">Purged / Free</text>
-                      <rect x={endX - 30} y="40" width="60" height="20" rx="3" fill="#ffffff" fillOpacity="0.9" stroke="#ef4444" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
-                      <text x={endX} y="52" textAnchor="middle" fontSize="7.5" fill="#dc2626" fontWeight="bold">❌ Expired</text>
+                      <circle cx={endX} cy="90" r="8" fill="var(--color-red)" filter="url(#s3-shadow-lifec)" />
+                      <text x={endX} y="112" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-red)">Day {lifecycleExpiration}: Expired</text>
+                      <text x={endX} y="125" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="600">Purged / Free</text>
+                      <rect x={endX - 30} y="40" width="60" height="20" rx="3" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--color-red)" strokeWidth="1" filter="url(#s3-shadow-lifec)" />
+                      <text x={endX} y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">❌ Expired</text>
 
                       {/* Dynamic Progress Indicator (Connected to elapsed clock!) */}
                       {lifecycleDaysPassed > 0 && (
                         <g>
-                          <line x1={currentX} y1="30" x2={currentX} y2="135" stroke="#0ea5e9" strokeWidth="2" strokeDasharray="3,3" />
-                          <circle cx={currentX} cy="90" r="12" fill="#eff6ff" stroke="#0284c7" strokeWidth="2" filter="url(#s3-shadow-lifec)" />
-                          <circle cx={currentX} cy="90" r="5" fill="#0284c7" />
+                          <line x1={currentX} y1="30" x2={currentX} y2="135" stroke="var(--color-blue)" strokeWidth="2" strokeDasharray="3,3" />
+                          <circle cx={currentX} cy="90" r="12" fill="var(--s3-success-bg)" stroke="var(--color-blue)" strokeWidth="2" filter="url(#s3-shadow-lifec)" />
+                          <circle cx={currentX} cy="90" r="5" fill="var(--color-blue)" />
                           
-                          <rect x={currentX - 45} y="142" width="90" height="26" rx="4" fill="#0284c7" filter="url(#s3-shadow-lifec)" />
-                          <text x={currentX} y="153" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#ffffff">Elapsed: {lifecycleDaysPassed} Days</text>
-                          <text x={currentX} y="163" textAnchor="middle" fontSize="7" fill="#e0f2fe" fontFamily="monospace">Active Class</text>
+                          <rect x={currentX - 45} y="142" width="90" height="26" rx="4" fill="var(--color-blue)" filter="url(#s3-shadow-lifec)" />
+                          <text x={currentX} y="153" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--s3-card-bg)">Elapsed: {lifecycleDaysPassed} Days</text>
+                          <text x={currentX} y="163" textAnchor="middle" fontSize="7" fill="var(--s3-success-bg)" fontFamily="monospace">Active Class</text>
                         </g>
                       )}
                     </>
@@ -5362,84 +5366,84 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <filter id="s3-shadow-net1" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                   </filter>
                   <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f0f9ff" />
+                    <stop offset="0%" stopColor="var(--s3-grad-client-start)" />
+                    <stop offset="100%" stopColor="var(--s3-grad-client-end)" />
                   </linearGradient>
                   <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f0fdf4" />
-                    <stop offset="100%" stopColor="#d1fae5" />
+                    <stop offset="0%" stopColor="var(--s3-card-border)" />
+                    <stop offset="100%" stopColor="var(--s3-grad-engine-end)" />
                   </linearGradient>
                   <linearGradient id="roseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fff1f2" />
-                    <stop offset="100%" stopColor="#ffe4e6" />
+                    <stop offset="0%" stopColor="var(--s3-card-border)" />
+                    <stop offset="100%" stopColor="var(--color-text-secondary)" />
                   </linearGradient>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Private Subnet boundary */}
-                <rect x="8" y="10" width="204" height="160" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="110" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">🔒 VPC CORPORATE PRIVATE SUBNET BOUNDARY</text>
+                <rect x="8" y="10" width="204" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="110" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">🔒 VPC CORPORATE PRIVATE SUBNET BOUNDARY</text>
 
                 {/* AWS Regional Backplane */}
-                <rect x="220" y="10" width="472" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="456" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE HIGH-SPEED REGIONAL BACKPLANE</text>
+                <rect x="220" y="10" width="472" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="456" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE HIGH-SPEED REGIONAL BACKPLANE</text>
 
                 {/* Private Subnet VM */}
-                <rect x="20" y="35" width="180" height="120" rx="8" fill="url(#blueGradient)" stroke="#0ea5e9" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
-                <text x="110" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#0369a1">💻 Private EC2 Instance</text>
-                <text x="110" y="67" textAnchor="middle" fontSize="8" fill="#475569">No Public IP Allocated</text>
-                <text x="110" y="79" textAnchor="middle" fontSize="7.5" fontFamily="monospace" fill="#64748b">VPC Subnet IP: 10.0.1.42</text>
+                <rect x="20" y="35" width="180" height="120" rx="8" fill="url(#blueGradient)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
+                <text x="110" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">💻 Private EC2 Instance</text>
+                <text x="110" y="67" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">No Public IP Allocated</text>
+                <text x="110" y="79" textAnchor="middle" fontSize="7.5" fontFamily="monospace" fill="var(--color-text-tertiary)">VPC Subnet IP: 10.0.1.42</text>
                 
                 {/* Embedded Mini Subnet Table */}
-                <rect x="28" y="93" width="164" height="52" rx="4" fill="#ffffff" fillOpacity="0.9" stroke="#cbd5e1" strokeWidth="0.8" />
-                <text x="35" y="104" fontSize="7.5" fontWeight="bold" fill="#334155">Route Target Prefix</text>
-                <text x="122" y="104" fontSize="7.5" fontWeight="bold" fill="#334155">Gateway Interface</text>
-                <line x1="28" y1="109" x2="192" y2="109" stroke="#cbd5e1" strokeWidth="0.5" />
-                <text x="35" y="121" fontSize="7.5" fill="#047857" fontWeight="bold" fontFamily="monospace">pl-63a5400a (S3)</text>
-                <text x="122" y="121" fontSize="7.5" fill="#047857" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928 (Free)</text>
-                <text x="35" y="134" fontSize="7.5" fill="#ef4444" fontFamily="monospace">0.0.0.0/0 (Egress)</text>
-                <text x="122" y="134" fontSize="7.5" fill="#ef4444" fontFamily="monospace">nat-072a1cf ($)</text>
+                <rect x="28" y="93" width="164" height="52" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--s3-card-border)" strokeWidth="0.8" />
+                <text x="35" y="104" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">Route Target Prefix</text>
+                <text x="122" y="104" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">Gateway Interface</text>
+                <line x1="28" y1="109" x2="192" y2="109" stroke="var(--s3-card-border)" strokeWidth="0.5" />
+                <text x="35" y="121" fontSize="7.5" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">pl-63a5400a (S3)</text>
+                <text x="122" y="121" fontSize="7.5" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928 (Free)</text>
+                <text x="35" y="134" fontSize="7.5" fill="var(--color-red)" fontFamily="monospace">0.0.0.0/0 (Egress)</text>
+                <text x="122" y="134" fontSize="7.5" fill="var(--color-red)" fontFamily="monospace">nat-072a1cf ($)</text>
 
                 {/* Route A: Public route via NAT */}
                 <path d="M 200 65 L 290 65 L 290 40 L 465 40" fill="none" 
-                  stroke="#ef4444" 
+                  stroke="var(--color-red)" 
                   strokeWidth="2" 
                   strokeDasharray="3,3" 
                   className="s3-flow-red" />
-                <rect x="260" y="48" width="60" height="18" rx="3" fill="#fef2f2" stroke="#fca5a5" strokeWidth="1" filter="url(#s3-shadow-net1)" />
-                <text x="290" y="60" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">NAT / IGW</text>
-                <text x="382" y="32" fontSize="7.5" fill="#ef4444" fontWeight="bold">💰 Public Egress Transit Charges Apply</text>
+                <rect x="260" y="48" width="60" height="18" rx="3" fill="var(--s3-error-bg)" stroke="var(--s3-error-border)" strokeWidth="1" filter="url(#s3-shadow-net1)" />
+                <text x="290" y="60" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">NAT / IGW</text>
+                <text x="382" y="32" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">💰 Public Egress Transit Charges Apply</text>
 
                 {/* Route B: Gateway VPCE route */}
                 <path d="M 200 115 L 465 115" fill="none" 
-                  stroke="#10b981" 
+                  stroke="var(--color-green)" 
                   strokeWidth="2.5" 
                   className="s3-flow-green" />
-                <rect x="235" y="122" width="160" height="24" rx="4" fill="url(#emeraldGradient)" stroke="#10b981" strokeWidth="1" filter="url(#s3-shadow-net1)" />
-                <text x="315" y="137" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">🔗 Private Gateway Endpoint Link</text>
-                <text x="315" y="104" fontSize="8.5" fill="#047857" fontWeight="bold">🔒 Secure Direct AWS Regional Backbone (Free)</text>
+                <rect x="235" y="122" width="160" height="24" rx="4" fill="url(#emeraldGradient)" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-net1)" />
+                <text x="315" y="137" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">🔗 Private Gateway Endpoint Link</text>
+                <text x="315" y="104" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">🔒 Secure Direct AWS Regional Backbone (Free)</text>
 
                 {/* S3 Public Endpoint */}
-                <rect x="465" y="18" width="210" height="42" rx="6" fill="url(#roseGradient)" stroke="#f43f5e" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
-                <text x="570" y="35" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#be123c">🌐 Public Host Endpoint</text>
-                <text x="570" y="49" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fill="#e11d48">s3.amazonaws.com</text>
+                <rect x="465" y="18" width="210" height="42" rx="6" fill="url(#roseGradient)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
+                <text x="570" y="35" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-red)">🌐 Public Host Endpoint</text>
+                <text x="570" y="49" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fill="var(--color-red)">s3.amazonaws.com</text>
 
                 {/* S3 gateway vpce endpoint target */}
-                <rect x="465" y="85" width="210" height="80" rx="6" fill="url(#emeraldGradient)" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
-                <text x="570" y="104" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#047857">🪣 AWS S3 Service Backplane</text>
-                <text x="570" y="122" textAnchor="middle" fontSize="8" fill="#475569" fontWeight="bold" fontFamily="monospace">Prefix List: pl-63a5400a</text>
-                <text x="570" y="136" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928bcde1a38</text>
-                <text x="570" y="150" textAnchor="middle" fontSize="7" fill="#15803d" fontStyle="italic">Direct Local VPC Gateway Interface</text>
+                <rect x="465" y="85" width="210" height="80" rx="6" fill="url(#emeraldGradient)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
+                <text x="570" y="104" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-green)">🪣 AWS S3 Service Backplane</text>
+                <text x="570" y="122" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="bold" fontFamily="monospace">Prefix List: pl-63a5400a</text>
+                <text x="570" y="136" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928bcde1a38</text>
+                <text x="570" y="150" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontStyle="italic">Direct Local VPC Gateway Interface</text>
 
                 {/* Streaming packets */}
-                <circle r="4.5" fill="#ef4444">
+                <circle r="4.5" fill="var(--color-red)">
                   <animateMotion path="M 200 65 L 290 65 L 290 40 L 465 40" dur="2.2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite" />
                 </circle>
-                <circle r="5" fill="#10b981">
+                <circle r="5" fill="var(--color-green)">
                   <animateMotion path="M 200 115 L 465 115" dur="1.4s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite" />
                 </circle>
@@ -5455,21 +5459,21 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <filter id="s3-shadow-net2" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                   </filter>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Router table subnet */}
-                <rect x="8" y="10" width="344" height="160" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="180" y="22" textAnchor="middle" fontSize="7" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">🔒 VPC ROUTE TABLE RULE DETERMINATION LAYER</text>
+                <rect x="8" y="10" width="344" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="180" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">🔒 VPC ROUTE TABLE RULE DETERMINATION LAYER</text>
 
                 {/* Private AWS Endpoint */}
-                <rect x="360" y="10" width="332" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0ea5e9" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="526" y="22" textAnchor="middle" fontSize="7" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">☁️ AWS PRIVATE VPCE REGIONAL TRANSIT SUBNET</text>
+                <rect x="360" y="10" width="332" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="526" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS PRIVATE VPCE REGIONAL TRANSIT SUBNET</text>
 
                 {/* Private subnet route table */}
-                <rect x="20" y="35" width="320" height="122" rx="6" fill="#ffffff" stroke="var(--color-border-tertiary)" strokeWidth="1" filter="url(#s3-shadow-net2)" />
+                <rect x="20" y="35" width="320" height="122" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-border-tertiary)" strokeWidth="1" filter="url(#s3-shadow-net2)" />
                 <text x="35" y="50" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">📁 Subnet VPC Route Table Rules</text>
 
                 {/* Headers */}
@@ -5481,34 +5485,34 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 {/* Rows */}
                 <text x="35" y="90" fontSize="8" fontFamily="monospace" fill="var(--color-text-primary)">10.0.0.0/16 (VPC)</text>
                 <text x="165" y="90" fontSize="8" fontFamily="monospace" fill="var(--color-text-secondary)">local</text>
-                <text x="275" y="90" fontSize="8" fontWeight="bold" fill="#10b981">Active</text>
+                <text x="275" y="90" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
                 <line x1="30" y1="96" x2="330" y2="96" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
 
                 {/* S3 gateway route rule */}
                 <rect x="30" y="100" width="300" height="18" fill="rgba(16, 185, 129, 0.08)" rx="2" />
-                <text x="35" y="112" fontSize="8" fontFamily="monospace" fill="#047857" fontWeight="bold">pl-63a5400a (S3)</text>
-                <text x="165" y="112" fontSize="8" fontFamily="monospace" fill="#047857" fontWeight="bold">vpce-0d8fa928</text>
-                <text x="275" y="112" fontSize="8" fontWeight="bold" fill="#10b981">Active</text>
+                <text x="35" y="112" fontSize="8" fontFamily="monospace" fill="var(--color-green)" fontWeight="bold">pl-63a5400a (S3)</text>
+                <text x="165" y="112" fontSize="8" fontFamily="monospace" fill="var(--color-green)" fontWeight="bold">vpce-0d8fa928</text>
+                <text x="275" y="112" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
                 <line x1="30" y1="122" x2="330" y2="122" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
 
                 {/* Public Egress Route */}
-                <text x="35" y="136" fontSize="8" fontFamily="monospace" fill="#ef4444">0.0.0.0/0 (Global)</text>
-                <text x="165" y="136" fontSize="8" fontFamily="monospace" fill="#ef4444">nat-0d8fa2bc</text>
-                <text x="275" y="136" fontSize="8" fontWeight="bold" fill="#10b981">Active</text>
+                <text x="35" y="136" fontSize="8" fontFamily="monospace" fill="var(--color-red)">0.0.0.0/0 (Global)</text>
+                <text x="165" y="136" fontSize="8" fontFamily="monospace" fill="var(--color-red)">nat-0d8fa2bc</text>
+                <text x="275" y="136" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
 
                 {/* Packet Routing Visual */}
-                <path d="M 340 111 L 375 111" stroke="#10b981" strokeWidth="2.5" fill="none" className="s3-flow-green" />
-                <text x="358" y="102" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Match</text>
+                <path d="M 340 111 L 375 111" stroke="var(--color-green)" strokeWidth="2.5" fill="none" className="s3-flow-green" />
+                <text x="358" y="102" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Match</text>
 
                 {/* Target Private AWS Endpoint */}
-                <rect x="376" y="35" width="306" height="122" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-net2)" />
-                <text x="529" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">🔌 Gateway Private Transit</text>
+                <rect x="376" y="35" width="306" height="122" rx="6" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net2)" />
+                <text x="529" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-green)">🔌 Gateway Private Transit</text>
                 <text x="388" y="68" fontSize="8" fill="var(--color-text-secondary)" style={{ lineHeight: '1.45' }}>
                   Prefix rules intercept default 0.0.0.0/0 internet routes, privately encapsulating packets inside secure regional trunk connections.
                 </text>
-                <rect x="388" y="108" width="282" height="38" rx="4" fill="#ffffff" fillOpacity="0.8" stroke="#a7f3d0" strokeWidth="0.8" />
-                <text x="396" y="121" fontSize="8" fill="#047857" fontWeight="bold">✔ ZERO TRANSIT CHARGES — FREE VPC EGRESS</text>
-                <text x="396" y="134" fontSize="8" fill="#047857" fontWeight="bold">✔ ENCRYPTED INTERNAL Regional AWS Link</text>
+                <rect x="388" y="108" width="282" height="38" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-success-border)" strokeWidth="0.8" />
+                <text x="396" y="121" fontSize="8" fill="var(--color-green)" fontWeight="bold">✔ ZERO TRANSIT CHARGES — FREE VPC EGRESS</text>
+                <text x="396" y="134" fontSize="8" fill="var(--color-green)" fontWeight="bold">✔ ENCRYPTED INTERNAL Regional AWS Link</text>
               </svg>
             </div>
 
@@ -5521,99 +5525,99 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 740 310" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <filter id="s3-shadow-net3" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.08" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
                   </filter>
-                  <marker id="ap-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
-                  <marker id="ap-arr-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0d9488" /></marker>
-                  <marker id="ap-arr-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c" /></marker>
-                  <marker id="ap-arr-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
+                  <marker id="ap-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-purple)" /></marker>
+                  <marker id="ap-arr-teal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)" /></marker>
+                  <marker id="ap-arr-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-amber)" /></marker>
+                  <marker id="ap-arr-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)" /></marker>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* IAM Identities Subnet */}
-                <rect x="8" y="10" width="144" height="290" rx="8" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="80" y="22" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold" letterSpacing="0.05em">👤 DELEGATED IAM CALLER SUBNET</text>
+                <rect x="8" y="10" width="144" height="290" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="80" y="22" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">👤 DELEGATED IAM CALLER SUBNET</text>
 
                 {/* Scoped Gateway Access Points Subnet */}
-                <rect x="168" y="10" width="204" height="290" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="270" y="22" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="bold" letterSpacing="0.05em">🔌 POLICY INGRESS GATEWAYS</text>
+                <rect x="168" y="10" width="204" height="290" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="270" y="22" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">🔌 POLICY INGRESS GATEWAYS</text>
 
                 {/* S3 Storage Engine Plane */}
-                <rect x="388" y="10" width="344" height="290" rx="8" fill="#f0fdf4" fillOpacity="0.3" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3,3" />
-                <text x="560" y="22" textAnchor="middle" fontSize="6.5" fill="#15803d" fontWeight="bold" letterSpacing="0.05em">🪣 AWS S3 STORAGE ENGINE SUBPATH PLANE</text>
+                <rect x="388" y="10" width="344" height="290" rx="8" fill="var(--s3-success-bg)" fillOpacity="0.3" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="3,3" />
+                <text x="560" y="22" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold" letterSpacing="0.05em">🪣 AWS S3 STORAGE ENGINE SUBPATH PLANE</text>
 
                 {/* Left Column: Department Users */}
                 {/* Finance User */}
-                <rect x="15" y="32" width="130" height="60" rx="6" fill="#ffffff" stroke="#e9d5ff" strokeWidth="1.2" filter="url(#s3-shadow-net3)" />
+                <rect x="15" y="32" width="130" height="60" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-text-secondary)" strokeWidth="1.2" filter="url(#s3-shadow-net3)" />
                 <text x="80" y="49" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Finance Dept</text>
-                <text x="80" y="65" textAnchor="middle" fontSize="9.5" fill="#8b5cf6" fontWeight="bold">👤 Finance User</text>
-                <path d="M 145 62 L 180 62" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
+                <text x="80" y="65" textAnchor="middle" fontSize="9.5" fill="var(--color-purple)" fontWeight="bold">👤 Finance User</text>
+                <path d="M 145 62 L 180 62" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
 
                 {/* Sales User */}
-                <rect x="15" y="122" width="130" height="60" rx="6" fill="#ffffff" stroke="#ccfbf1" strokeWidth="1.2" filter="url(#s3-shadow-net3)" />
+                <rect x="15" y="122" width="130" height="60" rx="6" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1.2" filter="url(#s3-shadow-net3)" />
                 <text x="80" y="139" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Sales Dept</text>
-                <text x="80" y="155" textAnchor="middle" fontSize="9.5" fill="#0d9488" fontWeight="bold">👤 Sales User</text>
-                <path d="M 145 152 L 180 152" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
+                <text x="80" y="155" textAnchor="middle" fontSize="9.5" fill="var(--color-blue)" fontWeight="bold">👤 Sales User</text>
+                <path d="M 145 152 L 180 152" fill="none" stroke="var(--color-blue)" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
 
                 {/* Analytics Platform */}
-                <rect x="15" y="212" width="130" height="60" rx="6" fill="#ffffff" stroke="#ffedd5" strokeWidth="1.2" filter="url(#s3-shadow-net3)" />
+                <rect x="15" y="212" width="130" height="60" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-text-secondary)" strokeWidth="1.2" filter="url(#s3-shadow-net3)" />
                 <text x="80" y="229" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Analytics Sys</text>
-                <text x="80" y="245" textAnchor="middle" fontSize="9.5" fill="#ea580c" fontWeight="bold">🤖 Analytics App</text>
-                <path d="M 145 242 L 180 242" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
+                <text x="80" y="245" textAnchor="middle" fontSize="9.5" fill="var(--color-amber)" fontWeight="bold">🤖 Analytics App</text>
+                <path d="M 145 242 L 180 242" fill="none" stroke="var(--color-red)" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
 
                 {/* Middle Column: Scoped Access Points + Policies */}
                 {/* Finance Access Point */}
-                <rect x="180" y="32" width="180" height="68" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
-                <text x="270" y="47" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6d28d9">🔑 Finance Access Point</text>
-                <text x="188" y="65" fontSize="8" fill="#7c3aed" fontWeight="bold">✔ Scoped: /finance/* prefix</text>
+                <rect x="180" y="32" width="180" height="68" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-purple)" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
+                <text x="270" y="47" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-purple)">🔑 Finance Access Point</text>
+                <text x="188" y="65" fontSize="8" fill="var(--color-purple)" fontWeight="bold">✔ Scoped: /finance/* prefix</text>
                 <text x="188" y="77" fontSize="7.5" fill="var(--color-text-secondary)">Policy: Grant R/W to Finance</text>
-                <rect x="338" y="70" width="16" height="12" rx="2" fill="#8b5cf6" />
-                <text x="346" y="79" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">✔</text>
-                <path d="M 360 62 L 450 62 L 450 90 L 498 90" fill="none" stroke="#8b5cf6" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
+                <rect x="338" y="70" width="16" height="12" rx="2" fill="var(--color-purple)" />
+                <text x="346" y="79" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">✔</text>
+                <path d="M 360 62 L 450 62 L 450 90 L 498 90" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" markerEnd="url(#ap-arr-purple)" />
 
                 {/* Sales Access Point */}
-                <rect x="180" y="122" width="180" height="68" rx="6" fill="#f0fdfa" stroke="#0d9488" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
-                <text x="270" y="137" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#0f766e">🔑 Sales Access Point</text>
-                <text x="188" y="155" fontSize="8" fill="#0f766e" fontWeight="bold">✔ Scoped: /sales/* prefix</text>
+                <rect x="180" y="122" width="180" height="68" rx="6" fill="var(--s3-card-border)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
+                <text x="270" y="137" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-blue)">🔑 Sales Access Point</text>
+                <text x="188" y="155" fontSize="8" fill="var(--color-blue)" fontWeight="bold">✔ Scoped: /sales/* prefix</text>
                 <text x="188" y="167" fontSize="7.5" fill="var(--color-text-secondary)">Policy: Grant R/W to Sales</text>
-                <rect x="338" y="160" width="16" height="12" rx="2" fill="#0d9488" />
-                <text x="346" y="169" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">✔</text>
-                <path d="M 360 152 L 498 152" fill="none" stroke="#0d9488" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
+                <rect x="338" y="160" width="16" height="12" rx="2" fill="var(--color-blue)" />
+                <text x="346" y="169" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">✔</text>
+                <path d="M 360 152 L 498 152" fill="none" stroke="var(--color-blue)" strokeWidth="1.5" markerEnd="url(#ap-arr-teal)" />
 
                 {/* Analytics Access Point */}
-                <rect x="180" y="212" width="180" height="68" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
-                <text x="270" y="227" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#c2410c">🔑 Analytics Access Point</text>
-                <text x="188" y="245" fontSize="8" fill="#c2410c" fontWeight="bold">✔ Scoped: Entire Bucket</text>
+                <rect x="180" y="212" width="180" height="68" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
+                <text x="270" y="227" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-red)">🔑 Analytics Access Point</text>
+                <text x="188" y="245" fontSize="8" fill="var(--color-red)" fontWeight="bold">✔ Scoped: Entire Bucket</text>
                 <text x="188" y="257" fontSize="7.5" fill="var(--color-text-secondary)">Policy: Grant Read to all prefixes</text>
-                <rect x="338" y="250" width="16" height="12" rx="2" fill="#ea580c" />
-                <text x="346" y="259" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">✔</text>
-                <path d="M 360 242 L 450 242 L 450 215 L 498 215" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
+                <rect x="338" y="250" width="16" height="12" rx="2" fill="var(--color-amber)" />
+                <text x="346" y="259" textAnchor="middle" fontSize="7.5" fill="#ffffff" fontWeight="bold">✔</text>
+                <path d="M 360 242 L 450 242 L 450 215 L 498 215" fill="none" stroke="var(--color-red)" strokeWidth="1.5" markerEnd="url(#ap-arr-orange)" />
 
                 {/* Right Column: Shared S3 Bucket */}
-                <rect x="398" y="32" width="324" height="258" rx="8" fill="#f8fafc" stroke="#2563eb" strokeWidth="2" filter="url(#s3-shadow-net3)" />
-                <text x="560" y="50" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1e40af">🪣 Shared Monolithic S3 Bucket</text>
+                <rect x="398" y="32" width="324" height="258" rx="8" fill="var(--s3-metric-card-bg)" stroke="var(--color-blue)" strokeWidth="2" filter="url(#s3-shadow-net3)" />
+                <text x="560" y="50" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-blue)">🪣 Shared Monolithic S3 Bucket</text>
 
                 {/* Red Monolithic Policy warning */}
-                <rect x="612" y="58" width="95" height="32" rx="4" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.2" />
-                <text x="660" y="70" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#991b1b">Bucket Policy</text>
-                <text x="660" y="82" textAnchor="middle" fontSize="7.5" fill="#b91c1c" fontWeight="bold">❌ Simplified!</text>
+                <rect x="612" y="58" width="95" height="32" rx="4" fill="var(--s3-error-bg)" stroke="var(--color-red)" strokeWidth="1.2" />
+                <text x="660" y="70" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-red)">Bucket Policy</text>
+                <text x="660" y="82" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">❌ Simplified!</text>
 
                 {/* Folders (Subpaths) */}
                 {/* /finance */}
-                <rect x="408" y="98" width="304" height="56" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
-                <text x="418" y="114" fontSize="10" fontWeight="bold" fill="#6b21a8">📂 /finance/ subpath</text>
+                <rect x="408" y="98" width="304" height="56" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
+                <text x="418" y="114" fontSize="10" fontWeight="bold" fill="var(--color-blue)">📂 /finance/ subpath</text>
                 <text x="418" y="128" fontSize="8" fill="var(--color-text-secondary)">Holds cost reports, ledgers &amp; invoices</text>
-                <text x="418" y="142" fontSize="7.5" fill="#6b21a8" fontWeight="bold">Authorized for: Finance User &amp; Analytics</text>
+                <text x="418" y="142" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Authorized for: Finance User &amp; Analytics</text>
 
                 {/* /sales */}
-                <rect x="408" y="168" width="304" height="56" rx="4" fill="#ffffff" stroke="#2dd4bf" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
-                <text x="418" y="184" fontSize="10" fontWeight="bold" fill="#0f766e">📂 /sales/ subpath</text>
+                <rect x="408" y="168" width="304" height="56" rx="4" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net3)" />
+                <text x="418" y="184" fontSize="10" fontWeight="bold" fill="var(--color-blue)">📂 /sales/ subpath</text>
                 <text x="418" y="198" fontSize="8" fill="var(--color-text-secondary)">Holds customer contracts &amp; pipelines</text>
-                <text x="418" y="212" fontSize="7.5" fill="#0f766e" fontWeight="bold">Authorized for: Sales User &amp; Analytics</text>
+                <text x="418" y="212" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Authorized for: Sales User &amp; Analytics</text>
 
                 {/* Divider Line */}
-                <line x1="398" y1="245" x2="722" y2="245" stroke="#bfdbfe" strokeWidth="1" />
-                <text x="560" y="262" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#2563eb">✔ Access Management: Simplify security control</text>
+                <line x1="398" y1="245" x2="722" y2="245" stroke="var(--s3-card-border)" strokeWidth="1" />
+                <text x="560" y="262" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-blue)">✔ Access Management: Simplify security control</text>
               </svg>
             </div>
 
@@ -5663,7 +5667,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Access Point evaluation logs:</div>
                     <div ref={apTerminalRef} className="s3-terminal" style={{ height: '110px', color: '#a78bfa', borderColor: '#7c3aed' }}>
                       {apResultLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting request dispatch...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting request dispatch...</div>
                       ) : (
                         apResultLogs.map((log, idx) => (
                           <div key={idx} style={{
@@ -5681,34 +5685,34 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 </div>
 
                 {/* Status Overlay and Diagram Visual */}
-                <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '300px' }}>
+                <div style={{ background: 'var(--s3-metric-card-bg)', padding: '14px', borderRadius: '12px', border: '1.5px solid var(--s3-metric-card-border)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '300px' }}>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Live Routing Visualization:</div>
                   
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                     {/* Beautiful reactive sandbox SVG */}
-                    <svg viewBox="0 0 350 220" width="100%" height="220" style={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'visible' }}>
+                    <svg viewBox="0 0 350 220" width="100%" height="220" style={{ background: 'var(--s3-bg)', borderRadius: '8px', border: '1.5px solid var(--s3-card-border)', overflow: 'visible' }}>
                       <defs>
-                        <marker id="sandbox-arr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="#cbd5e1" /></marker>
+                        <marker id="sandbox-arr" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto"><path d="M0,0 L0,4 L4,2 z" fill="var(--s3-success-bg)" /></marker>
                         <filter id="glow-purple" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         <filter id="glow-teal" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         <filter id="glow-orange" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         <filter id="s3-shadow-net4" x="-10%" y="-10%" width="120%" height="120%">
-                          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#0f172a" floodOpacity="0.06" />
+                          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="var(--color-blue)" floodOpacity="0.06" />
                         </filter>
                       </defs>
 
                       {/* PREMIUM NESTED BOUNDARIES */}
                       {/* Inbound caller boundary */}
-                      <rect x="2" y="10" width="66" height="200" rx="6" fill="#f8fafc" fillOpacity="0.45" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="35" y="18" textAnchor="middle" fontSize="5.5" fill="#64748b" fontWeight="bold">👤 INBOUND</text>
+                      <rect x="2" y="10" width="66" height="200" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="35" y="18" textAnchor="middle" fontSize="5.5" fill="var(--color-text-tertiary)" fontWeight="bold">👤 INBOUND</text>
 
                       {/* Gateway AP boundary */}
-                      <rect x="135" y="10" width="70" height="200" rx="8" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1" strokeDasharray="5,3" />
-                      <text x="170" y="18" textAnchor="middle" fontSize="5.5" fill="#0369a1" fontWeight="bold">🔌 GATEWAY</text>
+                      <rect x="135" y="10" width="70" height="200" rx="8" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="5,3" />
+                      <text x="170" y="18" textAnchor="middle" fontSize="5.5" fill="var(--color-blue)" fontWeight="bold">🔌 GATEWAY</text>
 
                       {/* S3 subpath storage boundary */}
-                      <rect x="270" y="10" width="78" height="200" rx="6" fill="#f0fdf4" fillOpacity="0.3" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="309" y="18" textAnchor="middle" fontSize="5.5" fill="#15803d" fontWeight="bold">🪣 STORAGE</text>
+                      <rect x="270" y="10" width="78" height="200" rx="6" fill="var(--s3-success-bg)" fillOpacity="0.3" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="309" y="18" textAnchor="middle" fontSize="5.5" fill="var(--color-green)" fontWeight="bold">🪣 STORAGE</text>
 
                       {/* Dynamic Connection Path */}
                       {(() => {
@@ -5721,7 +5725,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         return (
                           <>
                             {/* Standard connector pathway */}
-                            <path d={apPathD} fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                            <path d={apPathD} fill="none" stroke="var(--s3-card-border)" strokeWidth="1.5" strokeDasharray="3,3" />
 
                             {/* Active packet flow under evaluation */}
                             {apAnimationState === 'routing' && (
@@ -5733,7 +5737,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
 
                             {/* Granted packet at target */}
                             {apAnimationState === 'granted' && (
-                              <circle cx="280" cy={targetY} r="7" fill="#10b981" style={{ filter: 'drop-shadow(0 0 6px #10b981)' }}>
+                              <circle cx="280" cy={targetY} r="7" fill="var(--color-green)" style={{ filter: 'drop-shadow(0 0 6px #10b981)' }}>
                                 <animate attributeName="r" values="7;10;7" dur="1.5s" repeatCount="indefinite" />
                               </circle>
                             )}
@@ -5742,15 +5746,15 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                             {apAnimationState === 'denied' && (
                               <>
                                 {/* Blocked red packet particle blast */}
-                                <circle cx="170" cy={gatewayY} r="7" fill="#ef4444" style={{ filter: 'drop-shadow(0 0 6px #ef4444)' }} />
-                                <line x1="170" y1={gatewayY} x2="160" y2={gatewayY - 12} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
-                                <line x1="170" y1={gatewayY} x2="180" y2={gatewayY + 12} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
-                                <line x1="170" y1={gatewayY} x2="155" y2={gatewayY + 8} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
-                                <line x1="170" y1={gatewayY} x2="185" y2={gatewayY - 8} stroke="#ef4444" strokeWidth="1.5" opacity="0.8" />
-                                <circle cx="160" cy={gatewayY - 12} r="2" fill="#ef4444" />
-                                <circle cx="180" cy={gatewayY + 12} r="2" fill="#ef4444" />
-                                <circle cx="155" cy={gatewayY + 8} r="2" fill="#ef4444" />
-                                <circle cx="185" cy={gatewayY - 8} r="2" fill="#ef4444" />
+                                <circle cx="170" cy={gatewayY} r="7" fill="var(--color-red)" style={{ filter: 'drop-shadow(0 0 6px #ef4444)' }} />
+                                <line x1="170" y1={gatewayY} x2="160" y2={gatewayY - 12} stroke="var(--color-red)" strokeWidth="1.5" opacity="0.8" />
+                                <line x1="170" y1={gatewayY} x2="180" y2={gatewayY + 12} stroke="var(--color-red)" strokeWidth="1.5" opacity="0.8" />
+                                <line x1="170" y1={gatewayY} x2="155" y2={gatewayY + 8} stroke="var(--color-red)" strokeWidth="1.5" opacity="0.8" />
+                                <line x1="170" y1={gatewayY} x2="185" y2={gatewayY - 8} stroke="var(--color-red)" strokeWidth="1.5" opacity="0.8" />
+                                <circle cx="160" cy={gatewayY - 12} r="2" fill="var(--color-red)" />
+                                <circle cx="180" cy={gatewayY + 12} r="2" fill="var(--color-red)" />
+                                <circle cx="155" cy={gatewayY + 8} r="2" fill="var(--color-red)" />
+                                <circle cx="185" cy={gatewayY - 8} r="2" fill="var(--color-red)" />
                               </>
                             )}
                           </>
@@ -5760,104 +5764,104 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                       {/* Identities (Column 1) */}
                       {/* Finance User */}
                       <rect x="5" y="24" width="60" height="42" rx="4" 
-                        fill={apIdentity === 'finance_user' ? '#f5f3ff' : '#ffffff'} 
-                        stroke={apIdentity === 'finance_user' ? '#8b5cf6' : '#cbd5e1'} 
+                        fill={apIdentity === 'finance_user' ? 'rgba(139, 92, 246, 0.15)' : 'var(--s3-card-bg)'} 
+                        stroke={apIdentity === 'finance_user' ? 'var(--color-purple)' : 'var(--s3-card-border)'} 
                         strokeWidth={apIdentity === 'finance_user' ? '2' : '1'} 
                         filter="url(#s3-shadow-net4)" />
-                      <text x="35" y="40" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'finance_user' ? '#6d28d9' : '#475569'}>👤 Finance</text>
-                      <text x="35" y="52" textAnchor="middle" fontSize="6.5" fill="#8b5cf6" fontWeight="bold">IAM User</text>
+                      <text x="35" y="40" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'finance_user' ? 'var(--color-purple)' : 'var(--color-text-secondary)'}>👤 Finance</text>
+                      <text x="35" y="52" textAnchor="middle" fontSize="6.5" fill="var(--color-purple)" fontWeight="bold">IAM User</text>
 
                       {/* Sales User */}
                       <rect x="5" y="89" width="60" height="42" rx="4" 
-                        fill={apIdentity === 'sales_user' ? '#f0fdfa' : '#ffffff'} 
-                        stroke={apIdentity === 'sales_user' ? '#0d9488' : '#cbd5e1'} 
+                        fill={apIdentity === 'sales_user' ? 'rgba(13, 148, 136, 0.15)' : 'var(--s3-card-bg)'} 
+                        stroke={apIdentity === 'sales_user' ? '#0d9488' : 'var(--s3-card-border)'} 
                         strokeWidth={apIdentity === 'sales_user' ? '2' : '1'} 
                         filter="url(#s3-shadow-net4)" />
-                      <text x="35" y="105" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'sales_user' ? '#0f766e' : '#475569'}>👤 Sales</text>
-                      <text x="35" y="117" textAnchor="middle" fontSize="6.5" fill="#0d9488" fontWeight="bold">IAM User</text>
+                      <text x="35" y="105" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'sales_user' ? '#0f766e' : 'var(--color-text-secondary)'}>👤 Sales</text>
+                      <text x="35" y="117" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">IAM User</text>
 
                       {/* Auditor */}
                       <rect x="5" y="154" width="60" height="42" rx="4" 
-                        fill={apIdentity === 'auditor' ? '#fff7ed' : '#ffffff'} 
-                        stroke={apIdentity === 'auditor' ? '#ea580c' : '#cbd5e1'} 
+                        fill={apIdentity === 'auditor' ? 'rgba(234, 88, 12, 0.15)' : 'var(--s3-card-bg)'} 
+                        stroke={apIdentity === 'auditor' ? 'var(--color-amber)' : 'var(--s3-card-border)'} 
                         strokeWidth={apIdentity === 'auditor' ? '2' : '1'} 
                         filter="url(#s3-shadow-net4)" />
-                      <text x="35" y="170" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'auditor' ? '#c2410c' : '#475569'}>🔎 Auditor</text>
-                      <text x="35" y="182" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">Compliance</text>
+                      <text x="35" y="170" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apIdentity === 'auditor' ? 'var(--color-amber)' : 'var(--color-text-secondary)'}>🔎 Auditor</text>
+                      <text x="35" y="182" textAnchor="middle" fontSize="6.5" fill="var(--color-amber)" fontWeight="bold">Compliance</text>
 
 
                       {/* Gateways (Column 2) */}
                       {/* Main Bucket Endpoint */}
                       <rect x="140" y="24" width="60" height="42" rx="4" 
-                        fill={apEndpoint === 'bucket_root' ? '#fff1f2' : '#ffffff'} 
-                        stroke={apEndpoint === 'bucket_root' ? '#ef4444' : '#cbd5e1'} 
+                        fill={apEndpoint === 'bucket_root' ? 'rgba(239, 68, 68, 0.15)' : 'var(--s3-card-bg)'} 
+                        stroke={apEndpoint === 'bucket_root' ? 'var(--color-red)' : 'var(--s3-card-border)'} 
                         strokeWidth={apEndpoint === 'bucket_root' ? '2' : '1'}
                         filter="url(#s3-shadow-net4)" />
-                      <text x="170" y="40" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'bucket_root' ? '#b91c1c' : '#475569'}>🪣 Root</text>
-                      <text x="170" y="52" textAnchor="middle" fontSize="6" fill="#be123c" fontWeight="bold">Direct Gate</text>
+                      <text x="170" y="40" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'bucket_root' ? 'var(--color-red)' : 'var(--color-text-secondary)'}>🪣 Root</text>
+                      <text x="170" y="52" textAnchor="middle" fontSize="6" fill="var(--color-red)" fontWeight="bold">Direct Gate</text>
 
                       {/* Finance AP */}
                       <rect x="140" y="89" width="60" height="42" rx="4" 
-                        fill={apEndpoint === 'finance_ap' ? '#f5f3ff' : '#ffffff'} 
-                        stroke={apEndpoint === 'finance_ap' ? '#8b5cf6' : '#cbd5e1'} 
+                        fill={apEndpoint === 'finance_ap' ? 'rgba(139, 92, 246, 0.15)' : 'var(--s3-card-bg)'} 
+                        stroke={apEndpoint === 'finance_ap' ? 'var(--color-purple)' : 'var(--s3-card-border)'} 
                         strokeWidth={apEndpoint === 'finance_ap' ? '2' : '1'}
                         filter="url(#s3-shadow-net4)" />
-                      <text x="170" y="105" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'finance_ap' ? '#6d28d9' : '#475569'}>🔌 Finance</text>
-                      <text x="170" y="117" textAnchor="middle" fontSize="6.5" fill="#8b5cf6" fontWeight="bold">Access Pt</text>
+                      <text x="170" y="105" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'finance_ap' ? 'var(--color-purple)' : 'var(--color-text-secondary)'}>🔌 Finance</text>
+                      <text x="170" y="117" textAnchor="middle" fontSize="6.5" fill="var(--color-purple)" fontWeight="bold">Access Pt</text>
 
                       {/* Sales AP */}
                       <rect x="140" y="154" width="60" height="42" rx="4" 
-                        fill={apEndpoint === 'sales_ap' ? '#f0fdfa' : '#ffffff'} 
-                        stroke={apEndpoint === 'sales_ap' ? '#0d9488' : '#cbd5e1'} 
+                        fill={apEndpoint === 'sales_ap' ? 'rgba(13, 148, 136, 0.15)' : 'var(--s3-card-bg)'} 
+                        stroke={apEndpoint === 'sales_ap' ? '#0d9488' : 'var(--s3-card-border)'} 
                         strokeWidth={apEndpoint === 'sales_ap' ? '2' : '1'}
                         filter="url(#s3-shadow-net4)" />
-                      <text x="170" y="170" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'sales_ap' ? '#0f766e' : '#475569'}>🔌 Sales</text>
-                      <text x="170" y="182" textAnchor="middle" fontSize="6.5" fill="#0d9488" fontWeight="bold">Access Pt</text>
+                      <text x="170" y="170" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill={apEndpoint === 'sales_ap' ? '#0f766e' : 'var(--color-text-secondary)'}>🔌 Sales</text>
+                      <text x="170" y="182" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">Access Pt</text>
 
 
                       {/* Target Folder Subpaths (Column 3) */}
                       {/* /finance/ */}
-                      <rect x="274" y="45" width="70" height="54" rx="4" fill="#ffffff" stroke="#c084fc" strokeWidth="1" filter="url(#s3-shadow-net4)" />
-                      <text x="309" y="61" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#6b21a8">📂 /finance/</text>
-                      <text x="309" y="73" textAnchor="middle" fontSize="6.5" fill="#701a75">Ledgers &amp; Bills</text>
-                      <rect x="281" y="80" width="56" height="12" rx="2" fill="#f3e8ff" />
-                      <text x="309" y="88.5" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#6b21a8">Scoped Path</text>
+                      <rect x="274" y="45" width="70" height="54" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" filter="url(#s3-shadow-net4)" />
+                      <text x="309" y="61" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-blue)">📂 /finance/</text>
+                      <text x="309" y="73" textAnchor="middle" fontSize="6.5" fill="var(--color-purple)">Ledgers &amp; Bills</text>
+                      <rect x="281" y="80" width="56" height="12" rx="2" fill="var(--color-text-secondary)" />
+                      <text x="309" y="88.5" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="var(--color-blue)">Scoped Path</text>
 
                       {/* /sales/ */}
-                      <rect x="274" y="120" width="70" height="54" rx="4" fill="#ffffff" stroke="#2dd4bf" strokeWidth="1" filter="url(#s3-shadow-net4)" />
-                      <text x="309" y="136" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0f766e">📂 /sales/</text>
-                      <text x="309" y="148" textAnchor="middle" fontSize="6.5" fill="#115e59">Contracts &amp; Leads</text>
-                      <rect x="281" y="155" width="56" height="12" rx="2" fill="#ccfbf1" />
-                      <text x="309" y="163.5" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="#0f766e">Scoped Path</text>
+                      <rect x="274" y="120" width="70" height="54" rx="4" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-net4)" />
+                      <text x="309" y="136" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-blue)">📂 /sales/</text>
+                      <text x="309" y="148" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)">Contracts &amp; Leads</text>
+                      <rect x="281" y="155" width="56" height="12" rx="2" fill="var(--s3-success-bg)" />
+                      <text x="309" y="163.5" textAnchor="middle" fontSize="5.5" fontWeight="bold" fill="var(--color-blue)">Scoped Path</text>
 
                       {/* Active security verdicts displayed on sandbox SVG */}
                       {apAnimationState === 'granted' && (
                         <g transform="translate(170, 110)">
-                          <circle r="22" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(16,185,129,0.3))' }} />
-                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#047857">✔</text>
+                          <circle r="22" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(16,185,129,0.3))' }} />
+                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--color-green)">✔</text>
                         </g>
                       )}
                       {apAnimationState === 'denied' && (
                         <g transform="translate(170, 110)">
-                          <circle r="22" fill="#fef2f2" stroke="#ef4444" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(239,68,68,0.3))' }} />
-                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#991b1b">✖</text>
+                          <circle r="22" fill="var(--s3-error-bg)" stroke="var(--color-red)" strokeWidth="2" style={{ filter: 'drop-shadow(0 2px 4px rgba(239,68,68,0.3))' }} />
+                          <text x="0" y="5" textAnchor="middle" fontSize="14" fontWeight="bold" fill="var(--color-red)">✖</text>
                         </g>
                       )}
                     </svg>
 
                     {/* Verdict overlay text */}
                     {apAnimationState === 'granted' && (
-                      <div style={{ marginTop: '8px', color: '#15803d', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}>
+                      <div style={{ marginTop: '8px', color: 'var(--s3-success-text)', background: 'var(--s3-success-bg)', border: '1px solid var(--s3-success-border)', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}>
                         🎉 GET 200 AUTHORIZED! ACCESS AP HANDSHAKE SUCCESS!
                       </div>
                     )}
                     {apAnimationState === 'denied' && (
-                      <div style={{ marginTop: '8px', color: '#b91c1c', background: '#fef2f2', border: '1px solid #fca5a5', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}>
+                      <div style={{ marginTop: '8px', color: 'var(--s3-error-text)', background: 'var(--s3-error-bg)', border: '1px solid var(--s3-error-border)', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center', fontWeight: 'bold' }}>
                         ❌ ACCESS DENIED (HTTP 403) — CHECK PERMISSIONS/GATEWAY!
                       </div>
                     )}
                     {apAnimationState === 'idle' && (
-                      <div style={{ marginTop: '8px', color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center' }}>
+                      <div style={{ marginTop: '8px', color: 'var(--color-text-tertiary)', background: 'var(--s3-metric-card-bg)', border: '1px solid var(--s3-card-border)', padding: '8px', borderRadius: '6px', width: '100%', fontSize: '11px', textAlign: 'center' }}>
                         💤 Sandbox Ready: Click <b>Dispatch Request Packet</b> to simulate route validation.
                       </div>
                     )}
@@ -5925,7 +5929,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Network route tracer logs:</div>
                     <div ref={transferTerminalRef} className="s3-terminal" style={{ height: '110px' }}>
                       {transferLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting upload simulation dispatch...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting upload simulation dispatch...</div>
                       ) : (
                         transferLogs.map((log, idx) => (
                           <div key={idx} style={{
@@ -5945,58 +5949,58 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 {/* SVG Route Visualization with animated packet */}
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   {transferRouteMode === 'standard' ? (
-                    <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #fecaca', background: '#fffbeb' }}>
+                    <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--s3-error-border)', background: 'var(--s3-error-bg)' }}>
                       <defs>
-                        <marker id="arr-accel-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                        <marker id="arr-accel-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-red)" /></marker>
                         <filter id="s3-shadow-net5" x="-10%" y="-10%" width="120%" height="120%">
-                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#991b1b" floodOpacity="0.06" />
+                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-red)" floodOpacity="0.06" />
                         </filter>
                       </defs>
 
                       {/* PREMIUM NESTED BOUNDARIES */}
                       {/* Client Boundary */}
-                      <rect x="5" y="10" width="120" height="195" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="65" y="20" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold">💻 USA LOCAL CLIENT</text>
+                      <rect x="5" y="10" width="120" height="195" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="65" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">💻 USA LOCAL CLIENT</text>
 
                       {/* Internet Plane */}
-                      <rect x="131" y="10" width="88" height="195" rx="8" fill="rgba(254, 242, 242, 0.3)" stroke="#fca5a5" strokeWidth="1.2" strokeDasharray="4,2" />
-                      <text x="175" y="20" textAnchor="middle" fontSize="6" fill="#b91c1c" fontWeight="bold">🌍 PUBLIC INTERNET</text>
+                      <rect x="131" y="10" width="88" height="195" rx="8" fill="rgba(254, 242, 242, 0.3)" stroke="var(--s3-error-border)" strokeWidth="1.2" strokeDasharray="4,2" />
+                      <text x="175" y="20" textAnchor="middle" fontSize="6" fill="var(--color-red)" fontWeight="bold">🌍 PUBLIC INTERNET</text>
 
                       {/* Target Region */}
-                      <rect x="225" y="10" width="120" height="195" rx="6" fill="rgba(241, 245, 249, 0.4)" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="3,3" />
-                      <text x="285" y="20" textAnchor="middle" fontSize="6.5" fill="#b91c1c" fontWeight="bold">🇦🇺 SYDNEY TARGET</text>
+                      <rect x="225" y="10" width="120" height="195" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--color-red)" strokeWidth="1.2" strokeDasharray="3,3" />
+                      <text x="285" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-red)" fontWeight="bold">🇦🇺 SYDNEY TARGET</text>
 
                       {/* Nodes */}
                       {/* USA Terminal */}
-                      <rect x="15" y="30" width="100" height="42" rx="6" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" filter="url(#s3-shadow-net5)" />
-                      <text x="65" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Client (USA)</text>
-                      <text x="65" y="56" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">Standard WWW</text>
+                      <rect x="15" y="30" width="100" height="42" rx="6" fill="var(--s3-card-bg)" stroke="var(--s3-error-border)" strokeWidth="1.5" filter="url(#s3-shadow-net5)" />
+                      <text x="65" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">Client (USA)</text>
+                      <text x="65" y="56" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">Standard WWW</text>
 
                       {/* ISP hop */}
-                      <circle cx="65" cy="125" r="18" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" filter="url(#s3-shadow-net5)" />
-                      <text x="65" y="128" textAnchor="middle" fontSize="8" fill="#991b1b" fontWeight="bold">Local ISP</text>
+                      <circle cx="65" cy="125" r="18" fill="var(--s3-card-bg)" stroke="var(--s3-error-border)" strokeWidth="1.5" filter="url(#s3-shadow-net5)" />
+                      <text x="65" y="128" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">Local ISP</text>
 
                       {/* BGP 1 hop */}
-                      <circle cx="175" cy="80" r="18" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" strokeDasharray="3,1" filter="url(#s3-shadow-net5)" />
-                      <text x="175" y="83" textAnchor="middle" fontSize="7.5" fill="#991b1b" fontWeight="bold">AS-Peer A</text>
+                      <circle cx="175" cy="80" r="18" fill="var(--s3-card-bg)" stroke="var(--s3-error-border)" strokeWidth="1.5" strokeDasharray="3,1" filter="url(#s3-shadow-net5)" />
+                      <text x="175" y="83" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">AS-Peer A</text>
 
                       {/* BGP 2 hop */}
-                      <circle cx="175" cy="150" r="18" fill="#ffffff" stroke="#fca5a5" strokeWidth="1.5" strokeDasharray="3,1" filter="url(#s3-shadow-net5)" />
-                      <text x="175" y="153" textAnchor="middle" fontSize="7.5" fill="#991b1b" fontWeight="bold">AS-Peer B</text>
+                      <circle cx="175" cy="150" r="18" fill="var(--s3-card-bg)" stroke="var(--s3-error-border)" strokeWidth="1.5" strokeDasharray="3,1" filter="url(#s3-shadow-net5)" />
+                      <text x="175" y="153" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">AS-Peer B</text>
 
                       {/* Sydney S3 Bucket */}
-                      <rect x="235" y="110" width="100" height="70" rx="6" fill="#ffffff" stroke="#fca5a5" strokeWidth="2" filter="url(#s3-shadow-net5)" />
-                      <text x="285" y="130" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">🪣 Target S3</text>
-                      <text x="285" y="145" textAnchor="middle" fontSize="8.5" fill="#be123c" fontWeight="bold">🇦🇺 Australia</text>
-                      <text x="285" y="158" textAnchor="middle" fontSize="7.5" fill="#475569">Public Link</text>
+                      <rect x="235" y="110" width="100" height="70" rx="6" fill="var(--s3-card-bg)" stroke="var(--s3-error-border)" strokeWidth="2" filter="url(#s3-shadow-net5)" />
+                      <text x="285" y="130" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">🪣 Target S3</text>
+                      <text x="285" y="145" textAnchor="middle" fontSize="8.5" fill="var(--color-red)" fontWeight="bold">🇦🇺 Australia</text>
+                      <text x="285" y="158" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">Public Link</text>
 
                       {/* Paths */}
-                      <path d="M 65 72 L 65 107" fill="none" stroke="#fca5a5" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
-                      <path d="M 83 125 L 157 88" fill="none" stroke="#fca5a5" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
-                      <path d="M 175 98 L 175 132" fill="none" stroke="#fca5a5" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
-                      <path d="M 193 150 L 235 140" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 65 72 L 65 107" fill="none" stroke="var(--s3-error-border)" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 83 125 L 157 88" fill="none" stroke="var(--s3-error-border)" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 175 98 L 175 132" fill="none" stroke="var(--s3-error-border)" strokeWidth="1.5" markerEnd="url(#arr-accel-red)" />
+                      <path d="M 193 150 L 235 140" fill="none" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-accel-red)" />
 
-                      <text x="175" y="225" textAnchor="middle" fontSize="9.5" fill="#be123c" fontWeight="bold">🐌 Multi-Hop Congested Public WWW (~820ms)</text>
+                      <text x="175" y="225" textAnchor="middle" fontSize="9.5" fill="var(--color-red)" fontWeight="bold">🐌 Multi-Hop Congested Public WWW (~820ms)</text>
 
                       {/* Glowing animated data packet */}
                       {transferIsRunning && (
@@ -6010,55 +6014,55 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                           transferStep === 2 ? 125 :
                           transferStep === 3 ? 150 :
                           140
-                        } r="7" fill="#ef4444" style={{ filter: 'drop-shadow(0 0 5px #ef4444)' }}>
+                        } r="7" fill="var(--color-red)" style={{ filter: 'drop-shadow(0 0 5px #ef4444)' }}>
                           <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                         </circle>
                       )}
                     </svg>
                   ) : (
-                    <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #cbd5e1', background: '#ecfdf5' }}>
+                    <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--s3-success-border)', background: 'var(--s3-success-bg)' }}>
                       <defs>
-                        <marker id="arr-accel-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                        <marker id="arr-accel-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)" /></marker>
                         <filter id="s3-shadow-net6" x="-10%" y="-10%" width="120%" height="120%">
-                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f766e" floodOpacity="0.06" />
+                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.06" />
                         </filter>
                       </defs>
 
                       {/* PREMIUM NESTED BOUNDARIES */}
                       {/* Client Boundary */}
-                      <rect x="5" y="10" width="120" height="195" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="65" y="20" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold">💻 USA CLIENT OFFICE</text>
+                      <rect x="5" y="10" width="120" height="195" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="65" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">💻 USA CLIENT OFFICE</text>
 
                       {/* POP Ingress edge boundary */}
-                      <rect x="131" y="10" width="88" height="195" rx="8" fill="rgba(240, 253, 250, 0.25)" stroke="#0891b2" strokeWidth="1.2" strokeDasharray="5,3" />
-                      <text x="175" y="20" textAnchor="middle" fontSize="5.5" fill="#0369a1" fontWeight="bold">🔌 INGEST EDGE POP</text>
+                      <rect x="131" y="10" width="88" height="195" rx="8" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="5,3" />
+                      <text x="175" y="20" textAnchor="middle" fontSize="5.5" fill="var(--color-blue)" fontWeight="bold">🔌 INGEST EDGE POP</text>
 
                       {/* AWS Private Global network boundary */}
-                      <rect x="225" y="10" width="120" height="195" rx="6" fill="rgba(240, 253, 250, 0.2)" stroke="#10b981" strokeWidth="1.2" strokeDasharray="3,3" />
-                      <text x="285" y="20" textAnchor="middle" fontSize="6.5" fill="#15803d" fontWeight="bold">☁️ AWS BACKBONE SUBNET</text>
+                      <rect x="225" y="10" width="120" height="195" rx="6" fill="rgba(240, 253, 250, 0.2)" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="3,3" />
+                      <text x="285" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">☁️ AWS BACKBONE SUBNET</text>
 
                       {/* USA Terminal */}
-                      <rect x="15" y="30" width="100" height="42" rx="6" fill="#ffffff" stroke="#86efac" strokeWidth="1.5" filter="url(#s3-shadow-net6)" />
-                      <text x="65" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e293b">Client (USA)</text>
-                      <text x="65" y="56" textAnchor="middle" fontSize="8" fill="#16a34a" fontWeight="bold">Accelerated Endpoint</text>
+                      <rect x="15" y="30" width="100" height="42" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net6)" />
+                      <text x="65" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">Client (USA)</text>
+                      <text x="65" y="56" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Accelerated Endpoint</text>
 
                       {/* USA POP Ingestion */}
-                      <rect x="15" y="115" width="100" height="42" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-net6)" />
-                      <text x="65" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#065f46">USA POP Edge</text>
-                      <text x="65" y="143" textAnchor="middle" fontSize="8" fill="#047857" fontWeight="bold">CloudFront Node</text>
+                      <rect x="15" y="115" width="100" height="42" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net6)" />
+                      <text x="65" y="130" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--s3-success-text-bold)">USA POP Edge</text>
+                      <text x="65" y="143" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">CloudFront Node</text>
 
                       {/* Sydney S3 Bucket */}
-                      <rect x="235" y="110" width="100" height="70" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="2" filter="url(#s3-shadow-net6)" />
-                      <text x="285" y="130" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1e293b">🪣 Target S3</text>
-                      <text x="285" y="145" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">🇦🇺 Australia</text>
-                      <text x="285" y="158" textAnchor="middle" fontSize="7.5" fill="#475569">ap-southeast-2</text>
+                      <rect x="235" y="110" width="100" height="70" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="2" filter="url(#s3-shadow-net6)" />
+                      <text x="285" y="130" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-text-primary)">🪣 Target S3</text>
+                      <text x="285" y="145" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">🇦🇺 Australia</text>
+                      <text x="285" y="158" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">ap-southeast-2</text>
 
                       {/* Paths */}
-                      <path d="M 65 72 L 65 115" fill="none" stroke="#10b981" strokeWidth="2" markerEnd="url(#arr-accel-green)" />
-                      <path d="M 115 136 L 235 136" fill="none" stroke="#10b981" strokeWidth="2.5" markerEnd="url(#arr-accel-green)" />
+                      <path d="M 65 72 L 65 115" fill="none" stroke="var(--color-green)" strokeWidth="2" markerEnd="url(#arr-accel-green)" />
+                      <path d="M 115 136 L 235 136" fill="none" stroke="var(--color-green)" strokeWidth="2.5" markerEnd="url(#arr-accel-green)" />
 
-                      <text x="175" y="126" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">⚡ Undersea Fiber</text>
-                      <text x="175" y="225" textAnchor="middle" fontSize="9.5" fill="#047857" fontWeight="bold">⚡ Direct AWS Private Global Backbone Transit (~190ms)</text>
+                      <text x="175" y="126" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">⚡ Undersea Fiber</text>
+                      <text x="175" y="225" textAnchor="middle" fontSize="9.5" fill="var(--color-green)" fontWeight="bold">⚡ Direct AWS Private Global Backbone Transit (~190ms)</text>
 
                       {/* Glowing animated data packet */}
                       {transferIsRunning && (
@@ -6072,7 +6076,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                           transferStep === 2 ? 136 :
                           transferStep === 3 ? 136 :
                           130
-                        } r="7" fill="#10b981" style={{ filter: 'drop-shadow(0 0 5px #10b981)' }}>
+                        } r="7" fill="var(--color-green)" style={{ filter: 'drop-shadow(0 0 5px #10b981)' }}>
                           <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                         </circle>
                       )}
@@ -6099,69 +6103,69 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#eff6ff" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#dbeafe" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="var(--s3-card-border)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="var(--s3-card-border)" stopOpacity="0.8" />
                   </linearGradient>
                   <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#faf5ff" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#f3e8ff" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="var(--s3-grad-purple-start)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="var(--s3-grad-ssec-engine-end)" stopOpacity="0.8" />
                   </linearGradient>
                   <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f0fdf4" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#dcfce7" stopOpacity="0.8" />
+                    <stop offset="0%" stopColor="var(--s3-card-border)" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="var(--color-text-secondary)" stopOpacity="0.8" />
                   </linearGradient>
-                  <marker id="rep-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                  <marker id="rep-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                  <marker id="rep-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)" /></marker>
+                  <marker id="rep-arr-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-purple)" /></marker>
                   <filter id="s3-shadow-net7" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.06" />
                   </filter>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Replication Zone Boundary */}
-                <rect x="10" y="10" width="210" height="160" rx="6" fill="#f8fafc" fillOpacity="0.2" stroke="#3b82f6" strokeWidth="1" strokeDasharray="5,3" />
-                <text x="115" y="18" textAnchor="middle" fontSize="6" fill="#3b82f6" fontWeight="bold">SOURCE STORAGE DOMAIN</text>
+                <rect x="10" y="10" width="210" height="160" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.2" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="5,3" />
+                <text x="115" y="18" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">SOURCE STORAGE DOMAIN</text>
 
                 {/* Target Zones Boundaries */}
-                <rect x="340" y="10" width="350" height="160" rx="8" fill="rgba(240, 253, 250, 0.15)" stroke="#10b981" strokeWidth="1" strokeDasharray="5,3" />
-                <text x="515" y="18" textAnchor="middle" fontSize="6" fill="#0f766e" fontWeight="bold">REPLICATION STORAGE SUBNETS</text>
+                <rect x="340" y="10" width="350" height="160" rx="8" fill="rgba(240, 253, 250, 0.15)" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="5,3" />
+                <text x="515" y="18" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">REPLICATION STORAGE SUBNETS</text>
 
                 {/* Source Region */}
-                <rect x="20" y="26" width="190" height="132" rx="8" fill="url(#primaryGradient)" stroke="#3b82f6" strokeWidth="1.2" filter="url(#s3-shadow-net7)" />
-                <text x="115" y="44" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#1e3a8a">🇺🇸 Source Region (Virginia)</text>
+                <rect x="20" y="26" width="190" height="132" rx="8" fill="url(#primaryGradient)" stroke="var(--color-blue)" strokeWidth="1.2" filter="url(#s3-shadow-net7)" />
+                <text x="115" y="44" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-blue)">🇺🇸 Source Region (Virginia)</text>
 
-                <rect x="35" y="62" width="160" height="42" rx="4" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.2" filter="url(#s3-shadow-net7)" />
-                <text x="115" y="78" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e40af">🪣 Production Bucket</text>
-                <text x="115" y="92" textAnchor="middle" fontSize="8" fill="#10b981" fontWeight="bold">🔄 Versioning: ENABLED</text>
+                <rect x="35" y="62" width="160" height="42" rx="4" fill="var(--s3-card-bg)" stroke="var(--color-blue)" strokeWidth="1.2" filter="url(#s3-shadow-net7)" />
+                <text x="115" y="78" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-blue)">🪣 Production Bucket</text>
+                <text x="115" y="92" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">🔄 Versioning: ENABLED</text>
 
                 {/* SRR Target */}
-                <rect x="350" y="45" width="150" height="100" rx="8" fill="url(#greenGradient)" stroke="#10b981" strokeWidth="1.2" filter="url(#s3-shadow-net7)" />
-                <text x="425" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#047857">🇺🇸 Same-Region Target</text>
-                <text x="425" y="78" textAnchor="middle" fontSize="8" fill="#475569">Virginia Sub-Zone (US)</text>
-                <rect x="360" y="92" width="130" height="26" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" filter="url(#s3-shadow-net7)" />
-                <text x="425" y="108" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">🪣 SRR DR Replica Bucket</text>
+                <rect x="350" y="45" width="150" height="100" rx="8" fill="url(#greenGradient)" stroke="var(--color-green)" strokeWidth="1.2" filter="url(#s3-shadow-net7)" />
+                <text x="425" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-green)">🇺🇸 Same-Region Target</text>
+                <text x="425" y="78" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Virginia Sub-Zone (US)</text>
+                <rect x="360" y="92" width="130" height="26" rx="3" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-net7)" />
+                <text x="425" y="108" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">🪣 SRR DR Replica Bucket</text>
 
                 {/* CRR Target */}
-                <rect x="525" y="45" width="155" height="100" rx="8" fill="url(#purpleGradient)" stroke="#8b5cf6" strokeWidth="1.5" filter="url(#s3-shadow-net7)" />
-                <text x="602" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#6d28d9">🇪🇺 Cross-Region Target</text>
-                <text x="602" y="78" textAnchor="middle" fontSize="8" fill="#475569">Frankfurt Region (EU)</text>
-                <rect x="535" y="92" width="135" height="26" rx="3" fill="#ffffff" stroke="#8b5cf6" strokeWidth="1" filter="url(#s3-shadow-net7)" />
-                <text x="602" y="108" textAnchor="middle" fontSize="8.5" fill="#6d28d9" fontWeight="bold">🪣 CRR Sovereign Archive</text>
+                <rect x="525" y="45" width="155" height="100" rx="8" fill="url(#purpleGradient)" stroke="var(--color-purple)" strokeWidth="1.5" filter="url(#s3-shadow-net7)" />
+                <text x="602" y="65" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-purple)">🇪🇺 Cross-Region Target</text>
+                <text x="602" y="78" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Frankfurt Region (EU)</text>
+                <rect x="535" y="92" width="135" height="26" rx="3" fill="var(--s3-card-bg)" stroke="var(--color-purple)" strokeWidth="1" filter="url(#s3-shadow-net7)" />
+                <text x="602" y="108" textAnchor="middle" fontSize="8.5" fill="var(--color-purple)" fontWeight="bold">🪣 CRR Sovereign Archive</text>
 
                 {/* Background continuous packet streams representing active loops */}
                 {/* Path to SRR */}
-                <path d="M 195 81 Q 275 60 350 81" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4,4" />
-                <circle r="4.5" fill="#10b981" style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}>
+                <path d="M 195 81 Q 275 60 350 81" fill="none" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="4,4" />
+                <circle r="4.5" fill="var(--color-green)" style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}>
                   <animateMotion path="M 195 81 Q 275 60 350 81" dur="2s" repeatCount="indefinite" />
                 </circle>
 
                 {/* Path to CRR */}
-                <path d="M 195 95 Q 360 140 525 95" fill="none" stroke="#8b5cf6" strokeWidth="1.8" strokeDasharray="4,4" />
-                <circle r="4.5" fill="#8b5cf6" style={{ filter: 'drop-shadow(0 0 3px #8b5cf6)' }}>
+                <path d="M 195 95 Q 360 140 525 95" fill="none" stroke="var(--color-purple)" strokeWidth="1.8" strokeDasharray="4,4" />
+                <circle r="4.5" fill="var(--color-purple)" style={{ filter: 'drop-shadow(0 0 3px #8b5cf6)' }}>
                   <animateMotion path="M 195 95 Q 360 140 525 95" dur="2.8s" repeatCount="indefinite" />
                 </circle>
 
-                <text x="360" y="165" textAnchor="middle" fontSize="9" fill="#475569" fontWeight="bold">✔ Asynchronous Background Copy Loops (Zero Performance Drag on Main Write)</text>
+                <text x="360" y="165" textAnchor="middle" fontSize="9" fill="var(--color-text-secondary)" fontWeight="bold">✔ Asynchronous Background Copy Loops (Zero Performance Drag on Main Write)</text>
               </svg>
             </div>
 
@@ -6173,64 +6177,64 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
               </div>
               <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
-                  <marker id="pre-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
-                  <marker id="pre-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                  <marker id="pre-arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)" /></marker>
+                  <marker id="pre-arr-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)" /></marker>
                   <filter id="s3-shadow-net8" x="-10%" y="-10%" width="120%" height="120%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.06" />
                   </filter>
                 </defs>
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Client Subnet */}
-                <rect x="10" y="10" width="150" height="135" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="85" y="20" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold">💻 CLIENT SUBNET</text>
+                <rect x="10" y="10" width="150" height="135" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="85" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">💻 CLIENT SUBNET</text>
 
                 {/* App Server Subnet */}
-                <rect x="340" y="10" width="180" height="110" rx="8" fill="rgba(240, 253, 250, 0.15)" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,2" />
-                <text x="430" y="20" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">🛡️ APPLICATION PLANE</text>
+                <rect x="340" y="10" width="180" height="110" rx="8" fill="rgba(240, 253, 250, 0.15)" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="4,2" />
+                <text x="430" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">🛡️ APPLICATION PLANE</text>
 
                 {/* Target S3 Subnet */}
-                <rect x="530" y="10" width="160" height="135" rx="6" fill="rgba(239, 246, 255, 0.4)" stroke="#3b82f6" strokeWidth="1.2" strokeDasharray="3,3" />
-                <text x="610" y="20" textAnchor="middle" fontSize="6.5" fill="#1e40af" fontWeight="bold">☁️ SECURE STORAGE</text>
+                <rect x="530" y="10" width="160" height="135" rx="6" fill="rgba(239, 246, 255, 0.4)" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="3,3" />
+                <text x="610" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">☁️ SECURE STORAGE</text>
 
                 {/* Client browser */}
-                <rect x="20" y="35" width="130" height="90" rx="8" fill="rgba(255,255,255,0.85)" stroke="#cbd5e1" strokeWidth="1.5" filter="url(#s3-shadow-net8)" />
-                <text x="85" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">Client Browser</text>
-                <text x="85" y="83" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">❌ No AWS Credentials</text>
-                <text x="85" y="100" textAnchor="middle" fontSize="8" fill="#475569">Direct Upload/Download</text>
+                <rect x="20" y="35" width="130" height="90" rx="8" fill="rgba(255,255,255,0.85)" stroke="var(--s3-card-border)" strokeWidth="1.5" filter="url(#s3-shadow-net8)" />
+                <text x="85" y="65" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-text-primary)">Client Browser</text>
+                <text x="85" y="83" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">❌ No AWS Credentials</text>
+                <text x="85" y="100" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Direct Upload/Download</text>
 
                 {/* Step 1: Request URL */}
-                <path d="M 150 55 L 340 55" stroke="#3b82f6" strokeWidth="1.8" markerEnd="url(#pre-arr)" />
-                <text x="245" y="46" textAnchor="middle" fontSize="8.5" fill="#1e40af" fontWeight="bold">1. Request Signed Link</text>
-                <circle r="4" fill="#3b82f6">
+                <path d="M 150 55 L 340 55" stroke="var(--color-blue)" strokeWidth="1.8" markerEnd="url(#pre-arr)" />
+                <text x="245" y="46" textAnchor="middle" fontSize="8.5" fill="var(--color-blue)" fontWeight="bold">1. Request Signed Link</text>
+                <circle r="4" fill="var(--color-blue)">
                   <animateMotion path="M 150 55 L 340 55" dur="1.8s" repeatCount="indefinite" />
                 </circle>
 
                 {/* Step 2: Receive Presigned URL */}
-                <path d="M 340 75 L 150 75" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#pre-arr)" />
-                <text x="245" y="88" textAnchor="middle" fontSize="8.5" fill="#1e40af" fontWeight="bold">2. Returns URL (HMAC token)</text>
-                <circle r="4" fill="#3b82f6">
+                <path d="M 340 75 L 150 75" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#pre-arr)" />
+                <text x="245" y="88" textAnchor="middle" fontSize="8.5" fill="var(--color-blue)" fontWeight="bold">2. Returns URL (HMAC token)</text>
+                <circle r="4" fill="var(--color-blue)">
                   <animateMotion path="M 340 75 L 150 75" dur="1.8s" repeatCount="indefinite" />
                 </circle>
 
                 {/* Step 3: Fetch directly from S3 */}
-                <path d="M 85 125 L 85 155 L 610 155 L 610 125" fill="none" stroke="#10b981" strokeWidth="2.5" markerEnd="url(#pre-arr-green)" />
-                <text x="340" y="150" textAnchor="middle" fontSize="9" fill="#047857" fontWeight="bold">3. Direct Secure HTTPS GET / PUT payload (Bypasses App Server Bandwidth completely!)</text>
-                <circle r="5" fill="#10b981" style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}>
+                <path d="M 85 125 L 85 155 L 610 155 L 610 125" fill="none" stroke="var(--color-green)" strokeWidth="2.5" markerEnd="url(#pre-arr-green)" />
+                <text x="340" y="150" textAnchor="middle" fontSize="9" fill="var(--color-green)" fontWeight="bold">3. Direct Secure HTTPS GET / PUT payload (Bypasses App Server Bandwidth completely!)</text>
+                <circle r="5" fill="var(--color-green)" style={{ filter: 'drop-shadow(0 0 3px #10b981)' }}>
                   <animateMotion path="M 85 125 L 85 155 L 610 155 L 610 125" dur="2.4s" repeatCount="indefinite" />
                 </circle>
 
                 {/* App Server */}
-                <rect x="360" y="30" width="140" height="80" rx="8" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" filter="url(#s3-shadow-net8)" />
-                <text x="430" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#047857">Application Server</text>
-                <text x="430" y="70" textAnchor="middle" fontSize="8.5" fill="#475569">Possesses IAM Credentials</text>
-                <text x="430" y="85" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="bold">Generates signed temporal link</text>
+                <rect x="360" y="30" width="140" height="80" rx="8" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net8)" />
+                <text x="430" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-green)">Application Server</text>
+                <text x="430" y="70" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)">Possesses IAM Credentials</text>
+                <text x="430" y="85" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Generates signed temporal link</text>
 
                 {/* S3 Storage Endpoint */}
-                <rect x="545" y="35" width="135" height="90" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" filter="url(#s3-shadow-net8)" />
-                <text x="612" y="62" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e40af">S3 Secure Storage</text>
-                <text x="612" y="80" textAnchor="middle" fontSize="8.5" fill="#10b981" fontWeight="bold">Validates Signature</text>
-                <text x="612" y="94" textAnchor="middle" fontSize="8" fill="#475569">&amp; Expiration Timer Checks</text>
+                <rect x="545" y="35" width="135" height="90" rx="8" fill="var(--s3-success-bg)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-net8)" />
+                <text x="612" y="62" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">S3 Secure Storage</text>
+                <text x="612" y="80" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">Validates Signature</text>
+                <text x="612" y="94" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">&amp; Expiration Timer Checks</text>
               </svg>
             </div>
 
@@ -6284,7 +6288,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Multipart API transaction logs:</div>
                     <div ref={mpTerminalRef} className="s3-terminal" style={{ height: '110px', color: '#38bdf8', borderColor: '#0891b2' }}>
                       {mpLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting upload initialization...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting upload initialization...</div>
                       ) : (
                         mpLogs.map((log, idx) => (
                           <div key={idx} style={{
@@ -6309,7 +6313,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     </div>
 
                     {mpStep === 0 && (
-                      <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b' }}>
+                      <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-tertiary)' }}>
                         <div style={{ fontSize: '32px' }}>💤</div>
                         <div style={{ fontSize: '11.5px', marginTop: '6px' }}>Simulation idle. Trigger multipart to see concurrent threads.</div>
                       </div>
@@ -6358,7 +6362,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '10px', marginTop: '10px' }}>
                       <div style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px', textTransform: 'uppercase' }}>🧩 Reassembly Engine at rest:</div>
                       <svg viewBox="0 0 100 24" width="100%" height="24" style={{ background: '#ffffff', borderRadius: '4px', border: '0.5px solid #cbd5e1' }}>
-                        <rect x="2" y="2" width="96" height="20" rx="3" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" />
+                        <rect x="2" y="2" width="96" height="20" rx="3" fill="var(--s3-metric-card-bg)" stroke="var(--s3-card-border)" strokeWidth="0.5" />
                         {mpParts.map((part, idx) => {
                           const w = 96 / mpParts.length;
                           const x = 2 + idx * w;
@@ -6399,61 +6403,93 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
 
             {/* 📊 S3 Storage Lens HUD Panel */}
             <div className="s3-sec">📊 S3 Storage Lens Organization HUD</div>
-            <div className="s3-card" style={{ background: '#f8fafc', border: '1px solid #cbd5e1' }}>
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="s3-card" style={{ background: 'var(--s3-metric-card-bg)', border: '1.5px solid var(--s3-card-border)' }}>
+              <div style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Interactive daily metadata diagnostics for S3 resource footprint (auto-synced with bucket setups):</span>
-                <span className="s3-badge" style={{ background: '#e2e8f0', color: '#334155' }}>Diagnostic HUD</span>
+                <span className="s3-badge" style={{ background: 'var(--s3-tab-hover-bg)', color: 'var(--color-text-secondary)' }}>Diagnostic HUD</span>
               </div>
-              <div className="s3-g3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Metric 1: Total Volume */}
-                <div style={{ background: '#ffffff', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>📁 Storage Volume</div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#0f172a', fontFamily: 'monospace' }}>
-                    {lifecycleVolume >= 1000 ? `${(lifecycleVolume / 1000).toFixed(2)} TB` : `${lifecycleVolume} GB`}
+                <div style={{ background: 'var(--s3-card-bg)', padding: '16px', borderRadius: '12px', border: '1.5px solid var(--s3-card-border)', boxShadow: 'var(--s3-card-shadow)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', fontWeight: 'bold', marginBottom: '4px' }}>📁 Storage Footprint</div>
+                    <div style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--color-text-primary)', fontFamily: 'monospace' }}>
+                      {lifecycleVolume >= 1000 ? `${(lifecycleVolume / 1000).toFixed(2)} TB` : `${lifecycleVolume} GB`}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>
-                    Objects: <b>{(batchTotalObjects * 3).toLocaleString()}</b> · Prefixes: <b>142</b>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
+                    Objects: <b>{(batchTotalObjects * 3).toLocaleString()}</b> · Prefixes: <b>{nbPrefixCount}</b>
                   </div>
                 </div>
 
                 {/* Metric 2: Public Exposure risk */}
                 <div style={{
-                  background: '#ffffff',
+                  background: 'var(--s3-card-bg)',
                   padding: '16px',
                   borderRadius: '12px',
-                  border: '1px solid #cbd5e1',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  borderTop: !(bpaAcls && bpaPolicies) ? '4px solid #f59e0b' : '4px solid #10b981'
+                  border: '1.5px solid var(--s3-card-border)',
+                  boxShadow: 'var(--s3-card-shadow)',
+                  borderTop: !(bpaAcls && bpaPolicies) ? '4px solid var(--color-amber)' : '4px solid var(--color-green)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
                 }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>🛡️ Public Risk Exposure</div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: !(bpaAcls && bpaPolicies) ? '#d97706' : '#16a34a', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>{!(bpaAcls && bpaPolicies) ? '⚠️ HIGH' : '🟢 SECURE'}</span>
-                    <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#475569' }}>
-                      ({!(bpaAcls && bpaPolicies) ? 'BPA disabled' : '100% Protected'})
-                    </span>
+                  <div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', fontWeight: 'bold', marginBottom: '4px' }}>🛡️ Public Exposure Risk</div>
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', color: !(bpaAcls && bpaPolicies) ? 'var(--color-amber)' : 'var(--color-green)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{!(bpaAcls && bpaPolicies) ? '⚠️ HIGH' : '🟢 SECURE'}</span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#475569', marginTop: '4px', lineHeight: '1.2' }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.3' }}>
                     {!(bpaAcls && bpaPolicies) 
                       ? 'Wildcard access policies or public ACL overrides are allowed!'
-                      : 'BPA is fully active. All public policy doors locked.'}
+                      : 'Block Public Access (BPA) is fully active.'}
                   </div>
                 </div>
 
                 {/* Metric 3: Encryption Coverage */}
                 <div style={{
-                  background: '#ffffff',
+                  background: 'var(--s3-card-bg)',
                   padding: '16px',
                   borderRadius: '12px',
-                  border: '1px solid #cbd5e1',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  borderTop: encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '4px solid #10b981' : '4px solid #f59e0b'
+                  border: '1.5px solid var(--s3-card-border)',
+                  boxShadow: 'var(--s3-card-shadow)',
+                  borderTop: encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '4px solid var(--color-green)' : '4px solid var(--color-amber)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
                 }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 'bold', marginBottom: '4px' }}>🔒 Encryption Coverage</div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '#16a34a' : '#d97706', fontFamily: 'monospace' }}>
-                    {encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '100%' : '95%'}
+                  <div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', fontWeight: 'bold', marginBottom: '4px' }}>🔒 Protection &amp; WORM</div>
+                    <div style={{ fontSize: '22px', fontWeight: 'bold', color: encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? 'var(--color-green)' : 'var(--color-amber)', fontFamily: 'monospace' }}>
+                      {encryptionType === 'sse-s3' || encryptionType === 'sse-kms' || encryptionType === 'dsse-kms' ? '100%' : '95%'}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>
-                    Method: <b>{encryptionType.toUpperCase()}</b> {encryptionType === 'sse-c' && '(Customer Keys)'}
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.3' }}>
+                    SSE: <b>{encryptionType.toUpperCase()}</b> · Lock: <b>{objectLockMode.toUpperCase()}</b>
+                  </div>
+                </div>
+
+                {/* Metric 4: Latency & Ingestion Route */}
+                <div style={{
+                  background: 'var(--s3-card-bg)',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1.5px solid var(--s3-card-border)',
+                  boxShadow: 'var(--s3-card-shadow)',
+                  borderTop: transferRouteMode === 'accelerated' ? '4px solid var(--color-green)' : '4px solid var(--color-amber)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', fontWeight: 'bold', marginBottom: '4px' }}>⚡ Ingestion Routing</div>
+                    <div style={{ fontSize: '22px', fontWeight: 'bold', color: transferRouteMode === 'accelerated' ? 'var(--color-green)' : 'var(--color-amber)', fontFamily: 'monospace' }}>
+                      {transferRouteMode === 'accelerated' ? '190 ms' : '820 ms'}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.3' }}>
+                    Type: <b>{transferRouteMode === 'accelerated' ? 'Edge POP Ingest' : 'Public WAN Route'}</b>
                   </div>
                 </div>
               </div>
@@ -6481,7 +6517,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div className="s3-g2" style={{ gap: '8px', marginBottom: '8px' }}>
                       <div>
                         <label style={{ fontSize: '10.5px', display: 'block', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Simulated Object Key:</label>
-                        <select value={simulatedObjectKey} onChange={e => { setSimulatedObjectKey(e.target.value); setEventStep(0); setEventLogs([]); }} style={{ width: '100%', padding: '4px 6px', fontSize: '11px' }}>
+                        <select className="s3-card select" value={simulatedObjectKey} onChange={e => { setSimulatedObjectKey(e.target.value); setEventStep(0); setEventLogs([]); }} style={{ width: '100%', padding: '4px 6px', fontSize: '11px' }}>
                           <option value="uploads/avatar.png">uploads/avatar.png (Matched)</option>
                           <option value="uploads/financials.pdf">uploads/financials.pdf (Matched)</option>
                           <option value="corporate/system.log">corporate/system.log (Fails Prefix)</option>
@@ -6510,7 +6546,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Serverless routing execution logs:</div>
                     <div ref={eventTerminalRef} className="s3-terminal" style={{ height: '100px' }}>
                       {eventLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting simulated write trigger...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting simulated write trigger...</div>
                       ) : (
                         eventLogs.map((log, idx) => (
                           <div key={idx} style={{
@@ -6530,56 +6566,56 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <div>
                   {eventRoutingMode === 'direct' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <svg viewBox="0 0 350 170" width="100%" height="170" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #fde68a', background: '#fffbeb' }}>
+                      <svg viewBox="0 0 350 170" width="100%" height="170" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--s3-card-border)', background: 'linear-gradient(135deg, var(--s3-grad-orange-start) 0%, var(--s3-grad-orange-end) 100%)' }}>
                         <defs>
-                          <marker id="arr-notify-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#b45309" /></marker>
+                          <marker id="arr-notify-direct" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-amber)" /></marker>
                           <linearGradient id="snsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#fff7ed" />
-                            <stop offset="100%" stopColor="#ffedd5" />
+                            <stop offset="0%" stopColor="var(--s3-grad-orange-start)" />
+                            <stop offset="100%" stopColor="var(--s3-grad-orange-end)" />
                           </linearGradient>
                           <linearGradient id="sqsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#eff6ff" />
-                            <stop offset="100%" stopColor="#dbeafe" />
+                            <stop offset="0%" stopColor="var(--s3-card-border)" />
+                            <stop offset="100%" stopColor="var(--s3-card-border)" />
                           </linearGradient>
                           <linearGradient id="lambdaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#faf5ff" />
-                            <stop offset="100%" stopColor="#f3e8ff" />
+                            <stop offset="0%" stopColor="var(--s3-grad-purple-start)" />
+                            <stop offset="100%" stopColor="var(--s3-grad-ssec-engine-end)" />
                           </linearGradient>
                           <filter id="s3-shadow-net9" x="-10%" y="-10%" width="120%" height="120%">
-                            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#78350f" floodOpacity="0.06" />
+                            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-red)" floodOpacity="0.06" />
                           </filter>
                         </defs>
 
                         {/* PREMIUM NESTED BOUNDARIES */}
                         {/* Storage Source Boundary */}
-                        <rect x="5" y="10" width="115" height="150" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="62" y="20" textAnchor="middle" fontSize="6" fill="#64748b" fontWeight="bold">SOURCE STORAGE</text>
+                        <rect x="5" y="10" width="115" height="150" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="62" y="20" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)" fontWeight="bold">SOURCE STORAGE</text>
 
                         {/* Secure Target Subnet */}
-                        <rect x="155" y="10" width="190" height="150" rx="8" fill="rgba(254, 243, 199, 0.1)" stroke="#b45309" strokeWidth="1.2" strokeDasharray="4,2" />
-                        <text x="250" y="20" textAnchor="middle" fontSize="6" fill="#b45309" fontWeight="bold">🔔 TARGET INGEST PLANE</text>
+                        <rect x="155" y="10" width="190" height="150" rx="8" fill="rgba(251, 191, 36, 0.05)" stroke="var(--color-red)" strokeWidth="1.2" strokeDasharray="4,2" />
+                        <text x="250" y="20" textAnchor="middle" fontSize="6" fill="var(--color-amber)" fontWeight="bold">🔔 TARGET INGEST PLANE</text>
 
                         {/* S3 Bucket */}
-                        <rect x="15" y="50" width="95" height="70" rx="6" fill="#ffffff" stroke="#166534" strokeWidth="1.5" filter="url(#s3-shadow-net9)" />
-                        <text x="62" y="70" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#166534">🪣 Source S3</text>
-                        <text x="62" y="85" textAnchor="middle" fontSize="7.5" fill="#475569">my-premium-bucket</text>
-                        <rect x="22" y="94" width="80" height="15" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="0.8" />
-                        <text x="62" y="104" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold">PutObject Event</text>
+                        <rect x="15" y="50" width="95" height="70" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net9)" />
+                        <text x="62" y="70" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--s3-success-text-bold)">🪣 Source S3</text>
+                        <text x="62" y="85" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">my-premium-bucket</text>
+                        <rect x="22" y="94" width="80" height="15" rx="3" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
+                        <text x="62" y="104" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">PutObject Event</text>
 
                         {/* Paths */}
-                        <path d="M 110 75 Q 140 45 170 30" fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
-                        <path d="M 110 85 L 170 85" fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
-                        <path d="M 110 95 Q 140 125 170 140" fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M 110 75 Q 140 45 170 30" fill="none" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M 110 85 L 170 85" fill="none" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
+                        <path d="M 110 95 Q 140 125 170 140" fill="none" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-notify-direct)" />
 
                         {/* Targets */}
-                        <rect x="170" y="25" width="165" height="30" rx="4" fill="url(#snsGrad)" stroke="#ea580c" strokeWidth="1.2" filter="url(#s3-shadow-net9)" />
-                        <text x="252" y="43" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#c2410c">📥 Amazon SNS Topic</text>
+                        <rect x="170" y="25" width="165" height="30" rx="4" fill="url(#snsGrad)" stroke="var(--color-red)" strokeWidth="1.2" filter="url(#s3-shadow-net9)" />
+                        <text x="252" y="43" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-red)">📥 Amazon SNS Topic</text>
 
-                        <rect x="170" y="70" width="165" height="30" rx="4" fill="url(#sqsGrad)" stroke="#2563eb" strokeWidth="1.2" filter="url(#s3-shadow-net9)" />
-                        <text x="252" y="88" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1d4ed8">📥 Amazon SQS Queue</text>
+                        <rect x="170" y="70" width="165" height="30" rx="4" fill="url(#sqsGrad)" stroke="var(--color-blue)" strokeWidth="1.2" filter="url(#s3-shadow-net9)" />
+                        <text x="252" y="88" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-blue)">📥 Amazon SQS Queue</text>
 
-                        <rect x="170" y="125" width="165" height="30" rx="4" fill="url(#lambdaGrad)" stroke="#8b5cf6" strokeWidth="1.2" filter="url(#s3-shadow-net9)" />
-                        <text x="252" y="143" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#6d28d9">📥 AWS Lambda Function</text>
+                        <rect x="170" y="125" width="165" height="30" rx="4" fill="url(#lambdaGrad)" stroke="var(--color-purple)" strokeWidth="1.2" filter="url(#s3-shadow-net9)" />
+                        <text x="252" y="143" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-purple)">📥 AWS Lambda Function</text>
 
                         {/* Animated Glowing Packet */}
                         {eventIsRunning && (
@@ -6593,15 +6629,15 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                             eventStep === 2 ? 85 :
                             eventStep === 3 ? 85 :
                             88
-                          } r="6" fill="#b45309" style={{ filter: 'drop-shadow(0 0 4px #b45309)' }}>
+                          } r="6" fill="var(--color-amber)" style={{ filter: 'drop-shadow(0 0 4px #b45309)' }}>
                             <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                           </circle>
                         )}
                       </svg>
 
                       {/* Code preview block */}
-                      <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', fontSize: '10.5px' }}>
-                        <div style={{ color: '#94a3b8', fontWeight: 'bold', fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px' }}>📝 Target SQS Access Resource Policy Constraint:</div>
+                      <div style={{ background: 'var(--s3-terminal-bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--s3-terminal-border)', fontSize: '10.5px' }}>
+                        <div style={{ color: 'var(--color-text-secondary)', fontWeight: 'bold', fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px' }}>📝 Target SQS Access Resource Policy Constraint:</div>
                         <pre style={{ margin: 0, fontFamily: 'monospace', color: '#38bdf8', whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>
 {`{
   "Effect": "Allow",
@@ -6617,63 +6653,63 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <svg viewBox="0 0 350 170" width="100%" height="170" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid #d8b4fe', background: '#faf5ff' }}>
+                      <svg viewBox="0 0 350 170" width="100%" height="170" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--s3-card-border)', background: 'linear-gradient(135deg, var(--s3-grad-purple-start) 0%, var(--s3-grad-purple-end) 100%)' }}>
                         <defs>
-                          <marker id="arr-notify-eb" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" /></marker>
+                          <marker id="arr-notify-eb" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-purple)" /></marker>
                           <linearGradient id="ebGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#faf5ff" />
-                            <stop offset="100%" stopColor="#f3e8ff" />
+                            <stop offset="0%" stopColor="var(--s3-grad-purple-start)" />
+                            <stop offset="100%" stopColor="var(--s3-grad-ssec-engine-end)" />
                           </linearGradient>
                           <filter id="s3-shadow-net10" x="-10%" y="-10%" width="120%" height="120%">
-                            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#5b21b6" floodOpacity="0.06" />
+                            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.06" />
                           </filter>
                         </defs>
 
                         {/* PREMIUM NESTED BOUNDARIES */}
                         {/* Source Storage */}
-                        <rect x="5" y="10" width="115" height="150" rx="6" fill="#f8fafc" fillOpacity="0.4" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="62" y="20" textAnchor="middle" fontSize="6" fill="#64748b" fontWeight="bold">SOURCE STORAGE</text>
+                        <rect x="5" y="10" width="115" height="150" rx="6" fill="var(--s3-metric-card-bg)" fillOpacity="0.4" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="62" y="20" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)" fontWeight="bold">SOURCE STORAGE</text>
 
                         {/* EventBridge Router */}
-                        <rect x="127" y="10" width="124" height="150" rx="8" fill="rgba(245, 243, 255, 0.15)" stroke="#7c3aed" strokeWidth="1.2" strokeDasharray="4,2" />
-                        <text x="189" y="20" textAnchor="middle" fontSize="6" fill="#7c3aed" fontWeight="bold">⚙️ EVENTS DESCRIPTOR</text>
+                        <rect x="127" y="10" width="124" height="150" rx="8" fill="rgba(245, 243, 255, 0.15)" stroke="var(--color-purple)" strokeWidth="1.2" strokeDasharray="4,2" />
+                        <text x="189" y="20" textAnchor="middle" fontSize="6" fill="var(--color-purple)" fontWeight="bold">⚙️ EVENTS DESCRIPTOR</text>
 
                         {/* Target Services */}
-                        <rect x="258" y="10" width="87" height="150" rx="6" fill="rgba(239, 246, 255, 0.4)" stroke="#2563eb" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="301" y="20" textAnchor="middle" fontSize="6" fill="#1e40af" fontWeight="bold">🎯 TARGET ZONE</text>
+                        <rect x="258" y="10" width="87" height="150" rx="6" fill="rgba(239, 246, 255, 0.4)" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="301" y="20" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🎯 TARGET ZONE</text>
 
                         {/* S3 Bucket */}
-                        <rect x="15" y="50" width="95" height="70" rx="6" fill="#ffffff" stroke="#a855f7" strokeWidth="1.5" filter="url(#s3-shadow-net10)" />
-                        <text x="62" y="72" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#701a75">🪣 Source S3</text>
-                        <text x="62" y="87" textAnchor="middle" fontSize="7.5" fill="#a21caf" fontWeight="bold">EventBridge On</text>
-                        <rect x="22" y="95" width="80" height="15" rx="3" fill="#fdf4ff" stroke="#d8b4fe" strokeWidth="0.8" />
-                        <text x="62" y="105" textAnchor="middle" fontSize="7" fill="#701a75" fontWeight="bold">JSON Publisher</text>
+                        <rect x="15" y="50" width="95" height="70" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-purple)" strokeWidth="1.5" filter="url(#s3-shadow-net10)" />
+                        <text x="62" y="72" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-purple)">🪣 Source S3</text>
+                        <text x="62" y="87" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontWeight="bold">EventBridge On</text>
+                        <rect x="22" y="95" width="80" height="15" rx="3" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="0.8" />
+                        <text x="62" y="105" textAnchor="middle" fontSize="7" fill="var(--color-purple)" fontWeight="bold">JSON Publisher</text>
 
                         {/* Path */}
-                        <path d="M 110 85 L 140 85" fill="none" stroke="#7c3aed" strokeWidth="1.8" markerEnd="url(#arr-notify-eb)" />
+                        <path d="M 110 85 L 140 85" fill="none" stroke="var(--color-purple)" strokeWidth="1.8" markerEnd="url(#arr-notify-eb)" />
 
                         {/* EventBridge Router Box */}
-                        <rect x="145" y="30" width="90" height="110" rx="6" fill="url(#ebGrad)" stroke="#7c3aed" strokeWidth="1.5" filter="url(#s3-shadow-net10)" />
-                        <text x="190" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#5b21b6">⚙️ EventBridge</text>
-                        <rect x="152" y="54" width="76" height="73" rx="3" fill="#ffffff" stroke="#ddd6fe" strokeWidth="0.8" />
-                        <text x="190" y="66" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Filter Pattern</text>
+                        <rect x="145" y="30" width="90" height="110" rx="6" fill="url(#ebGrad)" stroke="var(--color-purple)" strokeWidth="1.5" filter="url(#s3-shadow-net10)" />
+                        <text x="190" y="44" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-blue)">⚙️ EventBridge</text>
+                        <rect x="152" y="54" width="76" height="73" rx="3" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="0.8" />
+                        <text x="190" y="66" textAnchor="middle" fontSize="7" fill="var(--color-purple)" fontWeight="bold">Filter Pattern</text>
                         <text x="190" y="78" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)">Prefix: uploads/</text>
                         <text x="190" y="89" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)">Size &gt; 5 MB</text>
                         
-                        <rect x="157" y="99" width="66" height="18" rx="2" fill={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '#ecfdf5' : '#fef2f2'} />
-                        <text x="190" y="111" textAnchor="middle" fontSize="7" fontWeight="bold" fill={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '#047857' : '#be123c'}>
+                        <rect x="157" y="99" width="66" height="18" rx="2" fill={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? 'var(--s3-success-bg)' : 'var(--s3-error-bg)'} stroke={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? 'var(--s3-success-border)' : 'var(--s3-error-border)'} strokeWidth="1" />
+                        <text x="190" y="111" textAnchor="middle" fontSize="7" fontWeight="bold" fill={simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? 'var(--s3-success-text-bold)' : 'var(--s3-error-text-bold)'}>
                           {simulatedObjectKey.startsWith('uploads/') && simulatedObjectSize > 5 ? '✔ Matched' : '❌ Ignored'}
                         </text>
 
                         {/* Target Egress */}
-                        <path d="M 235 85 L 265 85" fill="none" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arr-notify-eb)" />
+                        <path d="M 235 85 L 265 85" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" markerEnd="url(#arr-notify-eb)" />
 
                         {/* 18+ services */}
-                        <rect x="265" y="35" width="75" height="95" rx="6" fill="#ffffff" stroke="#2563eb" strokeWidth="1.2" filter="url(#s3-shadow-net10)" />
-                        <text x="302" y="50" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e40af">🎯 18+ Targets</text>
-                        <text x="302" y="68" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">Step Fns</text>
-                        <text x="302" y="84" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">Kinesis</text>
-                        <text x="302" y="100" textAnchor="middle" fontSize="7.5" fill="#1e40af" fontWeight="bold">ECS Tasks</text>
+                        <rect x="265" y="35" width="75" height="95" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-blue)" strokeWidth="1.2" filter="url(#s3-shadow-net10)" />
+                        <text x="302" y="50" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-blue)">🎯 18+ Targets</text>
+                        <text x="302" y="68" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Step Fns</text>
+                        <text x="302" y="84" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Kinesis</text>
+                        <text x="302" y="100" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">ECS Tasks</text>
 
                         {/* Animated Glowing Packet */}
                         {eventIsRunning && (
@@ -6687,15 +6723,15 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                             eventStep === 2 ? 85 :
                             eventStep === 3 ? 85 :
                             85
-                          } r="6" fill="#7c3aed" style={{ filter: 'drop-shadow(0 0 4px #7c3aed)' }}>
+                          } r="6" fill="var(--color-purple)" style={{ filter: 'drop-shadow(0 0 4px #7c3aed)' }}>
                             <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                           </circle>
                         )}
                       </svg>
 
                       {/* Code preview block */}
-                      <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', fontSize: '10.5px' }}>
-                        <div style={{ color: '#94a3b8', fontWeight: 'bold', fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px' }}>📝 Advanced EventBridge Filter Pattern JSON Rule:</div>
+                      <div style={{ background: 'var(--s3-terminal-bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--s3-terminal-border)', fontSize: '10.5px' }}>
+                        <div style={{ color: 'var(--color-text-secondary)', fontWeight: 'bold', fontSize: '9px', textTransform: 'uppercase', marginBottom: '4px' }}>📝 Advanced EventBridge Filter Pattern JSON Rule:</div>
                         <pre style={{ margin: 0, fontFamily: 'monospace', color: '#a855f7', whiteSpace: 'pre-wrap', lineHeight: '1.2' }}>
 {`{
   "source": ["aws.s3"],
@@ -6757,7 +6793,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         }</span>
                         <span>{batchProgressPercentage}%</span>
                       </div>
-                      <div style={{ width: '100%', height: '8px', background: '#334155', borderRadius: '999px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '8px', background: 'var(--s3-terminal-border)', borderRadius: '999px', overflow: 'hidden' }}>
                         <div style={{ width: `${batchProgressPercentage}%`, height: '100%', background: '#ec4899', transition: 'width 0.4s' }} />
                       </div>
                     </div>
@@ -6767,7 +6803,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Distributed batch trace logs:</div>
                     <div ref={batchTerminalRef} className="s3-terminal" style={{ height: '100px', borderColor: '#475569' }}>
                       {batchLogs.length === 0 ? (
-                        <div style={{ color: '#64748b' }}>[idle] Awaiting bulk batch job submission...</div>
+                        <div style={{ color: 'var(--color-text-tertiary)' }}>[idle] Awaiting bulk batch job submission...</div>
                       ) : (
                         batchLogs.map((log, idx) => (
                           <div key={idx} style={{
@@ -6788,72 +6824,72 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   <svg viewBox="0 0 350 250" width="100%" height="250" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                     <defs>
-                      <marker id="arr-batch-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb" /></marker>
-                      <marker id="arr-batch-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#166534" /></marker>
-                      <marker id="arr-batch-pink" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#be185d" /></marker>
+                      <marker id="arr-batch-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)" /></marker>
+                      <marker id="arr-batch-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--s3-success-text-bold)" /></marker>
+                      <marker id="arr-batch-pink" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-red)" /></marker>
                       <linearGradient id="invGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#fdf2f8" />
-                        <stop offset="100%" stopColor="#fbcfe8" />
+                        <stop offset="0%" stopColor="var(--s3-card-border)" />
+                        <stop offset="100%" stopColor="var(--color-purple)" />
                       </linearGradient>
                       <linearGradient id="athGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#eff6ff" />
-                        <stop offset="100%" stopColor="#bfdbfe" />
+                        <stop offset="0%" stopColor="var(--s3-card-border)" />
+                        <stop offset="100%" stopColor="var(--s3-card-border)" />
                       </linearGradient>
                       <linearGradient id="batGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#f0fdf4" />
-                        <stop offset="100%" stopColor="#bbf7d0" />
+                        <stop offset="0%" stopColor="var(--s3-card-border)" />
+                        <stop offset="100%" stopColor="var(--s3-success-border)" />
                       </linearGradient>
                       <filter id="s3-shadow-net11" x="-10%" y="-10%" width="120%" height="120%">
-                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
+                        <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.06" />
                       </filter>
                     </defs>
 
                     {/* PREMIUM NESTED BOUNDARIES */}
                     {/* Strategy Ingestion Plane */}
-                    <rect x="5" y="10" width="340" height="90" rx="8" fill="rgba(244, 63, 94, 0.03)" stroke="#f43f5e" strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="175" y="20" textAnchor="middle" fontSize="6.5" fill="#f43f5e" fontWeight="bold">📋 BATCH STRATEGY PLANE</text>
+                    <rect x="5" y="10" width="340" height="90" rx="8" fill="rgba(244, 63, 94, 0.03)" stroke="var(--color-red)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="175" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-red)" fontWeight="bold">📋 BATCH STRATEGY PLANE</text>
 
                     {/* Target execution subnet */}
-                    <rect x="5" y="108" width="340" height="135" rx="8" fill="rgba(16, 185, 129, 0.03)" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,2" />
-                    <text x="175" y="117" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">⚙️ DISTRIBUTED WORKERS GRID</text>
+                    <rect x="5" y="108" width="340" height="135" rx="8" fill="rgba(16, 185, 129, 0.03)" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="175" y="117" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">⚙️ DISTRIBUTED WORKERS GRID</text>
 
                     {/* S3 Inventory */}
-                    <rect x="15" y="32" width="85" height="50" rx="6" fill="url(#invGrad)" stroke="#ec4899" strokeWidth="1.5" filter="url(#s3-shadow-net11)" />
-                    <text x="57" y="51" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#be185d">📋 S3 Inventory</text>
-                    <text x="57" y="63" textAnchor="middle" fontSize="7.5" fill="#db2777" fontWeight="bold">Metadata Audit</text>
+                    <rect x="15" y="32" width="85" height="50" rx="6" fill="url(#invGrad)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-net11)" />
+                    <text x="57" y="51" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-red)">📋 S3 Inventory</text>
+                    <text x="57" y="63" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">Metadata Audit</text>
 
                     {/* Path 1 */}
-                    <path d="M100,57 L140,57" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-batch-blue)" />
+                    <path d="M100,57 L140,57" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-batch-blue)" />
 
                     {/* Athena */}
-                    <rect x="140" y="32" width="85" height="50" rx="6" fill="url(#athGrad)" stroke="#2563eb" strokeWidth="1.5" filter="url(#s3-shadow-net11)" />
-                    <text x="182" y="51" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#1e40af">🔍 Athena SQL</text>
-                    <text x="182" y="63" textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="bold">Generates Manifest</text>
+                    <rect x="140" y="32" width="85" height="50" rx="6" fill="url(#athGrad)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-net11)" />
+                    <text x="182" y="51" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-blue)">🔍 Athena SQL</text>
+                    <text x="182" y="63" textAnchor="middle" fontSize="7.5" fill="var(--color-blue)" fontWeight="bold">Generates Manifest</text>
 
                     {/* Path 2 */}
-                    <path d="M225,57 L265,57" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-batch-green)" />
+                    <path d="M225,57 L265,57" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="3,1" markerEnd="url(#arr-batch-green)" />
 
                     {/* Batch Job */}
-                    <rect x="265" y="32" width="70" height="50" rx="6" fill="url(#batGrad)" stroke="#166534" strokeWidth="1.5" filter="url(#s3-shadow-net11)" />
-                    <text x="300" y="51" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="#14532d">⚙️ Batch Job</text>
-                    <text x="300" y="63" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="bold">Runs Manifest</text>
+                    <rect x="265" y="32" width="70" height="50" rx="6" fill="url(#batGrad)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net11)" />
+                    <text x="300" y="51" textAnchor="middle" fontSize="9.5" fontWeight="bold" fill="var(--color-green)">⚙️ Batch Job</text>
+                    <text x="300" y="63" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Runs Manifest</text>
 
                     {/* Distributed threads radiating out */}
-                    <path d="M300,82 L300,122" stroke="#166534" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
-                    <path d="M265,72 L170,122" stroke="#166534" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
-                    <path d="M335,72 L335,122" stroke="#166534" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
+                    <path d="M300,82 L300,122" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
+                    <path d="M265,72 L170,122" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
+                    <path d="M335,72 L335,122" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="3,2" markerEnd="url(#arr-batch-green)" />
 
                     {/* Heavy process targets */}
-                    <rect x="115" y="127" width="105" height="42" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" filter="url(#s3-shadow-net11)" />
-                    <text x="167" y="141" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">📄 /financials/*</text>
-                    <text x="167" y="153" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Key Overwrites</text>
+                    <rect x="115" y="127" width="105" height="42" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" filter="url(#s3-shadow-net11)" />
+                    <text x="167" y="141" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-text-primary)">📄 /financials/*</text>
+                    <text x="167" y="153" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Key Overwrites</text>
 
-                    <rect x="230" y="127" width="105" height="42" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" filter="url(#s3-shadow-net11)" />
-                    <text x="282" y="141" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">📄 /archives/*</text>
-                    <text x="282" y="153" textAnchor="middle" fontSize="7" fill="#6d28d9" fontWeight="bold">Object Locks Set</text>
+                    <rect x="230" y="127" width="105" height="42" rx="4" fill="var(--s3-card-bg)" stroke="var(--s3-card-border)" strokeWidth="1" filter="url(#s3-shadow-net11)" />
+                    <text x="282" y="141" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-text-primary)">📄 /archives/*</text>
+                    <text x="282" y="153" textAnchor="middle" fontSize="7" fill="var(--color-purple)" fontWeight="bold">Object Locks Set</text>
 
-                    <rect x="175" y="195" width="120" height="26" rx="4" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" filter="url(#s3-shadow-net11)" />
-                    <text x="235" y="211" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#047857">SUCCESS! ✅ COMPLETED</text>
+                    <rect x="175" y="195" width="120" height="26" rx="4" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-net11)" />
+                    <text x="235" y="211" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-green)">SUCCESS! ✅ COMPLETED</text>
 
                     {/* Animated Manifest Glowing Packet */}
                     {batchIsRunning && (
@@ -6869,7 +6905,7 @@ aws s3control create-job --account-id 123456789012 --operation '{"S3PutObjectTag
                         batchStep === 3 ? 57 :
                         batchStep === 4 ? 141 :
                         208
-                      } r="7" fill="#ec4899" style={{ filter: 'drop-shadow(0 0 5px #ec4899)' }}>
+                      } r="7" fill="var(--color-red)" style={{ filter: 'drop-shadow(0 0 5px #ec4899)' }}>
                         <animate attributeName="opacity" values="1;0.4;1" dur="0.8s" repeatCount="indefinite" />
                       </circle>
                     )}

@@ -545,7 +545,85 @@ export default function CloudfrontVisualizer() {
         /* Scoped CloudFront Styling & Glassmorphic Tokens */
         .cf-container {
           font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
-          color: #1e293b;
+          color: var(--color-text-primary, #1e293b);
+
+          /* Theme Variables (Light mode default) */
+          --cf-bg: #ffffff;
+          --cf-card-bg: rgba(255, 255, 255, 0.8);
+          --cf-card-border: rgba(226, 232, 240, 0.85);
+          --cf-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08);
+          
+          --color-text-primary: #1e293b;
+          --color-text-secondary: #475569;
+          --color-text-tertiary: #64748b;
+          
+          --cf-border-primary: rgba(226, 232, 240, 0.8);
+          --cf-border-secondary: #cbd5e1;
+          --cf-border-tertiary: #e2e8f0;
+          
+          --color-background-primary: #ffffff;
+          --color-background-secondary: #f8fafc;
+          --color-background-tertiary: #f1f5f9;
+          
+          --cf-tab-bg: rgba(248, 250, 252, 0.7);
+          --cf-tab-hover-bg: rgba(241, 245, 249, 0.9);
+          --cf-tab-border: rgba(226, 232, 240, 0.8);
+          
+          --cf-btn-bg: #ffffff;
+          --cf-btn-color: #475569;
+          --cf-btn-hover-bg: rgba(248, 250, 252, 0.9);
+          
+          --cf-select-bg: #ffffff;
+          --cf-select-color: #1e293b;
+          --cf-select-border: rgba(226, 232, 240, 0.9);
+          
+          --cf-terminal-bg: #0f172a;
+          --cf-terminal-border: #1e293b;
+          --cf-terminal-color: #cbd5e1;
+          
+          --cf-svg-grid-line: rgba(203, 213, 225, 0.45);
+          --cf-svg-node-bg: #ffffff;
+          --cf-svg-node-border: #e2e8f0;
+          --cf-svg-node-stroke: #cbd5e1;
+          
+          --cf-svg-node-fill-client: #eff6ff;
+          --cf-svg-node-stroke-client: #bfdbfe;
+          --cf-svg-text-client: #1e40af;
+          
+          --cf-svg-node-fill-edge: #f5f3ff;
+          --cf-svg-node-stroke-edge: #ddd6fe;
+          --cf-svg-text-edge: #581c87;
+          
+          --cf-svg-node-fill-rec: #fdf2f8;
+          --cf-svg-node-stroke-rec: #fbcfe8;
+          --cf-svg-text-rec: #9d174d;
+          
+          --cf-svg-node-fill-origin: #ecfdf5;
+          --cf-svg-node-stroke-origin: #10b981;
+          --cf-svg-text-origin: #047857;
+          
+          --cf-svg-node-fill-alb: #eff6ff;
+          --cf-svg-node-stroke-alb: #3b82f6;
+          --cf-svg-text-alb: #1e3a8a;
+          
+          --cf-alert-blue-bg: #eff6ff;
+          --cf-alert-blue-border: #bfdbfe;
+          --cf-alert-blue-text: #1e40af;
+          --cf-alert-yellow-bg: #fdfaee;
+          --cf-alert-yellow-border: #fde68a;
+          --cf-alert-yellow-text: #854d0e;
+
+          --cf-svg-text-orange: #ea580c;
+          --cf-svg-node-fill-orange: #fff7ed;
+          --cf-svg-node-stroke-orange: #ffedd5;
+          --cf-svg-node-text-orange: #c2410c;
+          
+          --cf-alert-red-bg: #fee2e2;
+          --cf-alert-red-border: #fca5a5;
+          --cf-alert-red-text: #b91c1c;
+
+          --cf-svg-map-fill: rgba(99, 102, 241, 0.08);
+          --cf-svg-map-stroke: #c7d2fe;
         }
         .cf-h {
           font-size: 24px;
@@ -554,14 +632,14 @@ export default function CloudfrontVisualizer() {
           align-items: center;
           gap: 10px;
           margin-bottom: 6px;
-          color: #0f172a;
+          color: var(--color-text-primary);
           background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
         .cf-sub {
           font-size: 13.5px;
-          color: #475569;
+          color: var(--color-text-secondary);
           line-height: 1.6;
           margin-bottom: 18px;
         }
@@ -570,25 +648,25 @@ export default function CloudfrontVisualizer() {
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--cf-border-primary);
           padding-bottom: 12px;
         }
         .cf-tb {
           padding: 8px 16px;
           border-radius: 12px;
-          border: 1px solid rgba(226, 232, 240, 0.8);
+          border: 1px solid var(--cf-tab-border);
           font-size: 12.5px;
           cursor: pointer;
-          background: rgba(248, 250, 252, 0.7);
-          color: #475569;
+          background: var(--cf-tab-bg);
+          color: var(--color-text-secondary);
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           outline: none;
           font-weight: 600;
           backdrop-filter: blur(8px);
         }
         .cf-tb:hover {
-          background: rgba(241, 245, 249, 0.9);
-          color: #0f172a;
+          background: var(--cf-tab-hover-bg);
+          color: var(--color-text-primary);
           transform: translateY(-1px);
         }
         .cf-tb.cf-on {
@@ -598,12 +676,12 @@ export default function CloudfrontVisualizer() {
           box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
         .cf-card {
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--cf-card-border);
           border-radius: 16px;
           padding: 18px 20px;
-          background: rgba(255, 255, 255, 0.8);
+          background: var(--cf-card-bg);
           margin-bottom: 18px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08);
+          box-shadow: var(--cf-card-shadow);
           backdrop-filter: blur(12px);
           transition: border-color 0.2s;
         }
@@ -613,7 +691,7 @@ export default function CloudfrontVisualizer() {
         .cf-sec {
           font-size: 12px;
           font-weight: 700;
-          color: #475569;
+          color: var(--color-text-secondary);
           text-transform: uppercase;
           letter-spacing: 0.07em;
           margin: 20px 0 10px;
@@ -637,16 +715,16 @@ export default function CloudfrontVisualizer() {
           gap: 12px;
           align-items: flex-start;
           padding: 10px 12px;
-          border: 1px solid rgba(226, 232, 240, 0.8);
+          border: 1px solid var(--cf-border-primary);
           border-radius: 10px;
-          background: rgba(248, 250, 252, 0.6);
+          background: var(--color-background-secondary);
           margin-bottom: 8px;
           font-size: 12.5px;
           line-height: 1.5;
           transition: background 0.2s;
         }
         .cf-row:hover {
-          background: rgba(241, 245, 249, 0.85);
+          background: var(--cf-tab-hover-bg);
         }
         .cf-dot {
           width: 20px;
@@ -682,8 +760,8 @@ export default function CloudfrontVisualizer() {
           margin-bottom: 16px;
         }
         .cf-ctrl {
-          background: rgba(248, 250, 252, 0.8);
-          border: 1.5px solid rgba(226, 232, 240, 0.95);
+          background: var(--color-background-secondary);
+          border: 1.5px solid var(--cf-border-primary);
           border-radius: 12px;
           padding: 14px;
           transition: border-color 0.2s;
@@ -695,24 +773,20 @@ export default function CloudfrontVisualizer() {
           display: block;
           font-size: 12.5px;
           font-weight: 700;
-          color: #475569;
+          color: var(--color-text-secondary);
           margin-bottom: 8px;
         }
         .cf-ctrl select, .cf-ctrl input[type="text"] {
           width: 100%;
           padding: 8px;
           font-size: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          border: 1.5px solid var(--cf-select-border);
           border-radius: 8px;
-          background: #ffffff;
+          background: var(--cf-select-bg);
           outline: none;
-          color: #1e293b;
+          color: var(--cf-select-color);
           font-weight: 500;
           transition: all 0.15s;
-        }
-        .cf-ctrl select:focus, .cf-ctrl input[type="text"]:focus {
-          border-color: #6366f1;
-          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
         }
         .cf-mono {
           font-family: var(--font-mono, ui-monospace, monospace);
@@ -729,9 +803,9 @@ export default function CloudfrontVisualizer() {
           font-weight: 700;
           padding: 8px 16px;
           border-radius: 10px;
-          border: 1.5px solid rgba(226, 232, 240, 0.9);
-          background: #ffffff;
-          color: #475569;
+          border: 1.5px solid var(--cf-border-secondary);
+          background: var(--cf-btn-bg);
+          color: var(--cf-btn-color);
           cursor: pointer;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           outline: none;
@@ -741,8 +815,8 @@ export default function CloudfrontVisualizer() {
           transform: translateY(0);
         }
         .cf-btn:hover {
-          background: rgba(248, 250, 252, 0.9);
-          color: #0f172a;
+          background: var(--cf-btn-hover-bg);
+          color: var(--color-text-primary);
           border-color: rgba(99, 102, 241, 0.25);
           transform: translateY(-1px);
         }
@@ -767,12 +841,12 @@ export default function CloudfrontVisualizer() {
           box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
         }
         .cf-log {
-          background: #0f172a;
-          border: 1.5px solid #1e293b;
+          background: var(--cf-terminal-bg);
+          border: 1.5px solid var(--cf-terminal-border);
           border-radius: 12px;
           padding: 14px 16px;
           font-size: 11.5px;
-          color: #cbd5e1;
+          color: var(--cf-terminal-color);
           line-height: 1.7;
           min-height: 120px;
           max-height: 240px;
@@ -794,19 +868,19 @@ export default function CloudfrontVisualizer() {
           line-height: 1.5;
         }
         .cf-table th {
-          background: rgba(248, 250, 252, 0.8);
-          border: 1.5px solid rgba(226, 232, 240, 0.9);
+          background: var(--color-background-secondary);
+          border: 1.5px solid var(--cf-border-primary);
           padding: 10px 12px;
           text-align: left;
           font-weight: 700;
-          color: #475569;
+          color: var(--color-text-secondary);
         }
         .cf-table td {
-          border: 1.5px solid rgba(226, 232, 240, 0.8);
+          border: 1.5px solid var(--cf-border-primary);
           padding: 10px 12px;
-          color: #1e293b;
+          color: var(--color-text-primary);
         }
-        .cf-table tr:nth-child(even) { background: rgba(248, 250, 252, 0.45); }
+        .cf-table tr:nth-child(even) { background: var(--color-background-primary); }
         
         /* High-Contrast Highlights for light-mode text readability */
         .cf-hl-cyan { background-color: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 0.5px solid #bae6fd; }
@@ -817,24 +891,94 @@ export default function CloudfrontVisualizer() {
 
         /* Blueprint dot grid background grid */
         .cf-svg-bg {
-          background-color: #f8fafc;
-          background-image: radial-gradient(rgba(203, 213, 225, 0.45) 1.5px, transparent 1.5px);
+          background-color: var(--color-background-secondary);
+          background-image: radial-gradient(var(--cf-svg-grid-line) 1.5px, transparent 1.5px);
           background-size: 16px 16px;
         }
 
-        .cf-desc-mute { color: #64748b; font-size: 11px; font-style: italic; opacity: 0.95; font-weight: normal; background: none; padding: 0; }
+        .cf-desc-mute { color: var(--color-text-tertiary); font-size: 11px; font-style: italic; opacity: 0.95; font-weight: normal; background: none; padding: 0; }
 
         /* Centralized Dark Mode Overrides for CloudfrontVisualizer.tsx */
         .dark .cf-container {
           background: #020617 !important;
           color: #f8fafc !important;
-        }
-        .dark .cf-card,
-        .dark [class*="cf-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+
+          --cf-bg: #020617;
+          --cf-card-bg: rgba(15, 23, 42, 0.75);
+          --cf-card-border: rgba(51, 65, 85, 0.6);
+          --cf-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --color-text-primary: #f8fafc;
+          --color-text-secondary: #cbd5e1;
+          --color-text-tertiary: #94a3b8;
+          
+          --cf-border-primary: rgba(51, 65, 85, 0.6);
+          --cf-border-secondary: rgba(51, 65, 85, 0.6);
+          --cf-border-tertiary: rgba(51, 65, 85, 0.6);
+          
+          --color-background-primary: #0f172a;
+          --color-background-secondary: #0b0f19;
+          --color-background-tertiary: #1e293b;
+          
+          --cf-tab-bg: rgba(15, 23, 42, 0.6);
+          --cf-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --cf-tab-border: rgba(51, 65, 85, 0.6);
+          
+          --cf-btn-bg: rgba(15, 23, 42, 0.8);
+          --cf-btn-color: #cbd5e1;
+          --cf-btn-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --cf-select-bg: #0f172a;
+          --cf-select-color: #f1f5f9;
+          --cf-select-border: rgba(51, 65, 85, 0.8);
+          
+          --cf-terminal-bg: #020617;
+          --cf-terminal-border: rgba(51, 65, 85, 0.6);
+          --cf-terminal-color: #38bdf8;
+          
+          --cf-svg-grid-line: rgba(51, 65, 85, 0.5);
+          --cf-svg-node-bg: rgba(15, 23, 42, 0.8);
+          --cf-svg-node-border: rgba(51, 65, 85, 0.6);
+          --cf-svg-node-stroke: rgba(100, 116, 139, 0.5);
+          
+          --cf-svg-node-fill-client: rgba(37, 99, 235, 0.15);
+          --cf-svg-node-stroke-client: rgba(96, 165, 250, 0.6);
+          --cf-svg-text-client: #60a5fa;
+          
+          --cf-svg-node-fill-edge: rgba(139, 92, 246, 0.15);
+          --cf-svg-node-stroke-edge: rgba(167, 139, 250, 0.6);
+          --cf-svg-text-edge: #a78bfa;
+          
+          --cf-svg-node-fill-rec: rgba(236, 72, 153, 0.15);
+          --cf-svg-node-stroke-rec: rgba(244, 114, 182, 0.6);
+          --cf-svg-text-rec: #f472b6;
+          
+          --cf-svg-node-fill-origin: rgba(16, 185, 129, 0.15);
+          --cf-svg-node-stroke-origin: rgba(52, 211, 153, 0.6);
+          --cf-svg-text-origin: #34d399;
+          
+          --cf-svg-node-fill-alb: rgba(59, 130, 246, 0.15);
+          --cf-svg-node-stroke-alb: rgba(96, 165, 250, 0.6);
+          --cf-svg-text-alb: #60a5fa;
+          
+          --cf-alert-blue-bg: rgba(37, 99, 235, 0.1);
+          --cf-alert-blue-border: rgba(59, 130, 246, 0.4);
+          --cf-alert-blue-text: #93c5fd;
+          --cf-alert-yellow-bg: rgba(245, 158, 11, 0.1);
+          --cf-alert-yellow-border: rgba(217, 119, 6, 0.4);
+          --cf-alert-yellow-text: #fde68a;
+
+          --cf-svg-text-orange: #ff9d43;
+          --cf-svg-node-fill-orange: rgba(245, 158, 11, 0.15);
+          --cf-svg-node-stroke-orange: rgba(245, 158, 11, 0.5);
+          --cf-svg-node-text-orange: #fbbf24;
+          
+          --cf-alert-red-bg: rgba(239, 68, 68, 0.15);
+          --cf-alert-red-border: rgba(239, 68, 68, 0.4);
+          --cf-alert-red-text: #f87171;
+
+          --cf-svg-map-fill: rgba(99, 102, 241, 0.15);
+          --cf-svg-map-stroke: rgba(199, 210, 254, 0.35);
         }
         .dark .cf-card b,
         .dark .cf-card strong,
@@ -842,60 +986,11 @@ export default function CloudfrontVisualizer() {
         .dark .cf-card h4 {
           color: #ffffff !important;
         }
-        .dark .cf-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .cf-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .cf-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .cf-sec,
-        .dark .cf-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .cf-log,
-        .dark .cf-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .cf-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .cf-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .cf-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.cf-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .cf-inst,
-        .dark .cf-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .cf-inst .meta,
-        .dark .cf-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .cf-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
+        .dark .cf-hl-cyan { background-color: rgba(6, 182, 212, 0.25); color: #22d3ee; border-color: rgba(6, 182, 212, 0.4); }
+        .dark .cf-hl-indigo { background-color: rgba(99, 102, 241, 0.25); color: #818cf8; border-color: rgba(99, 102, 241, 0.4); }
+        .dark .cf-hl-orange { background-color: rgba(245, 158, 11, 0.25); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); }
+        .dark .cf-hl-green { background-color: rgba(16, 185, 129, 0.25); color: #34d399; border-color: rgba(16, 185, 129, 0.4); }
+        .dark .cf-hl-purple { background-color: rgba(168, 85, 247, 0.25); color: #c084fc; border-color: rgba(168, 85, 247, 0.4); }
         
         /* Node Status Overrides */
         .dark .cf-ok {
@@ -920,18 +1015,17 @@ export default function CloudfrontVisualizer() {
         }
         
         /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
+        .cf-container select,
+        .cf-container input,
+        .cf-container textarea {
+          background-color: var(--cf-select-bg) !important;
+          color: var(--cf-select-color) !important;
+          border-color: var(--cf-select-border) !important;
         }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-        }
-          `}</style>
+        .cf-container select option {
+          background-color: var(--cf-select-bg) !important;
+          color: var(--cf-select-color) !important;
+      `}</style>
 
       <div className="cf-container">
         {/* Title Header */}
@@ -962,8 +1056,8 @@ export default function CloudfrontVisualizer() {
 
               {/* Core Concept splits with .cf-desc-mute */}
               <div className="cf-grid2" style={{ marginBottom: '16px' }}>
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#4f46e5' }}>Key Edge Concepts</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-alert-blue-text)' }}>Key Edge Concepts</div>
                   
                   <div className="cf-row">
                     <div className="cf-dot">1</div>
@@ -980,8 +1074,8 @@ export default function CloudfrontVisualizer() {
                   </div>
                 </div>
 
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#0369a1' }}>Key Delivery Concepts</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-alb)' }}>Key Delivery Concepts</div>
 
                   <div className="cf-row">
                     <div className="cf-dot">3</div>
@@ -1000,12 +1094,12 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* High Level Architecture SVG */}
-              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginBottom: '18px' }}>
-                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ border: '1.5px solid var(--cf-card-border)', borderRadius: '16px', padding: '16px', background: 'var(--color-background-primary)', marginBottom: '18px' }}>
+                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>🌐</span> Global Request Processing Pipeline (High-Fidelity 3D Grid Blueprint)
                 </div>
                 
-                <svg width="100%" viewBox="0 0 760 220" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.8)' }}>
+                <svg width="100%" viewBox="0 0 760 220" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid var(--cf-card-border)' }}>
                   <defs>
                     <linearGradient id="grad-cf-blue" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#60a5fa" />
@@ -1029,102 +1123,102 @@ export default function CloudfrontVisualizer() {
                   </defs>
 
                   {/* Column 1: Client Locations Grid */}
-                  <rect x="15" y="25" width="150" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow)" />
-                  <text x="90" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🌍 Client Locations</text>
+                  <rect x="15" y="25" width="150" height="175" rx="10" fill="var(--cf-card-bg)" stroke="var(--cf-card-border)" strokeWidth="1" filter="url(#shadow)" />
+                  <text x="90" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="var(--color-text-secondary)">🌍 Client Locations</text>
                   
                   {/* US Client Card */}
                   <g filter="url(#shadow)">
-                    <rect x="25" y="58" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                    <text x="90" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client US (New York)</text>
+                    <rect x="25" y="58" width="130" height="32" rx="6" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" strokeWidth="1" />
+                    <text x="90" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-client)">Client US (New York)</text>
                   </g>
                   
                   {/* EU Client Card */}
                   <g filter="url(#shadow)">
-                    <rect x="25" y="102" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                    <text x="90" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client EU (Frankfurt)</text>
+                    <rect x="25" y="102" width="130" height="32" rx="6" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" strokeWidth="1" />
+                    <text x="90" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-client)">Client EU (Frankfurt)</text>
                   </g>
 
                   {/* ASIA Client Card */}
                   <g filter="url(#shadow)">
-                    <rect x="25" y="146" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                    <text x="90" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e40af">Client ASIA (Tokyo)</text>
+                    <rect x="25" y="146" width="130" height="32" rx="6" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" strokeWidth="1" />
+                    <text x="90" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-client)">Client ASIA (Tokyo)</text>
                   </g>
 
                   {/* ==================== GLOBAL EDGE POP BOUNDARY ==================== */}
                   <rect x="190" y="24" width="170" height="185" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="198" y="36" fill="#8b5cf6" fontSize="7.5" fontWeight="extrabold">Global Edge POP Boundary</text>
+                  <text x="198" y="36" fill="var(--cf-svg-text-edge)" fontSize="7.5" fontWeight="extrabold">Global Edge POP Boundary</text>
 
                   {/* Column 2: Edge Locations */}
                   {/* New York Edge PoP */}
                   <g filter="url(#shadow)">
-                    <rect x="205" y="58" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
+                    <rect x="205" y="58" width="140" height="32" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="1" />
                     <circle cx="218" cy="74" r="3" fill="#10b981" />
-                    <text x="280" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">New York Edge (POP)</text>
+                    <text x="280" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">New York Edge (POP)</text>
                   </g>
                   
                   {/* Frankfurt Edge PoP */}
                   <g filter="url(#shadow)">
-                    <rect x="205" y="102" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
+                    <rect x="205" y="102" width="140" height="32" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="1" />
                     <circle cx="218" cy="118" r="3" fill="#10b981" />
-                    <text x="280" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">Frankfurt Edge (POP)</text>
+                    <text x="280" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">Frankfurt Edge (POP)</text>
                   </g>
 
                   {/* Tokyo Edge PoP */}
                   <g filter="url(#shadow)">
-                    <rect x="205" y="146" width="140" height="32" rx="6" fill="#f5f3ff" stroke="#ddd6fe" strokeWidth="1" />
+                    <rect x="205" y="146" width="140" height="32" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="1" />
                     <circle cx="218" cy="162" r="3" fill="#10b981" />
-                    <text x="280" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#581c87">Tokyo Edge (POP)</text>
+                    <text x="280" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">Tokyo Edge (POP)</text>
                   </g>
 
                   {/* ==================== REGIONAL CACHING CLOUD BOUNDARY ==================== */}
                   <rect x="375" y="24" width="180" height="185" rx="8" fill="none" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="383" y="36" fill="#ec4899" fontSize="7.5" fontWeight="extrabold">Regional Caching Boundary</text>
+                  <text x="383" y="36" fill="var(--cf-svg-text-rec)" fontSize="7.5" fontWeight="extrabold">Regional Caching Boundary</text>
 
                   {/* Column 3: Regional Edge Cache (REC) */}
                   {/* US East REC */}
                   <g filter="url(#shadow)">
-                    <rect x="395" y="58" width="140" height="50" rx="6" fill="#fdf2f8" stroke="#fbcfe8" strokeWidth="1.5" />
-                    <text x="465" y="78" textAnchor="middle" fontSize="10" fontWeight="700" fill="#9d174d">US-East REC</text>
-                    <text x="465" y="94" textAnchor="middle" fontSize="8" fill="#db2777" fontWeight="600">(Primary Buffer)</text>
+                    <rect x="395" y="58" width="140" height="50" rx="6" fill="var(--cf-svg-node-fill-rec)" stroke="var(--cf-svg-node-stroke-rec)" strokeWidth="1.5" />
+                    <text x="465" y="78" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--cf-svg-text-rec)">US-East REC</text>
+                    <text x="465" y="94" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-rec)" fontWeight="600">(Primary Buffer)</text>
                   </g>
 
                   {/* Europe REC */}
                   <g filter="url(#shadow)">
-                    <rect x="395" y="128" width="140" height="50" rx="6" fill="#fdf2f8" stroke="#fbcfe8" strokeWidth="1.5" />
-                    <text x="465" y="148" textAnchor="middle" fontSize="10" fontWeight="700" fill="#9d174d">Europe REC</text>
-                    <text x="465" y="164" textAnchor="middle" fontSize="8" fill="#db2777" fontWeight="600">(Primary Buffer)</text>
+                    <rect x="395" y="128" width="140" height="50" rx="6" fill="var(--cf-svg-node-fill-rec)" stroke="var(--cf-svg-node-stroke-rec)" strokeWidth="1.5" />
+                    <text x="465" y="148" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--cf-svg-text-rec)">Europe REC</text>
+                    <text x="465" y="164" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-rec)" fontWeight="600">(Primary Buffer)</text>
                   </g>
 
                   {/* ==================== SECURE PRIVATE DATA VPC BOUNDARY ==================== */}
                   <rect x="570" y="24" width="180" height="185" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
-                  <text x="578" y="36" fill="#2563eb" fontSize="7.5" fontWeight="extrabold">Secure Private Data VPC Boundary</text>
+                  <text x="578" y="36" fill="var(--cf-svg-node-stroke-alb)" fontSize="7.5" fontWeight="extrabold">Secure Private Data VPC Boundary</text>
 
                   {/* Column 4: Origin Servers */}
                   {/* S3 Storage Cylinder */}
                   <g filter="url(#shadow)">
-                    <path d="M 595 72 A 50 12 0 0 0 695 72 L 695 90 A 50 12 0 0 1 595 90 Z" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <ellipse cx="645" cy="72" rx="50" ry="12" fill="#dcfce7" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="645" y="86" textAnchor="middle" fontSize="9" fontWeight="700" fill="#047857">🪣 private-s3-bucket</text>
+                    <path d="M 595 72 A 50 12 0 0 0 695 72 L 695 90 A 50 12 0 0 1 595 90 Z" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
+                    <ellipse cx="645" cy="72" rx="50" ry="12" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
+                    <text x="645" y="86" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-origin)">🪣 private-s3-bucket</text>
                   </g>
 
                   {/* ALB Compute Tower */}
                   <g filter="url(#shadow)">
-                    <rect x="595" y="128" width="130" height="42" rx="6" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="660" y="146" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#1e3a8a">⚙️ alb-dynamic-api</text>
-                    <text x="660" y="158" textAnchor="middle" fontSize="8" fill="#2563eb" fontWeight="600">VPC API Gateway</text>
+                    <rect x="595" y="128" width="130" height="42" rx="6" fill="var(--cf-svg-node-fill-alb)" stroke="var(--cf-svg-node-stroke-alb)" strokeWidth="1.5" />
+                    <text x="660" y="146" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-alb)">⚙️ alb-dynamic-api</text>
+                    <text x="660" y="158" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-alb)" fontWeight="600">VPC API Gateway</text>
                   </g>
 
                   {/* Routing Conduits & Waveguide Paths */}
                   {/* US Client to NY Edge */}
-                  <path d="M 155 74 L 205 74" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 155 74 L 205 74" fill="none" stroke="var(--cf-svg-node-stroke)" strokeWidth="2.5" strokeLinecap="round" />
                   <path d="M 155 74 L 205 74" id="path-us-pop" fill="none" stroke="url(#grad-cf-blue)" strokeWidth="1.5" strokeLinecap="round" />
 
                   {/* EU Client to Frankfurt Edge */}
-                  <path d="M 155 118 L 205 118" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 155 118 L 205 118" fill="none" stroke="var(--cf-svg-node-stroke)" strokeWidth="2.5" strokeLinecap="round" />
                   <path d="M 155 118 L 205 118" id="path-eu-pop" fill="none" stroke="url(#grad-cf-blue)" strokeWidth="1.5" strokeLinecap="round" />
 
                   {/* Asia Client to Tokyo Edge */}
-                  <path d="M 155 162 L 205 162" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 155 162 L 205 162" fill="none" stroke="var(--cf-svg-node-stroke)" strokeWidth="2.5" strokeLinecap="round" />
                   <path d="M 155 162 L 205 162" id="path-asia-pop" fill="none" stroke="url(#grad-cf-blue)" strokeWidth="1.5" strokeLinecap="round" />
 
                   {/* POPs to RECs */}
@@ -1137,12 +1231,12 @@ export default function CloudfrontVisualizer() {
 
                   {/* RECs to Origins */}
                   {/* US REC to S3 and ALB */}
-                  <path d="M 535 83 L 595 83" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M 535 90 L 595 140" fill="none" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M 535 83 L 595 83" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M 535 90 L 595 140" fill="none" stroke="var(--cf-svg-node-stroke-alb)" strokeWidth="1.5" strokeLinecap="round" />
 
                   {/* Europe REC to S3 and ALB */}
-                  <path d="M 535 145 L 595 89" fill="none" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" />
-                  <path d="M 535 153 L 595 153" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M 535 145 L 595 89" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M 535 153 L 595 153" fill="none" stroke="var(--cf-svg-node-stroke-alb)" strokeWidth="2" strokeLinecap="round" />
 
                   {/* Dynamic Packet Pulses */}
                   <circle r="4" fill="#a855f7">
@@ -1164,8 +1258,8 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* Core Features list */}
-              <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#4f46e5' }}>Operational Stages of a Request:</div>
+              <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: 'var(--cf-alert-blue-text)' }}>Operational Stages of a Request:</div>
                 <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '12px', lineHeight: '1.6' }}>
                   <li><strong>Client Handshake:</strong> Client browser sends a DNS request for <code>cdn.example.com</code>. DNS Anycast routes to the closest physical Edge POP. A secure TLS session terminates at the edge immediately.</li>
                   <li><strong>Edge Cache Lookup:</strong> The Edge Location checks its local RAM/SSD storage. If the asset matches the cache key (and TTL has not expired), it returns a <code>HIT</code> in microseconds.</li>
@@ -1188,8 +1282,8 @@ export default function CloudfrontVisualizer() {
 
               <div className="cf-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
                 {/* Origins Breakdown */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#16a34a' }}>Origin Integrations &amp; Security</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-origin)' }}>Origin Integrations &amp; Security</div>
                   
                   <div className="cf-row">
                     <div className="cf-dot">A</div>
@@ -1207,22 +1301,22 @@ export default function CloudfrontVisualizer() {
                 </div>
 
                 {/* VPC Origin vs Public Network */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#c2410c' }}>VPC Private Origin vs Public Network Custom Origin</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-alert-yellow-text)' }}>VPC Private Origin vs Public Network Custom Origin</div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                     How does CloudFront fetch content from an ALB or EC2 database API instance? You have two architectural choices:
                   </div>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
-                    <div style={{ background: '#ffffff', border: '0.5px solid #cbd5e1', borderRadius: '6px', padding: '8px' }}>
-                      <strong style={{ color: '#2563eb' }}>Option 1: CloudFront VPC Origin (Private Network Integration)</strong>
-                      <div style={{ marginTop: '4px', color: '#475569' }}>
+                    <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-secondary)', borderRadius: '6px', padding: '8px' }}>
+                      <strong style={{ color: 'var(--cf-svg-text-alb)' }}>Option 1: CloudFront VPC Origin (Private Network Integration)</strong>
+                      <div style={{ marginTop: '4px', color: 'var(--color-text-secondary)' }}>
                         Allows CloudFront to connect directly to private ALBs or EC2 instances inside your VPC subnets. Uses managed VPC endpoint interfaces under the hood. The ALB has no public IP address and cannot be accessed from the public internet.
                       </div>
                     </div>
-                    <div style={{ background: '#ffffff', border: '0.5px solid #cbd5e1', borderRadius: '6px', padding: '8px' }}>
-                      <strong style={{ color: '#d97706' }}>Option 2: Custom Origin via Public Network + Ingress Restricting</strong>
-                      <div style={{ marginTop: '4px', color: '#475569' }}>
+                    <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-secondary)', borderRadius: '6px', padding: '8px' }}>
+                      <strong style={{ color: 'var(--cf-alert-yellow-text)' }}>Option 2: Custom Origin via Public Network + Ingress Restricting</strong>
+                      <div style={{ marginTop: '4px', color: 'var(--color-text-secondary)' }}>
                         The ALB is placed in public subnets with a public DNS. To block public users from bypassing the CDN, you configure custom headers (e.g., <code>X-Origin-Verify: shared-secret</code>) inside CloudFront, and program the ALB to reject any traffic missing this header!
                       </div>
                     </div>
@@ -1235,10 +1329,10 @@ export default function CloudfrontVisualizer() {
               {/* 🎨 New Origins Security SVG Diagram */}
               <div className="cf-sec">🛡️ VPC Private Origins, S3 OAC Request Signing &amp; Custom Header Verification Pipelines</div>
               <div className="cf-card" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12.5px', color: '#475569', marginBottom: '14px', textAlign: 'left', lineHeight: '1.5' }}>
+                <div style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', marginBottom: '14px', textAlign: 'left', lineHeight: '1.5' }}>
                   CloudFront provides multiple mechanisms to lock down backend ingress. Trace the three standard security architectures below:
                 </div>
-                <svg viewBox="0 0 740 320" width="100%" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.01))' }}>
+                <svg viewBox="0 0 740 320" width="100%" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid var(--cf-card-border)', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.01))' }}>
                   <defs>
                     <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#3b82f6" />
@@ -1262,101 +1356,101 @@ export default function CloudfrontVisualizer() {
                   </defs>
 
                   {/* ==================== PUBLIC INGRESS BOUNDARY ==================== */}
-                  <rect x="10" y="100" width="125" height="120" rx="8" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="18" y="112" fill="#64748b" fontSize="7" fontWeight="bold">Public Ingress Boundary</text>
+                  <rect x="10" y="100" width="125" height="120" rx="8" fill="none" stroke="var(--cf-border-secondary)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="18" y="112" fill="var(--color-text-secondary)" fontSize="7" fontWeight="bold">Public Ingress Boundary</text>
 
                   {/* Public Client Ingress Card */}
                   <g filter="url(#shadow-sec)">
-                    <rect x="15" y="122" width="115" height="90" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1" />
-                    <text x="72" y="145" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0f172a">Global Users</text>
-                    <text x="72" y="163" textAnchor="middle" fontSize="8.5" fill="#3b82f6" fontWeight="700">💻 Web Requests</text>
-                    <text x="72" y="179" textAnchor="middle" fontSize="7.5" fill="#64748b">HTTPS / HTTP/3</text>
-                    <rect x="25" y="188" width="94" height="15" rx="3" fill="#dcfce7" />
-                    <text x="72" y="198" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">CDN ACCELERATED</text>
+                    <rect x="15" y="122" width="115" height="90" rx="8" fill="var(--cf-svg-node-bg)" stroke="var(--cf-svg-node-border)" strokeWidth="1" />
+                    <text x="72" y="145" textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--color-text-primary)">Global Users</text>
+                    <text x="72" y="163" textAnchor="middle" fontSize="8.5" fill="var(--cf-svg-text-alb)" fontWeight="700">💻 Web Requests</text>
+                    <text x="72" y="179" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">HTTPS / HTTP/3</text>
+                    <rect x="25" y="188" width="94" height="15" rx="3" fill="var(--cf-svg-node-fill-origin)" />
+                    <text x="72" y="198" textAnchor="middle" fontSize="7" fill="var(--cf-svg-text-origin)" fontWeight="700">CDN ACCELERATED</text>
                   </g>
 
                   {/* ==================== CLOUDFRONT EDGE SECURITY GATEWAY ==================== */}
-                  <rect x="170" y="70" width="165" height="180" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" />
-                  <text x="178" y="82" fill="#8b5cf6" fontSize="7.5" fontWeight="extrabold">CloudFront Edge Security Gateway</text>
+                  <rect x="170" y="70" width="165" height="180" rx="8" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" strokeDasharray="4,2" />
+                  <text x="178" y="82" fill="var(--cf-svg-text-edge)" fontSize="7.5" fontWeight="extrabold">CloudFront Edge Security Gateway</text>
 
                   {/* CloudFront Edge Controller Card */}
                   <g filter="url(#shadow-sec)">
-                    <rect x="180" y="92" width="145" height="150" rx="8" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="2" />
-                    <text x="252" y="112" textAnchor="middle" fontSize="11" fontWeight="800" fill="#6d28d9">⚡ CloudFront Edge</text>
+                    <rect x="180" y="92" width="145" height="150" rx="8" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-text-edge)" strokeWidth="2" />
+                    <text x="252" y="112" textAnchor="middle" fontSize="11" fontWeight="800" fill="var(--cf-svg-text-edge)">⚡ CloudFront Edge</text>
                     
                     <g filter="url(#shadow-sec)">
-                      <rect x="190" y="129" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
-                      <text x="252" y="140" textAnchor="middle" fontSize="8" fontWeight="700" fill="#6d28d9">SigV4 OAC Signer</text>
-                      <text x="252" y="151" textAnchor="middle" fontSize="6.5" fill="#7c3aed" fontWeight="600">(For S3 Bucket Origin)</text>
+                      <rect x="190" y="129" width="125" height="28" rx="4" fill="var(--color-background-primary)" stroke="var(--cf-border-secondary)" />
+                      <text x="252" y="140" textAnchor="middle" fontSize="8" fontWeight="700" fill="var(--cf-svg-text-edge)">SigV4 OAC Signer</text>
+                      <text x="252" y="151" textAnchor="middle" fontSize="6.5" fill="var(--cf-svg-text-edge)" fontWeight="600">(For S3 Bucket Origin)</text>
                     </g>
 
                     <g filter="url(#shadow-sec)">
-                      <rect x="190" y="165" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
-                      <text x="252" y="176" textAnchor="middle" fontSize="8" fontWeight="700" fill="#0284c7">VPC Endpoint Link</text>
-                      <text x="252" y="187" textAnchor="middle" fontSize="6.5" fill="#0369a1" fontWeight="600">(For Private ALB Subnet)</text>
+                      <rect x="190" y="165" width="125" height="28" rx="4" fill="var(--color-background-primary)" stroke="var(--cf-border-secondary)" />
+                      <text x="252" y="176" textAnchor="middle" fontSize="8" fontWeight="700" fill="var(--cf-svg-text-alb)">VPC Endpoint Link</text>
+                      <text x="252" y="187" textAnchor="middle" fontSize="6.5" fill="var(--cf-svg-text-alb)" fontWeight="600">(For Private ALB Subnet)</text>
                     </g>
 
                     <g filter="url(#shadow-sec)">
-                      <rect x="190" y="201" width="125" height="28" rx="4" fill="#ffffff" stroke="#ddd6fe" />
-                      <text x="252" y="212" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="#be185d">X-Origin-Verify Header</text>
-                      <text x="252" y="223" textAnchor="middle" fontSize="6.5" fill="#db2777" fontWeight="600">(Shared Token Injection)</text>
+                      <rect x="190" y="201" width="125" height="28" rx="4" fill="var(--color-background-primary)" stroke="var(--cf-border-secondary)" />
+                      <text x="252" y="212" textAnchor="middle" fontSize="7.5" fontWeight="700" fill="var(--cf-svg-text-rec)">X-Origin-Verify Header</text>
+                      <text x="252" y="223" textAnchor="middle" fontSize="6.5" fill="var(--cf-svg-text-rec)" fontWeight="600">(Shared Token Injection)</text>
                     </g>
                   </g>
 
                   {/* Connectors from Client */}
-                  <path d="M 130 167 L 180 167" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="155" cy="167" r="3" fill="#1d4ed8" />
+                  <path d="M 130 167 L 180 167" stroke="var(--cf-svg-text-alb)" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx="155" cy="167" r="3" fill="var(--cf-svg-text-alb)" />
 
                   {/* ==================== S3 SECURE STORAGE BOUNDARY ==================== */}
-                  <rect x="390" y="10" width="330" height="80" rx="6" fill="none" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="398" y="22" fill="#047857" fontSize="7" fontWeight="bold">S3 Secure Storage Boundary</text>
+                  <rect x="390" y="10" width="330" height="80" rx="6" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="398" y="22" fill="var(--cf-svg-text-origin)" fontSize="7" fontWeight="bold">S3 Secure Storage Boundary</text>
 
                   {/* Integration A: S3 Private Origin + OAC */}
-                  <path d="M 325 132 L 400 70" fill="none" stroke="#10b981" strokeWidth="1.5" />
-                  <text x="365" y="93" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="700">SigV4 Signed</text>
+                  <path d="M 325 132 L 400 70" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
+                  <text x="365" y="93" textAnchor="middle" fontSize="7.5" fill="var(--cf-svg-text-origin)" fontWeight="700">SigV4 Signed</text>
 
                   <g filter="url(#shadow-sec)">
-                    <rect x="400" y="26" width="310" height="58" rx="6" fill="#f0fdf4" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="415" y="40" textAnchor="start" fontSize="9" fontWeight="800" fill="#065f46">🪣 Option A: S3 Bucket Origin with OAC</text>
-                    <text x="415" y="52" textAnchor="start" fontSize="7.5" fill="#047857">Reject WWW bypass attempts (403) ❌ | Accepts verified OAC SigV4</text>
+                    <rect x="400" y="26" width="310" height="58" rx="6" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
+                    <text x="415" y="40" textAnchor="start" fontSize="9" fontWeight="800" fill="var(--cf-svg-text-origin)">🪣 Option A: S3 Bucket Origin with OAC</text>
+                    <text x="415" y="52" textAnchor="start" fontSize="7.5" fill="var(--cf-svg-text-origin)">Reject WWW bypass attempts (403) ❌ | Accepts verified OAC SigV4</text>
                   </g>
 
                   {/* ==================== PRIVATE VPC SUBNET GROUP ==================== */}
-                  <rect x="390" y="98" width="330" height="92" rx="6" fill="none" stroke="#0ea5e9" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="398" y="110" fill="#0369a1" fontSize="7" fontWeight="bold">Private VPC Subnet Group</text>
+                  <rect x="390" y="98" width="330" height="92" rx="6" fill="none" stroke="var(--cf-svg-text-alb)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="398" y="110" fill="var(--cf-svg-text-alb)" fontSize="7" fontWeight="bold">Private VPC Subnet Group</text>
 
                   {/* Integration B: CloudFront VPC Private Origin */}
-                  <path d="M 325 167 L 400 160" fill="none" stroke="#0ea5e9" strokeWidth="1.5" />
-                  <text x="365" y="158" textAnchor="middle" fontSize="7.5" fill="#0369a1" fontWeight="700">Private Link</text>
+                  <path d="M 325 167 L 400 160" fill="none" stroke="var(--cf-svg-text-alb)" strokeWidth="1.5" />
+                  <text x="365" y="158" textAnchor="middle" fontSize="7.5" fill="var(--cf-svg-text-alb)" fontWeight="700">Private Link</text>
 
                   <g filter="url(#shadow-sec)">
-                    <rect x="400" y="114" width="310" height="70" rx="6" fill="#f0f9ff" stroke="#0ea5e9" strokeWidth="1.5" />
-                    <text x="415" y="130" textAnchor="start" fontSize="9" fontWeight="800" fill="#0369a1">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
-                    <text x="415" y="142" textAnchor="start" fontSize="7.5" fill="#0284c7">Private VPC endpoints inside private backend subnets. No public IPs.</text>
-                    <text x="415" y="156" textAnchor="start" fontSize="8" fontWeight="700" fill="#0284c7">✔ 100% private transit over dedicated internal VPC routes 🔒</text>
+                    <rect x="400" y="114" width="310" height="70" rx="6" fill="var(--cf-svg-node-fill-alb)" stroke="var(--cf-svg-node-stroke-alb)" strokeWidth="1.5" />
+                    <text x="415" y="130" textAnchor="start" fontSize="9" fontWeight="800" fill="var(--cf-svg-text-alb)">🛡️ Option B: VPC Private Origin (Subnet Integration)</text>
+                    <text x="415" y="142" textAnchor="start" fontSize="7.5" fill="var(--cf-svg-text-alb)">Private VPC endpoints inside private backend subnets. No public IPs.</text>
+                    <text x="415" y="156" textAnchor="start" fontSize="8" fontWeight="700" fill="var(--cf-svg-text-alb)">✔ 100% private transit over dedicated internal VPC routes 🔒</text>
                   </g>
 
                   {/* ==================== DMZ / PUBLIC SUBNET GROUP ==================== */}
-                  <rect x="390" y="196" width="330" height="114" rx="6" fill="none" stroke="#e11d48" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="398" y="208" fill="#9f1239" fontSize="7" fontWeight="bold">DMZ / Public Subnet Group</text>
+                  <rect x="390" y="196" width="330" height="114" rx="6" fill="none" stroke="#f43f5e" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="398" y="208" fill="#f43f5e" fontSize="7" fontWeight="bold">DMZ / Public Subnet Group</text>
 
                   {/* Integration C: Public Custom Origin + Ingress Header Restriction */}
-                  <path d="M 325 202 L 400 245" fill="none" stroke="#8b5cf6" strokeWidth="1.5" />
-                  <text x="365" y="233" textAnchor="middle" fontSize="7.5" fill="#6d28d9" fontWeight="700">Secret Token</text>
+                  <path d="M 325 202 L 400 245" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" />
+                  <text x="365" y="233" textAnchor="middle" fontSize="7.5" fill="var(--cf-svg-text-edge)" fontWeight="700">Secret Token</text>
 
                   <g filter="url(#shadow-sec)">
-                    <rect x="400" y="212" width="310" height="92" rx="6" fill="#fff1f2" stroke="#db2777" strokeWidth="1.5" />
-                    <text x="415" y="228" textAnchor="start" fontSize="9" fontWeight="800" fill="#9f1239">⚡ Option C: Custom Origin with Ingress Headers</text>
-                    <text x="415" y="240" textAnchor="start" fontSize="7.5" fill="#be185d">ALB is in public subnet. Direct attackers bypassed CDN? ALB blocks them!</text>
-                    <text x="415" y="254" textAnchor="start" fontSize="8" fontWeight="700" fill="#9f1239">⚠ ALB validates "X-Origin-Verify: shared-secret-key" header</text>
-                    <text x="415" y="268" textAnchor="start" fontSize="7.5" fill="#be185d">If header matches: Accept ✅ | Otherwise reject instantly (HTTP 403) ❌</text>
+                    <rect x="400" y="212" width="310" height="92" rx="6" fill="rgba(244, 63, 94, 0.1)" stroke="#f43f5e" strokeWidth="1.5" />
+                    <text x="415" y="228" textAnchor="start" fontSize="9" fontWeight="800" fill="#f43f5e">⚡ Option C: Custom Origin with Ingress Headers</text>
+                    <text x="415" y="240" textAnchor="start" fontSize="7.5" fill="#f43f5e">ALB is in public subnet. Direct attackers bypassed CDN? ALB blocks them!</text>
+                    <text x="415" y="254" textAnchor="start" fontSize="8" fontWeight="700" fill="#f43f5e">⚠ ALB validates "X-Origin-Verify: shared-secret-key" header</text>
+                    <text x="415" y="268" textAnchor="start" fontSize="7.5" fill="#f43f5e">If header matches: Accept ✅ | Otherwise reject instantly (HTTP 403) ❌</text>
                   </g>
                 </svg>
               </div>
 
               {/* Side-by-side: CloudFront vs S3 Cross-Region Replication (CRR) */}
-              <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', marginTop: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#4f46e5' }}>
+              <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px', marginTop: '14px' }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: 'var(--cf-alert-blue-text)' }}>
                   Architectural Comparison: CloudFront Caching vs. S3 Cross-Region Replication (CRR)
                 </div>
                 
@@ -1405,17 +1499,17 @@ export default function CloudfrontVisualizer() {
               <div className="cf-sec">🔌 Interactive Cache Key &amp; Forwarding Optimizer Sandbox</div>
               <div className="cf-card">
                 <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
-                  CloudFront uses a lookup key (the <strong>Cache Key</strong>) to identify cached resources. By default, it consists of only the URL path. If you forward query strings, cookies, or headers, they are added to the key. This sandbox illustrates the direct trade-off between configuration flexibility and caching performance.
+                  CloudFront uses a lookup key (the <strong>Cache Key</strong>) to identify cached resources. By default, it consists of only the URL path. If you forward query strings, cookies, or headers, they are added to the key. This sandbox illustrates the trade-off between configuration flexibility and caching performance.
                 </div>
 
                 <div className="cf-grid2" style={{ gap: '16px' }}>
                   {/* Control Panel */}
-                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
                     <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '10px', color: '#6366f1' }}>Forwarding Configuration Policies</div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div className="cf-ctrl" style={{ padding: '8px', background: '#fff' }}>
-                        <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Query Strings Forwarding</label>
+                      <div className="cf-ctrl" style={{ padding: '8px', background: 'var(--color-background-primary)' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Query Strings Forwarding</label>
                         <select value={cfQsForwarding} onChange={(e) => setCfQsForwarding(e.target.value as any)} style={{ fontSize: '11px', padding: '4px' }}>
                           <option value="none">None (Ignore all query parameters)</option>
                           <option value="whitelist">Whitelist (Forward only ?v=... version tag)</option>
@@ -1423,8 +1517,8 @@ export default function CloudfrontVisualizer() {
                         </select>
                       </div>
 
-                      <div className="cf-ctrl" style={{ padding: '8px', background: '#fff' }}>
-                        <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Request Headers Forwarding</label>
+                      <div className="cf-ctrl" style={{ padding: '8px', background: 'var(--color-background-primary)' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Request Headers Forwarding</label>
                         <select value={cfHeaderForwarding} onChange={(e) => setCfHeaderForwarding(e.target.value as any)} style={{ fontSize: '11px', padding: '4px' }}>
                           <option value="none">None (Static assets only)</option>
                           <option value="whitelist">Whitelist (Forward only Accept-Language)</option>
@@ -1432,8 +1526,8 @@ export default function CloudfrontVisualizer() {
                         </select>
                       </div>
 
-                      <div className="cf-ctrl" style={{ padding: '8px', background: '#fff' }}>
-                        <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Cookies Forwarding</label>
+                      <div className="cf-ctrl" style={{ padding: '8px', background: 'var(--color-background-primary)' }}>
+                        <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Cookies Forwarding</label>
                         <select value={cfCookieForwarding} onChange={(e) => setCfCookieForwarding(e.target.value as any)} style={{ fontSize: '11px', padding: '4px' }}>
                           <option value="none">None (Ignore tracking/session cookies)</option>
                           <option value="all">Forward All Cookies (⚠️ Unique sessions)</option>
@@ -1453,17 +1547,17 @@ export default function CloudfrontVisualizer() {
 
                   {/* Inspector Panel */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px', flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: '#334155' }}>Live Compiled Cache Key:</div>
-                      <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '6px', padding: '8px', fontFamily: 'monospace', fontSize: '10.5px', color: '#38bdf8', wordBreak: 'break-all', lineHeight: '1.4' }}>
+                    <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px', flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>Live Compiled Cache Key:</div>
+                      <div style={{ background: 'var(--cf-terminal-bg)', border: '1px solid var(--cf-terminal-border)', borderRadius: '6px', padding: '8px', fontFamily: 'monospace', fontSize: '10.5px', color: 'var(--cf-terminal-color)', wordBreak: 'break-all', lineHeight: '1.4' }}>
                         {getCompiledCacheKey()}
                       </div>
                       
                       <div style={{ marginTop: '10px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Sequential Test Requests (Varying Client Devices):</div>
-                        <div style={{ background: '#ffffff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '8px', minHeight: '80px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Sequential Test Requests (Varying Client Devices):</div>
+                        <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-tertiary)', borderRadius: '6px', padding: '8px', minHeight: '80px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           {cfCacheHistory.length === 0 ? (
-                            <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>Click "Evaluate Cache Key Caching" to run device lookup sequence...</span>
+                            <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Click "Evaluate Cache Key Caching" to run device lookup sequence...</span>
                           ) : (
                             cfCacheHistory.map((item, index) => (
                               <div key={index} style={{ fontFamily: 'monospace', fontSize: '10px', color: item.includes('HIT') ? '#16a34a' : '#c2410c' }}>
@@ -1476,13 +1570,13 @@ export default function CloudfrontVisualizer() {
                     </div>
 
                     {cfChrRate !== null && (
-                      <div style={{ background: cfChrRate === 0 ? '#fef2f2' : '#f0fdf4', border: `1px solid ${cfChrRate === 0 ? '#fca5a5' : '#86efac'}`, borderRadius: '8px', padding: '10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div style={{ background: cfChrRate === 0 ? 'var(--cf-alert-yellow-bg)' : 'var(--cf-alert-blue-bg)', border: `1px solid ${cfChrRate === 0 ? 'var(--cf-alert-yellow-border)' : 'var(--cf-alert-blue-border)'}`, borderRadius: '8px', padding: '10px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                         <div style={{ fontSize: '20px' }}>{cfChrRate === 0 ? '❌' : '🟢'}</div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '11.5px', fontWeight: 700, color: cfChrRate === 0 ? '#991b1b' : '#166534' }}>
+                          <div style={{ fontSize: '11.5px', fontWeight: 700, color: cfChrRate === 0 ? 'var(--cf-alert-yellow-text)' : 'var(--cf-alert-blue-text)' }}>
                             Calculated Cache Hit Ratio (CHR): {cfChrRate}%
                           </div>
-                          <div style={{ fontSize: '10.5px', color: cfChrRate === 0 ? '#b91c1c' : '#15803d', marginTop: '2px', lineHeight: '1.3' }}>
+                          <div style={{ fontSize: '10.5px', color: cfChrRate === 0 ? 'var(--cf-alert-yellow-text)' : 'var(--cf-alert-blue-text)', marginTop: '2px', lineHeight: '1.3' }}>
                             {cfChrRate === 0 ? (
                               <strong>⚠️ CACHE EFFICIENCY DESTROYED!</strong>
                             ) : (
@@ -1509,38 +1603,38 @@ export default function CloudfrontVisualizer() {
 
                 <div className="cf-grid2" style={{ gap: '16px' }}>
                   {/* Left Controls column */}
-                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#b91c1c' }}>HA Origin Group Configuration</div>
+                  <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-alert-red-text)' }}>HA Origin Group Configuration</div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', marginBottom: '12px' }}>
-                      <div style={{ background: '#fff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-tertiary)', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>Primary Origin: <strong>S3 Bucket (Virginia)</strong></span>
                         <span className="cf-badge cf-bok">Primary</span>
                       </div>
-                      <div style={{ background: '#fff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-tertiary)', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>Backup Origin: <strong>S3 Bucket (Dublin)</strong></span>
                         <span className="cf-badge cf-binfo">Secondary</span>
                       </div>
-                      <div style={{ background: '#fff', border: '0.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-tertiary)', borderRadius: '6px', padding: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span>Failover Trigger Codes:</span>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#b91c1c' }}>500, 502, 503, 504</span>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'var(--cf-alert-red-text)' }}>500, 502, 503, 504</span>
                       </div>
                     </div>
 
-                    <div className="cf-ctrl" style={{ padding: '8px', background: '#fff', marginBottom: '10px' }}>
-                      <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>Primary Origin Health Status</label>
+                    <div className="cf-ctrl" style={{ padding: '8px', background: 'var(--color-background-primary)', marginBottom: '10px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Primary Origin Health Status</label>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button 
                           className={`cf-tb ${cfPrimaryOriginStatus === 'healthy' ? 'cf-on' : ''}`}
                           onClick={() => setCfPrimaryOriginStatus('healthy')}
-                          style={{ flex: 1, padding: '4px', fontSize: '11px', background: cfPrimaryOriginStatus === 'healthy' ? '#16a34a' : '', borderColor: cfPrimaryOriginStatus === 'healthy' ? '#16a34a' : '' }}
+                          style={{ flex: 1, padding: '4px', fontSize: '11px', background: cfPrimaryOriginStatus === 'healthy' ? 'var(--cf-svg-node-stroke-origin)' : '', borderColor: cfPrimaryOriginStatus === 'healthy' ? 'var(--cf-svg-node-stroke-origin)' : '' }}
                         >
                           🟢 Healthy
                         </button>
                         <button 
                           className={`cf-tb ${cfPrimaryOriginStatus === 'outage' ? 'cf-on' : ''}`}
                           onClick={() => setCfPrimaryOriginStatus('outage')}
-                          style={{ flex: 1, padding: '4px', fontSize: '11px', background: cfPrimaryOriginStatus === 'outage' ? '#ef4444' : '', borderColor: cfPrimaryOriginStatus === 'outage' ? '#ef4444' : '' }}
+                          style={{ flex: 1, padding: '4px', fontSize: '11px', background: cfPrimaryOriginStatus === 'outage' ? 'var(--cf-alert-red-text)' : '', borderColor: cfPrimaryOriginStatus === 'outage' ? 'var(--cf-alert-red-text)' : '' }}
                         >
                           🔴 Outage (502 Error)
                         </button>
@@ -1559,10 +1653,10 @@ export default function CloudfrontVisualizer() {
 
                   {/* Right SVG and log output column */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '10px', background: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', alignSelf: 'flex-start', marginBottom: '6px' }}>Failover Route Topology:</span>
+                    <div style={{ border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '10px', background: 'var(--color-background-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', alignSelf: 'flex-start', marginBottom: '6px' }}>Failover Route Topology:</span>
                       
-                      <svg width="100%" height="110" viewBox="0 0 320 110" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
+                      <svg width="100%" height="110" viewBox="0 0 320 110" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--cf-card-border)' }}>
                         <defs>
                           <linearGradient id="grad-active-pri" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stopColor="#34d399" />
@@ -1579,17 +1673,17 @@ export default function CloudfrontVisualizer() {
 
                         {/* Client Node */}
                         <g filter="url(#shadow-fail)">
-                          <rect x="10" y="38" width="30" height="34" rx="4" fill="#ffffff" stroke="#94a3b8" />
-                          <rect x="14" y="42" width="22" height="16" rx="2" fill="#eff6ff" stroke="#3b82f6" />
-                          <line x1="20" y1="62" x2="30" y2="62" stroke="#94a3b8" strokeWidth="1.5" />
-                          <line x1="25" y1="62" x2="25" y2="68" stroke="#94a3b8" strokeWidth="2" />
-                          <text x="25" y="82" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#475569">Client</text>
+                          <rect x="10" y="38" width="30" height="34" rx="4" fill="var(--cf-card-bg)" stroke="var(--cf-card-border)" />
+                          <rect x="14" y="42" width="22" height="16" rx="2" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" />
+                          <line x1="20" y1="62" x2="30" y2="62" stroke="var(--cf-svg-node-stroke)" strokeWidth="1.5" />
+                          <line x1="25" y1="62" x2="25" y2="68" stroke="var(--cf-svg-node-stroke)" strokeWidth="2" />
+                          <text x="25" y="82" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="var(--color-text-secondary)">Client</text>
                         </g>
 
                         {/* Edge Location */}
                         <g filter="url(#shadow-fail)">
-                          <rect x="80" y="32" width="42" height="42" rx="6" fill="#f5f3ff" stroke="#8b5cf6" strokeWidth="1.5" />
-                          <text x="101" y="47" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#6d28d9">CF Edge</text>
+                          <rect x="80" y="32" width="42" height="42" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" />
+                          <text x="101" y="47" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="var(--cf-svg-text-edge)">CF Edge</text>
                           <circle cx="91" cy="62" r="2.5" fill="#10b981" />
                           <circle cx="101" cy="62" r="2.5" fill="#10b981" />
                           <circle cx="111" cy="62" r="2.5" fill="#10b981" />
@@ -1598,17 +1692,17 @@ export default function CloudfrontVisualizer() {
                         {/* Primary S3 (Virginia) Cylinder */}
                         <g filter="url(#shadow-fail)">
                           <path d="M 180 20 A 27.5 7 0 0 0 235 20 L 235 32 A 27.5 7 0 0 1 180 32 Z" 
-                            fill={cfPrimaryOriginStatus === 'healthy' ? '#ecfdf5' : '#fee2e2'} 
-                            stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? '#10b981' : '#cbd5e1'} 
+                            fill={cfPrimaryOriginStatus === 'healthy' ? 'var(--cf-svg-node-fill-origin)' : 'var(--cf-alert-yellow-bg)'} 
+                            stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? 'var(--cf-svg-node-stroke-origin)' : 'var(--cf-svg-node-stroke)'} 
                             strokeWidth={cfActiveOrigin === 'primary' || cfFailoverStep >= 3 ? 1.5 : 1} 
                           />
                           <ellipse cx="207.5" cy="20" rx="27.5" ry="7" 
-                            fill={cfPrimaryOriginStatus === 'healthy' ? '#dcfce7' : '#fecaca'} 
-                            stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? '#10b981' : '#cbd5e1'} 
+                            fill={cfPrimaryOriginStatus === 'healthy' ? 'var(--cf-svg-node-fill-origin)' : 'var(--cf-alert-yellow-bg)'} 
+                            stroke={cfFailoverStep >= 3 ? '#ef4444' : cfActiveOrigin === 'primary' ? 'var(--cf-svg-node-stroke-origin)' : 'var(--cf-svg-node-stroke)'} 
                             strokeWidth={cfActiveOrigin === 'primary' || cfFailoverStep >= 3 ? 1.5 : 1} 
                           />
-                          <text x="207.5" y="31" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#475569">S3 Primary</text>
-                          <text x="207.5" y="41" textAnchor="middle" fontSize="5.5" fontWeight="700" fill={cfFailoverStep >= 3 ? '#ef4444' : '#047857'}>
+                          <text x="207.5" y="31" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="var(--color-text-secondary)">S3 Primary</text>
+                          <text x="207.5" y="41" textAnchor="middle" fontSize="5.5" fontWeight="700" fill={cfFailoverStep >= 3 ? '#ef4444' : 'var(--cf-svg-text-origin)'}>
                             {cfPrimaryOriginStatus === 'healthy' ? '🟢 Virginia' : '🔴 OUTAGE 502'}
                           </text>
                         </g>
@@ -1616,28 +1710,28 @@ export default function CloudfrontVisualizer() {
                         {/* Secondary S3 (Dublin) Cylinder */}
                         <g filter="url(#shadow-fail)">
                           <path d="M 180 72 A 27.5 7 0 0 0 235 72 L 235 84 A 27.5 7 0 0 1 180 84 Z" 
-                            fill={cfActiveOrigin === 'secondary' ? '#eff6ff' : '#ffffff'} 
-                            stroke={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#cbd5e1'} 
+                            fill={cfActiveOrigin === 'secondary' ? 'var(--cf-svg-node-fill-client)' : 'var(--color-background-primary)'} 
+                            stroke={cfActiveOrigin === 'secondary' ? 'var(--cf-svg-node-stroke-alb)' : 'var(--cf-svg-node-stroke)'} 
                             strokeWidth={cfActiveOrigin === 'secondary' ? 1.5 : 1} 
                           />
                           <ellipse cx="207.5" cy="72" rx="27.5" ry="7" 
-                            fill={cfActiveOrigin === 'secondary' ? '#dbeafe' : '#f8fafc'} 
-                            stroke={cfActiveOrigin === 'secondary' ? '#3b82f6' : '#cbd5e1'} 
+                            fill={cfActiveOrigin === 'secondary' ? 'var(--cf-svg-node-fill-client)' : 'var(--color-background-primary)'} 
+                            stroke={cfActiveOrigin === 'secondary' ? 'var(--cf-svg-node-stroke-alb)' : 'var(--cf-svg-node-stroke)'} 
                             strokeWidth={cfActiveOrigin === 'secondary' ? 1.5 : 1} 
                           />
-                          <text x="207.5" y="83" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#475569">S3 Backup</text>
-                          <text x="207.5" y="93" textAnchor="middle" fontSize="5.5" fontWeight="700" fill={cfActiveOrigin === 'secondary' ? '#2563eb' : '#64748b'}>🔵 Dublin (REC)</text>
+                          <text x="207.5" y="83" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="var(--color-text-secondary)">S3 Backup</text>
+                          <text x="207.5" y="93" textAnchor="middle" fontSize="5.5" fontWeight="700" fill={cfActiveOrigin === 'secondary' ? 'var(--cf-svg-text-alb)' : 'var(--color-text-tertiary)'}>🔵 Dublin (REC)</text>
                         </g>
 
                         {/* Routing Lines */}
                         {/* Client to Edge */}
-                        <path d="M 40 55 L 80 55" id="f-path-cli-edge" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <path d="M 40 55 L 80 55" id="f-path-cli-edge" fill="none" stroke="var(--cf-svg-node-stroke)" strokeWidth="1.5" />
                         
                         {/* Edge to Primary S3 */}
-                        <path d="M 122 50 L 180 26" id="f-path-edge-pri" fill="none" stroke={cfFailoverStep === 3 ? '#fca5a5' : '#cbd5e1'} strokeWidth="1.5" />
+                        <path d="M 122 50 L 180 26" id="f-path-edge-pri" fill="none" stroke={cfFailoverStep === 3 ? '#fca5a5' : 'var(--cf-svg-node-stroke)'} strokeWidth="1.5" />
                         
                         {/* Edge to Secondary S3 */}
-                        <path d="M 122 60 L 180 78" id="f-path-edge-sec" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <path d="M 122 60 L 180 78" id="f-path-edge-sec" fill="none" stroke="var(--cf-svg-node-stroke)" strokeWidth="1.5" />
 
                         {/* Packet Animation Dots */}
                         {cfFailoverIsSimulating && (
@@ -1658,8 +1752,8 @@ export default function CloudfrontVisualizer() {
                         {/* Failover Shield status logo */}
                         {cfFailoverStep === 4 && (
                           <g>
-                            <circle cx="150" cy="55" r="9" fill="#fee2e2" stroke="#ef4444" strokeWidth="1.5" />
-                            <text x="150" y="55" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#b91c1c" fontWeight="bold">⚠️</text>
+                            <circle cx="150" cy="55" r="9" fill="var(--cf-alert-red-bg)" stroke="var(--cf-alert-red-text)" strokeWidth="1.5" />
+                            <text x="150" y="55" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="var(--cf-alert-red-text)" fontWeight="bold">⚠️</text>
                             <animate attributeName="opacity" values="0.2;1;0.2" dur="0.8s" repeatCount="indefinite" />
                           </g>
                         )}
@@ -1667,10 +1761,10 @@ export default function CloudfrontVisualizer() {
                     </div>
 
                     {/* Terminal Failover Logs */}
-                    <div style={{ background: '#1e293b', borderRadius: '6px', padding: '8px', minHeight: '90px', maxHeight: '120px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '9.5px', color: '#cbd5e1', lineHeight: '1.45' }}>
+                    <div style={{ background: 'var(--cf-terminal-bg)', border: '1px solid var(--cf-terminal-border)', borderRadius: '6px', padding: '8px', minHeight: '90px', maxHeight: '120px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '9.5px', color: 'var(--cf-terminal-color)', lineHeight: '1.45' }}>
                       {cfFailoverLogs.map((logLine, logIdx) => (
                         <div key={logIdx} style={{ marginBottom: '3px' }}>
-                          <span style={{ color: logLine.includes('✅') ? '#4ade80' : logLine.includes('⚠️') ? '#f87171' : logLine.includes('🔄') ? '#fbbf24' : '#94a3b8' }}>
+                          <span style={{ color: logLine.includes('✅') ? '#4ade80' : logLine.includes('⚠️') ? '#f87171' : logLine.includes('🔄') ? '#fbbf24' : '#cbd5e1' }}>
                             {logLine}
                           </span>
                         </div>
@@ -1694,8 +1788,8 @@ export default function CloudfrontVisualizer() {
 
               {/* Concepts Deep-Dive matching .cf-hl-cyan & .cf-desc-mute */}
               <div className="cf-grid2" style={{ marginBottom: '16px' }}>
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#c2410c' }}>Core Architecture Concepts</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-orange)' }}>Core Architecture Concepts</div>
 
                   <div className="cf-row">
                     <div className="cf-dot">1</div>
@@ -1712,8 +1806,8 @@ export default function CloudfrontVisualizer() {
                   </div>
                 </div>
 
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#15803d' }}>Traffic Control &amp; HA Concepts</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-origin)' }}>Traffic Control &amp; HA Concepts</div>
 
                   <div className="cf-row">
                     <div className="cf-dot">3</div>
@@ -1732,12 +1826,12 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* Global Accelerator Routing Pipeline SVG */}
-              <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '16px', padding: '16px', background: '#ffffff', marginBottom: '18px' }}>
-                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ border: '1.5px solid var(--cf-card-border)', borderRadius: '16px', padding: '16px', background: 'var(--color-background-primary)', marginBottom: '18px' }}>
+                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '12px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span>🚀</span> AWS Global Accelerator Architecture (L4 Anycast Static IP Routing)
                 </div>
 
-                <svg width="100%" viewBox="0 0 760 220" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.8)' }}>
+                <svg width="100%" viewBox="0 0 760 220" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid var(--cf-card-border)' }}>
                   <defs>
                     <linearGradient id="grad-aga-orange" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#fb923c" />
@@ -1761,68 +1855,68 @@ export default function CloudfrontVisualizer() {
                   </defs>
 
                   {/* Column 1: Global Users */}
-                  <rect x="15" y="25" width="150" height="175" rx="10" fill="rgba(255, 255, 255, 0.8)" stroke="#e2e8f0" strokeWidth="1" filter="url(#shadow-aga)" />
-                  <text x="90" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#475569">🌍 Global Users</text>
+                  <rect x="15" y="25" width="150" height="175" rx="10" fill="var(--cf-card-bg)" stroke="var(--cf-card-border)" strokeWidth="1" filter="url(#shadow-aga)" />
+                  <text x="90" y="42" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="var(--color-text-secondary)">🌍 Global Users</text>
 
-                  <rect x="25" y="58" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                  <text x="90" y="77" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">US Client ➔ Anycast</text>
+                  <rect x="25" y="58" width="130" height="32" rx="6" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" strokeWidth="1" />
+                  <text x="90" y="77" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-client)">US Client ➔ Anycast</text>
 
-                  <rect x="25" y="102" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                  <text x="90" y="121" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">EU Client ➔ Anycast</text>
+                  <rect x="25" y="102" width="130" height="32" rx="6" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" strokeWidth="1" />
+                  <text x="90" y="121" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-client)">EU Client ➔ Anycast</text>
 
-                  <rect x="25" y="146" width="130" height="32" rx="6" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                  <text x="90" y="165" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e40af">Asia Client ➔ Anycast</text>
+                  <rect x="25" y="146" width="130" height="32" rx="6" fill="var(--cf-svg-node-fill-client)" stroke="var(--cf-svg-node-stroke-client)" strokeWidth="1" />
+                  <text x="90" y="165" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-client)">Asia Client ➔ Anycast</text>
 
                   {/* ==================== BGP ANYCAST POP BOUNDARY ==================== */}
-                  <rect x="190" y="24" width="170" height="185" rx="8" fill="none" stroke="#ea580c" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="198" y="36" fill="#ea580c" fontSize="7.5" fontWeight="extrabold">BGP Anycast POP Boundary</text>
+                  <rect x="190" y="24" width="170" height="185" rx="8" fill="none" stroke="var(--cf-svg-text-orange)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="198" y="36" fill="var(--cf-svg-text-orange)" fontSize="7.5" fontWeight="extrabold">BGP Anycast POP Boundary</text>
 
                   {/* Column 2: BGP Anycast POPs Ingestion */}
                   {/* Static IP Blocks */}
                   <g filter="url(#shadow-aga)">
-                    <rect x="205" y="58" width="140" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="275" y="76" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#c2410c">Static IP #1</text>
-                    <text x="275" y="92" textAnchor="middle" fontSize="9" fontWeight="700" fill="#ea580c">1.2.3.4 (Anycast)</text>
+                    <rect x="205" y="58" width="140" height="50" rx="6" fill="var(--cf-svg-node-fill-orange)" stroke="var(--cf-svg-node-stroke-orange)" strokeWidth="1" />
+                    <text x="275" y="76" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="var(--cf-svg-node-text-orange)">Static IP #1</text>
+                    <text x="275" y="92" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-orange)">1.2.3.4 (Anycast)</text>
                   </g>
 
                   <g filter="url(#shadow-aga)">
-                    <rect x="205" y="128" width="140" height="50" rx="6" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="275" y="146" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#c2410c">Static IP #2</text>
-                    <text x="275" y="162" textAnchor="middle" fontSize="9" fontWeight="700" fill="#ea580c">5.6.7.8 (Anycast)</text>
+                    <rect x="205" y="128" width="140" height="50" rx="6" fill="var(--cf-svg-node-fill-orange)" stroke="var(--cf-svg-node-stroke-orange)" strokeWidth="1" />
+                    <text x="275" y="146" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="var(--cf-svg-node-text-orange)">Static IP #2</text>
+                    <text x="275" y="162" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-orange)">5.6.7.8 (Anycast)</text>
                   </g>
 
                   {/* ==================== AWS GLOBAL BACKBONE SHIELD ==================== */}
-                  <rect x="375" y="24" width="170" height="185" rx="8" fill="none" stroke="#6366f1" strokeWidth="1.5" strokeDasharray="4,2" />
-                  <text x="383" y="36" fill="#6366f1" fontSize="7.5" fontWeight="extrabold">AWS Global Network Backbone Shield</text>
+                  <rect x="375" y="24" width="170" height="185" rx="8" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" strokeDasharray="4,2" />
+                  <text x="383" y="36" fill="var(--cf-svg-text-edge)" fontSize="7.5" fontWeight="extrabold">AWS Global Network Backbone Shield</text>
 
                   {/* Column 3: Private AWS Backbone */}
                   {/* Thick glowing private fiber bus */}
                   <path d="M 460 55 L 460 180" id="aga-backbone" fill="none" stroke="url(#grad-aga-purple)" strokeWidth="6" strokeLinecap="round" />
-                  <text x="470" y="118" textAnchor="start" fontSize="8.5" fill="#4f46e5" fontWeight="700">Congestion-Free</text>
-                  <text x="470" y="130" textAnchor="start" fontSize="7.5" fill="#6366f1" fontWeight="600">Transit Backbone</text>
+                  <text x="470" y="118" textAnchor="start" fontSize="8.5" fill="var(--cf-svg-text-edge)" fontWeight="700">Congestion-Free</text>
+                  <text x="470" y="130" textAnchor="start" fontSize="7.5" fill="var(--cf-svg-text-edge)" fontWeight="600">Transit Backbone</text>
 
                   {/* ==================== US EAST REGION BOUNDARY ==================== */}
-                  <rect x="565" y="24" width="180" height="90" rx="6" fill="none" stroke="#10b981" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="573" y="36" fill="#047857" fontSize="7" fontWeight="bold">US-East Region (us-east-1)</text>
+                  <rect x="565" y="24" width="180" height="90" rx="6" fill="none" stroke="var(--cf-svg-text-origin)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="573" y="36" fill="var(--cf-svg-text-origin)" fontSize="7" fontWeight="bold">US-East Region (us-east-1)</text>
 
                   {/* US East Endpoint Group */}
                   <g filter="url(#shadow-aga)">
-                    <rect x="575" y="48" width="160" height="50" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="655" y="68" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#047857">us-east-1 Endpoint</text>
-                    <rect x="585" y="76" width="140" height="15" rx="3" fill="#dcfce7" />
-                    <text x="655" y="86" textAnchor="middle" fontSize="7" fill="#15803d" fontWeight="700">ALB ACTIVE 🟢 DIAL 100%</text>
+                    <rect x="575" y="48" width="160" height="50" rx="6" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
+                    <text x="655" y="68" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="var(--cf-svg-text-origin)">us-east-1 Endpoint</text>
+                    <rect x="585" y="76" width="140" height="15" rx="3" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="0.5" />
+                    <text x="655" y="86" textAnchor="middle" fontSize="7" fill="var(--cf-svg-text-origin)" fontWeight="700">ALB ACTIVE 🟢 DIAL 100%</text>
                   </g>
 
                   {/* ==================== EU CENTRAL REGION BOUNDARY ==================== */}
-                  <rect x="565" y="118" width="180" height="90" rx="6" fill="none" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="573" y="130" fill="#b91c1c" fontSize="7" fontWeight="bold">EU-Central Region (eu-central-1)</text>
+                  <rect x="565" y="118" width="180" height="90" rx="6" fill="none" stroke="var(--cf-alert-red-text)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="573" y="130" fill="var(--cf-alert-red-text)" fontSize="7" fontWeight="bold">EU-Central Region (eu-central-1)</text>
 
                   {/* EU Central Endpoint Group (Unhealthy - Redirected) */}
                   <g filter="url(#shadow-aga)">
-                    <rect x="575" y="142" width="160" height="50" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                    <text x="655" y="162" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="#b91c1c">eu-central-1 Endpoint</text>
-                    <rect x="585" y="170" width="140" height="15" rx="3" fill="#fee2e2" />
-                    <text x="655" y="180" textAnchor="middle" fontSize="7" fill="#dc2626" fontWeight="700">DEGRADED ❌ FAILOVER ACTIVE</text>
+                    <rect x="575" y="142" width="160" height="50" rx="6" fill="var(--cf-alert-red-bg)" stroke="var(--cf-alert-red-border)" strokeWidth="1.5" />
+                    <text x="655" y="162" textAnchor="middle" fontSize="9.5" fontWeight="800" fill="var(--cf-alert-red-text)">eu-central-1 Endpoint</text>
+                    <rect x="585" y="170" width="140" height="15" rx="3" fill="var(--cf-alert-red-bg)" stroke="var(--cf-alert-red-border)" strokeWidth="0.5" />
+                    <text x="655" y="180" textAnchor="middle" fontSize="7" fill="var(--cf-alert-red-text)" fontWeight="700">DEGRADED ❌ FAILOVER ACTIVE</text>
                   </g>
 
                   {/* Connectors */}
@@ -1832,16 +1926,16 @@ export default function CloudfrontVisualizer() {
                   <path d="M 155 162 L 205 148" fill="none" stroke="url(#grad-aga-orange)" strokeWidth="1.2" />
 
                   {/* Ingestion POPs to AWS Private Backbone */}
-                  <path d="M 345 83 L 390 100" fill="none" stroke="#4f46e5" strokeWidth="1.5" />
-                  <path d="M 345 153 L 390 120" fill="none" stroke="#4f46e5" strokeWidth="1.5" />
+                  <path d="M 345 83 L 390 100" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" />
+                  <path d="M 345 153 L 390 120" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" />
 
                   {/* Backbone to Endpoints */}
                   {/* Normal routing from backbone to healthy US ALB */}
-                  <path d="M 530 90 L 575 73" fill="none" stroke="#10b981" strokeWidth="2" />
+                  <path d="M 530 90 L 575 73" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="2" />
                   
                   {/* Rerouted path away from failed EU Central ALB to US ALB */}
-                  <path d="M 530 140 L 575 82" id="path-failover-aga" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <text x="552.5" y="112" textAnchor="middle" fontSize="7" fill="#ef4444" fontWeight="800">Sub-10s Dynamic Shift</text>
+                  <path d="M 530 140 L 575 82" id="path-failover-aga" fill="none" stroke="var(--cf-alert-red-text)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <text x="552.5" y="112" textAnchor="middle" fontSize="7" fill="var(--cf-alert-red-text)" fontWeight="800">Sub-10s Dynamic Shift</text>
 
                   {/* Dynamic packets streaming along the backbone */}
                   <circle r="3.5" fill="#f59e0b">
@@ -1858,8 +1952,8 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* AWS Global Accelerator vs. Amazon CloudFront Comparison */}
-              <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px', marginTop: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#4f46e5' }}>
+              <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px', marginTop: '14px' }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: 'var(--cf-svg-text-edge)' }}>
                   Architectural Matrix: AWS Global Accelerator vs. Amazon CloudFront
                 </div>
 
@@ -1930,8 +2024,8 @@ export default function CloudfrontVisualizer() {
 
               <div className="cf-grid3" style={{ marginBottom: '14px' }}>
                 {/* OAC */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#16a34a' }}>Origin Access Control (OAC)</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-origin)' }}>Origin Access Control (OAC)</div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
                     OAC is the modern AWS security standard that replaces the legacy Origin Access Identity (OAI) system.
                   </div>
@@ -1943,8 +2037,8 @@ export default function CloudfrontVisualizer() {
                 </div>
 
                 {/* Geo Restriction */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#c2410c' }}>Geo-Restriction (Geoblocking)</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-orange)' }}>Geo-Restriction (Geoblocking)</div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
                     Apply geographic filters directly at global edge locations before requests consume any backend bandwidth.
                   </div>
@@ -1956,8 +2050,8 @@ export default function CloudfrontVisualizer() {
                 </div>
 
                 {/* Cache Invalidations */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#6b21a8' }}>Cache Invalidation Pipelines</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-edge)' }}>Cache Invalidation Pipelines</div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
                     What happens if a developer deploys an updated website, but the CDN continues serving cached old files?
                   </div>
@@ -1970,8 +2064,8 @@ export default function CloudfrontVisualizer() {
               </div>
 
               {/* Visualizing Invalidation and Geo block in Simulator Info */}
-              <div style={{ background: '#eff6ff', border: '0.5px solid #bfdbfe', borderRadius: '8px', padding: '12px', fontSize: '12px', lineHeight: '1.5' }}>
-                <div style={{ fontWeight: 600, color: '#1e40af', marginBottom: '4px' }}>💡 Interactive Testing Tip:</div>
+              <div style={{ background: 'var(--cf-alert-blue-bg)', border: '1.5px solid var(--cf-alert-blue-border)', borderRadius: '8px', padding: '12px', fontSize: '12px', lineHeight: '1.5' }}>
+                <div style={{ fontWeight: 600, color: 'var(--cf-alert-blue-text)', marginBottom: '4px' }}>💡 Interactive Testing Tip:</div>
                 You can test both **Geo-Restrictions** and **Cache Invalidations** in real-time inside the **Live Global Request Simulator** tab!
                 Toggle country blockades to see requests instantly rejected at the edge, or trigger an invalidation path to wipe cache states and witness a live cache miss animation.
               </div>
@@ -1987,8 +2081,8 @@ export default function CloudfrontVisualizer() {
               <div className="cf-grid2" style={{ gap: '16px' }}>
                 {/* Left Column: Selector & Editor */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#6366f1' }}>Select Script Template Policy:</div>
+                  <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-edge)' }}>Select Script Template Policy:</div>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <button 
@@ -2015,10 +2109,10 @@ export default function CloudfrontVisualizer() {
                     </div>
 
                     {/* Educational specifications box */}
-                    <div style={{ marginTop: '12px', borderTop: '0.5px solid #cbd5e1', paddingTop: '8px', fontSize: '11px', lineHeight: '1.45', color: '#475569' }}>
-                      <div><strong>Engine:</strong> <span style={{ color: '#0284c7', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].type}</span></div>
-                      <div><strong>Stage:</strong> <span style={{ color: '#6d28d9', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].stage}</span></div>
-                      <div><strong>Performance:</strong> <span style={{ color: '#16a34a', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].latency}</span></div>
+                    <div style={{ marginTop: '12px', borderTop: '0.5px solid var(--cf-border-primary)', paddingTop: '8px', fontSize: '11px', lineHeight: '1.45', color: 'var(--color-text-secondary)' }}>
+                      <div><strong>Engine:</strong> <span style={{ color: 'var(--cf-svg-text-client)', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].type}</span></div>
+                      <div><strong>Stage:</strong> <span style={{ color: 'var(--cf-svg-text-edge)', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].stage}</span></div>
+                      <div><strong>Performance:</strong> <span style={{ color: 'var(--cf-svg-text-origin)', fontWeight: 600 }}>{scriptTemplates[cfSelectedTemplate].latency}</span></div>
                       <p style={{ margin: '4px 0 0 0', fontStyle: 'italic', fontSize: '10px' }}>
                         {scriptTemplates[cfSelectedTemplate].description}
                       </p>
@@ -2026,12 +2120,12 @@ export default function CloudfrontVisualizer() {
                   </div>
 
                   {/* Editor Mockup */}
-                  <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
-                      <span style={{ fontSize: '10.5px', fontFamily: 'monospace', color: '#94a3b8' }}>📄 handler.js (Read-only Editor)</span>
+                  <div style={{ background: 'var(--cf-terminal-bg)', border: '1.5px solid var(--cf-terminal-border)', borderRadius: '8px', padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1.5px solid var(--cf-terminal-border)', paddingBottom: '6px' }}>
+                      <span style={{ fontSize: '10.5px', fontFamily: 'monospace', color: 'var(--color-text-tertiary)' }}>📄 handler.js (Read-only Editor)</span>
                       <span className="cf-badge cf-binfo" style={{ padding: '2px 6px', fontSize: '8px' }}>{scriptTemplates[cfSelectedTemplate].language}</span>
                     </div>
-                    <pre style={{ margin: 0, overflowX: 'auto', fontFamily: 'monospace', fontSize: '10.5px', color: '#38bdf8', flex: 1, whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                    <pre style={{ margin: 0, overflowX: 'auto', fontFamily: 'monospace', fontSize: '10.5px', color: 'var(--cf-terminal-color)', flex: 1, whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
                       {scriptTemplates[cfSelectedTemplate].code}
                     </pre>
                   </div>
@@ -2039,8 +2133,8 @@ export default function CloudfrontVisualizer() {
 
                 {/* Right Column: Execution Terminal and Latency Indicator */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ background: '#f8fafc', border: '0.5px solid #cbd5e1', borderRadius: '8px', padding: '12px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#334155' }}>Edge Execution Console</div>
+                  <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>Edge Execution Console</div>
                     
                     <button 
                       className="cf-btn cf-primary" 
@@ -2052,78 +2146,78 @@ export default function CloudfrontVisualizer() {
                     </button>
 
                     {/* Micro-animations and phase indicator */}
-                    <div style={{ background: '#ffffff', border: '1.5px solid rgba(226, 232, 240, 0.9)', borderRadius: '12px', padding: '12px', fontSize: '11px', marginBottom: '10px' }}>
-                      <div style={{ fontWeight: 700, color: '#475569', marginBottom: '8px' }}>⚡ Edge Interception Stage Mapping:</div>
+                    <div style={{ background: 'var(--color-background-primary)', border: '1.5px solid var(--cf-card-border)', borderRadius: '12px', padding: '12px', fontSize: '11px', marginBottom: '10px' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>⚡ Edge Interception Stage Mapping:</div>
                       
                       {/* Brand New Interception Events SVG */}
-                      <svg width="100%" height="60" viewBox="0 0 320 60" style={{ background: '#f8fafc', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '10px' }}>
+                      <svg width="100%" height="60" viewBox="0 0 320 60" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--cf-card-border)', marginBottom: '10px' }}>
                         {/* ==================== EDGE COMPUTING EXECUTION BOUNDARY ==================== */}
-                        <rect x="5" y="5" width="310" height="50" rx="4" fill="none" stroke="#8b5cf6" strokeWidth="1" strokeDasharray="3,2" />
-                        <text x="12" y="14" fill="#8b5cf6" fontSize="5" fontWeight="bold">Edge Computing Execution Boundary</text>
+                        <rect x="5" y="5" width="310" height="50" rx="4" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1" strokeDasharray="3,2" />
+                        <text x="12" y="14" fill="var(--cf-svg-text-edge)" fontSize="5" fontWeight="bold">Edge Computing Execution Boundary</text>
 
                         {/* Flow Conduit */}
-                        <line x1="20" y1="34" x2="300" y2="34" stroke="#cbd5e1" strokeWidth="2.5" />
-                        <line x1="20" y1="34" x2="300" y2="34" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <line x1="20" y1="34" x2="300" y2="34" stroke="var(--cf-svg-node-stroke)" strokeWidth="2.5" />
+                        <line x1="20" y1="34" x2="300" y2="34" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" strokeDasharray="3,3" />
 
                         {/* Viewer Request Node (Stage 1) */}
                         <circle cx="40" cy="34" r="7" 
-                          fill={cfSelectedTemplate === 'rewrite' ? '#a855f7' : '#ffffff'} 
-                          stroke={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#94a3b8'} 
+                          fill={cfSelectedTemplate === 'rewrite' ? 'var(--cf-svg-text-edge)' : 'var(--color-background-primary)'} 
+                          stroke={cfSelectedTemplate === 'rewrite' ? 'var(--cf-svg-text-edge)' : 'var(--cf-svg-node-stroke)'} 
                           strokeWidth="2" 
                         />
                         {cfSelectedTemplate === 'rewrite' && (
-                          <circle cx="40" cy="34" r="11" fill="none" stroke="#a855f7" strokeWidth="1.5">
+                          <circle cx="40" cy="34" r="11" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5">
                             <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="40" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'rewrite' ? '#7c3aed' : '#64748b'}>Viewer Req</text>
+                        <text x="40" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'rewrite' ? 'var(--cf-svg-text-edge)' : 'var(--color-text-tertiary)'}>Viewer Req</text>
 
                         {/* Origin Request Node (Stage 2) */}
                         <circle cx="120" cy="34" r="7" 
-                          fill={cfSelectedTemplate === 'ab' ? '#3b82f6' : '#ffffff'} 
-                          stroke={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#94a3b8'} 
+                          fill={cfSelectedTemplate === 'ab' ? 'var(--cf-svg-text-alb)' : 'var(--color-background-primary)'} 
+                          stroke={cfSelectedTemplate === 'ab' ? 'var(--cf-svg-text-alb)' : 'var(--cf-svg-node-stroke)'} 
                           strokeWidth="2" 
                         />
                         {cfSelectedTemplate === 'ab' && (
-                          <circle cx="120" cy="34" r="11" fill="none" stroke="#3b82f6" strokeWidth="1.5">
+                          <circle cx="120" cy="34" r="11" fill="none" stroke="var(--cf-svg-text-alb)" strokeWidth="1.5">
                             <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="120" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'ab' ? '#1d4ed8' : '#64748b'}>Origin Req</text>
+                        <text x="120" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'ab' ? 'var(--cf-svg-text-alb)' : 'var(--color-text-tertiary)'}>Origin Req</text>
 
                         {/* Origin Response Node (Stage 3) */}
-                        <circle cx="200" cy="34" r="7" fill="#ffffff" stroke="#94a3b8" strokeWidth="2" />
-                        <text x="200" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#64748b">Origin Resp</text>
+                        <circle cx="200" cy="34" r="7" fill="var(--color-background-primary)" stroke="var(--cf-svg-node-stroke)" strokeWidth="2" />
+                        <text x="200" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="var(--color-text-tertiary)">Origin Resp</text>
 
                         {/* Viewer Response Node (Stage 4) */}
                         <circle cx="280" cy="34" r="7" 
-                          fill={cfSelectedTemplate === 'hsts' ? '#10b981' : '#ffffff'} 
-                          stroke={cfSelectedTemplate === 'hsts' ? '#059669' : '#94a3b8'} 
+                          fill={cfSelectedTemplate === 'hsts' ? 'var(--cf-svg-text-origin)' : 'var(--color-background-primary)'} 
+                          stroke={cfSelectedTemplate === 'hsts' ? 'var(--cf-svg-text-origin)' : 'var(--cf-svg-node-stroke)'} 
                           strokeWidth="2" 
                         />
                         {cfSelectedTemplate === 'hsts' && (
-                          <circle cx="280" cy="34" r="11" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <circle cx="280" cy="34" r="11" fill="none" stroke="var(--cf-svg-text-origin)" strokeWidth="1.5">
                             <animate attributeName="r" values="7;14;7" dur="1.5s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="280" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'hsts' ? '#059669' : '#64748b'}>Viewer Resp</text>
+                        <text x="280" y="24" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={cfSelectedTemplate === 'hsts' ? 'var(--cf-svg-text-origin)' : 'var(--color-text-tertiary)'}>Viewer Resp</text>
                       </svg>
 
-                      <div style={{ fontWeight: 700, color: '#475569', marginBottom: '6px' }}>Pipeline Progress Stages:</div>
+                      <div style={{ fontWeight: 700, color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Pipeline Progress Stages:</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ color: cfEdgeStep >= 1 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 1 ? 'bold' : 'normal' }}>
+                        <div style={{ color: cfEdgeStep >= 1 ? 'var(--cf-svg-text-origin)' : 'var(--color-text-tertiary)', fontWeight: cfEdgeStep === 1 ? 'bold' : 'normal' }}>
                           {cfEdgeStep >= 1 ? '🟢' : '⚪'} Stage 1: Request Interception ({scriptTemplates[cfSelectedTemplate].stage})
                         </div>
-                        <div style={{ color: cfEdgeStep >= 2 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 2 ? 'bold' : 'normal' }}>
+                        <div style={{ color: cfEdgeStep >= 2 ? 'var(--cf-svg-text-origin)' : 'var(--color-text-tertiary)', fontWeight: cfEdgeStep === 2 ? 'bold' : 'normal' }}>
                           {cfEdgeStep >= 2 ? '🟢' : '⚪'} Stage 2: Sandbox Isolate compilation
                         </div>
-                        <div style={{ color: cfEdgeStep >= 3 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 3 ? 'bold' : 'normal' }}>
+                        <div style={{ color: cfEdgeStep >= 3 ? 'var(--cf-svg-text-origin)' : 'var(--color-text-tertiary)', fontWeight: cfEdgeStep === 3 ? 'bold' : 'normal' }}>
                           {cfEdgeStep >= 3 ? '🟢' : '⚪'} Stage 3: Request/Response Header Mutation
                         </div>
-                        <div style={{ color: cfEdgeStep >= 4 ? '#16a34a' : '#94a3b8', fontWeight: cfEdgeStep === 4 ? 'bold' : 'normal' }}>
+                        <div style={{ color: cfEdgeStep >= 4 ? 'var(--cf-svg-text-origin)' : 'var(--color-text-tertiary)', fontWeight: cfEdgeStep === 4 ? 'bold' : 'normal' }}>
                           {cfEdgeStep >= 4 ? '🟢' : '⚪'} Stage 4: Execution successfully finished!
                         </div>
                       </div>
@@ -2134,24 +2228,24 @@ export default function CloudfrontVisualizer() {
                       <div style={{ marginTop: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>
                           <span>Dynamic Latency Overhead:</span>
-                          <span style={{ color: cfEdgeLatency === 1 ? '#16a34a' : '#be185d' }}>
+                          <span style={{ color: cfEdgeLatency === 1 ? 'var(--cf-svg-text-origin)' : 'var(--cf-alert-red-text)' }}>
                             {cfEdgeLatency} ms ({cfEdgeLatency === 1 ? 'Ultra optimized V8 isolate' : 'Node Lambda container'})
                           </span>
                         </div>
                         
                         {/* Visual progress bar */}
-                        <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '100%', height: '8px', background: 'var(--cf-border-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
                           <div 
                             style={{ 
                               height: '100%', 
                               width: cfEdgeLatency === 1 ? '4%' : '90%', 
-                              background: cfEdgeLatency === 1 ? '#16a34a' : '#db2777',
+                              background: cfEdgeLatency === 1 ? 'var(--cf-svg-text-origin)' : 'var(--cf-alert-red-text)',
                               transition: 'width 0.4s ease-out'
                             }} 
                           />
                         </div>
                         
-                        <div style={{ fontSize: '9.5px', color: '#64748b', marginTop: '4px', fontStyle: 'italic' }}>
+                        <div style={{ fontSize: '9.5px', color: 'var(--color-text-tertiary)', marginTop: '4px', fontStyle: 'italic' }}>
                           {cfEdgeLatency === 1 
                             ? 'CloudFront Functions execute in lightweight threads. Zero cold-start latency.'
                             : 'Lambda@Edge invokes a full Node.js server container. Supports extensive computational power at a slight startup cost.'}
@@ -2163,9 +2257,9 @@ export default function CloudfrontVisualizer() {
                   {/* Console Logs & Modified Headers Terminals */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {/* Logs console */}
-                    <div style={{ background: '#1e293b', borderRadius: '6px', padding: '8px', height: '80px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '9.5px', color: '#cbd5e1', lineHeight: '1.4' }}>
+                    <div style={{ background: 'var(--cf-terminal-bg)', borderRadius: '6px', padding: '8px', height: '80px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '9.5px', color: 'var(--cf-terminal-color)', lineHeight: '1.4' }}>
                       {cfEdgeLogs.map((logLine, logIdx) => (
-                        <div key={logIdx} style={{ marginBottom: '3px', color: logLine.includes('✅') ? '#4ade80' : '#cbd5e1' }}>
+                        <div key={logIdx} style={{ marginBottom: '3px', color: logLine.includes('✅') ? 'var(--cf-svg-text-origin)' : 'var(--cf-terminal-color)' }}>
                           {logLine}
                         </div>
                       ))}
@@ -2174,15 +2268,15 @@ export default function CloudfrontVisualizer() {
                     {/* Header Diff side-by-side */}
                     {cfEdgeStep >= 3 && (
                       <div className="cf-grid2" style={{ gap: '8px', flex: 1 }}>
-                        <div style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '6px', padding: '6px', display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#b91c1c', marginBottom: '4px' }}>Inbound Header:</span>
-                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '9px', color: '#475569', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                        <div style={{ background: 'var(--color-background-secondary)', border: '1.5px solid var(--cf-border-primary)', borderRadius: '6px', padding: '6px', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--cf-alert-red-text)', marginBottom: '4px' }}>Inbound Header:</span>
+                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '9px', color: 'var(--color-text-secondary)', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
                             {scriptTemplates[cfSelectedTemplate].inputHeaders}
                           </pre>
                         </div>
-                        <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '6px', padding: '6px', display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#166534', marginBottom: '4px' }}>Modified Header (At Edge):</span>
-                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '9px', color: '#15803d', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                        <div style={{ background: 'var(--cf-svg-node-fill-origin)', border: '1.5px solid var(--cf-svg-node-stroke-origin)', borderRadius: '6px', padding: '6px', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--cf-svg-text-origin)', marginBottom: '4px' }}>Modified Header (At Edge):</span>
+                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '9px', color: 'var(--cf-svg-text-origin)', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
                             {scriptTemplates[cfSelectedTemplate].outputHeaders}
                           </pre>
                         </div>
@@ -2201,10 +2295,10 @@ export default function CloudfrontVisualizer() {
             <div className="cf-sec">Live Interactive Global Request Routing Simulator</div>
             
             {/* Quick Cache Control bar */}
-            <div className="cf-card" style={{ display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', background: '#fdfaee', borderColor: '#fde68a' }}>
+            <div className="cf-card" style={{ display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', background: 'var(--cf-alert-yellow-bg)', borderColor: 'var(--cf-alert-yellow-border)' }}>
               <div>
-                <span style={{ fontWeight: 700, fontSize: '12px', color: '#854d0e' }}>⚡ CDN Cache State Controller:</span>
-                <span style={{ fontSize: '11px', color: '#a16207', marginLeft: '6px' }}>
+                <span style={{ fontWeight: 700, fontSize: '12px', color: 'var(--cf-alert-yellow-text)' }}>⚡ CDN Cache State Controller:</span>
+                <span style={{ fontSize: '11px', color: 'var(--cf-alert-yellow-text)', marginLeft: '6px' }}>
                   US Edge: <b>{edgeCacheState['us-static'] === 'warm' ? 'WARM 🟢' : 'EMPTY ⚪'}</b> | 
                   EU Edge: <b>{edgeCacheState['eu-static'] === 'warm' ? 'WARM 🟢' : 'EMPTY ⚪'}</b> | 
                   Asia Edge: <b>{edgeCacheState['asia-static'] === 'warm' ? 'WARM 🟢' : 'EMPTY ⚪'}</b>
@@ -2215,7 +2309,7 @@ export default function CloudfrontVisualizer() {
                   type="text" 
                   value={invalidationPath} 
                   onChange={(e) => setInvalidationPath(e.target.value)} 
-                  style={{ width: '120px', fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '0.5px solid #d97706' }} 
+                  style={{ width: '120px', fontSize: '11px', padding: '4px 8px', borderRadius: '4px', border: '1.5px solid var(--cf-alert-yellow-border)' }} 
                   placeholder="/*"
                 />
                 <button className="cf-btn cf-primary" style={{ padding: '4px 10px', fontSize: '11px' }} onClick={handleInvalidate}>
@@ -2350,7 +2444,7 @@ export default function CloudfrontVisualizer() {
                 <div className="cf-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   
                   {/* Dynamic SVG tracing paths */}
-                  <svg width="100%" height="200" viewBox="0 0 480 200" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid rgba(226, 232, 240, 0.85)' }}>
+                  <svg width="100%" height="200" viewBox="0 0 480 200" className="cf-svg-bg" style={{ borderRadius: '12px', border: '1.5px solid var(--cf-card-border)' }}>
                     <defs>
                       <linearGradient id="grad-edge-3d" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#a855f7" />
@@ -2366,129 +2460,129 @@ export default function CloudfrontVisualizer() {
                     </defs>
 
                     {/* ==================== PUBLIC INGRESS REGIONS BOUNDARY ==================== */}
-                    <rect x="8" y="12" width="64" height="176" rx="8" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4,2" />
-                    <text x="14" y="22" fill="#64748b" fontSize="5" fontWeight="bold">Ingress Regions</text>
+                    <rect x="8" y="12" width="64" height="176" rx="8" fill="none" stroke="var(--color-text-tertiary)" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="14" y="22" fill="var(--color-text-tertiary)" fontSize="5" fontWeight="bold">Ingress Regions</text>
 
                     {/* Node US Client Card */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="15" y="26" width="50" height="34" rx="4" fill={clientRegion === 'us' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'us' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'us' ? 1.5 : 1} />
-                      <text x="40" y="42" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'us' ? '#1d4ed8' : '#475569'}>US East</text>
-                      <text x="40" y="51" textAnchor="middle" fontSize="6" fill="#64748b">New York</text>
+                      <rect x="15" y="26" width="50" height="34" rx="4" fill={clientRegion === 'us' ? 'var(--cf-svg-node-fill-client)' : 'var(--color-background-primary)'} stroke={clientRegion === 'us' ? 'var(--cf-svg-node-stroke-client)' : 'var(--cf-svg-node-stroke)'} strokeWidth={clientRegion === 'us' ? 1.5 : 1} />
+                      <text x="40" y="42" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'us' ? 'var(--cf-svg-text-client)' : 'var(--color-text-secondary)'}>US East</text>
+                      <text x="40" y="51" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)">New York</text>
                     </g>
 
                     {/* Node EU Client Card */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="15" y="82" width="50" height="34" rx="4" fill={clientRegion === 'eu' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'eu' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'eu' ? 1.5 : 1} />
-                      <text x="40" y="98" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'eu' ? '#1d4ed8' : '#475569'}>EU West</text>
-                      <text x="40" y="107" textAnchor="middle" fontSize="6" fill="#64748b">Frankfurt</text>
+                      <rect x="15" y="82" width="50" height="34" rx="4" fill={clientRegion === 'eu' ? 'var(--cf-svg-node-fill-client)' : 'var(--color-background-primary)'} stroke={clientRegion === 'eu' ? 'var(--cf-svg-node-stroke-client)' : 'var(--cf-svg-node-stroke)'} strokeWidth={clientRegion === 'eu' ? 1.5 : 1} />
+                      <text x="40" y="98" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'eu' ? 'var(--cf-svg-text-client)' : 'var(--color-text-secondary)'}>EU West</text>
+                      <text x="40" y="107" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)">Frankfurt</text>
                     </g>
 
                     {/* Node Asia Client Card */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="15" y="138" width="50" height="34" rx="4" fill={clientRegion === 'asia' ? '#eff6ff' : '#ffffff'} stroke={clientRegion === 'asia' ? '#3b82f6' : '#cbd5e1'} strokeWidth={clientRegion === 'asia' ? 1.5 : 1} />
-                      <text x="40" y="154" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'asia' ? '#1d4ed8' : '#475569'}>AP East</text>
-                      <text x="40" y="163" textAnchor="middle" fontSize="6" fill="#64748b">Tokyo</text>
+                      <rect x="15" y="138" width="50" height="34" rx="4" fill={clientRegion === 'asia' ? 'var(--cf-svg-node-fill-client)' : 'var(--color-background-primary)'} stroke={clientRegion === 'asia' ? 'var(--cf-svg-node-stroke-client)' : 'var(--cf-svg-node-stroke)'} strokeWidth={clientRegion === 'asia' ? 1.5 : 1} />
+                      <text x="40" y="154" textAnchor="middle" fontSize="8" fontWeight="800" fill={clientRegion === 'asia' ? 'var(--cf-svg-text-client)' : 'var(--color-text-secondary)'}>AP East</text>
+                      <text x="40" y="163" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)">Tokyo</text>
                     </g>
 
                     {/* Anycast DNS Gateway */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="105" y="77" width="45" height="46" rx="6" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" />
-                      <text x="127.5" y="94" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#475569">Anycast</text>
-                      <text x="127.5" y="107" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="#475569">DNS</text>
-                      <circle cx="127.5" cy="115" r="2.5" fill="#3b82f6" />
+                      <rect x="105" y="77" width="45" height="46" rx="6" fill="var(--color-background-primary)" stroke="var(--cf-svg-node-stroke)" strokeWidth="1" />
+                      <text x="127.5" y="94" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="var(--color-text-secondary)">Anycast</text>
+                      <text x="127.5" y="107" textAnchor="middle" fontSize="8.5" fontWeight="800" fill="var(--color-text-secondary)">DNS</text>
+                      <circle cx="127.5" cy="115" r="2.5" fill="var(--cf-svg-text-client)" />
                     </g>
 
                     {/* ==================== CLOUDFRONT EDGE POP CACHING BOUNDARY ==================== */}
-                    <rect x="180" y="32" width="80" height="136" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" />
-                    <text x="188" y="44" fill="#8b5cf6" fontSize="5.5" fontWeight="extrabold">CloudFront Edge POP</text>
+                    <rect x="180" y="32" width="80" height="136" rx="8" fill="none" stroke="var(--cf-svg-text-edge)" strokeWidth="1.5" strokeDasharray="4,2" />
+                    <text x="188" y="44" fill="var(--cf-svg-text-edge)" fontSize="5.5" fontWeight="extrabold">CloudFront Edge POP</text>
 
                     {/* Edge Server Location */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="190" y="70" width="60" height="60" rx="8" fill={simStep >= 3 ? '#f5f3ff' : '#ffffff'} stroke={simStep === 5 ? '#ef4444' : simStep >= 3 ? '#8b5cf6' : '#cbd5e1'} strokeWidth={simStep === 5 || simStep >= 3 ? 2 : 1} />
-                      <text x="220" y="87" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 3 ? '#6d28d9' : '#475569'}>Edge PoP</text>
+                      <rect x="190" y="70" width="60" height="60" rx="8" fill={simStep >= 3 ? 'var(--cf-svg-node-fill-edge)' : 'var(--color-background-primary)'} stroke={simStep === 5 ? 'var(--cf-alert-red-text)' : simStep >= 3 ? 'var(--cf-svg-text-edge)' : 'var(--cf-svg-node-stroke)'} strokeWidth={simStep === 5 || simStep >= 3 ? 2 : 1} />
+                      <text x="220" y="87" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 3 ? 'var(--cf-svg-text-edge)' : 'var(--color-text-secondary)'}>Edge PoP</text>
                       
                       <g transform="translate(198, 97)">
-                        <rect x="0" y="0" width="44" height="24" rx="2" fill="#ffffff" stroke="#ddd6fe" />
+                        <rect x="0" y="0" width="44" height="24" rx="2" fill="var(--color-background-primary)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="0.5" />
                         {simStep === 5 ? (
-                          <text x="22" y="15" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="800">BLOCKED</text>
+                          <text x="22" y="15" textAnchor="middle" fontSize="8" fill="var(--cf-alert-red-text)" fontWeight="800">BLOCKED</text>
                         ) : simStep >= 7 && simResults?.cacheHeader.includes('Hit') ? (
-                          <text x="22" y="15" textAnchor="middle" fontSize="8.5" fill="#10b981" fontWeight="800">⭐ HIT</text>
+                          <text x="22" y="15" textAnchor="middle" fontSize="8.5" fill="var(--cf-svg-text-origin)" fontWeight="800">⭐ HIT</text>
                         ) : simStep >= 3 ? (
                           <g>
-                            <circle cx="12" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
-                            <circle cx="22" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="1;0.2;1" dur="0.6s" repeatCount="indefinite" /></circle>
-                            <circle cx="32" cy="12" r="2.5" fill="#10b981"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                            <circle cx="12" cy="12" r="2.5" fill="var(--cf-svg-text-origin)"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
+                            <circle cx="22" cy="12" r="2.5" fill="var(--cf-svg-text-origin)"><animate attributeName="opacity" values="1;0.2;1" dur="0.6s" repeatCount="indefinite" /></circle>
+                            <circle cx="32" cy="12" r="2.5" fill="var(--cf-svg-text-origin)"><animate attributeName="opacity" values="0.2;1;0.2" dur="0.6s" repeatCount="indefinite" /></circle>
                           </g>
                         ) : (
-                          <text x="22" y="15" textAnchor="middle" fontSize="7.5" fill="#94a3b8">Idle</text>
+                          <text x="22" y="15" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">Idle</text>
                         )}
                       </g>
                     </g>
 
                     {/* ==================== REGIONAL CACHE SHIELD BOUNDARY ==================== */}
-                    <rect x="280" y="32" width="80" height="136" rx="8" fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="4,2" />
-                    <text x="288" y="44" fill="#ec4899" fontSize="5.5" fontWeight="extrabold">Regional Cache Shield</text>
+                    <rect x="280" y="32" width="80" height="136" rx="8" fill="none" stroke="var(--cf-svg-text-rec)" strokeWidth="1.5" strokeDasharray="4,2" />
+                    <text x="288" y="44" fill="var(--cf-svg-text-rec)" fontSize="5.5" fontWeight="extrabold">Regional Cache Shield</text>
 
                     {/* Regional Edge Cache (REC) */}
                     <g filter="url(#shadow-sim)">
-                      <rect x="290" y="70" width="60" height="60" rx="8" fill={simStep >= 3.5 ? '#fdf2f8' : '#ffffff'} stroke={simStep >= 3.5 ? '#db2777' : '#cbd5e1'} strokeWidth={simStep >= 3.5 ? 1.5 : 1} strokeDasharray={useOriginShield ? '' : '3,3'} />
-                      <text x="320" y="87" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 3.5 ? '#be185d' : '#475569'}>REC Buffer</text>
+                      <rect x="290" y="70" width="60" height="60" rx="8" fill={simStep >= 3.5 ? 'var(--cf-svg-node-fill-rec)' : 'var(--color-background-primary)'} stroke={simStep >= 3.5 ? 'var(--cf-svg-text-rec)' : 'var(--cf-svg-node-stroke)'} strokeWidth={simStep >= 3.5 ? 1.5 : 1} strokeDasharray={useOriginShield ? '' : '3,3'} />
+                      <text x="320" y="87" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 3.5 ? 'var(--cf-svg-text-rec)' : 'var(--color-text-secondary)'}>REC Buffer</text>
                       
                       <g transform="translate(298, 97)">
-                        <rect x="0" y="0" width="44" height="24" rx="2" fill="#ffffff" stroke="#fbcfe8" />
+                        <rect x="0" y="0" width="44" height="24" rx="2" fill="var(--color-background-primary)" stroke="var(--cf-svg-node-stroke-rec)" strokeWidth="0.5" />
                         {simStep >= 7 && simResults?.cacheHeader.includes('REC Hit') ? (
-                          <text x="22" y="15" textAnchor="middle" fontSize="8.5" fill="#be185d" fontWeight="800">⭐ REC HIT</text>
+                          <text x="22" y="15" textAnchor="middle" fontSize="8.5" fill="var(--cf-svg-text-rec)" fontWeight="800">⭐ REC HIT</text>
                         ) : simStep >= 3.5 ? (
                           <g>
-                            <line x1="8" y1="12" x2="36" y2="12" stroke="#db2777" strokeWidth="1.5" strokeDasharray="3,2" />
+                            <line x1="8" y1="12" x2="36" y2="12" stroke="var(--cf-svg-text-rec)" strokeWidth="1.5" strokeDasharray="3,2" />
                             <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite" />
                           </g>
                         ) : (
-                          <text x="22" y="15" textAnchor="middle" fontSize="7.5" fill="#94a3b8">Idle</text>
+                          <text x="22" y="15" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">Idle</text>
                         )}
                       </g>
                     </g>
 
                     {/* ==================== SECURE ORIGIN GROUP BOUNDARY ==================== */}
-                    <rect x="375" y="32" width="95" height="136" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
-                    <text x="383" y="44" fill="#2563eb" fontSize="5.5" fontWeight="extrabold">Secure Origin Group</text>
+                    <rect x="375" y="32" width="95" height="136" rx="8" fill="none" stroke="var(--cf-svg-text-alb)" strokeWidth="1.5" strokeDasharray="6,4" />
+                    <text x="383" y="44" fill="var(--cf-svg-text-alb)" fontSize="5.5" fontWeight="extrabold">Secure Origin Group</text>
 
                     {/* Origin Server Cylinder */}
                     <g filter="url(#shadow-sim)">
                       <path d="M 385 82 A 27.5 7 0 0 0 440 82 L 440 120 A 27.5 7 0 0 1 385 120 Z" 
-                        fill={simStep >= 4 ? '#ecfdf5' : '#ffffff'} 
-                        stroke={simStep >= 4 ? '#10b981' : '#cbd5e1'} 
+                        fill={simStep >= 4 ? 'var(--cf-svg-node-fill-origin)' : 'var(--color-background-primary)'} 
+                        stroke={simStep >= 4 ? 'var(--cf-svg-node-stroke-origin)' : 'var(--cf-svg-node-stroke)'} 
                         strokeWidth={simStep >= 4 ? 2 : 1} 
                       />
                       <ellipse cx="412.5" cy="82" rx="27.5" ry="7" 
-                        fill={simStep >= 4 ? '#dcfce7' : '#f8fafc'} 
-                        stroke={simStep >= 4 ? '#10b981' : '#cbd5e1'} 
+                        fill={simStep >= 4 ? 'var(--cf-svg-node-fill-origin)' : 'var(--color-background-primary)'} 
+                        stroke={simStep >= 4 ? 'var(--cf-svg-node-stroke-origin)' : 'var(--cf-svg-node-stroke)'} 
                         strokeWidth={simStep >= 4 ? 2 : 1} 
                       />
-                      <text x="412.5" y="99" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 4 ? '#047857' : '#475569'}>Origin</text>
-                      <text x="412.5" y="112" textAnchor="middle" fontSize="7.5" fontWeight="700" fill={simStep >= 4 ? '#059669' : '#64748b'}>
+                      <text x="412.5" y="99" textAnchor="middle" fontSize="9.5" fontWeight="800" fill={simStep >= 4 ? 'var(--cf-svg-text-origin)' : 'var(--color-text-secondary)'}>Origin</text>
+                      <text x="412.5" y="112" textAnchor="middle" fontSize="7.5" fontWeight="700" fill={simStep >= 4 ? 'var(--cf-svg-text-origin)' : 'var(--color-text-tertiary)'}>
                         {originType === 's3' ? '🪣 private-s3' : '⚙️ app-alb'}
                       </text>
                     </g>
 
                     {/* Conduit Trace Lines */}
                     {/* US Client to DNS */}
-                    <path d={clientRegion === 'us' ? "M 65 42 L 105 100" : "M 65 42 L 105 100"} fill="none" stroke={clientRegion === 'us' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'us' && simStep >= 1 ? 2.5 : 1.5} />
+                    <path d={clientRegion === 'us' ? "M 65 42 L 105 100" : "M 65 42 L 105 100"} fill="none" stroke={clientRegion === 'us' && simStep >= 1 ? 'var(--cf-svg-text-alb)' : 'var(--cf-border-primary)'} strokeWidth={clientRegion === 'us' && simStep >= 1 ? 2.5 : 1.5} />
                     
                     {/* EU Client to DNS */}
-                    <path d="M 65 100 L 105 100" fill="none" stroke={clientRegion === 'eu' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'eu' && simStep >= 1 ? 2.5 : 1.5} />
+                    <path d="M 65 100 L 105 100" fill="none" stroke={clientRegion === 'eu' && simStep >= 1 ? 'var(--cf-svg-text-alb)' : 'var(--cf-border-primary)'} strokeWidth={clientRegion === 'eu' && simStep >= 1 ? 2.5 : 1.5} />
                     
                     {/* ASIA Client to DNS */}
-                    <path d={clientRegion === 'asia' ? "M 65 156 L 105 100" : "M 65 156 L 105 100"} fill="none" stroke={clientRegion === 'asia' && simStep >= 1 ? '#3b82f6' : '#e2e8f0'} strokeWidth={clientRegion === 'asia' && simStep >= 1 ? 2.5 : 1.5} />
+                    <path d={clientRegion === 'asia' ? "M 65 156 L 105 100" : "M 65 156 L 105 100"} fill="none" stroke={clientRegion === 'asia' && simStep >= 1 ? 'var(--cf-svg-text-alb)' : 'var(--cf-border-primary)'} strokeWidth={clientRegion === 'asia' && simStep >= 1 ? 2.5 : 1.5} />
 
                     {/* DNS to Edge */}
-                    <path d="M 150 100 L 190 100" fill="none" stroke={simStep >= 2 ? (simStep === 5 ? '#ef4444' : '#6366f1') : '#e2e8f0'} strokeWidth={2.5} />
+                    <path d="M 150 100 L 190 100" fill="none" stroke={simStep >= 2 ? (simStep === 5 ? 'var(--cf-alert-red-text)' : 'var(--cf-svg-text-edge)') : 'var(--cf-border-primary)'} strokeWidth={2.5} />
 
                     {/* Edge to REC */}
-                    <path d="M 250 100 L 290 100" fill="none" stroke={simStep >= 3.5 ? '#db2777' : '#e2e8f0'} strokeWidth={2} strokeDasharray={useOriginShield ? '' : '3,3'} />
+                    <path d="M 250 100 L 290 100" fill="none" stroke={simStep >= 3.5 ? 'var(--cf-svg-text-rec)' : 'var(--cf-border-primary)'} strokeWidth={2} strokeDasharray={useOriginShield ? '' : '3,3'} />
 
                     {/* REC to Origin */}
-                    <path d="M 350 100 L 385 100" fill="none" stroke={simStep >= 4 ? '#10b981' : '#e2e8f0'} strokeWidth={2.5} />
+                    <path d="M 350 100 L 385 100" fill="none" stroke={simStep >= 4 ? 'var(--cf-svg-node-stroke-origin)' : 'var(--cf-border-primary)'} strokeWidth={2.5} />
 
                     {/* Stateful Packet Animations */}
                     {isSimulating && (
@@ -2510,10 +2604,10 @@ export default function CloudfrontVisualizer() {
                     {/* Geo-Blocked Firewall Shield Burst */}
                     {simStep === 5 && (
                       <g transform="translate(170, 70)">
-                        <polygon points="0,0 20,-10 40,0 30,30 20,40 10,30" fill="rgba(239, 68, 68, 0.25)" stroke="#ef4444" strokeWidth="2">
+                        <polygon points="0,0 20,-10 40,0 30,30 20,40 10,30" fill="var(--cf-alert-red-bg)" stroke="var(--cf-alert-red-text)" strokeWidth="2">
                           <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite" />
                         </polygon>
-                        <text x="20" y="22" textAnchor="middle" fontSize="10" fill="#fee2e2" fontWeight="bold">🛡️</text>
+                        <text x="20" y="22" textAnchor="middle" fontSize="10" fill="var(--cf-alert-red-text)" fontWeight="bold">🛡️</text>
                       </g>
                     )}
                   </svg>
@@ -2523,16 +2617,16 @@ export default function CloudfrontVisualizer() {
                     <div style={{ width: '100%', marginTop: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>
                         <span>Trace Latency Gauge:</span>
-                        <span style={{ color: simResults.latency <= 15 ? '#16a34a' : simResults.latency <= 50 ? '#4f46e5' : '#c2410c' }}>
+                        <span style={{ color: simResults.latency <= 15 ? 'var(--cf-svg-text-origin)' : simResults.latency <= 50 ? 'var(--cf-svg-text-edge)' : 'var(--cf-svg-text-orange)' }}>
                           {simResults.latency} ms ({simResults.latency <= 15 ? 'Ultra Fast' : simResults.latency <= 50 ? 'Optimized' : 'Origin Transit'})
                         </span>
                       </div>
-                      <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: '100%', height: '8px', background: 'var(--cf-border-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
                         <div 
                           style={{ 
                             height: '100%', 
                             width: `${Math.min((simResults.latency / 250) * 100, 100)}%`, 
-                            background: simResults.latency <= 15 ? '#16a34a' : simResults.latency <= 50 ? '#6366f1' : '#c2410c',
+                            background: simResults.latency <= 15 ? 'var(--cf-svg-text-origin)' : simResults.latency <= 50 ? 'var(--cf-svg-text-edge)' : 'var(--cf-svg-text-orange)',
                             transition: 'width 0.4s ease-out'
                           }} 
                         />
@@ -2542,12 +2636,12 @@ export default function CloudfrontVisualizer() {
 
                   {/* Simulator Results Box */}
                   {simResults && (
-                    <div style={{ width: '100%', marginTop: '10px', border: '0.5px solid #cbd5e1', borderRadius: '6px', padding: '10px', background: '#f8fafc' }}>
-                      <div style={{ fontWeight: 600, fontSize: '11px', color: '#4f46e5', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div style={{ width: '100%', marginTop: '10px', border: '0.5px solid var(--cf-border-secondary)', borderRadius: '6px', padding: '10px', background: 'var(--color-background-secondary)' }}>
+                      <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--cf-svg-text-edge)', textTransform: 'uppercase', marginBottom: '6px' }}>
                         CDN Header Analysis Console
                       </div>
                       <div className="cf-grid2" style={{ gap: '6px', fontFamily: 'monospace', fontSize: '10px' }}>
-                        <div>HTTP Status: <b style={{ color: simResults.status >= 400 ? '#ef4444' : '#16a34a' }}>{simResults.status}</b></div>
+                        <div>HTTP Status: <b style={{ color: simResults.status >= 400 ? 'var(--cf-alert-red-text)' : 'var(--cf-svg-text-origin)' }}>{simResults.status}</b></div>
                         <div>X-Cache: <b>{simResults.cacheHeader}</b></div>
                         <div>Server: <b>{originType === 's3' ? 'AmazonS3' : 'ALB/2.0'}</b></div>
                         <div>Protocol: <b>HTTP/2 + TLS 1.3</b></div>
@@ -2572,11 +2666,11 @@ export default function CloudfrontVisualizer() {
             <div className="cf-log">
               {simLogs.map((log, idx) => (
                 <div key={idx} className="cf-log-entry">
-                  <span style={{ color: '#94a3b8', marginRight: '6px' }}>[{log.timestamp}]</span>
+                  <span style={{ color: 'var(--color-text-tertiary)', marginRight: '6px' }}>[{log.timestamp}]</span>
                   <span style={{ 
-                    color: log.type === 'success' ? '#4ade80' : 
-                           log.type === 'warning' ? '#fbbf24' : 
-                           log.type === 'error' ? '#f87171' : '#60a5fa',
+                    color: log.type === 'success' ? 'var(--cf-svg-text-origin)' : 
+                           log.type === 'warning' ? 'var(--cf-svg-text-orange)' : 
+                           log.type === 'error' ? 'var(--cf-alert-red-text)' : 'var(--cf-terminal-color)',
                     fontWeight: log.type !== 'info' ? 700 : 'normal'
                   }}>
                     {log.message}
@@ -2599,8 +2693,8 @@ export default function CloudfrontVisualizer() {
 
               <div className="cf-grid2">
                 {/* Price Class Selector */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#4f46e5' }}>CloudFront Price Classes Selector</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: 'var(--cf-svg-text-edge)' }}>CloudFront Price Classes Selector</div>
                   
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
                     <button 
@@ -2628,11 +2722,11 @@ export default function CloudfrontVisualizer() {
 
                   {activePriceClass === '100' && (
                     <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
-                      <strong style={{ color: '#16a34a' }}>Price Class 100 (Lowest Cost):</strong>
+                      <strong style={{ color: 'var(--cf-svg-text-origin)' }}>Price Class 100 (Lowest Cost):</strong>
                       <p style={{ margin: '4px 0', color: 'var(--color-text-secondary)' }}>
                         Utilizes only Edge POPs in <strong>North America and Europe</strong>. Users in Asia, South America, and Africa will experience higher latency because they route back to Western datacenters, but you are not billed for expensive regional POP bandwidth.
                       </p>
-                      <div className="cf-mono" style={{ fontSize: '10px', color: '#64748b', marginTop: '6px' }}>
+                      <div className="cf-mono" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
                         Ideal for: Startups, local businesses, or internal tooling with Western-centric user clusters.
                       </div>
                     </div>
@@ -2640,11 +2734,11 @@ export default function CloudfrontVisualizer() {
 
                   {activePriceClass === '200' && (
                     <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
-                      <strong style={{ color: '#4f46e5' }}>Price Class 200 (Standard Balancing):</strong>
+                      <strong style={{ color: 'var(--cf-svg-text-edge)' }}>Price Class 200 (Standard Balancing):</strong>
                       <p style={{ margin: '4px 0', color: 'var(--color-text-secondary)' }}>
                         Utilizes Edge POPs in <strong>North America, Europe, East Asia, and South America</strong>. Leaves out only the most expensive remote locations (like parts of Africa and Oceania).
                       </p>
-                      <div className="cf-mono" style={{ fontSize: '10px', color: '#64748b', marginTop: '6px' }}>
+                      <div className="cf-mono" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
                         Ideal for: Global web applications, standard e-commerce stores, and high-growth SaaS backends.
                       </div>
                     </div>
@@ -2652,23 +2746,23 @@ export default function CloudfrontVisualizer() {
 
                   {activePriceClass === 'all' && (
                     <div style={{ fontSize: '12px', lineHeight: '1.5' }}>
-                      <strong style={{ color: '#db2777' }}>Price Class All (Highest Performance):</strong>
+                      <strong style={{ color: 'var(--cf-svg-text-rec)' }}>Price Class All (Highest Performance):</strong>
                       <p style={{ margin: '4px 0', color: 'var(--color-text-secondary)' }}>
                         Activates **all global locations** including Oceania, Africa, South East Asia, and South America. Guarantees minimal latency globally, but billing rates reflect regional premium transit rates.
                       </p>
-                      <div className="cf-mono" style={{ fontSize: '10px', color: '#64748b', marginTop: '6px' }}>
+                      <div className="cf-mono" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
                         Ideal for: High-traffic video platforms, real-time gaming APIs, and enterprise-grade corporate portals.
                       </div>
                     </div>
                   )}
 
                   {/* Active POP Map Visualisation */}
-                  <div style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '12px', background: '#ffffff', padding: '14px', marginTop: '16px' }}>
-                    <div style={{ fontWeight: 700, fontSize: '12.5px', color: '#475569', marginBottom: '10px' }}>🌐 Active Edge Locations Visual Mapping:</div>
+                  <div style={{ border: '1.5px solid var(--cf-card-border)', borderRadius: '12px', background: 'var(--color-background-primary)', padding: '14px', marginTop: '16px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '12.5px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>🌐 Active Edge Locations Visual Mapping:</div>
                     
-                    <svg width="100%" height="150" viewBox="0 0 340 150" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1px solid #cbd5e1', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.01))' }}>
+                    <svg width="100%" height="150" viewBox="0 0 340 150" className="cf-svg-bg" style={{ borderRadius: '8px', border: '1.5px solid var(--cf-card-border)', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.01))' }}>
                       {/* Continental Outline Shapes (Premium Gradient Styling) */}
-                      <g fill="rgba(99, 102, 241, 0.08)" stroke="#c7d2fe" strokeWidth="1">
+                      <g fill="var(--cf-svg-map-fill)" stroke="var(--cf-svg-map-stroke)" strokeWidth="1">
                         {/* North America */}
                         <path d="M 20,25 C 40,20 70,15 80,35 C 65,40 55,55 35,60 Z" />
                         {/* South America */}
@@ -2686,70 +2780,70 @@ export default function CloudfrontVisualizer() {
                       {/* Active POP Nodes */}
                       {/* US East (Always Active) */}
                       <g>
-                        <circle cx="55" cy="38" r="4" fill="#10b981" />
-                        <circle cx="55" cy="38" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                        <circle cx="55" cy="38" r="4" fill="var(--cf-svg-node-stroke-origin)" />
+                        <circle cx="55" cy="38" r="8" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5">
                           <animate attributeName="r" values="4;10;4" dur="2s" repeatCount="indefinite" />
                           <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite" />
                         </circle>
-                        <text x="55" y="28" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#047857">US East</text>
+                        <text x="55" y="28" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="var(--cf-svg-text-origin)">US East</text>
                       </g>
 
                       {/* EU West (Always Active) */}
                       <g>
-                        <circle cx="140" cy="30" r="4" fill="#10b981" />
-                        <circle cx="140" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                        <circle cx="140" cy="30" r="4" fill="var(--cf-svg-node-stroke-origin)" />
+                        <circle cx="140" cy="30" r="8" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5">
                           <animate attributeName="r" values="4;10;4" dur="2.2s" repeatCount="indefinite" />
                           <animate attributeName="opacity" values="1;0;1" dur="2.2s" repeatCount="indefinite" />
                         </circle>
-                        <text x="140" y="20" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="#047857">EU West</text>
+                        <text x="140" y="20" textAnchor="middle" fontSize="6.5" fontWeight="800" fill="var(--cf-svg-text-origin)">EU West</text>
                       </g>
 
                       {/* East Asia (Active on 200 and all) */}
                       <g opacity={activePriceClass !== '100' ? 1 : 0.35}>
-                        <circle cx="245" cy="50" r="4" fill={activePriceClass !== '100' ? '#10b981' : '#64748b'} />
+                        <circle cx="245" cy="50" r="4" fill={activePriceClass !== '100' ? 'var(--cf-svg-node-stroke-origin)' : 'var(--color-text-tertiary)'} />
                         {activePriceClass !== '100' && (
-                          <circle cx="245" cy="50" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <circle cx="245" cy="50" r="8" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5">
                             <animate attributeName="r" values="4;10;4" dur="1.9s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.9s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="245" y="42" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass !== '100' ? '#047857' : '#475569'}>East Asia</text>
+                        <text x="245" y="42" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass !== '100' ? 'var(--cf-svg-text-origin)' : 'var(--color-text-secondary)'}>East Asia</text>
                       </g>
 
                       {/* South America (Active on 200 and all) */}
                       <g opacity={activePriceClass !== '100' ? 1 : 0.35}>
-                        <circle cx="72" cy="92" r="4" fill={activePriceClass !== '100' ? '#10b981' : '#64748b'} />
+                        <circle cx="72" cy="92" r="4" fill={activePriceClass !== '100' ? 'var(--cf-svg-node-stroke-origin)' : 'var(--color-text-tertiary)'} />
                         {activePriceClass !== '100' && (
-                          <circle cx="72" cy="92" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <circle cx="72" cy="92" r="8" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5">
                             <animate attributeName="r" values="4;10;4" dur="2.1s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="2.1s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="72" y="84" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass !== '100' ? '#047857' : '#475569'}>S. America</text>
+                        <text x="72" y="84" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass !== '100' ? 'var(--cf-svg-text-origin)' : 'var(--color-text-secondary)'}>S. America</text>
                       </g>
 
                       {/* South Africa (Active on all only) */}
                       <g opacity={activePriceClass === 'all' ? 1 : 0.35}>
-                        <circle cx="158" cy="94" r="4" fill={activePriceClass === 'all' ? '#10b981' : '#64748b'} />
+                        <circle cx="158" cy="94" r="4" fill={activePriceClass === 'all' ? 'var(--cf-svg-node-stroke-origin)' : 'var(--color-text-tertiary)'} />
                         {activePriceClass === 'all' && (
-                          <circle cx="158" cy="94" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <circle cx="158" cy="94" r="8" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5">
                             <animate attributeName="r" values="4;10;4" dur="1.8s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="1.8s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="158" y="104" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass === 'all' ? '#047857' : '#475569'}>S. Africa</text>
+                        <text x="158" y="104" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass === 'all' ? 'var(--cf-svg-text-origin)' : 'var(--color-text-secondary)'}>S. Africa</text>
                       </g>
 
                       {/* Australia (Active on all only) */}
                       <g opacity={activePriceClass === 'all' ? 1 : 0.35}>
-                        <circle cx="272" cy="112" r="4" fill={activePriceClass === 'all' ? '#10b981' : '#64748b'} />
+                        <circle cx="272" cy="112" r="4" fill={activePriceClass === 'all' ? 'var(--cf-svg-node-stroke-origin)' : 'var(--color-text-tertiary)'} />
                         {activePriceClass === 'all' && (
-                          <circle cx="272" cy="112" r="8" fill="none" stroke="#10b981" strokeWidth="1.5">
+                          <circle cx="272" cy="112" r="8" fill="none" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5">
                             <animate attributeName="r" values="4;10;4" dur="2.3s" repeatCount="indefinite" />
                             <animate attributeName="opacity" values="1;0;1" dur="2.3s" repeatCount="indefinite" />
                           </circle>
                         )}
-                        <text x="272" y="122" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass === 'all' ? '#047857' : '#475569'}>Australia</text>
+                        <text x="272" y="122" textAnchor="middle" fontSize="6.5" fontWeight="800" fill={activePriceClass === 'all' ? 'var(--cf-svg-text-origin)' : 'var(--color-text-secondary)'}>Australia</text>
                       </g>
                     </svg>
                   </div>
@@ -2757,8 +2851,8 @@ export default function CloudfrontVisualizer() {
                 </div>
 
                 {/* Caching Behaviors & Origin Shield */}
-                <div style={{ background: '#f8fafc', border: '0.5px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#c2410c' }}>Cache Shielding (Origin Shield) &amp; TTL Parameters</div>
+                <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: 'var(--cf-svg-text-orange)' }}>Cache Shielding (Origin Shield) &amp; TTL Parameters</div>
                   
                   <div className="cf-row">
                     <div className="cf-dot">1</div>

@@ -589,72 +589,167 @@ export default function EC2Visualizer() {
   };
 
   return (
-    <div style={{ fontSize: '13.5px' }}>
+    <div className="ec2-container" style={{ fontSize: '13.5px' }}>
       <style>{`
-        .ec2-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary, #e2e8f0); padding-bottom: 10px; }
-        .ec2-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary, #cbd5e1); font-size: 12px; cursor: pointer; background: rgba(255, 255, 255, 0.6); color: var(--color-text-secondary, #475569); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
-        .ec2-tb:hover { background: rgba(241, 245, 249, 0.8); color: var(--color-text-primary, #1e293b); transform: translateY(-1px); }
-        .ec2-tb.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2); }
-        .ec2-card { border: 1.5px solid rgba(226, 232, 240, 0.8); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03), inset 0 1px 0 0 rgba(255, 255, 255, 0.6); margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: #1e293b; }
-        .ec2-sec { font-size: 12.5px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
+        .ec2-container {
+          font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+          color: var(--color-text-primary, #1e293b);
+
+          /* Theme Variables (Light mode default) */
+          --ec-bg: rgba(255, 255, 255, 0.75);
+          --ec-card-bg: rgba(255, 255, 255, 0.75);
+          --ec-card-border: rgba(226, 232, 240, 0.8);
+          --ec-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+          
+          --color-text-primary: #1e293b;
+          --color-text-secondary: #475569;
+          --color-text-tertiary: #64748b;
+          --color-border-secondary: #cbd5e1;
+          --color-border-tertiary: #e2e8f0;
+          
+          --ec-tab-bg: rgba(255, 255, 255, 0.6);
+          --ec-tab-hover-bg: rgba(241, 245, 249, 0.8);
+          
+          --ec-btn-bg: rgba(255, 255, 255, 0.8);
+          --ec-btn-hover-bg: #f8fafc;
+          
+          --ec-terminal-bg: #0a0d16;
+          --ec-terminal-border: #1e293b;
+          --ec-terminal-color: #38bdf8;
+          
+          --ec-svg-grid-line: #cbd5e1;
+          --ec-svg-line-stroke: #cbd5e1;
+          
+          --ec-metric-card-bg: rgba(241, 245, 249, 0.3);
+          --ec-metric-card-border: #cbd5e1;
+          
+          --color-red: #dc2626;
+          --color-amber: #d97706;
+          --color-green: #16a34a;
+          --color-blue: #2563eb;
+          --color-purple: #7c3aed;
+
+          --ec-success-bg: #f0fdf4;
+          --ec-success-border: #bbf7d0;
+          --ec-success-text: #166534;
+          --ec-success-text-bold: #14532d;
+          --ec-error-bg: #fef2f2;
+          --ec-error-border: #fecaca;
+          --ec-error-text: #991b1b;
+          --ec-error-text-bold: #7f1d1d;
+        }
+
+        .dark .ec2-container {
+          background: #020617 !important;
+          color: #f8fafc !important;
+
+          --ec-bg: #020617;
+          --ec-card-bg: rgba(15, 23, 42, 0.75);
+          --ec-card-border: rgba(51, 65, 85, 0.6);
+          --ec-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --color-text-primary: #f8fafc;
+          --color-text-secondary: #94a3b8;
+          --color-text-tertiary: #64748b;
+          --color-border-secondary: rgba(51, 65, 85, 0.6);
+          --color-border-tertiary: rgba(51, 65, 85, 0.6);
+          
+          --ec-tab-bg: rgba(15, 23, 42, 0.6);
+          --ec-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --ec-btn-bg: rgba(15, 23, 42, 0.8);
+          --ec-btn-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --ec-terminal-bg: #020617;
+          --ec-terminal-border: rgba(51, 65, 85, 0.6);
+          --ec-terminal-color: #38bdf8;
+          
+          --ec-svg-grid-line: rgba(51, 65, 85, 0.5);
+          --ec-svg-line-stroke: rgba(100, 116, 139, 0.5);
+          
+          --ec-metric-card-bg: rgba(15, 23, 42, 0.6);
+          --ec-metric-card-border: rgba(51, 65, 85, 0.6);
+          
+          --color-red: #f87171;
+          --color-amber: #fbbf24;
+          --color-green: #4ade80;
+          --color-blue: #60a5fa;
+          --color-purple: #a78bfa;
+
+          --ec-success-bg: rgba(22, 163, 74, 0.1);
+          --ec-success-border: rgba(74, 222, 128, 0.2);
+          --ec-success-text: #86efac;
+          --ec-success-text-bold: #4ade80;
+          --ec-error-bg: rgba(239, 68, 68, 0.1);
+          --ec-error-border: rgba(248, 113, 113, 0.2);
+          --ec-error-text: #fca5a5;
+          --ec-error-text-bold: #f87171;
+        }
+
+        .ec2-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 10px; }
+        .ec2-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--ec-tab-bg); color: var(--color-text-secondary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
+        .ec2-tb:hover { background: var(--ec-tab-hover-bg); color: var(--color-text-primary); transform: translateY(-1px); }
+        .ec2-tb.ec2-on { background: var(--color-blue); color: #fff; border-color: var(--color-blue); font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2); }
+        .ec2-card { border: 1.5px solid var(--ec-card-border); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: var(--ec-card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--ec-card-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: var(--color-text-primary); }
+        .ec2-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
         .ec2-sec:first-child { margin-top: 0; }
         .ec2-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         .ec2-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .ec2-kv { display: flex; gap: 8px; font-size: 13px; margin: 6px 0; align-items: baseline; }
-        .ec2-kk { min-width: 160px; color: #475569; flex-shrink: 0; font-weight: 500; }
+        .ec2-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; font-weight: 500; }
         .ec2-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-        .ec2-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary, #cbd5e1); background: rgba(255, 255, 255, 0.8); color: #1e293b; cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
-        .ec2-btn:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .ec2-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary); background: var(--ec-btn-bg); color: var(--color-text-primary); cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
+        .ec2-btn:hover:not(:disabled) { background: var(--ec-btn-hover-bg); border-color: var(--color-border-secondary); transform: translateY(-1px); }
         .ec2-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .ec2-btn.ec2-on { background: #0284c7; color: #fff; border-color: #0284c7; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15); }
-        .ec2-terminal { background: #0a0d16; color: #38bdf8; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
-        .ec2-svg-bg { background-color: #fafbfd; background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid rgba(226, 232, 240, 0.8); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
+        .ec2-btn.ec2-on { background: var(--color-blue); color: #fff; border-color: var(--color-blue); box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15); }
+        .ec2-terminal { background: var(--ec-terminal-bg); color: var(--ec-terminal-color); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid var(--ec-terminal-border); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
+        .ec2-svg-bg { background-color: var(--ec-bg); background-image: radial-gradient(var(--ec-svg-grid-line) 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid var(--ec-card-border); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
         
         /* Unified Dropdown Selection Visual Cues */
         .ec2-card select {
-          border: 1.5px solid #e2e8f0 !important;
+          border: 1.5px solid var(--color-border-tertiary) !important;
           border-radius: 8px;
           padding: 6px 12px;
-          background: rgba(255, 255, 255, 0.85);
-          color: #1e293b;
+          background: var(--ec-bg);
+          color: var(--color-text-primary);
           font-weight: 500;
           outline: none;
           transition: all 0.2s;
         }
         .ec2-card select:focus {
-          border-color: #f59e0b !important;
+          border-color: var(--color-amber) !important;
           box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15) !important;
         }
         .ec2-card select.ec2-highlight {
-          border: 1.5px solid #f59e0b !important;
+          border: 1.5px solid var(--color-amber) !important;
           box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1) !important;
         }
         .ec2-card input[type="text"] {
-          border: 1.5px solid #cbd5e1;
+          border: 1.5px solid var(--color-border-secondary);
           border-radius: 8px;
           padding: 6px 10px;
-          background: rgba(255, 255, 255, 0.85);
-          color: #1e293b;
+          background: var(--ec-bg);
+          color: var(--color-text-primary);
           outline: none;
           transition: all 0.2s;
         }
         .ec2-card input[type="text"]:focus {
-          border-color: #0284c7;
+          border-color: var(--color-blue);
           box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
         }
         .ec2-card input[type="range"] {
-          accent-color: #0284c7;
-          background: #cbd5e1;
+          accent-color: var(--color-blue);
+          background: var(--color-border-secondary);
           height: 6px;
           border-radius: 3px;
         }
 
         /* Premium Flowing Conduit animations */
-        .ec2-flow-blue { stroke: #3b82f6; stroke-dasharray: 8, 4; animation: ec2Flow 25s linear infinite; }
-        .ec2-flow-orange { stroke: #ea580c; stroke-dasharray: 8, 4; animation: ec2Flow 20s linear infinite; }
-        .ec2-flow-green { stroke: #10b981; stroke-dasharray: 8, 4; animation: ec2Flow 22s linear infinite; }
-        .ec2-flow-purple { stroke: #8b5cf6; stroke-dasharray: 8, 4; animation: ec2Flow 24s linear infinite; }
-        .ec2-flow-red { stroke: #ef4444; stroke-dasharray: 8, 4; animation: ec2Flow 18s linear infinite; }
+        .ec2-flow-blue { stroke: var(--color-blue); stroke-dasharray: 8, 4; animation: ec2Flow 25s linear infinite; }
+        .ec2-flow-orange { stroke: var(--color-amber); stroke-dasharray: 8, 4; animation: ec2Flow 20s linear infinite; }
+        .ec2-flow-green { stroke: var(--color-green); stroke-dasharray: 8, 4; animation: ec2Flow 22s linear infinite; }
+        .ec2-flow-purple { stroke: var(--color-purple); stroke-dasharray: 8, 4; animation: ec2Flow 24s linear infinite; }
+        .ec2-flow-red { stroke: var(--color-red); stroke-dasharray: 8, 4; animation: ec2Flow 18s linear infinite; }
 
         @keyframes ec2Flow {
           from { stroke-dashoffset: 360; }
@@ -677,35 +772,36 @@ export default function EC2Visualizer() {
         .ec2-card-interactive:hover {
           transform: translateY(-2px);
           box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
-          border-color: #0284c7;
+          border-color: var(--color-blue);
         }
 
         /* Modern Architect Learning Center styles */
         .da-edu-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--ec-card-bg);
+          border: 1px solid var(--ec-card-border);
           border-radius: 16px;
           padding: 24px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          color: var(--color-text-primary);
         }
         .da-edu-card:hover {
           transform: translateY(-2px);
           box-shadow: 0 12px 20px -8px rgba(79, 70, 229, 0.12);
-          border-color: #c7d2fe;
+          border-color: var(--color-purple);
         }
         
         /* Premium Academy Directory Styles */
         .acad-dir-container {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--ec-card-bg);
+          border: 1px solid var(--ec-card-border);
           border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .acad-dir-header {
-          background: #0f172a;
-          color: #f8fafc;
+          background: var(--ec-terminal-border);
+          color: var(--color-text-primary);
           padding: 16px;
           font-weight: 800;
           font-size: 11px;
@@ -721,20 +817,20 @@ export default function EC2Visualizer() {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: #f8fafc;
+          background: var(--ec-metric-card-bg);
           border: none;
-          border-bottom: 1px solid #e2e8f0;
+          border-bottom: 1px solid var(--ec-card-border);
           font-size: 10px;
           font-weight: 850;
-          color: #475569;
+          color: var(--color-text-secondary);
           text-transform: uppercase;
           letter-spacing: 0.04em;
           transition: all 0.2s ease;
           cursor: pointer;
         }
         .acad-dir-folder-btn:hover {
-          background: #f1f5f9;
-          color: #1e293b;
+          background: var(--ec-tab-hover-bg);
+          color: var(--color-text-primary);
         }
         .acad-dir-item-btn {
           width: 100%;
@@ -744,36 +840,37 @@ export default function EC2Visualizer() {
           padding: 10px 18px;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: var(--color-text-tertiary);
           border: none;
           border-left: 3px solid transparent;
-          background: #ffffff;
+          background: var(--ec-card-bg);
           transition: all 0.15s ease;
           text-align: left;
           cursor: pointer;
         }
         .acad-dir-item-btn:hover {
-          background: #f8fafc;
-          color: #4f46e5;
-          border-left-color: #cbd5e1;
+          background: var(--ec-tab-hover-bg);
+          color: var(--color-purple);
+          border-left-color: var(--color-border-secondary);
         }
         .acad-dir-item-btn.acad-active {
-          background: #eef2ff;
-          color: #4338ca;
-          border-left-color: #4f46e5;
+          background: rgba(124, 58, 237, 0.1);
+          color: var(--color-purple);
+          border-left-color: var(--color-purple);
           font-weight: 800;
         }
         .acad-detail-card {
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          background: var(--ec-card-bg);
+          border: 1px solid var(--ec-card-border);
           border-radius: 16px;
           padding: 28px;
           box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+          color: var(--color-text-primary);
         }
         .acad-hero-badge {
-          background: #ecfdf5;
-          border: 1.5px solid #a7f3d0;
-          color: #065f46;
+          background: rgba(16, 185, 129, 0.1);
+          border: 1.5px solid var(--color-green);
+          color: var(--color-green);
           font-size: 9.5px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -785,13 +882,13 @@ export default function EC2Visualizer() {
           gap: 5px;
         }
         .acad-takeaway-box {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border-left: 4px solid #4f46e5;
+          background: var(--ec-metric-card-bg);
+          border-left: 4px solid var(--color-purple);
           border-radius: 12px;
           padding: 18px;
           font-size: 12px;
           line-height: 1.6;
-          color: #475569;
+          color: var(--color-text-secondary);
           font-weight: 600;
         }
         .acad-table {
@@ -800,39 +897,39 @@ export default function EC2Visualizer() {
           font-size: 12px;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid #e2e8f0;
+          border: 1px solid var(--ec-card-border);
         }
         .acad-table th {
-          background: #f8fafc;
-          color: #334155;
+          background: var(--ec-metric-card-bg);
+          color: var(--color-text-primary);
           font-weight: 800;
           padding: 12px 14px;
-          border-bottom: 1.5px solid #e2e8f0;
+          border-bottom: 1.5px solid var(--ec-card-border);
           text-align: left;
         }
         .acad-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid #f1f5f9;
-          color: #475569;
+          border-bottom: 1px solid var(--ec-card-border);
+          color: var(--color-text-secondary);
         }
         .acad-table tr:last-child td {
           border-bottom: none;
         }
         .acad-sim-diagram {
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--ec-card-bg);
+          border: 1.5px solid var(--ec-card-border);
           border-radius: 16px;
           padding: 18px;
           box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
           position: relative;
         }
         .acad-terminal {
-          background: #090d16;
-          border: 1px solid #1e293b;
+          background: var(--ec-terminal-bg);
+          border: 1px solid var(--ec-terminal-border);
           border-radius: 12px;
           padding: 14px;
           font-family: 'Fira Code', 'Courier New', Courier, monospace;
-          color: #cbd5e1;
+          color: var(--color-text-primary);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
 
@@ -858,173 +955,35 @@ export default function EC2Visualizer() {
           }
         }
 
-        /* Centralized Dark Mode Overrides for EC2Visualizer.tsx */
-        .dark .ec2-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
-        }
-        .dark .ec2-card,
-        .dark [class*="ec2-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
         .dark .ec2-card b,
         .dark .ec2-card strong,
         .dark .ec2-card h3,
         .dark .ec2-card h4 {
           color: #ffffff !important;
         }
-        .dark .ec2-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .ec2-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .ec2-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .ec2-sec,
-        .dark .ec2-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .ec2-log,
-        .dark .ec2-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .ec2-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .ec2-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .ec2-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.ec2-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .ec2-inst,
-        .dark .ec2-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .ec2-inst .meta,
-        .dark .ec2-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .ec2-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        
-        /* Node Status Overrides */
-        .dark .ec2-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .ec2-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .ec2-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .ec2-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
-        }
-        
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
-        }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-        }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
-        }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-              `}</style>
 
-      {/* Header */}
+        /* Node Status Overrides */
+        .ec2-ok {
+          border-color: var(--color-green) !important;
+          background: rgba(16, 185, 129, 0.15) !important;
+          color: var(--color-green) !important;
+        }
+        .ec2-warm {
+          border-color: var(--color-amber) !important;
+          background: rgba(245, 158, 11, 0.15) !important;
+          color: var(--color-amber) !important;
+        }
+        .ec2-drain {
+          border-color: var(--color-blue) !important;
+          background: rgba(59, 130, 246, 0.15) !important;
+          color: var(--color-blue) !important;
+        }
+        .ec2-down {
+          border-color: var(--color-red) !important;
+          background: rgba(239, 68, 68, 0.15) !important;
+          color: var(--color-red) !important;
+        }
+      `}</style>
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
           <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1089,10 +1048,10 @@ sudo mount /dev/xvdf /var/www/html`;
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
               
               <div className="card text-left">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
-                  <BookOpen className="w-5 h-5 text-indigo-600" /> EC2 Compute &amp; Storage Notes
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--color-text-primary)' }}>
+                  <BookOpen className="w-5 h-5" style={{ color: 'var(--color-purple)' }} /> EC2 Compute &amp; Storage Notes
                 </h2>
-                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
                   This guide outlines EC2 instance types, purchasing strategies (On-Demand, Spot, Reserved), EBS block storage mapping, stateful security groups, and burstable CPU credit behaviors.
                 </p>
               </div>
@@ -1104,7 +1063,7 @@ sudo mount /dev/xvdf /var/www/html`;
                 <div className="acad-col-3">
                   <div className="acad-dir-container">
                     <div className="acad-dir-header">
-                      <BookOpen style={{ width: '16px', height: '16px', color: '#bae6fd' }} />
+                      <BookOpen style={{ width: '16px', height: '16px', color: 'var(--color-blue)' }} />
                       <span>Module Index</span>
                     </div>
 
@@ -1115,13 +1074,13 @@ sudo mount /dev/xvdf /var/www/html`;
                         onClick={() => setExpandedCategory(expandedCategory === 'ec2_fundamentals' ? '' : 'ec2_fundamentals')}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Sliders style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                          <Sliders style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
                           1. EC2 Fundamentals
                         </span>
                         {expandedCategory === 'ec2_fundamentals' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'ec2_fundamentals' && (
-                        <div style={{ background: '#f8fafc', padding: '4px 0' }}>
+                        <div style={{ background: 'var(--ec-metric-card-bg)', padding: '4px 0' }}>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'ec2_bootstrap' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('ec2_bootstrap')}
@@ -1145,13 +1104,13 @@ sudo mount /dev/xvdf /var/www/html`;
                         onClick={() => setExpandedCategory(expandedCategory === 'purchasing_options' ? '' : 'purchasing_options')}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Globe style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                          <Globe style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
                           2. Purchasing Options
                         </span>
                         {expandedCategory === 'purchasing_options' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'purchasing_options' && (
-                        <div style={{ background: '#f8fafc', padding: '4px 0' }}>
+                        <div style={{ background: 'var(--ec-metric-card-bg)', padding: '4px 0' }}>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'purchasing_models' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('purchasing_models')}
@@ -1175,22 +1134,24 @@ sudo mount /dev/xvdf /var/www/html`;
                         onClick={() => setExpandedCategory(expandedCategory === 'storage_audit' ? '' : 'storage_audit')}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Network style={{ width: '14px', height: '14px', color: '#0284c7' }} />
+                          <Network style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
                           3. Storage &amp; Auditing
                         </span>
                         {expandedCategory === 'storage_audit' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'storage_audit' && (
-                        <div style={{ background: '#f8fafc', padding: '4px 0' }}>
+                        <div style={{ background: 'var(--ec-metric-card-bg)', padding: '4px 0' }}>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'storage_comparison' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('storage_comparison')}
+                            style={{ borderLeft: '3px solid transparent' }}
                           >
                             EBS vs Instance Store vs EFS
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'best_practices' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('best_practices')}
+                            style={{ borderLeft: '3px solid transparent' }}
                           >
                             HA Architecture &amp; Audit
                           </button>
@@ -1200,9 +1161,9 @@ sudo mount /dev/xvdf /var/www/html`;
 
                   </div>
 
-                  <div style={{ background: '#0a0d16', borderRadius: '16px', padding: '16px', color: '#94a3b8', fontSize: '11px', marginTop: '16px', border: '1px solid #1e293b', lineHeight: '1.5' }}>
-                    <span style={{ color: '#ffffff', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
-                      <Info style={{ width: '14px', height: '14px', color: '#38bdf8' }} /> Academy Guidance
+                  <div style={{ background: 'var(--ec-terminal-bg)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', marginTop: '16px', border: '1px solid var(--ec-terminal-border)', lineHeight: '1.5' }}>
+                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
+                      <Info style={{ width: '14px', height: '14px', color: 'var(--ec-terminal-color)' }} /> Academy Guidance
                     </span>
                     You can switch directly to target interactive simulations inside standard visualizer tabs using the action buttons in each note.
                   </div>
@@ -1233,19 +1194,19 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>CLI Command Reference: Requesting IMDSv2 Token</h4>
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>imds_fetch.sh</span>
                           <button
                             onClick={() => handleCopyCode(imdsCodeSnippet, 'imds_sh')}
-                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
                           >
                             <Copy style={{ width: '12px', height: '12px' }} />
                             {copiedNoteId === 'imds_sh' ? 'Copied!' : 'Copy Script'}
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
                             <code>{imdsCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1285,19 +1246,19 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Authorizing Security Group Inbound Rules</h4>
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>security_rules.sh</span>
                           <button
                             onClick={() => handleCopyCode(sgCodeSnippet, 'sg_sh')}
-                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
                           >
                             <Copy style={{ width: '12px', height: '12px' }} />
                             {copiedNoteId === 'sg_sh' ? 'Copied!' : 'Copy Commands'}
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
                             <code>{sgCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1373,19 +1334,19 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Requesting Spot Instances</h4>
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>spot_request.sh</span>
                           <button
                             onClick={() => handleCopyCode(spotCodeSnippet, 'spot_sh')}
-                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
                           >
                             <Copy style={{ width: '12px', height: '12px' }} />
                             {copiedNoteId === 'spot_sh' ? 'Copied!' : 'Copy Command'}
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
                             <code>{spotCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1425,7 +1386,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       {/* Interactive Widget: Credit Accumulator Simulator */}
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
+                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
                         <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 12px' }}>
                           📈 Burstable CPU Credit Simulator
                         </h4>
@@ -1433,7 +1394,7 @@ sudo mount /dev/xvdf /var/www/html`;
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                             <div style={{ flex: '1 1 200px' }}>
-                              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569', display: 'block', marginBottom: '6px' }}>
+                              <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '6px' }}>
                                 Select Burstable Instance Type:
                               </label>
                               <div style={{ display: 'flex', gap: '6px' }}>
@@ -1451,9 +1412,9 @@ sudo mount /dev/xvdf /var/www/html`;
                             </div>
 
                             <div style={{ flex: '1 1 200px' }}>
-                              <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                              <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                 <span>Simulated Average CPU load:</span>
-                                <span style={{ color: '#0284c7' }}>{nbCpuUtilization}%</span>
+                                <span style={{ color: 'var(--color-blue)' }}>{nbCpuUtilization}%</span>
                               </label>
                               <input
                                 type="range"
@@ -1477,9 +1438,9 @@ sudo mount /dev/xvdf /var/www/html`;
                           </div>
 
                           <div className="acad-terminal" style={{ maxHeight: '150px' }}>
-                            <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>burstable-performance-telemetry logs</span>
+                            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>burstable-performance-telemetry logs</span>
                             {nbCreditLog.length === 0 ? (
-                              <div style={{ fontSize: '11.5px', color: '#64748b', fontStyle: 'italic', padding: '16px 0', textAlign: 'center' }}>
+                              <div style={{ fontSize: '11.5px', color: 'var(--color-text-tertiary)', fontStyle: 'italic', padding: '16px 0', textAlign: 'center' }}>
                                 Click the button above to simulate how the credit bucket behaves over a 24-hour cycle.
                               </div>
                             ) : (
@@ -1488,9 +1449,9 @@ sudo mount /dev/xvdf /var/www/html`;
                                   <div
                                     key={index}
                                     style={{
-                                      color: index === 0 ? '#34d399' : log.includes('🚨') ? '#f87171' : log.includes('📈') ? '#10b981' : '#cbd5e1',
+                                      color: index === 0 ? 'var(--color-green)' : log.includes('🚨') ? 'var(--color-red)' : log.includes('📈') ? 'var(--color-green)' : 'var(--color-text-secondary)',
                                       fontWeight: index === 0 ? 'bold' : 'normal',
-                                      borderBottom: index === 0 ? '1px solid #1e293b' : 'none',
+                                      borderBottom: index === 0 ? '1px solid var(--ec-terminal-border)' : 'none',
                                       paddingBottom: index === 0 ? '6px' : '0',
                                       marginBottom: index === 0 ? '6px' : '0'
                                     }}
@@ -1578,19 +1539,19 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Bash Command: Formatting and Mounting attached EBS volume</h4>
-                      <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>ebs_mount.sh</span>
                           <button
                             onClick={() => handleCopyCode(mountCodeSnippet, 'mount_sh')}
-                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
                           >
                             <Copy style={{ width: '12px', height: '12px' }} />
                             {copiedNoteId === 'mount_sh' ? 'Copied!' : 'Copy Script'}
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
                             <code>{mountCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1695,10 +1656,10 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div ref={bootTerminalRef} className="ec2-terminal" style={{ flex: 1, maxHeight: '250px' }}>
                     {bootTerminalLogs.length > 0 ? (
                       bootTerminalLogs.map((log, index) => (
-                        <div key={index} style={{ color: log.startsWith('$') ? '#f59e0b' : log.includes('===') ? '#10b981' : '#38bdf8' }}>{log}</div>
+                        <div key={index} style={{ color: log.startsWith('$') ? 'var(--color-amber)' : log.includes('===') ? 'var(--color-green)' : 'var(--ec-terminal-color)' }}>{log}</div>
                       ))
                     ) : (
-                      <div style={{ color: '#64748b' }}>Console idle. Click "Test Bootstrapping Script" to run bash execution pipeline.</div>
+                      <div style={{ color: 'var(--color-text-tertiary)' }}>Console idle. Click "Test Bootstrapping Script" to run bash execution pipeline.</div>
                     )}
                   </div>
                 </div>
@@ -1726,25 +1687,25 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* SVG Baking Flow */}
-                <div style={{ background: 'rgba(255, 255, 255, 0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>AMI Baking &amp; Auto-Scaling Launch Pipeline</div>
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-card-border)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>AMI Baking &amp; Auto-Scaling Launch Pipeline</div>
                   <svg viewBox="0 0 470 160" width="100%" className="ec2-svg-bg">
                     <defs>
-                      <marker id="arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#64748b"/></marker>
+                      <marker id="arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-text-tertiary)"/></marker>
                       <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#3b82f6" />
+                        <stop offset="0%" stopColor="var(--color-blue)" />
                         <stop offset="100%" stopColor="#1d4ed8" />
                       </linearGradient>
                       <linearGradient id="pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#ec4899" />
+                        <stop offset="0%" stopColor="var(--color-purple)" />
                         <stop offset="100%" stopColor="#be185d" />
                       </linearGradient>
                       <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="0%" stopColor="var(--color-amber)" />
                         <stop offset="100%" stopColor="#d97706" />
                       </linearGradient>
                       <linearGradient id="green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="0%" stopColor="var(--color-green)" />
                         <stop offset="100%" stopColor="#047857" />
                       </linearGradient>
                       <filter id="ec2-shadow-net" x="-10%" y="-10%" width="120%" height="120%">
@@ -1754,16 +1715,16 @@ sudo mount /dev/xvdf /var/www/html`;
 
                     {/* PREMIUM NESTED BOUNDARIES */}
                     {/* Host Configuration Zone */}
-                    <rect x="5" y="10" width="105" height="140" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="57" y="20" textAnchor="middle" fontSize="6.5" fill="#2563eb" fontWeight="bold">📦 HOST CONFIG</text>
+                    <rect x="5" y="10" width="105" height="140" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="57" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">📦 HOST CONFIG</text>
 
                     {/* Baking & Blueprint Vault */}
-                    <rect x="120" y="10" width="220" height="140" rx="8" fill="rgba(234, 88, 12, 0.02)" stroke="#ea580c" strokeWidth="1.2" strokeDasharray="4,2" />
-                    <text x="230" y="20" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">💿 BAKING &amp; BLUEPRINT VAULT</text>
+                    <rect x="120" y="10" width="220" height="140" rx="8" fill="rgba(234, 88, 12, 0.02)" stroke="var(--color-amber)" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="230" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-amber)" fontWeight="bold">💿 BAKING &amp; BLUEPRINT VAULT</text>
 
                     {/* Auto-scaling Zone */}
-                    <rect x="350" y="10" width="115" height="140" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="407" y="20" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">🚀 AUTO-SCALING ZONE</text>
+                    <rect x="350" y="10" width="115" height="140" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="407" y="20" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">🚀 AUTO-SCALING ZONE</text>
                     
                     {/* Paths with animatemotion */}
                     <path id="path1" d="M 95, 75 L 135, 75" className={isBootstrapping ? "ec2-flow-orange" : "ec2-flow-blue"} strokeWidth="2" markerEnd="url(#arrow)" />
@@ -1772,94 +1733,94 @@ sudo mount /dev/xvdf /var/www/html`;
                     <path id="path4" d="M 335, 75 L 365, 105" className={isBootstrapping ? "ec2-flow-orange" : "ec2-flow-green"} strokeWidth="2" markerEnd="url(#arrow)" />
 
                     {/* Active moving pulses */}
-                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#3b82f6"}>
+                    <circle r="4" fill={isBootstrapping ? "var(--color-amber)" : "var(--color-blue)"}>
                       <animateMotion dur={isBootstrapping ? "1s" : "3s"} repeatCount="indefinite" path="M 95, 75 L 135, 75" />
                     </circle>
-                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#ec4899"}>
+                    <circle r="4" fill={isBootstrapping ? "var(--color-amber)" : "var(--color-purple)"}>
                       <animateMotion dur={isBootstrapping ? "1s" : "3s"} repeatCount="indefinite" path="M 215, 75 L 255, 75" />
                     </circle>
-                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#10b981"}>
+                    <circle r="4" fill={isBootstrapping ? "var(--color-amber)" : "var(--color-green)"}>
                       <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 365, 45" />
                     </circle>
-                    <circle r="4" fill={isBootstrapping ? "#f59e0b" : "#10b981"}>
+                    <circle r="4" fill={isBootstrapping ? "var(--color-amber)" : "var(--color-green)"}>
                       <animateMotion dur={isBootstrapping ? "1.2s" : "4s"} repeatCount="indefinite" path="M 335, 75 L 365, 105" />
                     </circle>
 
                     {/* Source EC2 3D Rack */}
                     <g transform="translate(15, 40)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="#ffffff" stroke="#2563eb" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#blue-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Source EC2</text>
                       
                       {/* Rack units */}
-                      <rect x="5" y="25" width="70" height="8" rx="1.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
-                      <circle cx="12" cy="29" r="1.5" fill="#22c55e" />
-                      <rect x="20" y="28" width="45" height="2" rx="1" fill="#cbd5e1" />
+                      <rect x="5" y="25" width="70" height="8" rx="1.5" fill="var(--ec-metric-card-bg)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                      <circle cx="12" cy="29" r="1.5" fill="var(--color-green)" />
+                      <rect x="20" y="28" width="45" height="2" rx="1" fill="var(--color-border-secondary)" />
                       
-                      <rect x="5" y="37" width="70" height="8" rx="1.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
-                      <circle cx="12" cy="41" r="1.5" fill="#22c55e" />
-                      <rect x="20" y="40" width="45" height="2" rx="1" fill="#cbd5e1" />
+                      <rect x="5" y="37" width="70" height="8" rx="1.5" fill="var(--ec-metric-card-bg)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                      <circle cx="12" cy="41" r="1.5" fill="var(--color-green)" />
+                      <rect x="20" y="40" width="45" height="2" rx="1" fill="var(--color-border-secondary)" />
 
-                      <rect x="5" y="49" width="70" height="8" rx="1.5" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
-                      <circle cx="12" cy="53" r="1.5" fill="#ef4444" />
-                      <rect x="20" y="52" width="45" height="2" rx="1" fill="#cbd5e1" />
+                      <rect x="5" y="49" width="70" height="8" rx="1.5" fill="var(--ec-metric-card-bg)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                      <circle cx="12" cy="53" r="1.5" fill="var(--color-red)" />
+                      <rect x="20" y="52" width="45" height="2" rx="1" fill="var(--color-border-secondary)" />
                       
-                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="500">(Configured Host)</text>
+                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="500">(Configured Host)</text>
                     </g>
 
                     {/* Snapshot Storage Cylinder */}
                     <g transform="translate(130, 40)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="#ffffff" stroke="#db2777" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#pink-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Snapshot</text>
                       
                       {/* 3D database disk cylinder outline */}
-                      <ellipse cx="40" cy="32" rx="20" ry="6" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
-                      <path d="M20,32 L20,44 A20,6 0 0,0 60,44 L60,32" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
-                      <path d="M20,44 L20,56 A20,6 0 0,0 60,56 L60,44" fill="#fdf2f8" stroke="#db2777" strokeWidth="1" />
+                      <ellipse cx="40" cy="32" rx="20" ry="6" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
+                      <path d="M20,32 L20,44 A20,6 0 0,0 60,44 L60,32" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
+                      <path d="M20,44 L20,56 A20,6 0 0,0 60,56 L60,44" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
                       
-                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="500">(Root EBS Copy)</text>
+                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="500">(Root EBS Copy)</text>
                     </g>
 
                     {/* Golden AMI (Baked disc) */}
                     <g transform="translate(250, 40)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="#ffffff" stroke="#ea580c" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-amber)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#orange-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Golden AMI</text>
                       
                       {/* Compact Disc shape */}
-                      <circle cx="40" cy="38" r="14" fill="#fff" stroke="#ea580c" strokeWidth="1.5" />
-                      <circle cx="40" cy="38" r="4" fill="#fafbfd" stroke="#ea580c" strokeWidth="1" />
-                      <path d="M 40,24 A 14,14 0 0, 1 54,38" stroke="#ea580c" strokeWidth="1" strokeDasharray="2,2" fill="none" />
+                      <circle cx="40" cy="38" r="14" fill="var(--ec-card-bg)" stroke="var(--color-amber)" strokeWidth="1.5" />
+                      <circle cx="40" cy="38" r="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-amber)" strokeWidth="1" />
+                      <path d="M 40,24 A 14,14 0 0, 1 54,38" stroke="var(--color-amber)" strokeWidth="1" strokeDasharray="2,2" fill="none" />
                       
-                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="500">(Template Image)</text>
+                      <text x="40" y="66" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="500">(Template Image)</text>
                     </g>
 
                     {/* Replicas (Green Racks) */}
                     {/* Replica 1 */}
                     <g transform="translate(370, 10)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="60" rx="6" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
                       <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 1</text>
                       
                       {/* mini rack lines */}
-                      <rect x="10" y="24" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
-                      <rect x="10" y="32" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
+                      <rect x="10" y="24" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
+                      <rect x="10" y="32" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
                       
-                      <text x="40" y="48" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Active</text>
+                      <text x="40" y="48" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Active</text>
                     </g>
 
                     {/* Replica 2 */}
                     <g transform="translate(370, 85)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="60" rx="6" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
                       <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 2</text>
                       
                       {/* mini rack lines */}
-                      <rect x="10" y="24" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
-                      <rect x="10" y="32" width="60" height="4" rx="1" fill="#ecfdf5" stroke="#059669" strokeWidth="0.5" />
+                      <rect x="10" y="24" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
+                      <rect x="10" y="32" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
                       
-                      <text x="40" y="48" textAnchor="middle" fontSize="7" fill="#047857" fontWeight="bold">Active</text>
+                      <text x="40" y="48" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Active</text>
                     </g>
                   </svg>
                 </div>
@@ -1887,13 +1848,13 @@ sudo mount /dev/xvdf /var/www/html`;
               </div>
 
               {selectedFamily && (
-                <div style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '8px', marginBottom: '12px' }}>
                     <div style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-primary)' }}>
                       <span>{INSTANCE_FAMILIES[selectedFamily].icon}</span>
                       {INSTANCE_FAMILIES[selectedFamily].name}
                     </div>
-                    <div className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '10px' }}>
+                    <div className="ec2-badge" style={{ background: 'var(--color-blue)', color: '#fff', fontSize: '10px' }}>
                       Prefix Class: {INSTANCE_FAMILIES[selectedFamily].classCode}
                     </div>
                   </div>
@@ -1910,7 +1871,7 @@ sudo mount /dev/xvdf /var/www/html`;
                     </div>
                     <div>
                       <div className="ec2-kv"><span className="ec2-kk">Network Performance:</span><b>{INSTANCE_FAMILIES[selectedFamily].networkBandwidth}</b></div>
-                      <div className="ec2-kv"><span className="ec2-kk">Production Scenarios:</span><b style={{ color: '#0284c7' }}>{INSTANCE_FAMILIES[selectedFamily].useCase}</b></div>
+                      <div className="ec2-kv"><span className="ec2-kk">Production Scenarios:</span><b style={{ color: 'var(--color-blue)' }}>{INSTANCE_FAMILIES[selectedFamily].useCase}</b></div>
                     </div>
                   </div>
                 </div>
@@ -2014,23 +1975,23 @@ sudo mount /dev/xvdf /var/www/html`;
                   </div>
 
                   {/* Visual packet trace */}
-                  <div style={{ flex: 1, border: '1.5px solid rgba(226, 232, 240, 0.8)', background: 'rgba(255, 255, 255, 0.4)', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+                  <div style={{ flex: 1, border: '1.5px solid var(--ec-card-border)', background: 'var(--ec-metric-card-bg)', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
                     <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
                       
                       {/* Interactive SVG Sandbox */}
                       <svg viewBox="0 0 450 180" width="100%" className="ec2-svg-bg">
                         <defs>
-                          <marker id="firewall-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                          <marker id="firewall-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-text-tertiary)"/></marker>
                           <linearGradient id="shield-grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#60a5fa" />
-                            <stop offset="100%" stopColor="#2563eb" />
+                            <stop offset="0%" stopColor="var(--color-blue)" />
+                            <stop offset="100%" stopColor="#1d4ed8" />
                           </linearGradient>
                           <linearGradient id="shield-grad-green" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#34d399" />
+                            <stop offset="0%" stopColor="var(--color-green)" />
                             <stop offset="100%" stopColor="#059669" />
                           </linearGradient>
                           <linearGradient id="shield-grad-red" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#f87171" />
+                            <stop offset="0%" stopColor="var(--color-red)" />
                             <stop offset="100%" stopColor="#dc2626" />
                           </linearGradient>
                           <filter id="ec2-shadow-net2" x="-10%" y="-10%" width="120%" height="120%">
@@ -2040,51 +2001,51 @@ sudo mount /dev/xvdf /var/www/html`;
 
                         {/* PREMIUM NESTED BOUNDARIES */}
                         {/* Public Ingress Boundary */}
-                        <rect x="5" y="8" width="115" height="164" rx="8" fill="rgba(71, 85, 105, 0.02)" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="62" y="18" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">🌐 PUBLIC INGRESS NETS</text>
+                        <rect x="5" y="8" width="115" height="164" rx="8" fill="rgba(148, 163, 184, 0.02)" stroke="var(--color-text-tertiary)" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="62" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">🌐 PUBLIC INGRESS NETS</text>
 
                         {/* SG Gateway Shield Boundary */}
-                        <rect x="130" y="8" width="140" height="164" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="#2563eb" strokeWidth="1.2" strokeDasharray="4,2" />
-                        <text x="200" y="18" textAnchor="middle" fontSize="6.5" fill="#1e40af" fontWeight="bold">🛡️ STATEFUL SG GATEWAY</text>
+                        <rect x="130" y="8" width="140" height="164" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="4,2" />
+                        <text x="200" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">🛡️ STATEFUL SG GATEWAY</text>
 
                         {/* Secure Compute Subnet */}
-                        <rect x="280" y="8" width="165" height="164" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1.2" strokeDasharray="3,3" />
-                        <text x="362" y="18" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">💻 SECURE COMPUTE SUBNET</text>
+                        <rect x="280" y="8" width="165" height="164" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="3,3" />
+                        <text x="362" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">💻 SECURE COMPUTE SUBNET</text>
 
                         {/* Connection Paths from Left Nodes to Firewall Center (200, 90) */}
-                        <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
-                        <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
-                        <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
-                        <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
+                        <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
+                        <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
+                        <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
+                        <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
 
                         {/* Connection Path from Firewall to EC2 (230, 90) to (315, 90) */}
-                        <path d="M 230, 90 L 290, 90" stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
+                        <path d="M 230, 90 L 290, 90" stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--ec-svg-line-stroke)'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
 
                         {/* Animated Packets */}
                         {sendingPacket === 'internet' && (
-                          <circle r="5" fill="#f59e0b">
+                          <circle r="5" fill="var(--color-amber)">
                             <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 30 L 200, 90" />
                           </circle>
                         )}
                         {sendingPacket === 'bastion' && (
-                          <circle r="5" fill="#f59e0b">
+                          <circle r="5" fill="var(--color-amber)">
                             <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 70 L 200, 90" />
                           </circle>
                         )}
                         {sendingPacket === 'corp_app' && (
-                          <circle r="5" fill="#f59e0b">
+                          <circle r="5" fill="var(--color-amber)">
                             <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 110 L 200, 90" />
                           </circle>
                         )}
                         {sendingPacket === 'hacker' && (
-                          <circle r="5" fill="#f59e0b">
+                          <circle r="5" fill="var(--color-amber)">
                             <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 150 L 200, 90" />
                           </circle>
                         )}
 
                         {/* Green Allowed Flow through the Gate */}
                         {firewallTestResult?.status === 'ALLOW' && (
-                          <circle r="5" fill="#10b981">
+                          <circle r="5" fill="var(--color-green)">
                             <animateMotion dur="0.6s" repeatCount="indefinite" path="M 230, 90 L 290, 90" />
                           </circle>
                         )}
@@ -2092,51 +2053,51 @@ sudo mount /dev/xvdf /var/www/html`;
                         {/* Red Packet Drop / Collision at Firewall */}
                         {firewallTestResult?.status === 'DROP' && (
                           <g>
-                            <circle cx="200" cy="90" r="8" fill="none" stroke="#ef4444" strokeWidth="2">
+                            <circle cx="200" cy="90" r="8" fill="none" stroke="var(--color-red)" strokeWidth="2">
                               <animate attributeName="r" values="5;18" dur="0.6s" repeatCount="indefinite" />
                               <animate attributeName="opacity" values="1;0" dur="0.6s" repeatCount="indefinite" />
                             </circle>
-                            <circle cx="200" cy="90" r="3.5" fill="#ef4444" />
+                            <circle cx="200" cy="90" r="3.5" fill="var(--color-red)" />
                           </g>
                         )}
 
                         {/* Left Clients / Nodes */}
                         {/* 1. Public Client */}
                         <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(12, 23)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#0284c7" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🌐 Public (Port 80)</text>
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🌐 Public (Port 80)</text>
                         </g>
 
                         {/* 2. Bastion */}
                         <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(12, 60)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#6366f1" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🔒 Bastion (Port 22)</text>
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🔒 Bastion (Port 22)</text>
                         </g>
 
                         {/* 3. Corporate Intranet */}
                         <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(12, 97)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#0d9488" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🏢 Corp App (Port 8080)</text>
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🏢 Corp App (Port 8080)</text>
                         </g>
 
                         {/* 4. Anonymous Hacker */}
                         <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(12, 134)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="#ffffff" stroke="#ef4444" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="bold">🚨 Hacker (Port 22)</text>
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-red)" strokeWidth="1" />
+                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🚨 Hacker (Port 22)</text>
                         </g>
 
                         {/* Firewall Stateful Shield Gate */}
                         <g transform="translate(145, 20)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="40" height="140" rx="8" fill="#334155" stroke="#475569" strokeWidth="1" />
-                          <text x="20" y="18" textAnchor="middle" fontSize="6.5" fill="#94a3b8" fontWeight="bold">FIREWALL</text>
+                          <rect x="0" y="0" width="40" height="140" rx="8" fill="var(--ec-terminal-bg)" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                          <text x="20" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">FIREWALL</text>
                           
                           {/* Stateful brick segments */}
-                          <line x1="5" y1="28" x2="35" y2="28" stroke="#475569" strokeWidth="1" />
-                          <line x1="5" y1="48" x2="35" y2="48" stroke="#475569" strokeWidth="1" />
-                          <line x1="5" y1="68" x2="35" y2="68" stroke="#475569" strokeWidth="1" />
-                          <line x1="5" y1="88" x2="35" y2="88" stroke="#475569" strokeWidth="1" />
-                          <line x1="5" y1="108" x2="35" y2="108" stroke="#475569" strokeWidth="1" />
-                          <line x1="5" y1="128" x2="35" y2="128" stroke="#475569" strokeWidth="1" />
+                          <line x1="5" y1="28" x2="35" y2="28" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                          <line x1="5" y1="48" x2="35" y2="48" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                          <line x1="5" y1="68" x2="35" y2="68" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                          <line x1="5" y1="88" x2="35" y2="88" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                          <line x1="5" y1="108" x2="35" y2="108" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                          <line x1="5" y1="128" x2="35" y2="128" stroke="var(--ec-terminal-border)" strokeWidth="1" />
 
                           {/* Glowing central SG Shield */}
                           <circle cx="20" cy="70" r="15" 
@@ -2145,7 +2106,7 @@ sudo mount /dev/xvdf /var/www/html`;
                               firewallTestResult?.status === 'DROP' ? 'url(#shield-grad-red)' :
                               'url(#shield-grad-blue)'
                             }
-                            stroke="#fff" 
+                            stroke="var(--color-text-primary)" 
                             strokeWidth="1.5" 
                           />
                           <text x="20" y="73" textAnchor="middle" fontSize="9" fill="#fff" fontWeight="bold">SG</text>
@@ -2153,46 +2114,46 @@ sudo mount /dev/xvdf /var/www/html`;
 
                         {/* Destination EC2 Host on Right */}
                         <g transform="translate(305, 45)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="115" height="90" rx="8" fill="#ffffff" 
-                            stroke={firewallTestResult?.status === 'ALLOW' ? '#10b981' : '#475569'} 
+                          <rect x="0" y="0" width="115" height="90" rx="8" fill="var(--ec-card-bg)" 
+                            stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--ec-card-border)'} 
                             strokeWidth={firewallTestResult?.status === 'ALLOW' ? '2.5' : '1.5'} 
                           />
                           
                           {/* Server header */}
-                          <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? '#ecfdf5' : '#f1f5f9'} />
-                          <text x="57.5" y="17" textAnchor="middle" fontSize="8.5" fill="#1e293b" fontWeight="bold">EC2 Guest Host</text>
+                          <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? 'rgba(16, 185, 129, 0.15)' : 'var(--ec-metric-card-bg)'} />
+                          <text x="57.5" y="17" textAnchor="middle" fontSize="8.5" fill="var(--color-text-primary)" fontWeight="bold">EC2 Guest Host</text>
 
                           {/* Interactive status bulb */}
                           <circle cx="20" cy="40" r="4.5" 
                             fill={
-                              firewallTestResult?.status === 'ALLOW' ? '#10b981' :
-                              firewallTestResult?.status === 'DROP' ? '#ef4444' :
-                              '#64748b'
+                              firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' :
+                              firewallTestResult?.status === 'DROP' ? 'var(--color-red)' :
+                              'var(--color-text-tertiary)'
                             } 
                           />
-                          <text x="32" y="43" fontSize="7.5" fill="#475569" fontWeight="bold">
+                          <text x="32" y="43" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">
                             {firewallTestResult ? `PORT: ${firewallTestResult.status}` : 'PORT IDLE'}
                           </text>
 
                           {/* Details mock */}
-                          <rect x="15" y="55" width="85" height="4" rx="2" fill="#e2e8f0" />
-                          <rect x="15" y="65" width="65" height="4" rx="2" fill="#e2e8f0" />
-                          <rect x="15" y="75" width="75" height="4" rx="2" fill="#e2e8f0" />
+                          <rect x="15" y="55" width="85" height="4" rx="2" fill="var(--color-border-tertiary)" />
+                          <rect x="15" y="65" width="65" height="4" rx="2" fill="var(--color-border-tertiary)" />
+                          <rect x="15" y="75" width="75" height="4" rx="2" fill="var(--color-border-tertiary)" />
                         </g>
 
                       </svg>
 
                       {/* Stateful text explanation below SVG */}
-                      <div style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.9)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+                      <div style={{ textAlign: 'center', background: 'var(--ec-card-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--ec-card-border)' }}>
                         {sendingPacket ? (
-                          <div style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', animation: 'ping 1s infinite' }} />
+                          <div style={{ fontSize: '11px', color: 'var(--color-amber)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-amber)', animation: 'ping 1s infinite' }} />
                             Evaluating packet headers against Ingress Security Group rules table...
                           </div>
                         ) : firewallTestResult ? (
                           <div>
                             <span className="ec2-badge" style={{ 
-                              background: firewallTestResult.status === 'ALLOW' ? '#10b981' : '#ef4444', 
+                              background: firewallTestResult.status === 'ALLOW' ? 'var(--color-green)' : 'var(--color-red)', 
                               color: '#fff', 
                               fontSize: '11px',
                               marginBottom: '6px',
@@ -2200,12 +2161,12 @@ sudo mount /dev/xvdf /var/www/html`;
                             }}>
                               {firewallTestResult.status}
                             </span>
-                            <div style={{ fontSize: '11px', color: '#1e293b', fontWeight: 500, lineHeight: '1.45', padding: '0 8px' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 500, lineHeight: '1.45', padding: '0 8px' }}>
                               {firewallTestResult.msg}
                             </div>
                           </div>
                         ) : (
-                          <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: 500 }}>
+                          <div style={{ fontSize: '11.5px', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
                             💡 <b>Test network:</b> Click any left client node directly in the SVG sandbox to fire a simulated TCP connection!
                           </div>
                         )}
@@ -2219,75 +2180,75 @@ sudo mount /dev/xvdf /var/www/html`;
 
             <div className="ec2-sec">EC2 Instance Placement Groups Architectures</div>
             <div className="ec2-card">
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '14px', lineHeight: '1.4' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.4' }}>
                 Placement Groups control the physical distribution logic of your EC2 instances within the AWS underlying physical hardware backplane.
               </div>
 
               <div className="ec2-g3">
                 {/* Cluster PG */}
-                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#ea580c' }}>📍</span> Cluster Group
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--color-amber)' }}>📍</span> Cluster Group
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
                     Packs instances close together inside a **single Availability Zone** on the same physical server rack. Provides ultra-low latency and maximum inter-node throughput (up to 100 Gbps).
                   </div>
 
                   {/* SVG Cluster */}
                   <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                     <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
-                      <rect x="5" y="5" width="190" height="110" rx="6" fill="rgba(234, 88, 12, 0.02)" stroke="#ea580c" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="100" y="15" textAnchor="middle" fontSize="6.5" fill="#ea580c" fontWeight="bold">📍 HIGH-PERFORMANCE RACK ZONE</text>
+                      <rect x="5" y="5" width="190" height="110" rx="6" fill="var(--color-amber)" fillOpacity="0.05" stroke="var(--color-amber)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="100" y="15" textAnchor="middle" fontSize="6.5" fill="var(--color-amber)" fontWeight="bold">📍 HIGH-PERFORMANCE RACK ZONE</text>
                       
                       {/* Top Switch */}
-                      <rect x="50" y="24" width="100" height="18" rx="4" fill="#ffffff" stroke="#ea580c" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(234,88,12,0.15))' }} />
-                      <text x="100" y="35" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ea580c">⚡ 100Gbps Switch</text>
+                      <rect x="50" y="24" width="100" height="18" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-amber)" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }} />
+                      <text x="100" y="35" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-amber)">⚡ 100Gbps Switch</text>
  
                        {/* Connections */}
-                      <path id="cluster-p1" d="M 45, 75 L 70, 42" stroke="#cbd5e1" strokeWidth="1" />
-                      <path id="cluster-p2" d="M 100, 75 L 100, 42" stroke="#cbd5e1" strokeWidth="1" />
-                      <path id="cluster-p3" d="M 155, 75 L 130, 42" stroke="#cbd5e1" strokeWidth="1" />
+                      <path id="cluster-p1" d="M 45, 75 L 70, 42" stroke="var(--ec-svg-line-stroke)" strokeWidth="1" />
+                      <path id="cluster-p2" d="M 100, 75 L 100, 42" stroke="var(--ec-svg-line-stroke)" strokeWidth="1" />
+                      <path id="cluster-p3" d="M 155, 75 L 130, 42" stroke="var(--ec-svg-line-stroke)" strokeWidth="1" />
  
                        {/* Packets */}
-                      <circle r="2.5" fill="#ea580c">
+                      <circle r="2.5" fill="var(--color-amber)">
                         <animateMotion dur="1s" repeatCount="indefinite" path="M 45, 75 L 70, 42" />
                       </circle>
-                      <circle r="2.5" fill="#ea580c">
+                      <circle r="2.5" fill="var(--color-amber)">
                         <animateMotion dur="1.2s" repeatCount="indefinite" path="M 100, 75 L 100, 42" />
                       </circle>
-                      <circle r="2.5" fill="#ea580c">
+                      <circle r="2.5" fill="var(--color-amber)">
                         <animateMotion dur="1s" repeatCount="indefinite" path="M 155, 75 L 130, 42" />
                       </circle>
  
                        {/* Clustered EC2 nodes */}
                       <g transform="translate(20, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="#ffffff" stroke="#2563eb" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
-                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
-                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-A</text>
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
+                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-A</text>
                       </g>
                       
                       <g transform="translate(77, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="#ffffff" stroke="#2563eb" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
-                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
-                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-B</text>
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
+                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-B</text>
                       </g>
  
                        <g transform="translate(135, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="#ffffff" stroke="#2563eb" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
-                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="#3b82f6" />
-                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2-C</text>
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
+                        <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-C</text>
                       </g>
                     </svg>
                   </div>
-                  <span className="ec2-badge" style={{ background: '#ea580c', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: High Performance Compute (HPC)</span>
+                  <span className="ec2-badge" style={{ background: 'var(--color-amber)', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: High Performance Compute (HPC)</span>
                 </div>
 
                 {/* Spread PG */}
-                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#10b981' }}>📍</span> Spread Group
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--color-green)' }}>📍</span> Spread Group
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
                     Maps each instance onto **strictly different physical hardware power racks**, separate switches, and isolated power sources. Maximum safety boundary: 7 instances per AZ.
                   </div>
 
@@ -2296,63 +2257,63 @@ sudo mount /dev/xvdf /var/www/html`;
                     <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
                       {/* Rack 1 */}
                       <g transform="translate(10, 8)">
-                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="2,2" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">RACK A DOMAIN</text>
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="var(--color-green)" fillOpacity="0.05" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">RACK A DOMAIN</text>
                         
                         {/* 3D server */}
-                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(16,185,129,0.1))' }}>
-                          <rect x="5" y="16" width="40" height="22" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
-                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-1</text>
+                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-1</text>
                         </g>
                         
-                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-A</text>
-                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-A</text>
-                        <circle cx="25" cy="85" r="4.5" fill="#10b981" />
-                        <circle cx="25" cy="85" r="2" fill="#fff" />
+                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-A</text>
+                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔌 Net-A</text>
+                        <circle cx="25" cy="85" r="4.5" fill="var(--color-green)" />
+                        <circle cx="25" cy="85" r="2" fill="var(--ec-card-bg)" />
                       </g>
 
                       {/* Rack 2 */}
                       <g transform="translate(75, 8)">
-                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="2,2" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">RACK B DOMAIN</text>
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="var(--color-green)" fillOpacity="0.05" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">RACK B DOMAIN</text>
                         
-                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(16,185,129,0.1))' }}>
-                          <rect x="5" y="16" width="40" height="22" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
-                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-2</text>
+                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-2</text>
                         </g>
                         
-                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-B</text>
-                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-B</text>
-                        <circle cx="25" cy="85" r="4.5" fill="#10b981" />
-                        <circle cx="25" cy="85" r="2" fill="#fff" />
+                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-B</text>
+                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔌 Net-B</text>
+                        <circle cx="25" cy="85" r="4.5" fill="var(--color-green)" />
+                        <circle cx="25" cy="85" r="2" fill="var(--ec-card-bg)" />
                       </g>
 
                       {/* Rack 3 */}
                       <g transform="translate(140, 8)">
-                        <rect x="0" y="0" width="50" height="104" rx="4" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="2,2" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">RACK C DOMAIN</text>
+                        <rect x="0" y="0" width="50" height="104" rx="4" fill="var(--color-green)" fillOpacity="0.05" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">RACK C DOMAIN</text>
                         
-                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(16,185,129,0.1))' }}>
-                          <rect x="5" y="16" width="40" height="22" rx="3" fill="#ffffff" stroke="#10b981" strokeWidth="1" />
-                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="#047857" fontWeight="bold">EC2-3</text>
+                        <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-3</text>
                         </g>
                         
-                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="#047857">🔋 Power-C</text>
-                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="#047857">🔌 Net-C</text>
-                        <circle cx="25" cy="85" r="4.5" fill="#10b981" />
-                        <circle cx="25" cy="85" r="2" fill="#fff" />
+                        <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-C</text>
+                        <text x="25" y="70" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔌 Net-C</text>
+                        <circle cx="25" cy="85" r="4.5" fill="var(--color-green)" />
+                        <circle cx="25" cy="85" r="2" fill="var(--ec-card-bg)" />
                       </g>
                     </svg>
                   </div>
-                  <span className="ec2-badge" style={{ background: '#10b981', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Core Controllers, Core Database Nodes</span>
+                  <span className="ec2-badge" style={{ background: 'var(--color-green)', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Core Controllers, Core Database Nodes</span>
                 </div>
 
                 {/* Partition PG */}
-                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: '#0284c7' }}>📍</span> Partition Group
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--color-blue)' }}>📍</span> Partition Group
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '12px', flex: 1 }}>
                     Divides placement into isolated partitions. Racks in one partition do not share hardware with racks in other partitions. Allows multiple nodes in a single partition.
                   </div>
 
@@ -2361,60 +2322,60 @@ sudo mount /dev/xvdf /var/www/html`;
                     <svg viewBox="0 0 200 120" width="100%" className="ec2-svg-bg">
                       {/* Partition 1 */}
                       <g transform="translate(6, 8)">
-                        <rect x="0" y="0" width="90" height="104" rx="4" fill="rgba(2, 132, 199, 0.02)" stroke="#0284c7" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">🛡️ COMPUTE PARTITION 1</text>
+                        <rect x="0" y="0" width="90" height="104" rx="4" fill="var(--color-blue)" fillOpacity="0.05" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ COMPUTE PARTITION 1</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="5" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
-                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-1</text>
+                          <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-1</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="49" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
-                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-2</text>
+                          <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-2</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="27" y="44" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
-                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-3</text>
+                          <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-3</text>
                         </g>
                         
-                        <path d="M 15, 85 L 75, 85" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                        <circle r="3" fill="#0284c7">
+                        <path d="M 15, 85 L 75, 85" stroke="var(--ec-svg-line-stroke)" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <circle r="3" fill="var(--color-blue)">
                           <animateMotion dur="1.5s" repeatCount="indefinite" path="M 15, 85 L 75, 85" />
                         </circle>
-                        <text x="45" y="98" textAnchor="middle" fontSize="5.5" fill="#64748b" fontWeight="bold">HDFS / Data Node Pool</text>
+                        <text x="45" y="98" textAnchor="middle" fontSize="5.5" fill="var(--color-text-tertiary)" fontWeight="bold">HDFS / Data Node Pool</text>
                       </g>
 
                       {/* Partition 2 */}
                       <g transform="translate(104, 8)">
-                        <rect x="0" y="0" width="90" height="104" rx="4" fill="rgba(2, 132, 199, 0.02)" stroke="#0284c7" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="#0284c7" fontWeight="bold">🛡️ COMPUTE PARTITION 2</text>
+                        <rect x="0" y="0" width="90" height="104" rx="4" fill="var(--color-blue)" fillOpacity="0.05" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ COMPUTE PARTITION 2</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="5" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
-                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-4</text>
+                          <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-4</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="49" y="16" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
-                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-5</text>
+                          <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-5</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="27" y="44" width="36" height="20" rx="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="0.8" />
-                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="#1d4ed8" fontWeight="bold">EC2-6</text>
+                          <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-6</text>
                         </g>
                         
-                        <path d="M 15, 85 L 75, 85" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
-                        <circle r="3" fill="#0284c7">
+                        <path d="M 15, 85 L 75, 85" stroke="var(--ec-svg-line-stroke)" strokeWidth="1.5" strokeDasharray="3,3" />
+                        <circle r="3" fill="var(--color-blue)">
                           <animateMotion dur="1.5s" repeatCount="indefinite" path="M 15, 85 L 75, 85" />
                         </circle>
-                        <text x="45" y="98" textAnchor="middle" fontSize="5.5" fill="#64748b" fontWeight="bold">Cassandra replicas</text>
+                        <text x="45" y="98" textAnchor="middle" fontSize="5.5" fill="var(--color-text-tertiary)" fontWeight="bold">Cassandra replicas</text>
                       </g>
                     </svg>
                   </div>
-                  <span className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Kafka, HDFS, Cassandra, Hadoop</span>
+                  <span className="ec2-badge" style={{ background: 'var(--color-blue)', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Kafka, HDFS, Cassandra, Hadoop</span>
                 </div>
               </div>
             </div>
@@ -2436,17 +2397,17 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div style={{ marginBottom: '14px', background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '6px' }}>
                       <span>Your Maximum Bid Price:</span>
-                      <b style={{ color: '#0284c7' }}>${maxBid.toFixed(2)} / Hour</b>
+                      <b style={{ color: 'var(--color-blue)' }}>${maxBid.toFixed(2)} / Hour</b>
                     </div>
                     <input 
                       type="range" min="0.05" max="0.35" step="0.01" value={maxBid} 
                       onChange={(e) => setMaxBid(Number(e.target.value))} 
-                      style={{ width: '100%', accentColor: '#0284c7' }}
+                      style={{ width: '100%', accentColor: 'var(--color-blue)' }}
                     />
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '10px' }}>
                       <span>Current Spot Market Price:</span>
-                      <b style={{ color: spotPrice > maxBid ? '#ef4444' : '#10b981' }}>${spotPrice.toFixed(2)} / Hour</b>
+                      <b style={{ color: spotPrice > maxBid ? 'var(--color-red)' : 'var(--color-green)' }}>${spotPrice.toFixed(2)} / Hour</b>
                     </div>
                   </div>
 
@@ -2469,20 +2430,20 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-primary)' }}>🔄 Spot Fleet Active Operations Event Log</div>
                   
                   {spotCountdown !== null ? (
-                    <div style={{ background: '#fef2f2', border: '0.5px solid #fecaca', padding: '10px', borderRadius: '6px', marginBottom: '10px', textAlign: 'center', animation: 'pulse 2s infinite' }}>
-                      <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#ef4444' }}>⏳ Reclaiming: {spotCountdown}s</div>
-                      <div style={{ fontSize: '10px', color: '#991b1b', marginTop: '2px' }}>AWS is terminating your Spot Instance due to target pricing thresholds!</div>
+                    <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '0.5px solid var(--color-red)', padding: '10px', borderRadius: '6px', marginBottom: '10px', textAlign: 'center', animation: 'pulse 2s infinite' }}>
+                      <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--color-red)' }}>⏳ Reclaiming: {spotCountdown}s</div>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>AWS is terminating your Spot Instance due to target pricing thresholds!</div>
                     </div>
                   ) : (
-                    <div style={{ background: '#f0fdf4', border: '0.5px solid #bbf7d0', padding: '10px', borderRadius: '6px', marginBottom: '10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#166534' }}>🟢 SPOT INSTANCES IN SERVICE</div>
-                      <div style={{ fontSize: '10px', color: '#166534', marginTop: '2px' }}>Market price remains safely below your Maximum Bid price limit.</div>
+                    <div style={{ background: 'rgba(22, 163, 74, 0.08)', border: '0.5px solid var(--color-green)', padding: '10px', borderRadius: '6px', marginBottom: '10px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-green)' }}>🟢 SPOT INSTANCES IN SERVICE</div>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>Market price remains safely below your Maximum Bid price limit.</div>
                     </div>
                   )}
 
-                  <div className="ec2-terminal" style={{ flex: 1, maxHeight: '140px', background: '#090d16' }}>
+                  <div className="ec2-terminal" style={{ flex: 1, maxHeight: '140px', background: 'var(--ec-terminal-bg)' }}>
                     {spotLogs.map((log, index) => (
-                      <div key={index} style={{ color: log.includes('⚠️') ? '#f59e0b' : log.includes('✅') ? '#10b981' : log.includes('🔄') ? '#38bdf8' : '#94a3b8', fontSize: '10px' }}>
+                      <div key={index} style={{ color: log.includes('⚠️') ? 'var(--color-amber)' : log.includes('✅') ? 'var(--color-green)' : log.includes('🔄') ? 'var(--color-blue)' : 'var(--color-text-tertiary)', fontSize: '10px' }}>
                         [{new Date().toLocaleTimeString()}] {log}
                       </div>
                     ))}
@@ -2495,7 +2456,7 @@ sudo mount /dev/xvdf /var/www/html`;
             <div className="ec2-card">
               <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ background: 'var(--color-background-secondary)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
+                  <tr style={{ background: 'var(--ec-metric-card-bg)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
                     <th style={{ padding: '8px' }}>Purchase Model</th>
                     <th style={{ padding: '8px' }}>Discount Range</th>
                     <th style={{ padding: '8px' }}>Commitment Bounds</th>
@@ -2505,33 +2466,33 @@ sudo mount /dev/xvdf /var/www/html`;
                 <tbody>
                   <tr style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px', fontWeight: 'bold' }}>On-Demand</td>
-                    <td style={{ padding: '8px', color: '#94a3b8' }}>Baseline Cost (0% off)</td>
+                    <td style={{ padding: '8px', color: 'var(--color-text-tertiary)' }}>Baseline Cost (0% off)</td>
                     <td style={{ padding: '8px' }}>None (Per-Second Billing)</td>
-                    <td style={{ padding: '8px', color: '#0284c7' }}>Spiky, unpredictable server traffic and early stage apps</td>
+                    <td style={{ padding: '8px', color: 'var(--color-blue)' }}>Spiky, unpredictable server traffic and early stage apps</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px', fontWeight: 'bold' }}>Reserved Instances (RIs)</td>
-                    <td style={{ padding: '8px', color: '#10b981' }}>Up to 72% discount</td>
+                    <td style={{ padding: '8px', color: 'var(--color-green)' }}>Up to 72% discount</td>
                     <td style={{ padding: '8px' }}>1 or 3 years (Specific family/AZ)</td>
-                    <td style={{ padding: '8px', color: '#0284c7' }}>Steady-state production database servers and enterprise networks</td>
+                    <td style={{ padding: '8px', color: 'var(--color-blue)' }}>Steady-state production database servers and enterprise networks</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px', fontWeight: 'bold' }}>Savings Plans</td>
-                    <td style={{ padding: '8px', color: '#10b981' }}>Up to 72% discount</td>
+                    <td style={{ padding: '8px', color: 'var(--color-green)' }}>Up to 72% discount</td>
                     <td style={{ padding: '8px' }}>1 or 3 years ($ spend commitment)</td>
-                    <td style={{ padding: '8px', color: '#0284c7' }}>Diverse compute scaling across Fargate, Lambda, and EC2</td>
+                    <td style={{ padding: '8px', color: 'var(--color-blue)' }}>Diverse compute scaling across Fargate, Lambda, and EC2</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px', fontWeight: 'bold' }}>Spot Instances</td>
-                    <td style={{ padding: '8px', color: '#10b981', fontWeight: 'bold' }}>Up to 90% discount</td>
+                    <td style={{ padding: '8px', color: 'var(--color-green)', fontWeight: 'bold' }}>Up to 90% discount</td>
                     <td style={{ padding: '8px' }}>None (Interruptible by AWS)</td>
-                    <td style={{ padding: '8px', color: '#0284c7' }}>Container stateless fleets, stateless batch processing, CI/CD workers</td>
+                    <td style={{ padding: '8px', color: 'var(--color-blue)' }}>Container stateless fleets, stateless batch processing, CI/CD workers</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
                     <td style={{ padding: '8px', fontWeight: 'bold' }}>Dedicated Hosts</td>
-                    <td style={{ padding: '8px', color: '#ef4444' }}>Premium pricing</td>
+                    <td style={{ padding: '8px', color: 'var(--color-red)' }}>Premium pricing</td>
                     <td style={{ padding: '8px' }}>Physical server dedicated to you</td>
-                    <td style={{ padding: '8px', color: '#0284c7' }}>Strict hardware licensing (BYOL) and server compliance policies</td>
+                    <td style={{ padding: '8px', color: 'var(--color-blue)' }}>Strict hardware licensing (BYOL) and server compliance policies</td>
                   </tr>
                 </tbody>
               </table>
@@ -2554,7 +2515,7 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '6px' }}>
                     Network attached virtual drive. Replication is constrained inside **one AZ**. The volume lifecycle is independent of the instance state (survives stopping).
                   </div>
-                  <span className="ec2-badge" style={{ background: '#0284c7', color: '#fff', fontSize: '9px' }}>Type: SAN Block</span>
+                  <span className="ec2-badge" style={{ background: 'var(--color-blue)', color: '#fff', fontSize: '9px' }}>Type: SAN Block</span>
                 </div>
 
                 <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
@@ -2562,7 +2523,7 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '6px' }}>
                     Direct physical NVMe/SSD buses on the host machine. **Ephemeral** storage. **If instance STOPS or TERMINATES, data is completely wiped!**
                   </div>
-                  <span className="ec2-badge" style={{ background: '#ef4444', color: '#fff', fontSize: '9px' }}>Type: Ephemeral Direct</span>
+                  <span className="ec2-badge" style={{ background: 'var(--color-red)', color: '#fff', fontSize: '9px' }}>Type: Ephemeral Direct</span>
                 </div>
 
                 <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
@@ -2570,7 +2531,7 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '6px' }}>
                     Managed network filesystem (NFS). Multi-AZ accessible. Scales storage and throughput dynamically. Hundreds of EC2s can mount it concurrently.
                   </div>
-                  <span className="ec2-badge" style={{ background: '#10b981', color: '#fff', fontSize: '9px' }}>Type: Shared NAS</span>
+                  <span className="ec2-badge" style={{ background: 'var(--color-green)', color: '#fff', fontSize: '9px' }}>Type: Shared NAS</span>
                 </div>
               </div>
 
@@ -2602,7 +2563,7 @@ sudo mount /dev/xvdf /var/www/html`;
                     <input 
                       type="range" min="10" max="2000" value={ebsSize} 
                       onChange={(e) => setEbsSize(Number(e.target.value))} 
-                      style={{ width: '100%', accentColor: '#0284c7' }}
+                      style={{ width: '100%', accentColor: 'var(--color-blue)' }}
                     />
                   </div>
 
@@ -2615,14 +2576,14 @@ sudo mount /dev/xvdf /var/www/html`;
                       <input 
                         type="range" min={ebsVolumeType === 'gp3' ? 3000 : 1000} max={ebsVolumeType === 'gp3' ? 16000 : 64000} step="500" value={ebsIops} 
                         onChange={(e) => setEbsIops(Number(e.target.value))} 
-                        style={{ width: '100%', accentColor: '#0284c7' }}
+                        style={{ width: '100%', accentColor: 'var(--color-blue)' }}
                       />
                     </div>
                   )}
 
                   <div style={{ borderTop: '1px solid var(--color-border-secondary)', paddingTop: '8px', marginTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
                     <span>Estimated Monthly Cost:</span>
-                    <b style={{ color: '#0284c7', fontSize: '12px' }}>${getEbsPricing()} / Month</b>
+                    <b style={{ color: 'var(--color-blue)', fontSize: '12px' }}>${getEbsPricing()} / Month</b>
                   </div>
                 </div>
 
@@ -2651,7 +2612,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           <input 
                             type="range" min="1" max="256" value={efsProvisionedMb} 
                             onChange={(e) => setEfsProvisionedMb(Number(e.target.value))} 
-                            style={{ width: '100%', accentColor: '#0284c7' }}
+                            style={{ width: '100%', accentColor: 'var(--color-blue)' }}
                           />
                         </div>
                       )}
@@ -2681,7 +2642,7 @@ sudo mount /dev/xvdf /var/www/html`;
                         <input 
                           type="range" min="10" max="5000" step="50" value={efsSize} 
                           onChange={(e) => setEfsSize(Number(e.target.value))} 
-                          style={{ width: '100%', accentColor: '#0284c7' }}
+                          style={{ width: '100%', accentColor: 'var(--color-blue)' }}
                         />
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '8px' }}>
@@ -2691,7 +2652,7 @@ sudo mount /dev/xvdf /var/www/html`;
                         <input 
                           type="range" min="0" max="100" step="5" value={efsInactiveRatio} 
                           onChange={(e) => setEfsInactiveRatio(Number(e.target.value))} 
-                          style={{ width: '100%', accentColor: '#0284c7' }}
+                          style={{ width: '100%', accentColor: 'var(--color-blue)' }}
                         />
                       </div>
                     </div>
@@ -2700,7 +2661,7 @@ sudo mount /dev/xvdf /var/www/html`;
                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div style={{ background: 'var(--color-background-primary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '8px' }}>
                         <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>⚡ Performance &amp; Latency Profile</div>
-                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#0284c7' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-blue)' }}>
                           {efsPerfMode === 'general' ? '🟢 GP Mode: Low Latency Focus' : '🔵 Max I/O: Infinite Scale Focus'}
                         </div>
                         <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
@@ -2718,14 +2679,14 @@ sudo mount /dev/xvdf /var/www/html`;
                           <b>${getEfsPricing(false)} / mo</b>
                         </div>
                         
-                        <div style={{ fontSize: '10.5px', margin: '4px 0', display: 'flex', justifyContent: 'space-between', color: '#15803d', fontWeight: 'bold' }}>
+                        <div style={{ fontSize: '10.5px', margin: '4px 0', display: 'flex', justifyContent: 'space-between', color: 'var(--color-green)', fontWeight: 'bold' }}>
                           <span>Tiered Cost (Lifecycle Active):</span>
                           <span>${getEfsPricing(true)} / mo</span>
                         </div>
 
                         <div style={{ borderTop: '1px solid var(--color-border-secondary)', marginTop: '6px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '10.5px', fontWeight: 'bold' }}>Monthly Net Savings:</span>
-                          <span className="ec2-badge" style={{ background: '#22c55e', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>
+                          <span className="ec2-badge" style={{ background: 'var(--color-green)', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>
                             ${(Number(getEfsPricing(false)) - Number(getEfsPricing(true))).toFixed(2)} / mo (Save {efsInactiveRatio}%)
                           </span>
                         </div>
@@ -2754,85 +2715,85 @@ sudo mount /dev/xvdf /var/www/html`;
                   <div style={{ padding: '4px', textAlign: 'center', marginBottom: '8px' }}>
                     <svg viewBox="0 0 320 130" width="100%" className="ec2-svg-bg">
                       <defs>
-                        <marker id="storage-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94a3b8"/></marker>
+                        <marker id="storage-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-text-tertiary)"/></marker>
                         <linearGradient id="efs-std-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#10b981" />
-                          <stop offset="100%" stopColor="#059669" />
+                          <stop offset="0%" stopColor="var(--color-green)" stopOpacity="0.8" />
+                          <stop offset="100%" stopColor="var(--color-green)" />
                         </linearGradient>
                         <linearGradient id="efs-ia-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#3b82f6" />
-                          <stop offset="100%" stopColor="#1d4ed8" />
+                          <stop offset="0%" stopColor="var(--color-blue)" stopOpacity="0.8" />
+                          <stop offset="100%" stopColor="var(--color-blue)" />
                         </linearGradient>
                         <linearGradient id="efs-arc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#8b5cf6" />
-                          <stop offset="100%" stopColor="#6d28d9" />
+                          <stop offset="0%" stopColor="var(--color-purple)" stopOpacity="0.8" />
+                          <stop offset="100%" stopColor="var(--color-purple)" />
                         </linearGradient>
                       </defs>
 
                       {/* PREMIUM BOUNDARY TIERS */}
                       {/* Active Access Subnet */}
-                      <rect x="3" y="10" width="88" height="78" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="47" y="18" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">⚡ ACTIVE ZONE</text>
+                      <rect x="3" y="10" width="88" height="78" rx="8" fill="var(--color-green)" fillOpacity="0.03" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="47" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">⚡ ACTIVE ZONE</text>
 
                       {/* Infrequent Access Subnet */}
-                      <rect x="115" y="10" width="88" height="78" rx="8" fill="rgba(59, 130, 246, 0.02)" stroke="#3b82f6" strokeWidth="1.2" strokeDasharray="4,2" />
-                      <text x="159" y="18" textAnchor="middle" fontSize="6.5" fill="#1d4ed8" fontWeight="bold">💤 IA SUBNET</text>
+                      <rect x="115" y="10" width="88" height="78" rx="8" fill="var(--color-blue)" fillOpacity="0.03" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="4,2" />
+                      <text x="159" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">💤 IA SUBNET</text>
 
                       {/* Archive Cold Vault */}
-                      <rect x="227" y="10" width="90" height="78" rx="8" fill="rgba(139, 92, 246, 0.02)" stroke="#8b5cf6" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="272" y="18" textAnchor="middle" fontSize="6.5" fill="#6d28d9" fontWeight="bold">❄️ DEEP VAULT</text>
+                      <rect x="227" y="10" width="90" height="78" rx="8" fill="var(--color-purple)" fillOpacity="0.03" stroke="var(--color-purple)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="272" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-purple)" fontWeight="bold">❄️ DEEP VAULT</text>
                       
                       {/* Connections with animatemotion */}
                       <path d="M 90, 50 L 115, 50" className="ec2-flow-green" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
                       <path d="M 202, 50 L 227, 50" className="ec2-flow-blue" strokeWidth="2" strokeDasharray="3,2" markerEnd="url(#storage-arrow)" />
 
-                      <circle r="3" fill="#10b981">
+                      <circle r="3" fill="var(--color-green)">
                         <animateMotion dur="2.5s" repeatCount="indefinite" path="M 90, 50 L 115, 50" />
                       </circle>
-                      <circle r="3" fill="#3b82f6">
+                      <circle r="3" fill="var(--color-blue)">
                         <animateMotion dur="2.5s" repeatCount="indefinite" path="M 202, 50 L 227, 50" />
                       </circle>
 
                       {/* EFS Standard */}
                       <g transform="translate(6, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="82" height="60" rx="6" fill="#ffffff" stroke="#059669" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-std-grad)" />
                         <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">Standard</text>
-                        <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Frequent Access)</text>
-                        <text x="41" y="42" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="extrabold">$0.30 / GB</text>
-                        <text x="41" y="52" textAnchor="middle" fontSize="6" fill="#10b981" fontWeight="bold">⚡ <tspan fontSize="5">GP Storage</tspan></text>
+                        <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Frequent Access)</text>
+                        <text x="41" y="42" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="extrabold">$0.30 / GB</text>
+                        <text x="41" y="52" textAnchor="middle" fontSize="6" fill="var(--color-green)" fontWeight="bold">⚡ <tspan fontSize="5">GP Storage</tspan></text>
                       </g>
 
                       {/* EFS Infrequent Access */}
                       <g transform="translate(118, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="82" height="60" rx="6" fill="#ffffff" stroke="#1d4ed8" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-ia-grad)" />
                         <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS IA</text>
-                        <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Idle {efsLifecycleDays} Days)</text>
-                        <text x="41" y="42" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="extrabold">$0.025 / GB</text>
-                        <text x="41" y="52" textAnchor="middle" fontSize="6" fill="#3b82f6" fontWeight="bold">📉 Save 92%</text>
+                        <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Idle {efsLifecycleDays} Days)</text>
+                        <text x="41" y="42" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="extrabold">$0.025 / GB</text>
+                        <text x="41" y="52" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">📉 Save 92%</text>
                       </g>
 
                       {/* EFS Archive */}
                       <g transform="translate(230, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="84" height="60" rx="6" fill="#ffffff" stroke="#6d28d9" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="84" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="76" height="12" rx="3" fill="url(#efs-arc-grad)" />
                         <text x="42" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS Archive</text>
-                        <text x="42" y="30" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Idle 90+ Days)</text>
-                        <text x="42" y="42" textAnchor="middle" fontSize="7.5" fill="#1e293b" fontWeight="extrabold">$0.008 / GB</text>
-                        <text x="42" y="52" textAnchor="middle" fontSize="6" fill="#8b5cf6" fontWeight="bold">❄️ Save 97%</text>
+                        <text x="42" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Idle 90+ Days)</text>
+                        <text x="42" y="42" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="extrabold">$0.008 / GB</text>
+                        <text x="42" y="52" textAnchor="middle" fontSize="6" fill="var(--color-purple)" fontWeight="bold">❄️ Save 97%</text>
                       </g>
 
-                      <rect x="20" y="96" width="280" height="24" rx="6" fill="rgba(240, 253, 244, 0.8)" stroke="#bbf7d0" strokeWidth="0.8" />
-                      <text x="160" y="111" textAnchor="middle" fontSize="8" fill="#15803d" fontWeight="bold">💰 Tiered Storage Audit: Automatic lifecycle savings applied concurrently</text>
+                      <rect x="20" y="96" width="280" height="24" rx="6" fill="rgba(22, 163, 74, 0.08)" stroke="var(--color-green)" strokeWidth="0.8" />
+                      <text x="160" y="111" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">💰 Tiered Storage Audit: Automatic lifecycle savings applied concurrently</text>
                     </svg>
                   </div>
                 </div>
 
                 {/* EBS Multi-Attach & Encryption */}
-                <div style={{ background: 'rgba(255,255,255,0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#1e293b' }}>💾 EBS Multi-Attach (io1/io2) &amp; KMS Encryption</div>
-                  <div style={{ fontSize: '10.5px', color: '#475569', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>💾 EBS Multi-Attach (io1/io2) &amp; KMS Encryption</div>
+                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
                     - <b>EBS Multi-Attach:</b> Enables mounting a single high-performance **Provisioned IOPS (io1 or io2)** volume concurrently to up to 16 Nitro-based EC2 instances within the *same* AZ. Requires a cluster-aware filesystem (e.g. GFS2) to prevent data corruption.
                     <br />- <b>Hypervisor-level Encryption:</b> EBS utilizes **AWS KMS Keys (AES-256)** to encrypt data in transit between compute hosts and storage fabrics, data at rest, and all snapshots automatically.
                   </div>
@@ -2842,19 +2803,19 @@ sudo mount /dev/xvdf /var/www/html`;
                     <svg viewBox="0 0 320 120" width="100%" className="ec2-svg-bg">
                       <defs>
                         <linearGradient id="multi-ebs-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#f87171" />
-                          <stop offset="100%" stopColor="#dc2626" />
+                          <stop offset="0%" stopColor="var(--color-red)" stopOpacity="0.8" />
+                          <stop offset="100%" stopColor="var(--color-red)" />
                         </linearGradient>
                       </defs>
 
                       {/* PREMIUM BOUNDARY TIERS */}
                       {/* Nitro Host Subnet Zone */}
-                      <rect x="3" y="5" width="140" height="110" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="#3b82f6" strokeWidth="1" strokeDasharray="3,3" />
-                      <text x="73" y="14" textAnchor="middle" fontSize="6.5" fill="#2563eb" fontWeight="bold">💻 NITRO COMPUTE SUBNET</text>
+                      <rect x="3" y="5" width="140" height="110" rx="8" fill="var(--color-blue)" fillOpacity="0.03" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="73" y="14" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">💻 NITRO COMPUTE SUBNET</text>
 
                       {/* Secured EBS SAN Storage Zone */}
-                      <rect x="150" y="5" width="166" height="110" rx="8" fill="rgba(239, 68, 68, 0.02)" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="4,2" />
-                      <text x="233" y="14" textAnchor="middle" fontSize="6.5" fill="#dc2626" fontWeight="bold">🔒 SECURED EBS SAN FABRIC</text>
+                      <rect x="150" y="5" width="166" height="110" rx="8" fill="var(--color-red)" fillOpacity="0.03" stroke="var(--color-red)" strokeWidth="1.2" strokeDasharray="4,2" />
+                      <text x="233" y="14" textAnchor="middle" fontSize="6.5" fill="var(--color-red)" fontWeight="bold">🔒 SECURED EBS SAN FABRIC</text>
 
                       {/* Connections pointing to shared volume */}
                       <path d="M 70, 32 L 160, 60" className="ec2-flow-blue" strokeWidth="1.5" strokeDasharray="3,2" />
@@ -2862,49 +2823,49 @@ sudo mount /dev/xvdf /var/www/html`;
                       <path d="M 70, 108 L 160, 80" className="ec2-flow-blue" strokeWidth="1.5" strokeDasharray="3,2" />
 
                       {/* Active animated pulses */}
-                      <circle r="2.5" fill="#ef4444">
+                      <circle r="2.5" fill="var(--color-red)">
                         <animateMotion dur="1.5s" repeatCount="indefinite" path="M 70, 32 L 160, 60" />
                       </circle>
-                      <circle r="2.5" fill="#ef4444">
+                      <circle r="2.5" fill="var(--color-red)">
                         <animateMotion dur="1.2s" repeatCount="indefinite" path="M 70, 70 L 160, 70" />
                       </circle>
-                      <circle r="2.5" fill="#ef4444">
+                      <circle r="2.5" fill="var(--color-red)">
                         <animateMotion dur="1.7s" repeatCount="indefinite" path="M 70, 108 L 160, 80" />
                       </circle>
 
                       {/* EC2 instances (3D) */}
                       <g transform="translate(10, 20)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#1e40af" strokeWidth="1" />
-                        <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
-                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host A</text>
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <rect x="3" y="3" width="54" height="4" rx="1" fill="var(--color-blue)" />
+                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2 Host A</text>
                       </g>
 
                       <g transform="translate(10, 58)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#1e40af" strokeWidth="1" />
-                        <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
-                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host B</text>
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <rect x="3" y="3" width="54" height="4" rx="1" fill="var(--color-blue)" />
+                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2 Host B</text>
                       </g>
 
                       <g transform="translate(10, 96)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="#ffffff" stroke="#1e40af" strokeWidth="1" />
-                        <rect x="3" y="3" width="54" height="4" rx="1" fill="#3b82f6" />
-                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">EC2 Host C</text>
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <rect x="3" y="3" width="54" height="4" rx="1" fill="var(--color-blue)" />
+                        <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2 Host C</text>
                       </g>
 
                       {/* Shared KMS Encrypted EBS Cylinder */}
-                      <g transform="translate(158, 20)" style={{ filter: 'drop-shadow(0 2px 3px rgba(220,38,38,0.1))' }}>
-                        <rect x="0" y="0" width="150" height="90" rx="6" fill="#ffffff" stroke="#dc2626" strokeWidth="1.2" />
+                      <g transform="translate(158, 20)" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.1))' }}>
+                        <rect x="0" y="0" width="150" height="90" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-red)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#multi-ebs-grad)" />
                         <text x="75" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Shared EBS io1/io2</text>
                         
                         {/* Cylinder drawing */}
-                        <ellipse cx="40" cy="46" rx="18" ry="5" fill="#fef2f2" stroke="#ef4444" strokeWidth="0.8" />
-                        <path d="M22,46 L22,60 A18,5 0 0,0 58,60 L58,46" fill="#fef2f2" stroke="#ef4444" strokeWidth="0.8" />
+                        <ellipse cx="40" cy="46" rx="18" ry="5" fill="var(--color-red)" fillOpacity="0.05" stroke="var(--color-red)" strokeWidth="0.8" />
+                        <path d="M22,46 L22,60 A18,5 0 0,0 58,60 L58,46" fill="var(--color-red)" fillOpacity="0.05" stroke="var(--color-red)" strokeWidth="0.8" />
                         
-                        <text x="100" y="39" textAnchor="middle" fontSize="6.5" fill="#be123c" fontWeight="bold">⛓️ Multi-AZ Attach</text>
-                        <text x="100" y="52" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">🔑 KMS AES-256</text>
+                        <text x="100" y="39" textAnchor="middle" fontSize="6.5" fill="var(--color-red)" fontWeight="bold">⛓️ Multi-AZ Attach</text>
+                        <text x="100" y="52" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">🔑 KMS AES-256</text>
                         
-                        <text x="75" y="80" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Safe Persistent Network SAN Block</text>
+                        <text x="75" y="80" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">Safe Persistent Network SAN Block</text>
                       </g>
                     </svg>
                   </div>
@@ -2995,7 +2956,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       onClick={handleConsoleStop} 
                       disabled={vmState !== 'Running'} 
                       className="ec2-btn"
-                      style={{ padding: '6px 12px', background: '#eab308', color: '#fff', border: 'none' }}
+                      style={{ padding: '6px 12px', background: 'var(--color-amber)', color: '#fff', border: 'none' }}
                     >
                       🛑 Stop Instance
                     </button>
@@ -3003,7 +2964,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       onClick={handleConsoleTerminate} 
                       disabled={vmState !== 'Running' && vmState !== 'Stopped'} 
                       className="ec2-btn"
-                      style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none' }}
+                      style={{ padding: '6px 12px', background: 'var(--color-red)', color: '#fff', border: 'none' }}
                     >
                       ❌ Terminate
                     </button>
@@ -3011,11 +2972,11 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* Hypervisor status screen */}
-                <div style={{ background: 'rgba(255, 255, 255, 0.4)', padding: '14px', borderRadius: '10px', border: '1.5px solid rgba(226, 232, 240, 0.8)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>🖥️ Virtual Motherboard Chassis:</span>
+                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>🖥️ Virtual Motherboard Chassis:</span>
                     <span className="ec2-badge" style={{ 
-                      background: vmState === 'Running' ? '#10b981' : vmState === 'Stopped' ? '#ef4444' : vmState === 'Terminated' ? '#64748b' : '#eab308', 
+                      background: vmState === 'Running' ? 'var(--color-green)' : vmState === 'Stopped' ? 'var(--color-red)' : vmState === 'Terminated' ? 'var(--color-text-tertiary)' : 'var(--color-amber)', 
                       color: '#fff',
                       fontWeight: 'bold',
                       fontSize: '10px'
@@ -3029,39 +2990,39 @@ sudo mount /dev/xvdf /var/www/html`;
                     const isNvmePresent = consoleStorageType === 'ephemeral' || consoleStorageType === 'both' || consoleInstanceType === 'i3.xlarge';
                     return (
                       <div style={{ margin: '6px 0', textAlign: 'center' }}>
-                        <svg viewBox="0 0 320 170" width="100%" style={{ background: '#070a13', borderRadius: '10px', border: '1.5px solid #1e293b' }}>
+                        <svg viewBox="0 0 320 170" width="100%" style={{ background: '#070a13', borderRadius: '10px', border: '1.5px solid var(--color-border-secondary)' }}>
                           {/* Grid background on board */}
                           <defs>
                             <pattern id="motherboard-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                              <circle cx="2" cy="2" r="0.6" fill="#1e293b" />
+                              <circle cx="2" cy="2" r="0.6" fill="var(--color-border-secondary)" />
                             </pattern>
                             <linearGradient id="board-cpu-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="#3b82f6" />
-                              <stop offset="100%" stopColor="#1e3a8a" />
+                              <stop offset="0%" stopColor="var(--color-blue)" stopOpacity="0.8" />
+                              <stop offset="100%" stopColor="var(--color-blue)" />
                             </linearGradient>
                             <filter id="motherboard-glow" x="-10%" y="-10%" width="120%" height="120%">
-                              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#3b82f6" floodOpacity="0.4" />
+                              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="var(--color-blue)" floodOpacity="0.4" />
                             </filter>
                           </defs>
                           <rect width="320" height="170" fill="#070a13" />
                           <rect width="320" height="170" fill="url(#motherboard-grid)" />
                           
                           {/* Circuits / Buses */}
-                          <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
-                          <path d="M 60,70 L 120,105" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
-                          <path d="M 60,70 L 215,105" stroke={vmState === 'Running' ? '#3b82f6' : '#1e293b'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                          <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                          <path d="M 60,70 L 120,105" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                          <path d="M 60,70 L 215,105" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
  
                            {/* CPU Socket */}
                           <g transform="translate(20, 40)" style={vmState === 'Running' ? { filter: 'url(#motherboard-glow)' } : {}}>
-                            <rect x="0" y="0" width="60" height="60" rx="6" fill="#111827" stroke="#1f2937" strokeWidth="1.5" />
+                            <rect x="0" y="0" width="60" height="60" rx="6" fill="var(--ec-terminal-bg)" stroke="var(--color-border-secondary)" strokeWidth="1.5" />
                             <rect x="10" y="10" width="40" height="40" rx="4" fill="url(#board-cpu-grad)" opacity={vmState === 'Running' ? '0.3' : '0.05'} />
-                            <text x="30" y="32" textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="bold">CPU</text>
-                            <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="bold">vCPU Cores</text>
+                            <text x="30" y="32" textAnchor="middle" fontSize="9" fill="var(--color-text-secondary)" fontWeight="bold">CPU</text>
+                            <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">vCPU Cores</text>
                             
                             {/* Pulse paths if running */}
                             {vmState === 'Running' && (
                               <g>
-                                <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? '#ea580c' : '#3b82f6'} strokeWidth="1.5">
+                                <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? 'var(--color-amber)' : 'var(--color-blue)'} strokeWidth="1.5">
                                   <animate attributeName="r" values="10;25" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
                                   <animate attributeName="opacity" values="1;0" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
                                 </circle>
@@ -3071,21 +3032,21 @@ sudo mount /dev/xvdf /var/www/html`;
  
                            {/* RAM DIMMs */}
                           <g transform="translate(120, 22)">
-                            <rect x="0" y="0" width="80" height="34" rx="4" fill="#111827" stroke="#1f2937" strokeWidth="1" />
-                            <text x="40" y="10" textAnchor="middle" fontSize="7" fill="#94a3b8" fontWeight="bold">RAM slots</text>
+                            <rect x="0" y="0" width="80" height="34" rx="4" fill="var(--ec-terminal-bg)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                            <text x="40" y="10" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">RAM slots</text>
                             
                             {/* DIMM sticks */}
-                            <line x1="10" y1="16" x2="70" y2="16" stroke="#4b5563" strokeWidth="2" />
-                            <line x1="10" y1="22" x2="70" y2="22" stroke="#4b5563" strokeWidth="2" />
+                            <line x1="10" y1="16" x2="70" y2="16" stroke="var(--color-text-tertiary)" strokeWidth="2" />
+                            <line x1="10" y1="22" x2="70" y2="22" stroke="var(--color-text-tertiary)" strokeWidth="2" />
  
                              {/* RAM LEDs based on instance class */}
                             <g transform="translate(15, 14)">
-                              <circle cx="0" cy="0" r="1.5" fill={vmState === 'Running' ? '#10b981' : '#4b5563'} />
-                              <circle cx="10" cy="0" r="1.5" fill={vmState === 'Running' && ['c6g.large', 'r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? '#10b981' : '#4b5563'} />
-                              <circle cx="20" cy="0" r="1.5" fill={vmState === 'Running' && ['r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? '#10b981' : '#4b5563'} />
-                              <circle cx="30" cy="0" r="1.5" fill={vmState === 'Running' && consoleInstanceType === 'r6g.xlarge' ? '#10b981' : '#4b5563'} />
+                              <circle cx="0" cy="0" r="1.5" fill={vmState === 'Running' ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                              <circle cx="10" cy="0" r="1.5" fill={vmState === 'Running' && ['c6g.large', 'r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                              <circle cx="20" cy="0" r="1.5" fill={vmState === 'Running' && ['r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                              <circle cx="30" cy="0" r="1.5" fill={vmState === 'Running' && consoleInstanceType === 'r6g.xlarge' ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
                             </g>
-                            <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="#3b82f6" fontWeight="bold">
+                            <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">
                               {consoleInstanceType === 't3.medium' ? '4 GiB (Standard)' :
                                consoleInstanceType === 'c6g.large' ? '8 GiB (Compute)' :
                                consoleInstanceType === 'r6g.xlarge' ? '32 GiB (Memory!)' :
@@ -3098,15 +3059,15 @@ sudo mount /dev/xvdf /var/www/html`;
                           {isEbsRendered && (
                             <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`} style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
                               <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={isEbsDetached ? '#111827' : '#ffffff'} 
-                                stroke={isEbsDetached ? '#ef4444' : vmState === 'Running' ? '#10b981' : '#cbd5e1'} 
+                                fill={isEbsDetached ? 'var(--ec-terminal-bg)' : 'var(--ec-card-bg)'} 
+                                stroke={isEbsDetached ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
                                 strokeWidth="1.2" 
                               />
-                              <rect x="2" y="2" width="76" height="6" rx="1" fill={isEbsDetached ? '#ef4444' : '#0284c7'} />
-                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill={isEbsDetached ? '#ef4444' : '#1e293b'} fontWeight="extrabold">EBS Root</text>
-                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill={isEbsDetached ? '#94a3b8' : '#475569'} fontWeight="bold">/dev/xvda</text>
+                              <rect x="2" y="2" width="76" height="6" rx="1" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-blue)'} />
+                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-text-primary)'} fontWeight="extrabold">EBS Root</text>
+                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill={isEbsDetached ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)'} fontWeight="bold">/dev/xvda</text>
                               
-                              <text x="40" y="33" textAnchor="middle" fontSize="6" fill={isEbsDetached ? '#ef4444' : '#059669'} fontWeight="extrabold">
+                              <text x="40" y="33" textAnchor="middle" fontSize="6" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-green)'} fontWeight="extrabold">
                                 {isEbsDetached ? '⚠️ DETACHED' : vmState === 'Running' ? '● MOUNT ACTIVE' : '● STANDBY'}
                               </text>
                             </g>
@@ -3115,9 +3076,9 @@ sudo mount /dev/xvdf /var/www/html`;
                           {/* EBS deleted representation placeholder */}
                           {!isEbsRendered && isEbsPresent && (
                             <g transform="translate(120, 90)">
-                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" />
-                              <text x="40" y="20" textAnchor="middle" fontSize="8" fill="#ef4444" fontWeight="bold">EBS DELETED</text>
-                              <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="#64748b">(Terminated)</text>
+                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="var(--color-red)" strokeWidth="1" strokeDasharray="3,3" />
+                              <text x="40" y="20" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">EBS DELETED</text>
+                              <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)">(Terminated)</text>
                             </g>
                           )}
  
@@ -3125,24 +3086,24 @@ sudo mount /dev/xvdf /var/www/html`;
                           {isNvmePresent && (
                             <g transform="translate(215, 90)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
                               <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={['Stopped', 'Terminated'].includes(vmState) ? '#1f1315' : '#ffffff'} 
-                                stroke={['Stopped', 'Terminated'].includes(vmState) ? '#ef4444' : vmState === 'Running' ? '#10b981' : '#cbd5e1'} 
+                                fill={['Stopped', 'Terminated'].includes(vmState) ? 'rgba(239, 68, 68, 0.05)' : 'var(--ec-card-bg)'} 
+                                stroke={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
                                 strokeWidth="1.2" 
                               />
-                              <rect x="2" y="2" width="76" height="6" rx="1" fill={['Stopped', 'Terminated'].includes(vmState) ? '#ef4444' : '#8b5cf6'} />
-                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill={['Stopped', 'Terminated'].includes(vmState) ? '#fca5a5' : '#1e293b'} fontWeight="extrabold">NVMe SSD</text>
-                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill="#64748b" fontWeight="bold">/dev/nvme0n1</text>
+                              <rect x="2" y="2" width="76" height="6" rx="1" fill={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : 'var(--color-purple)'} />
+                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="extrabold">NVMe SSD</text>
+                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)" fontWeight="bold">/dev/nvme0n1</text>
                               
                               {['Stopped', 'Terminated'].includes(vmState) ? (
                                 <g>
                                   {/* flashing alert */}
-                                  <rect x="5" y="28" width="70" height="7" rx="1.5" fill="#ef4444">
+                                  <rect x="5" y="28" width="70" height="7" rx="1.5" fill="var(--color-red)">
                                     <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" />
                                   </rect>
                                   <text x="40" y="34" textAnchor="middle" fontSize="5.5" fill="#fff" fontWeight="extrabold">WIPED / LOSS</text>
                                 </g>
                               ) : (
-                                <text x="40" y="34" textAnchor="middle" fontSize="6" fill={vmState === 'Running' ? '#059669' : '#475569'} fontWeight="extrabold">
+                                <text x="40" y="34" textAnchor="middle" fontSize="6" fill={vmState === 'Running' ? 'var(--color-green)' : 'var(--color-text-secondary)'} fontWeight="extrabold">
                                   {vmState === 'Running' ? '⚡ VOLATILE' : 'STANDBY'}
                                 </text>
                               )}
@@ -3152,9 +3113,9 @@ sudo mount /dev/xvdf /var/www/html`;
                            {/* If NVMe is not present */}
                           {!isNvmePresent && (
                             <g transform="translate(215, 90)">
-                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="#1f2937" strokeWidth="1" />
-                              <text x="40" y="18" textAnchor="middle" fontSize="7" fill="#475569" fontWeight="bold">No Inst Store</text>
-                              <text x="40" y="28" textAnchor="middle" fontSize="6.5" fill="#64748b">(EBS Only)</text>
+                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                              <text x="40" y="18" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">No Inst Store</text>
+                              <text x="40" y="28" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)">(EBS Only)</text>
                             </g>
                           )}
                         </svg>
@@ -3162,15 +3123,15 @@ sudo mount /dev/xvdf /var/www/html`;
                     );
                   })()}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'rgba(255, 255, 255, 0.8)', padding: '6px', borderRadius: '4px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'var(--ec-metric-card-bg)', padding: '6px', borderRadius: '4px', border: '1px solid var(--ec-metric-card-border)' }}>
                     <span>Compute CPU Meter:</span>
-                    <b style={{ color: consoleCpuGauge > 50 ? '#ef4444' : '#10b981' }}>{consoleCpuGauge}%</b>
+                    <b style={{ color: consoleCpuGauge > 50 ? 'var(--color-red)' : 'var(--color-green)' }}>{consoleCpuGauge}%</b>
                   </div>
 
-                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '140px', background: '#0a0d16' }}>
+                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '140px', background: 'var(--ec-terminal-bg)' }}>
                     {consoleLogs.map((log, index) => (
                       <div key={index} style={{ 
-                        color: log.includes('⚠️') ? '#ef4444' : log.includes('[system]') ? '#10b981' : log.includes('[user-data]') ? '#f59e0b' : '#38bdf8',
+                        color: log.includes('⚠️') ? 'var(--color-red)' : log.includes('[system]') ? 'var(--color-green)' : log.includes('[user-data]') ? 'var(--color-amber)' : 'var(--color-blue)',
                         fontSize: '10px'
                       }}>
                         {log}
@@ -3197,116 +3158,116 @@ sudo mount /dev/xvdf /var/www/html`;
                 <svg viewBox="0 0 680 180" width="100%" className="ec2-svg-bg">
                   <defs>
                     <linearGradient id="ha-blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#1d4ed8" />
+                      <stop offset="0%" stopColor="var(--color-blue)" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="var(--color-blue)" />
                     </linearGradient>
                     <linearGradient id="ha-pink-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ec4899" />
-                      <stop offset="100%" stopColor="#be185d" />
+                      <stop offset="0%" stopColor="var(--color-purple)" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="var(--color-purple)" />
                     </linearGradient>
                     <linearGradient id="ha-green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#059669" />
+                      <stop offset="0%" stopColor="var(--color-green)" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="var(--color-green)" />
                     </linearGradient>
                   </defs>
 
                   {/* PREMIUM SUBNET GROUPS */}
                   {/* Public Internet Client zone */}
-                  <rect x="5" y="8" width="110" height="164" rx="8" fill="rgba(16, 185, 129, 0.01)" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="60" y="166" textAnchor="middle" fontSize="6.5" fill="#047857" fontWeight="bold">PUBLIC EDGE PLANE</text>
+                  <rect x="5" y="8" width="110" height="164" rx="8" fill="var(--color-green)" fillOpacity="0.03" stroke="var(--color-green)" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="60" y="166" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">PUBLIC EDGE PLANE</text>
 
                   {/* Load Balancer zone */}
-                  <rect x="150" y="8" width="120" height="164" rx="8" fill="rgba(59, 130, 246, 0.01)" stroke="rgba(59, 130, 246, 0.2)" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="210" y="166" textAnchor="middle" fontSize="6.5" fill="#1d4ed8" fontWeight="bold">BALANCE PLANE</text>
+                  <rect x="150" y="8" width="120" height="164" rx="8" fill="var(--color-blue)" fillOpacity="0.03" stroke="var(--color-blue)" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="210" y="166" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">BALANCE PLANE</text>
 
                   {/* VPC Private Subnet Bounding Region */}
-                  <rect x="315" y="8" width="180" height="164" rx="8" fill="rgba(219, 39, 119, 0.02)" stroke="#db2777" strokeWidth="1" strokeDasharray="4,3" />
-                  <text x="405" y="166" textAnchor="middle" fontSize="6.5" fill="#db2777" fontWeight="bold">🔒 VPC SECURED PRIVATE SUBNETS</text>
+                  <rect x="315" y="8" width="180" height="164" rx="8" fill="var(--color-purple)" fillOpacity="0.03" stroke="var(--color-purple)" strokeWidth="1" strokeDasharray="4,3" />
+                  <text x="405" y="166" textAnchor="middle" fontSize="6.5" fill="var(--color-purple)" fontWeight="bold">🔒 VPC SECURED PRIVATE SUBNETS</text>
 
                   {/* Shared NAS storage zone */}
-                  <rect x="535" y="8" width="140" height="164" rx="8" fill="rgba(5, 150, 105, 0.01)" stroke="rgba(5, 150, 105, 0.2)" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="605" y="166" textAnchor="middle" fontSize="6.5" fill="#059669" fontWeight="bold">STORAGE SAN PLANE</text>
+                  <rect x="535" y="8" width="140" height="164" rx="8" fill="var(--color-green)" fillOpacity="0.03" stroke="var(--color-green)" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="3,3" />
+                  <text x="605" y="166" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">STORAGE SAN PLANE</text>
 
                   {/* Connecting paths */}
                   <path d="M 110, 90 L 160, 90" className="ec2-flow-green" strokeWidth="2" strokeDasharray="3,3" />
                   <path d="M 260, 75 L 330, 55" className="ec2-flow-blue" strokeWidth="2" />
                   <path d="M 260, 105 L 330, 125" className="ec2-flow-blue" strokeWidth="2" />
-                  <path d="M 480, 50 L 550, 75" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
-                  <path d="M 480, 130 L 550, 105" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 480, 50 L 550, 75" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="3,3" />
+                  <path d="M 480, 130 L 550, 105" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="3,3" />
 
                   {/* Active moving pulses */}
-                  <circle r="3.5" fill="#047857">
+                  <circle r="3.5" fill="var(--color-green)">
                     <animateMotion dur="2s" repeatCount="indefinite" path="M 110, 90 L 160, 90" />
                   </circle>
-                  <circle r="3.5" fill="#1d4ed8">
+                  <circle r="3.5" fill="var(--color-blue)">
                     <animateMotion dur="2.5s" repeatCount="indefinite" path="M 260, 75 L 330, 55" />
                   </circle>
-                  <circle r="3.5" fill="#1d4ed8">
+                  <circle r="3.5" fill="var(--color-blue)">
                     <animateMotion dur="2.5s" repeatCount="indefinite" path="M 260, 105 L 330, 125" />
                   </circle>
-                  <circle r="3.5" fill="#0284c7">
+                  <circle r="3.5" fill="var(--color-blue)">
                     <animateMotion dur="2.2s" repeatCount="indefinite" path="M 480, 50 L 550, 75" />
                   </circle>
-                  <circle r="3.5" fill="#0284c7">
+                  <circle r="3.5" fill="var(--color-blue)">
                     <animateMotion dur="2.2s" repeatCount="indefinite" path="M 480, 130 L 550, 105" />
                   </circle>
 
                   {/* Public Internet */}
                   <g transform="translate(10, 48)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.05))' }}>
-                    <rect x="0" y="0" width="100" height="70" rx="8" fill="#ffffff" stroke="#047857" strokeWidth="1.5" />
+                    <rect x="0" y="0" width="100" height="70" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
                     <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-green-grad)" />
                     <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🌐 Internet</text>
-                    <text x="50" y="42" textAnchor="middle" fontSize="9.5" fill="#1e293b" fontWeight="bold">Public Clients</text>
-                    <text x="50" y="55" textAnchor="middle" fontSize="7" fill="#64748b">(Secure HTTP Traffic)</text>
+                    <text x="50" y="42" textAnchor="middle" fontSize="9.5" fill="var(--color-text-primary)" fontWeight="bold">Public Clients</text>
+                    <text x="50" y="55" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">(Secure HTTP Traffic)</text>
                   </g>
                   
                   {/* ALB */}
                   <g transform="translate(160, 28)" style={{ filter: 'drop-shadow(0 2px 2px rgba(29,78,216,0.1))' }}>
-                    <rect x="0" y="0" width="100" height="110" rx="8" fill="#ffffff" stroke="#1d4ed8" strokeWidth="1.5" />
+                    <rect x="0" y="0" width="100" height="110" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1.5" />
                     <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-blue-grad)" />
                     <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🍪 Application LB</text>
                     
                     {/* Cookies / listeners */}
-                    <circle cx="25" cy="45" r="4.5" fill="#3b82f6" />
-                    <text x="35" y="48" fontSize="7.5" fill="#1e293b" fontWeight="bold">SSL listener</text>
-                    <rect x="15" y="65" width="70" height="4" rx="2" fill="#cbd5e1" />
-                    <rect x="15" y="75" width="50" height="4" rx="2" fill="#cbd5e1" />
-                    <text x="50" y="98" textAnchor="middle" fontSize="8" fill="#1d4ed8" fontWeight="bold">Target Groups</text>
+                    <circle cx="25" cy="45" r="4.5" fill="var(--color-blue)" />
+                    <text x="35" y="48" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">SSL listener</text>
+                    <rect x="15" y="65" width="70" height="4" rx="2" fill="var(--color-border-secondary)" />
+                    <rect x="15" y="75" width="50" height="4" rx="2" fill="var(--color-border-secondary)" />
+                    <text x="50" y="98" textAnchor="middle" fontSize="8" fill="var(--color-blue)" fontWeight="bold">Target Groups</text>
                   </g>
 
                   {/* Private AZ-A */}
                   <g transform="translate(330, 15)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(219,39,119,0.05))' }}>
-                    <rect x="0" y="0" width="150" height="70" rx="8" fill="#ffffff" stroke="#db2777" strokeWidth="1.2" />
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.2" />
                     <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
                     <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-a (sg-app-fleet)</text>
                     
-                    <rect x="15" y="32" width="120" height="16" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="0.8" />
-                    <text x="75" y="43" textAnchor="middle" fontSize="8" fill="#9d174d" fontWeight="bold">EC2 Instance (10.0.1.x)</text>
-                    <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Healthy in Private Subnet</text>
+                    <rect x="15" y="32" width="120" height="16" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="0.8" />
+                    <text x="75" y="43" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">EC2 Instance (10.0.1.x)</text>
+                    <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">Healthy in Private Subnet</text>
                   </g>
 
                   {/* Private AZ-B */}
                   <g transform="translate(330, 85)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(219,39,119,0.05))' }}>
-                    <rect x="0" y="0" width="150" height="70" rx="8" fill="#ffffff" stroke="#db2777" strokeWidth="1.2" />
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.2" />
                     <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
                     <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-b (sg-app-fleet)</text>
                     
-                    <rect x="15" y="32" width="120" height="16" rx="4" fill="#fdf2f8" stroke="#db2777" strokeWidth="0.8" />
-                    <text x="75" y="43" textAnchor="middle" fontSize="8" fill="#9d174d" fontWeight="bold">EC2 Instance (10.0.2.x)</text>
-                    <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">Healthy in Private Subnet</text>
+                    <rect x="15" y="32" width="120" height="16" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="0.8" />
+                    <text x="75" y="43" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">EC2 Instance (10.0.2.x)</text>
+                    <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">Healthy in Private Subnet</text>
                   </g>
 
                   {/* EFS Mount */}
                   <g transform="translate(545, 48)" style={{ filter: 'drop-shadow(0 2px 2px rgba(5,150,105,0.1))' }}>
-                    <rect x="0" y="0" width="120" height="80" rx="8" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
+                    <rect x="0" y="0" width="120" height="80" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
                     <rect x="4" y="4" width="112" height="15" rx="3" fill="url(#ha-green-grad)" />
                     <text x="60" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">📁 Shared NAS (EFS)</text>
                     
                     {/* Database disks drawing inside */}
-                    <ellipse cx="60" cy="42" rx="16" ry="4" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
-                    <path d="M44,42 L44,52 A16,4 0 0,0 76,52 L76,42" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
+                    <ellipse cx="60" cy="42" rx="16" ry="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
+                    <path d="M44,42 L44,52 A16,4 0 0,0 76,52 L76,42" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
                     
-                    <text x="60" y="70" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">Multi-AZ Mount Targets</text>
+                    <text x="60" y="70" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">Multi-AZ Mount Targets</text>
                   </g>
                 </svg>
               </div>
@@ -3327,78 +3288,78 @@ sudo mount /dev/xvdf /var/www/html`;
 
                 {/* SVG Comparative Hardware */}
                 <div style={{ padding: '4px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '8px' }}>Physical Hypervisor Host vs SAN Storage Architecture</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>Physical Hypervisor Host vs SAN Storage Architecture</div>
                   <svg viewBox="0 0 450 160" width="100%" className="ec2-svg-bg">
                     <defs>
                       <linearGradient id="host-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#f472b6" />
-                        <stop offset="100%" stopColor="#db2777" />
+                        <stop offset="0%" stopColor="var(--color-purple)" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="var(--color-purple)" />
                       </linearGradient>
                       <linearGradient id="san-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#34d399" />
-                        <stop offset="100%" stopColor="#059669" />
+                        <stop offset="0%" stopColor="var(--color-green)" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="var(--color-green)" />
                       </linearGradient>
                     </defs>
 
                     {/* PREMIUM SUBNET BOUNDARIES */}
                     {/* Motherboard Host Subnet */}
-                    <rect x="5" y="5" width="230" height="150" rx="8" fill="rgba(219, 39, 119, 0.01)" stroke="#db2777" strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="120" y="150" textAnchor="middle" fontSize="6" fill="#db2777" fontWeight="bold">💻 HYPERVISOR BLADE ZONE</text>
+                    <rect x="5" y="5" width="230" height="150" rx="8" fill="var(--color-purple)" fillOpacity="0.03" stroke="var(--color-purple)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="120" y="150" textAnchor="middle" fontSize="6" fill="var(--color-purple)" fontWeight="bold">💻 HYPERVISOR BLADE ZONE</text>
 
                     {/* Storage SAN Subnet */}
-                    <rect x="250" y="5" width="195" height="150" rx="8" fill="rgba(5, 150, 105, 0.01)" stroke="#059669" strokeWidth="1.2" strokeDasharray="4,2" />
-                    <text x="347" y="150" textAnchor="middle" fontSize="6.5" fill="#059669" fontWeight="bold">🔒 SECURED EBS STORAGE SAN</text>
+                    <rect x="250" y="5" width="195" height="150" rx="8" fill="var(--color-green)" fillOpacity="0.03" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="4,2" />
+                    <text x="347" y="150" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">🔒 SECURED EBS STORAGE SAN</text>
 
                     {/* Connection paths inside motherboard & outwards */}
                     {/* Local NVMe PCIe path */}
-                    <path id="pcie-path" d="M 70, 70 L 70, 100" stroke="#ef4444" strokeWidth="2.5" />
+                    <path id="pcie-path" d="M 70, 70 L 70, 100" stroke="var(--color-red)" strokeWidth="2.5" />
                     {/* VPC Network Outward path */}
                     <path id="vpc-path" d="M 150, 70 L 150, 115 L 280, 115" className="ec2-flow-blue" strokeWidth="2" strokeDasharray="3,2" />
 
                     {/* Active moving pulses */}
-                    <circle r="3" fill="#f43f5e">
+                    <circle r="3" fill="var(--color-red)">
                       <animateMotion dur="0.8s" repeatCount="indefinite" path="M 70, 70 L 70, 100" />
                     </circle>
-                    <circle r="3" fill="#3b82f6">
+                    <circle r="3" fill="var(--color-blue)">
                       <animateMotion dur="2.5s" repeatCount="indefinite" path="M 150, 70 L 150, 115 L 280, 115" />
                     </circle>
 
                     {/* Hypervisor Host Motherboard */}
                     <g transform="translate(15, 15)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.05))' }}>
-                      <rect x="0" y="0" width="200" height="120" rx="8" fill="#ffffff" stroke="#db2777" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="200" height="120" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.5" />
                       <rect x="4" y="4" width="192" height="15" rx="3" fill="url(#host-grad)" />
                       <text x="100" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Physical Motherboard (Hypervisor Host)</text>
                     </g>
 
                     {/* CPU RAM Core */}
                     <g transform="translate(30, 45)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                      <rect x="0" y="0" width="170" height="28" rx="4" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1.2" />
-                      <text x="85" y="17" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1d4ed8">Virtual Guest VM (vCPU &amp; RAM)</text>
+                      <rect x="0" y="0" width="170" height="28" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-blue)" strokeWidth="1.2" />
+                      <text x="85" y="17" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-blue)">Virtual Guest VM (vCPU &amp; RAM)</text>
                     </g>
 
-                    <text x="76" y="90" fontSize="6.5" fill="#ef4444" fontWeight="extrabold">PCIe Bus</text>
+                    <text x="76" y="90" fontSize="6.5" fill="var(--color-red)" fontWeight="extrabold">PCIe Bus</text>
 
                     {/* Local Instance Store SSD */}
                     <g transform="translate(35, 96)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                      <rect x="0" y="0" width="80" height="32" rx="4" fill="#fff1f2" stroke="#f43f5e" strokeWidth="1.2" />
-                      <text x="40" y="12" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#be123c">Instance Store</text>
-                      <text x="40" y="24" textAnchor="middle" fontSize="6" fill="#be123c" fontWeight="extrabold">💥 Ephemeral NVMe</text>
+                      <rect x="0" y="0" width="80" height="32" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-red)" strokeWidth="1.2" />
+                      <text x="40" y="12" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-red)">Instance Store</text>
+                      <text x="40" y="24" textAnchor="middle" fontSize="6" fill="var(--color-red)" fontWeight="extrabold">💥 Ephemeral NVMe</text>
                     </g>
 
-                    <text x="210" y="106" fontSize="7" fill="#2563eb" fontWeight="extrabold">Dedicated SAN Fiber link</text>
+                    <text x="210" y="106" fontSize="7" fill="var(--color-blue)" fontWeight="extrabold">Dedicated SAN Fiber link</text>
 
                     {/* Remote EBS SAN Cluster */}
                     <g transform="translate(268, 15)" style={{ filter: 'drop-shadow(0 2px 2px rgba(5,150,105,0.1))' }}>
-                      <rect x="0" y="0" width="160" height="120" rx="8" fill="#ffffff" stroke="#059669" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="160" height="120" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
                       <rect x="4" y="4" width="152" height="15" rx="3" fill="url(#san-grad)" />
                       <text x="80" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">EBS Storage SAN Cluster</text>
                       
                       {/* EBS volume cylinders */}
-                      <ellipse cx="80" cy="50" rx="30" ry="8" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
-                      <path d="M50,50 L50,68 A30,8 0 0,0 110,68 L110,50" fill="#ecfdf5" stroke="#059669" strokeWidth="0.8" />
+                      <ellipse cx="80" cy="50" rx="30" ry="8" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
+                      <path d="M50,50 L50,68 A30,8 0 0,0 110,68 L110,50" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
 
-                      <text x="80" y="94" textAnchor="middle" fontSize="7.5" fill="#047857" fontWeight="bold">✅ Data Persists on VM Stop</text>
-                      <text x="80" y="106" textAnchor="middle" fontSize="6.5" fill="#475569" fontWeight="bold">(Network Detached &amp; Detourable)</text>
+                      <text x="80" y="94" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">✅ Data Persists on VM Stop</text>
+                      <text x="80" y="106" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Network Detached &amp; Detourable)</text>
                     </g>
                   </svg>
                 </div>
@@ -3412,38 +3373,38 @@ sudo mount /dev/xvdf /var/www/html`;
               </div>
               <div className="ec2-g2">
                 {/* Best Practices */}
-                <div style={{ background: '#f0fdf4', padding: '18px', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#166534', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ background: 'var(--ec-success-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--ec-success-border)' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ec-success-text-bold)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>✅</span> Mandatory Production Best Practices
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🔑 IAM Role Authorization</div>
-                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-success-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-success-text-bold)' }}>🔑 IAM Role Authorization</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-success-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Attach IAM roles to instances via Instance Profiles. Never hardcode static Access Keys or Secrets within scripts or environment variables.
                       </div>
                     </div>
-                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🛡️ Scoped Security Groups</div>
-                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-success-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-success-text-bold)' }}>🛡️ Scoped Security Groups</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-success-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Always whitelist specific Security Group IDs or narrow, trusted CIDR blocks. Adhere strictly to the Principle of Least Privilege.
                       </div>
                     </div>
-                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🚀 Elastic Multi-AZ Scaling</div>
-                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-success-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-success-text-bold)' }}>🚀 Elastic Multi-AZ Scaling</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-success-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Scale compute nodes horizontally across multiple Availability Zones inside private subnets, fronted by an Application Load Balancer.
                       </div>
                     </div>
-                    <div style={{ borderBottom: '1px solid rgba(22, 101, 52, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>🔒 IMDSv2 Token Protection</div>
-                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-success-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-success-text-bold)' }}>🔒 IMDSv2 Token Protection</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-success-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Enforce session-oriented Instance Metadata Service v2 (IMDSv2) with hop limit 1 to fully mitigate SSRF credential extraction exploits.
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#14532d' }}>💾 Stateless Decoupled Storage</div>
-                      <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.45', marginTop: '2px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-success-text-bold)' }}>💾 Stateless Decoupled Storage</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-success-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Keep EC2 instances completely stateless. Store all persistent transactional data on decoupled network volumes (EBS, shared EFS, or S3).
                       </div>
                     </div>
@@ -3451,38 +3412,38 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* Common Mistakes */}
-                <div style={{ background: '#fef2f2', padding: '18px', borderRadius: '10px', border: '1px solid #fecaca' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#991b1b', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ background: 'var(--ec-error-bg)', padding: '18px', borderRadius: '10px', border: '1px solid var(--ec-error-border)' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--ec-error-text-bold)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>❌</span> Critical Production Mistakes
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🔓 Wildcard SSH Exposure</div>
-                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
-                        Opening Port 22 inbound from wildcard <code style={{ background: 'rgba(153, 27, 27, 0.05)', padding: '1px 4px', borderRadius: '3px' }}>0.0.0.0/0</code>, exposing server consoles to relentless global brute-force attacks.
+                    <div style={{ borderBottom: '1px solid var(--ec-error-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-error-text-bold)' }}>🔓 Wildcard SSH Exposure</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-error-text)', lineHeight: '1.45', marginTop: '2px' }}>
+                        Opening Port 22 inbound from wildcard <code style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1px 4px', borderRadius: '3px', color: 'var(--color-red)' }}>0.0.0.0/0</code>, exposing server consoles to relentless global brute-force attacks.
                       </div>
                     </div>
-                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>💥 Ephemeral Data Volatility</div>
-                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-error-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-error-text-bold)' }}>💥 Ephemeral Data Volatility</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-error-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Storing primary databases or critical logs on local physical Instance Stores. All data is completely formatted if the instance stops.
                       </div>
                     </div>
-                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🔑 User Data Credential Leak</div>
-                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-error-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-error-text-bold)' }}>🔑 User Data Credential Leak</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-error-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Writing plain-text database passwords, API tokens, or SSH private keys inside bootstrapping scripts, which are globally readable via metadata.
                       </div>
                     </div>
-                    <div style={{ borderBottom: '1px solid rgba(153, 27, 27, 0.1)', paddingBottom: '8px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🗑️ Orphaned Volumes Accumulation</div>
-                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                    <div style={{ borderBottom: '1px solid var(--ec-error-border)', paddingBottom: '8px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-error-text-bold)' }}>🗑️ Orphaned Volumes Accumulation</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-error-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Disabling "Delete on Termination" for root or short-term block volumes, causing orphaned, unattached EBS drives to quietly inflate cloud bills.
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: '#7f1d1d' }}>🪪 Vulnerable IMDSv1 Legacy</div>
-                      <div style={{ fontSize: '11.5px', color: '#991b1b', lineHeight: '1.45', marginTop: '2px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '12.5px', color: 'var(--ec-error-text-bold)' }}>🪪 Vulnerable IMDSv1 Legacy</div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--ec-error-text)', lineHeight: '1.45', marginTop: '2px' }}>
                         Allowing unauthenticated IMDSv1 queries, which lets attackers utilize Server-Side Request Forgery to harvest IAM instance profile credentials.
                       </div>
                     </div>

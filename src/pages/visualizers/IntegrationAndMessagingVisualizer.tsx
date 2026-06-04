@@ -625,20 +625,129 @@ export default function IntegrationAndMessagingVisualizer() {
 
   return (
     <div className="im-container">
-      {/* ==========================================
-          Premium Scoped CSS Definitions
-          ========================================== */}
       <style>{`
         .im-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-          color: #1e293b;
-          background-color: #f8fafc;
+          color: var(--im-text-primary);
+          background-color: var(--im-bg);
           padding: 24px;
           min-height: 100vh;
+
+          /* Light mode defaults */
+          --im-bg: #f8fafc;
+          --im-card-bg: rgba(255, 255, 255, 0.75);
+          --im-card-border: rgba(226, 232, 240, 0.8);
+          --im-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          
+          --im-text-primary: #0f172a;
+          --im-text-secondary: #475569;
+          --im-text-tertiary: #64748b;
+          
+          --im-border-primary: rgba(226, 232, 240, 0.8);
+          --im-border-secondary: #cbd5e1;
+          --im-border-tertiary: #e2e8f0;
+          
+          --im-tab-bg: rgba(255, 255, 255, 0.85);
+          --im-tab-hover-bg: #f8fafc;
+          --im-tab-border: rgba(226, 232, 240, 0.85);
+          
+          --im-btn-bg: #ffffff;
+          --im-btn-color: #1e293b;
+          --im-btn-hover-bg: #f8fafc;
+          --im-btn-border: rgba(226, 232, 240, 0.85);
+          
+          --im-select-bg: #ffffff;
+          --im-select-color: #1e293b;
+          --im-select-border: #cbd5e1;
+          
+          --im-terminal-bg: #090d16;
+          --im-terminal-border: #1e293b;
+          --im-terminal-color: #cbd5e1;
+          
+          --im-svg-grid-line: rgba(203, 213, 225, 0.45);
+          --im-svg-bg: #f8fafc;
+          --im-svg-node-bg: #ffffff;
+          --im-svg-node-border: #cbd5e1;
+          
+          /* Specific SVGs node variables */
+          --im-node-producer-bg: #fff7ed;
+          --im-node-producer-border: #f97316;
+          --im-node-producer-text: #c2410c;
+          
+          --im-node-sqs-bg: #ffffff;
+          --im-node-sqs-border: #cbd5e1;
+          --im-node-sqs-text: #1e293b;
+          
+          --im-node-consumer-bg: #f0fdf4;
+          --im-node-consumer-border: #10b981;
+          --im-node-consumer-text: #14532d;
+          
+          --im-node-dlq-bg: #fef2f2;
+          --im-node-dlq-border: #fca5a5;
+          --im-node-dlq-text: #b91c1c;
+
+          --im-node-activemq-active-bg: #10b981;
+          --im-node-activemq-active-border: #047857;
+          --im-node-activemq-active-cap: #34d399;
+          
+          --im-node-activemq-standby-bg: #94a3b8;
+          --im-node-activemq-standby-border: #475569;
+          --im-node-activemq-standby-cap: #cbd5e1;
+          
+          --im-node-activemq-failed-bg: #ef4444;
+          --im-node-activemq-failed-border: #b91c1c;
+          --im-node-activemq-failed-cap: #fca5a5;
+          
+          --im-node-efs-bg: #ffffff;
+          --im-node-efs-border: #64748b;
+          --im-node-efs-text: #1e293b;
+          
+          --im-node-client-bg: #1e293b;
+          --im-node-client-border: #0f172a;
+          --im-node-client-text: #ffffff;
+          
+          --im-node-dns-bg: #ffffff;
+          --im-node-dns-border: #cbd5e1;
+          --im-node-dns-text: #334155;
+
+          /* Sequential message blocks variables */
+          --im-node-block-a-bg: #eff6ff;
+          --im-node-block-a-border: #3b82f6;
+          --im-node-block-a-text: #1e40af;
+          --im-node-block-b-bg: #faf5ff;
+          --im-node-block-b-border: #a855f7;
+          --im-node-block-b-text: #6b21a8;
+          --im-node-block-c-bg: #fef2f2;
+          --im-node-block-c-border: #ef4444;
+          --im-node-block-c-text: #991b1b;
+
+          /* SNS Pub/Sub variables */
+          --im-sns-topic-bg: #faf5ff;
+          --im-sns-topic-border: #7c3aed;
+          --im-sns-topic-text: #6b21a8;
+          --im-lambda-bg: #e0f2fe;
+          --im-lambda-border: #3b82f6;
+          --im-lambda-text: #1e3a8a;
+          --im-status-match-bg: #ecfdf5;
+          --im-status-match-border: #10b981;
+          --im-status-match-text: #065f46;
+          --im-status-drop-bg: #fef2f2;
+          --im-status-drop-border: #ef4444;
+          --im-status-drop-text: #b91c1c;
+
+          /* Kinesis/Firehose/S3 variables */
+          --im-firehose-bg: #f8fafc;
+          --im-firehose-border: #3b82f6;
+          --im-firehose-text: #1e3a8a;
+          --im-firehose-subtext: #1d4ed8;
+          --im-s3-bg: #fff7ed;
+          --im-s3-border: #ea580c;
+          --im-s3-text: #c2410c;
+          --im-s3-subtext: #ea580c;
         }
 
         .im-header {
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--im-border-primary);
           padding-bottom: 14px;
           margin-bottom: 20px;
         }
@@ -650,7 +759,7 @@ export default function IntegrationAndMessagingVisualizer() {
           align-items: center;
           gap: 10px;
           margin-bottom: 6px;
-          color: #0f172a;
+          color: var(--im-text-primary);
           background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #7c3aed 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -658,7 +767,7 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .im-subtitle {
           font-size: 13.5px;
-          color: #475569;
+          color: var(--im-text-secondary);
           line-height: 1.6;
           margin-bottom: 4px;
         }
@@ -668,18 +777,18 @@ export default function IntegrationAndMessagingVisualizer() {
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--im-border-primary);
           padding-bottom: 10px;
         }
 
         .im-tab-btn {
           padding: 8px 16px;
           border-radius: 10px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--im-tab-border);
           font-size: 12px;
           cursor: pointer;
-          background: rgba(255, 255, 255, 0.85);
-          color: #475569;
+          background: var(--im-tab-bg);
+          color: var(--im-text-secondary);
           transition: all 0.15s ease-in-out;
           outline: none;
           font-weight: 600;
@@ -690,9 +799,9 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .im-tab-btn:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
+          background: var(--im-tab-hover-bg);
+          border-color: var(--im-border-secondary);
+          color: var(--im-text-primary);
         }
 
         .im-tab-btn.im-active {
@@ -716,19 +825,19 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .im-card {
-          border: 1.5px solid rgba(226, 232, 240, 0.8);
+          border: 1.5px solid var(--im-card-border);
           border-radius: 16px;
           padding: 18px 20px;
-          background: rgba(255, 255, 255, 0.75);
+          background: var(--im-card-bg);
           backdrop-filter: blur(16px);
           margin-bottom: 18px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          box-shadow: var(--im-card-shadow);
         }
 
         .im-card-title {
           font-size: 16px;
           font-weight: 700;
-          color: #0f172a;
+          color: var(--im-text-primary);
           margin-bottom: 10px;
           display: flex;
           align-items: center;
@@ -737,7 +846,7 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .im-card-desc {
           font-size: 13px;
-          color: #475569;
+          color: var(--im-text-secondary);
           line-height: 1.6;
           margin-bottom: 16px;
         }
@@ -750,26 +859,42 @@ export default function IntegrationAndMessagingVisualizer() {
           display: block;
           font-size: 12px;
           font-weight: 700;
-          color: #475569;
+          color: var(--im-text-secondary);
           margin-bottom: 6px;
         }
 
-        .im-input, .im-select {
+        .im-container select,
+        .im-container input,
+        .im-container textarea {
           width: 100%;
           padding: 8px 12px;
           font-size: 12.5px;
-          border: 1.5px solid #cbd5e1;
+          border: 1.5px solid var(--im-select-border) !important;
           border-radius: 8px;
-          background: #ffffff;
+          background-color: var(--im-select-bg) !important;
+          color: var(--im-select-color) !important;
           outline: none;
-          color: #1e293b;
           font-weight: 500;
           transition: all 0.15s ease-in-out;
         }
 
-        .im-input:focus, .im-select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        .im-container select:focus,
+        .im-container input:focus,
+        .im-container textarea:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        .im-container select {
+          padding-right: 30px !important;
+          appearance: none !important;
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+          background-repeat: no-repeat !important;
+          background-position: right 8px center !important;
+          background-size: 16px !important;
+          cursor: pointer;
         }
 
         .im-slider {
@@ -783,9 +908,9 @@ export default function IntegrationAndMessagingVisualizer() {
           font-size: 12.5px;
           padding: 8px 16px;
           border-radius: 10px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
-          background: #ffffff;
-          color: #1e293b;
+          border: 1.5px solid var(--im-btn-border);
+          background: var(--im-btn-bg);
+          color: var(--im-btn-color);
           font-weight: 600;
           cursor: pointer;
           transition: all 0.15s ease-in-out;
@@ -798,8 +923,8 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .im-btn:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
+          background: var(--im-btn-hover-bg);
+          border-color: var(--im-border-secondary);
           transform: translateY(-1px);
         }
 
@@ -816,13 +941,13 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .im-btn-secondary {
-          background: #ffffff;
-          color: #334155;
-          border-color: #cbd5e1;
+          background: var(--im-btn-bg);
+          color: var(--im-text-secondary);
+          border-color: var(--im-btn-border);
         }
 
         .im-btn-secondary:hover {
-          background: #f1f5f9;
+          background: var(--im-btn-hover-bg);
         }
 
         .im-btn-danger {
@@ -855,23 +980,23 @@ export default function IntegrationAndMessagingVisualizer() {
 
         /* Scoped blueprint dot grid backdrops */
         .im-svg-bg {
-          background-color: #f8fafc;
-          background-image: radial-gradient(rgba(203, 213, 225, 0.45) 1.5px, transparent 1.5px);
+          background-color: var(--im-svg-bg);
+          background-image: radial-gradient(var(--im-svg-grid-line) 1.5px, transparent 1.5px);
           background-size: 16px 16px;
         }
 
         .im-terminal {
-          background: #090d16;
+          background: var(--im-terminal-bg);
           border-radius: 12px;
           padding: 14px;
           font-size: 11px;
-          color: #cbd5e1;
+          color: var(--im-terminal-color);
           line-height: 1.6;
           height: 180px;
           overflow-y: auto;
           margin-top: 12px;
           font-family: var(--font-mono), monospace;
-          border: 1.5px solid #1e293b;
+          border: 1.5px solid var(--im-terminal-border);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
         }
 
@@ -879,10 +1004,10 @@ export default function IntegrationAndMessagingVisualizer() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid #1e293b;
+          border-bottom: 1px solid var(--im-terminal-border);
           padding-bottom: 6px;
           margin-bottom: 8px;
-          color: #64748b;
+          color: var(--im-text-tertiary);
           font-size: 10px;
           font-weight: 700;
           letter-spacing: 0.08em;
@@ -891,12 +1016,12 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .im-log-line {
           margin-bottom: 4px;
-          border-bottom: 1px dashed rgba(51, 65, 85, 0.3);
+          border-bottom: 1px dashed var(--im-border-primary);
           padding-bottom: 4px;
         }
 
         .im-log-time {
-          color: #475569;
+          color: var(--im-text-tertiary);
           margin-right: 6px;
         }
 
@@ -929,8 +1054,8 @@ export default function IntegrationAndMessagingVisualizer() {
           display: flex;
           gap: 10px;
           min-height: 100px;
-          background: rgba(248, 250, 252, 0.5);
-          border: 2px dashed #cbd5e1;
+          background: var(--im-svg-bg);
+          border: 2px dashed var(--im-border-secondary);
           border-radius: 12px;
           padding: 12px;
           overflow-x: auto;
@@ -940,14 +1065,14 @@ export default function IntegrationAndMessagingVisualizer() {
         .im-msg-card {
           width: 90px;
           height: 80px;
-          background: #ffffff;
-          border: 1.5px solid #cbd5e1;
+          background: var(--im-card-bg);
+          border: 1.5px solid var(--im-border-secondary);
           border-radius: 8px;
           padding: 6px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+          box-shadow: var(--im-card-shadow);
           font-size: 11px;
           position: relative;
           flex-shrink: 0;
@@ -991,8 +1116,8 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .im-feature-box {
-          background: rgba(248, 250, 252, 0.85);
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          background: var(--im-card-bg);
+          border: 1.5px solid var(--im-card-border);
           border-radius: 10px;
           padding: 10px;
           font-size: 12px;
@@ -1005,12 +1130,12 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .im-feature-title {
           font-weight: 700;
-          color: #334155;
+          color: var(--im-text-primary);
           margin-bottom: 4px;
         }
 
         .im-feature-value {
-          color: #64748b;
+          color: var(--im-text-secondary);
           font-size: 11px;
         }
 
@@ -1029,15 +1154,14 @@ export default function IntegrationAndMessagingVisualizer() {
 
         /* MQ specific failover steps */
         .im-mq-step-card {
-          border-left: 3px solid #cbd5e1;
+          border-left: 3px solid var(--im-border-secondary);
           padding: 8px 12px;
-          background: rgba(255, 255, 255, 0.9);
+          background: var(--im-card-bg);
           margin-bottom: 8px;
           font-size: 12px;
           transition: all 0.3s ease;
           border-radius: 0 8px 8px 0;
-          border: 1px solid rgba(226, 232, 240, 0.8);
-          border-left: 3.5px solid #cbd5e1;
+          border: 1px solid var(--im-border-primary);
         }
 
         .im-mq-step-card.im-mq-step-active {
@@ -1074,23 +1198,23 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .im-matrix-cell {
           padding: 10px 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--im-card-border);
           font-size: 12px;
-          color: #1e293b;
+          color: var(--im-text-primary);
         }
         
         .im-matrix-header {
-          background: #f8fafc;
+          background: var(--im-svg-bg);
           font-weight: 700;
-          color: #475569;
+          color: var(--im-text-secondary);
           text-align: left;
         }
 
         .im-advisor-box {
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--im-card-border);
           border-radius: 12px;
           padding: 14px;
-          background: rgba(255, 255, 255, 0.9);
+          background: var(--im-card-bg);
           transition: all 0.2s ease-in-out;
         }
         .im-advisor-box:hover {
@@ -1107,9 +1231,9 @@ export default function IntegrationAndMessagingVisualizer() {
         .im-selector-card {
           padding: 14px 18px;
           border-radius: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
-          background: rgba(255, 255, 255, 0.65);
-          color: #475569;
+          border: 1.5px solid var(--im-card-border);
+          background: var(--im-card-bg);
+          color: var(--im-text-secondary);
           cursor: pointer;
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
@@ -1122,11 +1246,11 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .im-selector-card:hover {
-          background: rgba(255, 255, 255, 0.95);
+          background: var(--im-tab-hover-bg);
           border-color: rgba(59, 130, 246, 0.4);
           box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
           transform: translateY(-2px);
-          color: #0f172a;
+          color: var(--im-text-primary);
         }
 
         .im-selector-card.im-selected-payment {
@@ -1155,18 +1279,18 @@ export default function IntegrationAndMessagingVisualizer() {
           display: grid;
           grid-template-columns: 280px 1fr;
           gap: 20px;
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--im-card-bg);
+          border: 1.5px solid var(--im-border-secondary);
           border-radius: 16px;
           min-height: 620px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+          box-shadow: var(--im-card-shadow);
           overflow: hidden;
           margin-top: 10px;
         }
 
         .acad-sidebar {
-          background: #f8fafc;
-          border-right: 1.5px solid #e2e8f0;
+          background: var(--im-svg-bg);
+          border-right: 1.5px solid var(--im-border-secondary);
           padding: 16px;
           display: flex;
           flex-direction: column;
@@ -1177,7 +1301,7 @@ export default function IntegrationAndMessagingVisualizer() {
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
-          color: #64748b;
+          color: var(--im-text-tertiary);
           letter-spacing: 0.05em;
           padding-left: 8px;
         }
@@ -1195,7 +1319,7 @@ export default function IntegrationAndMessagingVisualizer() {
           padding: 8px;
           font-size: 13px;
           font-weight: 600;
-          color: #334155;
+          color: var(--im-text-primary);
           border-radius: 8px;
           cursor: pointer;
           transition: background 0.15s ease-in-out;
@@ -1206,7 +1330,7 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-category-header:hover {
-          background: #f1f5f9;
+          background: var(--im-tab-hover-bg);
         }
 
         .acad-category-content {
@@ -1222,7 +1346,7 @@ export default function IntegrationAndMessagingVisualizer() {
           gap: 8px;
           padding: 8px 12px;
           font-size: 12.5px;
-          color: #475569;
+          color: var(--im-text-secondary);
           border-radius: 8px;
           cursor: pointer;
           transition: all 0.15s ease-in-out;
@@ -1233,13 +1357,13 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-note-item:hover {
-          background: #f1f5f9;
-          color: #0f172a;
+          background: var(--im-tab-hover-bg);
+          color: var(--im-text-primary);
         }
 
         .acad-note-item.acad-active {
-          background: #e2e8f0;
-          color: #0f172a;
+          background: var(--im-border-tertiary);
+          color: var(--im-text-primary);
           font-weight: 600;
         }
 
@@ -1250,7 +1374,7 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-note-header {
-          border-bottom: 1.5px solid #f1f5f9;
+          border-bottom: 1.5px solid var(--im-border-primary);
           padding-bottom: 16px;
           margin-bottom: 20px;
           display: flex;
@@ -1280,7 +1404,7 @@ export default function IntegrationAndMessagingVisualizer() {
         .acad-note-title {
           font-size: 20px;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--im-text-primary);
           display: flex;
           align-items: center;
           gap: 8px;
@@ -1288,7 +1412,7 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .acad-note-desc {
           font-size: 13.5px;
-          color: #475569;
+          color: var(--im-text-secondary);
           line-height: 1.5;
           margin-top: 4px;
         }
@@ -1330,7 +1454,7 @@ export default function IntegrationAndMessagingVisualizer() {
           }
           .acad-sidebar {
             border-right: none;
-            border-bottom: 1.5px solid #e2e8f0;
+            border-bottom: 1.5px solid var(--im-border-secondary);
           }
           .acad-grid {
             grid-template-columns: 1fr;
@@ -1338,8 +1462,8 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-card {
-          background: #ffffff;
-          border: 1.5px solid #e2e8f0;
+          background: var(--im-card-bg);
+          border: 1.5px solid var(--im-border-secondary);
           border-radius: 12px;
           padding: 16px;
           display: flex;
@@ -1353,11 +1477,11 @@ export default function IntegrationAndMessagingVisualizer() {
           gap: 8px;
           font-size: 14px;
           font-weight: 700;
-          color: #0f172a;
+          color: var(--im-text-primary);
         }
 
         .acad-card-title {
-          color: #1e293b;
+          color: var(--im-text-primary);
         }
 
         .acad-list {
@@ -1370,16 +1494,16 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .acad-list-item {
           font-size: 12.5px;
-          color: #475569;
+          color: var(--im-text-secondary);
           line-height: 1.5;
         }
 
         .acad-list-item strong {
-          color: #1e293b;
+          color: var(--im-text-primary);
         }
 
         .acad-terminal {
-          background: #0f172a;
+          background: var(--im-terminal-bg);
           border-radius: 10px;
           position: relative;
           overflow: hidden;
@@ -1387,25 +1511,25 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-terminal-header {
-          background: #1e293b;
+          background: var(--im-terminal-border);
           padding: 6px 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          border-bottom: 1px solid #334155;
+          border-bottom: 1px solid var(--im-terminal-border);
         }
 
         .acad-terminal-title {
           font-family: monospace;
           font-size: 11px;
-          color: #94a3b8;
+          color: var(--im-terminal-color);
         }
 
         .acad-terminal-content {
           padding: 12px;
           font-family: 'Fira Code', 'Courier New', Courier, monospace;
           font-size: 12px;
-          color: #e2e8f0;
+          color: var(--im-terminal-color);
           white-space: pre;
           overflow-x: auto;
           line-height: 1.5;
@@ -1414,7 +1538,7 @@ export default function IntegrationAndMessagingVisualizer() {
         .acad-copy-btn {
           background: transparent;
           border: none;
-          color: #94a3b8;
+          color: var(--im-text-tertiary);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -1426,8 +1550,8 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-copy-btn:hover {
-          background: #334155;
-          color: #ffffff;
+          background: var(--im-border-tertiary);
+          color: var(--im-text-primary);
         }
 
         .acad-copy-btn.copied {
@@ -1442,23 +1566,23 @@ export default function IntegrationAndMessagingVisualizer() {
         }
 
         .acad-matrix-table th {
-          background: #f8fafc;
-          color: #334155;
+          background: var(--im-svg-bg);
+          color: var(--im-text-primary);
           font-weight: 700;
           text-align: left;
           padding: 10px 12px;
-          border-bottom: 2px solid #e2e8f0;
+          border-bottom: 2px solid var(--im-border-secondary);
         }
 
         .acad-matrix-table td {
           padding: 10px 12px;
-          border-bottom: 1px solid #e2e8f0;
-          color: #475569;
+          border-bottom: 1px solid var(--im-border-secondary);
+          color: var(--im-text-secondary);
           line-height: 1.4;
         }
 
         .acad-matrix-table tr:hover td {
-          background: #f8fafc;
+          background: var(--im-svg-bg);
         }
 
         .acad-deep-dive-card {
@@ -1496,169 +1620,188 @@ export default function IntegrationAndMessagingVisualizer() {
 
         /* Centralized Dark Mode Overrides for IntegrationAndMessagingVisualizer.tsx */
         .dark .im-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
-        }
-        .dark .im-card,
-        .dark [class*="im-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
-        .dark .im-card b,
-        .dark .im-card strong,
-        .dark .im-card h3,
-        .dark .im-card h4 {
-          color: #ffffff !important;
-        }
-        .dark .im-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .im-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .im-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .im-sec,
-        .dark .im-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .im-log,
-        .dark .im-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .im-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .im-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .im-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.im-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .im-inst,
-        .dark .im-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .im-inst .meta,
-        .dark .im-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .im-svg-bg {
           background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
+          color: #f8fafc !important;
+
+          --im-bg: #020617;
+          --im-card-bg: rgba(15, 23, 42, 0.75);
+          --im-card-border: rgba(51, 65, 85, 0.6);
+          --im-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --im-text-primary: #f8fafc;
+          --im-text-secondary: #cbd5e1;
+          --im-text-tertiary: #94a3b8;
+          
+          --im-border-primary: rgba(51, 65, 85, 0.6);
+          --im-border-secondary: rgba(51, 65, 85, 0.6);
+          --im-border-tertiary: rgba(51, 65, 85, 0.6);
+          
+          --im-tab-bg: rgba(15, 23, 42, 0.6);
+          --im-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --im-tab-border: rgba(51, 65, 85, 0.6);
+          
+          --im-btn-bg: rgba(15, 23, 42, 0.8);
+          --im-btn-color: #cbd5e1;
+          --im-btn-hover-bg: rgba(30, 41, 59, 0.8);
+          --im-btn-border: rgba(51, 65, 85, 0.6);
+          
+          --im-select-bg: #0f172a;
+          --im-select-color: #f1f5f9;
+          --im-select-border: rgba(51, 65, 85, 0.8);
+          
+          --im-terminal-bg: #020617;
+          --im-terminal-border: rgba(51, 65, 85, 0.6);
+          --im-terminal-color: #38bdf8;
+          
+          --im-svg-grid-line: rgba(51, 65, 85, 0.5);
+          --im-svg-bg: #020617;
+          --im-svg-node-bg: rgba(15, 23, 42, 0.8);
+          --im-svg-node-border: rgba(51, 65, 85, 0.6);
+          
+          /* Specific SVGs node variables in dark mode */
+          --im-node-producer-bg: rgba(249, 115, 22, 0.15);
+          --im-node-producer-border: rgba(249, 115, 22, 0.5);
+          --im-node-producer-text: #ffedd5;
+          
+          --im-node-sqs-bg: rgba(15, 23, 42, 0.8);
+          --im-node-sqs-border: rgba(51, 65, 85, 0.6);
+          --im-node-sqs-text: #cbd5e1;
+          
+          --im-node-consumer-bg: rgba(16, 185, 129, 0.15);
+          --im-node-consumer-border: rgba(16, 185, 129, 0.5);
+          --im-node-consumer-text: #dcfce7;
+          
+          --im-node-dlq-bg: rgba(239, 68, 68, 0.15);
+          --im-node-dlq-border: rgba(239, 68, 68, 0.5);
+          --im-node-dlq-text: #fca5a5;
+
+          --im-node-activemq-active-bg: rgba(16, 185, 129, 0.15);
+          --im-node-activemq-active-border: rgba(16, 185, 129, 0.5);
+          --im-node-activemq-active-cap: rgba(16, 185, 129, 0.3);
+          
+          --im-node-activemq-standby-bg: rgba(71, 85, 105, 0.2);
+          --im-node-activemq-standby-border: rgba(148, 163, 184, 0.5);
+          --im-node-activemq-standby-cap: rgba(148, 163, 184, 0.3);
+          
+          --im-node-activemq-failed-bg: rgba(239, 68, 68, 0.15);
+          --im-node-activemq-failed-border: rgba(239, 68, 68, 0.5);
+          --im-node-activemq-failed-cap: rgba(239, 68, 68, 0.3);
+          
+          --im-node-efs-bg: rgba(15, 23, 42, 0.8);
+          --im-node-efs-border: rgba(51, 65, 85, 0.6);
+          --im-node-efs-text: #cbd5e1;
+          
+          --im-node-client-bg: #0f172a;
+          --im-node-client-border: rgba(51, 65, 85, 0.6);
+          --im-node-client-text: #cbd5e1;
+          
+          --im-node-dns-bg: rgba(15, 23, 42, 0.8);
+          --im-node-dns-border: rgba(51, 65, 85, 0.6);
+          --im-node-dns-text: #cbd5e1;
+
+          /* Sequential message blocks variables */
+          --im-node-block-a-bg: rgba(59, 130, 246, 0.15);
+          --im-node-block-a-border: rgba(59, 130, 246, 0.5);
+          --im-node-block-a-text: #93c5fd;
+          --im-node-block-b-bg: rgba(168, 85, 247, 0.15);
+          --im-node-block-b-border: rgba(168, 85, 247, 0.5);
+          --im-node-block-b-text: #e9d5ff;
+          --im-node-block-c-bg: rgba(239, 68, 68, 0.15);
+          --im-node-block-c-border: rgba(239, 68, 68, 0.5);
+          --im-node-block-c-text: #fca5a5;
+
+          /* SNS Pub/Sub variables */
+          --im-sns-topic-bg: rgba(168, 85, 247, 0.15);
+          --im-sns-topic-border: rgba(168, 85, 247, 0.5);
+          --im-sns-topic-text: #faf5ff;
+          --im-lambda-bg: rgba(14, 165, 233, 0.15);
+          --im-lambda-border: rgba(14, 165, 233, 0.5);
+          --im-lambda-text: #f0f9ff;
+          --im-status-match-bg: rgba(16, 185, 129, 0.15);
+          --im-status-match-border: rgba(16, 185, 129, 0.5);
+          --im-status-match-text: #a7f3d0;
+          --im-status-drop-bg: rgba(239, 68, 68, 0.15);
+          --im-status-drop-border: rgba(239, 68, 68, 0.5);
+          --im-status-drop-text: #fca5a5;
+
+          /* Kinesis/Firehose/S3 variables */
+          --im-firehose-bg: rgba(15, 23, 42, 0.8);
+          --im-firehose-border: rgba(59, 130, 246, 0.6);
+          --im-firehose-text: #93c5fd;
+          --im-firehose-subtext: #60a5fa;
+          --im-s3-bg: rgba(249, 115, 22, 0.15);
+          --im-s3-border: rgba(249, 115, 22, 0.5);
+          --im-s3-text: #ffedd5;
+          --im-s3-subtext: #f97316;
         }
-        
-        /* Node Status Overrides */
-        .dark .im-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .im-warm {
+
+        .dark .im-msg-card.im-msg-polled {
           border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
+          background: rgba(245, 158, 11, 0.1) !important;
         }
-        .dark .im-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .im-down {
+
+        .dark .im-msg-card.im-msg-dlq {
           border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
+          background: rgba(239, 68, 68, 0.1) !important;
         }
-        
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
+
+        .dark .im-msg-lock-overlay {
+          background: rgba(15, 23, 42, 0.95) !important;
+          color: #f59e0b !important;
         }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
+
+        .dark .im-fanout-stream-item {
+          background: rgba(37, 99, 235, 0.15) !important;
+          border-color: rgba(96, 165, 250, 0.5) !important;
+          color: #93c5fd !important;
         }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+
+        .dark .im-selector-card.im-selected-payment {
+          background: rgba(249, 115, 22, 0.15) !important;
+          border-color: #f97316 !important;
+          color: #ffedd5 !important;
+          box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25) !important;
         }
-        .dark .acad-dir-header {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        .dark .im-selector-card.im-selected-newsletter {
+          background: rgba(168, 85, 247, 0.15) !important;
+          border-color: #a855f7 !important;
+          color: #faf5ff !important;
+          box-shadow: 0 4px 16px rgba(168, 85, 247, 0.25) !important;
         }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+
+        .dark .im-selector-card.im-selected-iot {
+          background: rgba(14, 165, 233, 0.15) !important;
+          border-color: #0ea5e9 !important;
+          color: #f0f9ff !important;
+          box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25) !important;
         }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
+
+        .dark .acad-deep-dive-card {
+          background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
+          border-color: rgba(16, 185, 129, 0.3) !important;
         }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
+        .dark .acad-deep-dive-card-mq {
+          background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%) !important;
+          border-color: rgba(37, 99, 235, 0.3) !important;
         }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
+        .dark .acad-deep-dive-card-kinesis {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%) !important;
+          border-color: rgba(239, 68, 68, 0.3) !important;
         }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
+        .dark .acad-deep-dive-card-fanout {
+          background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%) !important;
+          border-color: rgba(168, 85, 247, 0.3) !important;
         }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
+        .im-container code {
+          background: var(--im-border-tertiary) !important;
+          color: var(--im-text-primary) !important;
+          padding: 2px 6px !important;
+          border-radius: 4px !important;
+          font-family: var(--font-mono, monospace) !important;
+          font-size: 11.5px !important;
         }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-              `}</style>
+      `}</style>
 
       {/* Title Header */}
       <div className="im-header">
@@ -2790,57 +2933,57 @@ aws firehose update-destination \\
             <div className="im-card" style={{ height: '100%' }}>
               <div className="im-card-title">💻 SQS Standard vs FIFO Visual Telemetry</div>
               
-              <svg width="100%" height="180" viewBox="0 0 380 180" className="im-svg-bg" style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '14px', marginBottom: '16px' }}>
+              <svg width="100%" height="180" viewBox="0 0 380 180" className="im-svg-bg" style={{ border: '1.5px solid var(--im-card-border)', borderRadius: '14px', marginBottom: '16px' }}>
                 <defs>
                   <linearGradient id="producerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fff7ed" />
-                    <stop offset="100%" stopColor="#ffedd5" />
+                    <stop offset="0%" stopColor="var(--im-node-producer-bg)" />
+                    <stop offset="100%" stopColor="var(--im-node-producer-bg)" opacity="0.8" />
                   </linearGradient>
                   <linearGradient id="sqsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f8fafc" />
+                    <stop offset="0%" stopColor="var(--im-node-sqs-bg)" />
+                    <stop offset="100%" stopColor="var(--im-node-sqs-bg)" opacity="0.8" />
                   </linearGradient>
                   <linearGradient id="consumerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#f0fdf4" />
-                    <stop offset="100%" stopColor="#dcfce7" />
+                    <stop offset="0%" stopColor="var(--im-node-consumer-bg)" />
+                    <stop offset="100%" stopColor="var(--im-node-consumer-bg)" opacity="0.8" />
                   </linearGradient>
                   <linearGradient id="dlqGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fef2f2" />
-                    <stop offset="100%" stopColor="#fee2e2" />
+                    <stop offset="0%" stopColor="var(--im-node-dlq-bg)" />
+                    <stop offset="100%" stopColor="var(--im-node-dlq-bg)" opacity="0.8" />
                   </linearGradient>
                   <marker id="arrow-sqs" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L6,3 z" fill="#ea580c" />
+                    <path d="M0,0 L0,6 L6,3 z" fill="var(--im-node-producer-border)" />
                   </marker>
                   <marker id="arrow-poll" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L6,3 z" fill="#16a34a" />
+                    <path d="M0,0 L0,6 L6,3 z" fill="var(--im-node-consumer-border)" />
                   </marker>
                 </defs>
 
                 {/* Producer server card */}
                 <g transform="translate(15, 30)">
-                  <rect x="0" y="0" width="75" height="90" rx="8" fill="url(#producerGrad)" stroke="#f97316" strokeWidth="1.5" />
-                  <rect x="5" y="5" width="65" height="15" rx="3" fill="#ffedd5" stroke="#fdba74" strokeWidth="1" />
-                  <circle cx="12" cy="12" r="3" fill="#ea580c" />
-                  <text x="37" y="15" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#c2410c">PRODUCER</text>
+                  <rect x="0" y="0" width="75" height="90" rx="8" fill="url(#producerGrad)" stroke="var(--im-node-producer-border)" strokeWidth="1.5" />
+                  <rect x="5" y="5" width="65" height="15" rx="3" fill="var(--im-node-producer-bg)" stroke="var(--im-node-producer-border)" strokeWidth="1" />
+                  <circle cx="12" cy="12" r="3" fill="var(--im-node-producer-border)" />
+                  <text x="37" y="15" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-node-producer-text)">PRODUCER</text>
                   
                   {/* Virtual server lights */}
-                  <rect x="10" y="32" width="55" height="8" rx="2" fill="#fff" stroke="#fed7aa" />
+                  <rect x="10" y="32" width="55" height="8" rx="2" fill="var(--im-card-bg)" stroke="var(--im-node-producer-border)" strokeWidth="0.5" />
                   <circle cx="16" cy="36" r="2" fill="#22c55e" />
                   <circle cx="24" cy="36" r="2" fill="#3b82f6" />
-                  <text x="43" y="38" fontSize="7" fontWeight="bold" fill="#ea580c">Vite App</text>
+                  <text x="43" y="38" fontSize="7" fontWeight="bold" fill="var(--im-node-producer-text)">Vite App</text>
                   
-                  <rect x="10" y="48" width="55" height="8" rx="2" fill="#fff" stroke="#fed7aa" />
+                  <rect x="10" y="48" width="55" height="8" rx="2" fill="var(--im-card-bg)" stroke="var(--im-node-producer-border)" strokeWidth="0.5" />
                   <circle cx="16" cy="52" r="2" fill="#16a34a" />
-                  <text x="43" y="54" fontSize="6.5" fill="#ca8a04">Active Task</text>
+                  <text x="43" y="54" fontSize="6.5" fill="var(--im-node-producer-text)">Active Task</text>
 
-                  <text x="37" y="80" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ca8a04">Enqueue API</text>
+                  <text x="37" y="80" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-node-producer-text)">Enqueue API</text>
                 </g>
 
                 {/* SQS Cluster Server Cabinet */}
                 <g transform="translate(130, 15)">
-                  <rect x="0" y="0" width="120" height="115" rx="10" fill="url(#sqsGrad)" stroke="#cbd5e1" strokeWidth="2" />
-                  <text x="60" y="18" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#1e293b">SQS QUEUE</text>
-                  <text x="60" y="28" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ca8a04">
+                  <rect x="0" y="0" width="120" height="115" rx="10" fill="url(#sqsGrad)" stroke="var(--im-svg-node-border)" strokeWidth="2" />
+                  <text x="60" y="18" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--im-text-primary)">SQS QUEUE</text>
+                  <text x="60" y="28" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-node-producer-text)">
                     {sqsQueueType === 'fifo' ? 'FIFO (Exactly-Once)' : 'Standard (At-Least-Once)'}
                   </text>
                   
@@ -2849,39 +2992,39 @@ aws firehose update-destination \\
                     {sqsQueueType === 'fifo' ? (
                       // FIFO Lane partitions
                       <g>
-                        <rect x="0" y="0" width="100" height="65" rx="4" fill="rgba(241, 245, 249, 0.5)" stroke="#e2e8f0" strokeWidth="1.5" />
-                        <line x1="50" y1="0" x2="50" y2="65" stroke="#cbd5e1" strokeWidth="1" strokeDasharray="2,2" />
-                        <text x="25" y="10" textAnchor="middle" fontSize="6" fill="#94a3b8">Group A</text>
-                        <text x="75" y="10" textAnchor="middle" fontSize="6" fill="#94a3b8">Group B</text>
+                        <rect x="0" y="0" width="100" height="65" rx="4" fill="var(--im-card-bg)" stroke="var(--im-card-border)" strokeWidth="1.5" />
+                        <line x1="50" y1="0" x2="50" y2="65" stroke="var(--im-border-secondary)" strokeWidth="1" strokeDasharray="2,2" />
+                        <text x="25" y="10" textAnchor="middle" fontSize="6" fill="var(--im-text-tertiary)">Group A</text>
+                        <text x="75" y="10" textAnchor="middle" fontSize="6" fill="var(--im-text-tertiary)">Group B</text>
 
                         {/* Standard/FIFO dynamic blocks inside lanes */}
                         {sqsMessages.filter(m => m.status === 'active' && m.groupId === 'group-A').slice(0,2).map((m, idx) => (
-                          <rect key={m.id} x="10" y={15 + idx * 22} width="30" height="18" rx="3" fill="#ffedd5" stroke="#f97316" strokeWidth="1" />
+                          <rect key={m.id} x="10" y={15 + idx * 22} width="30" height="18" rx="3" fill="var(--im-node-block-a-bg)" stroke="var(--im-node-block-a-border)" strokeWidth="1" />
                         ))}
                         {sqsMessages.filter(m => m.status === 'active' && m.groupId === 'group-B').slice(0,2).map((m, idx) => (
-                          <rect key={m.id} x="60" y={15 + idx * 22} width="30" height="18" rx="3" fill="#eff6ff" stroke="#3b82f6" strokeWidth="1" />
+                          <rect key={m.id} x="60" y={15 + idx * 22} width="30" height="18" rx="3" fill="var(--im-node-block-b-bg)" stroke="var(--im-node-block-b-border)" strokeWidth="1" />
                         ))}
                         
                         {/* Lock Indicators inside SVG if message is polled! */}
                         {sqsMessages.some(m => m.status === 'polled' && m.groupId === 'group-A') && (
-                          <rect x="10" y="42" width="30" height="18" rx="3" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,1" />
+                          <rect x="10" y="42" width="30" height="18" rx="3" fill="var(--im-msg-card-polled-bg, #fffbeb)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,1" />
                         )}
                         {sqsMessages.some(m => m.status === 'polled' && m.groupId === 'group-B') && (
-                          <rect x="60" y="42" width="30" height="18" rx="3" fill="#fffbeb" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,1" />
+                          <rect x="60" y="42" width="30" height="18" rx="3" fill="var(--im-msg-card-polled-bg, #fffbeb)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="2,1" />
                         )}
                       </g>
                     ) : (
                       // Standard Out of Order Box
                       <g>
-                        <rect x="0" y="0" width="100" height="65" rx="4" fill="rgba(248, 250, 252, 0.6)" stroke="#cbd5e1" strokeWidth="1" />
-                        <circle cx="25" cy="20" r="10" fill="#ffedd5" stroke="#f97316" />
-                        <text x="25" y="23" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#ea580c">M</text>
+                        <rect x="0" y="0" width="100" height="65" rx="4" fill="var(--im-card-bg)" stroke="var(--im-border-secondary)" strokeWidth="1" />
+                        <circle cx="25" cy="20" r="10" fill="var(--im-node-block-a-bg)" stroke="var(--im-node-block-a-border)" />
+                        <text x="25" y="23" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-node-block-a-text)">M</text>
                         
-                        <circle cx="75" cy="25" r="10" fill="#e0f2fe" stroke="#0ea5e9" />
-                        <text x="75" y="28" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#0369a1">M</text>
+                        <circle cx="75" cy="25" r="10" fill="var(--im-node-block-b-bg)" stroke="var(--im-node-block-b-border)" />
+                        <text x="75" y="28" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-node-block-b-text)">M</text>
 
-                        <circle cx="45" cy="45" r="10" fill="#f3e8ff" stroke="#a855f7" />
-                        <text x="45" y="48" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#6b21a8">M</text>
+                        <circle cx="45" cy="45" r="10" fill="var(--im-node-block-c-bg)" stroke="var(--im-node-block-c-border)" />
+                        <text x="45" y="48" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-node-block-c-text)">M</text>
                       </g>
                     )}
                   </g>
@@ -2889,8 +3032,8 @@ aws firehose update-destination \\
 
                 {/* Dead Letter Queue (DLQ) Vault */}
                 <g transform="translate(145, 140)">
-                  <rect x="0" y="0" width="90" height="30" rx="4" fill="url(#dlqGrad)" stroke="#fca5a5" strokeWidth="1.5" />
-                  <text x="45" y="18" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#b91c1c">🛑 DLQ VAULT</text>
+                  <rect x="0" y="0" width="90" height="30" rx="4" fill="url(#dlqGrad)" stroke="var(--im-node-dlq-border)" strokeWidth="1.5" />
+                  <text x="45" y="18" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-node-dlq-text)">🛑 DLQ VAULT</text>
                   {sqsMessages.some(m => m.status === 'dlq') && (
                     <circle cx="12" cy="15" r="4" fill="#ef4444" className="im-pulse" />
                   )}
@@ -2898,31 +3041,31 @@ aws firehose update-destination \\
 
                 {/* Consumer Station card */}
                 <g transform="translate(290, 30)">
-                  <rect x="0" y="0" width="75" height="90" rx="8" fill="url(#consumerGrad)" stroke="#10b981" strokeWidth="1.5" />
-                  <rect x="5" y="5" width="65" height="15" rx="3" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
-                  <circle cx="12" cy="12" r="3" fill="#15803d" />
-                  <text x="37" y="15" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#14532d">CONSUMER</text>
+                  <rect x="0" y="0" width="75" height="90" rx="8" fill="url(#consumerGrad)" stroke="var(--im-node-consumer-border)" strokeWidth="1.5" />
+                  <rect x="5" y="5" width="65" height="15" rx="3" fill="var(--im-node-consumer-bg)" stroke="var(--im-node-consumer-border)" strokeWidth="1" />
+                  <circle cx="12" cy="12" r="3" fill="var(--im-node-consumer-border)" />
+                  <text x="37" y="15" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-node-consumer-text)">CONSUMER</text>
 
                   {/* Microservice lights */}
-                  <rect x="10" y="32" width="55" height="22" rx="3" fill="#fff" stroke="#a7f3d0" />
-                  <text x="37" y="42" textAnchor="middle" fontSize="7.5" fill="#334155" fontWeight="bold">EC2 fleet</text>
-                  <text x="37" y="51" textAnchor="middle" fontSize="6.5" fill="#15803d" fontWeight="bold">Poll Active</text>
+                  <rect x="10" y="32" width="55" height="22" rx="3" fill="var(--im-card-bg)" stroke="var(--im-node-consumer-border)" strokeWidth="0.5" />
+                  <text x="37" y="42" textAnchor="middle" fontSize="7.5" fill="var(--im-text-primary)" fontWeight="bold">EC2 fleet</text>
+                  <text x="37" y="51" textAnchor="middle" fontSize="6.5" fill="var(--im-node-consumer-border)" fontWeight="bold">Poll Active</text>
 
-                  <rect x="10" y="60" width="55" height="8" rx="2" fill="#fff" stroke="#a7f3d0" />
-                  <text x="37" y="66" textAnchor="middle" fontSize="6.5" fill="#059669">Long Poll: {sqsLongPolling}s</text>
+                  <rect x="10" y="60" width="55" height="8" rx="2" fill="var(--im-card-bg)" stroke="var(--im-node-consumer-border)" strokeWidth="0.5" />
+                  <text x="37" y="66" textAnchor="middle" fontSize="6.5" fill="var(--im-node-consumer-text)">Long Poll: {sqsLongPolling}s</text>
                 </g>
 
                 {/* Connection conduits pipelines */}
                 <g>
                   {/* Producer to Queue conduit */}
-                  <path d="M 90 75 L 130 75" fill="none" stroke="#ea580c" strokeWidth="2.5" markerEnd="url(#arrow-sqs)" className="flow-active-line" />
+                  <path d="M 90 75 L 130 75" fill="none" stroke="var(--im-node-producer-border)" strokeWidth="2.5" markerEnd="url(#arrow-sqs)" className="flow-active-line" />
                   
                   {/* Queue to Consumer conduit */}
-                  <path d="M 250 75 L 290 75" fill="none" stroke="#16a34a" strokeWidth="2.5" markerEnd="url(#arrow-poll)" className="flow-active-line" />
+                  <path d="M 250 75 L 290 75" fill="none" stroke="var(--im-node-consumer-border)" strokeWidth="2.5" markerEnd="url(#arrow-poll)" className="flow-active-line" />
 
                   {/* DLQ failure drop redirection conduit */}
                   {sqsMessages.some(m => m.status === 'dlq') && (
-                    <path d="M 190 130 L 190 140" fill="none" stroke="#ef4444" strokeWidth="1.5" markerEnd="url(#arrow-sqs)" strokeDasharray="3,2" />
+                    <path d="M 190 130 L 190 140" fill="none" stroke="var(--im-node-dlq-border)" strokeWidth="1.5" markerEnd="url(#arrow-sqs)" strokeDasharray="3,2" />
                   )}
                 </g>
               </svg>
@@ -2987,25 +3130,25 @@ aws firehose update-destination \\
 
               <div className="im-grid-features">
                 <div className="im-feature-box">
-                  <div className="im-feature-title" style={{ color: '#6b21a8' }}>📥 US Shipping SQS</div>
+                  <div className="im-feature-title" style={{ color: 'var(--im-sns-topic-text)' }}>📥 US Shipping SQS</div>
                   <div className="im-feature-value">Filter Rule: <code>region == "us-east"</code></div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px', color: '#1e293b' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px', color: 'var(--im-text-primary)' }}>
                     {snsSubCounts.usQueue} events
                   </div>
                 </div>
 
                 <div className="im-feature-box">
-                  <div className="im-feature-title" style={{ color: '#6b21a8' }}>📥 EU Shipping SQS</div>
+                  <div className="im-feature-title" style={{ color: 'var(--im-sns-topic-text)' }}>📥 EU Shipping SQS</div>
                   <div className="im-feature-value">Filter Rule: <code>region == "eu-west"</code></div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px', color: '#1e293b' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px', color: 'var(--im-text-primary)' }}>
                     {snsSubCounts.euQueue} events
                   </div>
                 </div>
 
                 <div className="im-feature-box">
-                  <div className="im-feature-title" style={{ color: '#0369a1' }}>⚙️ Analytical Lambda</div>
+                  <div className="im-feature-title" style={{ color: 'var(--im-lambda-text)' }}>⚙️ Analytical Lambda</div>
                   <div className="im-feature-value">Filter Rule: <code>None (Receives All)</code></div>
-                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px', color: '#1e293b' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '8px', color: 'var(--im-text-primary)' }}>
                     {snsSubCounts.lambda} invocations
                   </div>
                 </div>
@@ -3018,69 +3161,69 @@ aws firehose update-destination \\
             <div className="im-card">
               <div className="im-card-title">🔀 Real-Time SNS Fanout Topography</div>
               
-              <svg width="100%" height="240" viewBox="0 0 400 240" className="im-svg-bg" style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '14px', marginBottom: '16px' }}>
+              <svg width="100%" height="240" viewBox="0 0 400 240" className="im-svg-bg" style={{ border: '1.5px solid var(--im-card-border)', borderRadius: '14px', marginBottom: '16px' }}>
                 <defs>
                   <linearGradient id="snsTopicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#faf5ff" />
-                    <stop offset="100%" stopColor="#f3e8ff" />
+                    <stop offset="0%" stopColor="var(--im-sns-topic-bg)" />
+                    <stop offset="100%" stopColor="var(--im-sns-topic-bg)" opacity="0.8" />
                   </linearGradient>
                   <linearGradient id="lambdaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#e0f2fe" />
-                    <stop offset="100%" stopColor="#bae6fd" />
+                    <stop offset="0%" stopColor="var(--im-lambda-bg)" />
+                    <stop offset="100%" stopColor="var(--im-lambda-bg)" opacity="0.8" />
                   </linearGradient>
                   <marker id="arrow-sns" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L6,3 z" fill="#7c3aed" />
+                    <path d="M0,0 L0,6 L6,3 z" fill="var(--im-sns-topic-border)" />
                   </marker>
                 </defs>
 
                 {/* Publisher Billing Client */}
                 <g transform="translate(15, 95)">
-                  <rect x="0" y="0" width="70" height="50" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <rect x="5" y="5" width="60" height="12" rx="2" fill="#faf5ff" stroke="#e9d5ff" />
-                  <text x="35" y="14" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#6b21a8">BILLING APP</text>
-                  <circle cx="10" cy="32" r="2" fill="#a855f7" className="im-pulse" />
-                  <text x="17" y="34.5" fontSize="6.5" fill="#475569" fontWeight="bold">Event Source</text>
-                  <text x="35" y="44" textAnchor="middle" fontSize="6" fill="#94a3b8">region="{snsRegion}"</text>
+                  <rect x="0" y="0" width="70" height="50" rx="8" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                  <rect x="5" y="5" width="60" height="12" rx="2" fill="var(--im-sns-topic-bg)" stroke="var(--im-node-sns-border)" />
+                  <text x="35" y="14" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--im-sns-topic-text)">BILLING APP</text>
+                  <circle cx="10" cy="32" r="2" fill="var(--im-sns-topic-border)" className="im-pulse" />
+                  <text x="17" y="34.5" fontSize="6.5" fill="var(--im-text-secondary)" fontWeight="bold">Event Source</text>
+                  <text x="35" y="44" textAnchor="middle" fontSize="6" fill="var(--im-text-tertiary)">region="{snsRegion}"</text>
                 </g>
 
                 {/* Publisher to SNS conduit */}
-                <path d="M 85 120 L 140 120" fill="none" stroke="#7c3aed" strokeWidth="2" markerEnd="url(#arrow-sns)" 
+                <path d="M 85 120 L 140 120" fill="none" stroke="var(--im-sns-topic-border)" strokeWidth="2" markerEnd="url(#arrow-sns)" 
                   className={snsAnimationState === 'publishing' ? 'flow-active-line' : ''} />
 
                 {/* SNS Topic Dispatcher Ring */}
                 <g transform="translate(140, 90)">
-                  <circle cx="30" cy="30" r="26" fill="url(#snsTopicGrad)" stroke="#7c3aed" strokeWidth="2" />
-                  <circle cx="30" cy="30" r="14" fill="#ffffff" stroke="#c084fc" strokeWidth="1.5" />
-                  <text x="30" y="27" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#6b21a8">SNS</text>
-                  <text x="30" y="38" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#7c3aed">Topic</text>
+                  <circle cx="30" cy="30" r="26" fill="url(#snsTopicGrad)" stroke="var(--im-sns-topic-border)" strokeWidth="2" />
+                  <circle cx="30" cy="30" r="14" fill="var(--im-svg-node-bg)" stroke="var(--im-node-sns-border)" strokeWidth="1.5" />
+                  <text x="30" y="27" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-sns-topic-text)">SNS</text>
+                  <text x="30" y="38" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-sns-topic-border)">Topic</text>
                   
                   {/* Duplication indicator particles */}
                   {snsAnimationState === 'routing' && (
                     <g>
-                      <circle cx="15" cy="30" r="2" fill="#a855f7" className="im-pulse" />
-                      <circle cx="45" cy="30" r="2" fill="#a855f7" className="im-pulse" />
-                      <circle cx="30" cy="15" r="2" fill="#a855f7" className="im-pulse" />
+                      <circle cx="15" cy="30" r="2" fill="var(--im-sns-topic-border)" className="im-pulse" />
+                      <circle cx="45" cy="30" r="2" fill="var(--im-sns-topic-border)" className="im-pulse" />
+                      <circle cx="30" cy="15" r="2" fill="var(--im-sns-topic-border)" className="im-pulse" />
                     </g>
                   )}
                 </g>
 
                 {/* Sub 1: US Queue */}
                 <g>
-                  <path d="M 200 105 L 285 55" fill="none" stroke={snsAnimationState === 'routing' && snsMatches.usQueue ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#arrow-sns)"
+                  <path d="M 200 105 L 285 55" fill="none" stroke={snsAnimationState === 'routing' && snsMatches.usQueue ? '#10b981' : 'var(--im-border-secondary)'} strokeWidth="2" markerEnd="url(#arrow-sns)"
                     className={snsAnimationState === 'routing' && snsMatches.usQueue ? 'flow-active-line' : ''} />
                   
                   <g transform="translate(290, 20)">
-                    <rect x="0" y="0" width="95" height="42" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="47" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">US Shipping SQS</text>
-                    <text x="47" y="24" textAnchor="middle" fontSize="6.5" fill="#64748b">Filter: region=="us-east"</text>
-                    <text x="47" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ca8a04">Count: {snsSubCounts.usQueue}</text>
+                    <rect x="0" y="0" width="95" height="42" rx="6" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                    <text x="47" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-text-primary)">US Shipping SQS</text>
+                    <text x="47" y="24" textAnchor="middle" fontSize="6.5" fill="var(--im-text-tertiary)">Filter: region=="us-east"</text>
+                    <text x="47" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-node-producer-border)">Count: {snsSubCounts.usQueue}</text>
                   </g>
 
                   {/* Filter Evaluation Badge */}
                   {snsAnimationState === 'routing' && (
                     <g transform="translate(210, 52)">
-                      <rect x="0" y="0" width="36" height="12" rx="3" fill={snsMatches.usQueue ? '#ecfdf5' : '#fef2f2'} stroke={snsMatches.usQueue ? '#10b981' : '#ef4444'} strokeWidth="1" />
-                      <text x="18" y="8.5" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill={snsMatches.usQueue ? '#065f46' : '#b91c1c'}>
+                      <rect x="0" y="0" width="36" height="12" rx="3" fill={snsMatches.usQueue ? 'var(--im-status-match-bg)' : 'var(--im-status-drop-bg)'} stroke={snsMatches.usQueue ? 'var(--im-status-match-border)' : 'var(--im-status-drop-border)'} strokeWidth="1" />
+                      <text x="18" y="8.5" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill={snsMatches.usQueue ? 'var(--im-status-match-text)' : 'var(--im-status-drop-text)'}>
                         {snsMatches.usQueue ? 'MATCH' : 'DROP'}
                       </text>
                     </g>
@@ -3089,21 +3232,21 @@ aws firehose update-destination \\
 
                 {/* Sub 2: EU Queue */}
                 <g>
-                  <path d="M 200 120 L 285 120" fill="none" stroke={snsAnimationState === 'routing' && snsMatches.euQueue ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#arrow-sns)"
+                  <path d="M 200 120 L 285 120" fill="none" stroke={snsAnimationState === 'routing' && snsMatches.euQueue ? '#10b981' : 'var(--im-border-secondary)'} strokeWidth="2" markerEnd="url(#arrow-sns)"
                     className={snsAnimationState === 'routing' && snsMatches.euQueue ? 'flow-active-line' : ''} />
                   
                   <g transform="translate(290, 98)">
-                    <rect x="0" y="0" width="95" height="42" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <text x="47" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">EU Shipping SQS</text>
-                    <text x="47" y="24" textAnchor="middle" fontSize="6.5" fill="#64748b">Filter: region=="eu-west"</text>
-                    <text x="47" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ca8a04">Count: {snsSubCounts.euQueue}</text>
+                    <rect x="0" y="0" width="95" height="42" rx="6" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                    <text x="47" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-text-primary)">EU Shipping SQS</text>
+                    <text x="47" y="24" textAnchor="middle" fontSize="6.5" fill="var(--im-text-tertiary)">Filter: region=="eu-west"</text>
+                    <text x="47" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-node-producer-border)">Count: {snsSubCounts.euQueue}</text>
                   </g>
 
                   {/* Filter Evaluation Badge */}
                   {snsAnimationState === 'routing' && (
                     <g transform="translate(210, 114)">
-                      <rect x="0" y="0" width="36" height="12" rx="3" fill={snsMatches.euQueue ? '#ecfdf5' : '#fef2f2'} stroke={snsMatches.euQueue ? '#10b981' : '#ef4444'} strokeWidth="1" />
-                      <text x="18" y="8.5" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill={snsMatches.euQueue ? '#065f46' : '#b91c1c'}>
+                      <rect x="0" y="0" width="36" height="12" rx="3" fill={snsMatches.euQueue ? 'var(--im-status-match-bg)' : 'var(--im-status-drop-bg)'} stroke={snsMatches.euQueue ? 'var(--im-status-match-border)' : 'var(--im-status-drop-border)'} strokeWidth="1" />
+                      <text x="18" y="8.5" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill={snsMatches.euQueue ? 'var(--im-status-match-text)' : 'var(--im-status-drop-text)'}>
                         {snsMatches.euQueue ? 'MATCH' : 'DROP'}
                       </text>
                     </g>
@@ -3112,21 +3255,21 @@ aws firehose update-destination \\
 
                 {/* Sub 3: Analytical Lambda */}
                 <g>
-                  <path d="M 200 135 L 285 185" fill="none" stroke={snsAnimationState === 'routing' ? '#10b981' : '#cbd5e1'} strokeWidth="2" markerEnd="url(#arrow-sns)"
+                  <path d="M 200 135 L 285 185" fill="none" stroke={snsAnimationState === 'routing' ? '#10b981' : 'var(--im-border-secondary)'} strokeWidth="2" markerEnd="url(#arrow-sns)"
                     className={snsAnimationState === 'routing' ? 'flow-active-line' : ''} />
                   
                   <g transform="translate(290, 175)">
-                    <rect x="0" y="0" width="95" height="42" rx="6" fill="url(#lambdaGrad)" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="47" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e3a8a">Analytics Lambda</text>
-                    <text x="47" y="24" textAnchor="middle" fontSize="6.5" fill="#1d4ed8">Filter: None (All Events)</text>
-                    <text x="47" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#2563eb">Runs: {snsSubCounts.lambda}</text>
+                    <rect x="0" y="0" width="95" height="42" rx="6" fill="url(#lambdaGrad)" stroke="var(--im-lambda-border)" strokeWidth="1.5" />
+                    <text x="47" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-lambda-text)">Analytics Lambda</text>
+                    <text x="47" y="24" textAnchor="middle" fontSize="6.5" fill="var(--im-firehose-subtext)">Filter: None (All Events)</text>
+                    <text x="47" y="34" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-firehose-border)">Runs: {snsSubCounts.lambda}</text>
                   </g>
 
                   {/* Filter Evaluation Badge */}
                   {snsAnimationState === 'routing' && (
                     <g transform="translate(210, 156)">
-                      <rect x="0" y="0" width="36" height="12" rx="3" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
-                      <text x="18" y="8.5" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="#065f46">PASS</text>
+                      <rect x="0" y="0" width="36" height="12" rx="3" fill="var(--im-status-match-bg)" stroke="var(--im-status-match-border)" strokeWidth="1" />
+                      <text x="18" y="8.5" textAnchor="middle" fontSize="6.5" fontWeight="bold" fill="var(--im-status-match-text)">PASS</text>
                     </g>
                   )}
                 </g>
@@ -3270,56 +3413,56 @@ aws firehose update-destination \\
             <div className="im-card">
               <div className="im-card-title">🔌 Active Fanout &amp; Firehose Topology Map</div>
               
-              <svg width="100%" height="200" viewBox="0 0 380 200" className="im-svg-bg" style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '14px', marginBottom: '16px' }}>
+              <svg width="100%" height="200" viewBox="0 0 380 200" className="im-svg-bg" style={{ border: '1.5px solid var(--im-card-border)', borderRadius: '14px', marginBottom: '16px' }}>
                 <defs>
                   <linearGradient id="firehoseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#1d4ed8" />
+                    <stop offset="0%" stopColor="var(--im-firehose-border)" />
+                    <stop offset="100%" stopColor="var(--im-firehose-subtext)" />
                   </linearGradient>
                   <linearGradient id="s3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fff7ed" />
-                    <stop offset="100%" stopColor="#ffedd5" />
+                    <stop offset="0%" stopColor="var(--im-s3-bg)" />
+                    <stop offset="100%" stopColor="var(--im-s3-bg)" opacity="0.8" />
                   </linearGradient>
                   <marker id="arrow-fanout" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L6,3 z" fill="#c2410c" />
+                    <path d="M0,0 L0,6 L6,3 z" fill="var(--im-s3-text)" />
                   </marker>
                 </defs>
 
                 {/* SNS Topic Dispatcher Node */}
                 <g transform="translate(15, 75)">
-                  <circle cx="20" cy="20" r="18" fill="#faf5ff" stroke="#7c3aed" strokeWidth="2" />
-                  <text x="20" y="23" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#6b21a8">SNS</text>
+                  <circle cx="20" cy="20" r="18" fill="var(--im-sns-topic-bg)" stroke="var(--im-sns-topic-border)" strokeWidth="2" />
+                  <text x="20" y="23" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-sns-topic-text)">SNS</text>
                   {fanoutIsStreaming && (
-                    <circle cx="20" cy="20" r="18" fill="none" stroke="#a855f7" strokeWidth="1.5" className="im-pulse" />
+                    <circle cx="20" cy="20" r="18" fill="none" stroke="var(--im-sns-topic-border)" strokeWidth="1.5" className="im-pulse" />
                   )}
                 </g>
 
                 {/* SQS Billing Queue */}
                 <g transform="translate(130, 20)">
-                  <rect x="0" y="0" width="100" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <text x="50" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">Billing FIFO SQS</text>
+                  <rect x="0" y="0" width="100" height="36" rx="6" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                  <text x="50" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-text-primary)">Billing FIFO SQS</text>
                   {/* Dynamic counts inside SVG */}
-                  <text x="50" y="28" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#ea580c">
+                  <text x="50" y="28" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-node-producer-border)">
                     Orders: {fanoutQueuesData.billing.length}
                   </text>
                 </g>
 
                 {/* SQS Inventory Queue */}
                 <g transform="translate(130, 75)">
-                  <rect x="0" y="0" width="100" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <text x="50" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1e293b">Inventory FIFO SQS</text>
-                  <text x="50" y="28" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#ea580c">
+                  <rect x="0" y="0" width="100" height="36" rx="6" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                  <text x="50" y="15" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-text-primary)">Inventory FIFO SQS</text>
+                  <text x="50" y="28" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-node-producer-border)">
                     Orders: {fanoutQueuesData.inventory.length}
                   </text>
                 </g>
 
                 {/* Kinesis Data Firehose Buffer Cylinder */}
                 <g transform="translate(130, 130)">
-                  <rect x="0" y="0" width="100" height="50" rx="6" fill="#f8fafc" stroke="#3b82f6" strokeWidth="1.5" />
-                  <text x="50" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e3a8a">Kinesis Firehose</text>
+                  <rect x="0" y="0" width="100" height="50" rx="6" fill="var(--im-firehose-bg)" stroke="var(--im-firehose-border)" strokeWidth="1.5" />
+                  <text x="50" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-firehose-text)">Kinesis Firehose</text>
                   
                   {/* Firehose fluid level representation based on buffer count! */}
-                  <rect x="5" y="22" width="90" height="12" rx="2" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="0.5" />
+                  <rect x="5" y="22" width="90" height="12" rx="2" fill="var(--im-border-tertiary)" stroke="var(--im-border-secondary)" strokeWidth="0.5" />
                   <rect 
                     x="5" y="22" 
                     width={Math.min(90, (firehoseBuffer.length / firehoseSizeLimit) * 90)} 
@@ -3327,20 +3470,20 @@ aws firehose update-destination \\
                     fill="url(#firehoseGrad)" 
                     style={{ transition: 'width 0.3s ease-in-out' }} 
                   />
-                  <text x="50" y="31.5" textAnchor="middle" fontSize="7" fontWeight="bold" fill={firehoseBuffer.length > 0 ? '#ffffff' : '#64748b'}>
+                  <text x="50" y="31.5" textAnchor="middle" fontSize="7" fontWeight="bold" fill={firehoseBuffer.length > 0 ? '#ffffff' : 'var(--im-text-tertiary)'}>
                     Buffer: {firehoseBuffer.length}/{firehoseSizeLimit}
                   </text>
                   
-                  <text x="50" y="44" textAnchor="middle" fontSize="6.5" fill="#1d4ed8">Flush timer: {firehoseTimer}s</text>
+                  <text x="50" y="44" textAnchor="middle" fontSize="6.5" fill="var(--im-firehose-subtext)">Flush timer: {firehoseTimer}s</text>
                 </g>
 
                 {/* Target Amazon S3 database cylinder */}
                 <g transform="translate(290, 70)">
-                  <rect x="0" y="0" width="70" height="60" rx="8" fill="url(#s3Grad)" stroke="#ea580c" strokeWidth="1.5" />
-                  <ellipse cx="35" cy="0" rx="35" ry="8" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
-                  <text x="35" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#c2410c">S3 LAKE</text>
-                  <text x="35" y="36" textAnchor="middle" fontSize="6.5" fill="#ea580c">Parquet files</text>
-                  <text x="35" y="48" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#7c3aed">Files: {s3Files.length}</text>
+                  <rect x="0" y="0" width="70" height="60" rx="8" fill="url(#s3Grad)" stroke="var(--im-s3-border)" strokeWidth="1.5" />
+                  <ellipse cx="35" cy="0" rx="35" ry="8" fill="var(--im-s3-bg)" stroke="var(--im-s3-border)" strokeWidth="1.5" />
+                  <text x="35" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--im-s3-text)">S3 LAKE</text>
+                  <text x="35" y="36" textAnchor="middle" fontSize="6.5" fill="var(--im-s3-subtext)">Parquet files</text>
+                  <text x="35" y="48" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-sns-topic-border)">Files: {s3Files.length}</text>
                   
                   {/* Pulsing glow on flush success */}
                   {firehoseFlushStatus === 'success' && (
@@ -3351,20 +3494,20 @@ aws firehose update-destination \\
                 {/* Routing pipelines network */}
                 <g>
                   {/* SNS to Billing */}
-                  <path d="M 50 85 L 130 38" fill="none" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arrow-fanout)"
+                  <path d="M 50 85 L 130 38" fill="none" stroke="var(--im-sns-topic-border)" strokeWidth="1.5" markerEnd="url(#arrow-fanout)"
                     className={fanoutIsStreaming ? 'flow-active-line' : ''} />
 
                   {/* SNS to Inventory */}
-                  <path d="M 53 95 L 130 95" fill="none" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arrow-fanout)"
+                  <path d="M 53 95 L 130 95" fill="none" stroke="var(--im-sns-topic-border)" strokeWidth="1.5" markerEnd="url(#arrow-fanout)"
                     className={fanoutIsStreaming ? 'flow-active-line' : ''} />
 
                   {/* SNS to Firehose */}
-                  <path d="M 50 105 L 130 150" fill="none" stroke="#7c3aed" strokeWidth="1.5" markerEnd="url(#arrow-fanout)"
+                  <path d="M 50 105 L 130 150" fill="none" stroke="var(--im-sns-topic-border)" strokeWidth="1.5" markerEnd="url(#arrow-fanout)"
                     className={fanoutIsStreaming ? 'flow-active-line' : ''} />
 
                   {/* Firehose to S3 Flush laser */}
                   <path d="M 230 155 L 290 110" fill="none" 
-                    stroke={firehoseFlushStatus === 'flushing' ? '#22c55e' : '#3b82f6'} 
+                    stroke={firehoseFlushStatus === 'flushing' ? '#22c55e' : 'var(--im-firehose-border)'} 
                     strokeWidth={firehoseFlushStatus === 'flushing' ? '3' : '1.5'} 
                     markerEnd="url(#arrow-fanout)"
                     className={firehoseFlushStatus === 'flushing' ? 'flow-active-line' : ''} 
@@ -3380,12 +3523,12 @@ aws firehose update-destination \\
                 Aggregated, Parquet columnar data lake buckets. JSON payloads are structured via Lambda on Firehose buffer write.
               </div>
 
-              <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', background: '#f0fdf4', padding: '14px', maxHeight: '150px', overflowY: 'auto', marginBottom: '16px' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '12px', color: '#166534', marginBottom: '8px' }}>s3://my-data-lake-archive/</div>
+              <div style={{ border: '1.5px solid var(--im-node-consumer-border)', borderRadius: '10px', background: 'var(--im-node-consumer-bg)', padding: '14px', maxHeight: '150px', overflowY: 'auto', marginBottom: '16px' }}>
+                <div style={{ fontWeight: 'bold', fontSize: '12px', color: 'var(--im-node-consumer-text)', marginBottom: '8px' }}>s3://my-data-lake-archive/</div>
                 {s3Files.map((file, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', borderBottom: '1px solid #d1fae5', padding: '6px 0' }}>
-                    <span style={{ color: '#0f766e', fontFamily: 'monospace' }}>📄 {file.filename}</span>
-                    <span style={{ fontSize: '10.5px', color: '#475569' }}>{file.size} ({file.itemsCount} rows)</span>
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', borderBottom: '1px solid var(--im-node-consumer-border)', padding: '6px 0' }}>
+                    <span style={{ color: 'var(--im-node-consumer-text)', fontFamily: 'monospace' }}>📄 {file.filename}</span>
+                    <span style={{ fontSize: '10.5px', color: 'var(--im-text-secondary)' }}>{file.size} ({file.itemsCount} rows)</span>
                   </div>
                 ))}
               </div>
@@ -3477,8 +3620,8 @@ aws firehose update-destination \\
               </div>
 
               {kinesisHashResult && (
-                <div style={{ marginTop: '14px', padding: '10px 14px', background: '#f0f9ff', border: '1px dashed #bae6fd', borderRadius: '8px', fontSize: '12px' }}>
-                  String Key: <strong style={{ color: '#0369a1' }}>{kinesisCustomPK}</strong> | Hash Segment: <code>{kinesisHashResult.hash}</code> | Allocated Destination: <strong style={{ color: '#0284c7' }}>Shard Lane {kinesisHashResult.shardNum}</strong>
+                <div style={{ marginTop: '14px', padding: '10px 14px', background: 'var(--im-lambda-bg)', border: '1px dashed var(--im-lambda-border)', borderRadius: '8px', fontSize: '12px' }}>
+                  String Key: <strong style={{ color: 'var(--im-lambda-text)' }}>{kinesisCustomPK}</strong> | Hash Segment: <code>{kinesisHashResult.hash}</code> | Allocated Destination: <strong style={{ color: 'var(--im-lambda-border)' }}>Shard Lane {kinesisHashResult.shardNum}</strong>
                 </div>
               )}
             </div>
@@ -3493,32 +3636,32 @@ aws firehose update-destination \\
               </div>
 
               {/* Hashing & Shard Router SVG Diagram */}
-              <svg width="100%" height="120" viewBox="0 0 380 120" className="im-svg-bg" style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '14px', marginBottom: '16px' }}>
+              <svg width="100%" height="120" viewBox="0 0 380 120" className="im-svg-bg" style={{ border: '1.5px solid var(--im-card-border)', borderRadius: '14px', marginBottom: '16px' }}>
                 <defs>
                   <linearGradient id="kinesisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#e0f2fe" />
-                    <stop offset="100%" stopColor="#bae6fd" />
+                    <stop offset="0%" stopColor="var(--im-lambda-bg)" />
+                    <stop offset="100%" stopColor="var(--im-lambda-bg)" opacity="0.8" />
                   </linearGradient>
                   <marker id="arrow-kinesis" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <path d="M0,0 L0,6 L6,3 z" fill="#0284c7" />
+                    <path d="M0,0 L0,6 L6,3 z" fill="var(--im-lambda-border)" />
                   </marker>
                 </defs>
 
                 {/* Clickstream Browser client */}
                 <g transform="translate(15, 35)">
-                  <rect x="0" y="0" width="70" height="50" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <rect x="5" y="5" width="60" height="10" rx="2" fill="#f0f9ff" stroke="#bae6fd" />
-                  <text x="35" y="12" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0369a1">CLICKSTREAM</text>
-                  <circle cx="15" cy="30" r="3" fill="#0ea5e9" className="im-pulse" />
-                  <text x="23" y="32.5" fontSize="7" fill="#475569" fontWeight="bold">App Clients</text>
-                  <text x="35" y="44" textAnchor="middle" fontSize="6.5" fill="#94a3b8">{kinesisIngressRate} KB/s rate</text>
+                  <rect x="0" y="0" width="70" height="50" rx="8" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                  <rect x="5" y="5" width="60" height="10" rx="2" fill="var(--im-lambda-bg)" stroke="var(--im-lambda-border)" />
+                  <text x="35" y="12" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--im-lambda-text)">CLICKSTREAM</text>
+                  <circle cx="15" cy="30" r="3" fill="var(--im-lambda-border)" className="im-pulse" />
+                  <text x="23" y="32.5" fontSize="7" fill="var(--im-text-secondary)" fontWeight="bold">App Clients</text>
+                  <text x="35" y="44" textAnchor="middle" fontSize="6.5" fill="var(--im-text-tertiary)">{kinesisIngressRate} KB/s rate</text>
                 </g>
 
                 {/* MD5 Partition key router */}
                 <g transform="translate(145, 35)">
-                  <circle cx="25" cy="25" r="22" fill="#ffffff" stroke="#0284c7" strokeWidth="2" />
-                  <text x="25" y="22" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#0369a1">MD5</text>
-                  <text x="25" y="33" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#0284c7">Router</text>
+                  <circle cx="25" cy="25" r="22" fill="var(--im-svg-node-bg)" stroke="var(--im-lambda-border)" strokeWidth="2" />
+                  <text x="25" y="22" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--im-lambda-text)">MD5</text>
+                  <text x="25" y="33" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--im-lambda-border)">Router</text>
                   {kinesisThrottled && (
                     <circle cx="25" cy="25" r="22" fill="none" stroke="#ef4444" strokeWidth="1.5" className="im-pulse" />
                   )}
@@ -3527,35 +3670,35 @@ aws firehose update-destination \\
                 {/* Dynamic shard channels in SVG */}
                 <g>
                   {/* Channel to Shard 1 */}
-                  <path d="M 192 50 L 275 30" fill="none" stroke={kinesisThrottled ? '#fca5a5' : '#0ea5e9'} strokeWidth={kinesisThrottled ? '1.5' : '2'} markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
-                  <rect x="280" y="12" width="80" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                  <text x="320" y="25" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e293b">Shard Lane 1</text>
+                  <path d="M 192 50 L 275 30" fill="none" stroke={kinesisThrottled ? 'var(--im-status-drop-border)' : 'var(--im-lambda-border)'} strokeWidth={kinesisThrottled ? '1.5' : '2'} markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
+                  <rect x="280" y="12" width="80" height="22" rx="4" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                  <text x="320" y="25" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-text-primary)">Shard Lane 1</text>
 
                   {/* Channel to Shard 2 */}
                   {kinesisShards >= 2 && (
                     <g>
-                      <path d="M 192 60 L 275 60" fill="none" stroke={kinesisThrottled ? '#fca5a5' : '#0ea5e9'} strokeWidth={kinesisThrottled ? '1.5' : '2'} markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
-                      <rect x="280" y="49" width="80" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                      <text x="320" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e293b">Shard Lane 2</text>
+                      <path d="M 192 60 L 275 60" fill="none" stroke={kinesisThrottled ? 'var(--im-status-drop-border)' : 'var(--im-lambda-border)'} strokeWidth={kinesisThrottled ? '1.5' : '2'} markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
+                      <rect x="280" y="49" width="80" height="22" rx="4" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                      <text x="320" y="62" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-text-primary)">Shard Lane 2</text>
                     </g>
                   )}
 
                   {/* Channel to Shard 3 */}
                   {kinesisShards >= 3 && (
                     <g>
-                      <path d="M 192 70 L 275 90" fill="none" stroke={kinesisThrottled ? '#fca5a5' : '#0ea5e9'} strokeWidth={kinesisThrottled ? '1.5' : '2'} markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
-                      <rect x="280" y="86" width="80" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                      <text x="320" y="99" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#1e293b">Shard Lane 3</text>
+                      <path d="M 192 70 L 275 90" fill="none" stroke={kinesisThrottled ? 'var(--im-status-drop-border)' : 'var(--im-lambda-border)'} strokeWidth={kinesisThrottled ? '1.5' : '2'} markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
+                      <rect x="280" y="86" width="80" height="22" rx="4" fill="var(--im-svg-node-bg)" stroke="var(--im-svg-node-border)" strokeWidth="1.5" />
+                      <text x="320" y="99" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-text-primary)">Shard Lane 3</text>
                     </g>
                   )}
                 </g>
 
                 {/* Packet flow conduits */}
-                <path d="M 85 60 L 145 60" fill="none" stroke="#38bdf8" strokeWidth="2.5" markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
+                <path d="M 85 60 L 145 60" fill="none" stroke="var(--im-lambda-border)" strokeWidth="2.5" markerEnd="url(#arrow-kinesis)" className="flow-active-line" />
               </svg>
 
               {/* Shard visual lanes */}
-              <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '12px', background: '#f8fafc', padding: '14px', marginBottom: '16px' }}>
+              <div style={{ border: '1.5px solid var(--im-card-border)', borderRadius: '12px', background: 'var(--im-svg-bg)', padding: '14px', marginBottom: '16px' }}>
                 {[...Array(kinesisShards)].map((_, i) => {
                   const maxSlots = 8;
                   const shardPackets = kinesisRecentPackets.filter(p => p.shard === i + 1).slice(0, maxSlots);
@@ -3565,10 +3708,10 @@ aws firehose update-destination \\
                   }
 
                   return (
-                    <div key={i} style={{ marginBottom: '12px', borderBottom: i < kinesisShards - 1 ? '1px dashed #cbd5e1' : 'none', paddingBottom: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', fontWeight: 'bold' }}>
+                    <div key={i} style={{ marginBottom: '12px', borderBottom: i < kinesisShards - 1 ? '1px dashed var(--im-border-secondary)' : 'none', paddingBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--im-text-secondary)', fontWeight: 'bold' }}>
                         <span>🌊 Shard Lane {i + 1} (Hash segment {Math.floor((i * 65536) / kinesisShards).toString(16).toUpperCase()}-{(Math.floor(((i + 1) * 65536) / kinesisShards) - 1).toString(16).toUpperCase()})</span>
-                        <span style={{ color: '#0f766e' }}>Max limit: 1.0 MB/s</span>
+                        <span style={{ color: 'var(--im-node-consumer-border)' }}>Max limit: 1.0 MB/s</span>
                       </div>
 
                       {/* Packet visual heatmap cells grid */}
@@ -3578,15 +3721,15 @@ aws firehose update-destination \\
                             return (
                               <div key={p.id} style={{
                                 height: '36px',
-                                border: '1px dashed #cbd5e1',
+                                border: '1px dashed var(--im-border-secondary)',
                                 borderRadius: '6px',
-                                background: '#f8fafc',
+                                background: 'var(--im-svg-bg)',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontSize: '8px',
-                                color: '#94a3b8'
+                                color: 'var(--im-text-tertiary)'
                               }}>
                                 <span>-</span>
                                 <span style={{ fontSize: '6px', opacity: 0.5 }}>IDLE</span>
@@ -3598,16 +3741,16 @@ aws firehose update-destination \\
                           return (
                             <div key={p.id} style={{
                               height: '36px',
-                              border: `1.5px solid ${isThrottled ? '#ef4444' : '#0ea5e9'}`,
+                              border: `1.5px solid ${isThrottled ? 'var(--im-status-drop-border)' : 'var(--im-lambda-border)'}`,
                               borderRadius: '6px',
-                              background: isThrottled ? '#fee2e2' : '#e0f2fe',
+                              background: isThrottled ? 'var(--im-status-drop-bg)' : 'var(--im-lambda-bg)',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontSize: '9px',
                               fontWeight: 'bold',
-                              color: isThrottled ? '#b91c1c' : '#0369a1',
+                              color: isThrottled ? 'var(--im-status-drop-text)' : 'var(--im-lambda-text)',
                               transition: 'all 0.2s ease',
                               cursor: 'default',
                               textOverflow: 'ellipsis',
@@ -3618,7 +3761,7 @@ aws firehose update-destination \\
                               <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', width: '100%', textAlign: 'center' }}>
                                 {p.pk}
                               </span>
-                              <span style={{ fontSize: '7px', opacity: 0.8, color: isThrottled ? '#b91c1c' : '#0284c7' }}>
+                              <span style={{ fontSize: '7px', opacity: 0.8, color: isThrottled ? 'var(--im-status-drop-text)' : 'var(--im-lambda-border)' }}>
                                 {isThrottled ? '⚠️ DROP' : '⚡ OK'}
                               </span>
                             </div>
@@ -3715,7 +3858,7 @@ aws firehose update-destination \\
             <div className="im-card">
               <div className="im-card-title">🐹 Amazon MQ Cross-AZ Availability topology</div>
               
-              <svg width="100%" height="240" viewBox="0 0 440 240" className="im-svg-bg" style={{ border: '1.5px solid rgba(226, 232, 240, 0.85)', borderRadius: '14px', marginBottom: '16px' }}>
+              <svg width="100%" height="240" viewBox="0 0 440 240" className="im-svg-bg" style={{ border: '1.5px solid var(--im-card-border)', borderRadius: '14px', marginBottom: '16px' }}>
                 <defs>
                   {/* Glowing and lighting filters */}
                   <filter id="mqActiveGlow" x="-20%" y="-20%" width="140%" height="140%">
@@ -3752,8 +3895,8 @@ aws firehose update-destination \\
                   </linearGradient>
 
                   <linearGradient id="efsChassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="100%" stopColor="#f1f5f9" />
+                    <stop offset="0%" stopColor="var(--im-node-efs-bg)" />
+                    <stop offset="100%" stopColor="var(--im-node-efs-bg)" opacity="0.9" />
                   </linearGradient>
                   
                   {/* Arrow markers */}
@@ -3769,26 +3912,26 @@ aws firehose update-destination \\
                 </defs>
 
                 {/* VPC Boundary dashed line */}
-                <rect x="8" y="8" width="424" height="224" rx="10" fill="none" stroke="rgba(148, 163, 184, 0.4)" strokeWidth="1.5" strokeDasharray="4,4" />
-                <text x="424" y="19" textAnchor="end" fontSize="7" fontWeight="bold" fill="#64748b" letterSpacing="0.05em">VPC BOUNDARY (10.0.0.0/16)</text>
+                <rect x="8" y="8" width="424" height="224" rx="10" fill="none" stroke="var(--im-svg-grid-line)" strokeWidth="1.5" strokeDasharray="4,4" />
+                <text x="424" y="19" textAnchor="end" fontSize="7" fontWeight="bold" fill="var(--im-text-tertiary)" letterSpacing="0.05em">VPC BOUNDARY (10.0.0.0/16)</text>
 
                 {/* Subnet AZ-a Boundary */}
                 <rect x="20" y="65" width="180" height="110" rx="10" 
-                      fill="rgba(255, 255, 255, 0.5)" 
+                      fill="var(--im-card-bg)" 
                       stroke={mqStatus === 'healthy' ? '#0d9488' : mqStatus === 'restored' ? '#38bdf8' : '#ef4444'} 
                       strokeWidth={mqStatus === 'healthy' || mqStatus === 'restored' ? '1.5' : '2'} 
                       style={{ transition: 'all 0.3s ease' }} />
-                <text x="110" y="77" textAnchor="middle" fontSize="8" fontWeight="bold" fill={mqStatus === 'healthy' || mqStatus === 'restored' ? '#0f766e' : '#b91c1c'}>
+                <text x="110" y="77" textAnchor="middle" fontSize="8" fontWeight="bold" fill={mqStatus === 'healthy' || mqStatus === 'restored' ? 'var(--im-node-consumer-border)' : 'var(--im-node-dlq-border)'}>
                   US-EAST-1A (Subnet AZ-a)
                 </text>
 
                 {/* Subnet AZ-b Boundary */}
                 <rect x="240" y="65" width="180" height="110" rx="10" 
-                      fill="rgba(255, 255, 255, 0.5)" 
-                      stroke={mqStatus === 'promoted' ? '#0d9488' : mqStatus === 'dns-swap' || mqStatus === 'fencing' ? '#eab308' : 'rgba(203, 213, 225, 0.85)'} 
+                      fill="var(--im-card-bg)" 
+                      stroke={mqStatus === 'promoted' ? '#0d9488' : mqStatus === 'dns-swap' || mqStatus === 'fencing' ? '#eab308' : 'var(--im-border-secondary)'} 
                       strokeWidth={mqStatus === 'healthy' || mqStatus === 'restored' ? '1' : '1.8'} 
                       style={{ transition: 'all 0.3s ease' }} />
-                <text x="330" y="77" textAnchor="middle" fontSize="8" fontWeight="bold" fill={mqStatus === 'promoted' ? '#0f766e' : mqStatus === 'healthy' ? '#475569' : '#854d0e'}>
+                <text x="330" y="77" textAnchor="middle" fontSize="8" fontWeight="bold" fill={mqStatus === 'promoted' ? 'var(--im-node-consumer-border)' : mqStatus === 'healthy' ? 'var(--im-text-secondary)' : 'var(--im-node-producer-border)'}>
                   US-EAST-1B (Subnet AZ-b)
                 </text>
 
@@ -3869,13 +4012,13 @@ aws firehose update-destination \\
                 {/* --- Shared Amazon EFS Storage Chassis (bottom center) --- */}
                 <g>
                   {/* 3D EFS Block background */}
-                  <rect x="155" y="190" width="130" height="38" rx="6" fill="url(#efsChassisGrad)" stroke="#64748b" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 8px rgba(148,163,184,0.12))' }} />
+                  <rect x="155" y="190" width="130" height="38" rx="6" fill="url(#efsChassisGrad)" stroke="var(--im-node-efs-border)" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 4px 8px rgba(148,163,184,0.12))' }} />
                   
                   {/* Draw 4 server bays inside EFS */}
-                  <rect x="162" y="195" width="22" height="6" rx="1.5" fill="#e2e8f0" stroke="#cbd5e1" />
-                  <rect x="190" y="195" width="22" height="6" rx="1.5" fill="#e2e8f0" stroke="#cbd5e1" />
-                  <rect x="228" y="195" width="22" height="6" rx="1.5" fill="#e2e8f0" stroke="#cbd5e1" />
-                  <rect x="256" y="195" width="22" height="6" rx="1.5" fill="#e2e8f0" stroke="#cbd5e1" />
+                  <rect x="162" y="195" width="22" height="6" rx="1.5" fill="var(--im-border-tertiary)" stroke="var(--im-border-secondary)" />
+                  <rect x="190" y="195" width="22" height="6" rx="1.5" fill="var(--im-border-tertiary)" stroke="var(--im-border-secondary)" />
+                  <rect x="228" y="195" width="22" height="6" rx="1.5" fill="var(--im-border-tertiary)" stroke="var(--im-border-secondary)" />
+                  <rect x="256" y="195" width="22" height="6" rx="1.5" fill="var(--im-border-tertiary)" stroke="var(--im-border-secondary)" />
                   
                   {/* Status LEDs for EFS */}
                   <circle cx="166" cy="198" r="1" fill="#10b981" />
@@ -3883,35 +4026,35 @@ aws firehose update-destination \\
                   <circle cx="232" cy="198" r="1" fill="#10b981" />
                   <circle cx="260" cy="198" r="1" fill="#10b981" />
                   
-                  <text x="220" y="210" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#1e293b">💾 Amazon EFS Store</text>
-                  <text x="220" y="222" textAnchor="middle" fontSize="6.5" fill="#64748b" fontWeight="600">
+                  <text x="220" y="210" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--im-node-efs-text)">💾 Amazon EFS Store</text>
+                  <text x="220" y="222" textAnchor="middle" fontSize="6.5" fill="var(--im-text-secondary)" fontWeight="600">
                     {mqStatus === 'fencing' ? '⚠️ LOCK ACQUIRED BY US-EAST-1B' : 'Synchronous ActiveMQ Mirror Lock'}
                   </text>
                 </g>
 
                 {/* --- JMS Client Gateway (top left) --- */}
                 <g>
-                  <rect x="20" y="18" width="90" height="32" rx="6" fill="#1e293b" stroke="#0f172a" strokeWidth="1.2" />
-                  <text x="65" y="32" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#ffffff">💻 JMS Client</text>
-                  <text x="65" y="44" textAnchor="middle" fontSize="6.5" fill="#94a3b8">failover:// transport</text>
+                  <rect x="20" y="18" width="90" height="32" rx="6" fill="var(--im-node-client-bg)" stroke="var(--im-node-client-border)" strokeWidth="1.2" />
+                  <text x="65" y="32" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--im-node-client-text)">💻 JMS Client</text>
+                  <text x="65" y="44" textAnchor="middle" fontSize="6.5" fill="var(--im-text-tertiary)">failover:// transport</text>
                 </g>
 
                 {/* --- DNS CNAME Router (top center-right) --- */}
                 <g>
-                  <rect x="175" y="18" width="130" height="32" rx="6" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
-                  <circle cx="188" cy="34" r="5" fill="#0ea5e9" className="im-pulse" />
-                  <text x="188" y="36.5" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#ffffff">R</text>
-                  <text x="248" y="30" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="#334155">DNS CNAME Router</text>
-                  <text x="248" y="42" textAnchor="middle" fontSize="6.5" fill="#0284c7" fontWeight="bold" fontFamily="monospace">broker.mq.amazonaws.com</text>
+                  <rect x="175" y="18" width="130" height="32" rx="6" fill="var(--im-node-dns-bg)" stroke="var(--im-node-dns-border)" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.02))' }} />
+                  <circle cx="188" cy="34" r="5" fill="var(--im-lambda-border)" className="im-pulse" />
+                  <text x="188" y="36.5" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--im-node-client-text)">R</text>
+                  <text x="248" y="30" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--im-node-dns-text)">DNS CNAME Router</text>
+                  <text x="248" y="42" textAnchor="middle" fontSize="6.5" fill="var(--im-lambda-border)" fontWeight="bold" fontFamily="monospace">broker.mq.amazonaws.com</text>
                 </g>
 
                 {/* --- CONDUITS & NETWORKING ROUTING --- */}
                 {/* JMS Client to DNS Router */}
-                <path d="M 110 34 L 175 34" fill="none" stroke="#64748b" strokeWidth="1.8" strokeDasharray="3,3" />
+                <path d="M 110 34 L 175 34" fill="none" stroke="var(--im-text-tertiary)" strokeWidth="1.8" strokeDasharray="3,3" />
 
                 {/* DNS to Subnet AZ-a Conduit */}
                 <path d="M 235 50 C 235 58, 110 58, 110 65" fill="none" 
-                      stroke={mqStatus === 'healthy' || mqStatus === 'restored' ? '#10b981' : mqStatus === 'failed' ? '#ef4444' : '#cbd5e1'} 
+                      stroke={mqStatus === 'healthy' || mqStatus === 'restored' ? '#10b981' : mqStatus === 'failed' ? '#ef4444' : 'var(--im-border-secondary)'} 
                       strokeWidth={mqStatus === 'healthy' || mqStatus === 'restored' ? '2.5' : '1.5'} 
                       strokeDasharray={mqStatus === 'healthy' || mqStatus === 'restored' ? '5,4' : 'none'} 
                       style={{ transition: 'all 0.3s ease' }}>
@@ -3930,7 +4073,7 @@ aws firehose update-destination \\
 
                 {/* DNS to Subnet AZ-b Conduit */}
                 <path d="M 235 50 C 235 58, 330 58, 330 65" fill="none" 
-                      stroke={mqStatus === 'promoted' ? '#10b981' : mqStatus === 'dns-swap' ? '#eab308' : '#cbd5e1'} 
+                      stroke={mqStatus === 'promoted' ? '#10b981' : mqStatus === 'dns-swap' ? '#eab308' : 'var(--im-border-secondary)'} 
                       strokeWidth={mqStatus === 'promoted' ? '2.5' : '1.5'} 
                       strokeDasharray={mqStatus === 'promoted' ? '5,4' : mqStatus === 'dns-swap' ? '3,3' : 'none'} 
                       style={{ transition: 'all 0.3s ease' }}>
@@ -3942,13 +4085,13 @@ aws firehose update-destination \\
                 {/* --- Replication & Shared backend links --- */}
                 {/* AZ-a broker to EFS */}
                 <path d="M 110 135 L 175 190" fill="none" 
-                      stroke={mqStatus === 'healthy' || mqStatus === 'restored' ? '#0d9488' : '#cbd5e1'} 
+                      stroke={mqStatus === 'healthy' || mqStatus === 'restored' ? '#0d9488' : 'var(--im-border-secondary)'} 
                       strokeWidth="2" 
                       strokeDasharray={mqStatus === 'healthy' || mqStatus === 'restored' ? '4,4' : 'none'} />
                 
                 {/* AZ-b broker to EFS */}
                 <path d="M 330 135 L 265 190" fill="none" 
-                      stroke={mqStatus === 'promoted' ? '#0d9488' : mqStatus === 'fencing' ? '#eab308' : '#cbd5e1'} 
+                      stroke={mqStatus === 'promoted' ? '#0d9488' : mqStatus === 'fencing' ? '#eab308' : 'var(--im-border-secondary)'} 
                       strokeWidth="2" 
                       strokeDasharray={mqStatus === 'promoted' || mqStatus === 'fencing' ? '4,4' : 'none'} />
 
@@ -3997,8 +4140,8 @@ aws firehose update-destination \\
               >
                 <span style={{ fontSize: '18px' }}>💳</span>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '12.5px', color: comparisonUseCase === 'payment' ? '#c2410c' : '#1e293b' }}>Decoupled Payments</div>
-                  <div style={{ fontSize: '10.5px', color: comparisonUseCase === 'payment' ? '#ea580c' : '#64748b', fontWeight: 500, marginTop: '2px' }}>Order processing & billing queues</div>
+                  <div style={{ fontWeight: 750, fontSize: '12.5px', color: comparisonUseCase === 'payment' ? 'var(--im-s3-text)' : 'var(--im-text-primary)' }}>Decoupled Payments</div>
+                  <div style={{ fontSize: '10.5px', color: comparisonUseCase === 'payment' ? 'var(--im-s3-subtext)' : 'var(--im-text-secondary)', fontWeight: 500, marginTop: '2px' }}>Order processing & billing queues</div>
                 </div>
               </button>
               
@@ -4008,8 +4151,8 @@ aws firehose update-destination \\
               >
                 <span style={{ fontSize: '18px' }}>📢</span>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '12.5px', color: comparisonUseCase === 'newsletter' ? '#6b21a8' : '#1e293b' }}>Broadcast Signups</div>
-                  <div style={{ fontSize: '10.5px', color: comparisonUseCase === 'newsletter' ? '#7e22ce' : '#64748b', fontWeight: 500, marginTop: '2px' }}>Multi-consumer fanout notifications</div>
+                  <div style={{ fontWeight: 750, fontSize: '12.5px', color: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-text)' : 'var(--im-text-primary)' }}>Broadcast Signups</div>
+                  <div style={{ fontSize: '10.5px', color: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-border)' : 'var(--im-text-secondary)', fontWeight: 500, marginTop: '2px' }}>Multi-consumer fanout notifications</div>
                 </div>
               </button>
               
@@ -4019,34 +4162,34 @@ aws firehose update-destination \\
               >
                 <span style={{ fontSize: '18px' }}>🌊</span>
                 <div>
-                  <div style={{ fontWeight: 750, fontSize: '12.5px', color: comparisonUseCase === 'iot' ? '#0369a1' : '#1e293b' }}>High-Velocity IoT</div>
-                  <div style={{ fontSize: '10.5px', color: comparisonUseCase === 'iot' ? '#0284c7' : '#64748b', fontWeight: 500, marginTop: '2px' }}>Clickstreams & real-time sensor ingest</div>
+                  <div style={{ fontWeight: 750, fontSize: '12.5px', color: comparisonUseCase === 'iot' ? 'var(--im-lambda-text)' : 'var(--im-text-primary)' }}>High-Velocity IoT</div>
+                  <div style={{ fontSize: '10.5px', color: comparisonUseCase === 'iot' ? 'var(--im-lambda-border)' : 'var(--im-text-secondary)', fontWeight: 500, marginTop: '2px' }}>Clickstreams & real-time sensor ingest</div>
                 </div>
               </button>
             </div>
 
             {comparisonUseCase !== 'none' && (
-              <div style={{ marginTop: '16px', padding: '14px', background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: '10px', fontSize: '13px' }}>
+              <div style={{ marginTop: '16px', padding: '14px', background: 'var(--im-lambda-bg)', border: '1.5px solid var(--im-lambda-border)', borderRadius: '10px', fontSize: '13px' }}>
                 {comparisonUseCase === 'payment' && (
                   <div>
-                    <strong>Recommended Service: <span style={{ color: '#c2410c' }}>Amazon SQS (FIFO Queue)</span></strong>
-                    <p style={{ margin: '6px 0 0 0', color: '#475569', fontSize: '12px' }}>
+                    <strong>Recommended Service: <span style={{ color: 'var(--im-s3-text)' }}>Amazon SQS (FIFO Queue)</span></strong>
+                    <p style={{ margin: '6px 0 0 0', color: 'var(--im-text-secondary)', fontSize: '12px' }}>
                       Payment gateways require **Exactly-Once delivery** and strict transactional sequencing to prevent double-charging or out-of-order accounting errors. SQS FIFO guarantees order sequencing, enables individual worker pooling with Visibility Timeout locks, and buffers traffic perfectly.
                     </p>
                   </div>
                 )}
                 {comparisonUseCase === 'newsletter' && (
                   <div>
-                    <strong>Recommended Service: <span style={{ color: '#6b21a8' }}>Amazon SNS Topic</span></strong>
-                    <p style={{ margin: '6px 0 0 0', color: '#475569', fontSize: '12px' }}>
+                    <strong>Recommended Service: <span style={{ color: 'var(--im-sns-topic-text)' }}>Amazon SNS Topic</span></strong>
+                    <p style={{ margin: '6px 0 0 0', color: 'var(--im-text-secondary)', fontSize: '12px' }}>
                       Signup triggers are **one-to-many fanout notifications**. When a customer registers, SNS duplicates the event payload instantly and pushes copies concurrently to SQS queues for Billing, SQS queues for Shipping, and Lambda analytical tools with zero disk latency storage.
                     </p>
                   </div>
                 )}
                 {comparisonUseCase === 'iot' && (
                   <div>
-                    <strong>Recommended Service: <span style={{ color: '#0369a1' }}>Amazon Kinesis Data Streams</span></strong>
-                    <p style={{ margin: '6px 0 0 0', color: '#475569', fontSize: '12px' }}>
+                    <strong>Recommended Service: <span style={{ color: 'var(--im-lambda-text)' }}>Amazon Kinesis Data Streams</span></strong>
+                    <p style={{ margin: '6px 0 0 0', color: 'var(--im-text-secondary)', fontSize: '12px' }}>
                       High-volume IoT streams are continuously written at megabytes/sec. SQS deletion-on-pull semantics makes historical logs un-replayable. Kinesis streams partition clickstreams via MD5 keys and retain historical streams up to 365 days, letting multiple analytical engines replay offsets repeatedly.
                     </p>
                   </div>
@@ -4059,17 +4202,17 @@ aws firehose update-destination \\
           <div className="im-card" style={{ overflowX: 'auto' }}>
             <div className="im-card-title">📊 Architectural Comparison Matrix Grid</div>
             
-            <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #cbd5e1' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid var(--im-card-border)' }}>
               <thead>
                 <tr>
-                  <th className="im-matrix-cell im-matrix-header" style={{ width: '18%' }}>Feature Metric</th>
-                  <th className={`im-matrix-cell im-matrix-header ${comparisonUseCase === 'payment' ? 'im-pulse' : ''}`} style={{ width: '27%', background: comparisonUseCase === 'payment' ? '#fffbeb' : '#f1f5f9', color: '#c2410c' }}>
+                  <th className="im-matrix-cell im-matrix-header" style={{ width: '18%', background: 'var(--im-svg-bg)', color: 'var(--im-text-primary)' }}>Feature Metric</th>
+                  <th className={`im-matrix-cell im-matrix-header ${comparisonUseCase === 'payment' ? 'im-pulse' : ''}`} style={{ width: '27%', background: comparisonUseCase === 'payment' ? 'var(--im-s3-bg)' : 'var(--im-svg-bg)', color: 'var(--im-s3-text)' }}>
                     📥 Amazon SQS (Queuing)
                   </th>
-                  <th className={`im-matrix-cell im-matrix-header ${comparisonUseCase === 'newsletter' ? 'im-pulse' : ''}`} style={{ width: '27%', background: comparisonUseCase === 'newsletter' ? '#faf5ff' : '#f1f5f9', color: '#6b21a8' }}>
+                  <th className={`im-matrix-cell im-matrix-header ${comparisonUseCase === 'newsletter' ? 'im-pulse' : ''}`} style={{ width: '27%', background: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-bg)' : 'var(--im-svg-bg)', color: 'var(--im-sns-topic-text)' }}>
                     📢 Amazon SNS (Pub/Sub)
                   </th>
-                  <th className={`im-matrix-cell im-matrix-header ${comparisonUseCase === 'iot' ? 'im-pulse' : ''}`} style={{ width: '27%', background: comparisonUseCase === 'iot' ? '#f0f9ff' : '#f1f5f9', color: '#0369a1' }}>
+                  <th className={`im-matrix-cell im-matrix-header ${comparisonUseCase === 'iot' ? 'im-pulse' : ''}`} style={{ width: '27%', background: comparisonUseCase === 'iot' ? 'var(--im-lambda-bg)' : 'var(--im-svg-bg)', color: 'var(--im-lambda-text)' }}>
                     🌊 Amazon Kinesis (Streaming)
                   </th>
                 </tr>
@@ -4077,61 +4220,61 @@ aws firehose update-destination \\
               <tbody>
                 <tr className={comparisonUseCase === 'payment' || comparisonUseCase === 'iot' ? 'im-matrix-row-highlight' : ''} style={{ transition: 'all 0.2s ease' }}>
                   <td className="im-matrix-cell" style={{ fontWeight: 'bold' }}>Retrieval Protocol</td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? '#fffbeb' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? 'var(--im-s3-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Pull Model</strong>: Consumers actively poll to fetch and lock messages.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? '#faf5ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Push Model</strong>: SNS pushes message duplicates instantly to subscribers.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? '#f0f9ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? 'var(--im-lambda-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Offset Pull Model</strong>: Multiple consumer fleets pull and track custom offsets.
                   </td>
                 </tr>
                 <tr className={comparisonUseCase === 'newsletter' ? 'im-matrix-row-highlight' : ''} style={{ transition: 'all 0.2s ease' }}>
                   <td className="im-matrix-cell" style={{ fontWeight: 'bold' }}>Fanout Capability</td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? '#fffbeb' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? 'var(--im-s3-bg)' : 'var(--im-card-bg)' }}>
                     <strong>1-to-1 Delivery</strong>: Only one consumer locks and processes a message.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? '#faf5ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-bg)' : 'var(--im-card-bg)' }}>
                     <strong>1-to-Many Fanout</strong>: Broadcasts identical payloads up to 12.5M subscribers.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? '#f0f9ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? 'var(--im-lambda-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Replay Fanout</strong>: Multiple consumer groups read identical stream concurrently.
                   </td>
                 </tr>
                 <tr className={comparisonUseCase === 'iot' || comparisonUseCase === 'payment' ? 'im-matrix-row-highlight' : ''} style={{ transition: 'all 0.2s ease' }}>
                   <td className="im-matrix-cell" style={{ fontWeight: 'bold' }}>Data Persistence</td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? '#fffbeb' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? 'var(--im-s3-bg)' : 'var(--im-card-bg)' }}>
                     <strong>High (14 Days)</strong>: Durable storage buffer holds uncompleted tasks.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? '#faf5ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Transient (0 Days)</strong>: Messages deleted instantly on push deliveries.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? '#f0f9ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? 'var(--im-lambda-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Log Streams (365 Days)</strong>: Persistent sequential stream logs are preserved.
                   </td>
                 </tr>
                 <tr className={comparisonUseCase === 'payment' || comparisonUseCase === 'iot' ? 'im-matrix-row-highlight' : ''} style={{ transition: 'all 0.2s ease' }}>
                   <td className="im-matrix-cell" style={{ fontWeight: 'bold' }}>Ordering Guarantee</td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? '#fffbeb' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? 'var(--im-s3-bg)' : 'var(--im-card-bg)' }}>
                     Strict sequence in <strong>FIFO mode</strong> using Message Group IDs.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? '#faf5ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-bg)' : 'var(--im-card-bg)' }}>
                     FIFO Topic guarantees order sequence to SQS FIFO subscriptions.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? '#f0f9ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? 'var(--im-lambda-bg)' : 'var(--im-card-bg)' }}>
                     Strict shard partition key order sequencing.
                   </td>
                 </tr>
                 <tr className={comparisonUseCase === 'iot' ? 'im-matrix-row-highlight' : ''} style={{ transition: 'all 0.2s ease' }}>
                   <td className="im-matrix-cell" style={{ fontWeight: 'bold' }}>Scaling Trigger</td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? '#fffbeb' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'payment' ? 'var(--im-s3-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Queue Depth</strong>: CloudWatch scales ASG EC2 fleets on message count.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? '#faf5ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'newsletter' ? 'var(--im-sns-topic-bg)' : 'var(--im-card-bg)' }}>
                     Serverless auto-scale based on volume push threads.
                   </td>
-                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? '#f0f9ff' : '#ffffff' }}>
+                  <td className="im-matrix-cell" style={{ background: comparisonUseCase === 'iot' ? 'var(--im-lambda-bg)' : 'var(--im-card-bg)' }}>
                     <strong>Resharding Splits</strong>: Splitting hot partition key hash zones.
                   </td>
                 </tr>

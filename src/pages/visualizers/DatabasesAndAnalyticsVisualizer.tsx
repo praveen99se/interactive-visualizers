@@ -164,6 +164,28 @@ const CATEGORY_MAP: Record<string, DBDetails> = {
 
 export default function DatabasesAndAnalyticsVisualizer() {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [isDark, setIsDark] = useState<boolean>(
+    typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
+    // Check initial state
+    setIsDark(document.documentElement.classList.contains('dark'));
+
+    // Set up observer to watch for theme switches on <html> element
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // ==========================================
   // TAB 1 STATE: Workload Recommendation Wizard
@@ -952,34 +974,192 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
   return (
     <div className="da-container animate-fadeIn">
-      {/* Styles block for premium, isolated light-theme look */}
       <style>{`
         .da-container {
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-          color: #1e293b;
-          background-color: #f8fafc;
+          color: var(--da-text);
+          background-color: var(--da-bg);
           padding: 24px;
           border-radius: 16px;
+          transition: all 0.25s ease;
+
+          /* Light Mode Colors */
+          --da-bg: #f8fafc;
+          --da-text: #1e293b;
+          --da-text-title: #0f172a;
+          --da-text-muted: #475569;
+          --da-card-bg: rgba(255, 255, 255, 0.75);
+          --da-card-border: rgba(226, 232, 240, 0.85);
+          --da-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          
+          --da-tab-bg: rgba(255, 255, 255, 0.85);
+          --da-tab-border: rgba(226, 232, 240, 0.85);
+          --da-tab-text: #475569;
+          --da-tab-hover-bg: #f8fafc;
+          --da-tab-hover-border: #cbd5e1;
+          --da-tab-hover-text: #1e293b;
+          
+          --da-input-bg: #ffffff;
+          --da-input-color: #0f172a;
+          --da-input-border: rgba(226, 232, 240, 0.85);
+          
+          --da-btn-sec-bg: #ffffff;
+          --da-btn-sec-color: #334155;
+          --da-btn-sec-border: #cbd5e1;
+          --da-btn-sec-hover-bg: #f1f5f9;
+          
+          --da-code-bg: #090d16;
+          --da-code-border: #1e293b;
+          --da-code-text: #94a3b8;
+          
+          --da-table-border: rgba(226, 232, 240, 0.85);
+          --da-table-th-bg: #f8fafc;
+          --da-table-th-text: #475569;
+          --da-table-td-text: #334155;
+          --da-table-hover-bg: #f8fafc;
+
+          --da-main-content-bg: #ffffff;
+          --da-main-content-border: #e2e8f0;
+
+          /* SVG standard colors */
+          --da-svg-bg: #f8fafc;
+          --da-svg-grid: radial-gradient(rgba(14, 165, 233, 0.08) 1.5px, transparent 1.5px);
+          --da-svg-text-dark: #1e293b;
+          --da-svg-text-light: #ffffff;
+          
+          --da-svg-green-bg: #effaf3;
+          --da-svg-green-border: #10b981;
+          --da-svg-green-text: #15803d;
+          --da-svg-green-subtext: #166534;
+          
+          --da-svg-red-bg: #fdf2f2;
+          --da-svg-red-border: #f87171;
+          --da-svg-red-text: #b91c1c;
+          --da-svg-red-subtext: #991b1b;
+          
+          --da-svg-amber-bg: #fff7ed;
+          --da-svg-amber-border: #ea580c;
+          --da-svg-amber-text: #c2410c;
+          --da-svg-amber-subtext: #7c2d12;
+
+          --da-svg-purple-bg: #faf5ff;
+          --da-svg-purple-border: #a855f7;
+          --da-svg-purple-text: #7e22ce;
+          --da-svg-purple-subtext: #581c87;
+
+          --da-svg-blue-bg: #eff6ff;
+          --da-svg-blue-border: #3b82f6;
+          --da-svg-blue-text: #1d4ed8;
+          --da-svg-blue-subtext: #1e40af;
+
+          --da-svg-subnet-bg: rgba(243, 244, 246, 0.45);
+          --da-svg-subnet-border: #9ca3af;
+          --da-svg-subnet-text: #374151;
+
+          --da-svg-node-fill: #ffffff;
+          --da-svg-node-border: #cbd5e1;
         }
+
+        .dark .da-container {
+          background-color: #020617 !important;
+          color: #cbd5e1 !important;
+
+          /* Dark Mode Colors */
+          --da-bg: #020617;
+          --da-text: #cbd5e1;
+          --da-text-title: #ffffff;
+          --da-text-muted: #94a3b8;
+          --da-card-bg: rgba(15, 23, 42, 0.75);
+          --da-card-border: rgba(51, 65, 85, 0.6);
+          --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+          
+          --da-tab-bg: rgba(15, 23, 42, 0.6);
+          --da-tab-border: rgba(51, 65, 85, 0.6);
+          --da-tab-text: #94a3b8;
+          --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
+          --da-tab-hover-border: rgba(51, 65, 85, 0.6);
+          --da-tab-hover-text: #f8fafc;
+          
+          --da-input-bg: #0f172a;
+          --da-input-color: #f1f5f9;
+          --da-input-border: rgba(51, 65, 85, 0.8);
+          
+          --da-btn-sec-bg: rgba(15, 23, 42, 0.8);
+          --da-btn-sec-color: #cbd5e1;
+          --da-btn-sec-border: rgba(51, 65, 85, 0.6);
+          --da-btn-sec-hover-bg: rgba(30, 41, 59, 0.8);
+          
+          --da-code-bg: #020617;
+          --da-code-border: rgba(51, 65, 85, 0.6);
+          --da-code-text: #38bdf8;
+          
+          --da-table-border: rgba(51, 65, 85, 0.6);
+          --da-table-th-bg: rgba(15, 23, 42, 0.8);
+          --da-table-th-text: #94a3b8;
+          --da-table-td-text: #cbd5e1;
+          --da-table-hover-bg: rgba(30, 41, 59, 0.4);
+
+          --da-main-content-bg: rgba(15, 23, 42, 0.5);
+          --da-main-content-border: rgba(51, 65, 85, 0.6);
+
+          /* SVG standard colors */
+          --da-svg-bg: #020617;
+          --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+          --da-svg-text-dark: #cbd5e1;
+          --da-svg-text-light: #ffffff;
+          
+          --da-svg-green-bg: rgba(16, 185, 129, 0.15);
+          --da-svg-green-border: rgba(16, 185, 129, 0.4);
+          --da-svg-green-text: #4ade80;
+          --da-svg-green-subtext: #a7f3d0;
+          
+          --da-svg-red-bg: rgba(239, 68, 68, 0.15);
+          --da-svg-red-border: rgba(239, 68, 68, 0.5);
+          --da-svg-red-text: #f87171;
+          --da-svg-red-subtext: #fca5a5;
+          
+          --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
+          --da-svg-amber-border: rgba(245, 158, 11, 0.5);
+          --da-svg-amber-text: #fbbf24;
+          --da-svg-amber-subtext: #fef08a;
+
+          --da-svg-purple-bg: rgba(168, 85, 247, 0.15);
+          --da-svg-purple-border: rgba(168, 85, 247, 0.5);
+          --da-svg-purple-text: #e9d5ff;
+          --da-svg-purple-subtext: #f3e8ff;
+
+          --da-svg-blue-bg: rgba(59, 130, 246, 0.15);
+          --da-svg-blue-border: rgba(59, 130, 246, 0.5);
+          --da-svg-blue-text: #93c5fd;
+          --da-svg-blue-subtext: #bfdbfe;
+
+          --da-svg-subnet-bg: rgba(15, 23, 42, 0.45);
+          --da-svg-subnet-border: rgba(148, 163, 184, 0.4);
+          --da-svg-subnet-text: #cbd5e1;
+
+          --da-svg-node-fill: rgba(15, 23, 42, 0.8);
+          --da-svg-node-border: rgba(51, 65, 85, 0.8);
+        }
+
         .da-card {
-          background: rgba(255, 255, 255, 0.75);
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          background: var(--da-card-bg);
+          border: 1.5px solid var(--da-card-border);
           border-radius: 16px;
           padding: 24px;
           backdrop-filter: blur(16px);
           margin-bottom: 24px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+          box-shadow: var(--da-card-shadow);
           transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .da-card:hover {
-          border-color: #0ea5e9;
-          box-shadow: 0 12px 24px -4px rgba(14, 165, 233, 0.08), 0 4px 12px -2px rgba(14, 165, 233, 0.03);
+          border-color: #0284c7;
+          box-shadow: 0 12px 24px -4px rgba(2, 132, 199, 0.08), 0 4px 12px -2px rgba(2, 132, 199, 0.03);
           transform: translateY(-1px);
         }
         .da-card-title {
           font-size: 16.5px;
           font-weight: 800;
-          color: #0f172a;
+          color: var(--da-text-title);
           margin-bottom: 12px;
           display: flex;
           align-items: center;
@@ -988,7 +1168,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
         }
         .da-card-desc {
           font-size: 12.5px;
-          color: #475569;
+          color: var(--da-text-muted);
           line-height: 1.65;
         }
         .da-tabs {
@@ -996,7 +1176,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
           gap: 6px;
           flex-wrap: wrap;
           margin-bottom: 20px;
-          border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+          border-bottom: 1.5px solid var(--da-card-border);
           padding-bottom: 10px;
         }
         .da-tb {
@@ -1005,33 +1185,35 @@ export default function DatabasesAndAnalyticsVisualizer() {
           gap: 6px;
           padding: 8px 16px;
           border-radius: 12px;
-          border: 1.5px solid rgba(226, 232, 240, 0.85);
+          border: 1.5px solid var(--da-tab-border);
           font-size: 12px;
           font-weight: 600;
-          color: #475569;
-          background: rgba(255, 255, 255, 0.85);
+          color: var(--da-tab-text);
+          background: var(--da-tab-bg);
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.15s ease-in-out;
           outline: none;
         }
         .da-tb:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-          color: #1e293b;
+          background: var(--da-tab-hover-bg);
+          border-color: var(--da-tab-hover-border);
+          color: var(--da-tab-hover-text);
         }
         .da-tb.da-on {
-          background: #0284c7;
-          color: #ffffff;
-          border-color: #0284c7;
-          box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+          background: #0284c7 !important;
+          color: #ffffff !important;
+          border-color: #0284c7 !important;
+          box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25) !important;
         }
 
         /* Custom dynamic visualizer backdrops */
         .da-svg-bg {
-          background-color: #f8fafc;
-          background-image: radial-gradient(rgba(14, 165, 233, 0.08) 1.5px, transparent 1.5px);
+          background-color: var(--da-svg-bg) !important;
+          background-image: var(--da-svg-grid) !important;
           background-size: 16px 16px;
+          border: 1.5px solid var(--da-card-border);
+          transition: all 0.25s ease;
         }
         
         .active-svg-glow {
@@ -1088,36 +1270,68 @@ export default function DatabasesAndAnalyticsVisualizer() {
           }
         }
 
-        /* Centralized Dark Mode Overrides for DatabasesAndAnalyticsVisualizer.tsx */
-        .dark .da-container {
-          background: #020617 !important;
-          color: #f8fafc !important;
+        /* Centralized Tailwind Overrides under .da-container */
+        .da-container .text-gray-900 {
+          color: var(--da-text-title) !important;
         }
-        .dark .da-card,
-        .dark [class*="da-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        .da-container .text-gray-800 {
+          color: var(--da-text-title) !important;
         }
-        .dark .da-card b,
-        .dark .da-card strong,
-        .dark .da-card h3,
-        .dark .da-card h4 {
-          color: #ffffff !important;
+        .da-container .text-gray-700 {
+          color: var(--da-text-title) !important;
         }
-        .dark .da-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
+        .da-container .text-gray-650 {
+          color: var(--da-text-title) !important;
         }
-        .dark .da-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
+        .da-container .text-gray-600 {
+          color: var(--da-text-muted) !important;
         }
-        .dark .da-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
+        .da-container .text-gray-500 {
+          color: var(--da-text-muted) !important;
         }
+        .da-container .text-slate-900 {
+          color: var(--da-text-title) !important;
+        }
+        .da-container .text-slate-800 {
+          color: var(--da-text-title) !important;
+        }
+        .da-container .text-slate-700 {
+          color: var(--da-text-title) !important;
+        }
+        .da-container .text-slate-650 {
+          color: var(--da-text-title) !important;
+        }
+        .da-container .text-slate-660 {
+          color: var(--da-text-muted) !important;
+        }
+        .da-container .text-slate-600 {
+          color: var(--da-text-muted) !important;
+        }
+        .da-container .text-slate-500 {
+          color: var(--da-text-muted) !important;
+        }
+        .da-container .bg-white {
+          background-color: var(--da-card-bg) !important;
+        }
+        .da-container .bg-slate-50 {
+          background-color: var(--da-bg) !important;
+        }
+        .da-container .bg-slate-100 {
+          background-color: var(--da-bg) !important;
+        }
+        .da-container .hover\:bg-slate-50:hover,
+        .da-container .hover\:bg-slate-100:hover,
+        .da-container .hover\:bg-slate-200:hover,
+        .da-container .hover\:bg-sky-50:hover {
+          background-color: var(--da-tab-hover-bg) !important;
+        }
+        .da-container .border-gray-200,
+        .da-container .border-slate-200,
+        .da-container .border-slate-100,
+        .da-container .border-slate-150 {
+          border-color: var(--da-card-border) !important;
+        }
+
         .dark .da-sec,
         .dark .da-kk {
           color: #94a3b8 !important;
@@ -1155,12 +1369,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
         .dark .da-instance .meta {
           color: #94a3b8 !important;
         }
-        .dark .da-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        
+
         /* Node Status Overrides */
         .dark .da-ok {
           border-color: #10b981 !important;
@@ -1182,8 +1391,57 @@ export default function DatabasesAndAnalyticsVisualizer() {
           background: rgba(239, 68, 68, 0.15) !important;
           color: #f87171 !important;
         }
-        
+
+        /* Alert dark overrides */
+        .dark .da-container .bg-blue-50 {
+          background-color: rgba(59, 130, 246, 0.15) !important;
+          color: #93c5fd !important;
+        }
+        .dark .da-container .bg-purple-50 {
+          background-color: rgba(168, 85, 247, 0.15) !important;
+          color: #e9d5ff !important;
+        }
+        .dark .da-container .bg-teal-50 {
+          background-color: rgba(20, 184, 166, 0.15) !important;
+          color: #99f6e4 !important;
+        }
+        .dark .da-container .bg-emerald-50,
+        .dark .da-container .bg-green-50 {
+          background-color: rgba(16, 185, 129, 0.15) !important;
+          color: #a7f3d0 !important;
+        }
+        .dark .da-container .bg-amber-50,
+        .dark .da-container .bg-orange-50 {
+          background-color: rgba(245, 158, 11, 0.15) !important;
+          color: #fef08a !important;
+        }
+        .dark .da-container .text-purple-900 {
+          color: #e9d5ff !important;
+        }
+        .dark .da-container .text-purple-950 {
+          color: #ffffff !important;
+        }
+        .dark .da-container .text-orange-900 {
+          color: #fef08a !important;
+        }
+        .dark .da-container .text-orange-950 {
+          color: #ffffff !important;
+        }
+        .dark .da-container .text-emerald-900 {
+          color: #a7f3d0 !important;
+        }
+        .dark .da-container .text-emerald-950 {
+          color: #ffffff !important;
+        }
+
         /* General form overrides */
+        .da-container select,
+        .da-container input,
+        .da-container textarea {
+          background-color: var(--da-input-bg) !important;
+          color: var(--da-input-color) !important;
+          border-color: var(--da-input-border) !important;
+        }
         .dark select,
         .dark input,
         .dark textarea {
@@ -1195,7 +1453,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
           background-color: #0f172a !important;
           color: #f1f5f9 !important;
         }
-          `}</style>
+        `}</style>
 
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6">
@@ -1472,36 +1730,36 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 70 80 L 130 50" fill="none" stroke="#0ea5e9" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 70 80 L 130 110" fill="none" stroke="#64748b" strokeWidth="1" strokeDasharray="3 2" markerEnd="url(#ex-arrow)" />
-                        <path d="M 220 50 L 340 80" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-blue" />
-                        <path d="M 220 110 L 340 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 70 80 L 130 50" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 70 80 L 130 110" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1" strokeDasharray="3 2" markerEnd="url(#ex-arrow)" />
+                        <path d="M 220 50 L 340 80" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-blue" />
+                        <path d="M 220 110 L 340 80" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(10, 55)">
-                          <rect width="60" height="50" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                          <text x="30" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                          <text x="30" y="38" fill="#94a3b8" fontSize="7" textAnchor="middle">SQL Aggs</text>
+                          <rect width="60" height="50" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                          <text x="30" y="38" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">SQL Aggs</text>
                         </g>
                         <g transform="translate(130, 25)">
-                          <rect width="90" height="50" rx="8" fill="#ecfdf5" stroke="#10b981" strokeWidth="2" />
-                          <text x="45" y="22" fill="#047857" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🛢️ WRITER (1A)</text>
-                          <text x="45" y="35" fill="#1e293b" fontSize="7.5" textAnchor="middle">Primary Node</text>
-                          <text x="45" y="44" fill="#059669" fontSize="7" fontWeight="bold" textAnchor="middle">Status: Active</text>
+                          <rect width="90" height="50" rx="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                          <text x="45" y="22" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🛢️ WRITER (1A)</text>
+                          <text x="45" y="35" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Primary Node</text>
+                          <text x="45" y="44" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Status: Active</text>
                         </g>
                         <g transform="translate(130, 85)">
-                          <rect width="90" height="50" rx="8" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2" />
-                          <text x="45" y="22" fill="#1d4ed8" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🔌 READER (1B)</text>
-                          <text x="45" y="35" fill="#1e293b" fontSize="7.5" textAnchor="middle">Replica Node</text>
-                          <text x="45" y="44" fill="#2563eb" fontSize="7" fontWeight="bold" textAnchor="middle">Status: Standby</text>
+                          <rect width="90" height="50" rx="8" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2" />
+                          <text x="45" y="22" fill="var(--da-svg-blue-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🔌 READER (1B)</text>
+                          <text x="45" y="35" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Replica Node</text>
+                          <text x="45" y="44" fill="var(--da-svg-blue-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Status: Standby</text>
                         </g>
                         <g transform="translate(340, 45)">
-                          <rect width="120" height="70" rx="10" fill="#fffbeb" stroke="#d97706" strokeWidth="2.5" />
-                          <text x="60" y="26" fill="#b45309" fontSize="10.5" fontWeight="extrabold" textAnchor="middle">⚡ SHARED STORAGE</text>
-                          <text x="60" y="44" fill="#78350f" fontSize="8" textAnchor="middle">6-way Replicated Pool</text>
-                          <text x="60" y="58" fill="#059669" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">Auto-scales up to 128TB</text>
+                          <rect width="120" height="70" rx="10" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2.5" />
+                          <text x="60" y="26" fill="var(--da-svg-amber-text)" fontSize="10.5" fontWeight="extrabold" textAnchor="middle">⚡ SHARED STORAGE</text>
+                          <text x="60" y="44" fill="var(--da-svg-amber-text)" fontSize="8" textAnchor="middle">6-way Replicated Pool</text>
+                          <text x="60" y="58" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">Auto-scales up to 128TB</text>
                         </g>
                       </svg>
                     )}
@@ -1510,41 +1768,41 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 75 80 H 130" fill="none" stroke="#a855f7" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 215 80 L 290 40" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                        <path d="M 215 80 H 290" fill="none" stroke="#a855f7" strokeWidth="2" strokeDasharray="5,3" className="da-flow-purple" />
-                        <path d="M 215 80 L 290 120" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <path d="M 75 80 H 130" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 215 80 L 290 40" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                        <path d="M 215 80 H 290" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="2" strokeDasharray="5,3" className="da-flow-purple" />
+                        <path d="M 215 80 L 290 120" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
                         
                         <g transform="translate(15, 55)">
-                          <rect width="60" height="50" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                          <text x="30" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                          <text x="30" y="38" fill="#94a3b8" fontSize="7" textAnchor="middle">key: user_412</text>
+                          <rect width="60" height="50" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                          <text x="30" y="38" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">key: user_412</text>
                         </g>
                         <g transform="translate(130, 50)">
-                          <rect width="85" height="60" rx="8" fill="#faf5ff" stroke="#a855f7" strokeWidth="2" />
-                          <text x="42.5" y="22" fill="#7e22ce" fontSize="9" fontWeight="extrabold" textAnchor="middle">🔑 HASH ENGINE</text>
-                          <text x="42.5" y="38" fill="#581c87" fontSize="7.5" textAnchor="middle">Computes MD5/SHA</text>
-                          <text x="42.5" y="48" fill="#7e22ce" fontSize="7" fontStyle="italic" textAnchor="middle">Partition Routing</text>
+                          <rect width="85" height="60" rx="8" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
+                          <text x="42.5" y="22" fill="var(--da-svg-purple-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">🔑 HASH ENGINE</text>
+                          <text x="42.5" y="38" fill="var(--da-svg-purple-text)" fontSize="7.5" textAnchor="middle">Computes MD5/SHA</text>
+                          <text x="42.5" y="48" fill="var(--da-svg-purple-text)" fontSize="7" fontStyle="italic" textAnchor="middle">Partition Routing</text>
                         </g>
                         
                         {/* Partitions */}
                         <g transform="translate(290, 20)">
-                          <rect width="170" height="30" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1.5" />
-                          <text x="10" y="18" fill="#64748b" fontSize="8.5" fontWeight="bold">Partition 0 (SSD)</text>
-                          <text x="160" y="18" fill="#94a3b8" fontSize="8" textAnchor="end">Slots: 0k - 10k</text>
+                          <rect width="170" height="30" rx="4" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="10" y="18" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="bold">Partition 0 (SSD)</text>
+                          <text x="160" y="18" fill="var(--da-text-muted)" fontSize="8" textAnchor="end">Slots: 0k - 10k</text>
                         </g>
                         <g transform="translate(290, 65)">
-                          <rect width="170" height="30" rx="4" fill="#f5f3ff" stroke="#a855f7" strokeWidth="1.5" />
-                          <text x="10" y="18" fill="#7e22ce" fontSize="8.5" fontWeight="bold">Partition 1 (SSD) MATCH</text>
-                          <text x="160" y="18" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="end">⚡ 2.5ms lookup</text>
+                          <rect width="170" height="30" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                          <text x="10" y="18" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="bold">Partition 1 (SSD) MATCH</text>
+                          <text x="160" y="18" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="bold" textAnchor="end">⚡ 2.5ms lookup</text>
                         </g>
                         <g transform="translate(290, 110)">
-                          <rect width="170" height="30" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1.5" />
-                          <text x="10" y="18" fill="#64748b" fontSize="8.5" fontWeight="bold">Partition 2 (SSD)</text>
-                          <text x="160" y="18" fill="#94a3b8" fontSize="8" textAnchor="end">Slots: 20k+</text>
+                          <rect width="170" height="30" rx="4" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="10" y="18" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="bold">Partition 2 (SSD)</text>
+                          <text x="160" y="18" fill="var(--da-text-muted)" fontSize="8" textAnchor="end">Slots: 20k+</text>
                         </g>
                       </svg>
                     )}
@@ -1553,35 +1811,35 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 85 80 H 135" fill="none" stroke="#0f766e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 215 80 H 270" fill="none" stroke="#0f766e" strokeWidth="2" strokeDasharray="5,3" className="da-flow-green" />
-                        <path d="M 360 80 H 400" fill="none" stroke="#0f766e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 85 80 H 135" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 215 80 H 270" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2" strokeDasharray="5,3" className="da-flow-green" />
+                        <path d="M 360 80 H 400" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(15, 50)">
-                          <rect width="70" height="60" rx="6" fill="#f0fdfa" stroke="#0f766e" strokeWidth="1.5" />
-                          <text x="35" y="18" fill="#0f766e" fontSize="7.5" fontWeight="bold" textAnchor="middle">📂 JSON DOC</text>
-                          <text x="35" y="32" fill="#475569" fontSize="6.5" textAnchor="middle" fontFamily="monospace">{"{id: 9,"}</text>
-                          <text x="35" y="44" fill="#475569" fontSize="6.5" textAnchor="middle" fontFamily="monospace">{" name: 'A'}"}</text>
+                          <rect width="70" height="60" rx="6" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="35" y="18" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">📂 JSON DOC</text>
+                          <text x="35" y="32" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle" fontFamily="monospace">{"{id: 9,"}</text>
+                          <text x="35" y="44" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle" fontFamily="monospace">{" name: 'A'}"}</text>
                         </g>
                         <g transform="translate(135, 55)">
-                          <rect width="80" height="50" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                          <text x="40" y="24" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">📱 APP SERVER</text>
-                          <text x="40" y="38" fill="#94a3b8" fontSize="7" textAnchor="middle">Parses JSON</text>
+                          <rect width="80" height="50" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="40" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">📱 APP SERVER</text>
+                          <text x="40" y="38" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Parses JSON</text>
                         </g>
                         <g transform="translate(270, 45)">
-                          <rect width="90" height="70" rx="10" fill="#f0fdfa" stroke="#0f766e" strokeWidth="2" />
-                          <text x="45" y="22" fill="#0f766e" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🛢️ PRIMARY WRITER</text>
-                          <text x="45" y="40" fill="#1e293b" fontSize="7.5" textAnchor="middle">DocumentDB Node</text>
-                          <text x="45" y="56" fill="#0d9488" fontSize="7.5" fontWeight="bold" textAnchor="middle">BSON Serializer</text>
+                          <rect width="90" height="70" rx="10" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                          <text x="45" y="22" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🛢️ PRIMARY WRITER</text>
+                          <text x="45" y="40" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">DocumentDB Node</text>
+                          <text x="45" y="56" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">BSON Serializer</text>
                         </g>
                         <g transform="translate(400, 45)">
-                          <rect width="70" height="70" rx="10" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                          <text x="35" y="24" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">⚡ STORAGE</text>
-                          <text x="35" y="40" fill="#78350f" fontSize="7" textAnchor="middle">Shared Log SSD</text>
-                          <text x="35" y="54" fill="#059669" fontSize="7" fontWeight="bold" textAnchor="middle">6-way Sync</text>
+                          <rect width="70" height="70" rx="10" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <text x="35" y="24" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">⚡ STORAGE</text>
+                          <text x="35" y="40" fill="var(--da-svg-amber-text)" fontSize="7" textAnchor="middle">Shared Log SSD</text>
+                          <text x="35" y="54" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="bold" textAnchor="middle">6-way Sync</text>
                         </g>
                       </svg>
                     )}
@@ -1590,41 +1848,41 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 60 80 H 120" fill="none" stroke="#d97706" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 215 80 H 265" fill="none" stroke="#d97706" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
-                        <path d="M 360 80 H 405" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#ex-arrow)" />
+                        <path d="M 60 80 H 120" fill="none" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 215 80 H 265" fill="none" stroke="var(--da-svg-amber-border)" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 360 80 H 405" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" strokeDasharray="3,2" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(10, 55)">
-                          <circle cx="25" cy="25" r="22" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                          <text x="25" y="28" fill="#b45309" fontSize="9" fontWeight="bold" textAnchor="middle">📁 RAW</text>
+                          <circle cx="25" cy="25" r="22" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <text x="25" y="28" fill="var(--da-svg-amber-text)" fontSize="9" fontWeight="bold" textAnchor="middle">📁 RAW</text>
                         </g>
                         <g transform="translate(120, 35)">
-                          <rect width="95" height="90" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="2.5" />
-                          <rect x="5" y="5" width="85" height="16" rx="2.5" fill="#fef3c7" />
-                          <text x="47.5" y="16.5" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">🪣 S3 STANDARD</text>
-                          <text x="47.5" y="44" fill="#78350f" fontSize="7.5" textAnchor="middle">Active Object Pool</text>
-                          <text x="47.5" y="60" fill="#059669" fontSize="7.5" fontWeight="bold" textAnchor="middle">11 9s Durability</text>
-                          <text x="47.5" y="74" fill="#475569" fontSize="7" textAnchor="middle">Hot Tier - Milliseconds</text>
+                          <rect width="95" height="90" rx="8" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2.5" />
+                          <rect x="5" y="5" width="85" height="16" rx="2.5" fill="var(--da-svg-amber-bg)" />
+                          <text x="47.5" y="16.5" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">🪣 S3 STANDARD</text>
+                          <text x="47.5" y="44" fill="var(--da-svg-amber-text)" fontSize="7.5" textAnchor="middle">Active Object Pool</text>
+                          <text x="47.5" y="60" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">11 9s Durability</text>
+                          <text x="47.5" y="74" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Hot Tier - Milliseconds</text>
                         </g>
                         <g transform="translate(265, 35)">
-                          <rect width="95" height="90" rx="8" fill="#fcf8f2" stroke="#d97706" strokeWidth="1.5" strokeDasharray="3 3" />
-                          <rect x="5" y="5" width="85" height="16" rx="2.5" fill="#faf0e6" />
-                          <text x="47.5" y="16.5" fill="#78350f" fontSize="8" fontWeight="bold" textAnchor="middle">S3 INFREQUENT</text>
-                          <text x="47.5" y="44" fill="#475569" fontSize="7.5" textAnchor="middle">Lifecycle Trigger</text>
-                          <text x="47.5" y="60" fill="#b45309" fontSize="7.5" fontWeight="bold" textAnchor="middle">90-day filter Rule</text>
-                          <text x="47.5" y="74" fill="#475569" fontSize="7" textAnchor="middle">Saves 40% cost</text>
+                          <rect width="95" height="90" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" strokeDasharray="3 3" />
+                          <rect x="5" y="5" width="85" height="16" rx="2.5" fill="var(--da-svg-node-fill)" />
+                          <text x="47.5" y="16.5" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">S3 INFREQUENT</text>
+                          <text x="47.5" y="44" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">Lifecycle Trigger</text>
+                          <text x="47.5" y="60" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">90-day filter Rule</text>
+                          <text x="47.5" y="74" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Saves 40% cost</text>
                         </g>
                         <g transform="translate(405, 35)">
-                          <rect width="70" height="90" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                          <rect x="4" y="4" width="62" height="16" rx="2" fill="#f1f5f9" />
-                          <text x="35" y="15" fill="#475569" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">GLACIER</text>
-                          <text x="35" y="40" fill="#475569" fontSize="7" textAnchor="middle">Archive Tier</text>
-                          <text x="35" y="52" fill="#b91c1c" fontSize="7.5" fontWeight="bold" textAnchor="middle">🔒 Locked</text>
-                          <text x="35" y="66" fill="#475569" fontSize="6.5" textAnchor="middle">Saves 95% vs</text>
-                          <text x="35" y="76" fill="#475569" fontSize="6.5" textAnchor="middle">S3 Standard</text>
+                          <rect width="70" height="90" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <rect x="4" y="4" width="62" height="16" rx="2" fill="var(--da-svg-node-fill)" />
+                          <text x="35" y="15" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">GLACIER</text>
+                          <text x="35" y="40" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Archive Tier</text>
+                          <text x="35" y="52" fill="var(--da-svg-red-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">🔒 Locked</text>
+                          <text x="35" y="66" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">Saves 95% vs</text>
+                          <text x="35" y="76" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">S3 Standard</text>
                         </g>
                       </svg>
                     )}
@@ -1633,45 +1891,45 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 85 80 H 130" fill="none" stroke="#ef4444" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 230 80 L 290 45" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
-                        <path d="M 230 80 L 290 115" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
-                        <path d="M 380 45 L 430 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
-                        <path d="M 380 115 L 430 80" fill="none" stroke="#cbd5e1" strokeWidth="1.5" />
+                        <path d="M 85 80 H 130" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 L 290 45" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 230 80 L 290 115" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 380 45 L 430 80" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                        <path d="M 380 115 L 430 80" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
                         
                         <g transform="translate(10, 50)">
-                          <rect width="75" height="60" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1.5" />
-                          <text x="37.5" y="20" fill="#991b1b" fontSize="8" fontWeight="bold" textAnchor="middle">📊 SQL QUERY</text>
-                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">SELECT SUM()</text>
-                          <text x="37.5" y="48" fill="#475569" fontSize="6.5" textAnchor="middle" fontStyle="italic">from pb_sales</text>
+                          <rect width="75" height="60" rx="6" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="var(--da-svg-red-text)" fontSize="8" fontWeight="bold" textAnchor="middle">📊 SQL QUERY</text>
+                          <text x="37.5" y="36" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">SELECT SUM()</text>
+                          <text x="37.5" y="48" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle" fontStyle="italic">from pb_sales</text>
                         </g>
                         <g transform="translate(130, 45)">
-                          <rect width="100" height="70" rx="8" fill="#fff5f5" stroke="#ef4444" strokeWidth="2" />
-                          <text x="50" y="24" fill="#991b1b" fontSize="9" fontWeight="extrabold" textAnchor="middle">👑 LEADER NODE</text>
-                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Compiles Plan</text>
-                          <text x="50" y="56" fill="#7f1d1d" fontSize="7.5" fontWeight="bold" textAnchor="middle">Distributes slices</text>
+                          <rect width="100" height="70" rx="8" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="2" />
+                          <text x="50" y="24" fill="var(--da-svg-red-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">👑 LEADER NODE</text>
+                          <text x="50" y="42" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Compiles Plan</text>
+                          <text x="50" y="56" fill="var(--da-svg-red-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Distributes slices</text>
                         </g>
                         
                         {/* Compute Nodes */}
                         <g transform="translate(290, 20)">
-                          <rect width="90" height="45" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="45" y="18" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">🖥️ COMPUTE 1</text>
-                          <text x="45" y="32" fill="#15803d" fontSize="7.5" fontWeight="bold" textAnchor="middle">Executing Scan</text>
+                          <rect width="90" height="45" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold" textAnchor="middle">🖥️ COMPUTE 1</text>
+                          <text x="45" y="32" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Executing Scan</text>
                         </g>
                         <g transform="translate(290, 95)">
-                          <rect width="90" height="45" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="45" y="18" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">🖥️ COMPUTE 2</text>
-                          <text x="45" y="32" fill="#15803d" fontSize="7.5" fontWeight="bold" textAnchor="middle">Executing Scan</text>
+                          <rect width="90" height="45" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold" textAnchor="middle">🖥️ COMPUTE 2</text>
+                          <text x="45" y="32" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Executing Scan</text>
                         </g>
                         <g transform="translate(400, 45)">
-                          <rect width="70" height="70" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                          <text x="35" y="26" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">📊 COLUMN</text>
-                          <text x="35" y="38" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">BLOCKS</text>
-                          <text x="35" y="54" fill="#78350f" fontSize="7" textAnchor="middle">Skips unused</text>
-                          <text x="35" y="62" fill="#78350f" fontSize="7" textAnchor="middle">fields (90% faster)</text>
+                          <rect width="70" height="70" rx="8" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <text x="35" y="26" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">📊 COLUMN</text>
+                          <text x="35" y="38" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">BLOCKS</text>
+                          <text x="35" y="54" fill="var(--da-svg-amber-text)" fontSize="7" textAnchor="middle">Skips unused</text>
+                          <text x="35" y="62" fill="var(--da-svg-amber-text)" fontSize="7" textAnchor="middle">fields (90% faster)</text>
                         </g>
                       </svg>
                     )}
@@ -1680,45 +1938,45 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 85 80 H 130" fill="none" stroke="#0284c7" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 230 80 H 275" fill="none" stroke="#0284c7" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-blue" />
-                        <path d="M 375 80 H 415" fill="none" stroke="#64748b" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 85 80 H 130" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 H 275" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-blue" />
+                        <path d="M 375 80 H 415" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(10, 50)">
-                          <rect width="75" height="60" rx="6" fill="#f0f9ff" stroke="#0284c7" strokeWidth="1.5" />
-                          <text x="37.5" y="20" fill="#0369a1" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔎 USER SEARCH</text>
-                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">Query: "auth*"</text>
-                          <text x="37.5" y="48" fill="#0284c7" fontSize="7.5" fontWeight="bold" textAnchor="middle">Fuzzy Match</text>
+                          <rect width="75" height="60" rx="6" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="var(--da-svg-blue-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔎 USER SEARCH</text>
+                          <text x="37.5" y="36" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Query: "auth*"</text>
+                          <text x="37.5" y="48" fill="var(--da-svg-blue-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Fuzzy Match</text>
                         </g>
                         <g transform="translate(130, 45)">
-                          <rect width="100" height="70" rx="8" fill="#f0f9ff" stroke="#0284c7" strokeWidth="2" />
-                          <text x="50" y="24" fill="#0369a1" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">👑 COORDINATOR</text>
-                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Master Node</text>
-                          <text x="50" y="56" fill="#0284c7" fontSize="7.5" fontWeight="bold" textAnchor="middle">Splits execution</text>
+                          <rect width="100" height="70" rx="8" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2" />
+                          <text x="50" y="24" fill="var(--da-svg-blue-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">👑 COORDINATOR</text>
+                          <text x="50" y="42" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Master Node</text>
+                          <text x="50" y="56" fill="var(--da-svg-blue-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Splits execution</text>
                         </g>
                         <g transform="translate(275, 25)">
-                          <rect width="100" height="110" rx="8" fill="#ffffff" stroke="#86efac" strokeWidth="1.5" />
-                          <rect x="5" y="5" width="90" height="14" rx="2" fill="#f0fdf4" />
-                          <text x="50" y="15" fill="#15803d" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Data Nodes (Shards)</text>
+                          <rect width="100" height="110" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <rect x="5" y="5" width="90" height="14" rx="2" fill="var(--da-svg-green-bg)" />
+                          <text x="50" y="15" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Data Nodes (Shards)</text>
                           
-                          <rect x="10" y="26" width="35" height="30" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
-                          <text x="27.5" y="42" fill="#16a34a" fontSize="8" fontWeight="bold" textAnchor="middle">P0</text>
-                          <rect x="55" y="26" width="35" height="30" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
-                          <text x="72.5" y="42" fill="#16a34a" fontSize="8" fontWeight="bold" textAnchor="middle">P1</text>
+                          <rect x="10" y="26" width="35" height="30" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="27.5" y="42" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">P0</text>
+                          <rect x="55" y="26" width="35" height="30" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="72.5" y="42" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">P1</text>
                           
-                          <rect x="10" y="65" width="35" height="30" rx="2" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" />
-                          <text x="27.5" y="82" fill="#64748b" fontSize="8" textAnchor="middle">R0</text>
-                          <rect x="55" y="65" width="35" height="30" rx="2" fill="#ffffff" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" />
-                          <text x="72.5" y="82" fill="#64748b" fontSize="8" textAnchor="middle">R1</text>
+                          <rect x="10" y="65" width="35" height="30" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="27.5" y="82" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle">R0</text>
+                          <rect x="55" y="65" width="35" height="30" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="72.5" y="82" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle">R1</text>
                         </g>
                         <g transform="translate(415, 50)">
-                          <rect width="55" height="60" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <ellipse cx="27.5" cy="20" rx="16" ry="6" fill="#cbd5e1" />
-                          <text x="27.5" y="38" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">UltraWarm</text>
-                          <text x="27.5" y="48" fill="#64748b" fontSize="6.5" textAnchor="middle">S3 cold tier</text>
+                          <rect width="55" height="60" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <ellipse cx="27.5" cy="20" rx="16" ry="6" fill="var(--da-svg-node-border)" />
+                          <text x="27.5" y="38" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">UltraWarm</text>
+                          <text x="27.5" y="48" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">S3 cold tier</text>
                         </g>
                       </svg>
                     )}
@@ -1727,49 +1985,49 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 80 80 H 130" fill="none" stroke="#7e22ce" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 230 80 H 260" fill="none" stroke="#7e22ce" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-purple" />
-                        <path d="M 375 80 H 410" fill="none" stroke="#64748b" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 80 80 H 130" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 H 260" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-purple" />
+                        <path d="M 375 80 H 410" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(10, 50)">
-                          <rect width="70" height="60" rx="6" fill="#faf5ff" stroke="#a855f7" strokeWidth="1.5" />
-                          <text x="35" y="20" fill="#7e22ce" fontSize="8.5" fontWeight="bold" textAnchor="middle">🕸️ GRAPH </text>
-                          <text x="35" y="36" fill="#475569" fontSize="7" textAnchor="middle">Gremlin: Hop 3</text>
-                          <text x="35" y="48" fill="#7e22ce" fontSize="7.5" fontWeight="bold" textAnchor="middle">Find rings</text>
+                          <rect width="70" height="60" rx="6" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                          <text x="35" y="20" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">🕸️ GRAPH </text>
+                          <text x="35" y="36" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Gremlin: Hop 3</text>
+                          <text x="35" y="48" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Find rings</text>
                         </g>
                         <g transform="translate(130, 45)">
-                          <rect width="100" height="70" rx="8" fill="#faf5ff" stroke="#a855f7" strokeWidth="2" />
-                          <text x="50" y="24" fill="#7e22ce" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">👑 GRAPH ENGINE</text>
-                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Traverses indices</text>
-                          <text x="50" y="56" fill="#581c87" fontSize="7.5" fontWeight="bold" textAnchor="middle">Neptune Cluster</text>
+                          <rect width="100" height="70" rx="8" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
+                          <text x="50" y="24" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">👑 GRAPH ENGINE</text>
+                          <text x="50" y="42" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Traverses indices</text>
+                          <text x="50" y="56" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Neptune Cluster</text>
                         </g>
                         
                         {/* Connected Graph Topology */}
                         <g transform="translate(260, 20)">
-                          <rect width="115" height="120" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <circle cx="30" cy="40" r="10" fill="#e9d5ff" stroke="#a855f7" strokeWidth="1.5" />
-                          <text x="30" y="43" fill="#7e22ce" fontSize="8" fontWeight="bold" textAnchor="middle">U1</text>
+                          <rect width="115" height="120" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <circle cx="30" cy="40" r="10" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                          <text x="30" y="43" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="bold" textAnchor="middle">U1</text>
                           
-                          <circle cx="85" cy="40" r="10" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" />
-                          <text x="85" y="43" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">A1</text>
+                          <circle cx="85" cy="40" r="10" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <text x="85" y="43" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">A1</text>
                           
-                          <circle cx="57" cy="95" r="10" fill="#e0f2fe" stroke="#0ea5e9" strokeWidth="1.5" />
-                          <text x="57" y="98" fill="#0369a1" fontSize="8" fontWeight="bold" textAnchor="middle">U2</text>
+                          <circle cx="57" cy="95" r="10" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="1.5" />
+                          <text x="57" y="98" fill="var(--da-svg-blue-text)" fontSize="8" fontWeight="bold" textAnchor="middle">U2</text>
                           
                           {/* Edges */}
-                          <line x1="40" y1="40" x2="75" y2="40" stroke="#94a3b8" strokeWidth="1.5" />
-                          <line x1="30" y1="50" x2="49" y2="87" stroke="#94a3b8" strokeWidth="1.5" />
-                          <line x1="80" y1="49" x2="65" y2="87" stroke="#a855f7" strokeWidth="2" strokeDasharray="3 1" />
+                          <line x1="40" y1="40" x2="75" y2="40" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <line x1="30" y1="50" x2="49" y2="87" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <line x1="80" y1="49" x2="65" y2="87" stroke="var(--da-svg-purple-border)" strokeWidth="2" strokeDasharray="3 1" />
                         </g>
                         
                         <g transform="translate(410, 45)">
-                          <rect width="60" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="30" y="24" fill="#475569" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📡 STREAM</text>
-                          <text x="30" y="40" fill="#64748b" fontSize="7.5" textAnchor="middle">CDC Graph</text>
-                          <text x="30" y="54" fill="#10b981" fontSize="7.5" fontWeight="bold" textAnchor="middle">Lambda Sync</text>
+                          <rect width="60" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📡 STREAM</text>
+                          <text x="30" y="40" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">CDC Graph</text>
+                          <text x="30" y="54" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Lambda Sync</text>
                         </g>
                       </svg>
                     )}
@@ -1778,37 +2036,37 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 85 80 H 130" fill="none" stroke="#f43f5e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 220 80 H 265" fill="none" stroke="#f43f5e" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-orange" />
-                        <path d="M 375 80 H 410" fill="none" stroke="#f43f5e" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 85 80 H 130" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 220 80 H 265" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 375 80 H 410" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(10, 50)">
-                          <rect width="75" height="60" rx="6" fill="#fff1f2" stroke="#f43f5e" strokeWidth="1.5" />
-                          <text x="37.5" y="20" fill="#be123c" fontSize="8.5" fontWeight="bold" textAnchor="middle">📝 WRITE TXN</text>
-                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">Balance Update</text>
-                          <text x="37.5" y="48" fill="#be123c" fontSize="7.5" fontWeight="bold" textAnchor="middle">Append Only</text>
+                          <rect width="75" height="60" rx="6" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="var(--da-svg-red-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">📝 WRITE TXN</text>
+                          <text x="37.5" y="36" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Balance Update</text>
+                          <text x="37.5" y="48" fill="var(--da-svg-red-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Append Only</text>
                         </g>
                         <g transform="translate(130, 45)">
-                          <rect width="90" height="70" rx="8" fill="#fff1f2" stroke="#f43f5e" strokeWidth="2" />
-                          <text x="45" y="22" fill="#be123c" fontSize="9" fontWeight="extrabold" textAnchor="middle">🗂️ JOURNAL</text>
-                          <text x="45" y="40" fill="#1e293b" fontSize="7.5" textAnchor="middle">Immutable block</text>
-                          <text x="45" y="54" fill="#9f1239" fontSize="7" fontWeight="bold" textAnchor="middle">Tamper Proof</text>
+                          <rect width="90" height="70" rx="8" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="2" />
+                          <text x="45" y="22" fill="var(--da-svg-red-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">🗂️ JOURNAL</text>
+                          <text x="45" y="40" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Immutable block</text>
+                          <text x="45" y="54" fill="var(--da-svg-red-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Tamper Proof</text>
                         </g>
                         <g transform="translate(265, 45)">
-                          <rect width="110" height="70" rx="8" fill="#ffffff" stroke="#d97706" strokeWidth="1.5" />
-                          <rect x="5" y="5" width="100" height="15" rx="2" fill="#fffbeb" />
-                          <text x="55" y="15" fill="#b45309" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🔒 SHA-256 CHAIN</text>
-                          <text x="55" y="38" fill="#b45309" fontSize="8" fontWeight="bold" textAnchor="middle">Block Chaining</text>
-                          <text x="55" y="52" fill="#78350f" fontSize="7" textAnchor="middle">Cryptographic Proof</text>
+                          <rect width="110" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <rect x="5" y="5" width="100" height="15" rx="2" fill="var(--da-svg-amber-bg)" />
+                          <text x="55" y="15" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🔒 SHA-256 CHAIN</text>
+                          <text x="55" y="38" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">Block Chaining</text>
+                          <text x="55" y="52" fill="var(--da-svg-amber-text)" fontSize="7" textAnchor="middle">Cryptographic Proof</text>
                         </g>
                         <g transform="translate(410, 45)">
-                          <rect width="60" height="70" rx="8" fill="#f8fafc" stroke="#64748b" strokeWidth="1.5" />
-                          <text x="30" y="24" fill="#475569" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📋 AUDIT</text>
-                          <text x="30" y="40" fill="#64748b" fontSize="7.5" textAnchor="middle">Verifiable</text>
-                          <text x="30" y="54" fill="#10b981" fontSize="7.5" fontWeight="bold" textAnchor="middle">State Table</text>
+                          <rect width="60" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📋 AUDIT</text>
+                          <text x="30" y="40" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">Verifiable</text>
+                          <text x="30" y="54" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">State Table</text>
                         </g>
                       </svg>
                     )}
@@ -1817,37 +2075,37 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 85 80 H 130" fill="none" stroke="#ea580c" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 230 80 H 265" fill="none" stroke="#ea580c" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-orange" />
-                        <path d="M 375 80 H 410" fill="none" stroke="#cbd5e1" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 85 80 H 130" fill="none" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 230 80 H 265" fill="none" stroke="var(--da-svg-amber-border)" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-orange" />
+                        <path d="M 375 80 H 410" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
                         
                         <g transform="translate(10, 50)">
-                          <rect width="75" height="60" rx="6" fill="#fff7ed" stroke="#ea580c" strokeWidth="1.5" />
-                          <text x="37.5" y="20" fill="#c2410c" fontSize="8.5" fontWeight="bold" textAnchor="middle">📈 METRICS FEED</text>
-                          <text x="37.5" y="36" fill="#475569" fontSize="7" textAnchor="middle">IoT Telemetry</text>
-                          <text x="37.5" y="48" fill="#ea580c" fontSize="7.5" fontWeight="bold" textAnchor="middle">100k writes/s</text>
+                          <rect width="75" height="60" rx="6" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <text x="37.5" y="20" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">📈 METRICS FEED</text>
+                          <text x="37.5" y="36" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">IoT Telemetry</text>
+                          <text x="37.5" y="48" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">100k writes/s</text>
                         </g>
                         <g transform="translate(130, 45)">
-                          <rect width="100" height="70" rx="8" fill="#fff7ed" stroke="#ea580c" strokeWidth="2" />
-                          <text x="50" y="24" fill="#c2410c" fontSize="9" fontWeight="extrabold" textAnchor="middle">💾 MEMORY TIER</text>
-                          <text x="50" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Hot writes buffer</text>
-                          <text x="50" y="56" fill="#a16207" fontSize="7.5" fontWeight="bold" textAnchor="middle">Sub-ms writes</text>
+                          <rect width="100" height="70" rx="8" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                          <text x="50" y="24" fill="var(--da-svg-amber-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">💾 MEMORY TIER</text>
+                          <text x="50" y="42" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Hot writes buffer</text>
+                          <text x="50" y="56" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Sub-ms writes</text>
                         </g>
                         <g transform="translate(265, 45)">
-                          <rect width="110" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <rect x="5" y="5" width="100" height="15" rx="2" fill="#f8fafc" />
-                          <text x="55" y="15" fill="#475569" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ MIGRATOR</text>
-                          <text x="55" y="38" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">Auto-Tiering</text>
-                          <text x="55" y="52" fill="#475569" fontSize="7" textAnchor="middle">Memory to Disk</text>
+                          <rect width="110" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <rect x="5" y="5" width="100" height="15" rx="2" fill="var(--da-svg-node-fill)" />
+                          <text x="55" y="15" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ MIGRATOR</text>
+                          <text x="55" y="38" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">Auto-Tiering</text>
+                          <text x="55" y="52" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Memory to Disk</text>
                         </g>
                         <g transform="translate(410, 45)">
-                          <rect width="60" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="30" y="24" fill="#475569" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🖲️ DISK</text>
-                          <text x="30" y="40" fill="#64748b" fontSize="7.5" textAnchor="middle">Magnetic</text>
-                          <text x="30" y="54" fill="#b45309" fontSize="7.5" fontWeight="bold" textAnchor="middle">Cold tier</text>
+                          <rect width="60" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="30" y="24" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🖲️ DISK</text>
+                          <text x="30" y="40" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">Magnetic</text>
+                          <text x="30" y="54" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Cold tier</text>
                         </g>
                       </svg>
                     )}
@@ -1856,42 +2114,42 @@ export default function DatabasesAndAnalyticsVisualizer() {
                       <svg className="w-full h-full max-w-[480px] da-svg-bg" viewBox="0 0 480 160">
                         <defs>
                           <marker id="ex-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                           </marker>
                         </defs>
-                        <path d="M 65 80 L 115 45" fill="none" stroke="#16a34a" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 65 80 L 115 115" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="2,2" />
-                        <path d="M 205 45 L 260 80" fill="none" stroke="#16a34a" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
-                        <path d="M 330 80 H 400" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-green" />
+                        <path d="M 65 80 L 115 45" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 65 80 L 115 115" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" strokeDasharray="2,2" />
+                        <path d="M 205 45 L 260 80" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" markerEnd="url(#ex-arrow)" />
+                        <path d="M 330 80 H 400" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2.5" strokeDasharray="5,3" className="da-flow-green" />
                         
                         <g transform="translate(10, 55)">
-                          <rect width="55" height="50" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
-                          <text x="27.5" y="24" fill="#15803d" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 RAW S3</text>
-                          <text x="27.5" y="38" fill="#475569" fontSize="7.5" textAnchor="middle">JSON files</text>
+                          <rect width="55" height="50" rx="6" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="27.5" y="24" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">🪣 RAW S3</text>
+                          <text x="27.5" y="38" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">JSON files</text>
                         </g>
                         <g transform="translate(115, 20)">
-                          <rect width="90" height="50" rx="6" fill="#f0fdf4" stroke="#16a34a" strokeWidth="1.5" />
-                          <text x="45" y="18" fill="#15803d" fontSize="8" fontWeight="extrabold" textAnchor="middle">🕷️ CRAWLER</text>
-                          <text x="45" y="32" fill="#475569" fontSize="7.5" textAnchor="middle">Scans files</text>
-                          <text x="45" y="42" fill="#16a34a" fontSize="7" fontWeight="bold" textAnchor="middle">Infers Schema</text>
+                          <rect width="90" height="50" rx="6" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">🕷️ CRAWLER</text>
+                          <text x="45" y="32" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">Scans files</text>
+                          <text x="45" y="42" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Infers Schema</text>
                         </g>
                         <g transform="translate(115, 90)">
-                          <rect width="90" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
-                          <text x="45" y="18" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">REGISTRY</text>
-                          <text x="45" y="32" fill="#64748b" fontSize="7.5" textAnchor="middle">AVRO checking</text>
-                          <text x="45" y="42" fill="#64748b" fontSize="7" textAnchor="middle">Prevents poison</text>
+                          <rect width="90" height="50" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                          <text x="45" y="18" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold" textAnchor="middle">REGISTRY</text>
+                          <text x="45" y="32" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">AVRO checking</text>
+                          <text x="45" y="42" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Prevents poison</text>
                         </g>
                         <g transform="translate(240, 45)">
-                          <rect width="90" height="70" rx="8" fill="#f0fdf4" stroke="#16a34a" strokeWidth="2" />
-                          <text x="45" y="24" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📚 DATA CATALOG</text>
-                          <text x="45" y="42" fill="#1e293b" fontSize="7.5" textAnchor="middle">Hive Metastore</text>
-                          <text x="45" y="56" fill="#166534" fontSize="7.5" fontWeight="bold" textAnchor="middle">Schema Database</text>
+                          <rect width="90" height="70" rx="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                          <text x="45" y="24" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📚 DATA CATALOG</text>
+                          <text x="45" y="42" fill="var(--da-text)" fontSize="7.5" textAnchor="middle">Hive Metastore</text>
+                          <text x="45" y="56" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Schema Database</text>
                         </g>
                         <g transform="translate(400, 50)">
-                          <rect width="70" height="60" rx="8" fill="#fffbeb" stroke="#d97706" strokeWidth="1.5" />
-                          <text x="35" y="24" fill="#b45309" fontSize="8" fontWeight="extrabold" textAnchor="middle">⚡ SPARK</text>
-                          <text x="35" y="38" fill="#78350f" fontSize="7.5" textAnchor="middle">Serverless ETL</text>
-                          <text x="35" y="48" fill="#059669" fontSize="7.5" fontWeight="bold" textAnchor="middle">DPU Transform</text>
+                          <rect width="70" height="60" rx="8" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                          <text x="35" y="24" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">⚡ SPARK</text>
+                          <text x="35" y="38" fill="var(--da-svg-amber-text)" fontSize="7.5" textAnchor="middle">Serverless ETL</text>
+                          <text x="35" y="48" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">DPU Transform</text>
                         </g>
                       </svg>
                     )}
@@ -2232,92 +2490,92 @@ export default function DatabasesAndAnalyticsVisualizer() {
                 <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 280">
                   <defs>
                     <marker id="aurora-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-node-border)" />
                     </marker>
                     <marker id="aurora-arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0ea5e9" />
+                      <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--da-svg-blue-border)" />
                     </marker>
                   </defs>
 
                   {/* CNAME endpoint lines */}
-                  <path d="M 300 20 L 150 70" fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
+                  <path d="M 300 20 L 150 70" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="1.5" strokeDasharray="3 3" />
                   
                   {/* Decoupled storage link lines */}
-                  <path d="M 150 120 L 300 210" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 450 120 L 300 210" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 150 120 L 300 210" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 450 120 L 300 210" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
 
                   {/* Active Flows */}
                   {masterActive && (
                     <>
-                      <path d="M 300 20 L 150 70" fill="none" stroke="#0ea5e9" strokeWidth="3.5" className="da-flow-blue" />
-                      <path d="M 150 120 L 300 210" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
+                      <path d="M 300 20 L 150 70" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3.5" className="da-flow-blue" />
+                      <path d="M 150 120 L 300 210" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3" className="da-flow-blue" />
                     </>
                   )}
 
                   {failoverState === 'promoting-reader' && (
-                    <path d="M 450 120 L 300 210" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
+                    <path d="M 450 120 L 300 210" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="3" className="da-flow-green" />
                   )}
 
                   {failoverState === 'route53-updating' && (
-                    <path d="M 300 20 L 450 70" fill="none" stroke="#0ea5e9" strokeWidth="3.5" className="da-flow-blue" />
+                    <path d="M 300 20 L 450 70" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3.5" className="da-flow-blue" />
                   )}
 
                   {failoverState === 'completed' && (
                     <>
-                      <path d="M 300 20 L 450 70" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
-                      <path d="M 450 120 L 300 210" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
+                      <path d="M 300 20 L 450 70" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3" className="da-flow-blue" />
+                      <path d="M 450 120 L 300 210" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3" className="da-flow-blue" />
                     </>
                   )}
 
                   {/* Route 53 endpoint node */}
                   <g transform="translate(230, 2)" className="da-node-btn">
-                    <rect width="140" height="32" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#0d9488" strokeWidth="2" />
-                    <text x="70" y="14" fill="#0d9488" fontSize="8.5" fontWeight="bold" textAnchor="middle">🌐 ROUTE 53 CNAME</text>
-                    <text x="70" y="24" fill="#475569" fontSize="7.5" textAnchor="middle" fontFamily="monospace">aurora-cluster.endpoint...</text>
+                    <rect width="140" height="32" rx="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                    <text x="70" y="14" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">🌐 ROUTE 53 CNAME</text>
+                    <text x="70" y="24" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle" fontFamily="monospace">aurora-cluster.endpoint...</text>
                   </g>
 
                   {/* AZ boundaries */}
-                  <rect x="20" y="52" width="260" height="110" rx="10" fill="rgba(148, 163, 184, 0.02)" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 4" />
-                  <text x="35" y="68" fill="#94a3b8" fontSize="7.5" fontWeight="bold">AVAILABILITY ZONE 1A</text>
+                  <rect x="20" y="52" width="260" height="110" rx="10" fill="transparent" stroke="var(--da-svg-node-border)" strokeWidth="1.5" strokeDasharray="4 4" />
+                  <text x="35" y="68" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold">AVAILABILITY ZONE 1A</text>
 
-                  <rect x="320" y="52" width="260" height="110" rx="10" fill="rgba(148, 163, 184, 0.02)" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="4 4" />
-                  <text x="335" y="68" fill="#94a3b8" fontSize="7.5" fontWeight="bold">AVAILABILITY ZONE 1B</text>
+                  <rect x="320" y="52" width="260" height="110" rx="10" fill="transparent" stroke="var(--da-svg-node-border)" strokeWidth="1.5" strokeDasharray="4 4" />
+                  <text x="335" y="68" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold">AVAILABILITY ZONE 1B</text>
 
                   {/* Instances */}
                   <g transform="translate(60, 75)" className="da-node-btn">
-                    <rect width="180" height="70" rx="12" fill={masterActive ? 'rgba(239, 246, 255, 0.95)' : 'rgba(254, 242, 242, 0.95)'} stroke={masterActive ? '#3b82f6' : '#ef4444'} strokeWidth="2.5" />
-                    <text x="90" y="24" fill={masterActive ? '#1d4ed8' : '#dc2626'} fontSize="11" fontWeight="bold" textAnchor="middle">
+                    <rect width="180" height="70" rx="12" fill={masterActive ? 'var(--da-svg-blue-bg)' : 'var(--da-svg-red-bg)'} stroke={masterActive ? 'var(--da-svg-blue-border)' : 'var(--da-svg-red-border)'} strokeWidth="2.5" />
+                    <text x="90" y="24" fill={masterActive ? 'var(--da-svg-blue-text)' : 'var(--da-svg-red-text)'} fontSize="11" fontWeight="bold" textAnchor="middle">
                       {masterActive ? '🛢️ PRIMARY WRITER' : '💥 WRITER CRASHED'}
                     </text>
-                    <text x="90" y="44" fill="#1e293b" fontSize="8.5" textAnchor="middle" fontWeight="500">aurora-writer-us-east-1a</text>
-                    <text x="90" y="58" fill={masterActive ? '#059669' : '#dc2626'} fontSize="8.5" fontWeight="bold" textAnchor="middle">
+                    <text x="90" y="44" fill="var(--da-text)" fontSize="8.5" textAnchor="middle" fontWeight="500">aurora-writer-us-east-1a</text>
+                    <text x="90" y="58" fill={masterActive ? 'var(--da-svg-green-text)' : 'var(--da-svg-red-text)'} fontSize="8.5" fontWeight="bold" textAnchor="middle">
                       {masterActive ? 'Status: Active Writes' : 'Status: Connection Lost'}
                     </text>
                   </g>
 
                   <g transform="translate(360, 75)" className="da-node-btn">
                     <rect width="180" height="70" rx="12" fill={
-                      promotedReaderId === 'aurora-reader-us-east-1b' ? 'rgba(240, 253, 244, 0.95)' : 'rgba(239, 246, 255, 0.95)'
+                      promotedReaderId === 'aurora-reader-us-east-1b' ? 'var(--da-svg-green-bg)' : 'var(--da-svg-blue-bg)'
                     } stroke={
-                      promotedReaderId === 'aurora-reader-us-east-1b' ? '#10b981' : '#3b82f6'
+                      promotedReaderId === 'aurora-reader-us-east-1b' ? 'var(--da-svg-green-border)' : 'var(--da-svg-blue-border)'
                     } strokeWidth="2.5" />
                     <text x="90" y="24" fill={
-                      promotedReaderId === 'aurora-reader-us-east-1b' ? '#047857' : '#1d4ed8'
+                      promotedReaderId === 'aurora-reader-us-east-1b' ? 'var(--da-svg-green-text)' : 'var(--da-svg-blue-text)'
                     } fontSize="11" fontWeight="bold" textAnchor="middle">
                       {promotedReaderId === 'aurora-reader-us-east-1b' ? '🛢️ PROMOTED WRITER' : '🔌 REPLICA READER'}
                     </text>
-                    <text x="90" y="44" fill="#1e293b" fontSize="8.5" textAnchor="middle" fontWeight="500">aurora-reader-us-east-1b</text>
-                    <text x="90" y="58" fill="#0d9488" fontSize="8.5" fontWeight="bold" textAnchor="middle">
+                    <text x="90" y="44" fill="var(--da-text)" fontSize="8.5" textAnchor="middle" fontWeight="500">aurora-reader-us-east-1b</text>
+                    <text x="90" y="58" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">
                       {promotedReaderId === 'aurora-reader-us-east-1b' ? 'Status: Master writes active' : 'Status: Standby replica ready'}
                     </text>
                   </g>
 
                   {/* Decoupled storage block */}
                   <g transform="translate(180, 195)" className="da-node-btn">
-                    <rect width="240" height="70" rx="12" fill="rgba(255, 253, 250, 0.95)" stroke="#d97706" strokeWidth="3" />
-                    <text x="120" y="24" fill="#b45309" fontSize="12.5" fontWeight="bold" textAnchor="middle">⚡ DECOUPLED SHARED SSD</text>
-                    <text x="120" y="42" fill="#78350f" fontSize="9" textAnchor="middle" fontWeight="semibold">Auto-Scales blocks up to 128 TB</text>
-                    <text x="120" y="56" fill="#059669" fontSize="9" fontWeight="bold" textAnchor="middle">6-way active replication across 3 AZs</text>
+                    <rect width="240" height="70" rx="12" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="3" />
+                    <text x="120" y="24" fill="var(--da-svg-amber-text)" fontSize="12.5" fontWeight="bold" textAnchor="middle">⚡ DECOUPLED SHARED SSD</text>
+                    <text x="120" y="42" fill="var(--da-svg-amber-text)" fontSize="9" textAnchor="middle" fontWeight="semibold">Auto-Scales blocks up to 128 TB</text>
+                    <text x="120" y="56" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="bold" textAnchor="middle">6-way active replication across 3 AZs</text>
                   </g>
                 </svg>
               </div>
@@ -2404,62 +2662,65 @@ export default function DatabasesAndAnalyticsVisualizer() {
               {/* Cache-Aside SVG graphics */}
               <div className="w-full h-[280px] rounded-xl border border-slate-200 p-2 relative overflow-hidden flex items-center justify-center shadow-inner bg-slate-50">
                 <svg className="w-full h-full max-w-[620px] da-svg-bg" viewBox="0 0 600 280">
-                  <path d="M 70 140 H 125" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 210 137 Q 240 72.5, 290 72.5" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 210 137 Q 240 197.5, 290 197.5" fill="none" stroke="#94a3b8" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
-                  <path d="M 400 197.5 H 480" fill="none" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 70 140 H 125" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 210 137 Q 240 72.5, 290 72.5" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 210 137 Q 240 197.5, 290 197.5" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2.5" markerEnd="url(#aurora-arrow)" />
+                  <path d="M 400 197.5 H 480" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2" markerEnd="url(#aurora-arrow)" />
 
                   {/* Cache hit flow line */}
                   {cacheState === 'checking-cache' && (
-                    <path d="M 210 137 Q 240 72.5, 290 72.5" fill="none" stroke="#c084fc" strokeWidth="3.5" className="da-flow-purple" />
+                    <path d="M 210 137 Q 240 72.5, 290 72.5" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="3.5" className="da-flow-purple" />
                   )}
 
+                  {/* Cache hit success flow line */}
                   {cacheState === 'cache-hit' && (
-                    <path d="M 290 72.5 Q 240 72.5, 210 137" fill="none" stroke="#10b981" strokeWidth="3.5" className="da-flow-green" />
+                    <path d="M 290 72.5 Q 240 72.5, 210 137" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="3.5" className="da-flow-green" />
                   )}
 
                   {/* Cache miss flow lines */}
                   {cacheState === 'cache-miss' && (
-                    <path d="M 290 72.5 Q 240 72.5, 210 137" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="3 3" />
+                    <path d="M 290 72.5 Q 240 72.5, 210 137" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2.5" strokeDasharray="3 3" />
                   )}
 
+                  {/* Backing DB query flow line */}
                   {cacheState === 'querying-db' && (
-                    <path d="M 210 137 Q 240 197.5, 290 197.5" fill="none" stroke="#0ea5e9" strokeWidth="3.5" className="da-flow-blue" />
+                    <path d="M 210 137 Q 240 197.5, 290 197.5" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3.5" className="da-flow-blue" />
                   )}
 
+                  {/* Write cache on database return */}
                   {cacheState === 'populating-cache' && (
                     <>
-                      <path d="M 400 197.5 H 480" fill="none" stroke="#10b981" strokeWidth="3" className="da-flow-green" />
-                      <path d="M 290 197.5 Q 240 197.5, 210 137" fill="none" stroke="#0ea5e9" strokeWidth="2.5" />
+                      <path d="M 400 197.5 H 480" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="3" className="da-flow-green" />
+                      <path d="M 290 197.5 Q 240 197.5, 210 137" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
                     </>
                   )}
 
                   {/* Nodes */}
                   <g transform="translate(10, 105)" className="da-node-btn">
-                    <rect width="60" height="70" rx="10" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="2" />
-                    <rect x="5" y="5" width="50" height="30" rx="6" fill="#f1f5f9" />
-                    <text x="30" y="24" fill="#1e293b" fontSize="10.5" fontWeight="bold" textAnchor="middle">📱 USER</text>
-                    <text x="30" y="50" fill="#475569" fontSize="8.5" fontWeight="bold" textAnchor="middle">Web Client</text>
-                    <text x="30" y="60" fill="#64748b" fontSize="7" textAnchor="middle">Profile Query</text>
+                    <rect width="60" height="70" rx="10" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="2" />
+                    <rect x="5" y="5" width="50" height="30" rx="6" fill="var(--da-svg-node-fill)" />
+                    <text x="30" y="24" fill="var(--da-svg-text-dark)" fontSize="10.5" fontWeight="bold" textAnchor="middle">📱 USER</text>
+                    <text x="30" y="50" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Web Client</text>
+                    <text x="30" y="60" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Profile Query</text>
                   </g>
 
                   <g transform="translate(125, 100)" className="da-node-btn">
-                    <rect x="4" y="4" width="85" height="75" rx="10" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="85" height="75" rx="10" fill="rgba(252, 247, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
-                    <rect x="8" y="8" width="69" height="18" rx="4" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="42.5" y="20.5" fill="#7e22ce" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ APP SERVER</text>
-                    <text x="42.5" y="42" fill="#581c87" fontSize="8" fontWeight="bold" textAnchor="middle">Node.js API</text>
-                    <rect x="10" y="50" width="65" height="16" rx="4" fill="#f3e8ff" />
-                    <text x="42.5" y="61" fill="#7e22ce" fontSize="7.5" textAnchor="middle" fontWeight="bold">
+                    <rect x="4" y="4" width="85" height="75" rx="10" fill="transparent" />
+                    <rect width="85" height="75" rx="10" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" />
+                    <rect x="8" y="8" width="69" height="18" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                    <text x="42.5" y="20.5" fill="var(--da-svg-purple-text)" fontSize="9.5" fontWeight="bold" textAnchor="middle">⚡ APP SERVER</text>
+                    <text x="42.5" y="42" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="bold" textAnchor="middle">Node.js API</text>
+                    <rect x="10" y="50" width="65" height="16" rx="4" fill="var(--da-svg-purple-bg)" />
+                    <text x="42.5" y="61" fill="var(--da-svg-purple-text)" fontSize="7.5" textAnchor="middle" fontWeight="bold">
                       {cacheState === 'checking-cache' ? 'Checking Cache' :
                        cacheState === 'querying-db' ? 'Querying DB' : 'Status: Idle'}
                     </text>
                   </g>
 
                   <g transform="translate(290, 35)" className="da-node-btn">
-                    <rect x="4" y="4" width="135" height="75" rx="10" fill="rgba(239, 68, 68, 0.1)" />
-                    <rect width="135" height="75" rx="10" fill="rgba(254, 242, 242, 0.95)" stroke="#ef4444" strokeWidth="2.5" />
-                    <rect x="10" y="10" width="115" height="20" rx="4" fill="#7f1d1d" />
+                    <rect x="4" y="4" width="135" height="75" rx="10" fill="transparent" />
+                    <rect width="135" height="75" rx="10" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="2.5" />
+                    <rect x="10" y="10" width="115" height="20" rx="4" fill="var(--da-svg-red-border)" />
                     <circle cx="20" cy="20" r="3.5" fill={cacheState === 'cache-hit' ? '#10b981' : '#ef4444'} className="pulse-circle" />
                     <circle cx="20" cy="20" r="3.5" fill={cacheState === 'cache-hit' ? '#10b981' : '#ef4444'} />
                     <circle cx="29" cy="20" r="2.5" fill="#10b981" />
@@ -2467,10 +2728,10 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     <circle cx="43" cy="20" r="2.5" fill="#6b7280" />
                     <text x="115" y="23" fill="#ffffff" fontSize="8.5" fontWeight="bold" fontFamily="monospace" textAnchor="end">REDIS CACHE</text>
                     
-                    <text x="67.5" y="47" fill="#991b1b" fontSize="9" fontWeight="bold" textAnchor="middle">ElastiCache Cluster</text>
+                    <text x="67.5" y="47" fill="var(--da-svg-red-text)" fontSize="9" fontWeight="bold" textAnchor="middle">ElastiCache Cluster</text>
                     <text x="67.5" y="61" fill={
-                      cacheState === 'cache-hit' ? '#059669' :
-                      cacheState === 'cache-miss' ? '#dc2626' : '#475569'
+                      cacheState === 'cache-hit' ? 'var(--da-svg-green-text)' :
+                      cacheState === 'cache-miss' ? 'var(--da-svg-red-text)' : 'var(--da-text-muted)'
                     } fontSize="9" fontWeight="bold" textAnchor="middle">
                       {cacheState === 'cache-hit' ? '🟢 HIT (0.2ms)' :
                        cacheState === 'cache-miss' ? '❌ MISS' : 'Status: Online'}
@@ -2478,26 +2739,26 @@ export default function DatabasesAndAnalyticsVisualizer() {
                   </g>
 
                   <g transform="translate(290, 160)" className="da-node-btn">
-                    <ellipse cx="55" cy="65" rx="45" ry="10" fill="rgba(59, 130, 246, 0.15)" />
-                    <path d="M 10 15 V 55 A 45 10 0 0 0 100 55 V 15 Z" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
-                    <ellipse cx="55" cy="15" rx="45" ry="10" fill="#eff6ff" stroke="#3b82f6" strokeWidth="2.5" />
-                    <path d="M 10 26 A 45 8 0 0 0 100 26" fill="none" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3 3" />
-                    <path d="M 10 38 A 45 8 0 0 0 100 38" fill="none" stroke="#93c5fd" strokeWidth="1.5" />
+                    <ellipse cx="55" cy="65" rx="45" ry="10" fill="transparent" />
+                    <path d="M 10 15 V 55 A 45 10 0 0 0 100 55 V 15 Z" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                    <ellipse cx="55" cy="15" rx="45" ry="10" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                    <path d="M 10 26 A 45 8 0 0 0 100 26" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="1" strokeDasharray="3 3" />
+                    <path d="M 10 38 A 45 8 0 0 0 100 38" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="1.5" />
                     
-                    <text x="55" y="23" fill="#1d4ed8" fontSize="9.5" fontWeight="bold" textAnchor="middle">🛢️ PRIMARY DB</text>
-                    <text x="55" y="43" fill="#475569" fontSize="8" textAnchor="middle" fontWeight="semibold">PostgreSQL / RDS</text>
-                    <text x="55" y="56" fill="#1e40af" fontSize="8.5" fontWeight="bold" textAnchor="middle">
+                    <text x="55" y="23" fill="var(--da-svg-blue-text)" fontSize="9.5" fontWeight="bold" textAnchor="middle">🛢️ PRIMARY DB</text>
+                    <text x="55" y="43" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle" fontWeight="semibold">PostgreSQL / RDS</text>
+                    <text x="55" y="56" fill="var(--da-svg-blue-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">
                       {cacheState === 'querying-db' ? 'Disk Query (6ms)' : 'Persistent SSD'}
                     </text>
                   </g>
 
                   <g transform="translate(480, 160)" className="da-node-btn">
-                    <rect x="4" y="4" width="110" height="75" rx="10" fill="rgba(22, 163, 74, 0.1)" />
-                    <rect width="110" height="75" rx="10" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <rect x="8" y="8" width="94" height="18" rx="4" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
-                    <text x="55" y="20.5" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">⚡ DYNAMODB</text>
-                    <text x="55" y="43" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Decoupled NoSQL</text>
-                    <text x="55" y="56" fill="#15803d" fontSize="8.5" fontWeight="bold" textAnchor="middle">Consistent Sub-10ms</text>
+                    <rect x="4" y="4" width="110" height="75" rx="10" fill="transparent" />
+                    <rect width="110" height="75" rx="10" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <rect x="8" y="8" width="94" height="18" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                    <text x="55" y="20.5" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="bold" textAnchor="middle">⚡ DYNAMODB</text>
+                    <text x="55" y="43" fill="var(--da-svg-green-text)" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Decoupled NoSQL</text>
+                    <text x="55" y="56" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Consistent Sub-10ms</text>
                   </g>
                 </svg>
               </div>
@@ -2594,58 +2855,57 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                     {/* Nodes */}
                     <g transform="translate(15, 80)" className="da-node-btn">
-                      <rect width="65" height="80" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="57" height="30" rx="4" fill="#f1f5f9" />
-                      <text x="32.5" y="22" fill="#1e293b" fontSize="9.5" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                      <text x="32.5" y="52" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">SQL Query</text>
-                      <text x="32.5" y="66" fill="#64748b" fontSize="7" textAnchor="middle">Select *</text>
+                      <rect width="65" height="80" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="57" height="30" rx="4" fill="var(--da-svg-bg)" />
+                      <text x="32.5" y="22" fill="var(--da-svg-text-dark)" fontSize="9.5" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                      <text x="32.5" y="52" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold" textAnchor="middle">SQL Query</text>
+                      <text x="32.5" y="66" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Select *</text>
                     </g>
 
                     <g transform="translate(135, 55)" className="da-node-btn">
-                      <rect x="3" y="3" width="122" height="117" rx="8" fill="rgba(59, 130, 246, 0.1)" />
-                      <rect width="122" height="117" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
-                      <rect x="6" y="6" width="110" height="26" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                      <text x="61" y="22" fill="#1d4ed8" fontSize="10" fontWeight="bold" textAnchor="middle">🔍 COORDINATOR</text>
-                      <text x="61" y="48" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Parses SQL Query</text>
-                      <text x="61" y="64" fill="#0d9488" fontSize="8.5" fontWeight="bold" textAnchor="middle">Checks Glue Catalog</text>
-                      <rect x="12" y="78" width="98" height="18" rx="3.5" fill="#ccfbf1" />
-                      <text x="61" y="90" fill="#0d9488" fontSize="8" fontWeight="bold" textAnchor="middle">Task Optimizer</text>
+                      <rect width="122" height="117" rx="8" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                      <rect x="6" y="6" width="110" height="26" rx="4" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="1" />
+                      <text x="61" y="22" fill="var(--da-svg-blue-text)" fontSize="10" fontWeight="bold" textAnchor="middle">🔍 COORDINATOR</text>
+                      <text x="61" y="48" fill="var(--da-svg-blue-subtext)" fontSize="8.5" textAnchor="middle" fontWeight="semibold">Parses SQL Query</text>
+                      <text x="61" y="64" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Checks Glue Catalog</text>
+                      <rect x="12" y="78" width="98" height="18" rx="3.5" fill="var(--da-svg-green-bg)" />
+                      <text x="61" y="90" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">Task Optimizer</text>
                     </g>
 
                     {/* Workers */}
                     <g transform="translate(325, 20)" className="da-node-btn">
-                      <rect width="95" height="55" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="87" height="16" rx="3" fill="#f1f5f9" />
-                      <circle cx="12" cy="12" r="3.5" fill="#10b981" />
-                      <text x="51" y="15" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #1</text>
-                      <text x="47" y="40" fill="#64748b" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition A</text>
+                      <rect width="95" height="55" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="87" height="16" rx="3" fill="var(--da-svg-bg)" />
+                      <circle cx="12" cy="12" r="3.5" fill="var(--da-svg-green-border)" />
+                      <text x="51" y="15" fill="var(--da-svg-text-dark)" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #1</text>
+                      <text x="47" y="40" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition A</text>
                     </g>
                     <g transform="translate(325, 92)" className="da-node-btn">
-                      <rect width="95" height="55" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="87" height="16" rx="3" fill="#f1f5f9" />
-                      <circle cx="12" cy="12" r="3.5" fill="#10b981" />
-                      <text x="51" y="15" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #2</text>
-                      <text x="47" y="40" fill="#64748b" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition B</text>
+                      <rect width="95" height="55" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="87" height="16" rx="3" fill="var(--da-svg-bg)" />
+                      <circle cx="12" cy="12" r="3.5" fill="var(--da-svg-green-border)" />
+                      <text x="51" y="15" fill="var(--da-svg-text-dark)" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #2</text>
+                      <text x="47" y="40" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition B</text>
                     </g>
                     <g transform="translate(325, 164)" className="da-node-btn">
-                      <rect width="95" height="55" rx="6" fill="rgba(248, 250, 252, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="4" y="4" width="87" height="16" rx="3" fill="#f1f5f9" />
-                      <circle cx="12" cy="12" r="3.5" fill="#10b981" />
-                      <text x="51" y="15" fill="#475569" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #3</text>
-                      <text x="47" y="40" fill="#64748b" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition C</text>
+                      <rect width="95" height="55" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="87" height="16" rx="3" fill="var(--da-svg-bg)" />
+                      <circle cx="12" cy="12" r="3.5" fill="var(--da-svg-green-border)" />
+                      <text x="51" y="15" fill="var(--da-svg-text-dark)" fontSize="9" fontWeight="bold" textAnchor="middle">👷 Worker #3</text>
+                      <text x="47" y="40" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan Partition C</text>
                     </g>
 
                     {/* S3 Lake */}
                     <g transform="translate(460, 65)" className="da-node-btn">
-                      <ellipse cx="32" cy="75" rx="30" ry="9" fill="rgba(22, 163, 74, 0.15)" />
-                      <path d="M 2 20 V 75 A 30 9 0 0 0 62 75 V 20 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
-                      <ellipse cx="32" cy="20" rx="30" ry="9" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
-                      <path d="M 2 34 A 30 8 0 0 0 62 34" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
-                      <path d="M 2 48 A 30 8 0 0 0 62 48" fill="none" stroke="#86efac" strokeWidth="1.2" />
+                      <ellipse cx="32" cy="75" rx="30" ry="9" fill="var(--da-svg-green-bg)" />
+                      <path d="M 2 20 V 75 A 30 9 0 0 0 62 75 V 20 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <ellipse cx="32" cy="20" rx="30" ry="9" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <path d="M 2 34 A 30 8 0 0 0 62 34" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+                      <path d="M 2 48 A 30 8 0 0 0 62 48" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.2" opacity="0.5" />
                       
-                      <text x="32" y="32" fill="#15803d" fontSize="12" fontWeight="bold" textAnchor="middle">🪣 S3</text>
-                      <text x="32" y="56" fill="#166534" fontSize="9" textAnchor="middle" fontWeight="bold">Parquet</text>
-                      <text x="32" y="66" fill="#166534" fontSize="8.5" textAnchor="middle">Lake</text>
+                      <text x="32" y="32" fill="var(--da-svg-green-text)" fontSize="12" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="32" y="56" fill="var(--da-svg-green-subtext)" fontSize="9" textAnchor="middle" fontWeight="bold">Parquet</text>
+                      <text x="32" y="66" fill="var(--da-svg-green-subtext)" fontSize="8.5" textAnchor="middle">Lake</text>
                     </g>
                   </svg>
                 </div>
@@ -2838,61 +3098,61 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                   {/* 1. S3 Landing zone (Raw) */}
                   <g transform="translate(10, 52)">
-                    <ellipse cx="40" cy="65" rx="35" ry="9" fill="rgba(234, 88, 12, 0.1)" />
-                    <path d="M 5 20 V 65 A 35 9 0 0 0 75 65 V 20 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2" />
-                    <ellipse cx="40" cy="20" rx="35" ry="9" fill="#ffedd5" stroke="#ea580c" strokeWidth="2" />
-                    <text x="40" y="32" fill="#c2410c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 RAW S3</text>
-                    <text x="40" y="52" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">
+                    <ellipse cx="40" cy="65" rx="35" ry="9" fill="var(--da-svg-amber-bg)" />
+                    <path d="M 5 20 V 65 A 35 9 0 0 0 75 65 V 20 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                    <ellipse cx="40" cy="20" rx="35" ry="9" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                    <text x="40" y="32" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 RAW S3</text>
+                    <text x="40" y="52" fill="var(--da-svg-amber-subtext)" fontSize="8" fontWeight="bold" textAnchor="middle">
                       {glueFileType.toUpperCase()} Files
                     </text>
                   </g>
 
                   {/* 2. Schema Registry */}
                   <g transform="translate(155, 52)">
-                    <rect width="100" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" className={glueSchemaRegistry ? 'active-svg-glow' : ''} />
-                    <rect x="4" y="4" width="92" height="18" rx="3" fill="#faf5ff" />
-                    <text x="50" y="16.5" fill="#7e22ce" fontSize="8" fontWeight="extrabold" textAnchor="middle">📃 REGISTRY</text>
-                    <text x="50" y="38" fill="#581c87" fontSize="8" fontWeight="bold" textAnchor="middle">
+                    <rect width="100" height="75" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" className={glueSchemaRegistry ? 'active-svg-glow' : ''} />
+                    <rect x="4" y="4" width="92" height="18" rx="3" fill="var(--da-svg-purple-bg)" />
+                    <text x="50" y="16.5" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">📃 REGISTRY</text>
+                    <text x="50" y="38" fill="var(--da-svg-purple-subtext)" fontSize="8" fontWeight="bold" textAnchor="middle">
                       {glueSchemaRegistry ? 'AVRO Verified' : 'Registry Bypass'}
                     </text>
-                    <text x="50" y="52" fill="#64748b" fontSize="7" textAnchor="middle">Enforces compatibility</text>
+                    <text x="50" y="52" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Enforces compatibility</text>
                   </g>
 
                   {/* 3. Glue Spark ETL Job compute engine */}
                   <g transform="translate(315, 45)">
-                    <rect width="115" height="90" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2.5" />
-                    <rect x="4" y="4" width="107" height="20" rx="3.5" fill="#fff7ed" />
-                    <text x="57.5" y="17.5" fill="#ea580c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ GLUE JOB ({glueJobType.toUpperCase()})</text>
-                    <circle cx="57.5" cy="55" r="16" fill="#fcfcfc" stroke="#d97706" strokeWidth="2" strokeDasharray="3 3" className={glueJobState === 'etl-running' ? 'pulse-circle' : ''} />
-                    <text x="57.5" y="58.5" fill="#d97706" fontSize="10" fontWeight="extrabold" textAnchor="middle">SPARK</text>
-                    <text x="57.5" y="82" fill="#7c2d12" fontSize="7" textAnchor="middle">10 DPUs Configured</text>
+                    <rect width="115" height="90" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="2.5" />
+                    <rect x="4" y="4" width="107" height="20" rx="3.5" fill="var(--da-svg-amber-bg)" />
+                    <text x="57.5" y="17.5" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ GLUE JOB ({glueJobType.toUpperCase()})</text>
+                    <circle cx="57.5" cy="55" r="16" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="2" strokeDasharray="3 3" className={glueJobState === 'etl-running' ? 'pulse-circle' : ''} />
+                    <text x="57.5" y="58.5" fill="var(--da-svg-amber-text)" fontSize="10" fontWeight="extrabold" textAnchor="middle">SPARK</text>
+                    <text x="57.5" y="82" fill="var(--da-svg-amber-subtext)" fontSize="7" textAnchor="middle">10 DPUs Configured</text>
                   </g>
 
                   {/* 4. S3 Refined Zone (Parquet) */}
                   <g transform="translate(495, 52)">
-                    <ellipse cx="40" cy="65" rx="35" ry="9" fill="rgba(22, 163, 74, 0.1)" />
-                    <path d="M 5 20 V 65 A 35 9 0 0 0 75 65 V 20 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2" />
-                    <ellipse cx="40" cy="20" rx="35" ry="9" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
-                    <text x="40" y="32" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 REFINED S3</text>
-                    <text x="40" y="52" fill="#166534" fontSize="8" fontWeight="bold" textAnchor="middle">PARQUET Blocks</text>
+                    <ellipse cx="40" cy="65" rx="35" ry="9" fill="var(--da-svg-green-bg)" />
+                    <path d="M 5 20 V 65 A 35 9 0 0 0 75 65 V 20 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                    <ellipse cx="40" cy="20" rx="35" ry="9" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                    <text x="40" y="32" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 REFINED S3</text>
+                    <text x="40" y="52" fill="var(--da-svg-green-subtext)" fontSize="8" fontWeight="bold" textAnchor="middle">PARQUET Blocks</text>
                   </g>
 
                   {/* 5. Glue Crawler (Bottom Left) */}
                   <g transform="translate(75, 205)">
-                    <rect width="120" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#0ea5e9" strokeWidth="2" className={glueJobState === 'crawling' ? 'active-svg-glow' : ''} />
-                    <rect x="4" y="4" width="112" height="18" rx="3" fill="#f0f9ff" />
-                    <text x="60" y="16.5" fill="#0369a1" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🕸️ GLUE CRAWLER</text>
-                    <text x="60" y="38" fill="#0ea5e9" fontSize="8" fontWeight="bold" textAnchor="middle">Scans raw files</text>
-                    <text x="60" y="52" fill="#64748b" fontSize="7" textAnchor="middle">Infers columns schemas</text>
+                    <rect width="120" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" strokeWidth="2" className={glueJobState === 'crawling' ? 'active-svg-glow' : ''} />
+                    <rect x="4" y="4" width="112" height="18" rx="3" fill="var(--da-svg-blue-bg)" />
+                    <text x="60" y="16.5" fill="var(--da-svg-blue-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🕸️ GLUE CRAWLER</text>
+                    <text x="60" y="38" fill="var(--da-svg-blue-subtext)" fontSize="8" fontWeight="bold" textAnchor="middle">Scans raw files</text>
+                    <text x="60" y="52" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Infers columns schemas</text>
                   </g>
 
                   {/* 6. Centralized Glue Catalog Database (Bottom Center-Right) */}
                   <g transform="translate(290, 205)">
-                    <rect width="165" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <rect x="4" y="4" width="157" height="18" rx="3.5" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
-                    <text x="82.5" y="16.5" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📖 CENTRAL GLUE CATALOG</text>
-                    <text x="82.5" y="38" fill="#166534" fontSize="8" textAnchor="middle" fontWeight="bold">Central Unified Hive Metastore</text>
-                    <text x="82.5" y="52" fill="#059669" fontSize="7.5" fontWeight="bold" textAnchor="middle">Syncs schemas to Athena SQL</text>
+                    <rect width="165" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <rect x="4" y="4" width="157" height="18" rx="3.5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                    <text x="82.5" y="16.5" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📖 CENTRAL GLUE CATALOG</text>
+                    <text x="82.5" y="38" fill="var(--da-svg-green-subtext)" fontSize="8" textAnchor="middle" fontWeight="bold">Central Unified Hive Metastore</text>
+                    <text x="82.5" y="52" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Syncs schemas to Athena SQL</text>
                   </g>
                 </svg>
               </div>
@@ -3192,51 +3452,51 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                     {/* Nodes */}
                     <g transform="translate(20, 20)" className="da-node-btn">
-                      <rect width="70" height="50" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="1.5" />
-                      <text x="35" y="22" fill="#15803d" fontSize="10.5" fontWeight="bold" textAnchor="middle">🪣 S3</text>
-                      <text x="35" y="38" fill="#166534" fontSize="8" textAnchor="middle">Results Storage</text>
+                      <rect width="70" height="50" rx="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                      <text x="35" y="22" fill="var(--da-svg-green-text)" fontSize="10.5" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="35" y="38" fill="var(--da-svg-green-subtext)" fontSize="8" textAnchor="middle">Results Storage</text>
                     </g>
 
                     <g transform="translate(170, 25)" className="da-node-btn">
-                      <rect width="110" height="65" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
-                      <text x="55" y="24" fill="#1d4ed8" fontSize="11" fontWeight="bold" textAnchor="middle">🔍 ATHENA</text>
-                      <text x="55" y="44" fill="#1e40af" fontSize="8.5" textAnchor="middle">Federated Query</text>
-                      <text x="55" y="54" fill="#475569" fontSize="7.5" textAnchor="middle" fontWeight="bold">Distributor Engine</text>
+                      <rect width="110" height="65" rx="8" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                      <text x="55" y="24" fill="var(--da-svg-blue-text)" fontSize="11" fontWeight="bold" textAnchor="middle">🔍 ATHENA</text>
+                      <text x="55" y="44" fill="var(--da-svg-blue-subtext)" fontSize="8.5" textAnchor="middle">Federated Query</text>
+                      <text x="55" y="54" fill="var(--da-svg-blue-text)" fontSize="7.5" textAnchor="middle" fontWeight="bold">Distributor Engine</text>
                     </g>
 
                     <g transform="translate(195, 125)" className="da-node-btn">
-                      <circle cx="25" cy="25" r="28" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2" />
-                      <circle cx="25" cy="25" r="28" fill="none" stroke="#ea580c" strokeWidth="1.5" className={federatedState === 'fetching' ? 'pulse-circle' : ''} />
-                      <text x="25" y="31" fill="#ea580c" fontSize="18" fontWeight="bold" textAnchor="middle">λ</text>
-                      <text x="25" y="46" fill="#ea580c" fontSize="6.5" fontWeight="bold" textAnchor="middle">CONNECTOR</text>
+                      <circle cx="25" cy="25" r="28" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                      <circle cx="25" cy="25" r="28" fill="none" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" className={federatedState === 'fetching' ? 'pulse-circle' : ''} />
+                      <text x="25" y="31" fill="var(--da-svg-amber-text)" fontSize="18" fontWeight="bold" textAnchor="middle">λ</text>
+                      <text x="25" y="46" fill="var(--da-svg-amber-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">CONNECTOR</text>
                     </g>
 
                     <g transform="translate(10, 120)" className="da-node-btn">
-                      <rect width="75" height="40" rx="5" fill={federatedDb === 'dynamodb' ? '#ffedd5' : '#ffffff'} stroke={federatedDb === 'dynamodb' ? '#ea580c' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="37.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ DynamoDB</text>
+                      <rect width="75" height="40" rx="5" fill={federatedDb === 'dynamodb' ? 'var(--da-svg-amber-bg)' : 'var(--da-svg-node-fill)'} stroke={federatedDb === 'dynamodb' ? 'var(--da-svg-amber-border)' : 'var(--da-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="37.5" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ DynamoDB</text>
                     </g>
                     <g transform="translate(10, 185)" className="da-node-btn">
-                      <rect width="75" height="40" rx="5" fill={federatedDb === 'rds-aurora' ? '#dcfce7' : '#ffffff'} stroke={federatedDb === 'rds-aurora' ? '#16a34a' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="37.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">🛢️ RDS Aurora</text>
+                      <rect width="75" height="40" rx="5" fill={federatedDb === 'rds-aurora' ? 'var(--da-svg-green-bg)' : 'var(--da-svg-node-fill)'} stroke={federatedDb === 'rds-aurora' ? 'var(--da-svg-green-border)' : 'var(--da-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="37.5" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">🛢️ RDS Aurora</text>
                     </g>
                     
                     <g transform="translate(370, 140)" className="da-node-btn">
-                      <rect width="80" height="40" rx="5" fill={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#eff6ff' : '#ffffff'} stroke={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? '#3b82f6' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="40" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">
+                      <rect width="80" height="40" rx="5" fill={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? 'var(--da-svg-blue-bg)' : 'var(--da-svg-node-fill)'} stroke={federatedDb === 'elasticache' || federatedDb === 'emr-hbase' ? 'var(--da-svg-blue-border)' : 'var(--da-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="40" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">
                         {federatedDb === 'emr-hbase' ? '📦 HBase EMR' : '🔌 Redis Cache'}
                       </text>
                     </g>
 
                     <g transform="translate(380, 185)" className="da-node-btn">
-                      <rect width="85" height="40" rx="5" fill={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#fdf4ff' : '#ffffff'} stroke={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? '#a855f7' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="42.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">
+                      <rect width="85" height="40" rx="5" fill={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? 'var(--da-svg-purple-bg)' : 'var(--da-svg-node-fill)'} stroke={federatedDb === 'documentdb' || federatedDb === 'on-prem' ? 'var(--da-svg-purple-border)' : 'var(--da-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="42.5" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">
                         {federatedDb === 'on-prem' ? '🏢 On-Prem DB' : '🗄️ DocumentDB'}
                       </text>
                     </g>
 
                     <g transform="translate(445, 120)" className="da-node-btn">
-                      <rect width="75" height="40" rx="5" fill={federatedDb === 'redshift' ? '#f0f9ff' : '#ffffff'} stroke={federatedDb === 'redshift' ? '#0ea5e9' : '#cbd5e1'} strokeWidth="1.5" />
-                      <text x="37.5" y="24" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Redshift DW</text>
+                      <rect width="75" height="40" rx="5" fill={federatedDb === 'redshift' ? 'var(--da-svg-blue-bg)' : 'var(--da-svg-node-fill)'} stroke={federatedDb === 'redshift' ? 'var(--da-svg-blue-border)' : 'var(--da-svg-node-border)'} strokeWidth="1.5" />
+                      <text x="37.5" y="24" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">⚡ Redshift DW</text>
                     </g>
                   </svg>
                 </div>
@@ -3381,109 +3641,109 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                     {/* Client Node */}
                     <g transform="translate(5, 80)" className="da-node-btn">
-                      <rect width="40" height="60" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <rect x="3" y="3" width="34" height="18" rx="3" fill="#f1f5f9" />
-                      <text x="20" y="14" fill="#475569" fontSize="7" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                      <text x="20" y="35" fill="#64748b" fontSize="6.5" textAnchor="middle">BI Tool</text>
+                      <rect width="40" height="60" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                      <rect x="3" y="3" width="34" height="18" rx="3" fill="var(--da-svg-bg)" />
+                      <text x="20" y="14" fill="var(--da-svg-text-dark)" fontSize="7" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                      <text x="20" y="35" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">BI Tool</text>
                       <text x="20" y="45" fill="#0284c7" fontSize="6" fontWeight="bold" textAnchor="middle">JDBC/ODBC</text>
                     </g>
 
                     {/* Leader Node */}
                     <g transform="translate(95, 65)" className="da-node-btn">
-                      <rect width="85" height="90" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
+                      <rect width="85" height="90" rx="8" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2" />
                       {redshiftMppState === 'leader-plan' && (
-                        <rect width="85" height="90" rx="8" fill="none" stroke="#3b82f6" strokeWidth="2.5" className="pulse-border" />
+                        <rect width="85" height="90" rx="8" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" className="pulse-border" />
                       )}
                       
-                      <rect x="5" y="5" width="75" height="15" rx="3" fill="#dbeafe" stroke="#93c5fd" strokeWidth="0.5" />
-                      <text x="42.5" y="15" fill="#1d4ed8" fontSize="8" fontWeight="extrabold" textAnchor="middle">👑 LEADER NODE</text>
+                      <rect x="5" y="5" width="75" height="15" rx="3" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="0.5" />
+                      <text x="42.5" y="15" fill="var(--da-svg-blue-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">👑 LEADER NODE</text>
                       
-                      <text x="42.5" y="35" fill="#1e40af" fontSize="6.5" textAnchor="middle" fontWeight="bold">Plan Compiler</text>
-                      <text x="42.5" y="47" fill="#0891b2" fontSize="6.5" textAnchor="middle">Task Optimizer</text>
+                      <text x="42.5" y="35" fill="var(--da-svg-blue-subtext)" fontSize="6.5" textAnchor="middle" fontWeight="bold">Plan Compiler</text>
+                      <text x="42.5" y="47" fill="var(--da-svg-blue-text)" fontSize="6.5" textAnchor="middle">Task Optimizer</text>
                       
                       {/* Mini state visualization banner */}
-                      <rect x="8" y="58" width="69" height="24" rx="3" fill="#f8fafc" stroke="#e2e8f0" />
-                      <text x="42.5" y="67" fill="#475569" fontSize="6.5" fontWeight="bold" textAnchor="middle">STAGE:</text>
-                      <text x="42.5" y="77" fill="#0369a1" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
+                      <rect x="8" y="58" width="69" height="24" rx="3" fill="var(--da-svg-bg)" stroke="var(--da-card-border)" />
+                      <text x="42.5" y="67" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold" textAnchor="middle">STAGE:</text>
+                      <text x="42.5" y="77" fill="var(--da-svg-blue-text)" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
                         {redshiftMppState.toUpperCase()}
                       </text>
                     </g>
 
                     {/* Compute Node #1 */}
                     <g transform="translate(225, 10)" className="da-node-btn">
-                      <rect width="110" height="80" rx="6" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
+                      <rect width="110" height="80" rx="6" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
                       {redshiftMppState === 'compute-scan' && (
-                        <rect width="110" height="80" rx="6" fill="none" stroke="#a855f7" strokeWidth="2" className="pulse-border" />
+                        <rect width="110" height="80" rx="6" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="2" className="pulse-border" />
                       )}
-                      <rect x="4" y="4" width="102" height="13" rx="2" fill="#6b21a8" />
-                      <text x="55" y="13" fill="#ffffff" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #1</text>
+                      <rect x="4" y="4" width="102" height="13" rx="2" fill="var(--da-svg-purple-border)" />
+                      <text x="55" y="13" fill="var(--da-svg-text-light)" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #1</text>
                       
-                      <text x="55" y="30" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Slice A: Columnar SSD</text>
+                      <text x="55" y="30" fill="var(--da-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Slice A: Columnar SSD</text>
                       
                       {/* Columnar Data Scanning blocks visual representation */}
                       <g transform="translate(8, 38)">
                         {/* Category column */}
-                        <rect x="5" y="2" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
-                        <rect x="5" y="12" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
-                        <rect x="5" y="22" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
-                        <text x="14" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Cat</text>
+                        <rect x="5" y="2" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : 'var(--da-svg-node-border)'} />
+                        <rect x="5" y="12" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : 'var(--da-svg-node-border)'} />
+                        <rect x="5" y="22" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : 'var(--da-svg-node-border)'} />
+                        <text x="14" y="32" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Cat</text>
 
                         {/* Revenue column */}
-                        <rect x="30" y="2" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="30" y="12" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="30" y="22" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <text x="40" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rev</text>
+                        <rect x="30" y="2" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="30" y="12" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="30" y="22" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <text x="40" y="32" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rev</text>
 
                         {/* Unused column */}
-                        <rect x="58" y="2" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="58" y="12" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="58" y="22" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <text x="73" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">User/Reg</text>
+                        <rect x="58" y="2" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="58" y="12" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="58" y="22" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <text x="73" y="32" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">User/Reg</text>
                       </g>
                     </g>
 
                     {/* Compute Node #2 */}
                     <g transform="translate(225, 110)" className="da-node-btn">
-                      <rect width="110" height="80" rx="6" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
+                      <rect width="110" height="80" rx="6" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
                       {redshiftMppState === 'compute-scan' && (
-                        <rect width="110" height="80" rx="6" fill="none" stroke="#a855f7" strokeWidth="2" className="pulse-border" />
+                        <rect width="110" height="80" rx="6" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="2" className="pulse-border" />
                       )}
-                      <rect x="4" y="4" width="102" height="13" rx="2" fill="#6b21a8" />
-                      <text x="55" y="13" fill="#ffffff" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #2</text>
+                      <rect x="4" y="4" width="102" height="13" rx="2" fill="var(--da-svg-purple-border)" />
+                      <text x="55" y="13" fill="var(--da-svg-text-light)" fontSize="7.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #2</text>
                       
-                      <text x="55" y="30" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Slice B: Columnar SSD</text>
+                      <text x="55" y="30" fill="var(--da-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Slice B: Columnar SSD</text>
                       
                       {/* Columnar Data Scanning blocks visual representation */}
                       <g transform="translate(8, 38)">
                         {/* Category column */}
-                        <rect x="5" y="2" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
-                        <rect x="5" y="12" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
-                        <rect x="5" y="22" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : '#cbd5e1'} />
-                        <text x="14" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Cat</text>
+                        <rect x="5" y="2" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : 'var(--da-svg-node-border)'} />
+                        <rect x="5" y="12" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : 'var(--da-svg-node-border)'} />
+                        <rect x="5" y="22" width="18" height="8" rx="1.5" fill={redshiftQuery !== 'user-join' && redshiftMppState === 'compute-scan' ? '#10b981' : 'var(--da-svg-node-border)'} />
+                        <text x="14" y="32" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Cat</text>
 
                         {/* Revenue column */}
-                        <rect x="30" y="2" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="30" y="12" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="30" y="22" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <text x="40" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rev</text>
+                        <rect x="30" y="2" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="30" y="12" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="30" y="22" width="20" height="8" rx="1.5" fill={redshiftQuery === 'sales-sum' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <text x="40" y="32" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Rev</text>
 
                         {/* Unused column */}
-                        <rect x="58" y="2" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="58" y="12" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <rect x="58" y="22" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : '#cbd5e1'} />
-                        <text x="73" y="32" fill="#6b21a8" fontSize="5.5" fontWeight="bold" textAnchor="middle">User/Reg</text>
+                        <rect x="58" y="2" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="58" y="12" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <rect x="58" y="22" width="30" height="8" rx="1.5" fill={redshiftQuery === 'user-join' && redshiftMppState === 'compute-scan' ? '#3b82f6' : 'var(--da-svg-node-border)'} />
+                        <text x="73" y="32" fill="var(--da-svg-purple-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">User/Reg</text>
                       </g>
                     </g>
 
                     {/* External S3 Data Lake (Redshift Spectrum) */}
                     <g transform="translate(385, 60)" className="da-node-btn">
-                      <ellipse cx="30" cy="65" rx="25" ry="8" fill="rgba(22, 163, 74, 0.15)" />
-                      <path d="M 5 20 V 65 A 25 8 0 0 0 55 65 V 20 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
-                      <ellipse cx="30" cy="20" rx="25" ry="8" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
-                      <path d="M 5 32 A 25 6 0 0 0 55 32" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
-                      <path d="M 5 45 A 25 6 0 0 0 55 45" fill="none" stroke="#86efac" strokeWidth="1.5" />
-                      <text x="30" y="32" fill="#15803d" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3</text>
-                      <text x="30" y="55" fill="#166534" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spectrum Lake</text>
+                      <ellipse cx="30" cy="65" rx="25" ry="8" fill="var(--da-svg-green-bg)" />
+                      <path d="M 5 20 V 65 A 25 8 0 0 0 55 65 V 20 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <ellipse cx="30" cy="20" rx="25" ry="8" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <path d="M 5 32 A 25 6 0 0 0 55 32" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+                      <path d="M 5 45 A 25 6 0 0 0 55 45" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" opacity="0.5" />
+                      <text x="30" y="32" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="bold" textAnchor="middle">🪣 S3</text>
+                      <text x="30" y="55" fill="var(--da-svg-green-subtext)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Spectrum Lake</text>
                     </g>
                   </svg>
                 </div>
@@ -3717,70 +3977,66 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                   {/* Nodes */}
                   <g transform="translate(10, 105)" className="da-node-btn">
-                    <rect width="60" height="70" rx="10" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="2" />
-                    <rect x="5" y="5" width="50" height="30" rx="6" fill="#f1f5f9" />
-                    <text x="30" y="24" fill="#1e293b" fontSize="10.5" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
-                    <text x="30" y="50" fill="#475569" fontSize="8" fontWeight="bold" textAnchor="middle">BI Dashboard</text>
-                    <text x="30" y="60" fill="#64748b" fontSize="7" textAnchor="middle">Analytics SQL</text>
+                    <rect width="60" height="70" rx="10" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="2" />
+                    <rect x="5" y="5" width="50" height="30" rx="6" fill="var(--da-svg-bg)" />
+                    <text x="30" y="24" fill="var(--da-svg-text-dark)" fontSize="10.5" fontWeight="bold" textAnchor="middle">📱 CLIENT</text>
+                    <text x="30" y="50" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold" textAnchor="middle">BI Dashboard</text>
+                    <text x="30" y="60" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">Analytics SQL</text>
                   </g>
 
                   {/* Redshift Leader Node */}
                   <g transform="translate(130, 95)" className="da-node-btn">
-                    <rect x="4" y="4" width="85" height="90" rx="10" fill="rgba(59, 130, 246, 0.1)" />
-                    <rect width="85" height="90" rx="10" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
-                    <rect x="8" y="8" width="69" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                    <text x="42.5" y="21" fill="#1d4ed8" fontSize="9" fontWeight="bold" textAnchor="middle">👑 LEADER NODE</text>
-                    <text x="42.5" y="44" fill="#1e40af" fontSize="8" fontWeight="bold" textAnchor="middle">Client endpoint</text>
-                    <text x="42.5" y="58" fill="#0d9488" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Query planner</text>
-                    <rect x="12" y="68" width="61" height="14" rx="3" fill="#ccfbf1" />
-                    <text x="42.5" y="77" fill="#0f766e" fontSize="7" textAnchor="middle" fontWeight="bold">SQL Gateway</text>
+                    <rect width="85" height="90" rx="10" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                    <rect x="8" y="8" width="69" height="20" rx="4" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="1" />
+                    <text x="42.5" y="21" fill="var(--da-svg-blue-text)" fontSize="9" fontWeight="bold" textAnchor="middle">👑 LEADER NODE</text>
+                    <text x="42.5" y="44" fill="var(--da-svg-blue-subtext)" fontSize="8" fontWeight="bold" textAnchor="middle">Client endpoint</text>
+                    <text x="42.5" y="58" fill="var(--da-svg-blue-text)" fontSize="7.5" textAnchor="middle" fontWeight="semibold">Query planner</text>
+                    <rect x="12" y="68" width="61" height="14" rx="3" fill="var(--da-svg-green-bg)" />
+                    <text x="42.5" y="77" fill="var(--da-svg-green-text)" fontSize="7" textAnchor="middle" fontWeight="bold">SQL Gateway</text>
                   </g>
 
                   {/* Redshift Compute Nodes */}
                   <g transform="translate(280, 25)" className="da-node-btn">
-                    <rect x="4" y="4" width="120" height="75" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="120" height="75" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
-                    <rect x="8" y="8" width="104" height="15" rx="3" fill="#581c87" />
-                    <text x="60" y="19" fill="#ffffff" fontSize="8" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #1</text>
+                    <rect width="120" height="75" rx="8" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" />
+                    <rect x="8" y="8" width="104" height="15" rx="3" fill="var(--da-svg-purple-border)" />
+                    <text x="60" y="19" fill="var(--da-svg-text-light)" fontSize="8" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #1</text>
                     
-                    <text x="60" y="42" fill="#7e22ce" fontSize="8.5" fontWeight="bold" textAnchor="middle">Slice A: Columnar SSD</text>
-                    <rect x="15" y="52" width="90" height="14" rx="3" fill="#f3e8ff" />
-                    <text x="60" y="62" fill="#6b21a8" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active execution</text>
+                    <text x="60" y="42" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Slice A: Columnar SSD</text>
+                    <rect x="15" y="52" width="90" height="14" rx="3" fill="var(--da-svg-node-fill)" />
+                    <text x="60" y="62" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active execution</text>
                   </g>
 
                   <g transform="translate(280, 160)" className="da-node-btn">
-                    <rect x="4" y="4" width="120" height="75" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                    <rect width="120" height="75" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2.5" />
-                    <rect x="8" y="8" width="104" height="15" rx="3" fill="#581c87" />
-                    <text x="60" y="19" fill="#ffffff" fontSize="8" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #2</text>
+                    <rect width="120" height="75" rx="8" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" />
+                    <rect x="8" y="8" width="104" height="15" rx="3" fill="var(--da-svg-purple-border)" />
+                    <text x="60" y="19" fill="var(--da-svg-text-light)" fontSize="8" fontWeight="bold" fontFamily="monospace" textAnchor="middle">👷 COMPUTE NODE #2</text>
                     
-                    <text x="60" y="42" fill="#7e22ce" fontSize="8.5" fontWeight="bold" textAnchor="middle">Slice B: Columnar SSD</text>
-                    <rect x="15" y="52" width="90" height="14" rx="3" fill={redshiftState === 'recovering' ? '#fef3c7' : '#f3e8ff'} />
-                    <text x="60" y="62" fill={redshiftState === 'recovering' ? '#b45309' : '#6b21a8'} fontSize="7.5" fontWeight="bold" textAnchor="middle">
+                    <text x="60" y="42" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Slice B: Columnar SSD</text>
+                    <rect x="15" y="52" width="90" height="14" rx="3" fill={redshiftState === 'recovering' ? 'var(--da-svg-amber-bg)' : 'var(--da-svg-node-fill)'} />
+                    <text x="60" y="62" fill={redshiftState === 'recovering' ? 'var(--da-svg-amber-text)' : 'var(--da-svg-purple-text)'} fontSize="7.5" fontWeight="bold" textAnchor="middle">
                       {redshiftState === 'recovering' ? 'Re-assembling slice' : 'Active execution'}
                     </text>
                   </g>
 
                   {/* S3 querying via Redshift Spectrum */}
                   <g transform="translate(455, 25)" className="da-node-btn">
-                    <rect x="3" y="3" width="135" height="75" rx="8" fill="rgba(234, 88, 12, 0.1)" />
-                    <rect width="135" height="75" rx="8" fill="rgba(255, 247, 237, 0.95)" stroke="#ea580c" strokeWidth="2" />
-                    <rect x="8" y="8" width="119" height="18" rx="4" fill="#ffedd5" />
-                    <text x="67.5" y="21" fill="#c2410c" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔍 REDSHIFT SPECTRUM</text>
-                    <text x="67.5" y="44" fill="#ea580c" fontSize="8" fontWeight="bold" textAnchor="middle">Query external tables</text>
-                    <text x="67.5" y="58" fill="#7c2d12" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan S3 Parquet directly</text>
+                    <rect width="135" height="75" rx="8" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                    <rect x="8" y="8" width="119" height="18" rx="4" fill="var(--da-svg-amber-bg)" />
+                    <text x="67.5" y="21" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">🔍 REDSHIFT SPECTRUM</text>
+                    <text x="67.5" y="44" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">Query external tables</text>
+                    <text x="67.5" y="58" fill="var(--da-svg-amber-subtext)" fontSize="8" textAnchor="middle" fontWeight="semibold">Scan S3 Parquet directly</text>
                   </g>
 
                   <g transform="translate(455, 160)" className="da-node-btn">
-                    <ellipse cx="67.5" cy="55" rx="55" ry="12" fill="rgba(22, 163, 74, 0.15)" />
-                    <path d="M 12.5 15 V 55 A 55 12 0 0 0 122.5 55 V 15 Z" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <ellipse cx="67.5" cy="15" rx="55" ry="12" fill="#dcfce7" stroke="#16a34a" strokeWidth="2.5" />
-                    <path d="M 12.5 28 A 55 10 0 0 0 122.5 28" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
-                    <path d="M 12.5 40 A 55 10 0 0 0 122.5 40" fill="none" stroke="#86efac" strokeWidth="1.5" />
+                    <ellipse cx="67.5" cy="55" rx="55" ry="12" fill="var(--da-svg-green-bg)" />
+                    <path d="M 12.5 15 V 55 A 55 12 0 0 0 122.5 55 V 15 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <ellipse cx="67.5" cy="15" rx="55" ry="12" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <path d="M 12.5 28 A 55 10 0 0 0 122.5 28" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+                    <path d="M 12.5 40 A 55 10 0 0 0 122.5 40" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" opacity="0.5" />
                     
-                    <text x="67.5" y="24" fill="#15803d" fontSize="10" fontWeight="bold" textAnchor="middle">🪣 REFINED S3 LAKE</text>
-                    <text x="67.5" y="44" fill="#166534" fontSize="8" textAnchor="middle" fontWeight="semibold">dw-backups-bucket</text>
-                    <text x="67.5" y="56" fill="#059669" fontSize="8" fontWeight="bold" textAnchor="middle">Incremental snapshots</text>
+                    <text x="67.5" y="24" fill="var(--da-svg-green-text)" fontSize="10" fontWeight="bold" textAnchor="middle">🪣 REFINED S3 LAKE</text>
+                    <text x="67.5" y="44" fill="var(--da-svg-green-subtext)" fontSize="8" textAnchor="middle" fontWeight="semibold">dw-backups-bucket</text>
+                    <text x="67.5" y="56" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">Incremental snapshots</text>
                   </g>
                 </svg>
               </div>
@@ -3878,79 +4134,78 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     </defs>
 
                     {/* Pathways */}
-                    <path d="M 60 75 H 155" fill="none" stroke="#e9d5ff" strokeWidth="2.5" markerEnd="url(#stream-arrow)" />
-                    <path d="M 235 75 H 335" fill="none" stroke="#cbd5e1" strokeWidth="2.5" markerEnd="url(#stream-arrow)" />
+                    <path d="M 60 75 H 155" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="2.5" markerEnd="url(#stream-arrow)" />
+                    <path d="M 235 75 H 335" fill="none" stroke="var(--da-svg-node-border)" strokeWidth="2.5" markerEnd="url(#stream-arrow)" />
 
                     {/* Streaming flow animations */}
                     {flinkStreaming && (
                       <>
-                        <path d="M 60 75 H 155" fill="none" stroke="#a855f7" strokeWidth="3" className="da-flow-purple" />
-                        <path d="M 235 75 H 335" fill="none" stroke="#0ea5e9" strokeWidth="3" className="da-flow-blue" />
+                        <path d="M 60 75 H 155" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="3" className="da-flow-purple" />
+                        <path d="M 235 75 H 335" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="3" className="da-flow-blue" />
                       </>
                     )}
 
                     {/* 1. Ingestion Source (Client Station) */}
                     <g transform="translate(10, 40)" className="da-node-btn">
-                      <rect width="50" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                      <circle cx="25" cy="20" r="10" fill="#f1f5f9" />
-                      <text x="25" y="24" fill="#64748b" fontSize="12" textAnchor="middle">💳</text>
-                      <text x="25" y="46" fill="#1e293b" fontSize="7.5" fontWeight="bold" textAnchor="middle">TX SOURCES</text>
-                      <text x="25" y="56" fill={flinkStreaming ? '#059669' : '#64748b'} fontSize="6.5" fontWeight="bold" textAnchor="middle">
+                      <rect width="50" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                      <circle cx="25" cy="20" r="10" fill="var(--da-svg-bg)" />
+                      <text x="25" y="24" fill="var(--da-svg-text-dark)" fontSize="12" textAnchor="middle">💳</text>
+                      <text x="25" y="46" fill="var(--da-svg-text-dark)" fontSize="7.5" fontWeight="bold" textAnchor="middle">TX SOURCES</text>
+                      <text x="25" y="56" fill={flinkStreaming ? 'var(--da-svg-green-border)' : 'var(--da-text-muted)'} fontSize="6.5" fontWeight="bold" textAnchor="middle">
                         {flinkStreaming ? 'STREAMING' : 'PAUSED'}
                       </text>
                     </g>
 
                     {/* 2. Amazon MSK (Kafka) Brokers */}
                     <g transform="translate(155, 25)" className="da-node-btn">
-                      <rect x="4" y="4" width="80" height="100" rx="8" fill="rgba(168, 85, 247, 0.1)" />
-                      <rect width="80" height="100" rx="8" fill="rgba(253, 244, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
+                      <rect width="80" height="100" rx="8" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
                       
                       {/* Topic Partition shelves */}
-                      <rect x="6" y="6" width="68" height="18" rx="3" fill="#7e22ce" />
-                      <text x="40" y="17.5" fill="#ffffff" fontSize="8" fontWeight="bold" textAnchor="middle">📦 KAFKA MSK</text>
+                      <rect x="6" y="6" width="68" height="18" rx="3" fill="var(--da-svg-purple-border)" />
+                      <text x="40" y="17.5" fill="var(--da-svg-text-light)" fontSize="8" fontWeight="bold" textAnchor="middle">📦 KAFKA MSK</text>
                       
-                      <rect x="8" y="32" width="64" height="15" rx="3" fill="#f3e8ff" stroke="#e9d5ff" strokeWidth="1" />
-                      <text x="40" y="42" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Partition #0</text>
-                      <circle cx="16" cy="39.5" r="2.5" fill={flinkStreaming ? '#a855f7' : '#94a3b8'} className={flinkStreaming ? 'pulse-circle' : ''} />
+                      <rect x="8" y="32" width="64" height="15" rx="3" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                      <text x="40" y="42" fill="var(--da-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Partition #0</text>
+                      <circle cx="16" cy="39.5" r="2.5" fill={flinkStreaming ? 'var(--da-svg-purple-border)' : 'var(--da-svg-node-border)'} className={flinkStreaming ? 'pulse-circle' : ''} />
 
-                      <rect x="8" y="53" width="64" height="15" rx="3" fill="#f3e8ff" stroke="#e9d5ff" strokeWidth="1" />
-                      <text x="40" y="63" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Partition #1</text>
+                      <rect x="8" y="53" width="64" height="15" rx="3" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                      <text x="40" y="63" fill="var(--da-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Partition #1</text>
 
-                      <rect x="8" y="74" width="64" height="15" rx="3" fill="#f3e8ff" stroke="#e9d5ff" strokeWidth="1" />
-                      <text x="40" y="84" fill="#7e22ce" fontSize="7" fontWeight="bold" textAnchor="middle">Partition #2</text>
+                      <rect x="8" y="74" width="64" height="15" rx="3" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                      <text x="40" y="84" fill="var(--da-svg-purple-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Partition #2</text>
                     </g>
 
                     {/* 3. Stateful Apache Flink Engine */}
                     <g transform="translate(335, 20)" className="da-node-btn">
-                      <rect x="4" y="4" width="185" height="110" rx="10" fill={flinkWindowSum > 4000 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'} />
-                      <rect width="185" height="110" rx="10" fill="rgba(255, 255, 255, 0.95)" stroke={flinkWindowSum > 4000 ? '#ef4444' : '#10b981'} strokeWidth="2.5" />
+                      <rect width="185" height="110" rx="10" fill="var(--da-svg-node-fill)" stroke={flinkWindowSum > 4000 ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} strokeWidth="2.5" />
                       
                       {/* Flink header */}
-                      <rect x="8" y="8" width="169" height="18" rx="4" fill={flinkWindowSum > 4000 ? '#ef4444' : '#10b981'} />
-                      <text x="92.5" y="20.5" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">🐿️ APACHE FLINK ENGINE</text>
+                      <rect x="8" y="8" width="169" height="18" rx="4" fill={flinkWindowSum > 4000 ? 'var(--da-svg-red-border)' : 'var(--da-svg-green-border)'} />
+                      <text x="92.5" y="20.5" fill="var(--da-svg-text-light)" fontSize="9" fontWeight="bold" textAnchor="middle">🐿️ APACHE FLINK ENGINE</text>
 
                       {/* State status details */}
-                      <text x="14" y="42" fill="#475569" fontSize="8" fontWeight="bold">Window Sum:</text>
-                      <text x="95" y="42.5" fill={flinkWindowSum > 4000 ? '#dc2626' : '#059669'} fontSize="11" fontWeight="bold" fontFamily="monospace">${flinkWindowSum.toLocaleString()}</text>
+                      <text x="14" y="42" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold">Window Sum:</text>
+                      <text x="95" y="42.5" fill={flinkWindowSum > 4000 ? 'var(--da-svg-red-text)' : 'var(--da-svg-green-text)'} fontSize="11" fontWeight="bold" fontFamily="monospace">${flinkWindowSum.toLocaleString()}</text>
 
-                      <text x="14" y="58" fill="#475569" fontSize="8" fontWeight="bold">Events Count:</text>
-                      <text x="95" y="58.5" fill="#1e293b" fontSize="10" fontWeight="bold" fontFamily="monospace">{flinkWindowCount}</text>
+                      {/* Events Count */}
+                      <text x="14" y="58" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold">Events Count:</text>
+                      <text x="95" y="58.5" fill="var(--da-svg-text-dark)" fontSize="10" fontWeight="bold" fontFamily="monospace">{flinkWindowCount}</text>
 
                       {/* Stateful window graphic */}
-                      <rect x="8" y="70" width="169" height="32" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1.5" />
+                      <rect x="8" y="70" width="169" height="32" rx="4" fill="var(--da-svg-bg)" stroke="var(--da-card-border)" strokeWidth="1.5" />
                       
                       {flinkWindowSum > 4000 ? (
                         <>
-                          <rect x="12" y="74" width="161" height="24" rx="3" fill="#fef2f2" stroke="#fca5a5" strokeWidth="1" />
-                          <circle cx="24" cy="86" r="5" fill="#ef4444" className="pulse-circle" />
-                          <circle cx="24" cy="86" r="4" fill="#ef4444" />
-                          <text x="40" y="89" fill="#991b1b" fontSize="8" fontWeight="bold">🚨 FRAUD_SUSPECT LIMIT EXCEEDED</text>
+                          <rect x="12" y="74" width="161" height="24" rx="3" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1" />
+                          <circle cx="24" cy="86" r="5" fill="var(--da-svg-red-border)" className="pulse-circle" />
+                          <circle cx="24" cy="86" r="4" fill="var(--da-svg-red-border)" />
+                          <text x="40" y="89" fill="var(--da-svg-red-text)" fontSize="8" fontWeight="bold">🚨 FRAUD_SUSPECT LIMIT EXCEEDED</text>
                         </>
                       ) : (
                         <>
-                          <rect x="12" y="74" width="161" height="24" rx="3" fill="#f0fdf4" stroke="#86efac" strokeWidth="1" />
-                          <circle cx="24" cy="86" r="4" fill="#10b981" />
-                          <text x="36" y="89" fill="#14532d" fontSize="7.5" fontWeight="bold">🟢 STREAM HEALTHY - STABLE TRANSACTIONS</text>
+                          <rect x="12" y="74" width="161" height="24" rx="3" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                          <circle cx="24" cy="86" r="4" fill="var(--da-svg-green-border)" />
+                          <text x="36" y="89" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold">🟢 STREAM HEALTHY - STABLE TRANSACTIONS</text>
                         </>
                       )}
                     </g>
@@ -4141,98 +4396,98 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                   {/* Input Nodes */}
                   <g transform="translate(15, 52)">
-                    <rect width="80" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                    <rect x="4" y="4" width="72" height="18" rx="3.5" fill="#f8fafc" />
-                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="extrabold" textAnchor="middle">📱 IoT SENSORS</text>
-                    <text x="40" y="38" fill="#a855f7" fontSize="8.5" fontWeight="bold" textAnchor="middle">Real-Time</text>
-                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Sensor Metrics</text>
+                    <rect width="80" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="72" height="18" rx="3.5" fill="var(--da-svg-bg)" />
+                    <text x="40" y="16.5" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="extrabold" textAnchor="middle">📱 IoT SENSORS</text>
+                    <text x="40" y="38" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Real-Time</text>
+                    <text x="40" y="52" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">Sensor Metrics</text>
                   </g>
 
                   <g transform="translate(15, 205)">
-                    <rect width="80" height="70" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#64748b" strokeWidth="1.5" />
-                    <rect x="4" y="4" width="72" height="18" rx="3.5" fill="#f8fafc" />
-                    <text x="40" y="16.5" fill="#1e293b" fontSize="8" fontWeight="extrabold" textAnchor="middle">🛢️ APP LOGS</text>
-                    <text x="40" y="38" fill="#ea580c" fontSize="8.5" fontWeight="bold" textAnchor="middle">Batch OLTP</text>
-                    <text x="40" y="52" fill="#64748b" fontSize="7.5" textAnchor="middle">Raw Logs Pool</text>
+                    <rect width="80" height="70" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1.5" />
+                    <rect x="4" y="4" width="72" height="18" rx="3.5" fill="var(--da-svg-bg)" />
+                    <text x="40" y="16.5" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="extrabold" textAnchor="middle">🛢️ APP LOGS</text>
+                    <text x="40" y="38" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">Batch OLTP</text>
+                    <text x="40" y="52" fill="var(--da-text-muted)" fontSize="7.5" textAnchor="middle">Raw Logs Pool</text>
                   </g>
 
                   {/* Top track nodes (Streaming) */}
                   <g transform="translate(145, 50)">
-                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.05)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
-                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="47.5" y="17.5" fill="#7e22ce" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚡ KAFKA MSK</text>
-                    <text x="47.5" y="41" fill="#581c87" fontSize="8.5" textAnchor="middle" fontWeight="bold">Brokers Cluster</text>
-                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#f3e8ff" />
-                    <text x="47.5" y="61" fill="#7e22ce" fontSize="7.5" fontWeight="bold" textAnchor="middle">Serverless Shards</text>
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="var(--da-svg-purple-bg)" />
+                    <rect width="95" height="75" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                    <text x="47.5" y="17.5" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚡ KAFKA MSK</text>
+                    <text x="47.5" y="41" fill="var(--da-svg-purple-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Brokers Cluster</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="var(--da-svg-purple-bg)" />
+                    <text x="47.5" y="61" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Serverless Shards</text>
                   </g>
 
                   <g transform="translate(290, 50)">
-                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(168, 85, 247, 0.05)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="2" />
-                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#faf5ff" stroke="#e9d5ff" strokeWidth="1" />
-                    <text x="47.5" y="17.5" fill="#7e22ce" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ FLINK</text>
-                    <text x="47.5" y="41" fill="#581c87" fontSize="8.5" textAnchor="middle" fontWeight="bold">Stream Aggs</text>
-                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#f3e8ff" />
-                    <text x="47.5" y="61.5" fill="#7e22ce" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Sliding Window</text>
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="var(--da-svg-purple-bg)" />
+                    <rect width="95" height="75" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="2" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
+                    <text x="47.5" y="17.5" fill="var(--da-svg-purple-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ FLINK</text>
+                    <text x="47.5" y="41" fill="var(--da-svg-purple-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Stream Aggs</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="var(--da-svg-purple-bg)" />
+                    <text x="47.5" y="61.5" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Sliding Window</text>
                   </g>
 
                   {/* Bottom track nodes (Batch) */}
                   <g transform="translate(145, 200)">
-                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.05)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2" />
-                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="47.5" y="17.5" fill="#ea580c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 RAW S3</text>
-                    <text x="47.5" y="41" fill="#c2410c" fontSize="8.5" textAnchor="middle" fontWeight="bold">Ingest Buffer</text>
-                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#ffedd5" />
-                    <text x="47.5" y="61" fill="#7c2d12" fontSize="7.5" fontWeight="bold" textAnchor="middle">Unstructured DB</text>
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="var(--da-svg-amber-bg)" />
+                    <rect width="95" height="75" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1" />
+                    <text x="47.5" y="17.5" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🪣 RAW S3</text>
+                    <text x="47.5" y="41" fill="var(--da-svg-amber-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Ingest Buffer</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="var(--da-svg-amber-bg)" />
+                    <text x="47.5" y="61" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Unstructured DB</text>
                   </g>
 
                   <g transform="translate(290, 200)">
-                    <rect x="2" y="2" width="95" height="75" rx="8" fill="rgba(234, 88, 12, 0.05)" />
-                    <rect width="95" height="75" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="2" />
-                    <rect x="5" y="5" width="85" height="18" rx="3" fill="#fff7ed" stroke="#ffedd5" strokeWidth="1" />
-                    <text x="47.5" y="17.5" fill="#ea580c" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ GLUE SPARK</text>
-                    <text x="47.5" y="41" fill="#c2410c" fontSize="8.5" textAnchor="middle" fontWeight="bold">Batch Spark ETL</text>
-                    <rect x="10" y="52" width="75" height="13" rx="2" fill="#ffedd5" />
-                    <text x="47.5" y="61.5" fill="#7c2d12" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Parquet Convert</text>
+                    <rect x="2" y="2" width="95" height="75" rx="8" fill="var(--da-svg-amber-bg)" />
+                    <rect width="95" height="75" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                    <rect x="5" y="5" width="85" height="18" rx="3" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1" />
+                    <text x="47.5" y="17.5" fill="var(--da-svg-amber-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚙️ GLUE SPARK</text>
+                    <text x="47.5" y="41" fill="var(--da-svg-amber-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Batch Spark ETL</text>
+                    <rect x="10" y="52" width="75" height="13" rx="2" fill="var(--da-svg-amber-bg)" />
+                    <text x="47.5" y="61.5" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">Parquet Convert</text>
                   </g>
 
                   {/* Destination Nodes */}
                   <g transform="translate(440, 40)">
-                    <ellipse cx="70" cy="75" rx="60" ry="12" fill="rgba(22, 163, 74, 0.1)" />
-                    <path d="M 10 20 V 75 A 60 12 0 0 0 130 75 V 20 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <ellipse cx="70" cy="20" rx="60" ry="12" fill="#dcfce7" stroke="#16a34a" strokeWidth="2.5" />
-                    <path d="M 10 32 A 60 10 0 0 0 130 32" fill="none" stroke="#86efac" strokeWidth="1" strokeDasharray="3 3" />
-                    <text x="70" y="30.5" fill="#15803d" fontSize="10" fontWeight="extrabold" textAnchor="middle">🪣 DATA LAKE S3</text>
-                    <text x="70" y="51" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="bold">Refined Parquet</text>
-                    <text x="70" y="64" fill="#059669" fontSize="8" fontWeight="bold" textAnchor="middle">dw-backups-bucket</text>
+                    <ellipse cx="70" cy="75" rx="60" ry="12" fill="var(--da-svg-green-bg)" />
+                    <path d="M 10 20 V 75 A 60 12 0 0 0 130 75 V 20 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <ellipse cx="70" cy="20" rx="60" ry="12" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <path d="M 10 32 A 60 10 0 0 0 130 32" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1" strokeDasharray="3 3" />
+                    <text x="70" y="30.5" fill="var(--da-svg-green-text)" fontSize="10" fontWeight="extrabold" textAnchor="middle">🪣 DATA LAKE S3</text>
+                    <text x="70" y="51" fill="var(--da-svg-green-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Refined Parquet</text>
+                    <text x="70" y="64" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">dw-backups-bucket</text>
                   </g>
 
                   <g transform="translate(440, 200)">
-                    <rect x="2" y="2" width="135" height="80" rx="8" fill="rgba(22, 163, 74, 0.05)" />
-                    <rect width="135" height="80" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2.5" />
-                    <rect x="6" y="6" width="123" height="18" rx="3.5" fill="#dcfce7" stroke="#86efac" strokeWidth="1" />
-                    <text x="67.5" y="18.5" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📖 GLUE CATALOG</text>
-                    <text x="67.5" y="44" fill="#166534" fontSize="8.5" textAnchor="middle" fontWeight="bold">Central Metadata Store</text>
-                    <text x="67.5" y="59" fill="#059669" fontSize="8" textAnchor="middle">Lake Formation Governance</text>
+                    <rect x="2" y="2" width="135" height="80" rx="8" fill="var(--da-svg-green-bg)" />
+                    <rect width="135" height="80" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2.5" />
+                    <rect x="6" y="6" width="123" height="18" rx="3.5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
+                    <text x="67.5" y="18.5" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">📖 GLUE CATALOG</text>
+                    <text x="67.5" y="44" fill="var(--da-svg-green-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Central Metadata Store</text>
+                    <text x="67.5" y="59" fill="var(--da-svg-green-text)" fontSize="8" textAnchor="middle">Lake Formation Governance</text>
                   </g>
 
                   {/* Output Consumer Nodes */}
                   <g transform="translate(290, 133)">
-                    <rect x="2" y="2" width="150" height="60" rx="6" fill="rgba(59, 130, 246, 0.05)" />
-                    <rect width="150" height="60" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                    <text x="75" y="20.5" fill="#1d4ed8" fontSize="9" fontWeight="extrabold" textAnchor="middle">📊 QUICKSIGHT (BI)</text>
-                    <text x="75" y="36.5" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">SPICE Caching Engine</text>
-                    <text x="75" y="49" fill="#059669" fontSize="8" fontWeight="extrabold" textAnchor="middle">Sub-second Latency</text>
+                    <rect x="2" y="2" width="150" height="60" rx="6" fill="var(--da-svg-blue-bg)" />
+                    <rect width="150" height="60" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" strokeWidth="2" />
+                    <text x="75" y="20.5" fill="var(--da-svg-blue-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">📊 QUICKSIGHT (BI)</text>
+                    <text x="75" y="36.5" fill="var(--da-svg-blue-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">SPICE Caching Engine</text>
+                    <text x="75" y="49" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">Sub-second Latency</text>
                   </g>
 
                   <g transform="translate(115, 133)">
-                    <rect x="2" y="2" width="160" height="60" rx="6" fill="rgba(59, 130, 246, 0.05)" />
-                    <rect width="160" height="60" rx="6" fill="rgba(255, 255, 255, 0.95)" stroke="#3b82f6" strokeWidth="2" />
-                    <text x="80" y="20.5" fill="#1d4ed8" fontSize="9" fontWeight="extrabold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
-                    <text x="80" y="36.5" fill="#1e40af" fontSize="8.5" textAnchor="middle" fontWeight="bold">Primary &amp; Replica Shards</text>
-                    <text x="80" y="49" fill="#475569" fontSize="8" textAnchor="middle">Indexing log telemetry</text>
+                    <rect x="2" y="2" width="160" height="60" rx="6" fill="var(--da-svg-blue-bg)" />
+                    <rect width="160" height="60" rx="6" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" strokeWidth="2" />
+                    <text x="80" y="20.5" fill="var(--da-svg-blue-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
+                    <text x="80" y="36.5" fill="var(--da-svg-blue-text)" fontSize="8.5" textAnchor="middle" fontWeight="bold">Primary &amp; Replica Shards</text>
+                    <text x="80" y="49" fill="var(--da-text-muted)" fontSize="8" textAnchor="middle">Indexing log telemetry</text>
                   </g>
                 </svg>
               </div>
@@ -4251,10 +4506,10 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     <div className="h-[180px] w-full mt-1">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={telemetryData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                          <XAxis dataKey="timestamp" stroke="#94a3b8" fontSize={8} />
-                          <YAxis stroke="#94a3b8" fontSize={8} />
-                          <Tooltip contentStyle={{ fontSize: '9px', borderRadius: '8px', background: '#ffffff' }} />
+                          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(51, 65, 85, 0.5)" : "#e2e8f0"} />
+                          <XAxis dataKey="timestamp" stroke={isDark ? "#94a3b8" : "#475569"} fontSize={8} />
+                          <YAxis stroke={isDark ? "#94a3b8" : "#475569"} fontSize={8} />
+                          <Tooltip contentStyle={{ fontSize: '9px', borderRadius: '8px', background: isDark ? '#0f172a' : '#ffffff', color: isDark ? '#cbd5e1' : '#1e293b', borderColor: isDark ? '#334155' : '#cbd5e1' }} />
                           <Bar dataKey="recordsIngested" fill="#0ea5e9" radius={[3, 3, 0, 0]} name="Vol Ingested" />
                           <Bar dataKey="queryLatencyMs" fill="#a855f7" radius={[3, 3, 0, 0]} name="Speed (ms)" />
                         </BarChart>
@@ -4464,78 +4719,78 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                     {/* Master Node */}
                     <g transform="translate(15, 65)">
-                      <rect width="110" height="110" rx="8" fill="rgba(255, 255, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
-                      <rect x="5" y="5" width="100" height="24" rx="4" fill="#eff6ff" stroke="#bfdbfe" strokeWidth="1" />
-                      <text x="55" y="20.5" fill="#1d4ed8" fontSize="9" fontWeight="extrabold" textAnchor="middle">👑 MASTER NODE</text>
+                      <rect width="110" height="110" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                      <rect x="5" y="5" width="100" height="24" rx="4" fill="var(--da-svg-blue-bg)" stroke="var(--da-svg-blue-border)" strokeWidth="1" />
+                      <text x="55" y="20.5" fill="var(--da-svg-blue-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">👑 MASTER NODE</text>
                       
                       {/* Active coordinator dial */}
-                      <circle cx="55" cy="68" r="22" fill="#f8fafc" stroke="#cbd5e1" />
-                      <circle cx="55" cy="68" r="22" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="6 3" className={emrWorkload !== 'idle' ? 'pulse-circle' : ''} />
-                      <text x="55" y="71" fill="#1e293b" fontSize="8" fontWeight="bold" textAnchor="middle">
+                      <circle cx="55" cy="68" r="22" fill="var(--da-svg-bg)" stroke="var(--da-svg-node-border)" />
+                      <circle cx="55" cy="68" r="22" fill="none" stroke="var(--da-svg-blue-border)" strokeWidth="2" strokeDasharray="6 3" className={emrWorkload !== 'idle' ? 'pulse-circle' : ''} />
+                      <text x="55" y="71" fill="var(--da-svg-text-dark)" fontSize="8" fontWeight="bold" textAnchor="middle">
                         {emrWorkload !== 'idle' ? 'SPARK RUN' : 'HA OK'}
                       </text>
-                      <text x="55" y="102" fill="#64748b" fontSize="7" textAnchor="middle">m5.xlarge (Coord)</text>
+                      <text x="55" y="102" fill="var(--da-text-muted)" fontSize="7" textAnchor="middle">m5.xlarge (Coord)</text>
                     </g>
 
                     {/* Core Nodes Block (HDFS Storage Capacity) */}
                     <g transform="translate(290, 15)">
-                      <rect width="130" height="100" rx="8" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="2" />
-                      <rect x="4" y="4" width="122" height="20" rx="3.5" fill="#dcfce7" />
-                      <text x="65" y="17" fill="#15803d" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🗄️ CORE FLEET ({emrCoreCount})</text>
+                      <rect width="130" height="100" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <rect x="4" y="4" width="122" height="20" rx="3.5" fill="var(--da-svg-green-bg)" />
+                      <text x="65" y="17" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🗄️ CORE FLEET ({emrCoreCount})</text>
                       
                       {/* Dynamically drawn core server slots */}
                       {Array.from({ length: Math.min(emrCoreCount, 4) }).map((_, idx) => (
                         <g key={idx} transform={`translate(${10 + idx * 28}, 32)`}>
-                          <rect width="24" height="42" rx="3" fill="#ffffff" stroke="#86efac" strokeWidth="1.5" />
-                          <rect x="2" y="2" width="20" height="8" rx="1.5" fill="#f0f9ff" />
-                          <text x="12" y="8" fill="#0369a1" fontSize="5.5" fontWeight="bold" textAnchor="middle">HDFS</text>
-                          <circle cx="6" cy="22" r="2" fill="#16a34a" />
-                          <circle cx="18" cy="22" r="2" fill="#16a34a" />
-                          <circle cx="12" cy="32" r="2" fill="#16a34a" />
+                          <rect width="24" height="42" rx="3" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <rect x="2" y="2" width="20" height="8" rx="1.5" fill="var(--da-svg-green-bg)" />
+                          <text x="12" y="8" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">HDFS</text>
+                          <circle cx="6" cy="22" r="2" fill="var(--da-svg-green-border)" />
+                          <circle cx="18" cy="22" r="2" fill="var(--da-svg-green-border)" />
+                          <circle cx="12" cy="32" r="2" fill="var(--da-svg-green-border)" />
                         </g>
                       ))}
                       {emrCoreCount > 4 && (
-                        <text x="65" y="90" fill="#166534" fontSize="8" fontWeight="bold" textAnchor="middle">+ {emrCoreCount - 4} More Core Nodes</text>
+                        <text x="65" y="90" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">+ {emrCoreCount - 4} More Core Nodes</text>
                       )}
-                      <text x="65" y="93" fill="#166534" fontSize="7" textAnchor="middle" fontWeight="bold">Stores Local Blocks</text>
+                      <text x="65" y="93" fill="var(--da-svg-green-text)" fontSize="7" textAnchor="middle" fontWeight="bold">Stores Local Blocks</text>
                     </g>
 
                     {/* Task Nodes Block (Spot Compute) */}
                     <g transform="translate(290, 125)">
-                      <rect width="130" height="100" rx="8" fill={emrTaskCount > 0 ? "rgba(255, 247, 237, 0.95)" : "rgba(241, 245, 249, 0.6)"} stroke={emrTaskCount > 0 ? "#ea580c" : "#cbd5e1"} strokeWidth="2" />
-                      <rect x="4" y="4" width="122" height="20" rx="3.5" fill={emrTaskCount > 0 ? "#ffedd5" : "#f1f5f9"} />
-                      <text x="65" y="17" fill={emrTaskCount > 0 ? "#c2410c" : "#475569"} fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚡ TASK FLEET ({emrTaskCount})</text>
+                      <rect width="130" height="100" rx="8" fill="var(--da-svg-node-fill)" stroke={emrTaskCount > 0 ? "var(--da-svg-amber-border)" : "var(--da-svg-node-border)"} strokeWidth="2" />
+                      <rect x="4" y="4" width="122" height="20" rx="3.5" fill={emrTaskCount > 0 ? "var(--da-svg-amber-bg)" : "var(--da-svg-bg)"} />
+                      <text x="65" y="17" fill={emrTaskCount > 0 ? "var(--da-svg-amber-text)" : "var(--da-text-muted)"} fontSize="8.5" fontWeight="extrabold" textAnchor="middle">⚡ TASK FLEET ({emrTaskCount})</text>
                       
                       {emrTaskCount === 0 ? (
-                        <text x="65" y="60" fill="#94a3b8" fontSize="8.5" fontStyle="italic" textAnchor="middle">No Task Nodes (Idle)</text>
+                        <text x="65" y="60" fill="var(--da-text-muted)" fontSize="8.5" fontStyle="italic" textAnchor="middle">No Task Nodes (Idle)</text>
                       ) : (
                         <>
                           {Array.from({ length: Math.min(emrTaskCount, 4) }).map((_, idx) => (
                             <g key={idx} transform={`translate(${10 + idx * 28}, 32)`}>
-                              <rect width="24" height="42" rx="3" fill="#ffffff" stroke="#fdba74" strokeWidth="1.5" className={emrWorkload === 'spark-jobs' ? 'active-svg-glow' : ''} />
-                              <rect x="2" y="2" width="20" height="8" rx="1.5" fill="#fff7ed" />
-                              <text x="12" y="8" fill="#c2410c" fontSize="5.5" fontWeight="bold" textAnchor="middle">SPOT</text>
-                              <line x1="4" y1="20" x2="20" y2="20" stroke="#f97316" strokeWidth="2" />
-                              <line x1="4" y1="28" x2="20" y2="28" stroke="#f97316" strokeWidth="2" />
-                              <circle cx="12" cy="36" r="2.5" fill="#f97316" className={emrWorkload !== 'idle' ? 'pulse-circle' : ''} />
+                              <rect width="24" height="42" rx="3" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" className={emrWorkload === 'spark-jobs' ? 'active-svg-glow' : ''} />
+                              <rect x="2" y="2" width="20" height="8" rx="1.5" fill="var(--da-svg-amber-bg)" />
+                              <text x="12" y="8" fill="var(--da-svg-amber-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">SPOT</text>
+                              <line x1="4" y1="20" x2="20" y2="20" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                              <line x1="4" y1="28" x2="20" y2="28" stroke="var(--da-svg-amber-border)" strokeWidth="2" />
+                              <circle cx="12" cy="36" r="2.5" fill="var(--da-svg-amber-border)" className={emrWorkload !== 'idle' ? 'pulse-circle' : ''} />
                             </g>
                           ))}
                           {emrTaskCount > 4 && (
-                            <text x="65" y="90" fill="#c2410c" fontSize="8" fontWeight="bold" textAnchor="middle">+ {emrTaskCount - 4} Task Nodes</text>
+                            <text x="65" y="90" fill="var(--da-svg-amber-text)" fontSize="8" fontWeight="bold" textAnchor="middle">+ {emrTaskCount - 4} Task Nodes</text>
                           )}
-                          <text x="65" y="93" fill="#ea580c" fontSize="7" textAnchor="middle" fontWeight="bold">Compute-Only Nodes</text>
+                          <text x="65" y="93" fill="var(--da-svg-amber-text)" fontSize="7" textAnchor="middle" fontWeight="bold">Compute-Only Nodes</text>
                         </>
                       )}
                     </g>
 
                     {/* Output Bucket */}
                     <g transform="translate(490, 80)">
-                      <ellipse cx="35" cy="85" rx="30" ry="10" fill="rgba(22, 163, 74, 0.1)" />
-                      <path d="M 5 25 V 85 A 30 10 0 0 0 65 85 V 25 Z" fill="rgba(255, 255, 255, 0.95)" stroke="#16a34a" strokeWidth="2" />
-                      <ellipse cx="35" cy="25" rx="30" ry="10" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
-                      <text x="35" y="38" fill="#15803d" fontSize="9" fontWeight="extrabold" textAnchor="middle">🪣 REF S3</text>
-                      <text x="35" y="60" fill="#166534" fontSize="8" textAnchor="middle">Output</text>
-                      <text x="35" y="72" fill="#166534" fontSize="8" textAnchor="middle">Data Lake</text>
+                      <ellipse cx="35" cy="85" rx="30" ry="10" fill="var(--da-svg-green-bg)" />
+                      <path d="M 5 25 V 85 A 30 10 0 0 0 65 85 V 25 Z" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <ellipse cx="35" cy="25" rx="30" ry="10" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="2" />
+                      <text x="35" y="38" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="extrabold" textAnchor="middle">🪣 REF S3</text>
+                      <text x="35" y="60" fill="var(--da-svg-green-text)" fontSize="8" textAnchor="middle">Output</text>
+                      <text x="35" y="72" fill="var(--da-svg-green-text)" fontSize="8" textAnchor="middle">Data Lake</text>
                     </g>
                     <path d="M 420 65 H 490" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
                     <path d="M 420 175 H 490" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3" markerEnd="url(#emr-arrow)" />
@@ -4720,112 +4975,112 @@ export default function DatabasesAndAnalyticsVisualizer() {
 
                     {/* Ingestion Source Nodes */}
                     <g transform="translate(10, 20)">
-                      <rect width="70" height="55" rx="5" fill="rgba(255, 255, 255, 0.95)" stroke="#ea580c" strokeWidth="1.5" />
-                      <text x="35" y="16" fill="#c2410c" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🗄️ DynamoDB</text>
-                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="#ffedd5" />
-                      <text x="35" y="31.5" fill="#ea580c" fontSize="6.5" fontWeight="bold" textAnchor="middle">STREAMS CDC</text>
-                      <text x="35" y="47" fill="#64748b" fontSize="6" textAnchor="middle">Table Mutations</text>
+                      <rect width="70" height="55" rx="5" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                      <text x="35" y="16" fill="var(--da-svg-amber-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">🗄️ DynamoDB</text>
+                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="var(--da-svg-amber-bg)" />
+                      <text x="35" y="31.5" fill="var(--da-svg-amber-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">STREAMS CDC</text>
+                      <text x="35" y="47" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Table Mutations</text>
                     </g>
 
                     <g transform="translate(10, 92)">
-                      <rect width="70" height="55" rx="5" fill="rgba(255, 255, 255, 0.95)" stroke="#a855f7" strokeWidth="1.5" />
-                      <text x="35" y="16" fill="#7e22ce" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ KINESIS</text>
-                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="#f3e8ff" />
-                      <text x="35" y="31.5" fill="#7e22ce" fontSize="6.5" fontWeight="bold" textAnchor="middle">DATA FIREHOSE</text>
-                      <text x="35" y="47" fill="#64748b" fontSize="6" textAnchor="middle">Raw Streams</text>
+                      <rect width="70" height="55" rx="5" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
+                      <text x="35" y="16" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">⚡ KINESIS</text>
+                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="var(--da-svg-purple-bg)" />
+                      <text x="35" y="31.5" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">DATA FIREHOSE</text>
+                      <text x="35" y="47" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Raw Streams</text>
                     </g>
 
                     <g transform="translate(10, 162)">
-                      <rect width="70" height="55" rx="5" fill="rgba(255, 255, 255, 0.95)" stroke="#0ea5e9" strokeWidth="1.5" />
-                      <text x="35" y="16" fill="#0369a1" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📋 CLOUDWATCH</text>
-                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="#e0f2fe" />
-                      <text x="35" y="31.5" fill="#0ea5e9" fontSize="6.5" fontWeight="bold" textAnchor="middle">SUBSCRIPTION</text>
-                      <text x="35" y="47" fill="#64748b" fontSize="6" textAnchor="middle">Log rule filters</text>
+                      <rect width="70" height="55" rx="5" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" strokeWidth="1.5" />
+                      <text x="35" y="16" fill="var(--da-svg-blue-text)" fontSize="7.5" fontWeight="extrabold" textAnchor="middle">📋 CLOUDWATCH</text>
+                      <rect x="5" y="24" width="60" height="10" rx="1.5" fill="var(--da-svg-blue-bg)" />
+                      <text x="35" y="31.5" fill="var(--da-svg-blue-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">SUBSCRIPTION</text>
+                      <text x="35" y="47" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Log rule filters</text>
                     </g>
 
                     {/* Middle Transformation Node (Lambda Connector) */}
                     <g transform="translate(140, 25)">
-                      <rect width="75" height="190" rx="6" fill="rgba(254, 243, 199, 0.6)" stroke="#d97706" strokeWidth="1.5" />
-                      <rect x="5" y="5" width="65" height="16" rx="2" fill="#fef3c7" />
-                      <text x="37.5" y="16" fill="#b45309" fontSize="7" fontWeight="extrabold" textAnchor="middle">λ LAMBDAS</text>
+                      <rect width="75" height="190" rx="6" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1.5" />
+                      <rect x="5" y="5" width="65" height="16" rx="2" fill="var(--da-svg-amber-bg)" />
+                      <text x="37.5" y="16" fill="var(--da-svg-amber-text)" fontSize="7" fontWeight="extrabold" textAnchor="middle">λ LAMBDAS</text>
                       
                       {/* Lambda nodes */}
                       <g transform="translate(17, 30)">
-                        <circle cx="20" cy="20" r="16" fill="#ffffff" stroke="#d97706" className={osState === 'ingesting' && osIngestPath === 'dynamodb' ? 'pulse-circle' : ''} />
-                        <text x="20" y="24" fill="#d97706" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
+                        <circle cx="20" cy="20" r="16" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" className={osState === 'ingesting' && osIngestPath === 'dynamodb' ? 'pulse-circle' : ''} />
+                        <text x="20" y="24" fill="var(--da-svg-amber-text)" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
                       </g>
                       <g transform="translate(17, 85)">
-                        <circle cx="20" cy="20" r="16" fill="#ffffff" stroke="#d97706" className={osState === 'ingesting' && osIngestPath === 'kinesis-firehose' ? 'pulse-circle' : ''} />
-                        <text x="20" y="24" fill="#d97706" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
+                        <circle cx="20" cy="20" r="16" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" className={osState === 'ingesting' && osIngestPath === 'kinesis-firehose' ? 'pulse-circle' : ''} />
+                        <text x="20" y="24" fill="var(--da-svg-amber-text)" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
                       </g>
                       <g transform="translate(17, 140)">
-                        <circle cx="20" cy="20" r="16" fill="#ffffff" stroke="#d97706" />
-                        <text x="20" y="24" fill="#d97706" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
+                        <circle cx="20" cy="20" r="16" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-amber-border)" />
+                        <text x="20" y="24" fill="var(--da-svg-amber-text)" fontSize="12" fontWeight="bold" textAnchor="middle">λ</text>
                       </g>
                     </g>
 
                     {/* OpenSearch Service Core Cluster */}
                     <g transform="translate(265, 25)">
-                      <rect width="175" height="190" rx="8" fill="rgba(239, 246, 255, 0.95)" stroke="#3b82f6" strokeWidth="2.5" />
-                      <rect x="5" y="5" width="165" height="20" rx="3.5" fill="#eff6ff" />
-                      <text x="87.5" y="18" fill="#1d4ed8" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
+                      <rect width="175" height="190" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" strokeWidth="2.5" />
+                      <rect x="5" y="5" width="165" height="20" rx="3.5" fill="var(--da-svg-blue-bg)" />
+                      <text x="87.5" y="18" fill="var(--da-svg-blue-text)" fontSize="8.5" fontWeight="extrabold" textAnchor="middle">🔎 OPENSEARCH CLUSTER</text>
                       
                       {/* Coordinating Master Node */}
                       <g transform="translate(10, 32)">
-                        <rect width="155" height="28" rx="4" fill="#ffffff" stroke="#93c5fd" />
-                        <circle cx="15" cy="14" r="3.5" fill="#3b82f6" />
-                        <text x="85" y="17" fill="#1e293b" fontSize="7.5" fontWeight="extrabold">Coordinating Master Node</text>
-                        <text x="85" y="24.5" fill="#64748b" fontSize="6.5">Config &amp; cluster management</text>
+                        <rect width="155" height="28" rx="4" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-blue-border)" />
+                        <circle cx="15" cy="14" r="3.5" fill="var(--da-svg-blue-border)" />
+                        <text x="32" y="17" fill="var(--da-svg-text-dark)" fontSize="7.5" fontWeight="extrabold">Coordinating Master Node</text>
+                        <text x="32" y="24.5" fill="var(--da-text-muted)" fontSize="6.5">Config &amp; cluster management</text>
                       </g>
                       
                       {/* Shard Partition Data Nodes */}
                       <g transform="translate(10, 66)">
-                        <rect width="155" height="52" rx="4" fill="#ffffff" stroke="#86efac" />
-                        <rect x="4" y="4" width="147" height="12" rx="2" fill="#f0fdf4" />
-                        <text x="77.5" y="12" fill="#15803d" fontSize="7" fontWeight="extrabold" textAnchor="middle">Data Nodes (Primary Shards)</text>
+                        <rect width="155" height="52" rx="4" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" />
+                        <rect x="4" y="4" width="147" height="12" rx="2" fill="var(--da-svg-green-bg)" />
+                        <text x="77.5" y="12" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="extrabold" textAnchor="middle">Data Nodes (Primary Shards)</text>
                         
                         {/* Shards boxes */}
                         <g transform="translate(15, 20)">
-                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
-                          <text x="12.5" y="14" fill="#16a34a" fontSize="8.5" fontWeight="bold" textAnchor="middle">P0</text>
+                          <rect width="25" height="24" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="12.5" y="14" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">P0</text>
                         </g>
                         <g transform="translate(48, 20)">
-                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1.5" />
-                          <text x="12.5" y="14" fill="#16a34a" fontSize="8.5" fontWeight="bold" textAnchor="middle">P1</text>
+                          <rect width="25" height="24" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                          <text x="12.5" y="14" fill="var(--da-svg-green-text)" fontSize="8.5" fontWeight="bold" textAnchor="middle">P1</text>
                         </g>
                         
                         {/* Replica Shards */}
                         <g transform="translate(81, 20)">
-                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1" strokeDasharray="2 2" />
-                          <text x="12.5" y="14" fill="#64748b" fontSize="8.5" fontWeight="bold" textAnchor="middle">R0</text>
+                          <rect width="25" height="24" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="12.5" y="14" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="bold" textAnchor="middle">R0</text>
                         </g>
                         <g transform="translate(114, 20)">
-                          <rect width="25" height="24" rx="2" fill="#ffffff" stroke="#16a34a" strokeWidth="1" strokeDasharray="2 2" />
-                          <text x="12.5" y="14" fill="#64748b" fontSize="8.5" fontWeight="bold" textAnchor="middle">R1</text>
+                          <rect width="25" height="24" rx="2" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" strokeWidth="1" strokeDasharray="2 2" />
+                          <text x="12.5" y="14" fill="var(--da-text-muted)" fontSize="8.5" fontWeight="bold" textAnchor="middle">R1</text>
                         </g>
                       </g>
 
                       {/* UltraWarm Tier */}
                       <g transform="translate(10, 124)">
-                        <rect width="155" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" />
-                        <ellipse cx="15" cy="13" rx="10" ry="3" fill="#cbd5e1" />
-                        <text x="32" y="16" fill="#475569" fontSize="7.5" fontWeight="extrabold">UltraWarm Nodes</text>
-                        <text x="32" y="23.5" fill="#64748b" fontSize="6.5">Near-line caching tier</text>
+                        <rect width="155" height="26" rx="4" fill="var(--da-svg-node-fill)" stroke="var(--da-svg-node-border)" />
+                        <ellipse cx="15" cy="13" rx="10" ry="3" fill="var(--da-svg-node-border)" />
+                        <text x="32" y="16" fill="var(--da-svg-text-dark)" fontSize="7.5" fontWeight="extrabold">UltraWarm Nodes</text>
+                        <text x="32" y="23.5" fill="var(--da-text-muted)" fontSize="6.5">Near-line caching tier</text>
                       </g>
 
                       {/* Cold S3 Storage */}
                       <g transform="translate(10, 156)">
-                        <rect width="155" height="26" rx="4" fill="#f8fafc" stroke="#94a3b8" strokeDasharray="2 2" />
-                        <text x="77.5" y="16.5" fill="#475569" fontSize="7.5" fontWeight="bold" textAnchor="middle">Cold Tier (S3 backups bucket)</text>
+                        <rect width="155" height="26" rx="4" fill="var(--da-svg-bg)" stroke="var(--da-svg-node-border)" strokeDasharray="2 2" />
+                        <text x="77.5" y="16.5" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Cold Tier (S3 backups bucket)</text>
                       </g>
                     </g>
 
                     {/* Right Hand: Client Complementary Search patterns */}
                     <g transform="translate(480, 130)">
-                      <rect width="80" height="40" rx="4" fill="rgba(240, 253, 244, 0.95)" stroke="#16a34a" strokeWidth="1.5" />
-                      <text x="40" y="16" fill="#15803d" fontSize="8" fontWeight="extrabold" textAnchor="middle">🏢 COMPLEMENT</text>
-                      <text x="40" y="26" fill="#166534" fontSize="7" textAnchor="middle">DYNAMODB KEY</text>
-                      <text x="40" y="35" fill="#166534" fontSize="6.5" fontStyle="italic" textAnchor="middle">BatchGetItem</text>
+                      <rect width="80" height="40" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
+                      <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="extrabold" textAnchor="middle">🏢 COMPLEMENT</text>
+                      <text x="40" y="26" fill="var(--da-svg-green-subtext)" fontSize="7" textAnchor="middle">DYNAMODB KEY</text>
+                      <text x="40" y="35" fill="var(--da-svg-green-subtext)" fontSize="6.5" fontStyle="italic" textAnchor="middle">BatchGetItem</text>
                     </g>
                   </svg>
                 </div>
@@ -4929,35 +5184,35 @@ export default function DatabasesAndAnalyticsVisualizer() {
                     />
 
                     {/* Scale markers */}
-                    <text x="50" y="180" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">0ms</text>
-                    <text x="110" y="80" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">50ms</text>
-                    <text x="200" y="40" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">250ms</text>
-                    <text x="350" y="180" fill="#94a3b8" fontSize="10" textAnchor="middle" fontWeight="bold">500ms</text>
-
+                    <text x="50" y="180" fill="var(--da-text-muted)" fontSize="10" textAnchor="middle" fontWeight="bold">0ms</text>
+                    <text x="110" y="80" fill="var(--da-text-muted)" fontSize="10" textAnchor="middle" fontWeight="bold">50ms</text>
+                    <text x="200" y="40" fill="var(--da-text-muted)" fontSize="10" textAnchor="middle" fontWeight="bold">250ms</text>
+                    <text x="350" y="180" fill="var(--da-text-muted)" fontSize="10" textAnchor="middle" fontWeight="bold">500ms</text>
+ 
                     {/* Needle */}
                     {qsSpiceEnabled ? (
                       /* Needle pointing to 15ms (left side) */
                       <g transform="translate(200, 160) rotate(-75)">
-                        <polygon points="-4,0 4,0 0,-115" fill="#1e293b" />
-                        <circle cx="0" cy="0" r="8" fill="#16a34a" stroke="#ffffff" strokeWidth="2" />
+                        <polygon points="-4,0 4,0 0,-115" fill="var(--da-svg-text-dark)" />
+                        <circle cx="0" cy="0" r="8" fill="var(--da-svg-green-border)" stroke="var(--da-svg-node-fill)" strokeWidth="2" />
                       </g>
                     ) : (
                       /* Needle pointing to 480ms (right side) */
                       <g transform="translate(200, 160) rotate(70)">
-                        <polygon points="-4,0 4,0 0,-115" fill="#1e293b" />
-                        <circle cx="0" cy="0" r="8" fill="#dc2626" stroke="#ffffff" strokeWidth="2" />
+                        <polygon points="-4,0 4,0 0,-115" fill="var(--da-svg-text-dark)" />
+                        <circle cx="0" cy="0" r="8" fill="var(--da-svg-red-border)" stroke="var(--da-svg-node-fill)" strokeWidth="2" />
                       </g>
                     )}
-
+ 
                     {/* Core stats panel */}
-                    <rect x="135" y="115" width="130" height="50" rx="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1.5" />
-                    <text x="200" y="132" fill="#64748b" fontSize="8" fontWeight="bold" textAnchor="middle">QUERY LATENCY</text>
-                    <text x="200" y="157" fill={qsSpiceEnabled ? "#15803d" : "#b91c1c"} fontSize="20" fontWeight="black" textAnchor="middle" className="font-mono">
+                    <rect x="135" y="115" width="130" height="50" rx="8" fill="var(--da-svg-node-fill)" stroke="var(--da-card-border)" strokeWidth="1.5" />
+                    <text x="200" y="132" fill="var(--da-text-muted)" fontSize="8" fontWeight="bold" textAnchor="middle">QUERY LATENCY</text>
+                    <text x="200" y="157" fill={qsSpiceEnabled ? "var(--da-svg-green-text)" : "var(--da-svg-red-text)"} fontSize="20" fontWeight="black" textAnchor="middle" className="font-mono">
                       {qsQueryLatency} ms
                     </text>
-
+ 
                     {/* Performance classification text */}
-                    <text x="200" y="187" fill={qsSpiceEnabled ? "#16a34a" : "#ea580c"} fontSize="9.5" fontWeight="bold" textAnchor="middle">
+                    <text x="200" y="187" fill={qsSpiceEnabled ? "var(--da-svg-green-text)" : "var(--da-svg-amber-text)"} fontSize="9.5" fontWeight="bold" textAnchor="middle">
                       {qsSpiceEnabled ? "🚀 SUB-SECOND IN-MEMORY SPEED" : "⚠️ SLUGGISH DIRECT SCAN QUERY"}
                     </text>
                   </svg>
