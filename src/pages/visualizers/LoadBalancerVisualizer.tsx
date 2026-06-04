@@ -600,18 +600,37 @@ export default function LoadBalancerVisualizer() {
         }
 
         .anl-svg-text-primary {
-          fill: #1e293b;
+          fill: #0f172a;
           transition: all 0.3s ease;
         }
         .dark .anl-svg-text-primary {
-          fill: #f8fafc !important;
+          fill: #ffffff !important;
         }
         .anl-svg-text-secondary {
-          fill: #64748b;
+          fill: #475569;
           transition: all 0.3s ease;
         }
         .dark .anl-svg-text-secondary {
-          fill: #94a3b8 !important;
+          fill: #cbd5e1 !important;
+        }
+
+        /* Premium Subnet & VPC Boundary Borders */
+        .anl-svg-subnet-rect {
+          stroke: #64748b;
+          stroke-width: 1px;
+        }
+        .dark .anl-svg-subnet-rect {
+          stroke: #cbd5e1 !important;
+          stroke-width: 1px;
+        }
+        .anl-svg-vpc-rect {
+          stroke: #334155;
+          stroke-width: 1.5px;
+          stroke-dasharray: 4,3;
+        }
+        .dark .anl-svg-vpc-rect {
+          stroke: #94a3b8 !important;
+          stroke-width: 1.5px;
         }
 
         .anl-svg-alb-node {
@@ -3079,78 +3098,78 @@ Target Server Index:
                     </defs>
 
                     {/* Shared VPC Boundary Box */}
-                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" stroke="rgba(148, 163, 184, 0.5)" strokeWidth="1" strokeDasharray="3,3"/>
-                    <text x="150" y="70" fontSize="8" className="anl-svg-text-secondary" fontWeight="bold">VPC boundary (us-east-1)</text>
+                    <rect x="140" y="55" width="490" height="240" rx="12" fill="none" className="anl-svg-vpc-rect"/>
+                    <text x="150" y="70" fontSize="8.5" className="anl-svg-text-primary" fontWeight="bold">VPC boundary (us-east-1)</text>
 
                     {/* Subnet Boundaries */}
-                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="0.8"/>
-                    <text x="370" y="93" fontSize="7.5" className="anl-svg-text-secondary">🔒 Private Subnet AZ1</text>
+                    <rect x="360" y="80" width="250" height="90" rx="8" fill="none" className="anl-svg-subnet-rect"/>
+                    <text x="370" y="93" fontSize="8.5" className="anl-svg-text-primary" fontWeight="bold">🔒 Private Subnet AZ1</text>
 
-                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" stroke="var(--color-border-tertiary)" strokeWidth="0.8"/>
-                    <text x="370" y="198" fontSize="7.5" className="anl-svg-text-secondary">🔒 Private Subnet AZ2</text>
+                    <rect x="360" y="185" width="250" height="90" rx="8" fill="none" className="anl-svg-subnet-rect"/>
+                    <text x="370" y="198" fontSize="8.5" className="anl-svg-text-primary" fontWeight="bold">🔒 Private Subnet AZ2</text>
 
                     {/* Nodes Rendering */}
 
                     {/* Node 1: Client Node */}
-                    <g opacity={isNodeActive('client') || isNodeActive('phz') ? 1.0 : 0.7} className={isNodeActive('client') || isNodeActive('phz') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
-                      <rect x="15" y="125" width="85" height="50" rx="6" className="anl-svg-rect" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 0.5}/>
-                      <text x="57.5" y="145" textAnchor="middle" fontSize="10" className="anl-svg-text-primary" fontWeight="bold">💻 Public Client</text>
-                      <text x="57.5" y="160" textAnchor="middle" fontSize="7.5" className="text-blue">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
+                    <g opacity="1.0" className={isNodeActive('client') || isNodeActive('phz') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
+                      <rect x="15" y="125" width="85" height="50" rx="6" className="anl-svg-rect" stroke={isNodeActive('client') || isNodeActive('phz') ? activeColor : '#94a3b8'} strokeWidth={isNodeActive('client') || isNodeActive('phz') ? 2 : 1}/>
+                      <text x="57.5" y="145" textAnchor="middle" fontSize="10.5" className="anl-svg-text-primary" fontWeight="bold">💻 Public Client</text>
+                      <text x="57.5" y="160" textAnchor="middle" fontSize="8.5" className="text-blue" fontWeight="600">{infraScenario === 'privatelink' ? 'PHZ Query PHZ' : 'HTTPS browser'}</text>
                     </g>
 
                     {/* Node 2: Route 53 (L7 / L4 only) */}
                     {infraScenario !== 'privatelink' && (
-                      <g opacity={isNodeActive('route53') ? 1.0 : 0.7} className={isNodeActive('route53') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="150" y="85" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('route53') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('route53') ? 2 : 0.5}/>
-                        <text x="190" y="103" textAnchor="middle" fontSize="10" className="text-purple" fontWeight="bold">🚀 Route 53</text>
-                        <text x="190" y="116" textAnchor="middle" fontSize="7.5" className="text-purple">Global DNS Resolver</text>
+                      <g opacity="1.0" className={isNodeActive('route53') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="150" y="85" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('route53') ? '#7c3aed' : '#94a3b8'} strokeWidth={isNodeActive('route53') ? 2 : 1}/>
+                        <text x="190" y="103" textAnchor="middle" fontSize="10.5" className="text-purple" fontWeight="bold">🚀 Route 53</text>
+                        <text x="190" y="116" textAnchor="middle" fontSize="8.5" className="text-purple" fontWeight="600">Global DNS Resolver</text>
                       </g>
                     )}
 
                     {/* Node 3: AWS WAF (ALB only) */}
                     {infraScenario === 'alb_ingress' && (
-                      <g opacity={isNodeActive('waf') ? 1.0 : 0.7} className={isNodeActive('waf') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                        <rect x="150" y="145" width="80" height="42" rx="6" className="anl-svg-rect-red" stroke={isNodeActive('waf') ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('waf') ? 2 : 0.5}/>
-                        <text x="190" y="163" textAnchor="middle" fontSize="10" className="text-red" fontWeight="bold">🛡️ AWS WAF</text>
-                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" className="text-red">Packet Inspection</text>
+                      <g opacity="1.0" className={isNodeActive('waf') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
+                        <rect x="150" y="145" width="80" height="42" rx="6" className="anl-svg-rect-red" stroke={isNodeActive('waf') ? '#ea580c' : '#94a3b8'} strokeWidth={isNodeActive('waf') ? 2 : 1}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="10.5" className="text-red" fontWeight="bold">🛡️ AWS WAF</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="8.5" className="text-red" fontWeight="600">Packet Inspection</text>
                       </g>
                     )}
 
                     {/* Node 4: CloudFront Edge (ALB only) */}
                     {infraScenario === 'alb_ingress' && (
-                      <g opacity={isNodeActive('cloudfront') ? 1.0 : 0.7} className={isNodeActive('cloudfront') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
-                        <rect x="150" y="205" width="80" height="42" rx="6" className="anl-svg-rect-orange" stroke={isNodeActive('cloudfront') ? '#ea580c' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('cloudfront') ? 2 : 0.5}/>
-                        <text x="190" y="223" textAnchor="middle" fontSize="9.5" className="text-orange" fontWeight="bold">☁️ CloudFront CDN</text>
-                        <text x="190" y="236" textAnchor="middle" fontSize="7.5" className="text-orange">Edge Location Cache</text>
+                      <g opacity="1.0" className={isNodeActive('cloudfront') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#ea580c' } as React.CSSProperties}>
+                        <rect x="150" y="205" width="80" height="42" rx="6" className="anl-svg-rect-orange" stroke={isNodeActive('cloudfront') ? '#ea580c' : '#94a3b8'} strokeWidth={isNodeActive('cloudfront') ? 2 : 1}/>
+                        <text x="190" y="223" textAnchor="middle" fontSize="10" className="text-orange" fontWeight="bold">☁️ CloudFront CDN</text>
+                        <text x="190" y="236" textAnchor="middle" fontSize="8.5" className="text-orange" fontWeight="600">Edge Location Cache</text>
                       </g>
                     )}
 
                     {/* Node 5: Interface VPC Endpoint ENI (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
-                      <g opacity={isNodeActive('eni') ? 1.0 : 0.7} className={isNodeActive('eni') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="150" y="145" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('eni') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('eni') ? 2 : 0.5}/>
-                        <text x="190" y="163" textAnchor="middle" fontSize="9.5" className="text-purple" fontWeight="bold">🔌 Interface ENI</text>
-                        <text x="190" y="176" textAnchor="middle" fontSize="7.5" className="text-purple">Consumer Gateway</text>
+                      <g opacity="1.0" className={isNodeActive('eni') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="150" y="145" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('eni') ? '#7c3aed' : '#94a3b8'} strokeWidth={isNodeActive('eni') ? 2 : 1}/>
+                        <text x="190" y="163" textAnchor="middle" fontSize="10" className="text-purple" fontWeight="bold">🔌 Interface ENI</text>
+                        <text x="190" y="176" textAnchor="middle" fontSize="8.5" className="text-purple" fontWeight="600">Consumer Gateway</text>
                       </g>
                     )}
 
                     {/* Node 6: AWS Private Backbone (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
-                      <g opacity={isNodeActive('backbone') ? 1.0 : 0.7} className={isNodeActive('backbone') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="255" y="145" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('backbone') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('backbone') ? 2 : 0.5}/>
-                        <text x="295" y="163" textAnchor="middle" fontSize="9.5" className="text-purple" fontWeight="bold">🌐 AWS Backbone</text>
-                        <text x="295" y="176" textAnchor="middle" fontSize="7.5" className="text-purple">Physical Fiber Tunnel</text>
+                      <g opacity="1.0" className={isNodeActive('backbone') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="255" y="145" width="80" height="42" rx="6" className="anl-svg-rect-purple" stroke={isNodeActive('backbone') ? '#7c3aed' : '#94a3b8'} strokeWidth={isNodeActive('backbone') ? 2 : 1}/>
+                        <text x="295" y="163" textAnchor="middle" fontSize="10" className="text-purple" fontWeight="bold">🌐 AWS Backbone</text>
+                        <text x="295" y="176" textAnchor="middle" fontSize="8.5" className="text-purple" fontWeight="600">Physical Fiber Tunnel</text>
                       </g>
                     )}
 
                     {/* Node 7: Load Balancer (ALB / NLB Node) */}
                     {infraScenario !== 'privatelink' && (
-                      <g opacity={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 1.0 : 0.7} className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
+                      <g opacity="1.0" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? 'active-glow-node' : ''} style={{ '--pulse-color': activeColor } as React.CSSProperties}>
                         <rect x="255" y="125" width="80" height="50" rx="8" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-rect-orange'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? activeColor : undefined} stroke={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : activeColor} strokeWidth="1.5"/>
-                        <text x="295" y="146.5" textAnchor="middle" fontSize="10.5" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-text-primary'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : undefined} fontWeight="bold">
+                        <text x="295" y="146.5" textAnchor="middle" fontSize="11" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-text-primary'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : undefined} fontWeight="bold">
                           {infraScenario === 'alb_ingress' ? '🍔 Public ALB' : '🔢 Public NLB'}
                         </text>
-                        <text x="295" y="159.5" textAnchor="middle" fontSize="7.5" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-text-secondary'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : undefined}>
+                        <text x="295" y="159.5" textAnchor="middle" fontSize="8.5" className={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '' : 'anl-svg-text-secondary'} fill={isNodeActive('alb') || isNodeActive('nlb') || isNodeActive('tcp') || isNodeActive('hash') ? '#fff' : undefined} fontWeight="550">
                           {infraScenario === 'alb_ingress' ? 'Layer 7 Smart' : 'Layer 4 Static'}
                         </text>
                       </g>
@@ -3158,31 +3177,31 @@ Target Server Index:
 
                     {/* Provider NLB (PrivateLink only) */}
                     {infraScenario === 'privatelink' && (
-                      <g opacity={isNodeActive('nlb') ? 1.0 : 0.7} className={isNodeActive('nlb') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                        <rect x="360" y="140" width="80" height="42" rx="6" className="anl-svg-rect-blue" stroke={isNodeActive('nlb') ? '#7c3aed' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('nlb') ? 2 : 0.5}/>
-                        <text x="400" y="158" textAnchor="middle" fontSize="9.5" className="text-blue" fontWeight="bold">🔌 Provider NLB</text>
-                        <text x="400" y="171" textAnchor="middle" fontSize="7.5" className="text-blue">Endpoint Service</text>
+                      <g opacity="1.0" className={isNodeActive('nlb') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                        <rect x="360" y="140" width="80" height="42" rx="6" className="anl-svg-rect-blue" stroke={isNodeActive('nlb') ? '#7c3aed' : '#94a3b8'} strokeWidth={isNodeActive('nlb') ? 2 : 1}/>
+                        <text x="400" y="158" textAnchor="middle" fontSize="10" className="text-blue" fontWeight="bold">🔌 Provider NLB</text>
+                        <text x="400" y="171" textAnchor="middle" fontSize="8.5" className="text-blue" fontWeight="600">Endpoint Service</text>
                       </g>
                     )}
 
                     {/* Node 8: Private Compute AZ1 Racks */}
-                    <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
-                      <rect x="460" y="95" width="130" height="36" rx="5" className="anl-svg-rect" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
-                      <text x="468" y="110" fontSize="9.5" className="anl-svg-text-primary" fontWeight="bold">🖥️ Target Host AZ1</text>
-                      <text x="468" y="123" fontSize="7" className="anl-svg-text-secondary">Port 80 · Healthy Target Pool</text>
+                    <g opacity="1.0" className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
+                      <rect x="460" y="95" width="130" height="36" rx="5" className="anl-svg-rect" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#94a3b8'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 1}/>
+                      <text x="468" y="110" fontSize="10" className="anl-svg-text-primary" fontWeight="bold">🖥️ Target Host AZ1</text>
+                      <text x="468" y="123" fontSize="8" className="anl-svg-text-secondary" fontWeight="550">Port 80 · Healthy Target Pool</text>
                     </g>
 
                     {/* Node 9: Private Compute AZ2 Racks */}
-                    <g opacity={isNodeActive('servers') || isNodeActive('compute') ? 1.0 : 0.7} className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
-                      <rect x="460" y="200" width="130" height="36" rx="5" className="anl-svg-rect" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : 'var(--color-border-tertiary)'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 0.5}/>
-                      <text x="468" y="215" fontSize="9.5" className="anl-svg-text-primary" fontWeight="bold">🖥️ Target Host AZ2</text>
-                      <text x="468" y="228" fontSize="7" className="anl-svg-text-secondary">Port 80 · Healthy Target Pool</text>
+                    <g opacity="1.0" className={isNodeActive('servers') || isNodeActive('compute') ? 'active-glow-node' : ''} style={{ '--pulse-color': '#22c55e' } as React.CSSProperties}>
+                      <rect x="460" y="200" width="130" height="36" rx="5" className="anl-svg-rect" stroke={isNodeActive('servers') || isNodeActive('compute') ? '#22c55e' : '#94a3b8'} strokeWidth={isNodeActive('servers') || isNodeActive('compute') ? 1.5 : 1}/>
+                      <text x="468" y="215" fontSize="10" className="anl-svg-text-primary" fontWeight="bold">🖥️ Target Host AZ2</text>
+                      <text x="468" y="228" fontSize="8" className="anl-svg-text-secondary" fontWeight="550">Port 80 · Healthy Target Pool</text>
                     </g>
 
                     {/* Node 10: RDS Database Subnet */}
-                    <g opacity={0.7}>
-                      <rect x="460" y="255" width="130" height="30" rx="4" className="anl-svg-rect-grey" stroke="var(--color-border-tertiary)" strokeWidth="0.5"/>
-                      <text x="525" y="274" textAnchor="middle" fontSize="9" className="anl-svg-text-secondary" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
+                    <g opacity="1.0">
+                      <rect x="460" y="255" width="130" height="30" rx="4" className="anl-svg-rect-grey" stroke="#94a3b8" strokeWidth="1"/>
+                      <text x="525" y="274" textAnchor="middle" fontSize="9.5" className="anl-svg-text-secondary" fontWeight="bold">🗄️ RDS Database (Multi-AZ)</text>
                     </g>
 
                     {/* Flow Arrow Lines & Dynamic Paths */}
