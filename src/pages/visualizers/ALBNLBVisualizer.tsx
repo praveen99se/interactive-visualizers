@@ -218,27 +218,71 @@ export default function ALBNLBVisualizer() {
   const getRecommendedLB = () => {
     if (decisions.inspection === 'yes') {
       return {
-        title: '🔒 Recommended: AWS Gateway Load Balancer (GWLB)',
+        type: 'GWLB',
+        title: '🔒 AWS Gateway Load Balancer (GWLB)',
         desc: 'Since you require deep, inline third-party security packet inspection or firewall appliances, GWLB acts at Layer 3 to route raw IP packets transparently through a virtual appliance pool.',
-        themeClass: 'text-purple'
+        themeClass: 'text-purple',
+        badge: 'Layer 3 (IP Packets)',
+        borderColor: '#7c3aed',
+        borderColorDark: '#a78bfa',
+        bgColor: 'rgba(124, 58, 237, 0.05)',
+        features: [
+          { name: 'GENEVE Protocol Tunneling', value: true },
+          { name: 'Transparent Packet Routing', value: true },
+          { name: 'Layer 7 URL/Header Rules', value: false },
+          { name: 'Static IP per Zonal Subnet', value: false },
+        ]
       };
     } else if (decisions.layer === 'tcp' && decisions.throughput === 'extreme') {
       return {
-        title: '⚡ Recommended: AWS Network Load Balancer (NLB)',
+        type: 'NLB',
+        title: '⚡ AWS Network Load Balancer (NLB)',
         desc: 'Extreme throughput requirements combined with raw TCP/UDP networking make NLB the optimal choice. It operates at Layer 4, handling millions of requests per second with sub-millisecond latencies.',
-        themeClass: 'text-blue'
+        themeClass: 'text-blue',
+        badge: 'Layer 4 (TCP/UDP)',
+        borderColor: '#0284c7',
+        borderColorDark: '#38bdf8',
+        bgColor: 'rgba(2, 132, 199, 0.05)',
+        features: [
+          { name: 'Sub-millisecond Latency', value: true },
+          { name: 'Static IPs / Elastic IP per AZ', value: true },
+          { name: 'TCP/UDP/TLS Protocol Support', value: true },
+          { name: 'Layer 7 Header Routing', value: false },
+        ]
       };
     } else if (decisions.staticIp === 'yes') {
       return {
-        title: '🔢 Recommended: AWS Network Load Balancer (NLB)',
+        type: 'NLB',
+        title: '🔢 AWS Network Load Balancer (NLB)',
         desc: 'Since you require static elastic IP addresses per availability zone for white-listing, NLB is required because it binds a static elastic IP to each zonal subnet, unlike ALB which uses dynamic DNS names.',
-        themeClass: 'text-blue'
+        themeClass: 'text-blue',
+        badge: 'Layer 4 (TCP/UDP)',
+        borderColor: '#0284c7',
+        borderColorDark: '#38bdf8',
+        bgColor: 'rgba(2, 132, 199, 0.05)',
+        features: [
+          { name: 'Static IPs / Elastic IP per AZ', value: true },
+          { name: 'Sub-millisecond Latency', value: true },
+          { name: 'TCP/UDP/TLS Protocol Support', value: true },
+          { name: 'Layer 7 Header Routing', value: false },
+        ]
       };
     } else {
       return {
-        title: '🍔 Recommended: AWS Application Load Balancer (ALB)',
+        type: 'ALB',
+        title: '🍔 AWS Application Load Balancer (ALB)',
         desc: 'For standard HTTP/HTTPS application routing, ALB is the industry standard. It evaluates Layer 7 properties (Path rules, Host headers, and Cookie sessions) to intelligently load balance microservices and containerized backends.',
-        themeClass: 'text-orange'
+        themeClass: 'text-orange',
+        badge: 'Layer 7 (HTTP/HTTPS)',
+        borderColor: '#ea580c',
+        borderColorDark: '#f97316',
+        bgColor: 'rgba(234, 88, 12, 0.05)',
+        features: [
+          { name: 'Layer 7 Host/Path Smart Rules', value: true },
+          { name: 'HTTP/HTTPS/gRPC Support', value: true },
+          { name: 'Cookie-based Sticky Sessions', value: true },
+          { name: 'Static IP Support', value: false },
+        ]
       };
     }
   };
@@ -919,6 +963,55 @@ export default function ALBNLBVisualizer() {
           box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
         }
 
+        .anl-tb.anl-on-notebook {
+          background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+          color: #ffffff !important;
+          border-color: #d97706 !important;
+          box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+        }
+
+        .anl-tb.anl-on-concept {
+          background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+          color: #ffffff !important;
+          border-color: #0d9488 !important;
+          box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+        }
+
+        .anl-tb.anl-on-alb {
+          background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+          color: #ffffff !important;
+          border-color: #ea580c !important;
+          box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
+        }
+
+        .anl-tb.anl-on-nlb {
+          background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+          color: #ffffff !important;
+          border-color: #0284c7 !important;
+          box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+        }
+
+        .anl-tb.anl-on-simulation {
+          background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+          color: #ffffff !important;
+          border-color: #059669 !important;
+          box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+        }
+
+        .anl-tb.anl-on-integrations {
+          background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+          color: #ffffff !important;
+          border-color: #7c3aed !important;
+          box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+        }
+
+        .anl-tb.anl-on-config {
+          background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+          color: #ffffff !important;
+          border-color: #475569 !important;
+          box-shadow: 0 2px 4px rgba(71, 85, 105, 0.2);
+        }
+
         .anl-card {
           border: 1.5px solid #cbd5e1;
           border-radius: 12px;
@@ -1042,11 +1135,25 @@ export default function ALBNLBVisualizer() {
           box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
         }
 
+        .anl-btn.anl-on-alb {
+          background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+          color: #fff !important;
+          border-color: #ea580c !important;
+          box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
+        }
+
         .anl-btn.anl-on-nlb {
           background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-          color: #fff;
-          border-color: #0284c7;
+          color: #fff !important;
+          border-color: #0284c7 !important;
           box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+        }
+
+        .anl-btn.anl-on-gwlb {
+          background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+          color: #fff !important;
+          border-color: #7c3aed !important;
+          box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
         }
         
         /* Blueprint dot-grid backdrop style */
@@ -1316,6 +1423,67 @@ export default function ALBNLBVisualizer() {
           background: rgba(30, 41, 59, 0.8) !important;
           color: #ffffff !important;
         }
+        .dark .anl-tb.anl-on-notebook {
+          background: linear-gradient(135deg, #b45309 0%, #d97706 100%) !important;
+          border-color: #b45309 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(180, 83, 9, 0.4) !important;
+        }
+        .dark .anl-tb.anl-on-concept {
+          background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
+          border-color: #0f766e !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(15, 118, 110, 0.4) !important;
+        }
+        .dark .anl-tb.anl-on-alb {
+          background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%) !important;
+          border-color: #c2410c !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(194, 65, 12, 0.4) !important;
+        }
+        .dark .anl-tb.anl-on-nlb {
+          background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+          border-color: #0369a1 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(3, 105, 161, 0.4) !important;
+        }
+        .dark .anl-tb.anl-on-simulation {
+          background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+          border-color: #047857 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(4, 120, 87, 0.4) !important;
+        }
+        .dark .anl-tb.anl-on-integrations {
+          background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%) !important;
+          border-color: #6d28d9 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(109, 40, 217, 0.4) !important;
+        }
+        .dark .anl-tb.anl-on-config {
+          background: linear-gradient(135deg, #334155 0%, #475569 100%) !important;
+          border-color: #334155 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(51, 65, 85, 0.4) !important;
+        }
+
+        .dark .anl-btn.anl-on-alb {
+          background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%) !important;
+          border-color: #c2410c !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(194, 65, 12, 0.4) !important;
+        }
+        .dark .anl-btn.anl-on-nlb {
+          background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+          border-color: #0369a1 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(3, 105, 161, 0.4) !important;
+        }
+        .dark .anl-btn.anl-on-gwlb {
+          background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%) !important;
+          border-color: #6d28d9 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(109, 40, 217, 0.4) !important;
+        }
         .dark .anl-met {
           background: rgba(15, 23, 42, 0.6) !important;
           border-color: rgba(51, 65, 85, 0.6) !important;
@@ -1464,13 +1632,13 @@ export default function ALBNLBVisualizer() {
 
         {/* Tab Navigation */}
         <div className="anl-tabs">
-          <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
-          <button className={`anl-tb ${activeSection === 'concept' ? 'anl-on' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concepts &amp; Comparison</button>
-          <button className={`anl-tb ${activeSection === 'alb' ? 'anl-on' : ''}`} onClick={() => setActiveSection('alb')}>🍔 Application Load Balancer</button>
-          <button className={`anl-tb ${activeSection === 'nlb' ? 'anl-on' : ''}`} onClick={() => setActiveSection('nlb')}>🔢 Network Load Balancer</button>
-          <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
-          <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
-          <button className={`anl-tb ${activeSection === 'config' ? 'anl-on' : ''}`} onClick={() => setActiveSection('config')}>⚙️ Config &amp; Terraform</button>
+          <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on-notebook' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
+          <button className={`anl-tb ${activeSection === 'concept' ? 'anl-on-concept' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concepts &amp; Comparison</button>
+          <button className={`anl-tb ${activeSection === 'alb' ? 'anl-on-alb' : ''}`} onClick={() => setActiveSection('alb')}>🍔 Application Load Balancer</button>
+          <button className={`anl-tb ${activeSection === 'nlb' ? 'anl-on-nlb' : ''}`} onClick={() => setActiveSection('nlb')}>🔢 Network Load Balancer</button>
+          <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on-simulation' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
+          <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on-integrations' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
+          <button className={`anl-tb ${activeSection === 'config' ? 'anl-on-config' : ''}`} onClick={() => setActiveSection('config')}>⚙️ Config &amp; Terraform</button>
         </div>
       </div>
 
@@ -1576,49 +1744,153 @@ export default function ALBNLBVisualizer() {
             {/* DYNAMIC DECISION GUIDE */}
             <div className="anl-sec">Elastic Load Balancer Decision Guide</div>
             <div className="anl-g2">
-              <div className="anl-card">
+              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '10px' }}>Configure Application Parameters</div>
                 
                 <div style={{ marginBottom: '10px' }}>
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Network Traffic Layer / Protocol:</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button className={`anl-btn ${decisions.layer === 'http' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, layer: 'http' }))}>HTTP/HTTPS (L7)</button>
-                    <button className={`anl-btn ${decisions.layer === 'tcp' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, layer: 'tcp' }))}>Raw TCP/UDP (L4)</button>
+                    <button className={`anl-btn ${decisions.layer === 'http' ? 'anl-on-alb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, layer: 'http' }))}>HTTP/HTTPS (L7)</button>
+                    <button className={`anl-btn ${decisions.layer === 'tcp' ? 'anl-on-nlb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, layer: 'tcp' }))}>Raw TCP/UDP (L4)</button>
                   </div>
                 </div>
 
                 <div style={{ marginBottom: '10px' }}>
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Throughput requirements:</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button className={`anl-btn ${decisions.throughput === 'moderate' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, throughput: 'moderate' }))}>Moderate (~10k RPS)</button>
-                    <button className={`anl-btn ${decisions.throughput === 'extreme' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, throughput: 'extreme' }))}>Extreme (Millions RPS)</button>
+                    <button className={`anl-btn ${decisions.throughput === 'moderate' ? 'anl-on-alb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, throughput: 'moderate' }))}>Moderate (~10k RPS)</button>
+                    <button className={`anl-btn ${decisions.throughput === 'extreme' ? 'anl-on-nlb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, throughput: 'extreme' }))}>Extreme (Millions RPS)</button>
                   </div>
                 </div>
 
                 <div style={{ marginBottom: '10px' }}>
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Static IPs needed per Availability Zone?</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button className={`anl-btn ${decisions.staticIp === 'no' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, staticIp: 'no' }))}>No (Use DNS name)</button>
-                    <button className={`anl-btn ${decisions.staticIp === 'yes' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, staticIp: 'yes' }))}>Yes (IP whitelisting)</button>
+                    <button className={`anl-btn ${decisions.staticIp === 'no' ? 'anl-on-alb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, staticIp: 'no' }))}>No (Use DNS name)</button>
+                    <button className={`anl-btn ${decisions.staticIp === 'yes' ? 'anl-on-nlb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, staticIp: 'yes' }))}>Yes (IP whitelisting)</button>
                   </div>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Deep Third-Party Security Packet Inspection?</label>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button className={`anl-btn ${decisions.inspection === 'no' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, inspection: 'no' }))}>No (Standard load balancing)</button>
-                    <button className={`anl-btn ${decisions.inspection === 'yes' ? 'anl-on' : ''}`} onClick={() => setDecisions((d) => ({ ...d, inspection: 'yes' }))}>Yes (GENEVE tunneling)</button>
+                    <button className={`anl-btn ${decisions.inspection === 'no' ? 'anl-on-alb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, inspection: 'no' }))}>No (Standard load balancing)</button>
+                    <button className={`anl-btn ${decisions.inspection === 'yes' ? 'anl-on-gwlb' : ''}`} onClick={() => setDecisions((d) => ({ ...d, inspection: 'yes' }))}>Yes (GENEVE tunneling)</button>
                   </div>
                 </div>
               </div>
 
-              <div className="anl-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'var(--color-background-secondary)' }}>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '6px' }} className={recommendation.themeClass}>
-                  {recommendation.title}
+              <div 
+                className="anl-card" 
+                style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'space-between', 
+                  borderLeft: `4px solid ${recommendation.borderColor}`,
+                  background: 'var(--color-background-secondary)'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', color: recommendation.borderColor, background: recommendation.bgColor, padding: '2px 8px', borderRadius: '4px' }}>
+                      {recommendation.badge}
+                    </span>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>Decision Guide Output</span>
+                  </div>
+                  
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--color-text-primary)' }}>
+                    {recommendation.title}
+                  </div>
+                  
+                  <p style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4', marginBottom: '12px' }}>
+                    {recommendation.desc}
+                  </p>
+
+                  {/* Capabilities Checklist */}
+                  <div style={{ marginBottom: '12px', borderTop: '1px dashed var(--color-border-tertiary)', paddingTop: '10px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', marginBottom: '6px' }}>Supported capabilities</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                      {recommendation.features.map((feat, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: feat.value ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}>
+                          {feat.value ? (
+                            <span style={{ color: '#22c55e', fontWeight: 'bold' }}>✓</span>
+                          ) : (
+                            <span style={{ color: '#ef4444', fontWeight: 'bold' }}>✗</span>
+                          )}
+                          <span>{feat.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                  {recommendation.desc}
-                </p>
+
+                {/* SVG Visual Pathway */}
+                <div style={{ width: '100%' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', marginBottom: '4px' }}>Interactive Flow Visualization</div>
+                  <svg width="100%" height="80" viewBox="0 0 280 80" style={{ background: 'var(--color-background-primary)', borderRadius: '8px', border: '1px solid var(--color-border-tertiary)' }}>
+                    {/* Client Node */}
+                    <g transform="translate(10, 28)">
+                      <rect width="45" height="24" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                      <text x="22.5" y="15" fill="var(--color-text-primary)" fontSize="8" textAnchor="middle" fontWeight="600">Client</text>
+                    </g>
+
+                    {/* Load Balancer Node */}
+                    <g transform="translate(105, 28)">
+                      <rect width="60" height="24" rx="4" fill={recommendation.bgColor} stroke={recommendation.borderColor} strokeWidth="1.5" />
+                      <text x="30" y="15" fill="var(--color-text-primary)" fontSize="8.5" textAnchor="middle" fontWeight="bold">{recommendation.type}</text>
+                    </g>
+
+                    {/* Server Targets */}
+                    <g transform="translate(210, 12)">
+                      <rect width="60" height="20" rx="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                      <text x="30" y="12" fill="var(--color-text-secondary)" fontSize="7.5" textAnchor="middle">Target A</text>
+                    </g>
+                    <g transform="translate(210, 48)">
+                      <rect width="60" height="20" rx="3" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                      <text x="30" y="12" fill="var(--color-text-secondary)" fontSize="7.5" textAnchor="middle">Target B</text>
+                    </g>
+
+                    {/* Inbound Flow line */}
+                    <path d="M 55 40 L 105 40" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" strokeDasharray="3,2" />
+                    
+                    {/* Dynamic Flow Anim Circle */}
+                    <circle cx="55" cy="40" r="2.5" fill={recommendation.borderColor}>
+                      <animateMotion dur="2.2s" repeatCount="indefinite" path="M 0 0 L 50 0" />
+                    </circle>
+
+                    {/* Outbound/Appliance Flow */}
+                    {recommendation.type === 'GWLB' ? (
+                      <>
+                        <path d="M 135 28 L 135 8 L 165 8 L 165 28" fill="none" stroke={recommendation.borderColor} strokeWidth="1.2" />
+                        <text x="150" y="6" fill={recommendation.borderColor} fontSize="6" textAnchor="middle" fontWeight="bold">Security VM</text>
+                        <path d="M 165 40 L 210 22" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" strokeDasharray="3,2" />
+                        <circle cx="165" cy="40" r="2.5" fill={recommendation.borderColor}>
+                          <animateMotion dur="2.2s" repeatCount="indefinite" path="M 0 0 L 45 -18" />
+                        </circle>
+                      </>
+                    ) : (
+                      <>
+                        <path d="M 165 40 L 210 22" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" strokeDasharray="3,2" />
+                        <path d="M 165 40 L 210 58" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" strokeDasharray="3,2" />
+                        
+                        <circle cx="165" cy="40" r="2.5" fill={recommendation.borderColor}>
+                          <animateMotion dur="2s" repeatCount="indefinite" path="M 0 0 L 45 -18" />
+                        </circle>
+                        <circle cx="165" cy="40" r="2.5" fill={recommendation.borderColor}>
+                          <animateMotion dur="2.5s" repeatCount="indefinite" path="M 0 0 L 45 18" />
+                        </circle>
+                      </>
+                    )}
+
+                    {/* Return Flow paths */}
+                    {recommendation.type === 'NLB' && (
+                      <>
+                        <path d="M 210 22 C 160 5, 80 5, 32.5 28" fill="none" stroke="#0ea5e9" strokeWidth="1.2" strokeDasharray="3,1" />
+                        <text x="120" y="9" fill="#0ea5e9" fontSize="6.5" textAnchor="middle" fontWeight="bold">Direct Return (DSR)</text>
+                      </>
+                    )}
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -1895,7 +2167,7 @@ Connection: keep-alive`}</pre>
                   </div>
 
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="anl-btn anl-on" style={{ flex: 1, fontWeight: 'bold' }} onClick={simulateALBRouting} disabled={albIsAnimating}>
+                    <button className="anl-btn anl-on-alb" style={{ flex: 1, fontWeight: 'bold' }} onClick={simulateALBRouting} disabled={albIsAnimating}>
                       {albIsAnimating ? 'Sequencing Rules... ⏳' : 'Dispatch HTTP L7 Request ▶'}
                     </button>
                     <button className="anl-btn" onClick={() => { setAlbLogs([]); setMatchedRule(''); setAlbCheckingRuleIndex(-1); }}>Reset Logs</button>
@@ -2474,19 +2746,39 @@ Target Server Index:
                     
                     {/* Select Mode */}
                     <div style={{ marginBottom: '10px' }}>
-                      <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Load Balancer Routing Mode:</span>
-                      <select
-                        value={simMode}
-                        onChange={(e) => {
-                          setSimMode(e.target.value as any);
-                          cleanSimulatorCookies();
-                        }}
-                        style={{ width: '100%', fontSize: '12px', padding: '5px 8px', border: '2px solid #f59e0b', boxShadow: '0 0 0 3px rgba(245,158,11,0.2)', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', outline: 'none' }}
-                      >
-                        <option value="alb_sticky">ALB Cookie Session Stickiness (Enabled)</option>
-                        <option value="alb_no_sticky">ALB Dynamic Balancing (No Cookie)</option>
-                        <option value="nlb_hash">NLB 5-Tuple Connection Flow Hashing</option>
-                      </select>
+                      <span style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>Load Balancer Routing Mode:</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <button
+                          className={`anl-btn ${simMode === 'alb_sticky' ? 'anl-on-alb' : ''}`}
+                          onClick={() => {
+                            setSimMode('alb_sticky');
+                            cleanSimulatorCookies();
+                          }}
+                          style={{ fontSize: '11px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}
+                        >
+                          🍪 ALB Cookie Session Stickiness (Enabled)
+                        </button>
+                        <button
+                          className={`anl-btn ${simMode === 'alb_no_sticky' ? 'anl-on-alb' : ''}`}
+                          onClick={() => {
+                            setSimMode('alb_no_sticky');
+                            cleanSimulatorCookies();
+                          }}
+                          style={{ fontSize: '11px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}
+                        >
+                          🍔 ALB Dynamic Balancing (No Cookie)
+                        </button>
+                        <button
+                          className={`anl-btn ${simMode === 'nlb_hash' ? 'anl-on-nlb' : ''}`}
+                          onClick={() => {
+                            setSimMode('nlb_hash');
+                            cleanSimulatorCookies();
+                          }}
+                          style={{ fontSize: '11px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px' }}
+                        >
+                          ⚡ NLB 5-Tuple Connection Flow Hashing
+                        </button>
+                      </div>
                     </div>
 
                     {/* Server Count Slider */}
@@ -2532,7 +2824,7 @@ Target Server Index:
                     {/* Play & Reset Buttons */}
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
-                        className={`anl-btn ${simMode.startsWith('alb') ? 'anl-on' : 'anl-on-nlb'}`}
+                        className={`anl-btn ${simMode.startsWith('alb') ? 'anl-on-alb' : 'anl-on-nlb'}`}
                         onClick={toggleSimulation}
                         style={{ flex: 1, fontWeight: 'bold' }}
                       >
@@ -2581,38 +2873,23 @@ Target Server Index:
               {/* Scenario Toggles */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
                 <button
-                  className="anl-btn"
+                  className={`anl-btn ${infraScenario === 'alb_ingress' ? 'anl-on-alb' : ''}`}
                   onClick={() => handleScenarioChange('alb_ingress')}
-                  style={{
-                    fontWeight: 'bold',
-                    backgroundColor: infraScenario === 'alb_ingress' ? 'rgba(234, 88, 12, 0.15)' : 'var(--color-background-secondary)',
-                    color: infraScenario === 'alb_ingress' ? '#ea580c' : 'var(--color-text-primary)',
-                    borderColor: infraScenario === 'alb_ingress' ? '#ea580c' : 'var(--color-border-secondary)'
-                  }}
+                  style={{ fontWeight: 'bold' }}
                 >
                   🍔 Public ALB Ingress (L7)
                 </button>
                 <button
-                  className="anl-btn"
+                  className={`anl-btn ${infraScenario === 'nlb_throughput' ? 'anl-on-nlb' : ''}`}
                   onClick={() => handleScenarioChange('nlb_throughput')}
-                  style={{
-                    fontWeight: 'bold',
-                    backgroundColor: infraScenario === 'nlb_throughput' ? 'rgba(2, 132, 199, 0.15)' : 'var(--color-background-secondary)',
-                    color: infraScenario === 'nlb_throughput' ? '#0284c7' : 'var(--color-text-primary)',
-                    borderColor: infraScenario === 'nlb_throughput' ? '#0284c7' : 'var(--color-border-secondary)'
-                  }}
+                  style={{ fontWeight: 'bold' }}
                 >
                   🔢 NLB Throughput (L4)
                 </button>
                 <button
-                  className="anl-btn"
+                  className={`anl-btn ${infraScenario === 'privatelink' ? 'anl-on-gwlb' : ''}`}
                   onClick={() => handleScenarioChange('privatelink')}
-                  style={{
-                    fontWeight: 'bold',
-                    backgroundColor: infraScenario === 'privatelink' ? 'rgba(124, 58, 237, 0.15)' : 'var(--color-background-secondary)',
-                    color: infraScenario === 'privatelink' ? '#7c3aed' : 'var(--color-text-primary)',
-                    borderColor: infraScenario === 'privatelink' ? '#7c3aed' : 'var(--color-border-secondary)'
-                  }}
+                  style={{ fontWeight: 'bold' }}
                 >
                   🔌 VPC PrivateLink (PHZ)
                 </button>
@@ -2822,14 +3099,11 @@ Target Server Index:
                       ◀ Prev
                     </button>
                     <button
-                      className="anl-btn"
+                      className={`anl-btn ${infraTracing ? (infraScenario === 'alb_ingress' ? 'anl-on-alb' : infraScenario === 'nlb_throughput' ? 'anl-on-nlb' : 'anl-on-gwlb') : ''}`}
                       style={{
                         padding: '4px 12px',
                         fontSize: '11px',
-                        fontWeight: 'bold',
-                        backgroundColor: infraTracing ? activeColor : 'var(--color-background-primary)',
-                        color: infraTracing ? '#fff' : 'var(--color-text-primary)',
-                        borderColor: infraTracing ? activeColor : 'var(--color-border-secondary)'
+                        fontWeight: 'bold'
                       }}
                       onClick={() => setInfraTracing(!infraTracing)}
                     >
