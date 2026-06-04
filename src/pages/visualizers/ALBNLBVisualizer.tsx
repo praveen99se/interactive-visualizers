@@ -12,7 +12,7 @@ import {
   Cpu
 } from 'lucide-react';
 
-type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'config' | 'notebook';
+type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'notebook';
 type DecisionKey = 'layer' | 'throughput' | 'staticIp' | 'inspection';
 
 const tfRuleCode = `resource "aws_lb_listener_rule" "host_path_routing" {
@@ -1618,6 +1618,105 @@ export default function ALBNLBVisualizer() {
           border-color: rgba(51, 65, 85, 0.6) !important;
           color: #cbd5e1 !important;
         }
+
+        .anl-mnemonic-card {
+          background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
+          border: 1px solid #fed7aa !important;
+          border-left: 4px solid #ea580c !important;
+          padding: 12px 14px;
+          border-radius: 8px;
+          margin-top: 12px;
+        }
+        .anl-mnemonic-card.anl-mnemonic-blue {
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+          border-color: #cbd5e1 !important;
+          border-left-color: #0284c7 !important;
+        }
+        .anl-mnemonic-card.anl-mnemonic-purple {
+          background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%) !important;
+          border-color: #e9d5ff !important;
+          border-left-color: #7c3aed !important;
+        }
+        .anl-mnemonic-card .title {
+          color: #c2410c !important;
+          font-weight: bold;
+          font-size: 11px;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+        }
+        .anl-mnemonic-card.anl-mnemonic-blue .title {
+          color: #0369a1 !important;
+        }
+        .anl-mnemonic-card.anl-mnemonic-purple .title {
+          color: #7e22ce !important;
+        }
+        .anl-mnemonic-card .subtitle {
+          font-weight: bold;
+          font-size: 13px;
+          color: #7c2d12 !important;
+          margin-bottom: 4px;
+        }
+        .anl-mnemonic-card.anl-mnemonic-blue .subtitle {
+          color: #0c4a6e !important;
+        }
+        .anl-mnemonic-card.anl-mnemonic-purple .subtitle {
+          color: #581c87 !important;
+        }
+        .anl-mnemonic-card .desc {
+          font-size: 11px;
+          color: #431407 !important;
+          line-height: 1.4;
+        }
+        .anl-mnemonic-card.anl-mnemonic-blue .desc {
+          color: #0c4a6e !important;
+        }
+        .anl-mnemonic-card.anl-mnemonic-purple .desc {
+          color: #581c87 !important;
+        }
+
+        /* Dark Mode overrides */
+        .dark .anl-mnemonic-card {
+          background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(249, 115, 22, 0.15) 100%) !important;
+          border-color: rgba(234, 88, 12, 0.3) !important;
+          border-left-color: #f97316 !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-blue {
+          background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(56, 189, 248, 0.15) 100%) !important;
+          border-color: rgba(2, 132, 199, 0.3) !important;
+          border-left-color: #38bdf8 !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-purple {
+          background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(167, 139, 250, 0.15) 100%) !important;
+          border-color: rgba(124, 58, 237, 0.3) !important;
+          border-left-color: #a78bfa !important;
+        }
+        .dark .anl-mnemonic-card .title {
+          color: #f97316 !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-blue .title {
+          color: #38bdf8 !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-purple .title {
+          color: #a78bfa !important;
+        }
+        .dark .anl-mnemonic-card .subtitle {
+          color: #ffedd5 !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-blue .subtitle {
+          color: #e0f2fe !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-purple .subtitle {
+          color: #faf5ff !important;
+        }
+        .dark .anl-mnemonic-card .desc {
+          color: #fed7aa !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-blue .desc {
+          color: #7dd3fc !important;
+        }
+        .dark .anl-mnemonic-card.anl-mnemonic-purple .desc {
+          color: #e9d5ff !important;
+        }
       `}</style>
       {/* Header */}
       <div style={{ padding: '14px 16px 4px' }}>
@@ -1638,7 +1737,6 @@ export default function ALBNLBVisualizer() {
           <button className={`anl-tb ${activeSection === 'nlb' ? 'anl-on-nlb' : ''}`} onClick={() => setActiveSection('nlb')}>🔢 Network Load Balancer</button>
           <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on-simulation' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
           <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on-integrations' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
-          <button className={`anl-tb ${activeSection === 'config' ? 'anl-on-config' : ''}`} onClick={() => setActiveSection('config')}>⚙️ Config &amp; Terraform</button>
         </div>
       </div>
 
@@ -2175,19 +2273,14 @@ Connection: keep-alive`}</pre>
                 </div>
 
                 {/* ALB Premium Mnemonic Card */}
-                <div className="anl-card" style={{
-                  border: '1.5px solid #fdba74',
-                  background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
-                  padding: '12px 14px',
-                  borderRadius: '8px'
-                }}>
-                  <div style={{ color: '#c2410c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                <div className="anl-mnemonic-card">
+                  <div className="title">
                     🧠 Systems Memory Mnemonic
                   </div>
-                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#7c2d12', marginBottom: '4px' }}>
+                  <div className="subtitle">
                     ALB = "The Intelligent Postmaster"
                   </div>
-                  <div style={{ fontSize: '11px', color: '#431407', lineHeight: '1.4' }}>
+                  <div className="desc">
                     Unlike raw routers, the Postmaster opens the HTTP envelope (SSL Decryption), reads the Host and Path letters (Host/Path listener rules), checks the return cookie (stickiness), and handles delivery to the exact AZ microservice targets.
                   </div>
                 </div>
@@ -2465,19 +2558,14 @@ Target Server Index:
                 </div>
 
                 {/* NLB Premium Mnemonic Card */}
-                <div className="anl-card" style={{
-                  border: '1.5px solid #7dd3fc',
-                  background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                  padding: '12px 14px',
-                  borderRadius: '8px'
-                }}>
-                  <div style={{ color: '#0369a1', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                <div className="anl-mnemonic-card anl-mnemonic-blue">
+                  <div className="title">
                     🧠 Systems Memory Mnemonic
                   </div>
-                  <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0c4a6e', marginBottom: '4px' }}>
+                  <div className="subtitle">
                     NLB = "The Lightspeed Track Switcher"
                   </div>
-                  <div style={{ fontSize: '11px', color: '#0c4a6e', lineHeight: '1.4' }}>
+                  <div className="desc">
                     The Track Switcher does not open cargo or read envelopes. It simply hashes the standard 5-tuple connection data in hardware ASICs (Protocol, Source IP/Port, Dest IP/Port) and maps the connection deterministic to the track with microsecond latencies.
                   </div>
                 </div>
@@ -3141,58 +3229,44 @@ Target Server Index:
                   </div>
 
                   {/* Golden memory hooks based on active scenario */}
+                  {/* Golden memory hooks based on active scenario */}
                   {infraScenario === 'alb_ingress' && (
-                    <div className="anl-card" style={{
-                      border: '1.5px solid #fdba74',
-                      background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
-                      padding: '12px 14px',
-                      borderRadius: '8px'
-                    }}>
-                      <div style={{ color: '#c2410c', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div className="anl-mnemonic-card">
+                      <div className="title">
                         🧠 Systems Memory Mnemonic
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#7c2d12', marginBottom: '4px' }}>
+                      <div className="subtitle">
                         ALB = "The Smart Concierge at L7"
                       </div>
-                      <div style={{ fontSize: '11px', color: '#431407', lineHeight: '1.4' }}>
+                      <div className="desc">
                         The Concierge is smart. She opens client packages (SSL Decryption), checks their query string badges (WAF inspection), verifies dynamic host paths (Host/Path listener rules), and directs guests to AZ private suites.
                       </div>
                     </div>
                   )}
 
                   {infraScenario === 'nlb_throughput' && (
-                    <div className="anl-card" style={{
-                      border: '1.5px solid #7dd3fc',
-                      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-                      padding: '12px 14px',
-                      borderRadius: '8px'
-                    }}>
-                      <div style={{ color: '#0369a1', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div className="anl-mnemonic-card anl-mnemonic-blue">
+                      <div className="title">
                         🧠 Systems Memory Mnemonic
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#0c4a6e', marginBottom: '4px' }}>
+                      <div className="subtitle">
                         NLB = "The High-Speed Bullet Train at L4"
                       </div>
-                      <div style={{ fontSize: '11px', color: '#0c4a6e', lineHeight: '1.4' }}>
+                      <div className="desc">
                         The Train does not open bags. It reads raw L4 socket tickets instantly in hardware, hashes them determinants, fires down dedicated AZ subnet tracks, and allows servers to write back directly (DSR) to client IPs.
                       </div>
                     </div>
                   )}
 
                   {infraScenario === 'privatelink' && (
-                    <div className="anl-card" style={{
-                      border: '1.5px solid #d8b4fe',
-                      background: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)',
-                      padding: '12px 14px',
-                      borderRadius: '8px'
-                    }}>
-                      <div style={{ color: '#7e22ce', fontWeight: 'bold', fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>
+                    <div className="anl-mnemonic-card anl-mnemonic-purple">
+                      <div className="title">
                         🧠 Systems Memory Mnemonic
                       </div>
-                      <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#581c87', marginBottom: '4px' }}>
+                      <div className="subtitle">
                         PrivateLink = "The Secure Underground Highway"
                       </div>
-                      <div style={{ fontSize: '11px', color: '#581c87', lineHeight: '1.4' }}>
+                      <div className="desc">
                         Bypasses all public roads (Public internet, internet gateways). Connects consumer vault directly to provider vault through a secure underground highway drilled straight through solid AWS physical fiber bedrock.
                       </div>
                     </div>
@@ -3216,98 +3290,7 @@ Target Server Index:
           );
         })()}
 
-        {/* CONFIG PANEL */}
-        {activeSection === 'config' && (
-          <div>
-            <div className="anl-sec">Provisioning Elastic Load Balancer Infrastructure</div>
-            <div className="anl-card">
-              <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Terraform (HCL) provisioner: Public Application Load Balancer</div>
-              <pre className="anl-log" style={{ fontSize: '11px' }}>{`# 1. Create a Public Application Load Balancer
-resource "aws_lb" "application_lb" {
-  name               = "production-web-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [aws_subnet.public_az1.id, aws_subnet.public_az2.id]
 
-  enable_deletion_protection = false
-
-  tags = {
-    Environment = "production"
-  }
-}
-
-# 2. Create target group with cookie-based session stickiness
-resource "aws_lb_target_group" "web_tg" {
-  name     = "web-servers-target-group"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
-
-  stickiness {
-    type            = "lb_cookie"
-    cookie_duration = 86400  # Pinned session active for 24 hours
-    enabled         = true
-  }
-
-  health_check {
-    path                = "/health"
-    protocol            = "HTTP"
-    matcher             = "200"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-  }
-}
-
-# 3. Create HTTP Listener on ALB
-resource "aws_lb_listener" "web_listener" {
-  load_balancer_arn = aws_lb.application_lb.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.web_tg.arn
-  }
-}`}</pre>
-            </div>
-
-            <div className="anl-card">
-              <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Terraform (HCL) provisioner: High-Performance Network Load Balancer</div>
-              <pre className="anl-log" style={{ fontSize: '11px' }}>{`# 1. Create static Network Load Balancer
-resource "aws_lb" "network_lb" {
-  name               = "production-throughput-nlb"
-  internal           = false
-  load_balancer_type = "network"
-  subnets            = [aws_subnet.public_az1.id, aws_subnet.public_az2.id]
-
-  # NLB does not require security groups directly (flows transparently through L4)
-  # Dynamic IPs are disabled. Static public EIPs can be mapped explicitly per AZ.
-}
-
-# 2. Create TCP target group (L4 flow hashing)
-resource "aws_lb_target_group" "tcp_tg" {
-  name     = "high-throughput-tcp-tg"
-  port     = 5000
-  protocol = "TCP"
-  vpc_id   = aws_vpc.main.id
-
-  # Stickiness is not supported for raw TCP target groups
-  # Connections map purely via Flow Hashing mechanisms
-
-  health_check {
-    port                = "5000"
-    protocol            = "TCP"
-    interval            = 10
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-  }
-}`}</pre>
-            </div>
-          </div>
-        )}
 
         {/* ========================================================================= */}
         {/* TAB 7: VISUAL ARCHITECT NOTES (DEVELOPER ACADEMY)                         */}
