@@ -37,7 +37,7 @@ const tfRuleCode = `resource "aws_lb_listener_rule" "host_path_routing" {
   }
 }`;
 
-export default function ALBNLBVisualizer() {
+export default function LoadBalancerVisualizer() {
   const [activeSection, setActiveSection] = useState<TabType>('notebook');
   const [selectedNote, setSelectedNote] = useState<string>('alb_headers_routing');
   const [expandedCategory, setExpandedCategory] = useState<string>('l7_routing');
@@ -1374,7 +1374,7 @@ export default function ALBNLBVisualizer() {
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
 
-        /* Centralized Dark Mode Overrides for ALBNLBVisualizer.tsx */
+        /* Centralized Dark Mode Overrides for LoadBalancerVisualizer.tsx */
         .dark .anl-container {
           background: #020617 !important;
           color: #f8fafc !important;
@@ -1722,7 +1722,7 @@ export default function ALBNLBVisualizer() {
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
           <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            ⚖️ AWS Elastic Load Balancers — ALB stickiness vs NLB Flow Hashing
+            ⚖️ AWS Elastic Load Balancer
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
             Intelligent request routing, static elastic IPs, high-throughput flow hashing, and secure traffic distribution systems.

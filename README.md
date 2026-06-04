@@ -68,7 +68,7 @@ Quick steps:
 
 ## Available Visualizers
 
-- 🍪 **ALB vs NLB Stickiness** - Load balancer mechanisms
+- ⚖️ **Load Balancer** - Load balancer mechanisms
 
 ## Commands
 

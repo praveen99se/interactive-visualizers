@@ -153,8 +153,8 @@ export const qaData: Record<'compute' | 'networking' | 'database' | 'security' |
       a: 'The **Application Load Balancer (ALB)** is Layer 7 (HTTP/HTTPS aware), performing cookie stickiness, path-based routing, and payload evaluations. The **Network Load Balancer (NLB)** is Layer 4 (TCP/UDP), built for ultra-high throughput (millions of requests/sec) with sub-millisecond latencies. NLBs expose static IP addresses (or Elastic IPs) per subnet, which is critical for IP whitelisting, whereas ALBs only expose DNS names.',
       diagram: `TCP Packet ──► [ NLB (Layer 4) ] ──► Flow Hash routing ──► Target EC2 (Static IPs, Sub-ms latency)
 HTTP Payload ──► [ ALB (Layer 7) ] ──► Path & Header evaluation ──► Target Container`,
-      sandboxLink: '/visualizers/alb-nlb',
-      sandboxName: 'Launch ALB vs NLB Stickiness Sandbox'
+      sandboxLink: '/visualizers/load-balancer',
+      sandboxName: 'Launch Load Balancer Sandbox'
     },
     {
       id: 'net-2',

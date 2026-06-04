@@ -40,12 +40,12 @@ src/
 │   ├── Home.tsx                           # Landing page with visualizer grid
 │   ├── NotFound.tsx                       # 404 page
 │   └── visualizers/
-│       ├── ALBNLBVisualizer.tsx          # ALB/NLB visualizer page
+│       ├── LoadBalancerVisualizer.tsx    # Load Balancer visualizer page
 │       └── [NEW_VISUALIZER_NAME].tsx     # Future visualizers
 │
 ├── components/
 │   └── visualizers/
-│       ├── alb-nlb/
+│       ├── load-balancer/
 │       │   ├── ALBTab.tsx                # ALB content
 │       │   ├── NLBTab.tsx                # NLB content
 │       │   ├── SimulationTab.tsx         # Simulation content
@@ -506,10 +506,10 @@ npm run lint
 
 ## Directory Naming Conventions
 
-- Pages: `PascalCase.tsx` (e.g., `ALBNLBVisualizer.tsx`)
+- Pages: `PascalCase.tsx` (e.g., `LoadBalancerVisualizer.tsx`)
 - Components: `PascalCase.tsx` (e.g., `SimulationTab.tsx`)
 - Utilities/Hooks: `camelCase.ts` (e.g., `useSimulation.ts`)
-- Folders: `kebab-case` (e.g., `alb-nlb/`, `sorting-algorithms/`)
+- Folders: `kebab-case` (e.g., `load-balancer/`, `sorting-algorithms/`)
 
 ---
 

@@ -38,13 +38,13 @@ interface VisualizerItem {
 
 const visualizers: VisualizerItem[] = [
   {
-    id: 'alb-nlb',
-    title: '🍪 ALB vs NLB Stickiness',
+    id: 'load-balancer',
+    title: '⚖️ Load Balancer',
     description: 'Understand load balancer stickiness mechanisms - cookies vs flow hashing',
     tags: ['Load Balancing', 'HTTP/TCP', 'High Availability'],
     category: 'networking',
-    path: '/visualizers/alb-nlb',
-    icon: '⚡',
+    path: '/visualizers/load-balancer',
+    icon: '⚖️',
   },
   {
     id: 'asg',
@@ -334,7 +334,7 @@ const scenarios: Scenario[] = [
     solution: 'Protect resources at the Edge. Front your ALB with an Amazon CloudFront CDN distribution secured with AWS WAF Web Access Control lists to block malicious patterns, rate-limit spam requests, and deploy AWS Shield for Layer-3/4 DDoS protection.',
     links: [
       { name: '⚡ Amazon CloudFront Global CDN Sandbox', path: '/visualizers/cloudfront' },
-      { name: '🍪 ALB vs NLB Load Balancing Topologies', path: '/visualizers/alb-nlb' }
+      { name: '⚖️ Load Balancer Topologies', path: '/visualizers/load-balancer' }
     ]
   },
   {

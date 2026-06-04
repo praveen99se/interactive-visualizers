@@ -13,13 +13,13 @@ export interface VisualizerConfig {
 
 export const visualizerRegistry: VisualizerConfig[] = [
   {
-    id: 'alb-nlb',
-    title: 'ALB vs NLB Stickiness',
+    id: 'load-balancer',
+    title: 'Load Balancer',
     description: 'Understand load balancer stickiness mechanisms - cookies vs flow hashing',
     category: 'cloud',
     tags: ['AWS', 'Load Balancing', 'Cloud'],
-    path: '/visualizers/alb-nlb',
-    icon: '🍪',
+    path: '/visualizers/load-balancer',
+    icon: '⚖️',
     lastUpdated: '2025-01-20',
   },
   {

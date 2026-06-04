@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Cloud } from 'lucide-react';
 import Home from './pages/Home';
-import ALBNLBVisualizer from './pages/visualizers/ALBNLBVisualizer';
+import LoadBalancerVisualizer from './pages/visualizers/LoadBalancerVisualizer';
 import ASGVisualizer from './pages/visualizers/ASGVisualizer';
 import RDSVisualizer from './pages/visualizers/RDSVisualizer';
 import AuroraVisualizer from './pages/visualizers/AuroraVisualizer';
@@ -93,7 +93,7 @@ export default function App() {
         <main className="max-w-7xl w-full mx-auto px-4 md:px-8 py-8 flex-grow">
           <Routes>
             <Route path="/" element={<Home isDarkTheme={isDarkTheme} />} />
-            <Route path="/visualizers/alb-nlb" element={<ALBNLBVisualizer />} />
+            <Route path="/visualizers/load-balancer" element={<LoadBalancerVisualizer />} />
             <Route path="/visualizers/asg" element={<ASGVisualizer />} />
             <Route path="/visualizers/rds" element={<RDSVisualizer />} />
             <Route path="/visualizers/aurora" element={<AuroraVisualizer />} />
