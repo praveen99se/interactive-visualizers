@@ -464,11 +464,11 @@ export default function RDSVisualizer() {
         }
 
         .rds-tb.rds-on {
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          color: #ffffff;
-          border-color: #059669;
-          font-weight: 600;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+          color: #ffffff !important;
+          border-color: #059669 !important;
+          font-weight: 600 !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
         }
 
         .rds-card {
@@ -843,19 +843,19 @@ export default function RDSVisualizer() {
         }
 
         .rds-subtb.rds-on {
-          background: #2563eb;
-          color: #ffffff;
-          border-color: #2563eb;
-          font-weight: 600;
-          box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+          color: #ffffff !important;
+          border-color: #1d4ed8 !important;
+          font-weight: 600 !important;
+          box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15) !important;
         }
 
         .rds-subtb.rds-on-purple {
-          background: #7c3aed;
-          color: #ffffff;
-          border-color: #7c3aed;
-          font-weight: 600;
-          box-shadow: 0 2px 6px rgba(124, 58, 237, 0.15);
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+          color: #ffffff !important;
+          border-color: #6d28d9 !important;
+          font-weight: 600 !important;
+          box-shadow: 0 2px 6px rgba(124, 58, 237, 0.15) !important;
         }
 
         @keyframes activeNodePulse {
@@ -1078,6 +1078,13 @@ export default function RDSVisualizer() {
           background: rgba(30, 41, 59, 0.8) !important;
           color: #f8fafc !important;
         }
+        .dark .rds-tb.rds-on {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+          color: #ffffff !important;
+          border-color: #10b981 !important;
+          font-weight: 600 !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+        }
         .dark .rds-sec,
         .dark .rds-kk {
           color: #94a3b8 !important;
@@ -1170,14 +1177,18 @@ export default function RDSVisualizer() {
           color: #ffffff !important;
         }
         .dark .rds-subtb.rds-on {
-          background: #2563eb !important;
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
           color: #ffffff !important;
-          border-color: #2563eb !important;
+          border-color: #3b82f6 !important;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+          font-weight: 600 !important;
         }
         .dark .rds-subtb.rds-on-purple {
-          background: #7c3aed !important;
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
           color: #ffffff !important;
-          border-color: #7c3aed !important;
+          border-color: #8b5cf6 !important;
+          box-shadow: 0 4px 12px rgba(167, 139, 250, 0.2) !important;
+          font-weight: 600 !important;
         }
 
         .dark .rds-row {
