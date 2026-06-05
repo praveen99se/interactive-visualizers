@@ -468,35 +468,35 @@ export default function DisasterRecoveryVisualizer() {
             <RefreshCw className="w-6 h-6 stroke-[2]" />
           </span>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              AWS Disaster Recovery &amp; Migration Workbench
+            <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
+              <span className="dr-gradient-title">AWS Disaster Recovery &amp; Migration Workbench</span>
               <span className="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 uppercase tracking-widest font-mono">
                 SaaS Academy
               </span>
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Covering DR strategy planning, DMS database continuous replication, Multi-Region Active failovers, and AWS Backup Vault Lock ransomware resilience.</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Covering DR strategy planning, DMS database continuous replication, Multi-Region Active failovers, and AWS Backup Vault Lock ransomware resilience.</p>
           </div>
         </div>
       </div>
 
       {/* Tab navigation bar */}
       <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>
           <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
         </button>
-        <button className={`da-tb ${activeTab === 'strategies' ? 'da-on' : ''}`} onClick={() => setActiveTab('strategies')}>
+        <button className={`da-tb ${activeTab === 'strategies' ? 'da-on-strategies' : ''}`} onClick={() => setActiveTab('strategies')}>
           <Sliders className="w-4 h-4" /> 1. DR Strategies &amp; Cost Optimizer
         </button>
-        <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on' : ''}`} onClick={() => setActiveTab('multiregion')}>
+        <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on-multiregion' : ''}`} onClick={() => setActiveTab('multiregion')}>
           <Globe className="w-4 h-4" /> 2. Multi-Region Failover Simulator
         </button>
-        <button className={`da-tb ${activeTab === 'dms' ? 'da-on' : ''}`} onClick={() => setActiveTab('dms')}>
+        <button className={`da-tb ${activeTab === 'dms' ? 'da-on-dms' : ''}`} onClick={() => setActiveTab('dms')}>
           <Database className="w-4 h-4" /> 3. Database Migration Service (DMS)
         </button>
-        <button className={`da-tb ${activeTab === 'backup' ? 'da-on' : ''}`} onClick={() => setActiveTab('backup')}>
+        <button className={`da-tb ${activeTab === 'backup' ? 'da-on-backup' : ''}`} onClick={() => setActiveTab('backup')}>
           <Shield className="w-4 h-4" /> 4. AWS Backup &amp; Vault Lock
         </button>
-        <button className={`da-tb ${activeTab === 'playbook' ? 'da-on' : ''}`} onClick={() => setActiveTab('playbook')}>
+        <button className={`da-tb ${activeTab === 'playbook' ? 'da-on-playbook' : ''}`} onClick={() => setActiveTab('playbook')}>
           <BookOpen className="w-4 h-4" /> 5. Recovery Playbook
         </button>
       </div>
@@ -509,10 +509,10 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Sidebar Controls */}
-            <div className="lg:col-span-5 da-card flex flex-col justify-between text-left">
+            <div className="lg:col-span-5 da-card border-t-4 border-t-teal-500 dark:border-t-teal-500/50 flex flex-col justify-between text-left">
               <div>
-                <h3 className="da-card-title text-indigo-700 dark:text-indigo-400">
-                  <Sliders className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> RTO / RPO Target Calibration
+                <h3 className="da-card-title text-teal-700 dark:text-teal-400">
+                  <Sliders className="w-5 h-5 text-teal-500 dark:text-teal-400" /> RTO / RPO Target Calibration
                 </h3>
                 <p className="da-card-desc mb-6">
                   Adjust the Recovery Time Objective (RTO) and Recovery Point Objective (RPO) sliders to immediately map the matching AWS architectural blueprint, estimating backup infrastructure monthly hosting overhead vs estimated downtime losses.
@@ -521,10 +521,10 @@ export default function DisasterRecoveryVisualizer() {
                 {/* RPO Slider */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                       Recovery Point Objective (RPO)
                     </label>
-                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded">
+                    <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-xs font-bold rounded">
                       {rpoMinutes >= 60 ? `${(rpoMinutes / 60).toFixed(1)} Hours` : `${rpoMinutes} Minutes`}
                     </span>
                   </div>
@@ -535,7 +535,7 @@ export default function DisasterRecoveryVisualizer() {
                     step="10"
                     value={rpoMinutes}
                     onChange={(e) => setRpoMinutes(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-600 dark:accent-teal-500"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                     <span>Active-Active (&lt;1m)</span>
@@ -547,10 +547,10 @@ export default function DisasterRecoveryVisualizer() {
                 {/* RTO Slider */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                       Recovery Time Objective (RTO)
                     </label>
-                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded">
+                    <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-xs font-bold rounded">
                       {rtoHours >= 1 ? `${rtoHours.toFixed(1)} Hours` : `${(rtoHours * 60).toFixed(0)} Minutes`}
                     </span>
                   </div>
@@ -561,7 +561,7 @@ export default function DisasterRecoveryVisualizer() {
                     step="0.5"
                     value={rtoHours}
                     onChange={(e) => setRtoHours(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-600 dark:accent-teal-500"
                   />
                   <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                     <span>Instant Failover</span>
@@ -573,10 +573,10 @@ export default function DisasterRecoveryVisualizer() {
                 {/* Downtime Cost Per Hour */}
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                       Business Downtime Cost / Hour
                     </label>
-                    <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-xs font-bold rounded">
+                    <span className="px-2 py-0.5 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold rounded">
                       ${hourlyDowntimeCost.toLocaleString()} / Hour
                     </span>
                   </div>
@@ -587,36 +587,52 @@ export default function DisasterRecoveryVisualizer() {
                     step="500"
                     value={hourlyDowntimeCost}
                     onChange={(e) => setHourlyDowntimeCost(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-rose-600"
+                    className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-600 dark:accent-rose-500"
                   />
                 </div>
               </div>
 
               {/* Direct Strategy buttons selection */}
-              <div className="border-t border-slate-100 pt-4 mt-4">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4">
                 <span className="text-[10px] uppercase font-bold text-slate-400 block mb-2">Or select preset blueprint:</span>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <button
                     onClick={() => updateStrategyParameters('backup')}
-                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'backup' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`p-2.5 rounded-xl border text-left font-bold transition-all ${
+                      selectedStrategy === 'backup' 
+                        ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-500 text-teal-700 dark:text-teal-400 shadow-sm' 
+                        : 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
                   >
                     💾 Backup &amp; Restore
                   </button>
                   <button
                     onClick={() => updateStrategyParameters('pilot')}
-                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'pilot' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`p-2.5 rounded-xl border text-left font-bold transition-all ${
+                      selectedStrategy === 'pilot' 
+                        ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-500 text-teal-700 dark:text-teal-400 shadow-sm' 
+                        : 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
                   >
                     🕯️ Pilot Light
                   </button>
                   <button
                     onClick={() => updateStrategyParameters('warm')}
-                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'warm' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`p-2.5 rounded-xl border text-left font-bold transition-all ${
+                      selectedStrategy === 'warm' 
+                        ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-500 text-teal-700 dark:text-teal-400 shadow-sm' 
+                        : 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
                   >
                     🔥 Warm Standby
                   </button>
                   <button
                     onClick={() => updateStrategyParameters('hot')}
-                    className={`p-2.5 rounded-xl border text-left font-bold ${selectedStrategy === 'hot' ? 'bg-indigo-50 border-indigo-500 text-indigo-950' : 'bg-white border-slate-200 text-slate-600'}`}
+                    className={`p-2.5 rounded-xl border text-left font-bold transition-all ${
+                      selectedStrategy === 'hot' 
+                        ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-500 text-teal-700 dark:text-teal-400 shadow-sm' 
+                        : 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
                   >
                     🌐 Multi-Site (Active-Active)
                   </button>
@@ -626,26 +642,26 @@ export default function DisasterRecoveryVisualizer() {
 
             {/* Right Detailed Output Card */}
             <div className="lg:col-span-7 space-y-6 text-left">
-              <div className="da-card bg-gradient-to-tr from-slate-900 to-indigo-950 text-white border-none p-6 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-                <h4 className="text-xs uppercase font-extrabold tracking-wider text-indigo-300 mb-2">AWS Architectural Blueprint</h4>
+              <div className="da-blueprint-card">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+                <h4 className="text-xs uppercase font-extrabold tracking-wider mb-2" style={{ color: 'var(--da-blueprint-accent)' }}>AWS Architectural Blueprint</h4>
                 
                 {selectedStrategy === 'backup' && (
                   <div className="space-y-4 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--da-blueprint-text)' }}>
                       💾 Option 1: Backup &amp; Restore
                     </h3>
-                    <p className="text-slate-300 text-xs leading-relaxed">
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--da-blueprint-muted)' }}>
                       Saves database dump recovery points and compute images (AMIs) in cold storage vaults. During a disaster, database backups are fetched from S3, compute machines are built from scratch, and application routes are updated.
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-xs pt-2">
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
-                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost()} / mo</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Infrastructure Cost</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent)' }}>${getMonthlyInfraCost()} / mo</span>
                       </div>
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
-                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Estimated Downtime Loss</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent-rose)' }}>${getEstimatedDowntimeCost().toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -653,20 +669,20 @@ export default function DisasterRecoveryVisualizer() {
 
                 {selectedStrategy === 'pilot' && (
                   <div className="space-y-4 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--da-blueprint-text)' }}>
                       🕯️ Option 2: Pilot Light Approach
                     </h3>
-                    <p className="text-slate-300 text-xs leading-relaxed">
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--da-blueprint-muted)' }}>
                       Data (databases, files) is replicated continuously in synchronous or asynchronous replication states to the alternate region. Standby compute systems are provisioned but kept completely powered off or scaled to absolute zero (active database, dormant compute).
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-xs pt-2">
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
-                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost()} / mo</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Infrastructure Cost</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent)' }}>${getMonthlyInfraCost()} / mo</span>
                       </div>
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
-                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Estimated Downtime Loss</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent-rose)' }}>${getEstimatedDowntimeCost().toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -674,20 +690,20 @@ export default function DisasterRecoveryVisualizer() {
 
                 {selectedStrategy === 'warm' && (
                   <div className="space-y-4 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--da-blueprint-text)' }}>
                       🔥 Option 3: Warm Standby (Scaled Down Hot)
                     </h3>
-                    <p className="text-slate-300 text-xs leading-relaxed">
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--da-blueprint-muted)' }}>
                       Maintains a functionally minimal active replica version of the production environment always running in Region B (e.g. 1 EC2 instance instead of 10, database replica online). During failover, the Auto Scaling group quickly scales up to production volume.
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-xs pt-2">
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
-                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost()} / mo</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Infrastructure Cost</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent)' }}>${getMonthlyInfraCost()} / mo</span>
                       </div>
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
-                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Estimated Downtime Loss</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent-rose)' }}>${getEstimatedDowntimeCost().toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -695,20 +711,20 @@ export default function DisasterRecoveryVisualizer() {
 
                 {selectedStrategy === 'hot' && (
                   <div className="space-y-4 animate-fadeIn">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--da-blueprint-text)' }}>
                       🌐 Option 4: Multi-Site Active-Active (Hot Site)
                     </h3>
-                    <p className="text-slate-300 text-xs leading-relaxed">
+                    <p className="text-xs leading-relaxed" style={{ color: 'var(--da-blueprint-muted)' }}>
                       Full-scale replica systems run continuously in active-active split traffic modes in both Region A and Region B. Route 53 utilizes Anycast or Latency routing to partition active workloads. Zero data loss and near zero-RTO.
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-xs pt-2">
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Infrastructure Cost</span>
-                        <span className="text-lg font-black text-indigo-400 font-mono">${getMonthlyInfraCost().toLocaleString()} / mo</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Infrastructure Cost</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent)' }}>${getMonthlyInfraCost().toLocaleString()} / mo</span>
                       </div>
-                      <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                        <span className="text-[10px] text-slate-400 block uppercase">Estimated Downtime Loss</span>
-                        <span className="text-lg font-black text-rose-400 font-mono">${getEstimatedDowntimeCost().toLocaleString()}</span>
+                      <div className="da-blueprint-inner">
+                        <span className="text-[10px] block uppercase" style={{ color: 'var(--da-blueprint-muted)' }}>Estimated Downtime Loss</span>
+                        <span className="text-lg font-black font-mono" style={{ color: 'var(--da-blueprint-accent-rose)' }}>${getEstimatedDowntimeCost().toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -716,18 +732,18 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Dynamic Interactive Cost Comparison Bars */}
-              <div className="da-inner-card border rounded-2xl p-5 space-y-4 text-xs">
+              <div className="da-inner-card border border-t-4 border-t-teal-500/60 rounded-2xl p-5 space-y-4 text-xs">
                 <span className="font-extrabold text-slate-800 dark:text-slate-200 block">Financial Tradeoff Analysis (Monthly Budget Breakdown)</span>
                 
                 {/* Cost Bar 1 */}
                 <div className="space-y-1">
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-655 dark:text-slate-400">AWS Infrastructure Running Costs:</span>
-                    <span className="text-indigo-650 dark:text-indigo-400 font-mono font-bold">${getMonthlyInfraCost().toLocaleString()} / mo</span>
+                    <span className="text-slate-600 dark:text-slate-400">AWS Infrastructure Running Costs:</span>
+                    <span className="text-teal-600 dark:text-teal-400 font-mono font-bold">${getMonthlyInfraCost().toLocaleString()} / mo</span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
                     <div 
-                      className="bg-indigo-600 h-full rounded-full transition-all duration-500 ease-out"
+                      className="bg-teal-600 dark:bg-teal-500 h-full rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${Math.min((getMonthlyInfraCost() / 9500) * 100, 100)}%` }}
                     />
                   </div>
@@ -736,7 +752,7 @@ export default function DisasterRecoveryVisualizer() {
                 {/* Cost Bar 2 */}
                 <div className="space-y-1">
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-655 dark:text-slate-400">Disaster Exposure Cost Risk (Based on RTO):</span>
+                    <span className="text-slate-600 dark:text-slate-400">Disaster Exposure Cost Risk (Based on RTO):</span>
                     <span className="text-rose-600 dark:text-rose-400 font-mono font-bold">${getEstimatedDowntimeCost().toLocaleString()} / incident</span>
                   </div>
                   <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden">
@@ -747,7 +763,7 @@ export default function DisasterRecoveryVisualizer() {
                   </div>
                 </div>
 
-                <div className="p-3 da-svg-bg border rounded-xl leading-relaxed text-slate-500 dark:text-slate-400 text-[11px]">
+                <div className="p-3 da-svg-bg border rounded-xl leading-relaxed text-slate-600 dark:text-slate-400 text-[11px]">
                   <strong className="text-slate-900 dark:text-white">💡 Architectural Rule of Thumb:</strong> As RPO and RTO approach zero, your monthly infrastructure running costs increase exponentially because you replicate full-scale active database and application clusters in the standby region.
                 </div>
               </div>
@@ -762,9 +778,9 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'multiregion' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
-              <Globe className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> AWS Multi-Region Failover Architecture Simulator
+          <div className="da-card border-t-4 border-t-sky-500 dark:border-t-sky-500/50 text-left">
+            <h2 className="da-card-title text-sky-700 dark:text-sky-400">
+              <Globe className="w-5 h-5 text-sky-500 dark:text-sky-400" /> AWS Multi-Region Failover Architecture Simulator
             </h2>
             <p className="da-card-desc">
               Trigger a simulated primary region failure inside <strong>us-east-1</strong>. Witness Route 53 redirection telemetry, automated database promotions, and scaled-down EC2 scaling operations inside <strong>eu-west-1</strong>.
@@ -774,13 +790,13 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Sidebar Controller */}
-            <div className="lg:col-span-4 da-inner-card border rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 da-card border-t-4 border-t-sky-500 dark:border-t-sky-500/50 flex flex-col justify-between space-y-4">
               <div>
                 <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">1. Select Failover Strategy:</span>
                 <select 
                   value={failoverScenario} 
                   onChange={(e) => setFailoverScenario(e.target.value as any)}
-                  className="w-full bg-slate-50 border border-slate-200 text-xs rounded-lg p-2 font-medium mb-4 cursor-pointer"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs rounded-lg p-2 font-medium mb-4 cursor-pointer text-slate-700 dark:text-slate-300"
                 >
                   <option value="pilot">🕯️ Pilot Light (Dormant EC2 Standby, Active DB)</option>
                   <option value="warm">🔥 Warm Standby (Scaled-Down Active Standby)</option>
@@ -789,15 +805,15 @@ export default function DisasterRecoveryVisualizer() {
 
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-600">Region A (us-east-1) Health:</span>
-                    <span className={`px-2 py-0.5 rounded font-bold uppercase ${regionAStatus === 'healthy' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                    <span className="text-slate-600 dark:text-slate-400">Region A (us-east-1) Health:</span>
+                    <span className={`px-2 py-0.5 rounded font-bold uppercase ${regionAStatus === 'healthy' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'}`}>
                       {regionAStatus}
                     </span>
                   </div>
 
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-600">Active Routing Traffic Split:</span>
-                    <span className="text-indigo-600 font-bold font-mono">
+                    <span className="text-slate-600 dark:text-slate-400">Active Routing Traffic Split:</span>
+                    <span className="text-sky-600 dark:text-sky-400 font-bold font-mono">
                       {trafficSplit}% us-east-1 / {100 - trafficSplit}% eu-west-1
                     </span>
                   </div>
@@ -805,11 +821,11 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Simulation Action buttons */}
-              <div className="space-y-2 border-t border-slate-100 pt-4">
+              <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                 {regionAStatus === 'healthy' ? (
                   <button
                     onClick={triggerDisasterOutage}
-                    className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-rose-500/10 flex items-center justify-center gap-1.5"
+                    className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-md shadow-rose-500/10 dark:shadow-rose-500/20 flex items-center justify-center gap-1.5"
                   >
                     <AlertTriangle className="w-4 h-4 animate-bounce" /> Trigger Region A Failure
                   </button>
@@ -817,7 +833,11 @@ export default function DisasterRecoveryVisualizer() {
                   <button
                     onClick={executeFailoverSwitchover}
                     disabled={failoverState !== 'running'}
-                    className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${failoverState === 'running' ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                    className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                      failoverState === 'running' 
+                        ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-md shadow-sky-500/10 dark:shadow-sky-500/20' 
+                        : 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/80 cursor-not-allowed'
+                    }`}
                   >
                     <Play className="w-4 h-4" /> Trigger Switchover Failover
                   </button>
@@ -825,7 +845,7 @@ export default function DisasterRecoveryVisualizer() {
 
                 <button
                   onClick={resetFailoverSim}
-                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
                 >
                   <RefreshCw className="w-4 h-4" /> Reset Environment
                 </button>
@@ -833,10 +853,10 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* High-Fidelity SVG Diagram */}
-            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
+            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 border-t-4 border-t-sky-500/80 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
               <div className="absolute right-3 top-3 flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-indigo-400 rounded-md font-mono flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-indigo-500 animate-pulse" /> TELEMETRY ACTIVE
+                <span className="px-2.5 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-sky-400 rounded-md font-mono flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-sky-500 animate-pulse" /> TELEMETRY ACTIVE
                 </span>
               </div>
 
@@ -926,19 +946,29 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Telemetry live logs */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-400">
-                {failoverLogs.length === 0 ? (
-                  <div className="text-slate-500 italic text-center py-4">Environment idle. Click "Trigger Region A Failure" to execute failover plan scenarios.</div>
-                ) : (
-                  failoverLogs.map((log, index) => (
-                    <div key={index} className="flex gap-2">
-                      <span className="text-indigo-400">{log.timestamp}</span>
-                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
-                        {log.message}
-                      </span>
-                    </div>
-                  ))
-                )}
+              <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md">
+                <div className="bg-slate-50 dark:bg-slate-950 px-3 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-400" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  </div>
+                  <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">failover-telemetry.log</span>
+                </div>
+                <div className="bg-slate-900 dark:bg-slate-950 p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-300">
+                  {failoverLogs.length === 0 ? (
+                    <div className="text-slate-400 italic text-center py-4">Environment idle. Click "Trigger Region A Failure" to execute failover plan scenarios.</div>
+                  ) : (
+                    failoverLogs.map((log, index) => (
+                      <div key={index} className="flex gap-2">
+                        <span className="text-indigo-400">{log.timestamp}</span>
+                        <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                          {log.message}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
@@ -951,9 +981,9 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'dms' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
-              <Database className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Database Migration Service (DMS) &amp; Replication Engine
+          <div className="da-card border-t-4 border-t-orange-500 dark:border-t-orange-500/50 text-left">
+            <h2 className="da-card-title text-orange-700 dark:text-orange-400">
+              <Database className="w-5 h-5 text-orange-500 dark:text-orange-400" /> Database Migration Service (DMS) &amp; Replication Engine
             </h2>
             <p className="da-card-desc">
               AWS DMS migrates relational databases (Oracle, MySQL, SQL Server) to AWS securely. Replicate databases dynamically with <strong>Continuous Replication (CDC)</strong> and simulate **Multi-AZ Replication Failover** parameters.
@@ -963,7 +993,7 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Sidebar Controls */}
-            <div className="lg:col-span-4 da-inner-card border rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 da-card border-t-4 border-t-orange-500 dark:border-t-orange-500/50 flex flex-col justify-between space-y-4">
               <div>
                 <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">1. Migration Mode Selection:</span>
                 <div className="flex bg-slate-100 dark:bg-slate-900 border dark:border-slate-800 p-0.5 rounded-lg text-xs mb-4">
@@ -971,8 +1001,8 @@ export default function DisasterRecoveryVisualizer() {
                     onClick={() => setDmsMode('full_load')}
                     className={`flex-1 py-1 rounded-md font-bold transition-all ${
                       dmsMode === 'full_load'
-                        ? 'bg-white dark:bg-slate-800 shadow text-indigo-650 dark:text-indigo-400'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-755 dark:hover:text-slate-300'
+                        ? 'bg-white dark:bg-slate-800 shadow text-orange-600 dark:text-orange-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                     }`}
                   >
                     Full Load
@@ -981,8 +1011,8 @@ export default function DisasterRecoveryVisualizer() {
                     onClick={() => setDmsMode('cdc')}
                     className={`flex-1 py-1 rounded-md font-bold transition-all ${
                       dmsMode === 'cdc'
-                        ? 'bg-white dark:bg-slate-800 shadow text-indigo-650 dark:text-indigo-400'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-755 dark:hover:text-slate-300'
+                        ? 'bg-white dark:bg-slate-800 shadow text-orange-600 dark:text-orange-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                     }`}
                   >
                     Load &amp; CDC
@@ -991,8 +1021,8 @@ export default function DisasterRecoveryVisualizer() {
                     onClick={() => setDmsMode('multi_az')}
                     className={`flex-1 py-1 rounded-md font-bold transition-all ${
                       dmsMode === 'multi_az'
-                        ? 'bg-white dark:bg-slate-800 shadow text-indigo-650 dark:text-indigo-400'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-755 dark:hover:text-slate-300'
+                        ? 'bg-white dark:bg-slate-800 shadow text-orange-600 dark:text-orange-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                     }`}
                   >
                     Multi-AZ Task
@@ -1001,12 +1031,12 @@ export default function DisasterRecoveryVisualizer() {
 
                 <div className="space-y-3 pt-2 text-xs">
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-600">Replication Task State:</span>
-                    <span className="text-indigo-600 font-bold uppercase">{dmsStatus}</span>
+                    <span className="text-slate-600 dark:text-slate-400">Replication Task State:</span>
+                    <span className="text-orange-600 dark:text-orange-400 font-bold uppercase">{dmsStatus}</span>
                   </div>
 
                   <div className="flex justify-between font-semibold">
-                    <span className="text-slate-600">Estimated Migration Downtime:</span>
+                    <span className="text-slate-600 dark:text-slate-400">Estimated Migration Downtime:</span>
                     <span className={`font-bold ${migrationDowntime.includes('45') ? 'text-rose-500' : 'text-emerald-500'}`}>
                       {migrationDowntime}
                     </span>
@@ -1015,11 +1045,15 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Control Action Buttons */}
-              <div className="space-y-2 border-t border-slate-100 pt-4">
+              <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                 <button
                   onClick={triggerDmsMigration}
                   disabled={dmsStatus === 'migrating'}
-                  className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${dmsStatus === 'migrating' ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md'}`}
+                  className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    dmsStatus === 'migrating' 
+                      ? 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/80 cursor-not-allowed' 
+                      : 'bg-orange-600 hover:bg-orange-700 text-white shadow-md shadow-orange-500/10 dark:shadow-orange-500/20'
+                  }`}
                 >
                   <Play className="w-4 h-4" /> Start DMS Task
                 </button>
@@ -1037,7 +1071,11 @@ export default function DisasterRecoveryVisualizer() {
                   <button
                     onClick={simulateDmsFailover}
                     disabled={dmsNodeActive !== 'primary'}
-                    className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${dmsNodeActive === 'primary' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                    className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                      dmsNodeActive === 'primary' 
+                        ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-500/10 dark:shadow-rose-500/20' 
+                        : 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/80 cursor-not-allowed'
+                    }`}
                   >
                     <AlertTriangle className="w-4 h-4" /> Trigger DMS Multi-AZ Failover
                   </button>
@@ -1045,7 +1083,7 @@ export default function DisasterRecoveryVisualizer() {
 
                 <button
                   onClick={resetDmsSim}
-                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
                 >
                   <RefreshCw className="w-4 h-4" /> Reset Migration
                 </button>
@@ -1053,18 +1091,18 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Interactive SVG Diagram */}
-            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
+            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 border-t-4 border-t-orange-500/80 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
               
               {/* Progress bar overlay for Full Load */}
               {dmsStatus === 'migrating' && (
-                <div className="absolute top-3 left-6 right-6 bg-slate-900 border border-indigo-500/20 rounded-xl p-3 text-xs text-white z-10 flex items-center justify-between gap-4">
+                <div className="absolute top-3 left-6 right-6 bg-slate-900 border border-orange-500/20 rounded-xl p-3 text-xs text-white z-10 flex items-center justify-between gap-4">
                   <div className="flex-grow">
                     <div className="flex justify-between font-bold text-[10px] text-slate-400 uppercase mb-1">
                       <span>Database Full Load Status</span>
                       <span>{dmsProgress}%</span>
                     </div>
                     <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                      <div className="bg-indigo-500 h-full rounded-full transition-all duration-300" style={{ width: `${dmsProgress}%` }} />
+                      <div className="bg-orange-500 h-full rounded-full transition-all duration-300" style={{ width: `${dmsProgress}%` }} />
                     </div>
                   </div>
                 </div>
@@ -1134,19 +1172,29 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Logs output console */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-400">
-                {dmsLogs.length === 0 ? (
-                  <div className="text-slate-500 italic text-center py-4">DMS migration environment idle. Click "Start DMS Task" to begin database schema copy.</div>
-                ) : (
-                  dmsLogs.map((log, index) => (
-                    <div key={index} className="flex gap-2">
-                      <span className="text-indigo-400">{log.timestamp}</span>
-                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
-                        {log.message}
-                      </span>
-                    </div>
-                  ))
-                )}
+              <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md">
+                <div className="bg-slate-50 dark:bg-slate-950 px-3 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-400" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  </div>
+                  <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">dms-replication.log</span>
+                </div>
+                <div className="bg-slate-900 dark:bg-slate-950 p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-300">
+                  {dmsLogs.length === 0 ? (
+                    <div className="text-slate-400 italic text-center py-4">DMS migration environment idle. Click "Start DMS Task" to begin database schema copy.</div>
+                  ) : (
+                    dmsLogs.map((log, index) => (
+                      <div key={index} className="flex gap-2">
+                        <span className="text-orange-400">{log.timestamp}</span>
+                        <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                          {log.message}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1159,9 +1207,9 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'backup' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card text-left">
-            <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
-              <Shield className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> AWS Backup Vault Lock Ransomware Sandbox
+          <div className="da-card border-t-4 border-t-emerald-500 dark:border-t-emerald-500/50 text-left">
+            <h2 className="da-card-title text-emerald-700 dark:text-emerald-400">
+              <Shield className="w-5 h-5 text-emerald-500 dark:text-emerald-400" /> AWS Backup Vault Lock Ransomware Sandbox
             </h2>
             <p className="da-card-desc">
               Understand how AWS Backup Vault Lock guards backups. Toggle between <strong>Governance Mode</strong> and <strong>Compliance Mode (Enforced Lock)</strong>, then trigger a simulated ransomware attack to evaluate resilience.
@@ -1171,7 +1219,7 @@ export default function DisasterRecoveryVisualizer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Sidebar Controls */}
-            <div className="lg:col-span-4 da-inner-card border rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 da-card border-t-4 border-t-emerald-500 dark:border-t-emerald-500/50 flex flex-col justify-between space-y-4">
               <div>
                 <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block mb-2">1. Backup Vault Lock Strategy:</span>
                 <div className="space-y-2 mb-4">
@@ -1181,7 +1229,7 @@ export default function DisasterRecoveryVisualizer() {
                       name="vaultLock"
                       checked={vaultLockMode === 'none'}
                       onChange={() => setVaultLockMode('none')}
-                      className="text-indigo-600 accent-indigo-600 dark:accent-indigo-500"
+                      className="text-emerald-600 accent-emerald-600 dark:accent-emerald-500"
                     />
                     🔓 No Lock (Standard Unprotected Vault)
                   </label>
@@ -1191,7 +1239,7 @@ export default function DisasterRecoveryVisualizer() {
                       name="vaultLock"
                       checked={vaultLockMode === 'governance'}
                       onChange={() => setVaultLockMode('governance')}
-                      className="text-indigo-600 accent-indigo-600 dark:accent-indigo-500"
+                      className="text-emerald-600 accent-emerald-600 dark:accent-emerald-500"
                     />
                     🛡️ Governance Mode (Administrator can bypass)
                   </label>
@@ -1201,13 +1249,13 @@ export default function DisasterRecoveryVisualizer() {
                       name="vaultLock"
                       checked={vaultLockMode === 'compliance'}
                       onChange={() => setVaultLockMode('compliance')}
-                      className="text-indigo-600 accent-indigo-600 dark:accent-indigo-500"
+                      className="text-emerald-600 accent-emerald-600 dark:accent-emerald-500"
                     />
                     🔒 Compliance Mode (Zero-trust enforce Lock)
                   </label>
                 </div>
 
-                <div className="p-3 da-svg-bg rounded-xl text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed border border-slate-200 dark:border-slate-800">
+                <div className="p-3 da-svg-bg rounded-xl text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed border border-slate-200 dark:border-slate-800">
                   {vaultLockMode === 'none' && '⚠️ BACKUPS AT RISK: A compromised root key or malicious hacker can delete recovery points immediately, leading to total data loss.'}
                   {vaultLockMode === 'governance' && 'ℹ️ GOVERNANCE: Deletions are blocked for standard users, but authorized administrators with explicit credentials can delete recovery points or remove lock.'}
                   {vaultLockMode === 'compliance' && '🚀 ZERO-TRUST: Compliance mode locks the vault hardware. No user (including the Account Creator or AWS Support) can delete recovery points until retention windows expire!'}
@@ -1215,10 +1263,10 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2 border-t border-slate-100 pt-4">
+              <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                 <button
                   onClick={triggerBackupJob}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 dark:shadow-emerald-500/20"
                 >
                   <RefreshCw className="w-4 h-4" /> Run Backup Job
                 </button>
@@ -1226,14 +1274,18 @@ export default function DisasterRecoveryVisualizer() {
                 <button
                   onClick={triggerRansomwareAttack}
                   disabled={backupStatus !== 'backed_up'}
-                  className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${backupStatus === 'backed_up' ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-500/10' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                  className={`w-full font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    backupStatus === 'backed_up' 
+                      ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-500/10 dark:shadow-rose-500/20' 
+                      : 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/80 cursor-not-allowed'
+                  }`}
                 >
                   <AlertTriangle className="w-4 h-4" /> Simulate Ransomware Attack
                 </button>
 
                 <button
                   onClick={resetBackupSim}
-                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 dark:text-slate-300 font-bold text-xs py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
                 >
                   <Trash2 className="w-4 h-4" /> Reset Sandbox
                 </button>
@@ -1241,7 +1293,7 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* High-Fidelity SVG Simulator */}
-            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
+            <div className="lg:col-span-8 bg-slate-950 rounded-2xl border border-slate-800 border-t-4 border-t-emerald-500/80 p-6 flex flex-col justify-between relative overflow-hidden shadow-2xl min-h-[380px]">
               
               {/* Attack assessment popup alerts */}
               {attackStatus !== 'none' && (
@@ -1330,19 +1382,29 @@ export default function DisasterRecoveryVisualizer() {
               </div>
 
               {/* Console log output */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-400">
-                {backupLogs.length === 0 ? (
-                  <div className="text-slate-500 italic text-center py-4">Vault sandbox idle. Click "Run Backup Job" to capture system state.</div>
-                ) : (
-                  backupLogs.map((log, index) => (
-                    <div key={index} className="flex gap-2">
-                      <span className="text-indigo-400">{log.timestamp}</span>
-                      <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
-                        {log.message}
-                      </span>
-                    </div>
-                  ))
-                )}
+              <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md">
+                <div className="bg-slate-50 dark:bg-slate-950 px-3 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-400" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  </div>
+                  <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">backup-vault.log</span>
+                </div>
+                <div className="bg-slate-900 dark:bg-slate-950 p-3 h-24 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-300">
+                  {backupLogs.length === 0 ? (
+                    <div className="text-slate-400 italic text-center py-4">Vault sandbox idle. Click "Run Backup Job" to capture system state.</div>
+                  ) : (
+                    backupLogs.map((log, index) => (
+                      <div key={index} className="flex gap-2">
+                        <span className="text-emerald-400">{log.timestamp}</span>
+                        <span className={log.type === 'error' ? 'text-rose-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : 'text-slate-300'}>
+                          {log.message}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1355,7 +1417,7 @@ export default function DisasterRecoveryVisualizer() {
       {/* ========================================================================= */}
       {activeTab === 'playbook' && (
         <div className="space-y-6 text-left animate-fadeIn">
-          <div className="da-card text-left">
+          <div className="da-card border-t-4 border-t-indigo-500 dark:border-t-indigo-500/50 text-left">
             <h2 className="da-card-title text-indigo-700 dark:text-indigo-400">
               <BookOpen className="w-5 h-5 text-indigo-500 dark:text-indigo-400" /> Architect's Disaster Recovery Playbook &amp; Strategy Tips
             </h2>
@@ -1364,11 +1426,11 @@ export default function DisasterRecoveryVisualizer() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-755 dark:text-slate-350 leading-relaxed">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
             
             {/* Box 1 */}
-            <div className="da-card text-left space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="da-card border-t-4 border-t-indigo-500 dark:border-t-indigo-500/50 text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 dark:text-indigo-300 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 📂 1. Schema Migration &amp; AWS SCT
               </h4>
               <p>
@@ -1382,8 +1444,8 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Box 2 */}
-            <div className="da-card text-left space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="da-card border-t-4 border-t-indigo-500 dark:border-t-indigo-500/50 text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 dark:text-indigo-300 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 🛢️ 2. RDS &amp; Aurora Global Database DR
               </h4>
               <p>
@@ -1397,8 +1459,8 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Box 3 */}
-            <div className="da-card text-left space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="da-card border-t-4 border-t-indigo-500 dark:border-t-indigo-500/50 text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 dark:text-indigo-300 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 🔒 3. AWS Backup Vault Lock Best Practices
               </h4>
               <p>
@@ -1412,8 +1474,8 @@ export default function DisasterRecoveryVisualizer() {
             </div>
 
             {/* Box 4 */}
-            <div className="da-card text-left space-y-3">
-              <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="da-card border-t-4 border-t-indigo-500 dark:border-t-indigo-500/50 text-left space-y-3">
+              <h4 className="font-extrabold text-slate-900 dark:text-indigo-300 text-sm flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                 🌐 4. Hybrid On-Premise Migration Strategy
               </h4>
               <p>
@@ -1431,11 +1493,11 @@ export default function DisasterRecoveryVisualizer() {
       {activeTab === 'notebook' && (
         <div className="space-y-6 animate-fadeIn text-left">
           
-          <div className="da-card text-left">
+          <div className="da-card border-t-4 border-t-amber-500 dark:border-t-amber-500/50 text-left">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
-              <BookOpen className="w-5 h-5 text-indigo-650 dark:text-indigo-400" /> Disaster Recovery &amp; Database Migration Notes
+              <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" /> Disaster Recovery &amp; Database Migration Notes
             </h2>
-            <p className="text-xs text-slate-650 dark:text-slate-400 mt-1.5 leading-relaxed font-sans font-semibold">
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed font-sans font-semibold">
               Explore Disaster Recovery metrics (RTO/RPO), AWS Database Migration Service (DMS) continuous replication, Schema Conversion Tool (SCT), and Backup Vault Lock governance strategies.
             </p>
           </div>
@@ -1444,7 +1506,7 @@ export default function DisasterRecoveryVisualizer() {
             
             {/* Left Sidebar Category Explorer */}
             <div className="lg:col-span-3 space-y-4 text-left">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">VPC Directory Tree:</span>
+              <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block pl-1">DR Module Directory:/</span>
               
               <div className="acad-dir-container">
                 <div className="acad-dir-header">
@@ -1610,26 +1672,26 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Disaster Recovery Metrics</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">RTO &amp; RPO Technical Taxonomy</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">RTO &amp; RPO Technical Taxonomy</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('strategies')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Info className="w-3 h-3" /> Go to DR Strategies
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 1 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 1 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Recovery Point Objective (RPO) and Recovery Time Objective (RTO) are the critical architectural pillars that dictate the engineering complexity, system redundancy, and cost requirements of a Disaster Recovery framework.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">Core Architecture Characteristics:</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">Core Architecture Characteristics:</span>
                       <table className="acad-table">
                         <thead>
                           <tr>
@@ -1641,8 +1703,8 @@ export default function DisasterRecoveryVisualizer() {
                         <tbody>
                           <tr>
                             <td className="font-extrabold">Definition</td>
-                            <td className="text-slate-600 dark:text-slate-350">Maximum tolerable data loss margin</td>
-                            <td className="text-slate-600 dark:text-slate-350">Maximum tolerable downtime duration</td>
+                            <td className="text-slate-600 dark:text-slate-300">Maximum tolerable data loss margin</td>
+                            <td className="text-slate-600 dark:text-slate-300">Maximum tolerable downtime duration</td>
                           </tr>
                           <tr>
                             <td className="font-extrabold">Focus Area</td>
@@ -1670,8 +1732,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Disaster Timeline Visualizer</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Understand where RPO and RTO apply relative to a disaster event</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Disaster Timeline Visualizer</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Understand where RPO and RTO apply relative to a disaster event</p>
                       </div>
 
                       <div className="w-full py-4 rounded-xl border border-slate-100 flex items-center justify-center da-svg-bg">
@@ -1711,7 +1773,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-medium">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                         📊 Note: RPO limits are strictly dictated by data persistence strategies (backups frequency vs continuous replication), whereas RTO is capped by deployment orchestration speed.
                       </span>
                     </div>
@@ -1727,20 +1789,20 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Architecture Blueprints</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DR Strategy Blueprints &amp; Redundancies</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS DR Strategy Blueprints &amp; Redundancies</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('strategies')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Info className="w-3 h-3" /> Go to DR Strategies
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 2 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 2 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-550 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     AWS categorizes disaster recovery strategies into four distinct archetypes. Selecting a strategy is a trade-off between the Cost of Infrastructure and the Cost of Downtime. Explore the architectures below:
                   </p>
 
@@ -1753,8 +1815,8 @@ export default function DisasterRecoveryVisualizer() {
                           onClick={() => setActiveStrategyTab(strat)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all select-none ${
                             activeStrategyTab === strat
-                              ? 'bg-indigo-600 text-white shadow-md'
-                              : 'text-slate-650 dark:text-slate-350 hover:bg-slate-200 dark:hover:bg-slate-800'
+                              ? 'bg-amber-600 text-white shadow-md shadow-amber-500/10'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
                           }`}
                         >
                           {strat === 'backup' && '💾 Backup & Restore'}
@@ -1768,12 +1830,12 @@ export default function DisasterRecoveryVisualizer() {
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                       
                       <div className="md:col-span-7 flex flex-col justify-between">
-                        <div className="da-inner-card border rounded-xl p-4 space-y-3 text-xs leading-relaxed text-slate-700 dark:text-slate-350">
+                        <div className="da-inner-card border rounded-xl p-4 space-y-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
                           {activeStrategyTab === 'backup' && (
                             <div>
                               <strong className="text-blue-700 dark:text-blue-400 block text-sm mb-1">💾 Backup &amp; Restore Strategy (Highest RTO/RPO)</strong>
                               Daily or hourly snapshots and database transactions are stored securely in Amazon S3. In the recovery region, the compute environment is entirely <strong>Cold (0 active servers)</strong>. During disaster recovery, standard scripts provision network infrastructure, deploy server templates (AMIs), and restore backups from S3.
-                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
+                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
                                 <strong>RPO:</strong> &lt; 24 hours | <strong>RTO:</strong> &lt; 24 hours | <strong>Cost:</strong> Minimal ($)
                               </div>
                             </div>
@@ -1783,7 +1845,7 @@ export default function DisasterRecoveryVisualizer() {
                               <strong className="text-indigo-700 dark:text-indigo-400 block text-sm mb-1">🔥 Pilot Light Strategy (Low Cost Standby)</strong>
                               The databases and persistent storages are <strong>actively running</strong> in the standby region to replicate data in real time. However, application servers and other components are completely turned off or unprovisioned.
                               When a failover triggers, we quickly boot standby EC2 instances from AMIs and map endpoints.
-                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
+                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
                                 <strong>RPO:</strong> &lt; 60 mins | <strong>RTO:</strong> &lt; 4 hours | <strong>Cost:</strong> Low ($$)
                               </div>
                             </div>
@@ -1792,7 +1854,7 @@ export default function DisasterRecoveryVisualizer() {
                             <div>
                               <strong className="text-purple-700 dark:text-purple-400 block text-sm mb-1">⛅ Warm Standby Strategy (Scaled Down Fleet)</strong>
                               A scaled-down but <strong>fully functional</strong> copy of the primary infrastructure runs in the secondary region. Web servers are active (e.g. running 1 instance instead of 4), and database replication is live. Upon failover, the system automatically triggers an Auto Scaling Group scale-up rule to expand computing to full production size, resulting in sub-hour RTO.
-                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
+                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
                                 <strong>RPO:</strong> &lt; 15 mins | <strong>RTO:</strong> &lt; 1 hour | <strong>Cost:</strong> Medium ($$$)
                               </div>
                             </div>
@@ -1801,7 +1863,7 @@ export default function DisasterRecoveryVisualizer() {
                             <div>
                               <strong className="text-rose-700 dark:text-rose-400 block text-sm mb-1">⚡ Multi-Site Active-Active (Zero Downtime)</strong>
                               Two fully operational, mirrored environments handle traffic concurrently in both regions. Route 53 utilizes Anycast latency routing to split traffic between Region A and Region B. Database replication is handled at the hardware physical layer (e.g. Aurora Global Database), guaranteeing sub-second replication and immediate RTO failovers.
-                              <div className="mt-2 text-[10.5px] text-slate-500 dark:text-slate-400">
+                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
                                 <strong>RPO:</strong> Near-Zero | <strong>RTO:</strong> Near-Zero | <strong>Cost:</strong> Extreme ($$$$)
                               </div>
                             </div>
@@ -1988,37 +2050,37 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Resilience &amp; Testing</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">High Availability &amp; Chaos Engineering</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">High Availability &amp; Chaos Engineering</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('multiregion')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Zap className="w-3 h-3" /> Go to Failover Simulator
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 3 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 3 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Surviving a regional failure requires separating High Availability (HA) from Disaster Recovery (DR) and continuously validating systems via automated backups and chaos injection.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
                     <div className="md:col-span-6 space-y-4">
-                      <div className="space-y-3.5 text-xs text-slate-700 leading-relaxed">
+                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                         <div>
-                          <strong className="text-slate-900 block font-bold">1. High Availability (HA) vs. Disaster Recovery (DR)</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">1. High Availability (HA) vs. Disaster Recovery (DR)</strong>
                           <strong>HA (Multi-AZ)</strong> targets localized hardware/software failures, providing automated synchronous failover within a single AWS region under minute boundaries. <strong>DR (Multi-Region)</strong> targets geographic catastrophe, re-routing traffic across global networks under hours boundaries.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">2. Automated Restore Validation</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">2. Automated Restore Validation</strong>
                           Backing up data is useless if the recovery points are corrupted. Automate backup verification using **AWS Backup Restore Testing**: it triggers isolated, mock restores on a cron schedule, logs output telemetry, and destroys test instances automatically.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">3. Chaos Engineering: Test to Trust</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">3. Chaos Engineering: Test to Trust</strong>
                           Do not wait for a real failure to find out if your Route 53 health checks work. Use **AWS Fault Injection Service (FIS)** to routinely execute automated disruption scenarios (RDS crash, packet leaks, AZ blackholes) to guarantee resilient runbooks.
                         </div>
                       </div>
@@ -2030,19 +2092,19 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[320px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">AWS FIS Chaos Sandbox Terminal</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Select a failure drill and trigger the automated attack simulator</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">AWS FIS Chaos Sandbox Terminal</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Select a failure drill and trigger the automated attack simulator</p>
                       </div>
 
                       <div className="space-y-2 mt-4">
-                        <span className="text-[9.5px] font-extrabold text-slate-400 dark:text-slate-500 block uppercase tracking-wider">Select Chaos Target Vector:</span>
+                        <span className="text-[9.5px] font-extrabold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">Select Chaos Target Vector:</span>
                         <div className="grid grid-cols-3 gap-1">
                           <button
                             onClick={() => setChaosSimType('rds_failover')}
                             className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
                               chaosSimType === 'rds_failover'
-                                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-200'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
+                                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-600 dark:border-amber-500 text-amber-900 dark:text-amber-200 shadow-sm'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-800'
                             }`}
                           >
                             🛢️ RDS Failover
@@ -2051,8 +2113,8 @@ export default function DisasterRecoveryVisualizer() {
                             onClick={() => setChaosSimType('az_blackhole')}
                             className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
                               chaosSimType === 'az_blackhole'
-                                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-200'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
+                                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-600 dark:border-amber-500 text-amber-900 dark:text-amber-200 shadow-sm'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-800'
                             }`}
                           >
                             🔌 AZ Blackhole
@@ -2061,8 +2123,8 @@ export default function DisasterRecoveryVisualizer() {
                             onClick={() => setChaosSimType('dns_split_brain')}
                             className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
                               chaosSimType === 'dns_split_brain'
-                                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-200'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
+                                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-600 dark:border-amber-500 text-amber-900 dark:text-amber-200 shadow-sm'
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-800'
                             }`}
                           >
                             🌐 DNS Brain
@@ -2071,22 +2133,32 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
 
                       {/* Blinking Retro Terminal Console Output */}
-                      <div className="bg-slate-950 border border-slate-900 dark:border-slate-800 rounded-xl p-3 h-32 overflow-y-auto text-[10px] font-mono leading-relaxed text-emerald-400 shadow-inner mt-3">
-                        {chaosConsoleLogs.length === 0 ? (
-                          <div className="text-slate-500 italic py-6 text-center">
-                            Console idle. Ready for FIS Injection.<br />
-                            <span className="animate-pulse">_</span>
+                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md mt-3">
+                        <div className="bg-slate-50 dark:bg-slate-950 px-3 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-400" />
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
                           </div>
-                        ) : (
-                          chaosConsoleLogs.map((log, idx) => (
-                            <div key={idx} className="flex gap-2">
-                              <span className="text-slate-600">{log.timestamp}</span>
-                              <span className={log.type === 'error' ? 'text-rose-500 font-bold' : log.type === 'warn' ? 'text-amber-400' : 'text-emerald-400'}>
-                                {log.message}
-                              </span>
+                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">aws-fis-chaos.log</span>
+                        </div>
+                        <div className="bg-slate-900 dark:bg-slate-950 p-3 h-32 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-300">
+                          {chaosConsoleLogs.length === 0 ? (
+                            <div className="text-slate-400 italic py-6 text-center">
+                              Console idle. Ready for FIS Injection.<br />
+                              <span className="animate-pulse">_</span>
                             </div>
-                          ))
-                        )}
+                          ) : (
+                            chaosConsoleLogs.map((log, idx) => (
+                              <div key={idx} className="flex gap-2">
+                                <span className="text-amber-500">{log.timestamp}</span>
+                                <span className={log.type === 'error' ? 'text-rose-500 font-bold' : log.type === 'warn' ? 'text-amber-400' : 'text-emerald-400'}>
+                                  {log.message}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
 
                       <button
@@ -2094,8 +2166,8 @@ export default function DisasterRecoveryVisualizer() {
                         disabled={chaosSimStatus === 'running'}
                         className={`w-full font-black text-xs py-2 rounded-xl mt-3 transition-all flex items-center justify-center gap-1.5 shadow-md ${
                           chaosSimStatus === 'running'
-                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                            : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm'
+                            ? 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/80 cursor-not-allowed'
+                            : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm shadow-rose-500/10 dark:shadow-rose-500/20'
                         }`}
                       >
                         <Zap className="w-4 h-4" /> {chaosSimStatus === 'running' ? 'Injecting Fault...' : '⚡ Inject Chaos Simulation'}
@@ -2114,38 +2186,38 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Multi-Region &amp; Hybrid</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Route 53 Active-Passive DNS Failover</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">Route 53 Active-Passive DNS Failover</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('multiregion')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Activity className="w-3 h-3" /> Go to Failover Simulator
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 4 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 4 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Amazon Route 53 routes globally distributed users to active resources. During a region-wide outage, Route 53 automatically shifts DNS resolutions to the disaster recovery region using health probe status feeds.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">Technical Failover Pillars:</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">Technical Failover Pillars:</span>
                       
-                      <div className="space-y-3 text-xs leading-relaxed text-slate-655">
+                      <div className="space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                         <div>
-                          <strong className="text-slate-850 block">1. Anycast Routing Plane</strong>
+                          <strong className="text-slate-800 dark:text-white block">1. Anycast Routing Plane</strong>
                           Users connect to any of the dozens of Route 53 Edge Locations worldwide. Requests are processed at the nearest POP, optimizing latency and resilience against Layer-3/4 DDoS attacks.
                         </div>
                         <div>
-                          <strong className="text-slate-850 block">2. Route 53 Health Checks</strong>
+                          <strong className="text-slate-800 dark:text-white block">2. Route 53 Health Checks</strong>
                           Route 53 probes endpoints every 10 or 30 seconds. If an endpoint fails consecutive checks, it is flagged as Unhealthy, removing its A/CNAME record from DNS answers.
                         </div>
                         <div>
-                          <strong className="text-slate-850 block">3. DNS TTL (Time To Live) Limits</strong>
+                          <strong className="text-slate-800 dark:text-white block">3. DNS TTL (Time To Live) Limits</strong>
                           Browsers and local ISP recursive resolvers cache DNS answers. To ensure immediate failover re-routing, set the TTL for failover records to <strong>60 seconds or lower</strong> (e.g. 10s or 30s) to minimize cached stale routes.
                         </div>
                       </div>
@@ -2158,8 +2230,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">DNS Routing Topology</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Route 53 re-routing active traffic around degraded Region A</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">DNS Routing Topology</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Route 53 re-routing active traffic around degraded Region A</p>
                       </div>
 
                       <div className="w-full rounded-xl p-4 flex items-center justify-center da-svg-bg border border-slate-200">
@@ -2209,7 +2281,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-medium">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                         💡 Health probes measure latency and TCP/HTTP return status. Unhealthy nodes are removed automatically without administrator intervention.
                       </span>
                     </div>
@@ -2225,30 +2297,30 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Database Synchronization</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon Aurora Global Databases</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">Amazon Aurora Global Databases</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 5 of 10</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 5 of 10</span>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Amazon Aurora Global Databases enable low-latency cross-region replication by executing physical replication directly within the storage volume cluster layer, completely bypassing the compute database engines.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">Aurora Storage Layer Mechanics:</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">Aurora Storage Layer Mechanics:</span>
                       
-                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-655">
+                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                         <div>
-                          <strong className="text-slate-850 block">1. Physical Block Replication</strong>
+                          <strong className="text-slate-800 dark:text-white block">1. Physical Block Replication</strong>
                           Standard database replication streams SQL statements or logical binlogs, which must be executed by the target DB node. Aurora Global Databases stream raw physical blocks directly between NVMe storage systems, minimizing lag.
                         </div>
                         <div>
-                          <strong className="text-slate-850 block">2. Sub-Second Cross-Region Latency</strong>
+                          <strong className="text-slate-800 dark:text-white block">2. Sub-Second Cross-Region Latency</strong>
                           Replication lag between us-east-1 and eu-west-1 is typically <strong>under 1 second (1000ms)</strong>. This guarantees a near-zero RPO boundary, ensuring that database commits are copied to the DR region almost immediately.
                         </div>
                         <div>
-                          <strong className="text-slate-850 block">3. Multi-Region Write Forwarding</strong>
+                          <strong className="text-slate-800 dark:text-white block">3. Multi-Region Write Forwarding</strong>
                           Normally replica endpoints are strictly read-only. Aurora write-forwarding allows secondary clusters to accept write requests from local apps, automatically forwarding them to the Primary Writer region under the hood.
                         </div>
                       </div>
@@ -2261,8 +2333,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Physical Storage Replication</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Continuous block transfers bypass SQL execution overheads</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Physical Storage Replication</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Continuous block transfers bypass SQL execution overheads</p>
                       </div>
 
                       <div className="w-full rounded-xl p-4 flex flex-col items-center justify-center da-svg-bg border border-slate-200">
@@ -2297,7 +2369,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-medium">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                         💡 Since storage replication is handled asynchronously, there is no performance penalty or writing latency impact on the Primary DB cluster.
                       </span>
                     </div>
@@ -2313,30 +2385,30 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">On-Premises Integration</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Backup Gateway &amp; Hybrid Storage DR</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Backup Gateway &amp; Hybrid Storage DR</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 6 of 10</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 6 of 10</span>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Bridging legacy infrastructure with AWS requires seamless hybrid backup channels. Deploying AWS Backup Gateway connects on-premises hypervisors natively to secure cloud vaults.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
                     <div className="md:col-span-6 space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">Hybrid Backup Architecture:</span>
-                      <div className="space-y-3.5 text-xs text-slate-700 leading-relaxed">
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">Hybrid Backup Architecture:</span>
+                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                         <div>
-                          <strong className="text-slate-900 block font-bold">1. AWS Backup Gateway</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">1. AWS Backup Gateway</strong>
                           A lightweight VMware ESXi, Hyper-V, or physical virtual appliance deployed locally on-premises. It connects local hypervisors directly to AWS Backup endpoints over the internet, public endpoints, or private VPC interfaces via AWS Direct Connect.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">2. Cross-Account Backup Vault Copying</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">2. Cross-Account Backup Vault Copying</strong>
                           To isolate data from primary AWS account compromises (ransomware or root logins), configure automated cross-account copies. Backup jobs replicate snapshots into a secondary AWS account containing a strictly guarded backup vault.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">3. Immutable WORM Vaults</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">3. Immutable WORM Vaults</strong>
                           Lock the vaults using **AWS Backup Vault Lock**. Write-Once-Read-Many policies ensure recovery points remain completely undeletable by standard users or external hijackers.
                         </div>
                       </div>
@@ -2348,8 +2420,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Hybrid Backup Flow Topology</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">On-premises VMs replicating snapshots directly to immutable cloud vaults</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Hybrid Backup Flow Topology</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">On-premises VMs replicating snapshots directly to immutable cloud vaults</p>
                       </div>
 
                       <div className="w-full rounded-xl p-3 flex items-center justify-center da-svg-bg border border-slate-200">
@@ -2378,7 +2450,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-semibold">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold">
                         📊 Note: Deploying the lightweight gateway appliance requires zero modifications to existing virtual machine configurations.
                       </span>
                     </div>
@@ -2395,38 +2467,38 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Database &amp; Backup Governance</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS DMS CDC Continuous Sync</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS DMS CDC Continuous Sync</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('dms')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Database className="w-3 h-3" /> Go to DMS Simulator
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 7 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 7 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     AWS Database Migration Service (DMS) executes continuous database synchronizations. Integrating **Change Data Capture (CDC)** engines reads native log buffers in real time to capture active commits without database downtime.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
                     {/* Left Column: Interactive compatibility matrix */}
-                    <div className="md:col-span-6 space-y-4 text-xs text-slate-700 dark:text-slate-350 leading-relaxed">
+                    <div className="md:col-span-6 space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                       
                       <div className="da-inner-card border rounded-xl p-4 space-y-3">
                         <span className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">DMS Migration Pair Compatibility Matrix</span>
                         
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 block mb-1">1. Select Source DB:</label>
+                            <label className="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 block mb-1">1. Select Source DB:</label>
                             <select
                               value={dmsMatrixSource}
                               onChange={(e) => setDmsMatrixSource(e.target.value)}
-                              className="w-full bg-white border border-slate-200 rounded p-1 text-[11px] font-extrabold text-slate-700"
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-1 text-[11px] font-extrabold text-slate-700 dark:text-slate-300"
                             >
                               <option value="oracle">Oracle Enterprise</option>
                               <option value="sqlserver">Microsoft SQL Server</option>
@@ -2437,11 +2509,11 @@ export default function DisasterRecoveryVisualizer() {
                           </div>
 
                           <div>
-                            <label className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 block mb-1">2. Select Target DB:</label>
+                            <label className="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 block mb-1">2. Select Target DB:</label>
                             <select
                               value={dmsMatrixTarget}
                               onChange={(e) => setDmsMatrixTarget(e.target.value)}
-                              className="w-full bg-white border border-slate-200 rounded p-1 text-[11px] font-extrabold text-slate-700"
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-1 text-[11px] font-extrabold text-slate-700 dark:text-slate-300"
                             >
                               <option value="aurora">Amazon Aurora Cluster</option>
                               <option value="rds_pg">RDS PostgreSQL</option>
@@ -2488,8 +2560,8 @@ export default function DisasterRecoveryVisualizer() {
                     <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px] relative overflow-hidden">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Change Data Capture (CDC) Pipeline</span>
-                          <p className="text-[11px] text-slate-500 mt-0.5">Real-time log-scraping and delivery parser channel</p>
+                          <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Change Data Capture (CDC) Pipeline</span>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Real-time log-scraping and delivery parser channel</p>
                         </div>
                         <button
                           onClick={() => setIsCdcAnimating(!isCdcAnimating)}
@@ -2535,7 +2607,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-semibold leading-normal">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold leading-normal">
                         📊 Note: Continuous replication reduces application cutover downtime to just a few seconds since target schemas are fully synchronized.
                       </span>
                     </div>
@@ -2552,39 +2624,39 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Database &amp; Backup Governance</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Schema Conversion Tool (SCT)</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Schema Conversion Tool (SCT)</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('dms')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Database className="w-3 h-3" /> Go to DMS Simulator
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 8 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 8 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Migrating databases across different engines (heterogeneous, e.g. Oracle to PostgreSQL) requires schema translation. **AWS Schema Conversion Tool (SCT)** handles code and database object conversion natively.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
                     <div className="md:col-span-6 space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">SCT Structural Conversion Process:</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">SCT Structural Conversion Process:</span>
                       
-                      <div className="space-y-3.5 text-xs text-slate-700 leading-relaxed">
+                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                         <div>
-                          <strong className="text-slate-900 block font-bold">1. Translation Report Generation</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">1. Translation Report Generation</strong>
                           SCT scans source database schemas, tables, functions, stored procedures, packages, and triggers. It produces an evaluation report detailing how much code can be converted automatically (typically 80-90%) and highlights compatibility remediation items.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">2. Schema Translation &amp; DDL Loading</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">2. Schema Translation &amp; DDL Loading</strong>
                           Once rules are verified, SCT writes clean compatible DDL scripts (e.g. converting Oracle PL/SQL to PostgreSQL PL/pgSQL). It loads these directly onto the target Amazon Aurora cluster.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">3. SCT Extension Pack</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">3. SCT Extension Pack</strong>
                           For native functions that have no equivalent standard target dialect SQL blocks, the SCT Extension Pack is installed on the target database, emulating source functions to maintain application behavior.
                         </div>
                       </div>
@@ -2596,8 +2668,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px] relative overflow-hidden">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Multi-Phase Schema Translation Flow</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">How SCT converts structures before DMS loads database tables</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Multi-Phase Schema Translation Flow</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">How SCT converts structures before DMS loads database tables</p>
                       </div>
 
                       <div className="w-full rounded-xl p-4 flex items-center justify-center my-4 da-svg-bg border border-slate-200">
@@ -2640,7 +2712,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-semibold leading-normal">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold leading-normal">
                         💡 Note: Running the conversion utility does not access or duplicate production records, avoiding performance overheads.
                       </span>
                     </div>
@@ -2657,38 +2729,38 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Database &amp; Backup Governance</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Backup Vault Lock &amp; WORM</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Backup Vault Lock &amp; WORM</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('backup')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <Shield className="w-3 h-3" /> Go to Backup &amp; Vault
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 9 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 9 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     AWS Backup Vault Lock enforces write-once-read-many (WORM) storage controls on backup recovery points. By lock-securing vaults, you prevent accidental deletions, rogue administrator adjustments, or ransomware backup sabotage.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">Vault Lock Technical Modes:</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">Vault Lock Technical Modes:</span>
                       
-                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-655">
+                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                         <div>
-                          <strong className="text-slate-850 block">1. Governance Mode</strong>
+                          <strong className="text-slate-800 dark:text-white block">1. Governance Mode</strong>
                           Enforces block permissions that prevent backup deletions by standard users. However, authorized administrators with explicit, highly guarded IAM roles can override restrictions and delete backups if required.
                         </div>
                         <div>
-                          <strong className="text-slate-850 block">2. Compliance Mode (Immutable WORM)</strong>
+                          <strong className="text-slate-800 dark:text-white block">2. Compliance Mode (Immutable WORM)</strong>
                           Locks the vault permanently. Once the cooling-off period expires, **no user—not even the AWS root account or AWS support—can delete the vault lock or remove backup recovery points** until their retention expiration date.
                         </div>
                         <div>
-                          <strong className="text-slate-850 block">3. Cooling-Off Grace Period</strong>
+                          <strong className="text-slate-800 dark:text-white block">3. Cooling-Off Grace Period</strong>
                           Compliance Mode provides a custom cooling-off window (1 to 7 days). During this grace period, you can still test, adjust, or disable the compliance lock. Once the window closes, the lock is irreversible.
                         </div>
                       </div>
@@ -2701,8 +2773,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Ransomware Sabotage Attack Test</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Attempt to delete immutable backups under Vault Compliance Lock</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Ransomware Sabotage Attack Test</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Attempt to delete immutable backups under Vault Compliance Lock</p>
                       </div>
 
                       <div className="w-full rounded-xl p-4 flex flex-col items-center justify-center space-y-4 da-svg-bg border border-slate-200">
@@ -2726,7 +2798,7 @@ export default function DisasterRecoveryVisualizer() {
                         </div>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-medium">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                         💡 Combining Compliance Lock with cross-account backup vault copies protects your enterprise data against root account compromises.
                       </span>
                     </div>
@@ -2742,39 +2814,39 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Enterprise Migration Suite</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Application Discovery Service &amp; MGN Orchestration</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Application Discovery Service &amp; MGN Orchestration</h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('playbook')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                       >
                         <BookOpen className="w-3 h-3" /> Go to Recovery Playbook
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 10 of 10</span>
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 10 of 10</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Large-scale cloud migrations require structured planning and block-level replication pipelines. AWS utilizes **ADS** for environmental audits and **MGN** for continuous server conversions.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
                     <div className="md:col-span-6 space-y-4">
-                      <span className="text-xs font-black text-slate-800 block">System Technical Profiles:</span>
+                      <span className="text-xs font-black text-slate-800 dark:text-white block">System Technical Profiles:</span>
                       
-                      <div className="space-y-3.5 text-xs text-slate-700 leading-relaxed">
+                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                         <div>
-                          <strong className="text-slate-900 block font-bold">1. AWS Application Discovery Service (ADS)</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">1. AWS Application Discovery Service (ADS)</strong>
                           Discovers on-premises infrastructure dependencies. Deploys **Discovery Agents** on servers or runs **Agentless Collectors** on VMware vCenter. It builds a map of CPU/RAM limits, hardware specifications, and network traffic, exporting a migration roadmap.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">2. AWS Application Migration Service (MGN)</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">2. AWS Application Migration Service (MGN)</strong>
                           AWS's primary tool for lifting-and-shifting physical servers or hypervisors into AWS. It uses an **AWS Replication Agent** installed on source VMs to stream block-level modifications continuously into a private replication staging area in AWS.
                         </div>
                         <div>
-                          <strong className="text-slate-900 block font-bold">3. Staging Area &amp; Cutover Conversions</strong>
+                          <strong className="text-slate-900 dark:text-white block font-bold">3. Staging Area &amp; Cutover Conversions</strong>
                           The Staging Area runs low-cost replication instances and lightweight EBS storage nodes. During cutover, MGN automatically executes driver conversions (converting hypervisor drivers to AWS PV/NVMe drivers) and boots a production EC2 instance.
                         </div>
                       </div>
@@ -2786,8 +2858,8 @@ export default function DisasterRecoveryVisualizer() {
 
                     <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">AWS MGN Block Replication Pipeline</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Streaming continuous host storage sectors into cloud staging subnets</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">AWS MGN Block Replication Pipeline</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Streaming continuous host storage sectors into cloud staging subnets</p>
                       </div>
 
                       <div className="w-full rounded-xl p-4 flex items-center justify-center da-svg-bg border border-slate-200">
@@ -2833,7 +2905,7 @@ export default function DisasterRecoveryVisualizer() {
                         </svg>
                       </div>
 
-                      <span className="text-[10px] text-slate-500 font-semibold leading-normal">
+                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold leading-normal">
                         💡 Note: Drivers are dynamically injected into the target filesystem during staging, allowing instant booting upon final promotion.
                       </span>
                     </div>
@@ -2850,24 +2922,24 @@ export default function DisasterRecoveryVisualizer() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
                     <div>
                       <span className="acad-hero-badge">Large Scale Migration</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Large Scale Data Transfer Channels</h3>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">Large Scale Data Transfer Channels</h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-400">Concept 11 of 10</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 11 of 10</span>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     Transferring large datasets (terabytes or petabytes) requires balancing network bandwidth constraints against physical shipping times. Explore standard pathways and run our calculator below:
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                     
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
+                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                       <div>
-                        <strong className="text-slate-900 block font-bold">1. Network Transfer (DataSync &amp; Direct Connect)</strong>
+                        <strong className="text-slate-900 dark:text-white block font-bold">1. Network Transfer (DataSync &amp; Direct Connect)</strong>
                         **AWS DataSync** automates network replication over NFS, SMB, or S3, utilizing custom multi-threaded transfers. Pair with a dedicated **AWS Direct Connect** (1G/10G/100G fiber connection) to guarantee bandwidth speeds.
                       </div>
                       <div>
-                        <strong className="text-slate-900 block font-bold">2. Physical Snow Family Transport</strong>
+                        <strong className="text-slate-900 dark:text-white block font-bold">2. Physical Snow Family Transport</strong>
                         When bandwidth is narrow, transfer physically:
                         <ul className="list-disc pl-4 mt-1 space-y-1">
                           <li><strong>Snowcone (8–14 TB)</strong>: Lightweight, ruggedized edge-computing and file transfer unit.</li>
@@ -2876,21 +2948,21 @@ export default function DisasterRecoveryVisualizer() {
                         </ul>
                       </div>
                       <div>
-                        <strong className="text-slate-900 block font-bold">3. AWS Transfer Family</strong>
+                        <strong className="text-slate-900 dark:text-white block font-bold">3. AWS Transfer Family</strong>
                         A managed service to ingest daily transfers using legacy SFTP, FTPS, and FTP structures directly into Amazon S3 or EFS files.
                       </div>
                     </div>
 
                     <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[340px]">
                       <div>
-                        <span className="text-[10px] font-black text-slate-400 block uppercase tracking-wider">Feasibility &amp; ETA Calculator</span>
-                        <p className="text-[11px] text-slate-500 mt-0.5">Determine if physical transport saves time over network streaming</p>
+                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Feasibility &amp; ETA Calculator</span>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Determine if physical transport saves time over network streaming</p>
                       </div>
 
                       {/* Calculator Sliders */}
                       <div className="space-y-3 mt-3">
                         <div>
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                             <span>📦 Total Dataset Size:</span>
                             <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{calcDataSizeTB} TB</span>
                           </div>
@@ -2905,7 +2977,7 @@ export default function DisasterRecoveryVisualizer() {
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">
+                          <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                             <span>🌐 Available Net Bandwidth:</span>
                             <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
                               {calcBandwidthMbps >= 1000 ? `${(calcBandwidthMbps / 1000).toFixed(1)} Gbps` : `${calcBandwidthMbps} Mbps`}
@@ -2924,7 +2996,7 @@ export default function DisasterRecoveryVisualizer() {
                       </div>
 
                       {/* Computed Outputs */}
-                      <div className="da-svg-bg border p-3 rounded-lg text-[10px] font-mono leading-relaxed text-slate-600 dark:text-slate-350 space-y-1.5 mt-3">
+                      <div className="da-svg-bg border p-3 rounded-lg text-[10px] font-mono leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 mt-3">
                         <div className="flex justify-between">
                           <span>🌐 Network Transfer (80% Eff):</span>
                           <span className="text-amber-600 dark:text-amber-400 font-extrabold">
@@ -2977,25 +3049,27 @@ function styleBlock() {
       .dr-container {
         font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
         color: var(--da-text);
-        background-color: var(--da-bg);
+        background-color: transparent;
         padding: 20px;
         border-radius: 16px;
         transition: all 0.25s ease;
 
+        /* Base Variables (Light Mode) */
         --da-bg: #f8fafc;
-        --da-text: #1e293b;
+        --da-text: #334155;
         --da-text-title: #0f172a;
         --da-text-muted: #475569;
-        --da-card-bg: rgba(255, 255, 255, 0.95);
-        --da-card-border: rgba(226, 232, 240, 0.9);
-        --da-card-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
         
-        --da-tab-bg: rgba(255, 255, 255, 0.85);
-        --da-tab-border: rgba(226, 232, 240, 0.85);
+        --da-card-bg: rgba(255, 255, 255, 0.7);
+        --da-card-border: rgba(226, 232, 240, 0.8);
+        --da-card-shadow: 0 10px 30px -10px rgba(148, 163, 184, 0.12), 0 1px 3px rgba(148, 163, 184, 0.02);
+        
+        --da-tab-bg: rgba(255, 255, 255, 0.5);
+        --da-tab-border: rgba(226, 232, 240, 0.8);
         --da-tab-text: #475569;
-        --da-tab-hover-bg: #f8fafc;
+        --da-tab-hover-bg: rgba(255, 255, 255, 0.9);
         --da-tab-hover-border: #cbd5e1;
-        --da-tab-hover-text: #1e293b;
+        --da-tab-hover-text: #0f172a;
         
         --da-input-bg: #ffffff;
         --da-input-color: #0f172a;
@@ -3010,90 +3084,313 @@ function styleBlock() {
         --da-table-th-text: #475569;
         --da-table-td-text: #334155;
 
-        --da-svg-bg: #ffffff;
-        --da-svg-grid: radial-gradient(rgba(37, 99, 235, 0.03) 1.5px, transparent 1.5px);
+        --da-svg-bg: #f8fafc;
+        --da-svg-grid: radial-gradient(rgba(99, 102, 241, 0.07) 1.5px, transparent 1.5px);
         
-        --da-svg-indigo-bg: #eff6ff;
-        --da-svg-indigo-border: #3b82f6;
-        --da-svg-indigo-text: #1e3a8a;
+        --da-svg-indigo-bg: #e0e7ff;
+        --da-svg-indigo-border: #6366f1;
+        --da-svg-indigo-text: #4338ca;
         
-        --da-svg-green-bg: #f0fdf4;
+        --da-svg-green-bg: #dcfce7;
         --da-svg-green-border: #10b981;
-        --da-svg-green-text: #065f46;
+        --da-svg-green-text: #047857;
         
-        --da-svg-red-bg: #fff5f5;
+        --da-svg-red-bg: #fee2e2;
         --da-svg-red-border: #f43f5e;
-        --da-svg-red-text: #b91c1c;
+        --da-svg-red-text: #be123c;
         
-        --da-svg-amber-bg: #fffbeb;
-        --da-svg-amber-border: #fef3c7;
+        --da-svg-amber-bg: #fef3c7;
+        --da-svg-amber-border: #f59e0b;
         --da-svg-amber-text: #b45309;
 
-        --da-svg-purple-bg: #faf5ff;
-        --da-svg-purple-border: #c084fc;
-        --da-svg-purple-text: #6b21a8;
+        --da-svg-purple-bg: #f3e8ff;
+        --da-svg-purple-border: #a855f7;
+        --da-svg-purple-text: #7e22ce;
+
+        /* Academy mapping variables (Light mode) */
+        --acad-dir-bg: #ffffff;
+        --acad-dir-border: rgba(226, 232, 240, 0.8);
+        --acad-dir-header-bg: #f8fafc;
+        --acad-dir-header-text: #0f172a;
+        --acad-dir-folder-btn-bg: rgba(248, 250, 252, 0.6);
+        --acad-dir-folder-btn-text: #334155;
+        --acad-dir-folder-hover-bg: rgba(241, 245, 249, 0.8);
+        --acad-dir-item-btn-bg: transparent;
+        --acad-dir-item-text: #475569;
+        --acad-dir-item-hover-bg: rgba(254, 243, 199, 0.4);
+        --acad-dir-item-hover-text: #b45309;
+        --acad-dir-item-active-bg: #fef3c7;
+        --acad-dir-item-active-text: #b45309;
+        --acad-dir-item-active-border: #d97706;
+
+        --acad-detail-bg: rgba(255, 255, 255, 0.8);
+        --acad-detail-border: rgba(226, 232, 240, 0.8);
+        --acad-detail-text: #334155;
+        
+        --acad-hero-badge-bg: #ecfdf5;
+        --acad-hero-badge-border: #a7f3d0;
+        --acad-hero-badge-text: #065f46;
+
+        --acad-takeaway-border: #4f46e5;
+        --acad-takeaway-bg: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
+        --acad-takeaway-text: #334155;
+        
+        --acad-terminal-bg: #090d16;
+        --acad-terminal-text: #cbd5e1;
+
+        /* Blueprint Card variables (Light mode) */
+        --da-blueprint-bg: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+        --da-blueprint-text: #0f172a;
+        --da-blueprint-muted: #475569;
+        --da-blueprint-accent: #2563eb;
+        --da-blueprint-accent-rose: #be123c;
+        --da-blueprint-inner-bg: rgba(255, 255, 255, 0.7);
+        --da-blueprint-inner-border: rgba(14, 165, 233, 0.2);
       }
+
+      /* Centralized Dark Mode Overrides mapping */
+      .dark .dr-container {
+        background-color: transparent !important;
+        color: #cbd5e1 !important;
+
+        --da-bg: #020617;
+        --da-text: #cbd5e1;
+        --da-text-title: #ffffff;
+        --da-text-muted: #94a3b8;
+        --da-card-bg: rgba(15, 23, 42, 0.75);
+        --da-card-border: rgba(51, 65, 85, 0.6);
+        --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        
+        --da-tab-bg: rgba(15, 23, 42, 0.6);
+        --da-tab-border: rgba(51, 65, 85, 0.6);
+        --da-tab-text: #94a3b8;
+        --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
+        --da-tab-hover-border: rgba(51, 65, 85, 0.6);
+        --da-tab-hover-text: #f8fafc;
+        
+        --da-input-bg: #0f172a;
+        --da-input-color: #f1f5f9;
+        --da-input-border: rgba(51, 65, 85, 0.8);
+        
+        --da-code-bg: #020617;
+        --da-code-border: rgba(51, 65, 85, 0.6);
+        --da-code-text: #38bdf8;
+        
+        --da-table-border: rgba(51, 65, 85, 0.6);
+        --da-table-th-bg: rgba(15, 23, 42, 0.8);
+        --da-table-th-text: #94a3b8;
+        --da-table-td-text: #cbd5e1;
+
+        --da-svg-bg: #020617;
+        --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
+        
+        --da-svg-indigo-bg: rgba(59, 130, 246, 0.15);
+        --da-svg-indigo-border: rgba(59, 130, 246, 0.5);
+        --da-svg-indigo-text: #60a5fa;
+        
+        --da-svg-green-bg: rgba(16, 185, 129, 0.15);
+        --da-svg-green-border: rgba(16, 185, 129, 0.5);
+        --da-svg-green-text: #4ade80;
+        
+        --da-svg-red-bg: rgba(244, 63, 94, 0.15);
+        --da-svg-red-border: rgba(244, 63, 94, 0.5);
+        --da-svg-red-text: #f87171;
+        
+        --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
+        --da-svg-amber-border: rgba(245, 158, 11, 0.5);
+        --da-svg-amber-text: #fbbf24;
+
+        --da-svg-purple-bg: rgba(192, 132, 252, 0.15);
+        --da-svg-purple-border: rgba(192, 132, 252, 0.5);
+        --da-svg-purple-text: #c084fc;
+
+        /* Academy mapping variables (Dark mode) */
+        --acad-dir-bg: rgba(15, 23, 42, 0.5);
+        --acad-dir-border: rgba(51, 65, 85, 0.6);
+        --acad-dir-header-bg: rgba(15, 23, 42, 0.9);
+        --acad-dir-header-text: #ffffff;
+        --acad-dir-folder-btn-bg: rgba(15, 23, 42, 0.7);
+        --acad-dir-folder-btn-text: #94a3b8;
+        --acad-dir-folder-hover-bg: rgba(30, 41, 59, 0.8);
+        --acad-dir-item-btn-bg: transparent;
+        --acad-dir-item-text: #94a3b8;
+        --acad-dir-item-hover-bg: rgba(30, 41, 59, 0.8);
+        --acad-dir-item-hover-text: #fbbf24;
+        --acad-dir-item-active-bg: rgba(245, 158, 11, 0.15);
+        --acad-dir-item-active-text: #fbbf24;
+        --acad-dir-item-active-border: #f59e0b;
+
+        --acad-detail-bg: rgba(15, 23, 42, 0.75);
+        --acad-detail-border: rgba(51, 65, 85, 0.6);
+        --acad-detail-text: #cbd5e1;
+        
+        --acad-hero-badge-bg: rgba(16, 185, 129, 0.15);
+        --acad-hero-badge-border: rgba(16, 185, 129, 0.3);
+        --acad-hero-badge-text: #4ade80;
+
+        --acad-takeaway-border: rgba(51, 65, 85, 0.6);
+        --acad-takeaway-bg: rgba(15, 23, 42, 0.6);
+        --acad-takeaway-text: #cbd5e1;
+        
+        --acad-terminal-bg: #020617;
+        --acad-terminal-text: #cbd5e1;
+
+        /* Blueprint Card variables (Dark mode) */
+        --da-blueprint-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        --da-blueprint-text: #ffffff;
+        --da-blueprint-muted: #94a3b8;
+        --da-blueprint-accent: #60a5fa;
+        --da-blueprint-accent-rose: #f43f5e;
+        --da-blueprint-inner-bg: rgba(255, 255, 255, 0.05);
+        --da-blueprint-inner-border: rgba(255, 255, 255, 0.1);
+      }
+
+      .dr-gradient-title {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .dark .dr-gradient-title {
+        background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* Mapping Tailwind slate utility overrides inside .dr-container exactly like OperationsAndMLVisualizer */
+      .dr-container .text-slate-900,
+      .dr-container .text-slate-800,
+      .dr-container .text-slate-850,
+      .dr-container .text-slate-505 {
+        color: var(--da-text-title) !important;
+      }
+      .dr-container .text-slate-700,
+      .dr-container .text-slate-650 {
+        color: var(--da-text) !important;
+      }
+      .dr-container .text-slate-600,
+      .dr-container .text-slate-550,
+      .dr-container .text-slate-500,
+      .dr-container .text-slate-450,
+      .dr-container .text-slate-400 {
+        color: var(--da-text-muted) !important;
+      }
+
       .da-card {
-        background: rgba(255, 255, 255, 0.95);
-        border: 1.5px solid rgba(226, 232, 240, 0.9);
+        background: var(--da-card-bg);
+        border: 1px solid var(--da-card-border);
         border-radius: 16px;
         padding: 24px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
-        transition: all 0.2s ease-in-out;
+        box-shadow: var(--da-card-shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .da-card:hover {
-        border-color: #4f46e5;
-        box-shadow: 0 10px 20px -4px rgba(79, 70, 229, 0.04);
+        transform: translateY(-2px);
+        border-color: rgba(99, 102, 241, 0.25);
+        box-shadow: 0 20px 25px -5px rgba(148, 163, 184, 0.15), 0 10px 10px -5px rgba(148, 163, 184, 0.05);
+      }
+      .da-blueprint-card {
+        background: var(--da-blueprint-bg) !important;
+        color: var(--da-blueprint-text) !important;
+        border: 1px solid var(--da-card-border) !important;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: var(--da-card-shadow);
+        position: relative;
+        overflow: hidden;
+      }
+      .da-blueprint-inner {
+        background: var(--da-blueprint-inner-bg) !important;
+        border: 1px solid var(--da-blueprint-inner-border) !important;
+        border-radius: 12px;
+        padding: 12px;
       }
       .da-card-title {
         font-size: 17px;
         font-weight: 800;
-        color: #0f172a;
+        color: var(--da-text-title);
         margin-bottom: 10px;
         display: flex;
         align-items: center;
         gap: 8px;
+        transition: color 0.2s ease;
+      }
+      .da-card:hover .da-card-title {
+        color: #4f46e5;
       }
       .da-card-desc {
         font-size: 13px;
-        color: #475569;
+        color: var(--da-text-muted);
         line-height: 1.6;
       }
       .da-tabs {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         flex-wrap: wrap;
-        margin-bottom: 20px;
-        border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
-        padding-bottom: 10px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--da-card-border);
+        padding-bottom: 12px;
       }
       .da-tb {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
+        gap: 8px;
+        padding: 10px 18px;
         border-radius: 12px;
-        border: 1.5px solid rgba(226, 232, 240, 0.85);
-        font-size: 12px;
+        border: 1.5px solid var(--da-tab-border);
+        font-size: 12.5px;
         font-weight: 600;
-        color: #475569;
-        background: rgba(255, 255, 255, 0.85);
+        color: var(--da-tab-text);
+        background: var(--da-tab-bg);
         cursor: pointer;
         white-space: nowrap;
-        transition: all 0.15s ease-in-out;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         outline: none;
       }
       .da-tb:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-        color: #1e293b;
+        background: var(--da-tab-hover-bg);
+        border-color: var(--da-tab-hover-border);
+        color: var(--da-tab-hover-text);
+        transform: translateY(-1px);
       }
-      .da-tb.da-on {
-        background: #4f46e5;
-        color: #ffffff;
-        border-color: #4f46e5;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+      .da-tb.da-on-notebook {
+        background: rgba(217, 119, 6, 0.08);
+        color: #b45309;
+        border-color: rgba(217, 119, 6, 0.4);
+        box-shadow: 0 4px 12px rgba(217, 119, 6, 0.08);
+      }
+      .da-tb.da-on-strategies {
+        background: rgba(13, 148, 136, 0.08);
+        color: #0f766e;
+        border-color: rgba(13, 148, 136, 0.4);
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.08);
+      }
+      .da-tb.da-on-multiregion {
+        background: rgba(2, 132, 199, 0.08);
+        color: #0369a1;
+        border-color: rgba(2, 132, 199, 0.4);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);
+      }
+      .da-tb.da-on-dms {
+        background: rgba(234, 88, 12, 0.08);
+        color: #c2410c;
+        border-color: rgba(234, 88, 12, 0.4);
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.08);
+      }
+      .da-tb.da-on-backup {
+        background: rgba(5, 150, 105, 0.08);
+        color: #047857;
+        border-color: rgba(5, 150, 105, 0.4);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08);
+      }
+      .da-tb.da-on-playbook {
+        background: rgba(99, 102, 241, 0.08);
+        color: #4f46e5;
+        border-color: rgba(99, 102, 241, 0.4);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
       }
 
       .dr-flow-blue {
@@ -3112,7 +3409,7 @@ function styleBlock() {
         animation: flowDash 0.4s linear infinite;
       }
       .dr-flow-gray {
-        stroke: #334155;
+        stroke: #64748b;
         stroke-dasharray: 4,4;
       }
       
@@ -3131,13 +3428,13 @@ function styleBlock() {
         }
       }
 
-      /* Modern Architect Learning Center styles */
       .da-edu-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        background: var(--da-card-bg);
+        border: 1px solid var(--da-card-border);
         border-radius: 16px;
         padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        box-shadow: var(--da-card-shadow);
+        backdrop-filter: blur(12px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .da-edu-card:hover {
@@ -3146,18 +3443,19 @@ function styleBlock() {
         border-color: #c7d2fe;
       }
       
-      /* Premium Academy Directory Styles */
+      /* Academy mappings styled exactly using CSS variables */
       .acad-dir-container {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        background: var(--acad-dir-bg);
+        border: 1px solid var(--acad-dir-border);
         border-radius: 16px;
         overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.03);
+        backdrop-filter: blur(12px);
       }
       .acad-dir-header {
-        background: var(--da-table-th-bg);
-        color: var(--da-text-title);
-        border-bottom: 1.5px solid var(--da-table-border);
+        background: var(--acad-dir-header-bg);
+        color: var(--acad-dir-header-text);
+        border-bottom: 1.5px solid var(--acad-dir-border);
         padding: 16px;
         font-weight: 800;
         font-size: 11px;
@@ -3173,18 +3471,19 @@ function styleBlock() {
         align-items: center;
         justify-content: space-between;
         padding: 12px 16px;
-        background: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-        font-size: 10px;
-        font-weight: 850;
-        color: #475569;
+        background: var(--acad-dir-folder-btn-bg);
+        border: none;
+        border-bottom: 1px solid var(--acad-dir-border);
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--acad-dir-folder-btn-text);
         text-transform: uppercase;
         letter-spacing: 0.04em;
         transition: all 0.2s ease;
+        cursor: pointer;
       }
       .acad-dir-folder-btn:hover {
-        background: #f1f5f9;
-        color: #1e293b;
+        background: var(--acad-dir-folder-hover-bg);
       }
       .acad-dir-item-btn {
         width: 100%;
@@ -3194,34 +3493,36 @@ function styleBlock() {
         padding: 10px 18px;
         font-size: 12px;
         font-weight: 600;
-        color: #64748b;
+        color: var(--acad-dir-item-text);
+        border: none;
         border-left: 3px solid transparent;
-        background: #ffffff;
+        background: var(--acad-dir-item-btn-bg);
         transition: all 0.15s ease;
         text-align: left;
+        cursor: pointer;
       }
       .acad-dir-item-btn:hover {
-        background: #f8fafc;
-        color: #4f46e5;
-        border-left-color: #cbd5e1;
+        background: var(--acad-dir-item-hover-bg);
+        color: var(--acad-dir-item-hover-text);
       }
       .acad-dir-item-btn.acad-active {
-        background: #eef2ff;
-        color: #4338ca;
-        border-left-color: #4f46e5;
+        background: var(--acad-dir-item-active-bg);
+        color: var(--acad-dir-item-active-text);
+        border-left-color: var(--acad-dir-item-active-border);
         font-weight: 800;
       }
       .acad-detail-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        background: var(--acad-detail-bg);
+        border: 1px solid var(--acad-detail-border);
         border-radius: 16px;
         padding: 28px;
-        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        box-shadow: var(--da-card-shadow);
+        backdrop-filter: blur(16px);
       }
       .acad-hero-badge {
-        background: #ecfdf5;
-        border: 1.5px solid #a7f3d0;
-        color: #065f46;
+        background: var(--acad-hero-badge-bg);
+        border: 1.5px solid var(--acad-hero-badge-border);
+        color: var(--acad-hero-badge-text);
         font-size: 9.5px;
         font-weight: 900;
         letter-spacing: 0.08em;
@@ -3233,14 +3534,17 @@ function styleBlock() {
         gap: 5px;
       }
       .acad-takeaway-box {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-left: 4px solid #4f46e5;
+        background: var(--acad-takeaway-bg);
+        border-left: 4px solid var(--acad-takeaway-border);
         border-radius: 12px;
         padding: 18px;
         font-size: 12px;
         line-height: 1.6;
-        color: #475569;
+        color: var(--acad-takeaway-text);
         font-weight: 600;
+        border-top: 1px solid var(--da-card-border);
+        border-right: 1px solid var(--da-card-border);
+        border-bottom: 1px solid var(--da-card-border);
       }
       .acad-table {
         width: 100%;
@@ -3248,51 +3552,54 @@ function styleBlock() {
         font-size: 12px;
         border-radius: 12px;
         overflow: hidden;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--da-table-border);
       }
       .acad-table th {
-        background: #f8fafc;
-        color: #334155;
+        background: var(--da-table-th-bg);
+        color: var(--da-table-th-text);
         font-weight: 800;
         padding: 12px 14px;
-        border-bottom: 1.5px solid #e2e8f0;
+        border-bottom: 1.5px solid var(--da-table-border);
         text-align: left;
       }
       .acad-table td {
         padding: 12px 14px;
-        border-bottom: 1px solid #f1f5f9;
-        color: #475569;
+        border-bottom: 1px solid var(--da-table-border);
+        color: var(--da-table-td-text);
       }
       .acad-table tr:last-child td {
         border-bottom: none;
       }
       .acad-sim-diagram {
-        background: var(--da-card-bg);
+        background: var(--da-svg-bg);
+        background-image: var(--da-svg-grid);
+        background-size: 16px 16px;
         border: 1.5px solid var(--da-card-border);
         border-radius: 16px;
         padding: 18px;
-        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.02);
         position: relative;
       }
       .da-svg-bg {
         background-color: var(--da-svg-bg) !important;
+        background-image: var(--da-svg-grid) !important;
+        background-size: 16px 16px !important;
         border-color: var(--da-card-border) !important;
       }
       .da-inner-card {
-        background-color: var(--da-bg) !important;
+        background-color: rgba(248, 250, 252, 0.5) !important;
         border-color: var(--da-card-border) !important;
       }
       .acad-terminal {
-        background: #090d16;
-        border: 1px solid #1e293b;
+        background: var(--acad-terminal-bg);
+        border: 1.5px solid var(--da-code-border);
         border-radius: 12px;
         padding: 14px;
         font-family: 'Fira Code', 'Courier New', Courier, monospace;
-        color: #cbd5e1;
+        color: var(--acad-terminal-text);
         box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
       }
       
-      /* Active custom nodes glow classes */
       .dr-node-glow {
         animation: drNodeGlow 1.5s infinite alternate;
       }
@@ -3301,221 +3608,118 @@ function styleBlock() {
         to { filter: drop-shadow(0 0 10px rgba(79, 70, 229, 0.7)); }
       }
 
-        /* Centralized Dark Mode Overrides for DisasterRecoveryVisualizer.tsx */
-        .dark .dr-container {
-          background-color: #020617 !important;
-          color: #cbd5e1 !important;
-
-          --da-bg: #020617;
-          --da-text: #cbd5e1;
-          --da-text-title: #ffffff;
-          --da-text-muted: #94a3b8;
-          --da-card-bg: rgba(15, 23, 42, 0.75);
-          --da-card-border: rgba(51, 65, 85, 0.6);
-          --da-card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-          
-          --da-tab-bg: rgba(15, 23, 42, 0.6);
-          --da-tab-border: rgba(51, 65, 85, 0.6);
-          --da-tab-text: #94a3b8;
-          --da-tab-hover-bg: rgba(30, 41, 59, 0.8);
-          --da-tab-hover-border: rgba(51, 65, 85, 0.6);
-          --da-tab-hover-text: #f8fafc;
-          
-          --da-input-bg: #0f172a;
-          --da-input-color: #f1f5f9;
-          --da-input-border: rgba(51, 65, 85, 0.8);
-          
-          --da-code-bg: #020617;
-          --da-code-border: rgba(51, 65, 85, 0.6);
-          --da-code-text: #38bdf8;
-          
-          --da-table-border: rgba(51, 65, 85, 0.6);
-          --da-table-th-bg: rgba(15, 23, 42, 0.8);
-          --da-table-th-text: #94a3b8;
-          --da-table-td-text: #cbd5e1;
-
-          --da-svg-bg: #020617;
-          --da-svg-grid: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px);
-          
-          --da-svg-indigo-bg: rgba(59, 130, 246, 0.15);
-          --da-svg-indigo-border: rgba(59, 130, 246, 0.5);
-          --da-svg-indigo-text: #60a5fa;
-          
-          --da-svg-green-bg: rgba(16, 185, 129, 0.15);
-          --da-svg-green-border: rgba(16, 185, 129, 0.5);
-          --da-svg-green-text: #4ade80;
-          
-          --da-svg-red-bg: rgba(244, 63, 94, 0.15);
-          --da-svg-red-border: rgba(244, 63, 94, 0.5);
-          --da-svg-red-text: #f87171;
-          
-          --da-svg-amber-bg: rgba(245, 158, 11, 0.15);
-          --da-svg-amber-border: rgba(245, 158, 11, 0.5);
-          --da-svg-amber-text: #fbbf24;
-
-          --da-svg-purple-bg: rgba(192, 132, 252, 0.15);
-          --da-svg-purple-border: rgba(192, 132, 252, 0.5);
-          --da-svg-purple-text: #c084fc;
-        }
-        .dark .da-card,
-        .dark [class*="da-card"] {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        }
-        .dark .da-card b,
-        .dark .da-card strong,
-        .dark .da-card h3,
-        .dark .da-card h4 {
-          color: #ffffff !important;
-        }
-        .dark .da-tabs {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .da-tb {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .da-tb:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .da-sec,
-        .dark .da-kk {
-          color: #94a3b8 !important;
-        }
-        .dark .da-log,
-        .dark .da-terminal {
-          background: #020617 !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .da-btn {
-          background: rgba(15, 23, 42, 0.8) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .da-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.da-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst,
-        .dark .da-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .da-inst .meta,
-        .dark .da-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .da-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        
-        /* Node Status Overrides */
-        .dark .da-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .da-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .da-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .da-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
-        }
-        
-        /* General form overrides */
-        .dark select,
-        .dark input,
-        .dark textarea {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-          border-color: rgba(51, 65, 85, 0.8) !important;
-        }
-        .dark select option {
-          background-color: #0f172a !important;
-          color: #f1f5f9 !important;
-        }
-    
-        .dark .acad-dir-container {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-header {
-          background: var(--da-table-th-bg) !important;
-          color: var(--da-text-title) !important;
-          border-bottom-color: var(--da-table-border) !important;
-        }
-        .dark .acad-dir-folder-btn {
-          background: rgba(15, 23, 42, 0.7) !important;
-          color: #94a3b8 !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-dir-folder-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #ffffff !important;
-        }
-        .dark .acad-dir-item-btn {
-          background: rgba(15, 23, 42, 0.5) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .acad-dir-item-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #38bdf8 !important;
-        }
-        .dark .acad-dir-item-btn.acad-active {
-          background: rgba(2, 132, 199, 0.2) !important;
-          color: #38bdf8 !important;
-          border-left-color: #0ea5e9 !important;
-        }
-        .dark .acad-table {
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table th {
-          background: rgba(15, 23, 42, 0.9) !important;
-          color: #ffffff !important;
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-table td {
-          border-bottom-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-sim-diagram {
-          background: rgba(15, 23, 42, 0.7) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        .dark .acad-detail-card {
-          background: rgba(15, 23, 42, 0.75) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .acad-takeaway-box {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-              `}</style>
+      /* Custom inputs style */
+      .dr-container select,
+      .dr-container input:not([type="checkbox"]),
+      .dr-container textarea {
+        background-color: var(--da-input-bg) !important;
+        color: var(--da-input-color) !important;
+        border-color: var(--da-input-border) !important;
+      }
+      
+      .dark .da-card:hover .da-card-title {
+        color: #6366f1 !important;
+      }
+      .dark .da-tb.da-on-notebook {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1) !important;
+      }
+      .dark .da-tb.da-on-strategies {
+        background: rgba(13, 148, 136, 0.15) !important;
+        color: #2dd4bf !important;
+        border-color: rgba(13, 148, 136, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1) !important;
+      }
+      .dark .da-tb.da-on-multiregion {
+        background: rgba(14, 165, 233, 0.15) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(14, 165, 233, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1) !important;
+      }
+      .dark .da-tb.da-on-dms {
+        background: rgba(234, 88, 12, 0.15) !important;
+        color: #fb923c !important;
+        border-color: rgba(234, 88, 12, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(234, 88, 12, 0.1) !important;
+      }
+      .dark .da-tb.da-on-backup {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #4ade80 !important;
+        border-color: rgba(16, 185, 129, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1) !important;
+      }
+      .dark .da-tb.da-on-playbook {
+        background: rgba(99, 102, 241, 0.15) !important;
+        color: #a5b4fc !important;
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1) !important;
+      }
+      .dark .da-sec,
+      .dark .da-kk {
+        color: #94a3b8 !important;
+      }
+      .dark .da-log,
+      .dark .da-terminal {
+        background: #020617 !important;
+        border-color: rgba(51, 65, 85, 0.6) !important;
+        color: #38bdf8 !important;
+      }
+      .dark .da-btn {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border-color: rgba(51, 65, 85, 0.6) !important;
+        color: #cbd5e1 !important;
+      }
+      .dark .da-btn:hover {
+        background: rgba(30, 41, 59, 0.8) !important;
+        color: #ffffff !important;
+      }
+      .dark .da-met {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border-color: rgba(51, 65, 85, 0.6) !important;
+        color: #cbd5e1 !important;
+      }
+      .dark ul.da-ck li {
+        color: #cbd5e1 !important;
+      }
+      .dark .da-inst,
+      .dark .da-instance {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border-color: rgba(51, 65, 85, 0.6) !important;
+        color: #cbd5e1 !important;
+      }
+      .dark .da-inst .meta,
+      .dark .da-instance .meta {
+        color: #94a3b8 !important;
+      }
+      
+      /* Node Status Overrides */
+      .dark .da-ok {
+        border-color: #10b981 !important;
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #4ade80 !important;
+      }
+      .dark .da-warm {
+        border-color: #f59e0b !important;
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+      }
+      .dark .da-drain {
+        border-color: #3b82f6 !important;
+        background: rgba(59, 130, 246, 0.15) !important;
+        color: #60a5fa !important;
+      }
+      .dark .da-down {
+        border-color: #ef4444 !important;
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #f87171 !important;
+      }
+      
+      .dark select option {
+        background-color: #0f172a !important;
+        color: #f1f5f9 !important;
+      }
+    `}</style>
   );
 }
