@@ -6,7 +6,7 @@
     <script type="text/javascript">
       // SPA redirect script for GitHub Pages
       var l = window.location;
-      var pathSegmentsToKeep = 1; // since the repo name is 1 segment: /interactivevisualizers
+      var pathSegmentsToKeep = 1; // since the repo name is 1 segment: /interactive-visualizers
       
       var prefix = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/');
       var routePath = l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/');

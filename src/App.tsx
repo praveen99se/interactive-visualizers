@@ -28,8 +28,8 @@ import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
-  const isGithubPages = window.location.pathname.startsWith('/interactivevisualizers');
-  const basename = isGithubPages ? '/interactivevisualizers' : '';
+  const isGithubPages = window.location.pathname.startsWith('/interactive-visualizers');
+  const basename = isGithubPages ? '/interactive-visualizers' : '';
 
   return (
     <Router basename={basename}>
