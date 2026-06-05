@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Cloud } from 'lucide-react';
 import Home from './pages/Home';
 import LoadBalancerVisualizer from './pages/visualizers/LoadBalancerVisualizer';
@@ -28,9 +28,11 @@ import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
+  const isGithubPages = window.location.pathname.startsWith('/interactive-visualizers');
+  const basename = isGithubPages ? '/interactive-visualizers' : '';
 
   return (
-    <Router>
+    <Router basename={basename}>
       <ScrollToTop />
       <div className={`min-h-screen flex flex-col font-sans transition-colors duration-500 ${
         isDarkTheme ? 'dark bg-slate-950 text-slate-100' : 'bg-[#f8fafc] text-slate-800'
