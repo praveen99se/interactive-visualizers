@@ -38,6 +38,15 @@ interface VisualizerItem {
 
 const visualizers: VisualizerItem[] = [
   {
+    id: 'ec2',
+    title: '💻 AWS EC2',
+    description: 'Simulations of virtual compute instances, bootstrapping scripts, security groups, spot markets, placement groups, and EBS vs EFS',
+    tags: ['Virtual Servers', 'EBS vs EFS', 'Placement Groups'],
+    category: 'compute',
+    path: '/visualizers/ec2',
+    icon: '💻',
+  },
+  {
     id: 'load-balancer',
     title: '⚖️ Load Balancer',
     description: 'Understand load balancer stickiness mechanisms - cookies vs flow hashing',
@@ -90,15 +99,6 @@ const visualizers: VisualizerItem[] = [
     category: 'networking',
     path: '/visualizers/route53',
     icon: '🌐',
-  },
-  {
-    id: 'ec2',
-    title: '💻 AWS EC2',
-    description: 'Simulations of virtual compute instances, bootstrapping scripts, security groups, spot markets, placement groups, and EBS vs EFS',
-    tags: ['Virtual Servers', 'EBS vs EFS', 'Placement Groups'],
-    category: 'compute',
-    path: '/visualizers/ec2',
-    icon: '💻',
   },
   {
     id: 's3',
@@ -225,27 +225,6 @@ const visualizers: VisualizerItem[] = [
     category: 'integration',
     path: '/visualizers/operations-ml',
     icon: '⚙️',
-  },
-  // Upcoming Roadmap Items
-  {
-    id: 'sorting-algorithms',
-    title: '🔀 Sorting Algorithms',
-    description: 'Visualize how different sorting algorithms work in real-time',
-    tags: ['Algorithms', 'Data Structures'],
-    category: 'compute',
-    path: '/visualizers/sorting',
-    icon: '📊',
-    comingSoon: true,
-  },
-  {
-    id: 'network-topology',
-    title: '🌐 Network Topology',
-    description: 'Explore OSI model, TCP/IP stack, and network protocols',
-    tags: ['Networking', 'Education'],
-    category: 'networking',
-    path: '/visualizers/network',
-    icon: '📡',
-    comingSoon: true,
   },
 ];
 

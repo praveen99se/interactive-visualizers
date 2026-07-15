@@ -885,7 +885,7 @@ export default function Route53Visualizer() {
 
   // Cache Cabinet styling classes
   let cacheBoxClass = '';
-  let cacheBoxStroke = '#334155';
+  let cacheBoxStroke = 'var(--r53-inner-card-border)';
   let cacheBoxStrokeWidth = 1;
 
   if (dnsStepIndex === 1) {
@@ -900,6 +900,10 @@ export default function Route53Visualizer() {
         cacheBoxStrokeWidth = 2.5;
       }
     }
+  } else if (hasCacheItems) {
+    cacheBoxClass = 'cache-active-pulse';
+    cacheBoxStroke = 'var(--color-green)';
+    cacheBoxStrokeWidth = 1.5;
   }
 
   return (
@@ -1334,6 +1338,36 @@ export default function Route53Visualizer() {
             filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8));
           }
         }
+        @keyframes clientPulse {
+          from { filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.4)); }
+          to { filter: drop-shadow(0 0 14px rgba(59, 130, 246, 0.85)); }
+        }
+        @keyframes resolverPulse {
+          from { filter: drop-shadow(0 0 2px rgba(249, 115, 22, 0.4)); }
+          to { filter: drop-shadow(0 0 14px rgba(249, 115, 22, 0.85)); }
+        }
+        @keyframes rootPulse {
+          from { filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.4)); }
+          to { filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.85)); }
+        }
+        @keyframes tldPulse {
+          from { filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.4)); }
+          to { filter: drop-shadow(0 0 14px rgba(37, 99, 235, 0.85)); }
+        }
+        @keyframes authPulse {
+          from { filter: drop-shadow(0 0 2px rgba(124, 58, 237, 0.4)); }
+          to { filter: drop-shadow(0 0 14px rgba(124, 58, 237, 0.85)); }
+        }
+        @keyframes appPulse {
+          from { filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.4)); }
+          to { filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.85)); }
+        }
+        .pulse-client { animation: clientPulse 1.2s infinite alternate ease-in-out; }
+        .pulse-resolver { animation: resolverPulse 1.2s infinite alternate ease-in-out; }
+        .pulse-root { animation: rootPulse 1.2s infinite alternate ease-in-out; }
+        .pulse-tld { animation: tldPulse 1.2s infinite alternate ease-in-out; }
+        .pulse-auth { animation: authPulse 1.2s infinite alternate ease-in-out; }
+        .pulse-app { animation: appPulse 1.2s infinite alternate ease-in-out; }
 
         /* Modern Architect Learning Center styles */
         .da-edu-card {
@@ -1782,10 +1816,10 @@ export default function Route53Visualizer() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
               
               <div className="card text-left">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
-                  <BookOpen className="w-5 h-5 text-indigo-600" /> Route 53 Global Routing Notes
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
+                  <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Route 53 Global Routing Notes
                 </h2>
-                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-sans font-semibold">
                   Explore Domain Name System (DNS) fundamentals, Route 53 routing policies (geolocation, latency, failover), virtual aliases, and hybrid DNS resolution.
                 </p>
               </div>
@@ -2469,7 +2503,7 @@ export default function Route53Visualizer() {
           <div>
             <div className="r53-sec">How DNS Resolution Works — Step-by-Step Flow</div>
             <div className="r53-card">
-              <svg width="100%" viewBox="0 0 680 270" className="r53-svg-bg">
+              <svg width="100%" viewBox="0 0 680 300" className="r53-svg-bg">
                 <defs>
                   <linearGradient id="client-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="var(--primary-grad-start)" />
@@ -2524,63 +2558,75 @@ export default function Route53Visualizer() {
                 </defs>
 
                 {/* ==================== 1. USER LOCAL CLIENT SUBNET ==================== */}
-                <rect x="6" y="6" width="138" height="252" rx="10" fill="var(--r53-subnet-client-bg)" stroke="var(--r53-subnet-client-stroke)" strokeWidth="1" strokeDasharray="4,2" />
-                <text x="12" y="18" fill="var(--r53-subnet-client-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">User Local Client Subnet</text>
+                <rect x="6" y="32" width="138" height="262" rx="10" fill="var(--r53-subnet-client-bg)" stroke="var(--r53-subnet-client-stroke)" strokeWidth="1.5" strokeDasharray="4,3" />
+                <g transform="translate(6, 6)">
+                  <rect width="138" height="20" rx="6" fill="var(--r53-inner-card-bg)" stroke="var(--r53-subnet-client-stroke)" strokeWidth="1.2" />
+                  <text x="69" y="13" textAnchor="middle" fill="var(--r53-subnet-client-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">💻 LOCAL CLIENT ZONE</text>
+                </g>
 
                 {/* ==================== 2. PUBLIC RESOLVER SUBNET NETWORK ==================== */}
-                <rect x="150" y="6" width="140" height="252" rx="10" fill="var(--r53-subnet-resolver-bg)" stroke="var(--r53-subnet-resolver-stroke)" strokeWidth="1" strokeDasharray="4,2" />
-                <text x="156" y="18" fill="var(--r53-subnet-resolver-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">Public DNS Resolver Subnet</text>
+                <rect x="150" y="32" width="140" height="262" rx="10" fill="var(--r53-subnet-resolver-bg)" stroke="var(--r53-subnet-resolver-stroke)" strokeWidth="1.5" strokeDasharray="4,3" />
+                <g transform="translate(150, 6)">
+                  <rect width="140" height="20" rx="6" fill="var(--r53-inner-card-bg)" stroke="var(--r53-subnet-resolver-stroke)" strokeWidth="1.2" />
+                  <text x="70" y="13" textAnchor="middle" fill="var(--r53-subnet-resolver-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">🔄 PUBLIC RESOLVER ZONE</text>
+                </g>
 
                 {/* ==================== 3. AUTHORITATIVE DNS PLANE LAYER ==================== */}
-                <rect x="310" y="6" width="190" height="252" rx="10" fill="var(--r53-subnet-auth-bg)" stroke="var(--r53-subnet-auth-stroke)" strokeWidth="1" strokeDasharray="4,2" />
-                <text x="316" y="18" fill="var(--r53-subnet-auth-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">Authoritative DNS Plane</text>
+                <rect x="310" y="32" width="190" height="262" rx="10" fill="var(--r53-subnet-auth-bg)" stroke="var(--r53-subnet-auth-stroke)" strokeWidth="1.5" strokeDasharray="4,3" />
+                <g transform="translate(310, 6)">
+                  <rect width="190" height="20" rx="6" fill="var(--r53-inner-card-bg)" stroke="var(--r53-subnet-auth-stroke)" strokeWidth="1.2" />
+                  <text x="95" y="13" textAnchor="middle" fill="var(--r53-subnet-auth-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">🌐 AUTHORITATIVE DNS PLANE</text>
+                </g>
 
                 {/* ==================== 4. APPLICATION ENDPOINT SUBNET ==================== */}
-                <rect x="526" y="6" width="148" height="252" rx="10" fill="var(--r53-subnet-app-bg)" stroke="var(--r53-subnet-app-stroke)" strokeWidth="1" strokeDasharray="4,2" />
-                <text x="532" y="18" fill="var(--r53-subnet-app-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">Target Application Subnet</text>
+                <rect x="526" y="32" width="148" height="262" rx="10" fill="var(--r53-subnet-app-bg)" stroke="var(--r53-subnet-app-stroke)" strokeWidth="1.5" strokeDasharray="4,3" />
+                <g transform="translate(526, 6)">
+                  <rect width="148" height="20" rx="6" fill="var(--r53-inner-card-bg)" stroke="var(--r53-subnet-app-stroke)" strokeWidth="1.2" />
+                  <text x="74" y="13" textAnchor="middle" fill="var(--r53-subnet-app-text)" fontSize="7.5" fontWeight="bold" letterSpacing="0.05em">🖥️ TARGET ENDPOINT ZONE</text>
+                </g>
 
                 {/* BACKGROUND PIPELINES & ACTIVE GLOWING CONDUITS */}
                 {/* Browser to Cache */}
-                <path d="M 60 130 L 75 46" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2,2" />
+                <path d="M 60 156 L 75 72" fill="none" stroke="#cbd5e1" strokeWidth="1.2" strokeDasharray="2,2" />
                 {dnsStepIndex === 1 && !isCacheHit && (
-                  <path d="M 60 130 L 75 46" fill="none" className="r53-flow-orange" strokeWidth="1.8" />
+                  <path d="M 60 156 L 75 72" fill="none" className="r53-flow-orange" strokeWidth="1.8" />
                 )}
                 {dnsStepIndex === 1 && isCacheHit && (
-                  <path d="M 60 130 L 75 46" fill="none" className="r53-flow-green" strokeWidth="2" />
+                  <path d="M 60 156 L 75 72" fill="none" className="r53-flow-green" strokeWidth="2" />
                 )}
 
                 {/* Browser to Resolver */}
-                <path d="M 120 130 L 160 130" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                <path d="M 120 156 L 160 156" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
                 {dnsStepIndex === 1 && !isCacheHit && (
-                  <path d="M 120 130 L 160 130" fill="none" className="r53-flow-red" strokeWidth="1.8" markerEnd="url(#r53-arrow-red)" />
+                  <path d="M 120 156 L 160 156" fill="none" className="r53-flow-red" strokeWidth="1.8" markerEnd="url(#r53-arrow-red)" />
                 )}
                 {dnsStepIndex === 5 && (
-                  <path d="M 160 130 L 120 130" fill="none" className="r53-flow-green" strokeWidth="1.8" markerEnd="url(#r53-arrow-green)" />
+                  <path d="M 160 156 L 120 156" fill="none" className="r53-flow-green" strokeWidth="1.8" markerEnd="url(#r53-arrow-green)" />
                 )}
 
                 {/* Resolver to Root */}
-                <path d="M 280 130 Q 305 130 305 38 L 330 38" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                <path d="M 280 156 Q 305 156 305 64 L 330 64" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
                 {dnsStepIndex === 2 && (
-                  <path d="M 280 130 Q 305 130 305 38 L 330 38" fill="none" className="r53-flow-purple" strokeWidth="1.8" markerEnd="url(#r53-arrow-purple)" />
+                  <path d="M 280 156 Q 305 156 305 64 L 330 64" fill="none" className="r53-flow-purple" strokeWidth="1.8" markerEnd="url(#r53-arrow-purple)" />
                 )}
 
                 {/* Resolver to TLD */}
-                <path d="M 280 130 L 330 130" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                <path d="M 280 156 L 330 156" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
                 {dnsStepIndex === 3 && (
-                  <path d="M 280 130 L 330 130" fill="none" className="r53-flow-blue" strokeWidth="1.8" markerEnd="url(#r53-arrow-blue)" />
+                  <path d="M 280 156 L 330 156" fill="none" className="r53-flow-blue" strokeWidth="1.8" markerEnd="url(#r53-arrow-blue)" />
                 )}
 
                 {/* Resolver to Authoritative */}
-                <path d="M 280 130 Q 305 130 305 220 L 330 220" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
+                <path d="M 280 156 Q 305 156 305 246 L 330 246" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2,2" />
                 {dnsStepIndex === 4 && (
-                  <path d="M 280 130 Q 305 130 305 220 L 330 220" fill="none" className="r53-flow-purple" strokeWidth="1.8" markerEnd="url(#r53-arrow-purple)" />
+                  <path d="M 280 156 Q 305 156 305 246 L 330 246" fill="none" className="r53-flow-purple" strokeWidth="1.8" markerEnd="url(#r53-arrow-purple)" />
                 )}
 
                 {/* Client direct to Web Server */}
-                <path d="M 65 160 Q 65 260 305 260 Q 610 260 610 160" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
+                <path d="M 65 186 Q 65 286 305 286 Q 610 286 610 186" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="3,3" />
                 {dnsStepIndex === 6 && (
                   <path
-                    d="M 65 160 Q 65 260 305 260 Q 610 260 610 160"
+                    d="M 65 186 Q 65 286 305 286 Q 610 286 610 186"
                     fill="none"
                     className={isCacheHit ? "r53-flow-green" : "r53-flow-blue"}
                     strokeWidth="2.5"
@@ -2589,7 +2635,7 @@ export default function Route53Visualizer() {
                 )}
 
                 {/* 1. LAPTOP BROWSER CLIENT */}
-                <g filter="url(#shadow-r53)" transform="translate(15, 96)" className="r53-node-btn">
+                <g filter="url(#shadow-r53)" transform="translate(15, 122)" className={`r53-node-btn ${(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "pulse-client" : ""}`}>
                   <polygon points="10,48 90,48 98,54 2,54" fill="var(--color-text-tertiary)" stroke="var(--color-text-secondary)" strokeWidth="0.8" />
                   <rect x="36" y="42" width="24" height="6" fill="var(--color-text-secondary)" rx="1" />
                   <rect width="100" height="42" rx="6" fill="url(#client-grad)" stroke={(dnsStepIndex === 0 || dnsStepIndex === 1 || dnsStepIndex === 5 || dnsStepIndex === 6) ? "var(--primary-grad-stroke)" : "var(--r53-svg-line-stroke)"} strokeWidth="1.5" />
@@ -2612,7 +2658,7 @@ export default function Route53Visualizer() {
                 </g>
 
                 {/* 2. RECURSIVE RESOLVER (Server Rack) */}
-                <g filter="url(#shadow-r53)" transform="translate(160, 96)" className="r53-node-btn">
+                <g filter="url(#shadow-r53)" transform="translate(160, 122)" className={`r53-node-btn ${(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "pulse-resolver" : ""}`}>
                   <rect width="120" height="60" rx="6" fill="url(#resolver-grad)" stroke={(dnsStepIndex >= 1 && dnsStepIndex <= 5 && !isCacheHit) ? "var(--orange-grad-stroke)" : "var(--r53-svg-line-stroke)"} strokeWidth="1.5" />
                   <rect x="3" y="3" width="114" height="54" rx="4" fill="var(--r53-inner-card-bg)" opacity="0.8" />
                   {/* Slots */}
@@ -2634,7 +2680,7 @@ export default function Route53Visualizer() {
                 </g>
 
                 {/* 3. ROOT NAMESERVER (Red Chassis Server) */}
-                <g filter="url(#shadow-r53)" transform="translate(345, 12)" className="r53-node-btn">
+                <g filter="url(#shadow-r53)" transform="translate(345, 38)" className={`r53-node-btn ${dnsStepIndex === 2 ? "pulse-root" : ""}`}>
                   <rect width="120" height="52" rx="6" fill="url(#root-grad)" stroke={dnsStepIndex === 2 ? "var(--red-grad-stroke)" : "var(--r53-svg-line-stroke)"} strokeWidth="1.5" />
                   <rect x="3" y="3" width="114" height="46" rx="4" fill="var(--r53-inner-card-bg)" opacity="0.8" />
                   {/* Slots / Vents */}
@@ -2652,7 +2698,7 @@ export default function Route53Visualizer() {
                 </g>
 
                 {/* 4. TLD NAMESERVER (Blue Chassis Server) */}
-                <g filter="url(#shadow-r53)" transform="translate(345, 100)" className="r53-node-btn">
+                <g filter="url(#shadow-r53)" transform="translate(345, 126)" className={`r53-node-btn ${dnsStepIndex === 3 ? "pulse-tld" : ""}`}>
                   <rect width="120" height="52" rx="6" fill="url(#tld-grad)" stroke={dnsStepIndex === 3 ? "var(--primary-grad-stroke)" : "var(--r53-svg-line-stroke)"} strokeWidth="1.5" />
                   <rect x="3" y="3" width="114" height="46" rx="4" fill="var(--r53-inner-card-bg)" opacity="0.8" />
                   {/* Slots / Vents */}
@@ -2670,7 +2716,7 @@ export default function Route53Visualizer() {
                 </g>
 
                 {/* 5. AUTHORITATIVE NAMESERVER (AWS Route 53 Golden Orbit Node) */}
-                <g filter="url(#shadow-r53)" transform="translate(345, 188)" className="r53-node-btn">
+                <g filter="url(#shadow-r53)" transform="translate(345, 214)" className={`r53-node-btn ${dnsStepIndex === 4 ? "pulse-auth" : ""}`}>
                   <rect width="120" height="56" rx="6" fill="url(#r53-grad)" stroke={dnsStepIndex === 4 ? "var(--purple-grad-stroke)" : "var(--r53-svg-line-stroke)"} strokeWidth="1.5" />
                   <rect x="3" y="3" width="114" height="50" rx="4" fill="var(--r53-inner-card-bg)" opacity="0.8" />
                   
@@ -2694,7 +2740,7 @@ export default function Route53Visualizer() {
                 </g>
 
                 {/* 6. WEB SERVER TARGET */}
-                <g filter="url(#shadow-r53)" transform="translate(540, 96)" className="r53-node-btn">
+                <g filter="url(#shadow-r53)" transform="translate(540, 122)" className={`r53-node-btn ${dnsStepIndex === 6 ? "pulse-app" : ""}`}>
                   <rect width="120" height="60" rx="6" fill="url(#server-grad)" stroke={dnsStepIndex === 6 ? "var(--r53-subnet-app-stroke)" : "var(--r53-svg-line-stroke)"} strokeWidth="1.5" />
                   <rect x="3" y="3" width="114" height="54" rx="4" fill="var(--r53-inner-card-bg)" opacity="0.8" />
                   {/* Disk drive shapes */}
@@ -2720,7 +2766,7 @@ export default function Route53Visualizer() {
                 </g>
 
                 {/* 7. PRIVATE CACHE CABINET */}
-                <g opacity="0.95" transform="translate(10, 12)">
+                <g opacity="0.95" transform="translate(10, 38)">
                   <rect
                     width="130"
                     height="66"
@@ -2796,22 +2842,22 @@ export default function Route53Visualizer() {
                   <>
                     {isCacheHit ? (
                       <>
-                        <circle cx="60" cy="130" r="4.5" fill="var(--color-green)" filter="url(#glow)">
+                        <circle cx="60" cy="156" r="4.5" fill="var(--color-green)" filter="url(#glow)">
                           <animate attributeName="cx" values="60;75" dur="0.8s" repeatCount="indefinite" />
-                          <animate attributeName="cy" values="130;46" dur="0.8s" repeatCount="indefinite" />
+                          <animate attributeName="cy" values="156;72" dur="0.8s" repeatCount="indefinite" />
                         </circle>
-                        <circle cx="75" cy="46" r="4.5" fill="var(--color-green)" filter="url(#glow)">
+                        <circle cx="75" cy="72" r="4.5" fill="var(--color-green)" filter="url(#glow)">
                           <animate attributeName="cx" values="75;60" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
-                          <animate attributeName="cy" values="46;130" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
+                          <animate attributeName="cy" values="72;156" dur="0.8s" begin="0.4s" repeatCount="indefinite" />
                         </circle>
                       </>
                     ) : (
                       <>
-                        <circle cx="60" cy="130" r="4.5" fill="var(--color-amber)" filter="url(#glow)">
+                        <circle cx="60" cy="156" r="4.5" fill="var(--color-amber)" filter="url(#glow)">
                           <animate attributeName="cx" values="60;75" dur="0.8s" repeatCount="indefinite" />
-                          <animate attributeName="cy" values="130;46" dur="0.8s" repeatCount="indefinite" />
+                          <animate attributeName="cy" values="156;72" dur="0.8s" repeatCount="indefinite" />
                         </circle>
-                        <circle cx="145" cy="130" r="5.5" fill="var(--color-red)" filter="url(#glow)">
+                        <circle cx="145" cy="156" r="5.5" fill="var(--color-red)" filter="url(#glow)">
                           <animate attributeName="cx" values="75;215" dur="0.8s" repeatCount="indefinite" />
                         </circle>
                       </>
@@ -2821,22 +2867,22 @@ export default function Route53Visualizer() {
                 {dnsStepIndex === 2 && (
                   <circle cx="305" cy="85" r="5.5" fill="var(--color-red)" filter="url(#glow)">
                     <animate attributeName="cx" values="220;330;220" dur="1.2s" repeatCount="indefinite" />
-                    <animate attributeName="cy" values="130;38;130" dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="156;64;156" dur="1.2s" repeatCount="indefinite" />
                   </circle>
                 )}
                 {dnsStepIndex === 3 && (
-                  <circle cx="275" cy="130" r="5.5" fill="var(--color-blue)" filter="url(#glow)">
+                  <circle cx="275" cy="156" r="5.5" fill="var(--color-blue)" filter="url(#glow)">
                     <animate attributeName="cx" values="220;330;220" dur="1.2s" repeatCount="indefinite" />
                   </circle>
                 )}
                 {dnsStepIndex === 4 && (
                   <circle cx="305" cy="175" r="5.5" fill="var(--color-purple)" filter="url(#glow)">
                     <animate attributeName="cx" values="220;330;220" dur="1.2s" repeatCount="indefinite" />
-                    <animate attributeName="cy" values="130;220;130" dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="156;246;156" dur="1.2s" repeatCount="indefinite" />
                   </circle>
                 )}
                 {dnsStepIndex === 5 && (
-                  <circle cx="145" cy="130" r="5.5" fill={isCacheHit ? "var(--color-green)" : "var(--color-amber)"} filter="url(#glow)">
+                  <circle cx="145" cy="156" r="5.5" fill={isCacheHit ? "var(--color-green)" : "var(--color-amber)"} filter="url(#glow)">
                     <animate attributeName="cx" values="220;75" dur="0.8s" repeatCount="indefinite" />
                   </circle>
                 )}
@@ -4536,11 +4582,11 @@ export default function Route53Visualizer() {
 
                   {/* us-east-1 subnet boundary */}
                   <rect x="490" y="15" width="186" height="120" rx="8" fill="var(--replica-grad-start)" fillOpacity="0.4" stroke="var(--replica-grad-stroke)" strokeWidth="1.25" strokeDasharray="3,3" />
-                  <text x="498" y="27" fontSize="7" fill="var(--color-green)" fontWeight="bold">US-EAST-1 (PRIMARY VPC SUBNET)</text>
+                  <text x="498" y="128" fontSize="7" fill="var(--color-green)" fontWeight="bold">US-EAST-1 (PRIMARY VPC SUBNET)</text>
 
                   {/* eu-west-1 subnet boundary */}
                   <rect x="490" y="175" width="186" height="120" rx="8" fill="var(--primary-grad-start)" fillOpacity="0.3" stroke="var(--primary-grad-stroke)" strokeWidth="1.25" strokeDasharray="3,3" />
-                  <text x="498" y="187" fontSize="7" fill="var(--color-blue)" fontWeight="bold">EU-WEST-1 (SECONDARY VPC SUBNET)</text>
+                  <text x="498" y="288" fontSize="7" fill="var(--color-blue)" fontWeight="bold">EU-WEST-1 (SECONDARY VPC SUBNET)</text>
 
                   {/* 1. BACKGROUND PATHS & STREAMING DATA */}
                   {/* Client to Route 53 */}
