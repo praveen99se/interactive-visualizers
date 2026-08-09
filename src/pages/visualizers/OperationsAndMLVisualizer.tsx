@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   ChevronRight,
@@ -17,8 +17,10 @@ import {
   Bot,
   DollarSign
 } from 'lucide-react';
+import OperationsAndMLComparativeView from '../../components/visualizers/OperationsAndMLComparativeView';
+import UniqueOperationsAndMLFeatures from '../../components/visualizers/UniqueOperationsAndMLFeatures';
 
-type TabType = 'notebook' | 'cfn_ssm' | 'fleet' | 'hybrid_batch' | 'ml_analytics' | 'finops';
+type TabType = 'notebook' | 'cfn_ssm' | 'fleet' | 'hybrid_batch' | 'ml_analytics' | 'finops' | 'unique';
 
 interface EC2Instance {
   id: string;
@@ -66,8 +68,78 @@ const costExplorerQueryCli = `aws ce get-cost-and-usage \\
   --metrics UnblendedCost \\
   --group-by Type=DIMENSION,Key=SERVICE`;
 
-export default function OperationsAndMLVisualizer() {
+interface OperationsAndMLVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function OperationsAndMLVisualizer({ provider = 'aws', setProvider }: OperationsAndMLVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon Bedrock/gi, 'Azure OpenAI Service')
+        .replace(/Amazon SageMaker/gi, 'Azure Machine Learning Studio')
+        .replace(/SageMaker/g, 'Azure ML')
+        .replace(/AWS Systems Manager/gi, 'Azure Automation & Arc')
+        .replace(/SSM/g, 'Azure Arc')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon Bedrock/gi, 'Google Vertex AI Model Garden (Gemini)')
+        .replace(/Amazon SageMaker/gi, 'Google Vertex AI')
+        .replace(/SageMaker/g, 'Vertex AI')
+        .replace(/AWS Systems Manager/gi, 'Google OS Config & Agent')
+        .replace(/SSM/g, 'OS Config')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'ops-terminal' || node.props.className === 'ops-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'sysmgr' ? 'fleet' : tab === 'cicd' ? 'cfn_ssm' : tab === 'architect' ? 'notebook' : tab);
+  };
 
   // Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('cloudformation');
@@ -912,17 +984,31 @@ export default function OperationsAndMLVisualizer() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="ops-tabs">
-          <button className={`ops-tb ${activeTab === 'notebook' ? 'ops-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
-          <button className={`ops-tb ${activeTab === 'cfn_ssm' ? 'ops-on' : ''}`} onClick={() => setActiveTab('cfn_ssm')}>🏗️ IaC &amp; Runbooks</button>
-          <button className={`ops-tb ${activeTab === 'fleet' ? 'ops-on' : ''}`} onClick={() => setActiveTab('fleet')}>💻 SSM Fleet Manager</button>
-          <button className={`ops-tb ${activeTab === 'hybrid_batch' ? 'ops-on' : ''}`} onClick={() => setActiveTab('hybrid_batch')}>🌎 Batch &amp; App Channels</button>
-          <button className={`ops-tb ${activeTab === 'ml_analytics' ? 'ops-on' : ''}`} onClick={() => setActiveTab('ml_analytics')}>🤖 SageMaker &amp; AI APIs</button>
-          <button className={`ops-tb ${activeTab === 'finops' ? 'ops-on' : ''}`} onClick={() => setActiveTab('finops')}>📊 Cost &amp; Trusted Advisor</button>
-        </div>
+        {!isComparative && (
+          <div className="ops-tabs">
+            <button className={`ops-tb ${activeTab === 'notebook' ? 'ops-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
+            <button className={`ops-tb ${activeTab === 'cfn_ssm' ? 'ops-on' : ''}`} onClick={() => setActiveTab('cfn_ssm')}>🏗️ IaC &amp; Runbooks</button>
+            <button className={`ops-tb ${activeTab === 'fleet' ? 'ops-on' : ''}`} onClick={() => setActiveTab('fleet')}>💻 SSM Fleet Manager</button>
+            <button className={`ops-tb ${activeTab === 'hybrid_batch' ? 'ops-on' : ''}`} onClick={() => setActiveTab('hybrid_batch')}>🌎 Batch &amp; App Channels</button>
+            <button className={`ops-tb ${activeTab === 'ml_analytics' ? 'ops-on' : ''}`} onClick={() => setActiveTab('ml_analytics')}>🤖 SageMaker &amp; AI APIs</button>
+            <button className={`ops-tb ${activeTab === 'finops' ? 'ops-on' : ''}`} onClick={() => setActiveTab('finops')}>📊 Cost &amp; Trusted Advisor</button>
+            <button className={`ops-tb ${activeTab === 'unique' ? 'ops-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
+          </div>
+        )}
       </div>
 
       <div style={{ padding: '0 16px' }}>
+        {isComparative && (
+          <OperationsAndMLComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeTab === 'unique' && (
+          <UniqueOperationsAndMLFeatures provider={provider} />
+        )}
+
+        {!isComparative && activeTab !== 'unique' && (
+          <Translate>
+            <>
         {/* ========================================================================= */}
         {/* TAB 1: VISUAL ARCHITECT NOTES (DEVELOPER ACADEMY)                         */}
         {/* ========================================================================= */}
@@ -2232,6 +2318,9 @@ export default function OperationsAndMLVisualizer() {
               </div>
             </div>
           </div>
+        )}
+            </>
+          </Translate>
         )}
       </div>
     </div>

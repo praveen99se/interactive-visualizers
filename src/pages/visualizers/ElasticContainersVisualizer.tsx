@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Cpu,
   Layers,
@@ -14,8 +14,10 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import ElasticContainersComparativeView from '../../components/visualizers/ElasticContainersComparativeView';
+import UniqueElasticContainersFeatures from '../../components/visualizers/UniqueElasticContainersFeatures';
 
-type TabType = 'intro' | 'ecs-core' | 'ecs-advanced' | 'eks-k8s' | 'runner-migration' | 'simulation';
+type TabType = 'intro' | 'ecs-core' | 'ecs-advanced' | 'eks-k8s' | 'runner-migration' | 'simulation' | 'unique';
 
 interface SimTask {
   id: string;
@@ -27,8 +29,76 @@ interface SimTask {
   uptime: number; // in seconds
 }
 
-export default function ElasticContainersVisualizer() {
+interface ElasticContainersVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function ElasticContainersVisualizer({ provider = 'aws', setProvider }: ElasticContainersVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon ECS/gi, 'Azure Container Apps / ACA')
+        .replace(/Amazon EKS/gi, 'Azure Kubernetes Service (AKS)')
+        .replace(/AWS Fargate/gi, 'Azure Container Instances / ACA')
+        .replace(/Amazon ECR/gi, 'Azure Container Registry (ACR)')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon ECS/gi, 'Google Cloud Run')
+        .replace(/Amazon EKS/gi, 'Google Kubernetes Engine (GKE)')
+        .replace(/AWS Fargate/gi, 'Google Cloud Run / Autopilot')
+        .replace(/Amazon ECR/gi, 'Google Artifact Registry')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'ecs-terminal' || node.props.className === 'ecs-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'fargate' ? 'ecs-core' : tab === 'architect' ? 'intro' : tab);
+  };
 
   // Tab 1: Docker vs VM States
   const [dockerVmView, setDockerVmView] = useState<'container' | 'vm'>('container');
@@ -945,43 +1015,57 @@ export default function ElasticContainersVisualizer() {
       </div>
 
       {/* Navigation tabs */}
-      <div className="ecs-tabs">
-        <button className={`ecs-tb ${activeTab === 'intro' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <Layers className="w-4 h-4" /> Docker vs VMs
-        </button>
-        <button className={`ecs-tb ${activeTab === 'ecs-core' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('ecs-core')}>
-          <Cpu className="w-4 h-4" /> Amazon ECS &amp; ECR
-        </button>
-        <button className={`ecs-tb ${activeTab === 'ecs-advanced' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('ecs-advanced')}>
-          <Settings className="w-4 h-4" /> ECS Advanced Patterns
-        </button>
-        <button className={`ecs-tb ${activeTab === 'eks-k8s' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('eks-k8s')}>
-          <Database className="w-4 h-4" /> Amazon EKS (Kubernetes)
-        </button>
-        <button className={`ecs-tb ${activeTab === 'runner-migration' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('runner-migration')}>
-          <RefreshCw className="w-4 h-4" /> App Runner &amp; Migrate
-        </button>
-        <button className={`ecs-tb ${activeTab === 'simulation' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('simulation')}>
-          <Play className="w-4 h-4" /> Auto-Scaling Playground
-        </button>
-      </div>
-
-      {/* Alert Banner */}
-      {activeAlert && (
-        <div className={`mb-4 border-l-4 p-4 rounded-r-md flex items-start gap-3 transition-all duration-300 ${activeAlert.type === 'error' ? 'bg-red-50 border-red-500 text-red-700' :
-            activeAlert.type === 'success' ? 'bg-green-50 border-green-500 text-green-700' :
-              'bg-blue-50 border-blue-500 text-blue-700'
-          }`}>
-          <AlertTriangle className={`w-5 h-5 shrink-0 ${activeAlert.type === 'error' ? 'text-red-500' : activeAlert.type === 'success' ? 'text-green-500' : 'text-blue-500'}`} />
-          <div>
-            <h4 className="font-bold text-xs uppercase tracking-wider">{activeAlert.title}</h4>
-            <p className="text-xs mt-1 leading-relaxed">{activeAlert.desc}</p>
-          </div>
+      {!isComparative && (
+        <div className="ecs-tabs">
+          <button className={`ecs-tb ${activeTab === 'intro' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <Layers className="w-4 h-4" /> Docker vs VMs
+          </button>
+          <button className={`ecs-tb ${activeTab === 'ecs-core' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('ecs-core')}>
+            <Cpu className="w-4 h-4" /> Amazon ECS &amp; ECR
+          </button>
+          <button className={`ecs-tb ${activeTab === 'ecs-advanced' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('ecs-advanced')}>
+            <Settings className="w-4 h-4" /> ECS Advanced Patterns
+          </button>
+          <button className={`ecs-tb ${activeTab === 'eks-k8s' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('eks-k8s')}>
+            <Database className="w-4 h-4" /> Amazon EKS (Kubernetes)
+          </button>
+          <button className={`ecs-tb ${activeTab === 'runner-migration' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('runner-migration')}>
+            <RefreshCw className="w-4 h-4" /> App Runner &amp; Migrate
+          </button>
+          <button className={`ecs-tb ${activeTab === 'simulation' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('simulation')}>
+            <Play className="w-4 h-4" /> Auto-Scaling Playground
+          </button>
+          <button className={`ecs-tb ${activeTab === 'unique' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
         </div>
       )}
 
       {/* Main panels */}
       <div className="ecs-main-content">
+        {isComparative && (
+          <ElasticContainersComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeTab === 'unique' && (
+          <UniqueElasticContainersFeatures provider={provider} />
+        )}
+
+        {!isComparative && activeTab !== 'unique' && (
+          <Translate>
+            <>
+              {activeAlert && (
+                <div className={`mb-4 border-l-4 p-4 rounded-r-md flex items-start gap-3 transition-all duration-300 ${activeAlert.type === 'error' ? 'bg-red-50 border-red-500 text-red-700' :
+                    activeAlert.type === 'success' ? 'bg-green-50 border-green-500 text-green-700' :
+                      'bg-blue-50 border-blue-500 text-blue-700'
+                  }`}>
+                  <AlertTriangle className={`w-5 h-5 shrink-0 ${activeAlert.type === 'error' ? 'text-red-500' : activeAlert.type === 'success' ? 'text-green-500' : 'text-blue-500'}`} />
+                  <div>
+                    <h4 className="font-bold text-xs uppercase tracking-wider">{activeAlert.title}</h4>
+                    <p className="text-xs mt-1 leading-relaxed">{activeAlert.desc}</p>
+                  </div>
+                </div>
+              )}
 
         {/* TAB 1: DOCKER VS VM BASICS */}
         {activeTab === 'intro' && (
@@ -3310,6 +3394,9 @@ export default function ElasticContainersVisualizer() {
               </div>
             </div>
           </div>
+        )}
+            </>
+          </Translate>
         )}
 
       </div>

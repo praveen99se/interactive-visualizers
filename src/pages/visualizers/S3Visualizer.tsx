@@ -1901,7 +1901,19 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
         .s3-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 10px; }
         .s3-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--s3-tab-bg); color: var(--color-text-secondary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
         .s3-tb:hover { background: var(--s3-tab-hover-bg); color: var(--color-text-primary); transform: translateY(-1px); }
+        
         .s3-tb.s3-on { background: var(--s3-btn-active-bg); color: #fff; border-color: var(--s3-btn-active-border); font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+        .s3-tb.s3-on-notebook { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-color: #0284c7; }
+        .s3-tb.s3-on-overview { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #059669; }
+        .s3-tb.s3-on-security { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #d97706; }
+        .s3-tb.s3-on-encryption { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-color: #7c3aed; }
+        .s3-tb.s3-on-versioning { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); border-color: #db2777; }
+        .s3-tb.s3-on-storage { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: #2563eb; }
+        .s3-tb.s3-on-networking { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-color: #0891b2; }
+        .s3-tb.s3-on-transfer { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-color: #ea580c; }
+        .s3-tb.s3-on-operations { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-color: #4f46e5; }
+        .s3-tb.s3-on-unique { background: linear-gradient(135deg, #10b981 0%, #047857 100%); border-color: #047857; }
+
         
         .s3-card { border: 1.5px solid var(--s3-card-border); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: var(--s3-card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--s3-card-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: var(--color-text-primary); }
         .s3-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
@@ -2068,9 +2080,10 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .acad-dir-header {
-          background: var(--s3-terminal-border);
+          background: var(--color-background-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
           color: var(--color-text-primary);
-          padding: 16px;
+          padding: 14px 16px;
           font-weight: 800;
           font-size: 11px;
           letter-spacing: 0.08em;
@@ -2275,16 +2288,16 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
         {/* Tab Selection */}
         {!isComparative && (
           <div className="s3-tabs">
-            <button className={`s3-tb ${activeTab === 'notebook' ? 's3-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
-            <button className={`s3-tb ${activeTab === 'overview' ? 's3-on' : ''}`} onClick={() => setActiveTab('overview')}>🪣 Namespace & CORS</button>
-            <button className={`s3-tb ${activeTab === 'security' ? 's3-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Policies & BPA</button>
-            <button className={`s3-tb ${activeTab === 'encryption' ? 's3-on' : ''}`} onClick={() => setActiveTab('encryption')}>🔒 SSE & KMS keys</button>
-            <button className={`s3-tb ${activeTab === 'versioning' ? 's3-on' : ''}`} onClick={() => setActiveTab('versioning')}>🔄 Versioning & WORM</button>
-            <button className={`s3-tb ${activeTab === 'storage' ? 's3-on' : ''}`} onClick={() => setActiveTab('storage')}>📈 Classes & Lifecycle</button>
-            <button className={`s3-tb ${activeTab === 'networking' ? 's3-on' : ''}`} onClick={() => setActiveTab('networking')}>🌐 Gateway Endpoints</button>
-            <button className={`s3-tb ${activeTab === 'transfer' ? 's3-on' : ''}`} onClick={() => setActiveTab('transfer')}>⚡ Replication & Accel</button>
-            <button className={`s3-tb ${activeTab === 'operations' ? 's3-on' : ''}`} onClick={() => setActiveTab('operations')}>⚙️ Batch & Lens</button>
-            <button className={`s3-tb ${activeTab === 'unique' ? 's3-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
+            <button className={`s3-tb ${activeTab === 'notebook' ? 's3-on s3-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
+            <button className={`s3-tb ${activeTab === 'overview' ? 's3-on s3-on-overview' : ''}`} onClick={() => setActiveTab('overview')}>🪣 Namespace & CORS</button>
+            <button className={`s3-tb ${activeTab === 'security' ? 's3-on s3-on-security' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Policies & BPA</button>
+            <button className={`s3-tb ${activeTab === 'encryption' ? 's3-on s3-on-encryption' : ''}`} onClick={() => setActiveTab('encryption')}>🔒 SSE & KMS keys</button>
+            <button className={`s3-tb ${activeTab === 'versioning' ? 's3-on s3-on-versioning' : ''}`} onClick={() => setActiveTab('versioning')}>🔄 Versioning & WORM</button>
+            <button className={`s3-tb ${activeTab === 'storage' ? 's3-on s3-on-storage' : ''}`} onClick={() => setActiveTab('storage')}>📈 Classes & Lifecycle</button>
+            <button className={`s3-tb ${activeTab === 'networking' ? 's3-on s3-on-networking' : ''}`} onClick={() => setActiveTab('networking')}>🌐 Gateway Endpoints</button>
+            <button className={`s3-tb ${activeTab === 'transfer' ? 's3-on s3-on-transfer' : ''}`} onClick={() => setActiveTab('transfer')}>⚡ Replication & Accel</button>
+            <button className={`s3-tb ${activeTab === 'operations' ? 's3-on s3-on-operations' : ''}`} onClick={() => setActiveTab('operations')}>⚙️ Batch & Lens</button>
+            <button className={`s3-tb ${activeTab === 'unique' ? 's3-on s3-on-unique' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
           </div>
         )}
 
@@ -2296,11 +2309,11 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
         {!isComparative && activeTab === 'notebook' && (
           <div className="space-y-6 animate-fadeIn text-left" style={{ marginTop: '16px' }}>
             
-            <div className="card text-left">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-display">
-                <BookOpen className="w-5 h-5 text-indigo-600" /> S3 Storage &amp; Security Notes
+            <div className="s3-card" style={{ marginBottom: '14px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> S3 Storage &amp; Security Notes
               </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-sans font-semibold">
+              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45' }}>
                 Learn about Amazon S3 storage classes, cross-region replication architecture, Multi-Region Access Points, object versioning, and bucket policies to secure data at rest.
               </p>
             </div>
@@ -2420,9 +2433,9 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
                   </div>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-400 font-semibold space-y-1">
-                  <span className="text-white font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
-                    <Info className="w-3.5 h-3.5 text-emerald-400" /> Academy Advice
+                <div style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', lineHeight: '1.6', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', fontSize: '11.5px' }}>
+                    <Info style={{ width: '14px', height: '14px', color: '#10b981' }} /> Academy Advice
                   </span>
                   "Choose any module from the tree above. Each view includes custom interactive elements, dynamic code blocks, or structural system architecture diagrams."
                 </div>
@@ -2463,7 +2476,7 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
                         <div>
                           <span className="acad-hero-badge">{note.heroBadge}</span>
-                          <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-2 font-display">{note.title}</h3>
+                          <h3 style={{ fontSize: "20px", fontWeight: 900, color: "var(--color-text-primary)", marginTop: "8px" }}>{note.title}</h3>
                         </div>
                         <span className="text-xs font-bold text-slate-400">
                           Concept {
@@ -2478,7 +2491,7 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
                         </span>
                       </div>
 
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                      <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", lineHeight: "1.5" }}>
                         {note.desc}
                       </p>
 
@@ -4815,7 +4828,7 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Contrast public internet routing (via Internet Gateway) against private, free routing via S3 Gateway VPC Endpoint.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 720 190" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <filter id="s3-shadow-net1" x="-10%" y="-10%" width="120%" height="120%">
                     <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
@@ -4836,67 +4849,70 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Private Subnet boundary */}
-                <rect x="8" y="10" width="204" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="110" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">🔒 VPC CORPORATE PRIVATE SUBNET BOUNDARY</text>
+                <rect x="8" y="10" width="214" height="170" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="115" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">🔒 VPC CORPORATE PRIVATE SUBNET BOUNDARY</text>
 
                 {/* AWS Regional Backplane */}
-                <rect x="220" y="10" width="472" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="456" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE HIGH-SPEED REGIONAL BACKPLANE</text>
+                <rect x="230" y="10" width="482" height="170" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="471" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS SECURE HIGH-SPEED REGIONAL BACKPLANE</text>
 
                 {/* Private Subnet VM */}
-                <rect x="20" y="35" width="180" height="120" rx="8" fill="url(#blueGradient)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
-                <text x="110" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-blue)">💻 Private EC2 Instance</text>
-                <text x="110" y="67" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">No Public IP Allocated</text>
-                <text x="110" y="79" textAnchor="middle" fontSize="7.5" fontFamily="monospace" fill="var(--color-text-tertiary)">VPC Subnet IP: 10.0.1.42</text>
+                <rect x="18" y="32" width="194" height="138" rx="8" fill="url(#blueGradient)" stroke="var(--color-blue)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
+                <text x="115" y="47" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-blue)">💻 Private EC2 Instance</text>
+                <text x="115" y="60" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)">No Public IP Allocated</text>
+                <text x="115" y="72" textAnchor="middle" fontSize="7" fontFamily="monospace" fill="var(--color-text-tertiary)">Subnet IP: 10.0.1.42</text>
                 
                 {/* Embedded Mini Subnet Table */}
-                <rect x="28" y="93" width="164" height="52" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--s3-card-border)" strokeWidth="0.8" />
-                <text x="35" y="104" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">Route Target Prefix</text>
-                <text x="122" y="104" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">Gateway Interface</text>
-                <line x1="28" y1="109" x2="192" y2="109" stroke="var(--s3-card-border)" strokeWidth="0.5" />
-                <text x="35" y="121" fontSize="7.5" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">pl-63a5400a (S3)</text>
-                <text x="122" y="121" fontSize="7.5" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928 (Free)</text>
-                <text x="35" y="134" fontSize="7.5" fill="var(--color-red)" fontFamily="monospace">0.0.0.0/0 (Egress)</text>
-                <text x="122" y="134" fontSize="7.5" fill="var(--color-red)" fontFamily="monospace">nat-072a1cf ($)</text>
+                <rect x="24" y="80" width="182" height="82" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.9" stroke="var(--s3-card-border)" strokeWidth="0.8" />
+                <text x="30" y="93" fontSize="7" fontWeight="bold" fill="var(--color-text-primary)">Route Target Prefix</text>
+                <text x="126" y="93" fontSize="7" fontWeight="bold" fill="var(--color-text-primary)">Gateway Interface</text>
+                <line x1="24" y1="98" x2="206" y2="98" stroke="var(--s3-card-border)" strokeWidth="0.5" />
+                <text x="30" y="112" fontSize="7" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">pl-63a5400a (S3)</text>
+                <text x="126" y="112" fontSize="7" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">vpce-0d8fa (Free)</text>
+                <line x1="24" y1="120" x2="206" y2="120" stroke="var(--s3-card-border)" strokeWidth="0.5" />
+                <text x="30" y="134" fontSize="7" fill="var(--color-red)" fontFamily="monospace">0.0.0.0/0 (Egress)</text>
+                <text x="126" y="134" fontSize="7" fill="var(--color-red)" fontFamily="monospace">nat-072a1cf ($)</text>
+                <line x1="24" y1="142" x2="206" y2="142" stroke="var(--s3-card-border)" strokeWidth="0.5" />
+                <text x="30" y="155" fontSize="6.5" fill="var(--color-text-tertiary)" fontStyle="italic">Prefix match routes to VPCE</text>
 
                 {/* Route A: Public route via NAT */}
-                <path d="M 200 65 L 290 65 L 290 40 L 465 40" fill="none" 
+                <path d="M 212 65 L 300 65 L 300 48 L 475 48" fill="none" 
                   stroke="var(--color-red)" 
                   strokeWidth="2" 
                   strokeDasharray="3,3" 
                   className="s3-flow-red" />
-                <rect x="260" y="48" width="60" height="18" rx="3" fill="var(--s3-error-bg)" stroke="var(--s3-error-border)" strokeWidth="1" filter="url(#s3-shadow-net1)" />
-                <text x="290" y="60" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">NAT / IGW</text>
-                <text x="382" y="32" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">💰 Public Egress Transit Charges Apply</text>
+                <rect x="270" y="56" width="60" height="18" rx="3" fill="var(--s3-error-bg)" stroke="var(--s3-error-border)" strokeWidth="1" filter="url(#s3-shadow-net1)" />
+                <text x="300" y="68" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">NAT / IGW</text>
+                <text x="300" y="48" textAnchor="middle" fontSize="7" fill="var(--color-red)" fontWeight="bold">💰 Egress Charges ($)</text>
 
                 {/* Route B: Gateway VPCE route */}
-                <path d="M 200 115 L 465 115" fill="none" 
+                <path d="M 212 125 L 475 125" fill="none" 
                   stroke="var(--color-green)" 
                   strokeWidth="2.5" 
                   className="s3-flow-green" />
-                <rect x="235" y="122" width="160" height="24" rx="4" fill="url(#emeraldGradient)" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-net1)" />
-                <text x="315" y="137" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">🔗 Private Gateway Endpoint Link</text>
-                <text x="315" y="104" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">🔒 Secure Direct AWS Regional Backbone (Free)</text>
+                <rect x="245" y="134" width="180" height="24" rx="4" fill="url(#emeraldGradient)" stroke="var(--color-green)" strokeWidth="1" filter="url(#s3-shadow-net1)" />
+                <text x="335" y="149" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">🔗 Private Gateway Endpoint Link</text>
+                <text x="335" y="116" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">🔒 Direct Regional Backbone (Free)</text>
 
                 {/* S3 Public Endpoint */}
-                <rect x="465" y="18" width="210" height="42" rx="6" fill="url(#roseGradient)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
-                <text x="570" y="35" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-red)">🌐 Public Host Endpoint</text>
-                <text x="570" y="49" textAnchor="middle" fontSize="8.5" fontFamily="monospace" fill="var(--color-red)">s3.amazonaws.com</text>
+                <rect x="475" y="28" width="220" height="42" rx="6" fill="url(#roseGradient)" stroke="var(--color-red)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
+                <text x="585" y="45" textAnchor="middle" fontSize="10" fontWeight="bold" fill="var(--color-red)">🌐 Public Host Endpoint</text>
+                <text x="585" y="58" textAnchor="middle" fontSize="8" fontFamily="monospace" fill="var(--color-red)">s3.amazonaws.com</text>
 
                 {/* S3 gateway vpce endpoint target */}
-                <rect x="465" y="85" width="210" height="80" rx="6" fill="url(#emeraldGradient)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
-                <text x="570" y="104" textAnchor="middle" fontSize="11" fontWeight="bold" fill="var(--color-green)">🪣 AWS S3 Service Backplane</text>
-                <text x="570" y="122" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="bold" fontFamily="monospace">Prefix List: pl-63a5400a</text>
-                <text x="570" y="136" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928bcde1a38</text>
-                <text x="570" y="150" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontStyle="italic">Direct Local VPC Gateway Interface</text>
+                <rect x="475" y="85" width="220" height="88" rx="6" fill="url(#emeraldGradient)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net1)" />
+                <text x="585" y="104" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-green)">🪣 AWS S3 Service Backplane</text>
+                <text x="585" y="122" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="bold" fontFamily="monospace">Prefix List: pl-63a5400a</text>
+                <text x="585" y="138" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">vpce-0d8fa928bcde1a38</text>
+                <text x="585" y="154" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontStyle="italic">Direct Local VPC Gateway Interface</text>
 
                 {/* Streaming packets */}
                 <circle r="4.5" fill="var(--color-red)">
-                  <animateMotion path="M 200 65 L 290 65 L 290 40 L 465 40" dur="2.2s" repeatCount="indefinite" />
+                  <animateMotion path="M 212 65 L 300 65 L 300 48 L 475 48" dur="2.2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite" />
                 </circle>
                 <circle r="5" fill="var(--color-green)">
-                  <animateMotion path="M 200 115 L 465 115" dur="1.4s" repeatCount="indefinite" />
+                  <animateMotion path="M 212 125 L 475 125" dur="1.4s" repeatCount="indefinite" />
                   <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite" />
                 </circle>
               </svg>
@@ -4908,7 +4924,7 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                 Inside the VPC router fabrics: S3 Prefix Lists override default routes, forwarding traffic privately via Gateway links.
               </div>
-              <svg viewBox="0 0 700 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+              <svg viewBox="0 0 720 180" width="100%" className="s3-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
                 <defs>
                   <filter id="s3-shadow-net2" x="-10%" y="-10%" width="120%" height="120%">
                     <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="var(--color-blue)" floodOpacity="0.08" />
@@ -4917,54 +4933,56 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
 
                 {/* PREMIUM NESTED BOUNDARIES */}
                 {/* Router table subnet */}
-                <rect x="8" y="10" width="344" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
-                <text x="180" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">🔒 VPC ROUTE TABLE RULE DETERMINATION LAYER</text>
+                <rect x="8" y="10" width="354" height="160" rx="8" fill="var(--s3-metric-card-bg)" fillOpacity="0.45" stroke="var(--s3-card-border)" strokeWidth="1" strokeDasharray="3,3" />
+                <text x="185" y="22" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)" fontWeight="bold" letterSpacing="0.05em">🔒 VPC ROUTE TABLE RULE DETERMINATION LAYER</text>
 
                 {/* Private AWS Endpoint */}
-                <rect x="360" y="10" width="332" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
-                <text x="526" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS PRIVATE VPCE REGIONAL TRANSIT SUBNET</text>
+                <rect x="372" y="10" width="340" height="160" rx="12" fill="rgba(240, 253, 250, 0.25)" stroke="var(--color-blue)" strokeWidth="1.5" strokeDasharray="6,4" />
+                <text x="542" y="22" textAnchor="middle" fontSize="7" fill="var(--color-blue)" fontWeight="bold" letterSpacing="0.05em">☁️ AWS PRIVATE VPCE REGIONAL TRANSIT SUBNET</text>
 
                 {/* Private subnet route table */}
-                <rect x="20" y="35" width="320" height="122" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-border-tertiary)" strokeWidth="1" filter="url(#s3-shadow-net2)" />
-                <text x="35" y="50" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">📁 Subnet VPC Route Table Rules</text>
+                <rect x="18" y="35" width="334" height="122" rx="6" fill="var(--s3-card-bg)" stroke="var(--color-border-tertiary)" strokeWidth="1" filter="url(#s3-shadow-net2)" />
+                <text x="30" y="50" fontSize="9.5" fontWeight="bold" fill="var(--color-text-primary)">📁 Subnet VPC Route Table Rules</text>
 
                 {/* Headers */}
-                <rect x="30" y="58" width="300" height="18" fill="var(--color-background-tertiary)" rx="2" />
-                <text x="35" y="70" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Destination IP Prefix</text>
-                <text x="165" y="70" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Target VPCE / GW</text>
-                <text x="275" y="70" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Status</text>
+                <rect x="26" y="58" width="318" height="18" fill="var(--color-background-tertiary)" rx="2" />
+                <text x="32" y="70" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Destination IP Prefix</text>
+                <text x="175" y="70" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Target VPCE / GW</text>
+                <text x="285" y="70" fontSize="7.5" fontWeight="bold" fill="var(--color-text-secondary)">Status</text>
 
                 {/* Rows */}
-                <text x="35" y="90" fontSize="8" fontFamily="monospace" fill="var(--color-text-primary)">10.0.0.0/16 (VPC)</text>
-                <text x="165" y="90" fontSize="8" fontFamily="monospace" fill="var(--color-text-secondary)">local</text>
-                <text x="275" y="90" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
-                <line x1="30" y1="96" x2="330" y2="96" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                <text x="32" y="90" fontSize="8" fontFamily="monospace" fill="var(--color-text-primary)">10.0.0.0/16 (VPC)</text>
+                <text x="175" y="90" fontSize="8" fontFamily="monospace" fill="var(--color-text-secondary)">local</text>
+                <text x="285" y="90" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
+                <line x1="26" y1="96" x2="344" y2="96" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
 
                 {/* S3 gateway route rule */}
-                <rect x="30" y="100" width="300" height="18" fill="rgba(16, 185, 129, 0.08)" rx="2" />
-                <text x="35" y="112" fontSize="8" fontFamily="monospace" fill="var(--color-green)" fontWeight="bold">pl-63a5400a (S3)</text>
-                <text x="165" y="112" fontSize="8" fontFamily="monospace" fill="var(--color-green)" fontWeight="bold">vpce-0d8fa928</text>
-                <text x="275" y="112" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
-                <line x1="30" y1="122" x2="330" y2="122" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                <rect x="26" y="100" width="318" height="18" fill="rgba(16, 185, 129, 0.08)" rx="2" />
+                <text x="32" y="112" fontSize="8" fontFamily="monospace" fill="var(--color-green)" fontWeight="bold">pl-63a5400a (S3)</text>
+                <text x="175" y="112" fontSize="8" fontFamily="monospace" fill="var(--color-green)" fontWeight="bold">vpce-0d8fa928</text>
+                <text x="285" y="112" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
+                <line x1="26" y1="122" x2="344" y2="122" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
 
                 {/* Public Egress Route */}
-                <text x="35" y="136" fontSize="8" fontFamily="monospace" fill="var(--color-red)">0.0.0.0/0 (Global)</text>
-                <text x="165" y="136" fontSize="8" fontFamily="monospace" fill="var(--color-red)">nat-0d8fa2bc</text>
-                <text x="275" y="136" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
+                <text x="32" y="136" fontSize="8" fontFamily="monospace" fill="var(--color-red)">0.0.0.0/0 (Global)</text>
+                <text x="175" y="136" fontSize="8" fontFamily="monospace" fill="var(--color-red)">nat-0d8fa2bc</text>
+                <text x="285" y="136" fontSize="8" fontWeight="bold" fill="var(--color-green)">Active</text>
 
                 {/* Packet Routing Visual */}
-                <path d="M 340 111 L 375 111" stroke="var(--color-green)" strokeWidth="2.5" fill="none" className="s3-flow-green" />
-                <text x="358" y="102" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Match</text>
+                <path d="M 352 111 L 385 111" stroke="var(--color-green)" strokeWidth="2.5" fill="none" className="s3-flow-green" />
+                <text x="368" y="102" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Match</text>
 
                 {/* Target Private AWS Endpoint */}
-                <rect x="376" y="35" width="306" height="122" rx="6" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net2)" />
-                <text x="529" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-green)">🔌 Gateway Private Transit</text>
-                <text x="388" y="68" fontSize="8" fill="var(--color-text-secondary)" style={{ lineHeight: '1.45' }}>
-                  Prefix rules intercept default 0.0.0.0/0 internet routes, privately encapsulating packets inside secure regional trunk connections.
+                <rect x="386" y="35" width="314" height="122" rx="6" fill="var(--s3-success-bg)" stroke="var(--color-green)" strokeWidth="1.5" filter="url(#s3-shadow-net2)" />
+                <text x="543" y="52" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="var(--color-green)">🔌 Gateway Private Transit</text>
+                <text x="398" y="68" fontSize="7.5" fill="var(--color-text-secondary)">
+                  <tspan x="398" dy="0">Prefix rules intercept default 0.0.0.0/0 internet routes,</tspan>
+                  <tspan x="398" dy="12">privately encapsulating packets inside secure regional</tspan>
+                  <tspan x="398" dy="12">trunk connections.</tspan>
                 </text>
-                <rect x="388" y="108" width="282" height="38" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.8" stroke="var(--s3-success-border)" strokeWidth="0.8" />
-                <text x="396" y="121" fontSize="8" fill="var(--color-green)" fontWeight="bold">✔ ZERO TRANSIT CHARGES — FREE VPC EGRESS</text>
-                <text x="396" y="134" fontSize="8" fill="var(--color-green)" fontWeight="bold">✔ ENCRYPTED INTERNAL Regional AWS Link</text>
+                <rect x="398" y="106" width="290" height="42" rx="4" fill="var(--s3-card-bg)" fillOpacity="0.85" stroke="var(--s3-success-border)" strokeWidth="0.8" />
+                <text x="406" y="120" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">✔ ZERO TRANSIT CHARGES — FREE VPC EGRESS</text>
+                <text x="406" y="136" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">✔ ENCRYPTED INTERNAL Regional AWS Link</text>
               </svg>
             </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   RefreshCw,
   Activity,
@@ -17,8 +17,10 @@ import {
   ChevronDown,
   Info
 } from 'lucide-react';
+import DisasterRecoveryComparativeView from '../../components/visualizers/DisasterRecoveryComparativeView';
+import UniqueDisasterRecoveryFeatures from '../../components/visualizers/UniqueDisasterRecoveryFeatures';
 
-type TabType = 'strategies' | 'multiregion' | 'dms' | 'backup' | 'playbook' | 'notebook';
+type TabType = 'strategies' | 'multiregion' | 'dms' | 'backup' | 'playbook' | 'notebook' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -26,8 +28,74 @@ interface LogRow {
   type: 'info' | 'success' | 'warn' | 'error';
 }
 
-export default function DisasterRecoveryVisualizer() {
+interface DisasterRecoveryVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function DisasterRecoveryVisualizer({ provider = 'aws', setProvider }: DisasterRecoveryVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS Backup/gi, 'Azure Backup')
+        .replace(/AWS Elastic Disaster Recovery/gi, 'Azure Site Recovery (ASR)')
+        .replace(/Route 53/gi, 'Azure Traffic Manager / Front Door')
+        .replace(/S3 Cross-Region Replication/gi, 'Azure Geo-Redundant Storage (GRS)');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS Backup/gi, 'Google Cloud Backup and DR')
+        .replace(/AWS Elastic Disaster Recovery/gi, 'GCP Backup and DR Engine')
+        .replace(/Route 53/gi, 'Google Cloud DNS Failover')
+        .replace(/S3 Cross-Region Replication/gi, 'GCS Dual-Region Turbo Replication');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'dr-terminal' || node.props.className === 'dr-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'rpo-rto' ? 'strategies' : tab === 'architect' ? 'notebook' : tab);
+  };
   const [selectedNote, setSelectedNote] = useState<string>('rto_rpo');
   const [expandedCategory, setExpandedCategory] = useState<string>('fundamentals');
 
@@ -480,26 +548,43 @@ export default function DisasterRecoveryVisualizer() {
       </div>
 
       {/* Tab navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>
-          <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
-        </button>
-        <button className={`da-tb ${activeTab === 'strategies' ? 'da-on-strategies' : ''}`} onClick={() => setActiveTab('strategies')}>
-          <Sliders className="w-4 h-4" /> 1. DR Strategies &amp; Cost Optimizer
-        </button>
-        <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on-multiregion' : ''}`} onClick={() => setActiveTab('multiregion')}>
-          <Globe className="w-4 h-4" /> 2. Multi-Region Failover Simulator
-        </button>
-        <button className={`da-tb ${activeTab === 'dms' ? 'da-on-dms' : ''}`} onClick={() => setActiveTab('dms')}>
-          <Database className="w-4 h-4" /> 3. Database Migration Service (DMS)
-        </button>
-        <button className={`da-tb ${activeTab === 'backup' ? 'da-on-backup' : ''}`} onClick={() => setActiveTab('backup')}>
-          <Shield className="w-4 h-4" /> 4. AWS Backup &amp; Vault Lock
-        </button>
-        <button className={`da-tb ${activeTab === 'playbook' ? 'da-on-playbook' : ''}`} onClick={() => setActiveTab('playbook')}>
-          <BookOpen className="w-4 h-4" /> 5. Recovery Playbook
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'notebook' ? 'da-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+          </button>
+          <button className={`da-tb ${activeTab === 'strategies' ? 'da-on-strategies' : ''}`} onClick={() => setActiveTab('strategies')}>
+            <Sliders className="w-4 h-4" /> 1. DR Strategies &amp; Cost Optimizer
+          </button>
+          <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on-multiregion' : ''}`} onClick={() => setActiveTab('multiregion')}>
+            <Globe className="w-4 h-4" /> 2. Multi-Region Failover Simulator
+          </button>
+          <button className={`da-tb ${activeTab === 'dms' ? 'da-on-dms' : ''}`} onClick={() => setActiveTab('dms')}>
+            <Database className="w-4 h-4" /> 3. Database Migration Service (DMS)
+          </button>
+          <button className={`da-tb ${activeTab === 'backup' ? 'da-on-backup' : ''}`} onClick={() => setActiveTab('backup')}>
+            <Shield className="w-4 h-4" /> 4. AWS Backup &amp; Vault Lock
+          </button>
+          <button className={`da-tb ${activeTab === 'playbook' ? 'da-on-playbook' : ''}`} onClick={() => setActiveTab('playbook')}>
+            <BookOpen className="w-4 h-4" /> 5. Recovery Playbook
+          </button>
+          <button className={`da-tb ${activeTab === 'unique' ? 'da-on-backup' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <DisasterRecoveryComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueDisasterRecoveryFeatures provider={provider} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: DISASTER RECOVERY STRATEGIES & COST OPTIMIZER                       */}
@@ -3038,6 +3123,9 @@ export default function DisasterRecoveryVisualizer() {
 
           </div>
         </div>
+      )}
+          </>
+        </Translate>
       )}
     </div>
   );

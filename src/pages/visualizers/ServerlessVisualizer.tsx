@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Zap,
   Server,
@@ -24,6 +24,8 @@ import {
   Network
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import ServerlessComparativeView from '../../components/visualizers/ServerlessComparativeView';
+import UniqueServerlessFeatures from '../../components/visualizers/UniqueServerlessFeatures';
 
 type TabType = 
   | 'intro' 
@@ -35,7 +37,8 @@ type TabType =
   | 'cognito' 
   | 'serverless-architectures' 
   | 'db-integration' 
-  | 'simulation';
+  | 'simulation'
+  | 'unique';
 
 interface LambdaContainer {
   id: string;
@@ -59,8 +62,76 @@ interface Particle {
   containerId?: string;
 }
 
-export default function ServerlessVisualizer() {
+interface ServerlessVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function ServerlessVisualizer({ provider = 'aws', setProvider }: ServerlessVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS Lambda/gi, 'Azure Functions')
+        .replace(/Lambda/g, 'Azure Function')
+        .replace(/DynamoDB/g, 'Azure Cosmos DB')
+        .replace(/API Gateway/g, 'Azure API Management')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS Lambda/gi, 'Google Cloud Functions')
+        .replace(/Lambda/g, 'Cloud Function')
+        .replace(/DynamoDB/g, 'Google Cloud Datastore / Firestore')
+        .replace(/API Gateway/g, 'GCP API Gateway')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'sl-terminal' || node.props.className === 'sl-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'overview' ? 'intro' : tab === 'architect' ? 'serverless-architectures' : tab === 'sim' ? 'simulation' : tab);
+  };
 
   // ==========================================
   // TAB 1 STATE: AWS Serverless Catalog
@@ -1785,38 +1856,55 @@ export default function ServerlessVisualizer() {
       </div>
 
       {/* Navigation tabs */}
-      <div className="sv-tabs">
-        <button className={`sv-tb ${activeTab === 'intro' ? 'sv-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <Layers className="w-4 h-4" /> Serverless Ecosystem
-        </button>
-        <button className={`sv-tb ${activeTab === 'lambda-core' ? 'sv-on' : ''}`} onClick={() => setActiveTab('lambda-core')}>
-          <Cpu className="w-4 h-4" /> Thumbnail Pipeline
-        </button>
-        <button className={`sv-tb ${activeTab === 'concurrency-limits' ? 'sv-on' : ''}`} onClick={() => setActiveTab('concurrency-limits')}>
-          <Sliders className="w-4 h-4" /> Concurrency &amp; SnapStart
-        </button>
-        <button className={`sv-tb ${activeTab === 'edge-compute' ? 'sv-on' : ''}`} onClick={() => setActiveTab('edge-compute')}>
-          <Globe className="w-4 h-4" /> Edge Compute
-        </button>
-        <button className={`sv-tb ${activeTab === 'dynamodb' ? 'sv-on' : ''}`} onClick={() => setActiveTab('dynamodb')}>
-          <Database className="w-4 h-4" /> DynamoDB Deep Dive
-        </button>
-        <button className={`sv-tb ${activeTab === 'api-gateway' ? 'sv-on' : ''}`} onClick={() => setActiveTab('api-gateway')}>
-          <Network className="w-4 h-4" /> API Gateway &amp; Orchestration
-        </button>
-        <button className={`sv-tb ${activeTab === 'cognito' ? 'sv-on' : ''}`} onClick={() => setActiveTab('cognito')}>
-          <Lock className="w-4 h-4" /> Cognito Security
-        </button>
-        <button className={`sv-tb ${activeTab === 'serverless-architectures' ? 'sv-on' : ''}`} onClick={() => setActiveTab('serverless-architectures')}>
-          <Layers className="w-4 h-4" /> Serverless Architectures
-        </button>
-        <button className={`sv-tb ${activeTab === 'db-integration' ? 'sv-on' : ''}`} onClick={() => setActiveTab('db-integration')}>
-          <Shield className="w-4 h-4" /> VPC &amp; DB Integrations
-        </button>
-        <button className={`sv-tb ${activeTab === 'simulation' ? 'sv-on' : ''}`} onClick={() => setActiveTab('simulation')}>
-          <Play className="w-4 h-4" /> Auto-Scaling Playground
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="sv-tabs">
+          <button className={`sv-tb ${activeTab === 'intro' ? 'sv-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <Layers className="w-4 h-4" /> Serverless Ecosystem
+          </button>
+          <button className={`sv-tb ${activeTab === 'lambda-core' ? 'sv-on' : ''}`} onClick={() => setActiveTab('lambda-core')}>
+            <Cpu className="w-4 h-4" /> Thumbnail Pipeline
+          </button>
+          <button className={`sv-tb ${activeTab === 'concurrency-limits' ? 'sv-on' : ''}`} onClick={() => setActiveTab('concurrency-limits')}>
+            <Sliders className="w-4 h-4" /> Concurrency &amp; SnapStart
+          </button>
+          <button className={`sv-tb ${activeTab === 'edge-compute' ? 'sv-on' : ''}`} onClick={() => setActiveTab('edge-compute')}>
+            <Globe className="w-4 h-4" /> Edge Compute
+          </button>
+          <button className={`sv-tb ${activeTab === 'dynamodb' ? 'sv-on' : ''}`} onClick={() => setActiveTab('dynamodb')}>
+            <Database className="w-4 h-4" /> DynamoDB Deep Dive
+          </button>
+          <button className={`sv-tb ${activeTab === 'api-gateway' ? 'sv-on' : ''}`} onClick={() => setActiveTab('api-gateway')}>
+            <Network className="w-4 h-4" /> API Gateway &amp; Orchestration
+          </button>
+          <button className={`sv-tb ${activeTab === 'cognito' ? 'sv-on' : ''}`} onClick={() => setActiveTab('cognito')}>
+            <Lock className="w-4 h-4" /> Cognito Security
+          </button>
+          <button className={`sv-tb ${activeTab === 'serverless-architectures' ? 'sv-on' : ''}`} onClick={() => setActiveTab('serverless-architectures')}>
+            <Layers className="w-4 h-4" /> Serverless Architectures
+          </button>
+          <button className={`sv-tb ${activeTab === 'db-integration' ? 'sv-on' : ''}`} onClick={() => setActiveTab('db-integration')}>
+            <Shield className="w-4 h-4" /> VPC &amp; DB Integrations
+          </button>
+          <button className={`sv-tb ${activeTab === 'simulation' ? 'sv-on' : ''}`} onClick={() => setActiveTab('simulation')}>
+            <Play className="w-4 h-4" /> Auto-Scaling Playground
+          </button>
+          <button className={`sv-tb ${activeTab === 'unique' ? 'sv-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <ServerlessComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueServerlessFeatures provider={provider} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: INTRO & AWS SERVERLESS CATALOG                                     */}
@@ -4549,6 +4637,9 @@ export default function ServerlessVisualizer() {
             </div>
           </div>
         </div>
+      )}
+          </>
+        </Translate>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Shield,
   Key,
@@ -16,8 +16,10 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import NetworkAndEdgeSecurityComparativeView from '../../components/visualizers/NetworkAndEdgeSecurityComparativeView';
+import UniqueNetworkAndEdgeSecurityFeatures from '../../components/visualizers/UniqueNetworkAndEdgeSecurityFeatures';
 
-type TabType = 'notebook' | 'intro' | 'acm' | 'waf' | 'ddos' | 'scanners';
+type TabType = 'notebook' | 'intro' | 'acm' | 'waf' | 'ddos' | 'scanners' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -25,8 +27,76 @@ interface LogRow {
   type: 'info' | 'success' | 'warn' | 'error';
 }
 
-export default function NetworkAndEdgeSecurityVisualizer() {
+interface NetworkAndEdgeSecurityVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function NetworkAndEdgeSecurityVisualizer({ provider = 'aws', setProvider }: NetworkAndEdgeSecurityVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS WAF/gi, 'Azure WAF (Application Gateway / Front Door)')
+        .replace(/AWS Shield/gi, 'Azure DDoS Protection')
+        .replace(/AWS Network Firewall/gi, 'Azure Firewall Premium')
+        .replace(/WAF/g, 'Azure WAF')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS WAF/gi, 'Google Cloud Armor')
+        .replace(/AWS Shield/gi, 'Google Cloud Armor Enterprise')
+        .replace(/AWS Network Firewall/gi, 'GCP Next-Gen Firewall (NGFW)')
+        .replace(/WAF/g, 'Cloud Armor WAF')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'waf-terminal' || node.props.className === 'waf-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'firewall' ? 'waf' : tab === 'architect' ? 'notebook' : tab);
+  };
 
   // Visual Architect Academy Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('waf_webacl');
@@ -896,26 +966,43 @@ export default function NetworkAndEdgeSecurityVisualizer() {
       </div>
 
       {/* Tab navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-          <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
-        </button>
-        <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <BookOpen className="w-4 h-4" /> 1. Edge Scopes Comparative Grid
-        </button>
-        <button className={`da-tb ${activeTab === 'acm' ? 'da-on' : ''}`} onClick={() => setActiveTab('acm')}>
-          <Key className="w-4 h-4" /> 2. ACM Certificates &amp; HTTPS redirects
-        </button>
-        <button className={`da-tb ${activeTab === 'waf' ? 'da-on' : ''}`} onClick={() => setActiveTab('waf')}>
-          <Layers className="w-4 h-4" /> 3. AWS WAF Rules &amp; API Gateways
-        </button>
-        <button className={`da-tb ${activeTab === 'ddos' ? 'da-on' : ''}`} onClick={() => setActiveTab('ddos')}>
-          <Activity className="w-4 h-4" /> 4. DDoS Resilience E2E Map
-        </button>
-        <button className={`da-tb ${activeTab === 'scanners' ? 'da-on' : ''}`} onClick={() => setActiveTab('scanners')}>
-          <Search className="w-4 h-4" /> 5. Threat Intelligence &amp; CVE Scans
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+          </button>
+          <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <BookOpen className="w-4 h-4" /> 1. Edge Scopes Comparative Grid
+          </button>
+          <button className={`da-tb ${activeTab === 'acm' ? 'da-on' : ''}`} onClick={() => setActiveTab('acm')}>
+            <Key className="w-4 h-4" /> 2. ACM Certificates &amp; HTTPS redirects
+          </button>
+          <button className={`da-tb ${activeTab === 'waf' ? 'da-on' : ''}`} onClick={() => setActiveTab('waf')}>
+            <Layers className="w-4 h-4" /> 3. AWS WAF Rules &amp; API Gateways
+          </button>
+          <button className={`da-tb ${activeTab === 'ddos' ? 'da-on' : ''}`} onClick={() => setActiveTab('ddos')}>
+            <Activity className="w-4 h-4" /> 4. DDoS Resilience E2E Map
+          </button>
+          <button className={`da-tb ${activeTab === 'scanners' ? 'da-on' : ''}`} onClick={() => setActiveTab('scanners')}>
+            <Search className="w-4 h-4" /> 5. Threat Intelligence &amp; CVE Scans
+          </button>
+          <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <NetworkAndEdgeSecurityComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueNetworkAndEdgeSecurityFeatures provider={provider} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: EDGE SCOPES MATRIX                                                 */}
@@ -2373,6 +2460,9 @@ export default function NetworkAndEdgeSecurityVisualizer() {
 
           </div>
         </div>
+      )}
+          </>
+        </Translate>
       )}
 
     </div>

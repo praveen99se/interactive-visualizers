@@ -167,27 +167,27 @@ function AppContent() {
       <main className="max-w-7xl w-full mx-auto px-4 md:px-8 py-8 flex-grow">
         <Routes>
           <Route path="/" element={<Home isDarkTheme={isDarkTheme} />} />
-          <Route path="/visualizers/ec2" element={<EC2Visualizer />} />
-          <Route path="/visualizers/load-balancer" element={<LoadBalancerVisualizer />} />
-          <Route path="/visualizers/asg" element={<ASGVisualizer />} />
-          <Route path="/visualizers/rds" element={<RDSVisualizer />} />
-          <Route path="/visualizers/aurora" element={<AuroraVisualizer />} />
-          <Route path="/visualizers/elasticache" element={<ElastiCacheVisualizer />} />
-          <Route path="/visualizers/route53" element={<Route53Visualizer />} />
+          <Route path="/visualizers/ec2" element={<EC2Visualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/load-balancer" element={<LoadBalancerVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/asg" element={<ASGVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/rds" element={<RDSVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/aurora" element={<AuroraVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/elasticache" element={<ElastiCacheVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/route53" element={<Route53Visualizer provider={provider} setProvider={setProvider} />} />
           <Route path="/visualizers/s3" element={<S3Visualizer provider={provider} setProvider={setProvider} />} />
-          <Route path="/visualizers/cloudfront" element={<CloudfrontVisualizer />} />
-          <Route path="/visualizers/storage-fs" element={<FilesAndStorageVisualizer />} />
-          <Route path="/visualizers/integration-messaging" element={<IntegrationAndMessagingVisualizer />} />
-          <Route path="/visualizers/elastic-containers" element={<ElasticContainersVisualizer />} />
-          <Route path="/visualizers/serverless" element={<ServerlessVisualizer />} />
-          <Route path="/visualizers/databases-analytics" element={<DatabasesAndAnalyticsVisualizer />} />
-          <Route path="/visualizers/cloudwatch-events" element={<CloudWatchMAndEventsVisualizer />} />
-          <Route path="/visualizers/governance-identity" element={<GovernanceAndIdentityVisualizer />} />
-          <Route path="/visualizers/secrets-kms" element={<SecretsAndKMSEncryptionVisualizer />} />
-          <Route path="/visualizers/network-security" element={<NetworkAndEdgeSecurityVisualizer />} />
-          <Route path="/visualizers/networking-vpc" element={<NetworkingVPCVisualizer />} />
-          <Route path="/visualizers/disaster-recovery" element={<DisasterRecoveryVisualizer />} />
-          <Route path="/visualizers/operations-ml" element={<OperationsAndMLVisualizer />} />
+          <Route path="/visualizers/cloudfront" element={<CloudfrontVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/storage-fs" element={<FilesAndStorageVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/integration-messaging" element={<IntegrationAndMessagingVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/elastic-containers" element={<ElasticContainersVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/serverless" element={<ServerlessVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/databases-analytics" element={<DatabasesAndAnalyticsVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/cloudwatch-events" element={<CloudWatchMAndEventsVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/governance-identity" element={<GovernanceAndIdentityVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/secrets-kms" element={<SecretsAndKMSEncryptionVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/network-security" element={<NetworkAndEdgeSecurityVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/networking-vpc" element={<NetworkingVPCVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/disaster-recovery" element={<DisasterRecoveryVisualizer provider={provider} setProvider={setProvider} />} />
+          <Route path="/visualizers/operations-ml" element={<OperationsAndMLVisualizer provider={provider} setProvider={setProvider} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

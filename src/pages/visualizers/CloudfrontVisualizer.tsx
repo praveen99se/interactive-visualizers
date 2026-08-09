@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import CloudfrontComparativeView from '../../components/visualizers/CloudfrontComparativeView';
+import UniqueCloudfrontFeatures from '../../components/visualizers/UniqueCloudfrontFeatures';
 
-type TabType = 'overview' | 'origins' | 'aga' | 'security' | 'sim' | 'pricing';
+type TabType = 'overview' | 'origins' | 'aga' | 'security' | 'sim' | 'pricing' | 'unique';
 type ClientRegion = 'us' | 'eu' | 'asia';
 type OriginType = 's3' | 'alb_public' | 'alb_vpc';
 type HttpMethod = 'GET_STATIC' | 'GET_DYNAMIC' | 'POST';
@@ -12,8 +14,92 @@ interface SimLog {
   message: string;
 }
 
-export default function CloudfrontVisualizer() {
+interface CloudfrontVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function CloudfrontVisualizer({ provider = 'aws', setProvider }: CloudfrontVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon CloudFront/gi, 'Azure Front Door / Azure CDN')
+        .replace(/CloudFront/g, 'Azure Front Door')
+        .replace(/Edge Location/gi, 'Azure Edge PoP')
+        .replace(/Edge Locations/gi, 'Azure Edge PoPs')
+        .replace(/Origin Access Control \(OAC\)/gi, 'Azure Private Link Origin')
+        .replace(/AWS Global Accelerator/gi, 'Azure Front Door Anycast Architecture')
+        .replace(/Global Accelerator/gi, 'Azure Front Door Anycast Router')
+        .replace(/AWS WAF/gi, 'Azure Web Application Firewall (WAF)')
+        .replace(/Origin Shield/gi, 'Azure Front Door Regional Cache')
+        .replace(/CloudWatch/g, 'Azure Monitor')
+        .replace(/S3 Bucket/gi, 'Azure Blob Storage')
+        .replace(/CloudFront Functions/gi, 'Azure Front Door Rules Engine');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon CloudFront/gi, 'Google Cloud CDN')
+        .replace(/CloudFront/g, 'Cloud CDN')
+        .replace(/Edge Location/gi, 'Google Edge PoP')
+        .replace(/Edge Locations/gi, 'Google Edge PoPs')
+        .replace(/Origin Access Control \(OAC\)/gi, 'Signed URLs & Cloud IAM')
+        .replace(/AWS Global Accelerator/gi, 'Google Cloud Global Anycast IP & Premium Tier')
+        .replace(/Global Accelerator/gi, 'GCP Global Anycast Network')
+        .replace(/AWS WAF/gi, 'Google Cloud Armor Security Policies')
+        .replace(/Origin Shield/gi, 'GCP Media CDN Origin Shield')
+        .replace(/CloudWatch/g, 'Cloud Monitoring')
+        .replace(/S3 Bucket/gi, 'Google Cloud Storage Bucket')
+        .replace(/CloudFront Functions/gi, 'Cloud CDN Edge Logic');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'cf-terminal' || node.props.className === 'cf-log'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab);
+  };
   
   // Simulator State
   const [clientRegion, setClientRegion] = useState<ClientRegion>('us');
@@ -1030,28 +1116,67 @@ export default function CloudfrontVisualizer() {
       <div className="cf-container">
         {/* Title Header */}
         <div style={{ padding: '14px 16px 4px' }}>
-          <div className="cf-h">⚡ Amazon CloudFront — Global Content Delivery Network (CDN)</div>
+          <div className="cf-h">
+            {isComparative ? (
+              <span>⚖️ Multi-Cloud CDN Comparison — AWS CloudFront vs Azure Front Door vs GCP Cloud CDN</span>
+            ) : isAzure ? (
+              <span>⚡ Azure Front Door &amp; Azure Content Delivery Network</span>
+            ) : isGcp ? (
+              <span>⚡ Google Cloud CDN &amp; Media CDN Global Infrastructure</span>
+            ) : (
+              <span>⚡ Amazon CloudFront — Global Content Delivery Network (CDN)</span>
+            )}
+          </div>
           <div className="cf-sub">
-            Accelerate the distribution of static web pages, dynamic applications, streaming media, and secure APIs. Cache assets at globally distributed edge nodes to lower read latencies, reduce load and egress costs on origin servers, and block malicious traffic before it reaches your private cloud perimeter.
+            {isComparative ? (
+              <span>Side-by-side architectural comparison of global edge content delivery networks across AWS, Azure, and GCP.</span>
+            ) : isAzure ? (
+              <span>Accelerate applications at Azure edge PoPs. Rules engine header rewrites, Private Link storage origins, and WAF protection.</span>
+            ) : isGcp ? (
+              <span>Global Anycast CDN infrastructure. Signed URLs/Cookies authorization, Media CDN video streaming, and Cloud Armor edge security.</span>
+            ) : (
+              <span>Accelerate the distribution of static web pages, dynamic applications, streaming media, and secure APIs. Cache assets at globally distributed edge nodes to lower read latencies, reduce load and egress costs on origin servers, and block malicious traffic before it reaches your private cloud perimeter.</span>
+            )}
           </div>
         </div>
 
-        <div className="cf-tabs">
-          <button className={`cf-tb ${activeTab === 'overview' ? 'cf-on' : ''}`} onClick={() => setActiveTab('overview')}>🌐 1) Concept &amp; Delivery</button>
-          <button className={`cf-tb ${activeTab === 'origins' ? 'cf-on' : ''}`} onClick={() => setActiveTab('origins')}>🔌 2) Origins &amp; Integrations</button>
-          <button className={`cf-tb ${activeTab === 'aga' ? 'cf-on' : ''}`} onClick={() => setActiveTab('aga')}>🚀 3) Global Accelerator</button>
-          <button className={`cf-tb ${activeTab === 'security' ? 'cf-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ 4) OAC, Geo &amp; Purges</button>
-          <button className={`cf-tb ${activeTab === 'sim' ? 'cf-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 5) Live Global Request Simulator</button>
-          <button className={`cf-tb ${activeTab === 'pricing' ? 'cf-on' : ''}`} onClick={() => setActiveTab('pricing')}>💰 6) Pricing &amp; Shield</button>
-        </div>
+        {!isComparative && (
+          <div className="cf-tabs">
+            <button className={`cf-tb ${activeTab === 'overview' ? 'cf-on' : ''}`} onClick={() => setActiveTab('overview')}>🌐 1) Concept &amp; Delivery</button>
+            <button className={`cf-tb ${activeTab === 'origins' ? 'cf-on' : ''}`} onClick={() => setActiveTab('origins')}>🔌 2) Origins &amp; Integrations</button>
+            <button className={`cf-tb ${activeTab === 'aga' ? 'cf-on' : ''}`} onClick={() => setActiveTab('aga')}>🚀 3) Global Accelerator</button>
+            <button className={`cf-tb ${activeTab === 'security' ? 'cf-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ 4) OAC, Geo &amp; Purges</button>
+            <button className={`cf-tb ${activeTab === 'sim' ? 'cf-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 5) Live Global Request Simulator</button>
+            <button className={`cf-tb ${activeTab === 'pricing' ? 'cf-on' : ''}`} onClick={() => setActiveTab('pricing')}>💰 6) Pricing &amp; Shield</button>
+            <button className={`cf-tb ${activeTab === 'unique' ? 'cf-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
+          </div>
+        )}
+
+        {isComparative && (
+          <CloudfrontComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeTab === 'unique' && (
+          <UniqueCloudfrontFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+        )}
+
+        {!isComparative && activeTab !== 'unique' && (
+          <Translate>
+            <>
 
         {/* Tab 1: Concept & Delivery */}
         {activeTab === 'overview' && (
           <div>
-            <div className="cf-sec">Amazon CloudFront — Core Architecture &amp; Request Flow</div>
+            <div className="cf-sec">
+              {isAzure ? 'Azure Front Door / Azure CDN — Core Architecture & Request Flow' : isGcp ? 'Google Cloud CDN / Media CDN — Core Architecture & Request Flow' : 'Amazon CloudFront — Core Architecture & Request Flow'}
+            </div>
             <div className="cf-card">
               <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
-                CloudFront deploys a massive proxy and caching network spanning hundreds of cities globally. Instead of client requests traveling across public ocean floor fibers to a central database or origin server, requests are automatically routed to the topologically nearest datacenter for immediate local evaluation.
+                {isAzure 
+                  ? 'Azure Front Door deploys a global Anycast network spanning 190+ Edge PoP locations. Incoming HTTP/HTTPS client requests are terminated at the nearest Azure PoP, terminating TLS in milliseconds before proxying traffic over the private Microsoft global fiber backbone.'
+                  : isGcp 
+                  ? 'Google Cloud CDN leverages Google global Anycast infrastructure across 100+ locations worldwide. Client requests route to the nearest Google edge PoP over BGP Anycast, serving cached static assets or streaming video chunks via Media CDN.'
+                  : 'CloudFront deploys a massive proxy and caching network spanning hundreds of cities globally. Instead of client requests traveling across public ocean floor fibers to a central database or origin server, requests are automatically routed to the topologically nearest datacenter for immediate local evaluation.'}
               </div>
 
               {/* Core Concept splits with .cf-desc-mute */}
@@ -1062,14 +1187,18 @@ export default function CloudfrontVisualizer() {
                   <div className="cf-row">
                     <div className="cf-dot">1</div>
                     <div>
-                      AWS offers <span className="cf-hl-indigo">Edge Location</span> <span className="cf-desc-mute">(a geographically distributed datacenter running a Point of Presence POP housing high-speed physical caching proxy servers)</span> as the frontline client receiver. Which means client connections terminate millisecond distances away, accelerating TCP handshakes and TLS negotiations.
+                      {isAzure ? 'Azure offers ' : isGcp ? 'Google Cloud offers ' : 'AWS offers '}
+                      <span className="cf-hl-indigo">{isAzure ? 'Azure Edge PoP' : isGcp ? 'Google Anycast Edge PoP' : 'Edge Location'}</span>{' '}
+                      <span className="cf-desc-mute">({isAzure ? 'a globally distributed Azure datacenter running high-speed caching proxy servers' : isGcp ? 'a Google edge location running BGP Anycast and Media CDN cache nodes' : 'a geographically distributed datacenter running a Point of Presence POP housing high-speed physical caching proxy servers'})</span> as the frontline client receiver. Which means client connections terminate millisecond distances away, accelerating TCP handshakes and TLS negotiations.
                     </div>
                   </div>
 
                   <div className="cf-row">
                     <div className="cf-dot">2</div>
                     <div>
-                      AWS offers <span className="cf-hl-indigo">Regional Edge Cache (REC)</span> <span className="cf-desc-mute">(a larger, centralized mid-tier cache location situated between edge nodes and origins to swallow edge miss requests)</span> to buffer origin servers. Which means even if individual edge nodes expire assets, the REC holds copies, shielding the origin from costly database stampedes.
+                      {isAzure ? 'Azure offers ' : isGcp ? 'Google Cloud offers ' : 'AWS offers '}
+                      <span className="cf-hl-indigo">{isAzure ? 'Azure Regional Cache Node' : isGcp ? 'Google Regional Cache (GGC)' : 'Regional Edge Cache (REC)'}</span>{' '}
+                      <span className="cf-desc-mute">({isAzure ? 'a mid-tier cache location buffering Azure Storage and App Services' : isGcp ? 'a centralized regional cache tier shielding Cloud Storage and GKE backends' : 'a larger, centralized mid-tier cache location situated between edge nodes and origins to swallow edge miss requests'})</span> to buffer origin servers. Which means even if individual edge nodes expire assets, the regional cache holds copies, shielding origin servers from costly database stampedes.
                     </div>
                   </div>
                 </div>
@@ -1080,14 +1209,18 @@ export default function CloudfrontVisualizer() {
                   <div className="cf-row">
                     <div className="cf-dot">3</div>
                     <div>
-                      AWS offers <span className="cf-hl-cyan">DNS Anycast Routing</span> <span className="cf-desc-mute">(an IP addressing methodology where multiple physical servers share a single IP and BGP routers naturally steer packets to the topologically closest node)</span> to handle incoming requests. Which means the browser gets the same CDN domain, but physically points to different server racks depending on geography.
+                      {isAzure ? 'Azure offers ' : isGcp ? 'Google Cloud offers ' : 'AWS offers '}
+                      <span className="cf-hl-cyan">{isAzure ? 'Anycast VIP Ingress' : isGcp ? 'BGP Anycast Ingress' : 'DNS Anycast Routing'}</span>{' '}
+                      <span className="cf-desc-mute">({isAzure ? 'a split-TCP architecture directing traffic over the Microsoft global network' : isGcp ? 'a single global IP address BGP Anycast routing over Google private fiber' : 'an IP addressing methodology where multiple physical servers share a single IP and BGP routers naturally steer packets to the topologically closest node'})</span> to handle incoming requests. Which means client browsers point directly to optimal network entry points depending on geography.
                     </div>
                   </div>
 
                   <div className="cf-row">
                     <div className="cf-dot">4</div>
                     <div>
-                      AWS offers <span className="cf-hl-cyan">Origin Server</span> <span className="cf-desc-mute">(the authoritative cloud storage bucket, load balancer, API gateway, or custom server that owns the master copy of your data)</span> as the source of truth. Which means CloudFront pulls raw assets from this backend whenever a global cache lookup results in a total cache miss.
+                      {isAzure ? 'Azure offers ' : isGcp ? 'Google Cloud offers ' : 'AWS offers '}
+                      <span className="cf-hl-cyan">{isAzure ? 'Private Link / Storage Origin' : isGcp ? 'Cloud Storage / GKE Origin' : 'Origin Server'}</span>{' '}
+                      <span className="cf-desc-mute">({isAzure ? 'Azure Blob Storage or App Service connected via Private Link without public IPs' : isGcp ? 'Google Cloud Storage buckets or HTTPS Load Balancer with Signed URL validation' : 'the authoritative cloud storage bucket, load balancer, API gateway, or custom server that owns the master copy of your data'})</span> as the source of truth. Which means the CDN pulls raw assets from this backend whenever a global cache lookup results in a total cache miss.
                     </div>
                   </div>
                 </div>
@@ -1146,28 +1279,28 @@ export default function CloudfrontVisualizer() {
 
                   {/* ==================== GLOBAL EDGE POP BOUNDARY ==================== */}
                   <rect x="190" y="24" width="170" height="185" rx="8" fill="none" stroke="#8b5cf6" strokeWidth="1.2" strokeDasharray="4,2" />
-                  <text x="198" y="36" fill="var(--cf-svg-text-edge)" fontSize="7.5" fontWeight="extrabold">Global Edge POP Boundary</text>
+                  <text x="198" y="36" fill="var(--cf-svg-text-edge)" fontSize="7.5" fontWeight="extrabold">{isAzure ? "Azure Edge PoP Boundary" : isGcp ? "Google Anycast PoP Boundary" : "Global Edge POP Boundary"}</text>
 
                   {/* Column 2: Edge Locations */}
                   {/* New York Edge PoP */}
                   <g filter="url(#shadow)">
                     <rect x="205" y="58" width="140" height="32" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="1" />
                     <circle cx="218" cy="74" r="3" fill="#10b981" />
-                    <text x="280" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">New York Edge (POP)</text>
+                    <text x="280" y="77" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">{isAzure ? "New York PoP (East US)" : isGcp ? "New York Anycast PoP" : "New York Edge (POP)"}</text>
                   </g>
                   
                   {/* Frankfurt Edge PoP */}
                   <g filter="url(#shadow)">
                     <rect x="205" y="102" width="140" height="32" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="1" />
                     <circle cx="218" cy="118" r="3" fill="#10b981" />
-                    <text x="280" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">Frankfurt Edge (POP)</text>
+                    <text x="280" y="121" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">{isAzure ? "Frankfurt PoP (EU West)" : isGcp ? "Frankfurt Anycast PoP" : "Frankfurt Edge (POP)"}</text>
                   </g>
 
                   {/* Tokyo Edge PoP */}
                   <g filter="url(#shadow)">
                     <rect x="205" y="146" width="140" height="32" rx="6" fill="var(--cf-svg-node-fill-edge)" stroke="var(--cf-svg-node-stroke-edge)" strokeWidth="1" />
                     <circle cx="218" cy="162" r="3" fill="#10b981" />
-                    <text x="280" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">Tokyo Edge (POP)</text>
+                    <text x="280" y="165" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-edge)">{isAzure ? "Tokyo PoP (East Asia)" : isGcp ? "Tokyo Anycast PoP" : "Tokyo Edge (POP)"}</text>
                   </g>
 
                   {/* ==================== REGIONAL CACHING CLOUD BOUNDARY ==================== */}
@@ -1178,34 +1311,34 @@ export default function CloudfrontVisualizer() {
                   {/* US East REC */}
                   <g filter="url(#shadow)">
                     <rect x="395" y="58" width="140" height="50" rx="6" fill="var(--cf-svg-node-fill-rec)" stroke="var(--cf-svg-node-stroke-rec)" strokeWidth="1.5" />
-                    <text x="465" y="78" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--cf-svg-text-rec)">US-East REC</text>
+                    <text x="465" y="78" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--cf-svg-text-rec)">{isAzure ? "East US Cache" : isGcp ? "us-central1 Cache" : "US-East REC"}</text>
                     <text x="465" y="94" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-rec)" fontWeight="600">(Primary Buffer)</text>
                   </g>
 
                   {/* Europe REC */}
                   <g filter="url(#shadow)">
                     <rect x="395" y="128" width="140" height="50" rx="6" fill="var(--cf-svg-node-fill-rec)" stroke="var(--cf-svg-node-stroke-rec)" strokeWidth="1.5" />
-                    <text x="465" y="148" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--cf-svg-text-rec)">Europe REC</text>
+                    <text x="465" y="148" textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--cf-svg-text-rec)">{isAzure ? "West Europe Cache" : isGcp ? "europe-west1 Cache" : "Europe REC"}</text>
                     <text x="465" y="164" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-rec)" fontWeight="600">(Primary Buffer)</text>
                   </g>
 
                   {/* ==================== SECURE PRIVATE DATA VPC BOUNDARY ==================== */}
                   <rect x="570" y="24" width="180" height="185" rx="8" fill="none" stroke="#2563eb" strokeWidth="1.5" strokeDasharray="6,4" />
-                  <text x="578" y="36" fill="var(--cf-svg-node-stroke-alb)" fontSize="7.5" fontWeight="extrabold">Secure Private Data VPC Boundary</text>
+                  <text x="578" y="36" fill="var(--cf-svg-node-stroke-alb)" fontSize="7.5" fontWeight="extrabold">{isAzure ? "Secure Azure VNet Boundary" : isGcp ? "Secure GCP VPC Boundary" : "Secure Private Data VPC Boundary"}</text>
 
                   {/* Column 4: Origin Servers */}
                   {/* S3 Storage Cylinder */}
                   <g filter="url(#shadow)">
                     <path d="M 595 72 A 50 12 0 0 0 695 72 L 695 90 A 50 12 0 0 1 595 90 Z" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
                     <ellipse cx="645" cy="72" rx="50" ry="12" fill="var(--cf-svg-node-fill-origin)" stroke="var(--cf-svg-node-stroke-origin)" strokeWidth="1.5" />
-                    <text x="645" y="86" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-origin)">🪣 private-s3-bucket</text>
+                    <text x="645" y="86" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--cf-svg-text-origin)">{isAzure ? "📦 blob-storage-account" : isGcp ? "🪣 gcs-storage-bucket" : "🪣 private-s3-bucket"}</text>
                   </g>
 
                   {/* ALB Compute Tower */}
                   <g filter="url(#shadow)">
                     <rect x="595" y="128" width="130" height="42" rx="6" fill="var(--cf-svg-node-fill-alb)" stroke="var(--cf-svg-node-stroke-alb)" strokeWidth="1.5" />
-                    <text x="660" y="146" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-alb)">⚙️ alb-dynamic-api</text>
-                    <text x="660" y="158" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-alb)" fontWeight="600">VPC API Gateway</text>
+                    <text x="660" y="146" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--cf-svg-text-alb)">{isAzure ? "⚙️ app-service-api" : isGcp ? "⚙️ gke-https-lb" : "⚙️ alb-dynamic-api"}</text>
+                    <text x="660" y="158" textAnchor="middle" fontSize="8" fill="var(--cf-svg-text-alb)" fontWeight="600">{isAzure ? "VNet Private Link" : isGcp ? "PSA Subnet Gateway" : "VPC API Gateway"}</text>
                   </g>
 
                   {/* Routing Conduits & Waveguide Paths */}
@@ -1274,10 +1407,10 @@ export default function CloudfrontVisualizer() {
         {/* Tab 2: Origins & Integrations */}
         {activeTab === 'origins' && (
           <div>
-            <div className="cf-sec">Origin Types, Custom VPC Connections, and S3 CRR Comparisons</div>
+            <div className="cf-sec">{isAzure ? "Origin Types, Azure Private Link Connections, and Storage Redundancy" : isGcp ? "Origin Types, VPC Peering / PSA Connections, and Cloud Storage Redundancy" : "Origin Types, Custom VPC Connections, and S3 CRR Comparisons"}</div>
             <div className="cf-card">
               <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
-                CloudFront integrates with S3 buckets for static contents, and with dynamic application backends (like ALB, EC2, or custom servers) inside or outside AWS networks. Understanding secure access structures is essential for shielding your backends.
+                {isAzure ? "Azure Front Door integrates with Blob Storage accounts for static assets, and with dynamic backends (App Service, Azure VMs, or API Management) inside or outside Azure VNets via Private Link." : isGcp ? "Google Cloud CDN integrates with Cloud Storage (GCS) buckets for static contents, and with dynamic backends (Cloud Run, GKE, or Compute Engine) via HTTPS Load Balancers & Private Service Access." : "CloudFront integrates with S3 buckets for static contents, and with dynamic application backends (like ALB, EC2, or custom servers) inside or outside AWS networks. Understanding secure access structures is essential for shielding your backends."}
               </div>
 
               <div className="cf-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
@@ -1288,14 +1421,18 @@ export default function CloudfrontVisualizer() {
                   <div className="cf-row">
                     <div className="cf-dot">A</div>
                     <div>
-                      AWS offers <span className="cf-hl-green">S3 Bucket Origin + OAC</span> <span className="cf-desc-mute">(Origin Access Control which signs request blocks with custom AWS SigV4 signatures)</span> to secure static assets. Which means the S3 bucket is completely private, rejecting all public internet traffic and only authorizing requests carrying a valid signature validated by the CloudFront service.
+                      {isAzure ? 'Azure offers ' : isGcp ? 'Google Cloud offers ' : 'AWS offers '}
+                      <span className="cf-hl-green">{isAzure ? 'Azure Blob Storage + Private Link' : isGcp ? 'Cloud Storage + Signed URLs / IAM' : 'S3 Bucket Origin + OAC'}</span>{' '}
+                      <span className="cf-desc-mute">({isAzure ? 'Managed Identities & Private Endpoints securing storage accounts' : isGcp ? 'HMAC Signed URLs & Service Account IAM securing Cloud Storage buckets' : 'Origin Access Control which signs request blocks with custom AWS SigV4 signatures'})</span> to secure static assets. Which means storage is completely private, rejecting all unauthorized internet traffic.
                     </div>
                   </div>
 
                   <div className="cf-row">
                     <div className="cf-dot">B</div>
                     <div>
-                      AWS offers <span className="cf-hl-green">Dynamic ALB/EC2 Origins</span> <span className="cf-desc-mute">(attaching public Application Load Balancers or virtual compute instances as backend sources)</span> to accelerate APIs. Which means CloudFront operates as an SSL-terminating reverse proxy, maintaining keep-alive TCP connections over private backbones to boost processing speed.
+                      {isAzure ? 'Azure offers ' : isGcp ? 'Google Cloud offers ' : 'AWS offers '}
+                      <span className="cf-hl-green">{isAzure ? 'App Service / VM Origins' : isGcp ? 'Cloud Run / GKE Load Balancer Origins' : 'Dynamic ALB/EC2 Origins'}</span>{' '}
+                      <span className="cf-desc-mute">({isAzure ? 'Front Door Private Link connections into internal App Services and Load Balancers' : isGcp ? 'Serverless Network Endpoint Groups (NEGs) into Cloud Run and GKE clusters' : 'attaching public Application Load Balancers or virtual compute instances as backend sources'})</span> to accelerate APIs. Which means the CDN operates as an SSL-terminating reverse proxy over private backbones.
                     </div>
                   </div>
                 </div>
@@ -1309,13 +1446,13 @@ export default function CloudfrontVisualizer() {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
                     <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-secondary)', borderRadius: '6px', padding: '8px' }}>
-                      <strong style={{ color: 'var(--cf-svg-text-alb)' }}>Option 1: CloudFront VPC Origin (Private Network Integration)</strong>
+                      <strong style={{ color: 'var(--cf-svg-text-alb)' }}>{isAzure ? "Option 1: Azure Front Door Private Link Origin" : isGcp ? "Option 1: Internal HTTPS Load Balancer via Private Service Access (PSA)" : "Option 1: CloudFront VPC Origin (Private Network Integration)"}</strong>
                       <div style={{ marginTop: '4px', color: 'var(--color-text-secondary)' }}>
                         Allows CloudFront to connect directly to private ALBs or EC2 instances inside your VPC subnets. Uses managed VPC endpoint interfaces under the hood. The ALB has no public IP address and cannot be accessed from the public internet.
                       </div>
                     </div>
                     <div style={{ background: 'var(--color-background-primary)', border: '0.5px solid var(--cf-border-secondary)', borderRadius: '6px', padding: '8px' }}>
-                      <strong style={{ color: 'var(--cf-alert-yellow-text)' }}>Option 2: Custom Origin via Public Network + Ingress Restricting</strong>
+                      <strong style={{ color: 'var(--cf-alert-yellow-text)' }}>{isAzure ? "Option 2: Custom Origin via Public Network + X-Azure-FDID Header" : isGcp ? "Option 2: Custom Origin via Public Network + X-Goog-CDN-Header" : "Option 2: Custom Origin via Public Network + Ingress Restricting"}</strong>
                       <div style={{ marginTop: '4px', color: 'var(--color-text-secondary)' }}>
                         The ALB is placed in public subnets with a public DNS. To block public users from bypassing the CDN, you configure custom headers (e.g., <code>X-Origin-Verify: shared-secret</code>) inside CloudFront, and program the ALB to reject any traffic missing this header!
                       </div>
@@ -1780,7 +1917,7 @@ export default function CloudfrontVisualizer() {
         {/* Tab 3: AWS Global Accelerator (AGA) */}
         {activeTab === 'aga' && (
           <div>
-            <div className="cf-sec">AWS Global Accelerator — Static Anycast &amp; Network Backbone Optimization</div>
+            <div className="cf-sec">{isAzure ? "Azure Front Door Anycast Acceleration & ExpressRoute Backbone" : isGcp ? "Google Anycast Global Load Balancing & Private Fiber Backbone" : "AWS Global Accelerator — Static Anycast & Network Backbone Optimization"}</div>
             <div className="cf-card">
               <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
                 AWS Global Accelerator is a networking service that improves the availability and performance of your applications with local or global users. It operates at Layer 4 of the OSI model, directing dynamic TCP/UDP traffic over the highly optimized private AWS global network backbone.
@@ -1965,8 +2102,8 @@ export default function CloudfrontVisualizer() {
                   <thead>
                     <tr>
                       <th>Architectural Dimension</th>
-                      <th>🚀 AWS Global Accelerator (AGA)</th>
-                      <th>⚡ Amazon CloudFront (CDN)</th>
+                      <th>🚀 {isAzure ? 'Azure Front Door Anycast' : isGcp ? 'Google Anycast GLB' : 'AWS Global Accelerator (AGA)'}</th>
+                      <th>⚡ {isAzure ? 'Azure CDN' : isGcp ? 'Google Cloud CDN' : 'Amazon CloudFront (CDN)'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2016,29 +2153,37 @@ export default function CloudfrontVisualizer() {
         {/* Tab 4: Security, Geo & Invalidations */}
         {activeTab === 'security' && (
           <div>
-            <div className="cf-sec">Origin Access Control (OAC), Geo-Restrictions, and Cache Invalidations</div>
+            <div className="cf-sec">{isAzure ? "Azure Private Link & Entra ID, WAF Geo-Restrictions, and Cache Purges" : isGcp ? "Signed URLs / Signed Cookies, Cloud Armor Geo-Blocking, and Cache Purges" : "Origin Access Control (OAC), Geo-Restrictions, and Cache Invalidations"}</div>
             <div className="cf-card">
               <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
                 Secure content distribution relies on strict network boundaries and manual cache invalidation overrides. Here is how you protect your assets and maintain control over your global storage caches.
               </div>
 
               <div className="cf-grid3" style={{ marginBottom: '14px' }}>
-                {/* OAC */}
+                {/* OAC / Security Origin */}
                 <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-origin)' }}>Origin Access Control (OAC)</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-origin)' }}>
+                    {isAzure ? "Azure Private Link & Entra ID" : isGcp ? "Signed URLs & Signed Cookies" : "Origin Access Control (OAC)"}
+                  </div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
-                    OAC is the modern AWS security standard that replaces the legacy Origin Access Identity (OAI) system.
+                    {isAzure 
+                      ? "Azure Front Door connects directly to Blob Storage and App Services over Private Endpoints with Managed Identities." 
+                      : isGcp 
+                      ? "Cloud CDN validates HMAC-SHA1 cryptographic signatures at edge PoPs before delivering media files." 
+                      : "OAC is the modern AWS security standard that signs requests with SigV4 before querying private S3 buckets."}
                   </div>
                   <ul style={{ paddingLeft: '14px', margin: '8px 0 0 0', fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-                    <li>Supports **AWS Signature Version 4 (SigV4)** signing, allowing S3 to process authentication locks seamlessly.</li>
-                    <li>Allows integration with buckets encrypted using custom **KMS CMKs (Customer Managed Keys)**.</li>
+                    <li>{isAzure ? "Supports Microsoft Entra ID authentication locks." : isGcp ? "Supports Service Account IAM and HMAC keys." : "Supports AWS Signature Version 4 (SigV4) signing."}</li>
+                    <li>{isAzure ? "Integrates with Key Vault CMK encryption." : isGcp ? "Integrates with Cloud KMS CMEK encryption." : "Integrates with KMS CMKs (Customer Managed Keys)."}</li>
                     <li>Secures upload (PUT) and download (GET) pipelines, shielding static databases from web exposure.</li>
                   </ul>
                 </div>
 
                 {/* Geo Restriction */}
                 <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-orange)' }}>Geo-Restriction (Geoblocking)</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-orange)' }}>
+                    {isAzure ? "Front Door WAF Geo-Filtering" : isGcp ? "Cloud Armor Geo-Blocking" : "Geo-Restriction (Geoblocking)"}
+                  </div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
                     Apply geographic filters directly at global edge locations before requests consume any backend bandwidth.
                   </div>
@@ -2051,13 +2196,15 @@ export default function CloudfrontVisualizer() {
 
                 {/* Cache Invalidations */}
                 <div style={{ background: 'var(--color-background-secondary)', border: '0.5px solid var(--cf-border-primary)', borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-edge)' }}>Cache Invalidation Pipelines</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--cf-svg-text-edge)' }}>
+                    {isAzure ? "Front Door Cache Purge" : isGcp ? "Cloud CDN Cache Invalidations" : "Cache Invalidation Pipelines"}
+                  </div>
                   <div style={{ fontSize: '12px', lineHeight: '1.5', color: 'var(--color-text-secondary)' }}>
                     What happens if a developer deploys an updated website, but the CDN continues serving cached old files?
                   </div>
                   <ul style={{ paddingLeft: '14px', margin: '8px 0 0 0', fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-                    <li>Submit an <strong>Invalidation Request</strong> containing file paths (e.g. <code>/static/bundle.js</code>) or wildcards (<code>/*</code>).</li>
-                    <li>This propagates a delete signal globally across all 600+ edge POPs in seconds.</li>
+                    <li>Submit a <strong>Purge / Invalidation Request</strong> containing file paths (e.g. <code>/static/bundle.js</code>) or wildcards (<code>/*</code>).</li>
+                    <li>This propagates a delete signal globally across all global edge PoPs in seconds.</li>
                     <li>The next user request is guaranteed a `cache miss`, forcing a fresh fetch from the origin.</li>
                   </ul>
                 </div>
@@ -2685,7 +2832,7 @@ export default function CloudfrontVisualizer() {
         {/* Tab 5: Pricing */}
         {activeTab === 'pricing' && (
           <div>
-            <div className="cf-sec">Price Classes &amp; Advanced Cache Shield Caching</div>
+            <div className="cf-sec">{isAzure ? "Front Door Tiers (Standard vs Premium) & Edge Caching" : isGcp ? "Cloud CDN & Media CDN Pricing Tiers & Edge Caching" : "Price Classes & Advanced Cache Shield Caching"}</div>
             <div className="cf-card">
               <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
                 CDN operational costs are proportional to the geographic locations that host your cache clusters. By adjusting price classes, you can optimize your AWS budget while maintaining fast responses for your primary user bases.
@@ -2878,6 +3025,9 @@ export default function CloudfrontVisualizer() {
               </div>
             </div>
           </div>
+        )}
+            </>
+          </Translate>
         )}
 
       </div>

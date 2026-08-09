@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BookOpen,
   Shield,
@@ -11,11 +11,17 @@ import {
   Network,
   Cpu
 } from 'lucide-react';
+import LoadBalancerComparativeView from '../../components/visualizers/LoadBalancerComparativeView';
+import UniqueLoadBalancerFeatures from '../../components/visualizers/UniqueLoadBalancerFeatures';
 
-type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'notebook';
+type TabType = 'concept' | 'alb' | 'nlb' | 'simulation' | 'integrations' | 'notebook' | 'unique';
 type DecisionKey = 'layer' | 'throughput' | 'staticIp' | 'inspection';
 
-const tfRuleCode = `resource "aws_lb_listener_rule" "host_path_routing" {
+const getLBProviderSnippets = (prov: 'aws' | 'azure' | 'gcp' | 'comparative') => {
+  const p = prov === 'comparative' ? 'aws' : prov;
+  const data = {
+    aws: {
+      tfRuleCode: `resource "aws_lb_listener_rule" "host_path_routing" {
   listener_arn = aws_lb_listener.front_end.arn
   priority     = 100
 
@@ -35,12 +41,157 @@ const tfRuleCode = `resource "aws_lb_listener_rule" "host_path_routing" {
       values = ["/v1/*"]
     }
   }
-}`;
+}`
+    },
+    azure: {
+      tfRuleCode: `resource "azurerm_application_gateway" "appgw" {
+  name                = "app-gateway"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku {
+    name     = "WAF_v2"
+    tier     = "WAF_v2"
+    capacity = 2
+  }
 
-export default function LoadBalancerVisualizer() {
+  url_path_map {
+    name                               = "api-path-map"
+    default_backend_address_pool_name  = "default-pool"
+    default_backend_http_settings_name = "http-settings"
+
+    path_rule {
+      name                       = "api-v1-rule"
+      paths                      = ["/v1/*"]
+      backend_address_pool_name  = "api-backend-pool"
+      backend_http_settings_name = "http-settings"
+    }
+  }
+}`
+    },
+    gcp: {
+      tfRuleCode: `resource "google_compute_url_map" "urlmap" {
+  name            = "http-lb-url-map"
+  default_service = google_compute_backend_service.default.id
+
+  host_rule {
+    hosts        = ["api.example.com"]
+    path_matcher = "api-paths"
+  }
+
+  path_matcher {
+    name            = "api-paths"
+    default_service = google_compute_backend_service.default.id
+
+    path_rule {
+      paths   = ["/v1/*"]
+      service = google_compute_backend_service.api.id
+    }
+  }
+}`
+    }
+  };
+  return data[p];
+};
+
+interface LoadBalancerVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function LoadBalancerVisualizer({ provider = 'aws', setProvider }: LoadBalancerVisualizerProps) {
   const [activeSection, setActiveSection] = useState<TabType>('notebook');
   const [selectedNote, setSelectedNote] = useState<string>('alb_headers_routing');
   const [expandedCategory, setExpandedCategory] = useState<string>('l7_routing');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const snippets = getLBProviderSnippets(provider);
+  const currentTfRuleCode = snippets.tfRuleCode;
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Application Load Balancer \(ALB\)/gi, 'Azure Application Gateway')
+        .replace(/Application Load Balancer/gi, 'Azure Application Gateway')
+        .replace(/ALB/g, 'AppGateway')
+        .replace(/Network Load Balancer \(NLB\)/gi, 'Azure Load Balancer (Standard SKU)')
+        .replace(/Network Load Balancer/gi, 'Azure Load Balancer')
+        .replace(/NLB/g, 'Azure LB')
+        .replace(/Gateway Load Balancer \(GWLB\)/gi, 'Azure Gateway Load Balancer')
+        .replace(/Gateway Load Balancer/gi, 'Azure Gateway Load Balancer')
+        .replace(/GWLB/g, 'Azure GWLB')
+        .replace(/Elastic Load Balancer \(ELB\)/gi, 'Azure Load Balancer & Application Gateway')
+        .replace(/Elastic Load Balancer/gi, 'Azure Load Balancing Services')
+        .replace(/ELB/g, 'Azure LB')
+        .replace(/Target Group/gi, 'Backend Pool')
+        .replace(/Target Groups/gi, 'Backend Pools')
+        .replace(/AWS WAF/gi, 'Azure WAF')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Application Load Balancer \(ALB\)/gi, 'GCP External HTTP(S) Load Balancer')
+        .replace(/Application Load Balancer/gi, 'GCP HTTP(S) Load Balancer')
+        .replace(/ALB/g, 'HTTP(S) LB')
+        .replace(/Network Load Balancer \(NLB\)/gi, 'GCP Network Load Balancer (Passthrough)')
+        .replace(/Network Load Balancer/gi, 'GCP Network Load Balancer')
+        .replace(/NLB/g, 'Network LB')
+        .replace(/Gateway Load Balancer \(GWLB\)/gi, 'GCP Internal Passthrough Network LB')
+        .replace(/Gateway Load Balancer/gi, 'GCP Passthrough Network LB')
+        .replace(/GWLB/g, 'Passthrough LB')
+        .replace(/Elastic Load Balancer \(ELB\)/gi, 'GCP Cloud Load Balancing')
+        .replace(/Elastic Load Balancer/gi, 'GCP Cloud Load Balancing')
+        .replace(/ELB/g, 'Cloud LB')
+        .replace(/Target Group/gi, 'Backend Service')
+        .replace(/Target Groups/gi, 'Backend Services')
+        .replace(/AWS WAF/gi, 'Google Cloud Armor')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'anl-terminal'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', section: TabType) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveSection(section);
+  };
 
   // Notebook interactive simulation states
   const [nbSrcIp, setNbSrcIp] = useState('192.168.1.105');
@@ -1809,26 +1960,56 @@ export default function LoadBalancerVisualizer() {
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
           <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            ⚖️ AWS Elastic Load Balancer
+            {isComparative ? (
+              <span>⚖️ Multi-Cloud Load Balancing Comparison — AWS ELB vs Azure LB/AppGW vs GCP Cloud LB</span>
+            ) : isAzure ? (
+              <span>⚖️ Azure Load Balancing — Application Gateway · Azure Load Balancer · Gateway LB</span>
+            ) : isGcp ? (
+              <span>⚖️ Google Cloud Load Balancing — HTTP(S) LB · Network LB · Cloud Armor</span>
+            ) : (
+              <span>⚖️ AWS Elastic Load Balancer</span>
+            )}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-            Intelligent request routing, static elastic IPs, high-throughput flow hashing, and secure traffic distribution systems.
+            {isComparative ? (
+              <span>Side-by-side architectural comparison of L4/L7 load balancers across AWS, Azure, and GCP.</span>
+            ) : isAzure ? (
+              <span>Intelligent request routing, static IPs, high-throughput flow hashing, and secure traffic distribution systems in Azure.</span>
+            ) : isGcp ? (
+              <span>Global Anycast IP ingress, URL mapping, L4 passthrough, and Cloud Armor security policies in Google Cloud.</span>
+            ) : (
+              <span>Intelligent request routing, static elastic IPs, high-throughput flow hashing, and secure traffic distribution systems.</span>
+            )}
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="anl-tabs">
-          <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on-notebook' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
-          <button className={`anl-tb ${activeSection === 'concept' ? 'anl-on-concept' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concepts &amp; Comparison</button>
-          <button className={`anl-tb ${activeSection === 'alb' ? 'anl-on-alb' : ''}`} onClick={() => setActiveSection('alb')}>🍔 Application Load Balancer</button>
-          <button className={`anl-tb ${activeSection === 'nlb' ? 'anl-on-nlb' : ''}`} onClick={() => setActiveSection('nlb')}>🔢 Network Load Balancer</button>
-          <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on-simulation' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
-          <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on-integrations' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
-        </div>
+        {!isComparative && (
+          <div className="anl-tabs">
+            <button className={`anl-tb ${activeSection === 'notebook' ? 'anl-on-notebook' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
+            <button className={`anl-tb ${activeSection === 'concept' ? 'anl-on-concept' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concepts &amp; Comparison</button>
+            <button className={`anl-tb ${activeSection === 'alb' ? 'anl-on-alb' : ''}`} onClick={() => setActiveSection('alb')}>🍔 Application Load Balancer</button>
+            <button className={`anl-tb ${activeSection === 'nlb' ? 'anl-on-nlb' : ''}`} onClick={() => setActiveSection('nlb')}>🔢 Network Load Balancer</button>
+            <button className={`anl-tb ${activeSection === 'simulation' ? 'anl-on-simulation' : ''}`} onClick={() => setActiveSection('simulation')}>🎮 Live Traffic Simulator</button>
+            <button className={`anl-tb ${activeSection === 'integrations' ? 'anl-on-integrations' : ''}`} onClick={() => setActiveSection('integrations')}>🏗️ Integrations &amp; Infra</button>
+            <button className={`anl-tb ${activeSection === 'unique' ? 'anl-on-notebook' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
+          </div>
+        )}
       </div>
 
       {/* Content Panels */}
       <div style={{ padding: '0 16px' }}>
+        {isComparative && (
+          <LoadBalancerComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeSection === 'unique' && (
+          <UniqueLoadBalancerFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+        )}
+
+        {!isComparative && activeSection !== 'unique' && (
+          <Translate>
+            <>
 
         {/* CONCEPTS PANEL */}
         {activeSection === 'concept' && (
@@ -3607,7 +3788,7 @@ Target Server Index:
                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider font-mono">Terraform Listener Rule Snippet</span>
                           <button 
                             onClick={() => {
-                              navigator.clipboard.writeText(tfRuleCode);
+                              navigator.clipboard.writeText(currentTfRuleCode);
                               setCopiedNoteId('tf-rule');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
@@ -3617,7 +3798,7 @@ Target Server Index:
                           </button>
                         </div>
                         <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-60">
-                          {tfRuleCode}
+                          {currentTfRuleCode}
                         </pre>
                       </div>
                     </div>
@@ -4306,6 +4487,9 @@ Target Server Index:
             </div>
 
           </div>
+        )}
+            </>
+          </Translate>
         )}
 
       </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Activity,
   Terminal,
@@ -20,8 +20,10 @@ import {
   BookOpen
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import CloudWatchMAndEventsComparativeView from '../../components/visualizers/CloudWatchMAndEventsComparativeView';
+import UniqueCloudWatchMAndEventsFeatures from '../../components/visualizers/UniqueCloudWatchMAndEventsFeatures';
 
-type TabType = 'intro' | 'logs' | 'metrics' | 'eventbridge' | 'compliance' | 'matrix';
+type TabType = 'intro' | 'logs' | 'metrics' | 'eventbridge' | 'compliance' | 'matrix' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -36,8 +38,90 @@ interface MetricPoint {
   cpu: number;
 }
 
-export default function CloudWatchMAndEventsVisualizer() {
+interface CloudWatchMAndEventsVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function CloudWatchMAndEventsVisualizer({ provider = 'aws', setProvider }: CloudWatchMAndEventsVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon CloudWatch/gi, 'Azure Monitor')
+        .replace(/CloudWatch Logs/gi, 'Azure Log Analytics Workspace')
+        .replace(/CloudWatch/g, 'Azure Monitor')
+        .replace(/EventBridge/g, 'Azure Event Grid')
+        .replace(/CloudTrail/g, 'Azure Activity Log')
+        .replace(/AWS Config/gi, 'Azure Policy')
+        .replace(/SNS/g, 'Azure Action Group')
+        .replace(/EC2/g, 'Azure VM')
+        .replace(/S3 Bucket/gi, 'Azure Blob Storage')
+        .replace(/LogGroup/g, 'Log Analytics Table')
+        .replace(/Auto Scaling/gi, 'Azure VMSS AutoScale');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon CloudWatch/gi, 'Google Cloud Monitoring & Logging')
+        .replace(/CloudWatch Logs/gi, 'Google Cloud Logging')
+        .replace(/CloudWatch/g, 'Cloud Monitoring')
+        .replace(/EventBridge/g, 'Google Cloud Eventarc')
+        .replace(/CloudTrail/g, 'Cloud Audit Logs')
+        .replace(/AWS Config/gi, 'Security Command Center (SCC)')
+        .replace(/SNS/g, 'Pub/Sub Notification Channel')
+        .replace(/EC2/g, 'Compute Engine Instance')
+        .replace(/S3 Bucket/gi, 'Google Cloud Storage Bucket')
+        .replace(/LogGroup/g, 'Log Bucket')
+        .replace(/Auto Scaling/gi, 'MIG AutoScaler');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'cw-terminal' || node.props.className === 'cw-log-box'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'insights' ? 'logs' : tab === 'events' ? 'eventbridge' : tab === 'architect' ? 'intro' : tab);
+  };
   const [isDark, setIsDark] = useState<boolean>(
     typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false
   );
@@ -989,37 +1073,62 @@ export default function CloudWatchMAndEventsVisualizer() {
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6">
         <div className="flex items-center gap-2">
-          <span className="p-2 bg-indigo-500 rounded-lg text-white">
+          <span className={`p-2 rounded-lg text-white ${provider === 'azure' ? 'bg-blue-600' : provider === 'gcp' ? 'bg-emerald-600' : 'bg-indigo-500'}`}>
             <Eye className="w-6 h-6" />
           </span>
           <div className="text-left">
-            <h1 className="text-2xl font-bold text-gray-900">AWS Observability, Events &amp; Compliance Hub</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Explore CloudWatch Metric Streams, Log Agent Ingestion, EventBridge routing rules, CloudTrail audits, and AWS Config compliance guardrails</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {provider === 'azure' ? 'Azure Monitor, Event Grid & Policy Compliance Hub' :
+               provider === 'gcp' ? 'Google Cloud Monitoring, Logging, Eventarc & Audit Hub' :
+               'AWS Observability, Events & Compliance Hub'}
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {provider === 'azure' ? 'Explore Azure Monitor Log Analytics, Metrics Streams, Event Grid routing rules, Activity Log audits, and Azure Policy guardrails' :
+               provider === 'gcp' ? 'Explore Google Cloud Logging Log Router, Cloud Monitoring telemetry, Eventarc routing rules, Audit Logs, and Security Command Center guardrails' :
+               'Explore CloudWatch Metric Streams, Log Agent Ingestion, EventBridge routing rules, CloudTrail audits, and AWS Config compliance guardrails'}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Tab navigation bar */}
-      <div className="cw-tabs">
-        <button className={`cw-tb ${activeTab === 'intro' ? 'cw-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <BookOpen className="w-4 h-4" /> 1. Choosing Observability vs Auditing
-        </button>
-        <button className={`cw-tb ${activeTab === 'logs' ? 'cw-on' : ''}`} onClick={() => setActiveTab('logs')}>
-          <FileText className="w-4 h-4" /> 2. CloudWatch Logs &amp; Insights
-        </button>
-        <button className={`cw-tb ${activeTab === 'metrics' ? 'cw-on' : ''}`} onClick={() => setActiveTab('metrics')}>
-          <Activity className="w-4 h-4" /> 3. Metric Streams &amp; Alarms
-        </button>
-        <button className={`cw-tb ${activeTab === 'eventbridge' ? 'cw-on' : ''}`} onClick={() => setActiveTab('eventbridge')}>
-          <Workflow className="w-4 h-4" /> 4. EventBridge Schema Router
-        </button>
-        <button className={`cw-tb ${activeTab === 'compliance' ? 'cw-on' : ''}`} onClick={() => setActiveTab('compliance')}>
-          <Shield className="w-4 h-4" /> 5. CloudTrail &amp; Config Remediation
-        </button>
-        <button className={`cw-tb ${activeTab === 'matrix' ? 'cw-on' : ''}`} onClick={() => setActiveTab('matrix')}>
-          <Sliders className="w-4 h-4" /> 6. Observability Comparison &amp; Aggregation Map
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="cw-tabs">
+          <button className={`cw-tb ${activeTab === 'intro' ? 'cw-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <BookOpen className="w-4 h-4" /> 1. Choosing Observability vs Auditing
+          </button>
+          <button className={`cw-tb ${activeTab === 'logs' ? 'cw-on' : ''}`} onClick={() => setActiveTab('logs')}>
+            <FileText className="w-4 h-4" /> 2. {provider === 'azure' ? 'Azure Log Analytics' : provider === 'gcp' ? 'Cloud Logging' : 'CloudWatch Logs & Insights'}
+          </button>
+          <button className={`cw-tb ${activeTab === 'metrics' ? 'cw-on' : ''}`} onClick={() => setActiveTab('metrics')}>
+            <Activity className="w-4 h-4" /> 3. {provider === 'azure' ? 'Azure Metrics & Alerts' : provider === 'gcp' ? 'Cloud Monitoring & Alerts' : 'Metric Streams & Alarms'}
+          </button>
+          <button className={`cw-tb ${activeTab === 'eventbridge' ? 'cw-on' : ''}`} onClick={() => setActiveTab('eventbridge')}>
+            <Workflow className="w-4 h-4" /> 4. {provider === 'azure' ? 'Event Grid Router' : provider === 'gcp' ? 'Eventarc Event Router' : 'EventBridge Schema Router'}
+          </button>
+          <button className={`cw-tb ${activeTab === 'compliance' ? 'cw-on' : ''}`} onClick={() => setActiveTab('compliance')}>
+            <Shield className="w-4 h-4" /> 5. {provider === 'azure' ? 'Activity Log & Azure Policy' : provider === 'gcp' ? 'Audit Logs & SCC Remediation' : 'CloudTrail & Config Remediation'}
+          </button>
+          <button className={`cw-tb ${activeTab === 'matrix' ? 'cw-on' : ''}`} onClick={() => setActiveTab('matrix')}>
+            <Sliders className="w-4 h-4" /> 6. Observability Comparison &amp; Aggregation Map
+          </button>
+          <button className={`cw-tb ${activeTab === 'unique' ? 'cw-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <CloudWatchMAndEventsComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueCloudWatchMAndEventsFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: HOW TO CHOOSE THE RIGHT TELEMETRY ENGINE & COMPARISON MATRIX       */}
@@ -1427,25 +1536,67 @@ export default function CloudWatchMAndEventsVisualizer() {
 
                 {/* SQL display */}
                 <div className="bg-slate-950 border border-slate-900 rounded-xl p-3 font-mono text-[9.5px] leading-relaxed text-indigo-300">
-                  {insightsQuery === 'filter-errors' && (
-                    <>
-                      <span className="text-indigo-400">fields</span> @timestamp, @message<br />
-                      <span className="text-indigo-400">| filter</span> level in ["ERROR", "WARN"]<br />
-                      <span className="text-indigo-400">| sort</span> @timestamp desc<br />
-                      <span className="text-indigo-400">| limit</span> 10
-                    </>
-                  )}
-                  {insightsQuery === 'count-levels' && (
-                    <>
-                      <span className="text-indigo-400">stats</span> count(*) <span className="text-indigo-400">by</span> level<br />
-                      <span className="text-indigo-400">| sort</span> count(*) desc
-                    </>
-                  )}
-                  {insightsQuery === 'all-fields' && (
-                    <>
-                      <span className="text-indigo-400">fields</span> @timestamp, level, message, requestId<br />
-                      <span className="text-indigo-400">| sort</span> @timestamp desc
-                    </>
+                  {isAzure ? (
+                    insightsQuery === 'filter-errors' ? (
+                      <>
+                        <span className="text-blue-400">Syslog</span><br />
+                        <span className="text-blue-400">| where</span> SeverityLevel in ("Error", "Warning")<br />
+                        <span className="text-blue-400">| sort by</span> TimeGenerated desc<br />
+                        <span className="text-blue-400">| take</span> 10
+                      </>
+                    ) : insightsQuery === 'count-levels' ? (
+                      <>
+                        <span className="text-blue-400">Syslog</span><br />
+                        <span className="text-blue-400">| summarize</span> count() <span className="text-blue-400">by</span> SeverityLevel<br />
+                        <span className="text-blue-400">| order by</span> count_ desc
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-blue-400">Syslog</span><br />
+                        <span className="text-blue-400">| project</span> TimeGenerated, SeverityLevel, SyslogMessage, ProcessName<br />
+                        <span className="text-blue-400">| sort by</span> TimeGenerated desc
+                      </>
+                    )
+                  ) : isGcp ? (
+                    insightsQuery === 'filter-errors' ? (
+                      <>
+                        <span className="text-emerald-400">SELECT</span> timestamp, severity, textPayload<br />
+                        <span className="text-emerald-400">FROM</span> `project.global._Default._AllLogs`<br />
+                        <span className="text-emerald-400">WHERE</span> severity IN ('ERROR', 'WARNING')<br />
+                        <span className="text-emerald-400">ORDER BY</span> timestamp DESC LIMIT 10
+                      </>
+                    ) : insightsQuery === 'count-levels' ? (
+                      <>
+                        <span className="text-emerald-400">SELECT</span> severity, COUNT(*) as count<br />
+                        <span className="text-emerald-400">FROM</span> `project.global._Default._AllLogs`<br />
+                        <span className="text-emerald-400">GROUP BY</span> severity <span className="text-emerald-400">ORDER BY</span> count DESC
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-emerald-400">SELECT</span> timestamp, severity, textPayload, insertId<br />
+                        <span className="text-emerald-400">FROM</span> `project.global._Default._AllLogs`<br />
+                        <span className="text-emerald-400">ORDER BY</span> timestamp DESC
+                      </>
+                    )
+                  ) : (
+                    insightsQuery === 'filter-errors' ? (
+                      <>
+                        <span className="text-indigo-400">fields</span> @timestamp, @message<br />
+                        <span className="text-indigo-400">| filter</span> level in ["ERROR", "WARN"]<br />
+                        <span className="text-indigo-400">| sort</span> @timestamp desc<br />
+                        <span className="text-indigo-400">| limit</span> 10
+                      </>
+                    ) : insightsQuery === 'count-levels' ? (
+                      <>
+                        <span className="text-indigo-400">stats</span> count(*) <span className="text-indigo-400">by</span> level<br />
+                        <span className="text-indigo-400">| sort</span> count(*) desc
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-indigo-400">fields</span> @timestamp, level, message, requestId<br />
+                        <span className="text-indigo-400">| sort</span> @timestamp desc
+                      </>
+                    )
                   )}
                 </div>
 
@@ -3002,6 +3153,9 @@ export default function CloudWatchMAndEventsVisualizer() {
             </div>
           </div>
         </div>
+      )}
+          </>
+        </Translate>
       )}
     </div>
   );

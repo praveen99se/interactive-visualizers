@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import FilesAndStorageComparativeView from '../../components/visualizers/FilesAndStorageComparativeView';
+import UniqueFilesAndStorageFeatures from '../../components/visualizers/UniqueFilesAndStorageFeatures';
 
-type TabType = 'overview' | 'windows' | 'lustre' | 'hybrid' | 'sim' | 'matrix';
+type TabType = 'overview' | 'windows' | 'lustre' | 'hybrid' | 'sim' | 'matrix' | 'unique';
 type ScenarioType = 'lustre_ml' | 'windows_multiaz' | 'zfs_dev' | 'ontap_enterprise' | 'gateway_hybrid' | 'datasync_migration';
 
 interface SimLog {
@@ -9,8 +11,78 @@ interface SimLog {
   message: string;
 }
 
-export default function FilesAndStorageVisualizer() {
+interface FilesAndStorageVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function FilesAndStorageVisualizer({ provider = 'aws', setProvider }: FilesAndStorageVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon EFS/gi, 'Azure Files (NFS)')
+        .replace(/Amazon FSx/gi, 'Azure NetApp Files / Azure Files')
+        .replace(/FSx for Windows/gi, 'Azure Files SMB')
+        .replace(/FSx for Lustre/gi, 'Azure Managed Lustre')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon EFS/gi, 'Google Cloud Filestore')
+        .replace(/Amazon FSx/gi, 'Google Parallelstore / Filestore')
+        .replace(/FSx for Windows/gi, 'Cloud Filestore Active Directory')
+        .replace(/FSx for Lustre/gi, 'Google Parallelstore (Lustre)')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'fs-terminal' || node.props.className === 'fs-terminal-box'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'efs' ? 'overview' : tab === 'fsx' ? 'windows' : tab);
+  };
 
   // Simulator States
   const [activeScenario, setActiveScenario] = useState<ScenarioType>('windows_multiaz');
@@ -1050,21 +1122,53 @@ export default function FilesAndStorageVisualizer() {
       <div className="fs-container">
         {/* Title Header */}
         <div style={{ padding: '14px 16px 4px' }}>
-          <div className="fs-h">📂 Shared Filesystems &amp; Amazon FSx Visualizer</div>
+          <div className="fs-h">
+            {isComparative ? (
+              <span>⚖️ Multi-Cloud File Storage Comparison — AWS EFS/FSx vs Azure Files/ANF vs GCP Filestore</span>
+            ) : isAzure ? (
+              <span>📂 Azure Files &amp; Azure NetApp Files</span>
+            ) : isGcp ? (
+              <span>📂 Google Cloud Filestore &amp; Parallelstore</span>
+            ) : (
+              <span>📂 Shared Filesystems &amp; Amazon FSx Visualizer</span>
+            )}
+          </div>
           <div className="fs-sub">
-            Learn basic directory protocols (NFS, SMB) and deep-dive into the four Amazon FSx managed engines. Mount high-performance compute caches with Lustre, integrate corporate directories with Windows File Server, scale enterprise volumes with NetApp ONTAP, and boot sub-millisecond storage with OpenZFS.
+            {isComparative ? (
+              <span>Side-by-side architectural comparison of managed NFS, SMB, and high-performance Lustre file storage across AWS, Azure, and GCP.</span>
+            ) : isAzure ? (
+              <span>Managed SMB and NFS file shares in Azure. Azure Files cloud tiering, Azure NetApp Files ultra IOPS, and Active Directory integration.</span>
+            ) : isGcp ? (
+              <span>Enterprise NFS file storage in Google Cloud. Cloud Filestore live volume scaling and Parallelstore Lustre HPC clusters for AI/ML.</span>
+            ) : (
+              <span>Learn basic directory protocols (NFS, SMB) and deep-dive into the four Amazon FSx managed engines. Mount high-performance compute caches with Lustre, integrate corporate directories with Windows File Server, scale enterprise volumes with NetApp ONTAP, and boot sub-millisecond storage with OpenZFS.</span>
+            )}
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="fs-tabs">
-          <button className={`fs-tb ${activeTab === 'overview' ? 'fs-on' : ''}`} onClick={() => setActiveTab('overview')}>📂 1) File System Basics</button>
-          <button className={`fs-tb ${activeTab === 'windows' ? 'fs-on' : ''}`} onClick={() => setActiveTab('windows')}>🗄️ 2) Windows &amp; NetApp ONTAP</button>
-          <button className={`fs-tb ${activeTab === 'lustre' ? 'fs-on' : ''}`} onClick={() => setActiveTab('lustre')}>🚀 3) Lustre &amp; OpenZFS</button>
-          <button className={`fs-tb ${activeTab === 'hybrid' ? 'fs-on' : ''}`} onClick={() => setActiveTab('hybrid')}>🔌 4) Hybrid &amp; Migration</button>
-          <button className={`fs-tb ${activeTab === 'sim' ? 'fs-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 5) Live Storage Simulator</button>
-          <button className={`fs-tb ${activeTab === 'matrix' ? 'fs-on' : ''}`} onClick={() => setActiveTab('matrix')}>📊 6) Decision Advisor &amp; Matrix</button>
-        </div>
+        {!isComparative && (
+          <div className="fs-tabs">
+            <button className={`fs-tb ${activeTab === 'overview' ? 'fs-on' : ''}`} onClick={() => setActiveTab('overview')}>📂 1) File System Basics</button>
+            <button className={`fs-tb ${activeTab === 'windows' ? 'fs-on' : ''}`} onClick={() => setActiveTab('windows')}>🗄️ 2) Windows &amp; NetApp ONTAP</button>
+            <button className={`fs-tb ${activeTab === 'lustre' ? 'fs-on' : ''}`} onClick={() => setActiveTab('lustre')}>🚀 3) Lustre &amp; OpenZFS</button>
+            <button className={`fs-tb ${activeTab === 'hybrid' ? 'fs-on' : ''}`} onClick={() => setActiveTab('hybrid')}>🔌 4) Hybrid &amp; Migration</button>
+            <button className={`fs-tb ${activeTab === 'sim' ? 'fs-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 5) Live Storage Simulator</button>
+            <button className={`fs-tb ${activeTab === 'matrix' ? 'fs-on' : ''}`} onClick={() => setActiveTab('matrix')}>📊 6) Decision Advisor &amp; Matrix</button>
+            <button className={`fs-tb ${activeTab === 'unique' ? 'fs-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
+          </div>
+        )}
+
+        {isComparative && (
+          <FilesAndStorageComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeTab === 'unique' && (
+          <UniqueFilesAndStorageFeatures provider={provider} />
+        )}
+
+        {!isComparative && activeTab !== 'unique' && (
+          <Translate>
+            <>
 
         {/* Tab 1: File System Basics */}
         {activeTab === 'overview' && (
@@ -2809,6 +2913,9 @@ export default function FilesAndStorageVisualizer() {
               </div>
             </div>
           </div>
+        )}
+            </>
+          </Translate>
         )}
 
       </div>

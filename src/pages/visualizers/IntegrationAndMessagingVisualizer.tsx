@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen,
   ChevronRight,
@@ -11,15 +11,14 @@ import {
   Globe,
   Database,
   Check,
-  Folder,
-  FolderOpen,
-  FileText,
   Server,
   HelpCircle,
   Activity
 } from 'lucide-react';
+import IntegrationAndMessagingComparativeView from '../../components/visualizers/IntegrationAndMessagingComparativeView';
+import UniqueIntegrationAndMessagingFeatures from '../../components/visualizers/UniqueIntegrationAndMessagingFeatures';
 
-type TabType = 'sqs' | 'sns' | 'fanout' | 'kinesis' | 'amazonmq' | 'comparison' | 'notebook';
+type TabType = 'sqs' | 'sns' | 'fanout' | 'kinesis' | 'amazonmq' | 'comparison' | 'notebook' | 'unique';
 
 interface SimLog {
   timestamp: string;
@@ -44,8 +43,92 @@ interface S3File {
   itemsCount: number;
 }
 
-export default function IntegrationAndMessagingVisualizer() {
+interface IntegrationAndMessagingVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function IntegrationAndMessagingVisualizer({ provider = 'aws', setProvider }: IntegrationAndMessagingVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon SQS/gi, 'Azure Service Bus Queues')
+        .replace(/SQS FIFO/gi, 'Service Bus Sessions (FIFO)')
+        .replace(/Amazon SNS/gi, 'Azure Service Bus Topics')
+        .replace(/EventBridge/gi, 'Azure Event Grid')
+        .replace(/AWS Step Functions/gi, 'Azure Logic Apps / Durable Functions')
+        .replace(/Step Functions/gi, 'Azure Logic Apps')
+        .replace(/Amazon Kinesis Data Streams/gi, 'Azure Event Hubs')
+        .replace(/Amazon Kinesis/gi, 'Azure Event Hubs')
+        .replace(/Kinesis Firehose/gi, 'Event Hubs Capture')
+        .replace(/Amazon MQ/gi, 'Azure Service Bus AMQP')
+        .replace(/CloudWatch/g, 'Azure Monitor')
+        .replace(/S3 Bucket/gi, 'Azure Blob Storage');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon SQS/gi, 'Google Cloud Pub/Sub Queues')
+        .replace(/SQS FIFO/gi, 'Pub/Sub Exactly-Once Subscriptions')
+        .replace(/Amazon SNS/gi, 'Google Cloud Pub/Sub Topics')
+        .replace(/EventBridge/gi, 'Google Cloud Eventarc')
+        .replace(/AWS Step Functions/gi, 'Google Cloud Workflows')
+        .replace(/Step Functions/gi, 'Cloud Workflows')
+        .replace(/Amazon Kinesis Data Streams/gi, 'Google Cloud Pub/Sub Stream')
+        .replace(/Amazon Kinesis/gi, 'Google Cloud Pub/Sub Stream')
+        .replace(/Kinesis Firehose/gi, 'Cloud Dataflow Stream')
+        .replace(/Amazon MQ/gi, 'GCP Managed RabbitMQ')
+        .replace(/CloudWatch/g, 'Cloud Monitoring')
+        .replace(/S3 Bucket/gi, 'Google Cloud Storage Bucket');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'im-terminal'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'concept' ? 'notebook' : tab === 'stepfunctions' ? 'comparison' : tab);
+  };
 
   // Visual Architect Academy Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('sqs_queues');
@@ -1274,6 +1357,123 @@ export default function IntegrationAndMessagingVisualizer() {
           box-shadow: 0 4px 16px rgba(14, 165, 233, 0.15);
         }
 
+        /* Standardized Visual Architect Academy styles */
+        .acad-grid-12 {
+          display: grid;
+          grid-template-columns: repeat(12, minmax(0, 1fr));
+          gap: 20px;
+          text-align: left;
+        }
+        .acad-col-3 {
+          grid-column: span 3 / span 3;
+        }
+        .acad-col-9 {
+          grid-column: span 9 / span 9;
+        }
+        @media (max-width: 1024px) {
+          .acad-col-3, .acad-col-9 {
+            grid-column: span 12 / span 12;
+          }
+        }
+        .acad-dir-container {
+          background: var(--im-card-bg);
+          border: 1.5px solid var(--im-border-secondary);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          background: var(--im-svg-bg);
+          border-bottom: 1.5px solid var(--im-border-secondary);
+          color: var(--im-text-primary);
+          padding: 14px 16px;
+          font-weight: 800;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: var(--im-card-bg);
+          border: none;
+          border-bottom: 1.5px solid var(--im-border-secondary);
+          font-size: 10.5px;
+          font-weight: 850;
+          color: var(--im-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--im-tab-hover-bg);
+          color: var(--im-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--im-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--im-card-bg);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--im-tab-hover-bg);
+          color: #3b82f6;
+          border-left-color: var(--im-border-secondary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: rgba(59, 130, 246, 0.12);
+          color: #2563eb;
+          border-left-color: #3b82f6;
+          font-weight: 800;
+        }
+        .acad-detail-card {
+          background: var(--im-card-bg);
+          border: 1.5px solid var(--im-border-secondary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        }
+        .acad-hero-badge {
+          background: #ccfbf1;
+          border: 1.5px solid #99f6e4;
+          color: #0f766e;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: var(--im-svg-bg);
+          border-left: 4px solid #3b82f6;
+          border-radius: 12px;
+          padding: 16px;
+          font-size: 12.5px;
+          color: var(--im-text-secondary);
+          line-height: 1.6;
+        }
+
         /* Visual Architect Academy Notebook styles */
         .acad-notebook-container {
           display: grid;
@@ -1282,10 +1482,9 @@ export default function IntegrationAndMessagingVisualizer() {
           background: var(--im-card-bg);
           border: 1.5px solid var(--im-border-secondary);
           border-radius: 16px;
-          min-height: 620px;
           box-shadow: var(--im-card-shadow);
-          overflow: hidden;
           margin-top: 10px;
+          align-items: start;
         }
 
         .acad-sidebar {
@@ -1369,8 +1568,6 @@ export default function IntegrationAndMessagingVisualizer() {
 
         .acad-content-pane {
           padding: 24px;
-          overflow-y: auto;
-          max-height: 800px;
         }
 
         .acad-note-header {
@@ -1806,149 +2003,201 @@ export default function IntegrationAndMessagingVisualizer() {
       {/* Title Header */}
       <div className="im-header">
         <div className="im-title">
-          <span>✉️</span> AWS Integration &amp; Messaging Architecture Playground
+          {isComparative ? (
+            <span>⚖️ Multi-Cloud Integration &amp; Messaging Comparison — AWS SQS/SNS vs Azure Service Bus/Event Grid vs GCP Pub/Sub</span>
+          ) : isAzure ? (
+            <span>✉️ Azure Service Bus, Event Grid &amp; Event Hubs</span>
+          ) : isGcp ? (
+            <span>✉️ Google Cloud Pub/Sub, Eventarc &amp; Cloud Tasks</span>
+          ) : (
+            <span>✉️ AWS Integration &amp; Messaging Architecture Playground</span>
+          )}
         </div>
         <div className="im-subtitle">
-          Explore production-grade decoupled designs. TweakVisibility Timeout thresholds in SQS, simulate attribute pub/sub event filtering inside SNS, monitor FIFO preserving sequence fanouts, test Kinesis clickstream shard splits under heavy 429 congestion, and trigger Active/Standby cross-AZ MQ failover steppers.
+          {isComparative ? (
+            <span>Side-by-side architectural comparison of message queuing, pub/sub fan-out, event routing, and workflow orchestration across AWS, Azure, and GCP.</span>
+          ) : isAzure ? (
+            <span>Enterprise messaging in Azure. Service Bus session locking, Event Grid reactive routing, and Event Hubs streaming partitions.</span>
+          ) : isGcp ? (
+            <span>Global messaging in Google Cloud. Cloud Pub/Sub exactly-once delivery, Eventarc CloudEvents routing, and Cloud Tasks rate limiting.</span>
+          ) : (
+            <span>Explore production-grade decoupled designs. TweakVisibility Timeout thresholds in SQS, simulate attribute pub/sub event filtering inside SNS, monitor FIFO preserving sequence fanouts, test Kinesis clickstream shard splits under heavy 429 congestion, and trigger Active/Standby cross-AZ MQ failover steppers.</span>
+          )}
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="im-tab-nav">
-        <button className={`im-tab-btn ${activeTab === 'notebook' ? 'im-active' : ''}`} onClick={() => setActiveTab('notebook')}>
-          📓 Visual Architect Notes
-        </button>
-        <button className={`im-tab-btn ${activeTab === 'sqs' ? 'im-active' : ''}`} onClick={() => setActiveTab('sqs')}>
-          📤 SQS Queues &amp; Locks
-        </button>
-        <button className={`im-tab-btn ${activeTab === 'sns' ? 'im-active' : ''}`} onClick={() => setActiveTab('sns')}>
-          📢 SNS Pub/Sub Filtering
-        </button>
-        <button className={`im-tab-btn ${activeTab === 'fanout' ? 'im-active' : ''}`} onClick={() => setActiveTab('fanout')}>
-          🔀 FIFO Fanout &amp; Firehose
-        </button>
-        <button className={`im-tab-btn ${activeTab === 'kinesis' ? 'im-active' : ''}`} onClick={() => setActiveTab('kinesis')}>
-          🌊 Kinesis clickstreams
-        </button>
-        <button className={`im-tab-btn ${activeTab === 'amazonmq' ? 'im-active' : ''}`} onClick={() => setActiveTab('amazonmq')}>
-          🐹 Amazon MQ AZ Failover
-        </button>
-        <button className={`im-tab-btn ${activeTab === 'comparison' ? 'im-active' : ''}`} onClick={() => setActiveTab('comparison')}>
-          📊 Interactive Comparison Matrix
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="im-tab-nav">
+          <button className={`im-tab-btn ${activeTab === 'notebook' ? 'im-active' : ''}`} onClick={() => setActiveTab('notebook')}>
+            📓 Visual Architect Notes
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'sqs' ? 'im-active' : ''}`} onClick={() => setActiveTab('sqs')}>
+            📤 SQS Queues &amp; Locks
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'sns' ? 'im-active' : ''}`} onClick={() => setActiveTab('sns')}>
+            📢 SNS Pub/Sub Filtering
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'fanout' ? 'im-active' : ''}`} onClick={() => setActiveTab('fanout')}>
+            🔀 FIFO Fanout &amp; Firehose
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'kinesis' ? 'im-active' : ''}`} onClick={() => setActiveTab('kinesis')}>
+            🌊 Kinesis clickstreams
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'amazonmq' ? 'im-active' : ''}`} onClick={() => setActiveTab('amazonmq')}>
+            🐹 Amazon MQ AZ Failover
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'comparison' ? 'im-active' : ''}`} onClick={() => setActiveTab('comparison')}>
+            📊 Interactive Comparison Matrix
+          </button>
+          <button className={`im-tab-btn ${activeTab === 'unique' ? 'im-active' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <IntegrationAndMessagingComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueIntegrationAndMessagingFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ==========================================
           TAB 0: VISUAL ARCHITECT NOTES
           ========================================== */}
       {activeTab === 'notebook' && (
-        <div className="acad-notebook-container">
-          {/* Sidebar Note Explorer */}
-          <div className="acad-sidebar">
-            <div className="acad-sidebar-title">Architect Academy</div>
-            
-            {/* Category 1: Queues & Topics */}
-            <div className="acad-category">
-              <button 
-                className="acad-category-header" 
-                onClick={() => setExpandedCategory(expandedCategory === 'queues_topics' ? '' : 'queues_topics')}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {expandedCategory === 'queues_topics' ? <FolderOpen size={16} style={{ color: '#3b82f6' }} /> : <Folder size={16} style={{ color: '#64748b' }} />}
-                  Queues &amp; Topics
-                </span>
-                {expandedCategory === 'queues_topics' ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </button>
-              
-              {expandedCategory === 'queues_topics' && (
-                <div className="acad-category-content">
-                  <button 
-                    className={`acad-note-item ${selectedNote === 'sqs_queues' ? 'acad-active' : ''}`}
-                    onClick={() => setSelectedNote('sqs_queues')}
-                  >
-                    <FileText size={14} />
-                    SQS Queues &amp; Message Locks
-                  </button>
-                  <button 
-                    className={`acad-note-item ${selectedNote === 'sns_pubsub' ? 'acad-active' : ''}`}
-                    onClick={() => setSelectedNote('sns_pubsub')}
-                  >
-                    <FileText size={14} />
-                    SNS Pub/Sub Filtering
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Category 2: Streaming & Hybrid Ingestion */}
-            <div className="acad-category">
-              <button 
-                className="acad-category-header" 
-                onClick={() => setExpandedCategory(expandedCategory === 'streaming_hybrid' ? '' : 'streaming_hybrid')}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {expandedCategory === 'streaming_hybrid' ? <FolderOpen size={16} style={{ color: '#3b82f6' }} /> : <Folder size={16} style={{ color: '#64748b' }} />}
-                  Streaming &amp; Hybrid
-                </span>
-                {expandedCategory === 'streaming_hybrid' ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </button>
-              
-              {expandedCategory === 'streaming_hybrid' && (
-                <div className="acad-category-content">
-                  <button 
-                    className={`acad-note-item ${selectedNote === 'kinesis_streams' ? 'acad-active' : ''}`}
-                    onClick={() => setSelectedNote('kinesis_streams')}
-                  >
-                    <FileText size={14} />
-                    Kinesis Streams Partitioning
-                  </button>
-                  <button 
-                    className={`acad-note-item ${selectedNote === 'amazon_mq' ? 'acad-active' : ''}`}
-                    onClick={() => setSelectedNote('amazon_mq')}
-                  >
-                    <FileText size={14} />
-                    ActiveMQ Failover Broker
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Category 3: Enterprise Pipelines */}
-            <div className="acad-category">
-              <button 
-                className="acad-category-header" 
-                onClick={() => setExpandedCategory(expandedCategory === 'enterprise_pipelines' ? '' : 'enterprise_pipelines')}
-              >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {expandedCategory === 'enterprise_pipelines' ? <FolderOpen size={16} style={{ color: '#3b82f6' }} /> : <Folder size={16} style={{ color: '#64748b' }} />}
-                  Enterprise Pipelines
-                </span>
-                {expandedCategory === 'enterprise_pipelines' ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </button>
-              
-              {expandedCategory === 'enterprise_pipelines' && (
-                <div className="acad-category-content">
-                  <button 
-                    className={`acad-note-item ${selectedNote === 'fanout_firehose' ? 'acad-active' : ''}`}
-                    onClick={() => setSelectedNote('fanout_firehose')}
-                  >
-                    <FileText size={14} />
-                    FIFO Fanout &amp; Firehose
-                  </button>
-                  <button 
-                    className={`acad-note-item ${selectedNote === 'comparison_matrix' ? 'acad-active' : ''}`}
-                    onClick={() => setSelectedNote('comparison_matrix')}
-                  >
-                    <FileText size={14} />
-                    Services Comparison
-                  </button>
-                </div>
-              )}
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
+          
+          {/* Header Card */}
+          <div className="im-card" style={{ marginBottom: '14px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--im-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> Integration &amp; Messaging Architecture Notes
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--im-text-secondary)', marginTop: '6px', lineHeight: '1.45' }}>
+              Master decoupling patterns, SQS queue locks, SNS topic pub/sub fanout, Kinesis stream sharding, and enterprise message broker topologies.
+            </p>
           </div>
 
-          {/* Content Pane */}
-          <div className="acad-content-pane">
+          {/* Grid Layout */}
+          <div className="acad-grid-12">
+            
+            {/* Left Sidebar Menu */}
+            <div className="acad-col-3">
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <BookOpen style={{ width: '16px', height: '16px', color: '#818cf8' }} />
+                  <span>Module Index</span>
+                </div>
+
+                {/* Category 1: Queues & Topics */}
+                <div>
+                  <button
+                    className="acad-dir-folder-btn"
+                    onClick={() => setExpandedCategory(expandedCategory === 'queues_topics' ? '' : 'queues_topics')}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sliders style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
+                      1. Queues &amp; Topics
+                    </span>
+                    {expandedCategory === 'queues_topics' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                  </button>
+                  {expandedCategory === 'queues_topics' && (
+                    <div style={{ background: 'var(--im-svg-bg)', padding: '4px 0' }}>
+                      <button
+                        className={`acad-dir-item-btn ${selectedNote === 'sqs_queues' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('sqs_queues')}
+                      >
+                        SQS Queues &amp; Locks
+                      </button>
+                      <button
+                        className={`acad-dir-item-btn ${selectedNote === 'sns_pubsub' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('sns_pubsub')}
+                      >
+                        SNS Pub/Sub Filtering
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Category 2: Streaming & Hybrid */}
+                <div>
+                  <button
+                    className="acad-dir-folder-btn"
+                    onClick={() => setExpandedCategory(expandedCategory === 'streaming_hybrid' ? '' : 'streaming_hybrid')}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Globe style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
+                      2. Streaming &amp; Hybrid
+                    </span>
+                    {expandedCategory === 'streaming_hybrid' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                  </button>
+                  {expandedCategory === 'streaming_hybrid' && (
+                    <div style={{ background: 'var(--im-svg-bg)', padding: '4px 0' }}>
+                      <button
+                        className={`acad-dir-item-btn ${selectedNote === 'kinesis_streams' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('kinesis_streams')}
+                      >
+                        Kinesis Streams Sharding
+                      </button>
+                      <button
+                        className={`acad-dir-item-btn ${selectedNote === 'amazon_mq' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('amazon_mq')}
+                      >
+                        ActiveMQ Failover Broker
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Category 3: Enterprise Pipelines */}
+                <div>
+                  <button
+                    className="acad-dir-folder-btn"
+                    onClick={() => setExpandedCategory(expandedCategory === 'enterprise_pipelines' ? '' : 'enterprise_pipelines')}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Network style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
+                      3. Enterprise Pipelines
+                    </span>
+                    {expandedCategory === 'enterprise_pipelines' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                  </button>
+                  {expandedCategory === 'enterprise_pipelines' && (
+                    <div style={{ background: 'var(--im-svg-bg)', padding: '4px 0' }}>
+                      <button
+                        className={`acad-dir-item-btn ${selectedNote === 'fanout_firehose' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('fanout_firehose')}
+                      >
+                        FIFO Fanout &amp; Firehose
+                      </button>
+                      <button
+                        className={`acad-dir-item-btn ${selectedNote === 'comparison_matrix' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('comparison_matrix')}
+                      >
+                        Services Comparison
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Academy Tips Box */}
+              <div style={{ background: 'var(--color-background-primary, #ffffff)', border: '1px solid var(--im-border-secondary)', borderRadius: '16px', padding: '16px', color: 'var(--im-text-secondary)', fontSize: '11px', marginTop: '16px', lineHeight: '1.5' }}>
+                <span style={{ color: 'var(--im-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
+                  <Info style={{ width: '14px', height: '14px', color: '#6366f1' }} /> Academy Tips
+                </span>
+                Jump to target simulations directly using the buttons in the note view. All notes are optimized for AWS Solutions Architect exam prep.
+              </div>
+            </div>
+
+            {/* Right Content Panel */}
+            <div className="acad-col-9">
             
             {/* NOTE 1: SQS Queues & Message Locks */}
             {selectedNote === 'sqs_queues' && (
@@ -2779,6 +3028,7 @@ aws firehose update-destination \\
             )}
           </div>
         </div>
+      </div>
       )}
 
       {/* ==========================================
@@ -4282,6 +4532,9 @@ aws firehose update-destination \\
             </table>
           </div>
         </div>
+      )}
+          </>
+        </Translate>
       )}
     </div>
   );

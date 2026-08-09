@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import ElastiCacheComparativeView from '../../components/visualizers/ElastiCacheComparativeView';
+import UniqueElastiCacheFeatures from '../../components/visualizers/UniqueElastiCacheFeatures';
 
-type TabType = 'concept' | 'compare' | 'arch' | 'usecases' | 'security' | 'sim';
+type TabType = 'concept' | 'compare' | 'arch' | 'usecases' | 'security' | 'sim' | 'unique';
 
 const ucData = {
   session: {
@@ -154,8 +156,76 @@ const strategies = {
   }
 };
 
-export default function ElastiCacheVisualizer() {
+interface ElastiCacheVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function ElastiCacheVisualizer({ provider = 'aws', setProvider }: ElastiCacheVisualizerProps) {
   const [activeSection, setActiveSection] = useState<TabType>('concept');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon ElastiCache/gi, 'Azure Cache for Redis')
+        .replace(/ElastiCache Redis/gi, 'Azure Cache for Redis')
+        .replace(/ElastiCache/g, 'Azure Cache')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon ElastiCache/gi, 'Google Cloud Memorystore')
+        .replace(/ElastiCache Redis/gi, 'Memorystore for Redis')
+        .replace(/ElastiCache/g, 'Memorystore')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'ec-terminal' || node.props.className === 'ec-log'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', section: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveSection(section === 'notebook' ? 'concept' : section);
+  };
   const [strategy, setStrategy] = useState<'lazy' | 'write' | 'ttl'>('lazy');
   const [activeUsecase, setActiveUsecase] = useState<keyof typeof ucData>('session');
   
@@ -604,7 +674,6 @@ export default function ElastiCacheVisualizer() {
           border-color: rgba(51, 65, 85, 0.6) !important;
           box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
         }
-
         .dark select,
         .dark input,
         .dark textarea {
@@ -615,23 +684,56 @@ export default function ElastiCacheVisualizer() {
       `}</style>
 
       <div style={{ padding: '14px 16px 4px' }}>
-        <h1 className="ec-h">⚡ AWS ElastiCache Visualizer</h1>
-        <p className="ec-sub">Explore fully managed in-memory cache architectures, Redis vs Memcached parameters, and cache strategies.</p>
+        <h1 className="ec-h">
+          {isComparative ? (
+            <span>⚖️ Multi-Cloud In-Memory Cache Comparison — AWS ElastiCache vs Azure Cache vs GCP Memorystore</span>
+          ) : isAzure ? (
+            <span>⚡ Azure Cache for Redis &amp; Redis Enterprise Modules</span>
+          ) : isGcp ? (
+            <span>⚡ Google Cloud Memorystore for Redis &amp; Memcached</span>
+          ) : (
+            <span>⚡ AWS ElastiCache Visualizer</span>
+          )}
+        </h1>
+        <p className="ec-sub">
+          {isComparative ? (
+            <span>Side-by-side architectural comparison of managed in-memory caches across AWS, Azure, and GCP.</span>
+          ) : isAzure ? (
+            <span>Explore Azure Cache for Redis, Enterprise modules (RediSearch, RedisJSON), active-active geo-replication, and VNet integration.</span>
+          ) : isGcp ? (
+            <span>Explore Google Cloud Memorystore, zero-downtime resharding, cross-region read replicas, and Private Service Access.</span>
+          ) : (
+            <span>Explore fully managed in-memory cache architectures, Redis vs Memcached parameters, and cache strategies.</span>
+          )}
+        </p>
       </div>
 
-      <div className="ec-tabs">
-        <button className={`ec-tb ${activeSection === 'concept' ? 'on' : ''}`} onClick={() => setActiveSection('concept')}>💡 Concept &amp; Overview</button>
-        <button className={`ec-tb ${activeSection === 'compare' ? 'on' : ''}`} onClick={() => setActiveSection('compare')}>⚖️ Redis vs Memcached</button>
-        <button className={`ec-tb ${activeSection === 'arch' ? 'on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
-        <button className={`ec-tb ${activeSection === 'usecases' ? 'on' : ''}`} onClick={() => setActiveSection('usecases')}>🎯 Use Cases</button>
-        <button className={`ec-tb ${activeSection === 'security' ? 'on' : ''}`} onClick={() => setActiveSection('security')}>🔒 Security &amp; Auth</button>
-        <button className={`ec-tb ${activeSection === 'sim' ? 'on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Cache Simulator</button>
-      </div>
+      {!isComparative && (
+        <div className="ec-tabs">
+          <button className={`ec-tb ${activeSection === 'concept' ? 'on' : ''}`} onClick={() => setActiveSection('concept')}>💡 Concept &amp; Overview</button>
+          <button className={`ec-tb ${activeSection === 'compare' ? 'on' : ''}`} onClick={() => setActiveSection('compare')}>⚖️ Redis vs Memcached</button>
+          <button className={`ec-tb ${activeSection === 'arch' ? 'on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
+          <button className={`ec-tb ${activeSection === 'usecases' ? 'on' : ''}`} onClick={() => setActiveSection('usecases')}>🎯 Use-Case Design</button>
+          <button className={`ec-tb ${activeSection === 'security' ? 'on' : ''}`} onClick={() => setActiveSection('security')}>🛡️ Security &amp; Auth</button>
+          <button className={`ec-tb ${activeSection === 'sim' ? 'on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Live Traffic Sim</button>
+          <button className={`ec-tb ${activeSection === 'unique' ? 'on' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
+        </div>
+      )}
 
       <div className="ec-main-panel">
-        {activeSection === 'concept' && (
-          <div id="pnl-concept">
-            <div className="ec-g2" style={{ marginBottom: '10px' }}>
+        {isComparative && (
+          <ElastiCacheComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeSection === 'unique' && (
+          <UniqueElastiCacheFeatures provider={provider} />
+        )}
+
+        {!isComparative && activeSection !== 'unique' && (
+          <Translate>
+            <>
+              {activeSection === 'concept' && (
+                <div className="ec-g2" style={{ marginBottom: '10px' }}>
               <div>
                 <div className="ec-sec">What is ElastiCache?</div>
                 <svg width="100%" viewBox="0 0 520 220" className="ec-svg-bg" style={{ display: 'block' }}>
@@ -768,8 +870,7 @@ export default function ElastiCacheVisualizer() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {activeSection === 'compare' && (
           <div id="pnl-compare">
@@ -1556,6 +1657,9 @@ export default function ElastiCacheVisualizer() {
             Get full Terraform for ElastiCache Redis + Security + Integration ↗
           </button>
         </div>
+            </>
+          </Translate>
+        )}
       </div>
     </div>
   );

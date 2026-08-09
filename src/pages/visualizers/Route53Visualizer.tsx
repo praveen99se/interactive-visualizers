@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   BookOpen,
   ChevronRight,
@@ -10,8 +10,10 @@ import {
   Sliders,
   Globe
 } from 'lucide-react';
+import Route53ComparativeView from '../../components/visualizers/Route53ComparativeView';
+import UniqueRoute53Features from '../../components/visualizers/UniqueRoute53Features';
 
-type TabType = 'dns' | 'r53' | 'records' | 'routing' | 'health' | 'hybrid' | 'arch' | 'notebook';
+type TabType = 'dns' | 'r53' | 'records' | 'routing' | 'health' | 'hybrid' | 'arch' | 'notebook' | 'unique';
 type RecordType = 'A' | 'AAAA' | 'CNAME' | 'ALIAS' | 'MX' | 'TXT' | 'NS' | 'SOA' | 'SRV' | 'PTR';
 type PolicyType = 'simple' | 'weighted' | 'latency' | 'failover' | 'geo' | 'geoprox' | 'multivalue' | 'ipbased';
 
@@ -379,10 +381,78 @@ resource "aws_route53_resolver_rule" "forward_corp" {
   }
 }`;
 
-export default function Route53Visualizer() {
+interface Route53VisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function Route53Visualizer({ provider = 'aws', setProvider }: Route53VisualizerProps) {
   const [activeSection, setActiveSection] = useState<TabType>('notebook');
 
-  // Visual Architect Academy Notebook states
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon Route 53/gi, 'Azure DNS & Traffic Manager')
+        .replace(/Route 53/gi, 'Azure DNS')
+        .replace(/Hosted Zone/gi, 'DNS Zone')
+        .replace(/Hosted Zones/gi, 'DNS Zones')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon Route 53/gi, 'Google Cloud DNS')
+        .replace(/Route 53/gi, 'Cloud DNS')
+        .replace(/Hosted Zone/gi, 'Managed Zone')
+        .replace(/Hosted Zones/gi, 'Managed Zones')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'r53-terminal'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', section: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveSection(section === 'concept' ? 'r53' : section);
+  };
   const [selectedNote, setSelectedNote] = useState<string>('dns_queries');
   const [expandedCategory, setExpandedCategory] = useState<string>('dns_fundamentals');
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
@@ -1152,6 +1222,15 @@ export default function Route53Visualizer() {
           border-color: var(--replica-grad-stroke);
           box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
+        .r53-tb.r53-on-notebook { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-color: #0284c7; }
+        .r53-tb.r53-on-dns { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-color: #2563eb; }
+        .r53-tb.r53-on-r53 { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-color: #4f46e5; }
+        .r53-tb.r53-on-records { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #059669; }
+        .r53-tb.r53-on-routing { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-color: #d97706; }
+        .r53-tb.r53-on-health { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); border-color: #db2777; }
+        .r53-tb.r53-on-hybrid { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-color: #7c3aed; }
+        .r53-tb.r53-on-arch { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-color: #0891b2; }
+        .r53-tb.r53-on-unique { background: linear-gradient(135deg, #10b981 0%, #047857 100%); border-color: #047857; }
         .r53-card {
           background: var(--color-bg-glass);
           backdrop-filter: blur(12px);
@@ -1393,9 +1472,10 @@ export default function Route53Visualizer() {
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .acad-dir-header {
-          background: #0f172a;
-          color: #f8fafc;
-          padding: 16px;
+          background: var(--r53-inner-card-bg);
+          border-bottom: 1px solid var(--r53-inner-card-border);
+          color: var(--color-text-primary);
+          padding: 14px 16px;
           font-weight: 800;
           font-size: 11px;
           letter-spacing: 0.08em;
@@ -1727,28 +1807,58 @@ export default function Route53Visualizer() {
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
           <div className="r53-h">
-            🌐 AWS Route 53 — DNS · Hosted Zones · Routing Policies · Health Checks
+            {isComparative ? (
+              <span>⚖️ Multi-Cloud DNS Comparison — AWS Route 53 vs Azure DNS/TM vs GCP Cloud DNS</span>
+            ) : isAzure ? (
+              <span>🌐 Azure DNS &amp; Azure Traffic Manager</span>
+            ) : isGcp ? (
+              <span>🌐 Google Cloud DNS &amp; Anycast Nameservers</span>
+            ) : (
+              <span>🌐 AWS Route 53 — DNS · Hosted Zones · Routing Policies · Health Checks</span>
+            )}
           </div>
           <div className="r53-sub">
-            The internet's phone book — translates domain names to IP addresses · globally distributed infrastructure · 100% Availability SLA
+            {isComparative ? (
+              <span>Side-by-side architectural comparison of global DNS and intelligent traffic routing services across AWS, Azure, and GCP.</span>
+            ) : isAzure ? (
+              <span>Public and Private DNS zones in Azure VNet boundaries. Performance, Geographic, and Priority Traffic Manager routing.</span>
+            ) : isGcp ? (
+              <span>Managed public and private DNS zones in Google Cloud. Global Anycast DNS, automatic DNSSEC signing, and Weighted/Geolocation routing.</span>
+            ) : (
+              <span>The internet's phone book — translates domain names to IP addresses · globally distributed infrastructure · 100% Availability SLA</span>
+            )}
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="r53-tabs">
-          <button className={`r53-tb ${activeSection === 'notebook' ? 'r53-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
-          <button className={`r53-tb ${activeSection === 'dns' ? 'r53-on' : ''}`} onClick={() => setActiveSection('dns')}>🔍 How DNS Works</button>
-          <button className={`r53-tb ${activeSection === 'r53' ? 'r53-on' : ''}`} onClick={() => setActiveSection('r53')}>🚀 Route 53 Overview</button>
-          <button className={`r53-tb ${activeSection === 'records' ? 'r53-on' : ''}`} onClick={() => setActiveSection('records')}>📋 Records &amp; Zones</button>
-          <button className={`r53-tb ${activeSection === 'routing' ? 'r53-on' : ''}`} onClick={() => setActiveSection('routing')}>🗺️ Routing Policies</button>
-          <button className={`r53-tb ${activeSection === 'health' ? 'r53-on' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health Checks</button>
-          <button className={`r53-tb ${activeSection === 'hybrid' ? 'r53-on' : ''}`} onClick={() => setActiveSection('hybrid')}>🔌 Hybrid DNS</button>
-          <button className={`r53-tb ${activeSection === 'arch' ? 'r53-on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
-        </div>
+        {!isComparative && (
+          <div className="r53-tabs">
+            <button className={`r53-tb ${activeSection === 'notebook' ? 'r53-on r53-on-notebook' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
+            <button className={`r53-tb ${activeSection === 'dns' ? 'r53-on r53-on-dns' : ''}`} onClick={() => setActiveSection('dns')}>🔍 How DNS Works</button>
+            <button className={`r53-tb ${activeSection === 'r53' ? 'r53-on r53-on-r53' : ''}`} onClick={() => setActiveSection('r53')}>🚀 Route 53 Overview</button>
+            <button className={`r53-tb ${activeSection === 'records' ? 'r53-on r53-on-records' : ''}`} onClick={() => setActiveSection('records')}>📋 Records &amp; Zones</button>
+            <button className={`r53-tb ${activeSection === 'routing' ? 'r53-on r53-on-routing' : ''}`} onClick={() => setActiveSection('routing')}>🗺️ Routing Policies</button>
+            <button className={`r53-tb ${activeSection === 'health' ? 'r53-on r53-on-health' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health Checks</button>
+            <button className={`r53-tb ${activeSection === 'hybrid' ? 'r53-on r53-on-hybrid' : ''}`} onClick={() => setActiveSection('hybrid')}>🔌 Hybrid DNS</button>
+            <button className={`r53-tb ${activeSection === 'arch' ? 'r53-on r53-on-arch' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
+            <button className={`r53-tb ${activeSection === 'unique' ? 'r53-on r53-on-unique' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
+          </div>
+        )}
       </div>
 
       {/* Content Panels */}
       <div style={{ padding: '0 16px' }}>
+        {isComparative && (
+          <Route53ComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeSection === 'unique' && (
+          <UniqueRoute53Features provider={provider} />
+        )}
+
+        {!isComparative && activeSection !== 'unique' && (
+          <Translate>
+            <>
 
         {/* VISUAL ARCHITECT ACADEMY NOTEBOOK PANEL */}
         {activeSection === 'notebook' && (() => {
@@ -1815,11 +1925,11 @@ export default function Route53Visualizer() {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
               
-              <div className="card text-left">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
-                  <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Route 53 Global Routing Notes
+              <div className="r53-card" style={{ marginBottom: '14px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> Route 53 Global Routing Notes
                 </h2>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-sans font-semibold">
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45' }}>
                   Explore Domain Name System (DNS) fundamentals, Route 53 routing policies (geolocation, latency, failover), virtual aliases, and hybrid DNS resolution.
                 </p>
               </div>
@@ -1927,9 +2037,9 @@ export default function Route53Visualizer() {
 
                   </div>
 
-                  <div style={{ background: '#0f172a', borderRadius: '16px', padding: '16px', color: '#94a3b8', fontSize: '11px', marginTop: '16px', border: '1px solid #1e293b', lineHeight: '1.5' }}>
-                    <span style={{ color: '#ffffff', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
-                      <Info style={{ width: '14px', height: '14px', color: '#818cf8' }} /> Academy Tips
+                  <div style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', marginTop: '16px', lineHeight: '1.5' }}>
+                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
+                      <Info style={{ width: '14px', height: '14px', color: '#6366f1' }} /> Academy Tips
                     </span>
                     Jump to target simulations directly using the buttons in the note view. All notes are optimized for AWS Solutions Architect exam prep.
                   </div>
@@ -5902,6 +6012,9 @@ export default function Route53Visualizer() {
             </div>
           );
         })()}
+            </>
+          </Translate>
+        )}
 
       </div>
     </div>

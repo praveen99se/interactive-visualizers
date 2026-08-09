@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   BookOpen,
   Shield,
@@ -11,8 +11,10 @@ import {
   Cpu,
   Network
 } from 'lucide-react';
+import ASGComparativeView from '../../components/visualizers/ASGComparativeView';
+import UniqueScalingFeatures from '../../components/visualizers/UniqueScalingFeatures';
 
-type TabType = 'concept' | 'arch' | 'policies' | 'health' | 'sim' | 'notebook';
+type TabType = 'concept' | 'arch' | 'policies' | 'health' | 'sim' | 'notebook' | 'unique';
 
 interface Inst {
   id: number;
@@ -49,8 +51,12 @@ const makeInstance = (id: number): Inst => ({
   failed: false,
 });
 
-// Production Terraform Launch Template Snippet
-const terraformLaunchTemplateCode = `resource "aws_launch_template" "asg_template" {
+// Production Terraform Launch Templates & Instance templates definition mapper
+const getASGProviderSnippets = (prov: 'aws' | 'azure' | 'gcp' | 'comparative') => {
+  const p = prov === 'comparative' ? 'aws' : prov;
+  const data = {
+    aws: {
+      terraform: `resource "aws_launch_template" "asg_template" {
   name_prefix   = "asg-premium-template-"
   image_id      = "ami-0c7217cdde317cfec" # Amazon Linux 2023
   instance_type = "t3.medium"
@@ -82,10 +88,8 @@ const terraformLaunchTemplateCode = `resource "aws_launch_template" "asg_templat
       Environment = "production"
     }
   }
-}`;
-
-// Python Lambda Lifecycle Hook Handler
-const lifecycleHookLambdaCode = `import json
+}`,
+      lifecycle: `import json
 import boto3
 
 autoscaling = boto3.client('autoscaling')
@@ -97,11 +101,6 @@ def lambda_handler(event, context):
     autoscaling_group_name = detail['AutoScalingGroupName']
     lifecycle_action_token = detail['LifecycleActionToken']
     instance_id = detail['EC2InstanceId']
-    
-    print(f"ASG Lifecycle Event: Booting config for {instance_id}")
-    
-    # Perform operational boot tasks: precache, register endpoints, run tests
-    boot_success = run_boot_orchestration(instance_id)
     
     # Send signal to either CONTINUE or ABANDON
     action_result = 'CONTINUE' if boot_success else 'ABANDON'
@@ -116,14 +115,234 @@ def lambda_handler(event, context):
     return {
         'statusCode': 200,
         'body': json.dumps(f"Lifecycle hook completed with action: {action_result}")
+    }`
+    },
+    azure: {
+      terraform: `resource "azurerm_orchestrated_virtual_machine_scale_set" "vmss" {
+  name                = "premium-vmss"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku                 = "Standard_D2s_v5"
+  instances           = 3
+
+  # Enable automatic repairs based on health extension probes
+  automatic_instance_repair {
+    enabled      = true
+    grace_period = "PT10M" # 10 minute grace period
+  }
+
+  os_profile {
+    custom_data = base64encode(<<-EOF
+                  #!/bin/bash
+                  echo "Initializing Azure VM database cache connection..."
+                  apt-get update -y
+                  apt-get install -y apache2
+                  systemctl start apache2
+                  systemctl enable apache2
+                  echo "<h1>Welcome to Azure VM \\$(hostname)</h1>" > /var/www/html/index.html
+                  EOF
+    )
+  }
+
+  network_interface {
+    name    = "vmss-nic"
+    primary = true
+
+    ip_configuration {
+      name      = "internal"
+      primary   = true
+      subnet_id = azurerm_subnet.subnet.id
+    }
+  }
+}`,
+      lifecycle: `# Python script mapping Azure VMSS instance state change events
+# Utilizing Event Grid system topics to intercept VMSS termination events
+import json
+import requests
+
+def handle_vmss_terminate_event(event_payload):
+    subject = event_payload['subject'] # VMSS instance identifier
+    resource_id = event_payload['data']['resourceUri']
+    
+    # Induce pre-delete graceful shutdown routines
+    print(f"Intercepted terminate event for VMSS node: {subject}")
+    
+    # Notify orchestrator of cleanup completion
+    response = requests.post(
+        url="https://management.azure.com/.../approvePendingAction?api-version=2020-06-01",
+        headers={"Authorization": "Bearer TOKEN"},
+        json={"status": "Complete"}
+    )
+    return response.status_code`
+    },
+    gcp: {
+      terraform: `resource "google_compute_instance_template" "tpl" {
+  name         = "gce-premium-template"
+  machine_type = "e2-medium"
+
+  disk {
+    source_image = "debian-cloud/debian-11"
+    auto_delete  = true
+    boot         = true
+  }
+
+  network_interface {
+    network = "default"
+  }
+
+  metadata_startup_script = <<-EOF
+    #!/bin/bash
+    echo "Initializing GCP VM database cache connection..."
+    apt-get update -y
+    apt-get install -y apache2
+    systemctl start apache2
+    systemctl enable apache2
+    echo "<h1>Welcome to GCP instance \\$(hostname)</h1>" > /var/www/html/index.html
+    EOF
+
+  labels = {
+    environment = "production"
+  }
+}
+
+resource "google_compute_region_instance_group_manager" "mig" {
+  name               = "regional-mig"
+  region             = "us-central1"
+  base_instance_name = "mig-node"
+  target_size        = 3
+
+  version {
+    instance_template = google_compute_instance_template.tpl.id
+  }
+
+  auto_healing_policies {
+    health_check      = google_compute_health_check.http.id
+    initial_delay_sec = 300
+  }
+}`,
+      lifecycle: `# Python script running inside GCP Compute Engine Metadata shutdown script
+# Google Cloud triggers local shutdown script with 30-second warning buffer
+import json
+import sys
+
+def perform_mig_graceful_shutdown():
+    print("MIG Shutdown signal received. Executing pre-delete jobs...")
+    
+    # Perform cache flush or backup state to GCP Storage Bucket
+    # GCE automatically terminates VM after metadata script exit or 30s limit
+    sys.exit(0)
+
+if __name__ == "__main__":
+    perform_mig_graceful_shutdown()`
+    }
+  };
+  return data[p];
+};
+
+interface ASGVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisualizerProps) {
+  const [activeSection, setActiveSection] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const snippets = getASGProviderSnippets(provider);
+  const terraformSnippet = snippets.terraform;
+  const lifecycleSnippet = snippets.lifecycle;
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Auto Scaling Groups/gi, 'Virtual Machine Scale Sets')
+        .replace(/Auto Scaling Group/gi, 'Virtual Machine Scale Set')
+        .replace(/ASGs/g, 'VMSSs')
+        .replace(/ASG/g, 'VMSS')
+        .replace(/EC2/gi, 'VM')
+        .replace(/Launch Templates/gi, 'Scale Set VM Models')
+        .replace(/Launch Template/gi, 'Scale Set VM Model')
+        .replace(/Amazon Machine Image \(AMI\)/gi, 'Custom VM Image')
+        .replace(/Amazon Machine Images \(AMIs\)/gi, 'Custom VM Images')
+        .replace(/AMI/g, 'Image')
+        .replace(/User Data/gi, 'Custom Data')
+        .replace(/Application Load Balancer/gi, 'Azure Load Balancer')
+        .replace(/ALB/g, 'Load Balancer')
+        .replace(/CloudWatch/g, 'Azure Monitor')
+        .replace(/Target Tracking/gi, 'Autoscale Metric Rules')
+        .replace(/Lifecycle Hooks/gi, 'Custom Script Extensions')
+        .replace(/Lifecycle Hook/gi, 'Custom Script Extension')
+        .replace(/Warm Pools/gi, 'Standby Pools')
+        .replace(/Warm Pool/gi, 'Standby Pool');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Auto Scaling Groups/gi, 'Managed Instance Groups')
+        .replace(/Auto Scaling Group/gi, 'Managed Instance Group')
+        .replace(/ASGs/g, 'MIGs')
+        .replace(/ASG/g, 'MIG')
+        .replace(/EC2/gi, 'Compute Engine')
+        .replace(/Launch Templates/gi, 'Instance Templates')
+        .replace(/Launch Template/gi, 'Instance Template')
+        .replace(/Amazon Machine Image \(AMI\)/gi, 'Custom Machine Image')
+        .replace(/Amazon Machine Images \(AMIs\)/gi, 'Custom Machine Images')
+        .replace(/AMI/g, 'Image')
+        .replace(/User Data/gi, 'Startup Script')
+        .replace(/Application Load Balancer/gi, 'HTTP(S) Load Balancer')
+        .replace(/ALB/g, 'Load Balancer')
+        .replace(/CloudWatch/g, 'Cloud Monitoring')
+        .replace(/Target Tracking/gi, 'Target Utilization Autoscaling')
+        .replace(/Lifecycle Hooks/gi, 'Instance Lifecycle Hooks')
+        .replace(/Lifecycle Hook/gi, 'Instance Lifecycle Hook')
+        .replace(/Warm Pools/gi, 'Standby VM Pools')
+        .replace(/Warm Pool/gi, 'Standby VM Pool');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
     }
 
-def run_boot_orchestration(instance_id):
-    # Put custom warmup / verification scripts here
-    return True`;
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'asg-terminal'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
 
-export default function ASGVisualizer() {
-  const [activeSection, setActiveSection] = useState<TabType>('notebook');
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', section: TabType) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveSection(section);
+  };
 
   // Simulation parameters
   const [rps, setRps] = useState(300);
@@ -150,7 +369,7 @@ export default function ASGVisualizer() {
   const [launchHookApproved, setLaunchHookApproved] = useState<boolean>(false);
   const [terminateHookApproved, setTerminateHookApproved] = useState<boolean>(false);
 
-  // Visual Architect Academy Notebook states
+  // Visual Architect Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('launch_templates');
   const [expandedCategory, setExpandedCategory] = useState<string>('asg_fundamentals');
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
@@ -1070,26 +1289,56 @@ export default function ASGVisualizer() {
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
           <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📈 AWS Auto Scaling Groups (ASG) — Zonal Scaling · Launch Templates · Self Healing
+            {isComparative ? (
+              <span>⚖️ Multi-Cloud Scaling Comparison — AWS ASG vs Azure VMSS vs GCP MIG</span>
+            ) : isAzure ? (
+              <span>📈 Azure VM Scale Sets (VMSS) — Zonal Scaling · Models · Self Healing</span>
+            ) : isGcp ? (
+              <span>📈 Google Cloud Managed Instance Groups (MIG) — Zonal Scaling · Templates · Self Healing</span>
+            ) : (
+              <span>📈 AWS Auto Scaling Groups (ASG) — Zonal Scaling · Launch Templates · Self Healing</span>
+            )}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-            Ensure high availability by maintaining fleet sizes, recovering failed instances, and dynamically adapting to workload changes.
+            {isComparative ? (
+              <span>Compare terminology, configurations, policies, and health systems between AWS, Azure, and Google Cloud autoscaling services.</span>
+            ) : isAzure ? (
+              <span>Ensure high availability by maintaining VM Scale Set size, auto-repairing instances, and dynamically adapting to workload metrics.</span>
+            ) : isGcp ? (
+              <span>Ensure high availability by maintaining Managed Instance Group sizes, autohealing instances, and dynamically adapting to resource demands.</span>
+            ) : (
+              <span>Ensure high availability by maintaining fleet sizes, recovering failed instances, and dynamically adapting to workload changes.</span>
+            )}
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="asg-tabs">
-          <button className={`asg-tb ${activeSection === 'notebook' ? 'asg-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
-          <button className={`asg-tb ${activeSection === 'concept' ? 'asg-on' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concept &amp; Capacity</button>
-          <button className={`asg-tb ${activeSection === 'arch' ? 'asg-on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ VPC Architecture</button>
-          <button className={`asg-tb ${activeSection === 'policies' ? 'asg-on' : ''}`} onClick={() => setActiveSection('policies')}>📈 Scaling Policies</button>
-          <button className={`asg-tb ${activeSection === 'health' ? 'asg-on' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health &amp; Lifecycles</button>
-          <button className={`asg-tb ${activeSection === 'sim' ? 'asg-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Live Scaling Simulator</button>
-        </div>
+        {!isComparative && (
+          <div className="asg-tabs">
+            <button className={`asg-tb ${activeSection === 'notebook' ? 'asg-on' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
+            <button className={`asg-tb ${activeSection === 'concept' ? 'asg-on' : ''}`} onClick={() => setActiveSection('concept')}>⚖️ Concept &amp; Capacity</button>
+            <button className={`asg-tb ${activeSection === 'arch' ? 'asg-on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ VPC Architecture</button>
+            <button className={`asg-tb ${activeSection === 'policies' ? 'asg-on' : ''}`} onClick={() => setActiveSection('policies')}>📈 Scaling Policies</button>
+            <button className={`asg-tb ${activeSection === 'health' ? 'asg-on' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health &amp; Lifecycles</button>
+            <button className={`asg-tb ${activeSection === 'sim' ? 'asg-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Live Scaling Simulator</button>
+            <button className={`asg-tb ${activeSection === 'unique' ? 'asg-on' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
+          </div>
+        )}
       </div>
 
       {/* Content Panels */}
       <div style={{ padding: '0 16px' }}>
+        {isComparative && (
+          <ASGComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
+
+        {!isComparative && activeSection === 'unique' && (
+          <UniqueScalingFeatures provider={provider} />
+        )}
+
+        {!isComparative && activeSection !== 'unique' && (
+          <Translate>
+            <>
 
         {/* CONCEPT & CAPACITY PANEL */}
         {activeSection === 'concept' && (
@@ -2203,10 +2452,10 @@ export default function ASGVisualizer() {
                       {/* Visual HCL Code block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Terraform Launch Template Snippet</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Deployment Template Snippet</span>
                           <button 
                             onClick={() => {
-                              navigator.clipboard.writeText(terraformLaunchTemplateCode);
+                              navigator.clipboard.writeText(terraformSnippet);
                               setCopiedNoteId('lt-terraform');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
@@ -2216,7 +2465,7 @@ export default function ASGVisualizer() {
                           </button>
                         </div>
                         <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
-                          {terraformLaunchTemplateCode}
+                          {terraformSnippet}
                         </pre>
                       </div>
                     </div>
@@ -2662,7 +2911,7 @@ export default function ASGVisualizer() {
                           <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Python Lambda Hook Completer</span>
                           <button 
                             onClick={() => {
-                              navigator.clipboard.writeText(lifecycleHookLambdaCode);
+                              navigator.clipboard.writeText(lifecycleSnippet);
                               setCopiedNoteId('lh-lambda');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
@@ -2672,7 +2921,7 @@ export default function ASGVisualizer() {
                           </button>
                         </div>
                         <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
-                          {lifecycleHookLambdaCode}
+                          {lifecycleSnippet}
                         </pre>
                       </div>
                     </div>
@@ -2719,7 +2968,7 @@ export default function ASGVisualizer() {
                       <div className="asg-note-widget flex flex-col justify-center text-center">
                         <span className="text-[10px] font-mono font-bold uppercase tracking-widest block mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Cooldown Loop Safeguard</span>
                         
-                        <div className="flex items-center justify-center gap-2 text-[10px] font-mono">
+                        <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono">
                           <div className="asg-status-widget-orange p-2.5 rounded-lg">
                             <p className="font-bold text-orange">📈 Scale Out</p>
                             <span>Launch Instance</span>
@@ -2883,7 +3132,9 @@ export default function ASGVisualizer() {
             </div>
           </div>
         )}
-
+            </>
+          </Translate>
+        )}
 
       </div>
     </div>

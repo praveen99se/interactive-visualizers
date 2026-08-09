@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Shield,
   Key,
@@ -17,8 +17,10 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import SecretsAndKMSEncryptionComparativeView from '../../components/visualizers/SecretsAndKMSEncryptionComparativeView';
+import UniqueSecretsAndKMSEncryptionFeatures from '../../components/visualizers/UniqueSecretsAndKMSEncryptionFeatures';
 
-type TabType = 'notebook' | 'intro' | 'kms' | 'envelope' | 'multiregion' | 'crossaccount';
+type TabType = 'notebook' | 'intro' | 'kms' | 'envelope' | 'multiregion' | 'crossaccount' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -26,8 +28,76 @@ interface LogRow {
   type: 'info' | 'success' | 'warn' | 'error';
 }
 
-export default function SecretsAndKMSEncryptionVisualizer() {
+interface SecretsAndKMSEncryptionVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function SecretsAndKMSEncryptionVisualizer({ provider = 'aws', setProvider }: SecretsAndKMSEncryptionVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS KMS/gi, 'Azure Key Vault (Keys)')
+        .replace(/AWS Secrets Manager/gi, 'Azure Key Vault (Secrets)')
+        .replace(/SSM Parameter Store/gi, 'Azure App Configuration')
+        .replace(/KMS Key/gi, 'Key Vault Key')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS KMS/gi, 'Google Cloud KMS')
+        .replace(/AWS Secrets Manager/gi, 'Google Cloud Secret Manager')
+        .replace(/SSM Parameter Store/gi, 'GCP Secret Manager / Config Sync')
+        .replace(/KMS Key/gi, 'Cloud KMS Key Ring')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'kms-terminal' || node.props.className === 'kms-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'secrets' ? 'intro' : tab === 'architect' ? 'notebook' : tab);
+  };
 
   // Visual Architect Academy Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('kms_envelope');
@@ -911,26 +981,43 @@ export default function SecretsAndKMSEncryptionVisualizer() {
       </div>
 
       {/* Tab navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-          <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
-        </button>
-        <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <BookOpen className="w-4 h-4" /> 1. KMS vs SSM vs Secrets Manager
-        </button>
-        <button className={`da-tb ${activeTab === 'kms' ? 'da-on' : ''}`} onClick={() => setActiveTab('kms')}>
-          <Shield className="w-4 h-4" /> 2. Key Architecture &amp; Rotations
-        </button>
-        <button className={`da-tb ${activeTab === 'envelope' ? 'da-on' : ''}`} onClick={() => setActiveTab('envelope')}>
-          <Terminal className="w-4 h-4" /> 3. Envelope Encryption Simulator
-        </button>
-        <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on' : ''}`} onClick={() => setActiveTab('multiregion')}>
-          <Network className="w-4 h-4" /> 4. Global Multi-Region Replication
-        </button>
-        <button className={`da-tb ${activeTab === 'crossaccount' ? 'da-on' : ''}`} onClick={() => setActiveTab('crossaccount')}>
-          <Server className="w-4 h-4" /> 5. Shared AMIs &amp; Key Policies
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+          </button>
+          <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <BookOpen className="w-4 h-4" /> 1. KMS vs SSM vs Secrets Manager
+          </button>
+          <button className={`da-tb ${activeTab === 'kms' ? 'da-on' : ''}`} onClick={() => setActiveTab('kms')}>
+            <Shield className="w-4 h-4" /> 2. Key Architecture &amp; Rotations
+          </button>
+          <button className={`da-tb ${activeTab === 'envelope' ? 'da-on' : ''}`} onClick={() => setActiveTab('envelope')}>
+            <Terminal className="w-4 h-4" /> 3. Envelope Encryption Simulator
+          </button>
+          <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on' : ''}`} onClick={() => setActiveTab('multiregion')}>
+            <Network className="w-4 h-4" /> 4. Global Multi-Region Replication
+          </button>
+          <button className={`da-tb ${activeTab === 'crossaccount' ? 'da-on' : ''}`} onClick={() => setActiveTab('crossaccount')}>
+            <Server className="w-4 h-4" /> 5. Shared AMIs &amp; Key Policies
+          </button>
+          <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <SecretsAndKMSEncryptionComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueSecretsAndKMSEncryptionFeatures provider={provider} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: INTRO MATRIX & SCHEMES                                             */}
@@ -2422,7 +2509,9 @@ export default function SecretsAndKMSEncryptionVisualizer() {
           </div>
         </div>
       )}
-
+          </>
+        </Translate>
+      )}
     </div>
   );
 }

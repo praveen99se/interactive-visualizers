@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Shield,
   Users,
@@ -14,8 +14,10 @@ import {
   Terminal,
   Network
 } from 'lucide-react';
+import GovernanceAndIdentityComparativeView from '../../components/visualizers/GovernanceAndIdentityComparativeView';
+import UniqueGovernanceAndIdentityFeatures from '../../components/visualizers/UniqueGovernanceAndIdentityFeatures';
 
-type TabType = 'intro' | 'organizations' | 'iam' | 'identitycenter' | 'compliance';
+type TabType = 'intro' | 'organizations' | 'iam' | 'identitycenter' | 'compliance' | 'unique';
 
 interface AccountNode {
   id: string;
@@ -31,8 +33,76 @@ interface LogRow {
   type: 'info' | 'success' | 'warn' | 'error';
 }
 
-export default function GovernanceAndIdentityVisualizer() {
+interface GovernanceAndIdentityVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function GovernanceAndIdentityVisualizer({ provider = 'aws', setProvider }: GovernanceAndIdentityVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS IAM/gi, 'Microsoft Entra ID & Azure RBAC')
+        .replace(/AWS Organizations/gi, 'Azure Management Groups')
+        .replace(/Service Control Policies \(SCPs\)/gi, 'Azure Policy Guardrails')
+        .replace(/IAM Role/gi, 'Azure Managed Identity / RBAC Role')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS IAM/gi, 'Google Cloud IAM')
+        .replace(/AWS Organizations/gi, 'GCP Resource Manager')
+        .replace(/Service Control Policies \(SCPs\)/gi, 'GCP Organization Policies')
+        .replace(/IAM Role/gi, 'GCP Service Account / Role')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'gov-terminal' || node.props.className === 'gov-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'roles' ? 'iam' : tab === 'scp' ? 'organizations' : tab === 'architect' ? 'intro' : tab);
+  };
 
   // ==========================================
   // TAB 1 STATE: Topics & EventBridge Mode
@@ -898,23 +968,40 @@ export default function GovernanceAndIdentityVisualizer() {
       </div>
 
       {/* Tab navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <BookOpen className="w-4 h-4" /> 1. Governance Comparison &amp; EventBridge Security
-        </button>
-        <button className={`da-tb ${activeTab === 'organizations' ? 'da-on' : ''}`} onClick={() => setActiveTab('organizations')}>
-          <Building className="w-4 h-4" /> 2. SCP Multi-OU Hierarchy
-        </button>
-        <button className={`da-tb ${activeTab === 'iam' ? 'da-on' : ''}`} onClick={() => setActiveTab('iam')}>
-          <Key className="w-4 h-4" /> 3. Fine-Grained IAM Resolution
-        </button>
-        <button className={`da-tb ${activeTab === 'identitycenter' ? 'da-on' : ''}`} onClick={() => setActiveTab('identitycenter')}>
-          <Users className="w-4 h-4" /> 4. SSO Active Directory Mapping
-        </button>
-        <button className={`da-tb ${activeTab === 'compliance' ? 'da-on' : ''}`} onClick={() => setActiveTab('compliance')}>
-          <Activity className="w-4 h-4" /> 5. Guardrails Compliance Auditor
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <BookOpen className="w-4 h-4" /> 1. Governance Comparison &amp; EventBridge Security
+          </button>
+          <button className={`da-tb ${activeTab === 'organizations' ? 'da-on' : ''}`} onClick={() => setActiveTab('organizations')}>
+            <Building className="w-4 h-4" /> 2. SCP Multi-OU Hierarchy
+          </button>
+          <button className={`da-tb ${activeTab === 'iam' ? 'da-on' : ''}`} onClick={() => setActiveTab('iam')}>
+            <Key className="w-4 h-4" /> 3. Fine-Grained IAM Resolution
+          </button>
+          <button className={`da-tb ${activeTab === 'identitycenter' ? 'da-on' : ''}`} onClick={() => setActiveTab('identitycenter')}>
+            <Users className="w-4 h-4" /> 4. SSO Active Directory Mapping
+          </button>
+          <button className={`da-tb ${activeTab === 'compliance' ? 'da-on' : ''}`} onClick={() => setActiveTab('compliance')}>
+            <Activity className="w-4 h-4" /> 5. Guardrails Compliance Auditor
+          </button>
+          <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <GovernanceAndIdentityComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueGovernanceAndIdentityFeatures provider={provider} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: THEORETICAL MATRIX COMPARISON & EVENTBRIDGE SECURITY               */}
@@ -2587,7 +2674,9 @@ export default function GovernanceAndIdentityVisualizer() {
           </div>
         </div>
       )}
-
+          </>
+        </Translate>
+      )}
     </div>
   );
 }

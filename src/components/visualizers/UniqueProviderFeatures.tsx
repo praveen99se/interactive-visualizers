@@ -202,12 +202,8 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
     <div className="space-y-8 animate-fadeIn text-left mt-4">
       {/* Intro section */}
       <div className="s3-card">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-display">
-          ✨ Provider-Specific Advanced Offerings &amp; Sandbox
-        </h2>
-        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed font-sans font-semibold">
-          While basic storage concepts translate across clouds, each provider has engineered unique capability layers that do not map 1:1. Run the simulations below to understand these proprietary cloud architectures.
-        </p>
+        <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--color-text-primary)", display: "flex", alignItems: "center", gap: "8px" }}>✨ Provider-Specific Advanced Offerings &amp; Sandbox</h2>
+        <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "6px", lineHeight: "1.45" }}>While basic storage concepts translate across clouds, each provider has engineered unique capability layers that do not map 1:1. Run the simulations below to understand these proprietary cloud architectures.</p>
       </div>
 
       {/* ========================================================================= */}
@@ -220,45 +216,45 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Cpu className="w-5 h-5 text-amber-500" />
-                <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">S3 Object Lambda Interactive Simulator</h3>
+                <h3 style={{ fontSize: "13.5px", fontWeight: "bold", color: "var(--color-text-primary)" }}>S3 Object Lambda Interactive Simulator</h3>
               </div>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              <p style={{ fontSize: "11.5px", color: "var(--color-text-secondary)", marginBottom: "14px", lineHeight: "1.45" }}>
                 S3 Object Lambda lets you add custom code to standard S3 GET requests, modifying data on-the-fly. This eliminates the need to maintain duplicate sanitized datasets for different consumers.
               </p>
 
               {/* Simulation visual */}
-              <div className="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-[11px] font-mono space-y-4 mb-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                  <span className="text-slate-400">Request Authorizer Pipeline</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] ${lambdaRunning ? 'bg-amber-500/20 text-amber-400 animate-pulse' : 'bg-slate-800 text-slate-400'}`}>
+              <div style={{ borderColor: "var(--color-border-tertiary)" }}>
+                <div style={{ borderColor: "var(--color-border-tertiary)" }}>
+                  <span style={{ color: "var(--color-text-secondary)" }}>Request Authorizer Pipeline</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] ${lambdaRunning ? 'bg-amber-500/20 text-amber-400 animate-pulse' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-800 dark:text-slate-200'}`}>
                     {lambdaRunning ? 'PROCESSING IN FLIGHT' : 'IDLE'}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-5 gap-2 text-center items-center">
-                  <div className={`p-2 rounded border transition-colors ${lambdaStep === 1 ? 'bg-amber-500/20 border-amber-500 text-white' : 'bg-slate-800/50 border-slate-800 text-slate-500'}`}>
+                  <div className={`p-2 rounded border transition-colors ${lambdaStep === 1 ? 'bg-amber-500/20 border-amber-500 text-slate-900 dark:text-slate-100' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-800 dark:text-slate-200'}`}>
                     💻 Client GET
                   </div>
-                  <div className="text-slate-600">➔</div>
-                  <div className={`p-2 rounded border transition-colors ${lambdaStep === 2 || lambdaStep === 3 ? 'bg-amber-500/20 border-amber-500 text-white animate-pulse' : 'bg-slate-800/50 border-slate-800 text-slate-500'}`}>
+                  <div style={{ color: "var(--color-text-secondary)" }}>➔</div>
+                  <div className={`p-2 rounded border transition-colors ${lambdaStep === 2 || lambdaStep === 3 ? 'bg-amber-500/20 border-amber-500 text-slate-900 dark:text-slate-100 animate-pulse' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-800 dark:text-slate-200'}`}>
                     ⚙️ Lambda App
                   </div>
-                  <div className="text-slate-600">➔</div>
-                  <div className={`p-2 rounded border transition-colors ${lambdaStep === 4 ? 'bg-emerald-500/20 border-emerald-500 text-white' : 'bg-slate-800/50 border-slate-800 text-slate-500'}`}>
+                  <div style={{ color: "var(--color-text-secondary)" }}>➔</div>
+                  <div className={`p-2 rounded border transition-colors ${lambdaStep === 4 ? 'bg-emerald-500/20 border-emerald-500 text-slate-900 dark:text-slate-100' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-800 dark:text-slate-200'}`}>
                     🪣 Raw S3
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div>
-                    <span className="text-slate-500 block mb-1">Raw File in S3 Bucket:</span>
-                    <pre className="p-2 bg-slate-950 rounded border border-slate-850 text-amber-500 text-[10px] overflow-x-auto">
+                    <span style={{ color: "var(--color-text-secondary)" }}>Raw File in S3 Bucket:</span>
+                    <pre style={{ borderColor: "var(--color-border-tertiary)" }}>
                       {JSON.stringify(rawAwsObject, null, 2)}
                     </pre>
                   </div>
                   <div>
-                    <span className="text-slate-500 block mb-1">Client Received Response:</span>
-                    <pre className="p-2 bg-slate-950 rounded border border-slate-850 text-emerald-400 text-[10px] overflow-x-auto min-h-[108px]">
+                    <span style={{ color: "var(--color-text-secondary)" }}>Client Received Response:</span>
+                    <pre style={{ borderColor: "var(--color-border-tertiary)" }}>
                       {lambdaOutput ? JSON.stringify(lambdaOutput, null, 2) : 'Click "Sanitize Request" below...'}
                     </pre>
                   </div>
@@ -281,53 +277,77 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Network className="w-5 h-5 text-amber-500" />
-                <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Multi-Region Access Points (MRAP)</h3>
+                <h3 style={{ fontSize: "13.5px", fontWeight: "bold", color: "var(--color-text-primary)" }}>Multi-Region Access Points (MRAP)</h3>
               </div>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              <p style={{ fontSize: "11.5px", color: "var(--color-text-secondary)", marginBottom: "14px", lineHeight: "1.45" }}>
                 AWS Multi-Region Access Points assign a single global DNS endpoint to route traffic dynamically across multiple regional buckets over AWS Global Accelerator, choosing paths of lowest network latency.
               </p>
 
               {/* MRAP simulation interface */}
               <div className="space-y-4">
                 <div>
-                  <label className="text-[11.5px] font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Select Client Location:</label>
+                  <label style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '6px' }}>Select Client Location:</label>
                   <div className="grid grid-cols-3 gap-2">
                     <button 
                       onClick={() => setClientLocation('NY')}
-                      className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold ${clientLocation === 'NY' ? 'bg-amber-50 border-amber-500 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        border: clientLocation === 'NY' ? '1.5px solid #d97706' : '1px solid var(--color-border-tertiary)',
+                        background: clientLocation === 'NY' ? 'rgba(245, 158, 11, 0.12)' : 'var(--color-background-primary)',
+                        color: clientLocation === 'NY' ? '#d97706' : 'var(--color-text-primary)'
+                      }}
                     >
                       🗽 New York
                     </button>
                     <button 
                       onClick={() => setClientLocation('LDN')}
-                      className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold ${clientLocation === 'LDN' ? 'bg-amber-50 border-amber-500 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        border: clientLocation === 'LDN' ? '1.5px solid #d97706' : '1px solid var(--color-border-tertiary)',
+                        background: clientLocation === 'LDN' ? 'rgba(245, 158, 11, 0.12)' : 'var(--color-background-primary)',
+                        color: clientLocation === 'LDN' ? '#d97706' : 'var(--color-text-primary)'
+                      }}
                     >
                       🏰 London
                     </button>
                     <button 
                       onClick={() => setClientLocation('TKY')}
-                      className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold ${clientLocation === 'TKY' ? 'bg-amber-50 border-amber-500 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        border: clientLocation === 'TKY' ? '1.5px solid #d97706' : '1px solid var(--color-border-tertiary)',
+                        background: clientLocation === 'TKY' ? 'rgba(245, 158, 11, 0.12)' : 'var(--color-background-primary)',
+                        color: clientLocation === 'TKY' ? '#d97706' : 'var(--color-text-primary)'
+                      }}
                     >
                       🗼 Tokyo
                     </button>
                   </div>
                 </div>
 
-                <div className="p-4 bg-slate-900 rounded-xl border border-slate-850 text-slate-300 text-[11px] space-y-3 font-mono">
-                  <div className="flex justify-between items-center text-slate-500">
+                <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '14px', fontFamily: 'monospace', fontSize: '11px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
                     <span>MRAP ENDPOINT:</span>
-                    <span>my-global.mrap.s3.amazonaws.com</span>
+                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 'bold' }}>my-global.mrap.s3.amazonaws.com</span>
                   </div>
                   
-                  <div className="border-t border-slate-800 pt-2 space-y-2">
-                    <div className="flex justify-between">
-                      <span>Client Latency Routing:</span>
-                      <span className="text-amber-400 font-bold">{mrapRunning ? 'Calculating Accelerator route...' : 'Active Connection Established'}</span>
+                  <div style={{ borderTop: '1px solid var(--color-border-tertiary)', paddingTop: '8px', marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Client Latency Routing:</span>
+                      <span style={{ color: '#d97706', fontWeight: 'bold' }}>{mrapRunning ? 'Calculating Accelerator route...' : 'Active Connection Established'}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-slate-950/60 p-2 rounded border border-slate-850">
-                      <span>Routed Bucket Region:</span>
-                      <span className="text-emerald-400 font-bold flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--color-background-primary)', padding: '8px', borderRadius: '6px', border: '1px solid var(--color-border-tertiary)' }}>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Routed Bucket Region:</span>
+                      <span style={{ color: '#059669', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin style={{ width: '14px', height: '14px' }} />
                         {mrapActiveRegion || 'Click "Route request"...'}
                       </span>
                     </div>
@@ -359,30 +379,30 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Folder className="w-5 h-5 text-blue-500" />
-                  <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">ADLS Gen2 Hierarchical Namespace (HNS) Rename Simulator</h3>
+                  <h3 style={{ fontSize: "13.5px", fontWeight: "bold", color: "var(--color-text-primary)" }}>ADLS Gen2 Hierarchical Namespace (HNS) Rename Simulator</h3>
                 </div>
                 {/* HNS Switch */}
-                <div className="flex items-center gap-1 text-[11.5px] font-bold text-slate-600 dark:text-slate-400">
+                <div style={{ color: "var(--color-text-secondary)" }}>
                   <span>HNS {isHns ? 'ON' : 'OFF'}</span>
                   <button onClick={() => setIsHns(prev => !prev)} className="focus:outline-none">
-                    {isHns ? <ToggleRight className="w-8 h-8 text-blue-500" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
+                    {isHns ? <ToggleRight className="w-8 h-8 text-blue-500" /> : <ToggleLeft style={{ color: "var(--color-text-secondary)" }} />}
                   </button>
                 </div>
               </div>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              <p style={{ fontSize: "11.5px", color: "var(--color-text-secondary)", marginBottom: "14px", lineHeight: "1.45" }}>
                 Standard object storage uses a flat namespace where directories are only simulated prefixes. Renaming a simulated folder requires copying and deleting every single file. Azure ADLS Gen2 HNS creates a true hierarchical structure, letting you rename directories atomically in a single metadata update.
               </p>
 
               {/* HNS Renaming Sandbox */}
-              <div className="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-[11px] font-mono space-y-3">
-                <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2">
+              <div style={{ borderColor: "var(--color-border-tertiary)" }}>
+                <div style={{ color: "var(--color-text-secondary)" }}>
                   <span>Namespace Transaction Console</span>
                   <span className="font-bold text-blue-400">{isHns ? 'ADLS Gen2 HNS Engine Active' : 'Flat Blob Engine Active'}</span>
                 </div>
 
                 {/* Progress bar */}
                 <div>
-                  <div className="flex justify-between text-slate-500 mb-1 text-[10px]">
+                  <div style={{ color: "var(--color-text-secondary)" }}>
                     <span>Directory Restructuring:</span>
                     <span>{renameProgress}%</span>
                   </div>
@@ -392,27 +412,27 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
                 </div>
 
                 {/* Execution Stats */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-950 p-2.5 rounded border border-slate-850 text-center">
+                <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                   <div>
-                    <span className="text-slate-500 block text-[9.5px]">REST CALLS:</span>
-                    <span className="text-white font-bold text-[12px]">{renameStats.ops}</span>
+                    <span style={{ color: "var(--color-text-secondary)" }}>REST CALLS:</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-bold text-[12px]">{renameStats.ops}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[9.5px]">LATENCY:</span>
-                    <span className="text-white font-bold text-[12px]">{renameStats.time} ms</span>
+                    <span style={{ color: "var(--color-text-secondary)" }}>LATENCY:</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-bold text-[12px]">{renameStats.time} ms</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[9.5px]">TRANSACTION COST:</span>
-                    <span className="text-white font-bold text-[12px]">{renameStats.cost}</span>
+                    <span style={{ color: "var(--color-text-secondary)" }}>TRANSACTION COST:</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-bold text-[12px]">{renameStats.cost}</span>
                   </div>
                 </div>
 
                 {/* Logs terminal */}
-                <div className="h-28 overflow-y-auto bg-slate-950 rounded border border-slate-850 p-2 space-y-1 text-slate-400 text-[10px]">
+                <div style={{ color: "var(--color-text-secondary)" }}>
                   {renameLogs.length > 0 ? (
                     renameLogs.map((log, idx) => <div key={idx}>{log}</div>)
                   ) : (
-                    <div className="text-slate-600">Choose Flat/HNS, then click "Rename Directory"...</div>
+                    <div style={{ color: "var(--color-text-secondary)" }}>Choose Flat/HNS, then click "Rename Directory"...</div>
                   )}
                 </div>
               </div>
@@ -433,22 +453,22 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Terminal className="w-5 h-5 text-blue-500" />
-                <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">NFS v3.0 Protocol Mounting Access</h3>
+                <h3 style={{ fontSize: "13.5px", fontWeight: "bold", color: "var(--color-text-primary)" }}>NFS v3.0 Protocol Mounting Access</h3>
               </div>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              <p style={{ fontSize: "11.5px", color: "var(--color-text-secondary)", marginBottom: "14px", lineHeight: "1.45" }}>
                 Azure Blob Storage uniquely allows mounting container volumes directly onto Linux VM file systems using the Network File System (NFS) v3.0 protocol, bypassing standard object API middleware.
               </p>
 
               {/* Code blocks and mounting commands */}
-              <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 text-[11px] space-y-3 font-mono">
-                <div className="text-slate-400 font-bold border-b border-slate-800 pb-2">LINUX MOUNT CLI INSTRUCTION</div>
-                <div className="space-y-1.5 text-slate-300">
-                  <div><span className="text-slate-500"># 1. Install NFS client dependency</span></div>
-                  <div className="bg-slate-950 p-1.5 rounded border border-slate-850 text-blue-400">sudo apt-get install nfs-common</div>
-                  <div><span className="text-slate-500"># 2. Create local mount folder target</span></div>
-                  <div className="bg-slate-950 p-1.5 rounded border border-slate-850 text-blue-400">mkdir -p /mnt/myblobstorage</div>
-                  <div><span className="text-slate-500"># 3. Mount Azure Blob Container directly</span></div>
-                  <div className="bg-slate-950 p-1.5 rounded border border-slate-850 text-blue-400 overflow-x-auto whitespace-pre">
+              <div style={{ borderColor: "var(--color-border-tertiary)" }}>
+                <div style={{ color: "var(--color-text-secondary)" }}>LINUX MOUNT CLI INSTRUCTION</div>
+                <div className="space-y-1.5 text-slate-800 dark:text-slate-200">
+                  <div><span style={{ color: "var(--color-text-secondary)" }}># 1. Install NFS client dependency</span></div>
+                  <div style={{ borderColor: "var(--color-border-tertiary)" }}>sudo apt-get install nfs-common</div>
+                  <div><span style={{ color: "var(--color-text-secondary)" }}># 2. Create local mount folder target</span></div>
+                  <div style={{ borderColor: "var(--color-border-tertiary)" }}>mkdir -p /mnt/myblobstorage</div>
+                  <div><span style={{ color: "var(--color-text-secondary)" }}># 3. Mount Azure Blob Container directly</span></div>
+                  <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                     mount -t nfs -o sec=sys,vers=3,nolock myaccount.blob.core.windows.net:/myaccount/mycontainer /mnt/myblobstorage
                   </div>
                 </div>
@@ -473,42 +493,42 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-emerald-500" />
-                  <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Dual-Region Turbo Replication SLA Sandbox</h3>
+                  <h3 style={{ fontSize: "13.5px", fontWeight: "bold", color: "var(--color-text-primary)" }}>Dual-Region Turbo Replication SLA Sandbox</h3>
                 </div>
                 {/* Turbo switch */}
-                <div className="flex items-center gap-1 text-[11.5px] font-bold text-slate-600 dark:text-slate-400">
+                <div style={{ color: "var(--color-text-secondary)" }}>
                   <span>Turbo SLA {turboEnabled ? 'ON' : 'OFF'}</span>
                   <button onClick={() => setTurboEnabled(prev => !prev)} className="focus:outline-none">
-                    {turboEnabled ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
+                    {turboEnabled ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft style={{ color: "var(--color-text-secondary)" }} />}
                   </button>
                 </div>
               </div>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              <p style={{ fontSize: "11.5px", color: "var(--color-text-secondary)", marginBottom: "14px", lineHeight: "1.45" }}>
                 Standard multi-region replications run asynchronously. However, GCS Dual-Region configurations support **Turbo Replication**, providing a financially backed SLA that guarantees 99.9% of all written objects are replicated to the secondary region within 15 minutes.
               </p>
 
               {/* Turbo Replication Simulation */}
-              <div className="bg-slate-900/90 rounded-xl p-4 border border-slate-800 text-[11px] font-mono space-y-3">
-                <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2">
+              <div style={{ borderColor: "var(--color-border-tertiary)" }}>
+                <div style={{ color: "var(--color-text-secondary)" }}>
                   <span>Replication Pipeline: gs://my-bucket</span>
                   <span className="font-bold text-emerald-400">{turboEnabled ? 'Turbo Replication Active (15m SLA)' : 'Standard Replication Active'}</span>
                 </div>
 
-                <div className="flex items-center justify-around text-center py-2 bg-slate-950 rounded border border-slate-850">
+                <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                   <div>
-                    <span className="text-slate-500 block text-[9.5px]">SOURCE:</span>
-                    <span className="text-white font-bold">us-east1 (Virginia)</span>
+                    <span style={{ color: "var(--color-text-secondary)" }}>SOURCE:</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-bold">us-east1 (Virginia)</span>
                   </div>
-                  <div className="text-slate-600 font-bold">======➔</div>
+                  <div style={{ color: "var(--color-text-secondary)" }}>======➔</div>
                   <div>
-                    <span className="text-slate-500 block text-[9.5px]">TARGET:</span>
-                    <span className="text-white font-bold">us-west1 (Oregon)</span>
+                    <span style={{ color: "var(--color-text-secondary)" }}>TARGET:</span>
+                    <span className="text-slate-900 dark:text-slate-100 font-bold">us-west1 (Oregon)</span>
                   </div>
                 </div>
 
                 {/* Progress bar */}
                 <div>
-                  <div className="flex justify-between text-slate-500 mb-1 text-[10px]">
+                  <div style={{ color: "var(--color-text-secondary)" }}>
                     <span>Replication Sync status:</span>
                     <span>{gcpProgress}%</span>
                   </div>
@@ -518,11 +538,11 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
                 </div>
 
                 {/* Logs */}
-                <div className="h-24 overflow-y-auto bg-slate-950 rounded border border-slate-850 p-2 space-y-1 text-slate-400 text-[10px]">
+                <div style={{ color: "var(--color-text-secondary)" }}>
                   {gcpLogs.length > 0 ? (
                     gcpLogs.map((log, idx) => <div key={idx}>{log}</div>)
                   ) : (
-                    <div className="text-slate-600">Click "Ingest Big Data Object" to run speed test...</div>
+                    <div style={{ color: "var(--color-text-secondary)" }}>Click "Ingest Big Data Object" to run speed test...</div>
                   )}
                 </div>
               </div>
@@ -543,21 +563,21 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Coins className="w-5 h-5 text-emerald-500" />
-                <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">GCS Autoclass Cost Optimization Sandbox</h3>
+                <h3 style={{ fontSize: "13.5px", fontWeight: "bold", color: "var(--color-text-primary)" }}>GCS Autoclass Cost Optimization Sandbox</h3>
               </div>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+              <p style={{ fontSize: "11.5px", color: "var(--color-text-secondary)", marginBottom: "14px", lineHeight: "1.45" }}>
                 Standard lifecycles charge retrieval and class transition fees when objects are read/moved. GCS Autoclass dynamically transitions classes with **zero** retrieval/transition charges, relying only on a flat monitoring fee.
               </p>
 
               {/* Selector */}
               <div className="space-y-3 mb-4">
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block">Simulated File Access Pattern:</label>
+                <label style={{ color: "var(--color-text-secondary)" }}>Simulated File Access Pattern:</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {(['daily', 'monthly', 'quarterly', 'yearly'] as const).map((freq) => (
                     <button
                       key={freq}
                       onClick={() => setFileAccessFreq(freq)}
-                      className={`px-1.5 py-1.5 rounded-lg border text-[10.5px] font-bold uppercase ${fileAccessFreq === freq ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+                      className={`px-1.5 py-1.5 rounded-lg border text-[10.5px] font-bold uppercase ${fileAccessFreq === freq ? 'bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 border-slate-200 dark:border-slate-800'}`}
                     >
                       {freq}
                     </button>
@@ -566,37 +586,37 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
               </div>
 
               {/* Billing Sandbox Output */}
-              <div className="bg-slate-900 rounded-xl p-4 border border-slate-850 text-[11px] space-y-3 font-mono">
-                <div className="text-slate-400 font-bold border-b border-slate-800 pb-1.5">Monthly Billing Estimate (per 1 TB data)</div>
+              <div style={{ borderColor: "var(--color-border-tertiary)" }}>
+                <div style={{ color: "var(--color-text-secondary)" }}>Monthly Billing Estimate (per 1 TB data)</div>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-2 bg-slate-950 rounded border border-slate-850">
+                  <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                     <span className="text-[#0f9d58] font-bold block text-[10px]">💚 GCS Autoclass:</span>
                     <div className="flex justify-between mt-1 text-[11.5px]">
                       <span>Storage:</span>
-                      <span className="text-white font-bold">${gcpCost.storage}</span>
+                      <span className="text-slate-900 dark:text-slate-100 font-bold">${gcpCost.storage}</span>
                     </div>
                     <div className="flex justify-between text-[11.5px]">
                       <span>Retrieval/Tier Fee:</span>
                       <span className="text-emerald-400 font-bold">$0.00</span>
                     </div>
-                    <div className="flex justify-between text-[11.5px] border-t border-slate-850 mt-1 pt-1 font-bold text-white">
+                    <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                       <span>Total:</span>
                       <span>${gcpCost.total}</span>
                     </div>
                   </div>
 
-                  <div className="p-2 bg-slate-950 rounded border border-slate-850">
+                  <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                     <span className="text-[#f97316] font-bold block text-[10px]">🧡 S3 standard lifecycle:</span>
                     <div className="flex justify-between mt-1 text-[11.5px]">
                       <span>Storage:</span>
-                      <span className="text-white font-bold">${awsCost.storage}</span>
+                      <span className="text-slate-900 dark:text-slate-100 font-bold">${awsCost.storage}</span>
                     </div>
                     <div className="flex justify-between text-[11.5px]">
                       <span>Retrieval/Tier Fee:</span>
                       <span className="text-amber-500 font-bold">${awsCost.operations}</span>
                     </div>
-                    <div className="flex justify-between text-[11.5px] border-t border-slate-850 mt-1 pt-1 font-bold text-white">
+                    <div style={{ borderColor: "var(--color-border-tertiary)" }}>
                       <span>Total:</span>
                       <span>${awsCost.total}</span>
                     </div>
@@ -605,8 +625,8 @@ export default function UniqueProviderFeatures({ provider }: UniqueProviderFeatu
               </div>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 mt-4 text-[10.5px] text-slate-400 leading-relaxed font-sans">
-              <span className="text-white font-bold block mb-0.5">Architect Lesson:</span>
+            <div style={{ color: "var(--color-text-secondary)" }}>
+              <span className="text-slate-900 dark:text-slate-100 font-bold block mb-0.5">Architect Lesson:</span>
               GCS Autoclass is highly cost-effective for databases or file distributions where access frequencies are unpredictable, saving up to 60% compared to manually managing lifecycle transitions.
             </div>
           </div>

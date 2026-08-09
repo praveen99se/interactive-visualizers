@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield,
   Globe,
@@ -22,8 +22,10 @@ import {
   TrendingDown,
   ArrowRight
 } from 'lucide-react';
+import NetworkingVPCComparativeView from '../../components/visualizers/NetworkingVPCComparativeView';
+import UniqueNetworkingVPCFeatures from '../../components/visualizers/UniqueNetworkingVPCFeatures';
 
-type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid' | 'notebook' | 'pricing';
+type TabType = 'cidr' | 'pipelines' | 'security' | 'endpoints' | 'hybrid' | 'notebook' | 'pricing' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -31,8 +33,78 @@ interface LogRow {
   type: 'info' | 'success' | 'warn' | 'error';
 }
 
-export default function NetworkingVPCVisualizer() {
+interface NetworkingVPCVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function NetworkingVPCVisualizer({ provider = 'aws', setProvider }: NetworkingVPCVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS VPC/gi, 'Azure VNet')
+        .replace(/VPC/g, 'VNet')
+        .replace(/Internet Gateway/g, 'Azure Internet Egress')
+        .replace(/NAT Gateway/g, 'Azure NAT Gateway')
+        .replace(/Transit Gateway/g, 'Azure Virtual WAN Hub')
+        .replace(/CloudWatch/g, 'Azure Monitor');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS VPC/gi, 'Google Cloud Global VPC')
+        .replace(/VPC/g, 'Cloud VPC')
+        .replace(/Internet Gateway/g, 'GCP Cloud IGW')
+        .replace(/NAT Gateway/g, 'Google Cloud NAT')
+        .replace(/Transit Gateway/g, 'GCP Cloud Router & NCC')
+        .replace(/CloudWatch/g, 'Cloud Monitoring');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'vpc-terminal' || node.props.className === 'vpc-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'vpc-basics' ? 'cidr' : tab === 'tgw' ? 'pipelines' : tab === 'architect' ? 'notebook' : tab);
+  };
   const [selectedNote, setSelectedNote] = useState<string>('public_private_ip');
   const [expandedCategory, setExpandedCategory] = useState<string>('core');
 
@@ -1624,29 +1696,46 @@ export default function NetworkingVPCVisualizer() {
       </div>
 
       {/* Tab navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-          <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
-        </button>
-        <button className={`da-tb ${activeTab === 'cidr' ? 'da-on' : ''}`} onClick={() => setActiveTab('cidr')}>
-          <Info className="w-4 h-4" /> 1. CIDR &amp; Subnet Calculator
-        </button>
-        <button className={`da-tb ${activeTab === 'pipelines' ? 'da-on' : ''}`} onClick={() => setActiveTab('pipelines')}>
-          <Activity className="w-4 h-4" /> 2. Ingress &amp; HA Egress Pipelines
-        </button>
-        <button className={`da-tb ${activeTab === 'security' ? 'da-on' : ''}`} onClick={() => setActiveTab('security')}>
-          <Shield className="w-4 h-4" /> 3. Stateful SG vs Stateless NACL
-        </button>
-        <button className={`da-tb ${activeTab === 'endpoints' ? 'da-on' : ''}`} onClick={() => setActiveTab('endpoints')}>
-          <Layers className="w-4 h-4" /> 4. VPC Peering &amp; Endpoints
-        </button>
-        <button className={`da-tb ${activeTab === 'hybrid' ? 'da-on' : ''}`} onClick={() => setActiveTab('hybrid')}>
-          <Wifi className="w-4 h-4" /> 5. Redundant VPN &amp; Flow Logs
-        </button>
-        <button className={`da-tb ${activeTab === 'pricing' ? 'da-on' : ''}`} onClick={() => setActiveTab('pricing')}>
-          <DollarSign className="w-4 h-4" /> 6. Egress &amp; Firewall Optimizer
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+          </button>
+          <button className={`da-tb ${activeTab === 'cidr' ? 'da-on' : ''}`} onClick={() => setActiveTab('cidr')}>
+            <Info className="w-4 h-4" /> 1. CIDR &amp; Subnet Calculator
+          </button>
+          <button className={`da-tb ${activeTab === 'pipelines' ? 'da-on' : ''}`} onClick={() => setActiveTab('pipelines')}>
+            <Activity className="w-4 h-4" /> 2. Ingress &amp; HA Egress Pipelines
+          </button>
+          <button className={`da-tb ${activeTab === 'security' ? 'da-on' : ''}`} onClick={() => setActiveTab('security')}>
+            <Shield className="w-4 h-4" /> 3. Stateful SG vs Stateless NACL
+          </button>
+          <button className={`da-tb ${activeTab === 'endpoints' ? 'da-on' : ''}`} onClick={() => setActiveTab('endpoints')}>
+            <Layers className="w-4 h-4" /> 4. VPC Peering &amp; Endpoints
+          </button>
+          <button className={`da-tb ${activeTab === 'hybrid' ? 'da-on' : ''}`} onClick={() => setActiveTab('hybrid')}>
+            <Wifi className="w-4 h-4" /> 5. Redundant VPN &amp; Flow Logs
+          </button>
+          <button className={`da-tb ${activeTab === 'pricing' ? 'da-on' : ''}`} onClick={() => setActiveTab('pricing')}>
+            <DollarSign className="w-4 h-4" /> 6. Egress &amp; Firewall Optimizer
+          </button>
+          <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <NetworkingVPCComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueNetworkingVPCFeatures provider={provider} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: CIDR & SUBNET CALCULATOR                                           */}
@@ -6289,7 +6378,9 @@ export default function NetworkingVPCVisualizer() {
 
         </div>
       )}
-
+          </>
+        </Translate>
+      )}
 
     </div>
   );

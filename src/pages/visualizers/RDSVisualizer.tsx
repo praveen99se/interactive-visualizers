@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import RDSComparativeView from '../../components/visualizers/RDSComparativeView';
+import UniqueRDSFeatures from '../../components/visualizers/UniqueRDSFeatures';
 
-type TabType = 'overview' | 'connect' | 'multiaz' | 'replicas' | 'sim' | 'advanced' | 'best';
+type TabType = 'overview' | 'connect' | 'multiaz' | 'replicas' | 'sim' | 'advanced' | 'best' | 'unique';
 type EngineType = 'postgres' | 'mysql' | 'maria' | 'oracle' | 'mssql' | 'aurora';
 type FeatureTab = 'backup' | 'clone' | 'security' | 'ml' | 'proxy';
 
@@ -14,79 +16,241 @@ type Metrics = {
   stale: string;
 };
 
-// Original Engine Comparison Data
-const engineDetails: Record<EngineType, { title: string; desc: string; specs: { k: string; v: string }[]; cases: string[] }> = {
-  postgres: {
-    title: '🐘 PostgreSQL Engine',
-    desc: 'An advanced, enterprise-grade open-source relational database. Highly popular for complex queries, JSON-based document storage, and spatial indexing.',
-    specs: [
-      { k: 'Default Port', v: '5432' },
-      { k: 'Max Storage', v: '64 TiB' },
-      { k: 'High Availability', v: 'Multi-AZ Standby' },
-      { k: 'Read Replicas', v: 'Up to 5 active replicas' }
-    ],
-    cases: ['Complex analytics and reporting systems', 'JSON document hybrid relational structures', 'GIS and spatial mapping applications']
-  },
-  mysql: {
-    title: '🐬 MySQL Engine',
-    desc: 'The world\'s most popular open-source relational database. Renowned for its speed, reliability, simplicity, and massive developer ecosystem.',
-    specs: [
-      { k: 'Default Port', v: '3306' },
-      { k: 'Max Storage', v: '64 TiB' },
-      { k: 'High Availability', v: 'Multi-AZ Standby' },
-      { k: 'Read Replicas', v: 'Up to 5 active replicas' }
-    ],
-    cases: ['High-traffic web logs and CMS sites', 'LAMP-stack web applications', 'Standard transactional catalog stores']
-  },
-  maria: {
-    title: '🦭 MariaDB Engine',
-    desc: 'An community-developed, commercially supported fork of MySQL. Designed as a drop-in replacement with additional storage engines and security features.',
-    specs: [
-      { k: 'Default Port', v: '3306' },
-      { k: 'Max Storage', v: '64 TiB' },
-      { k: 'High Availability', v: 'Multi-AZ Standby' },
-      { k: 'Read Replicas', v: 'Up to 5 active replicas' }
-    ],
-    cases: ['Standard web applications', 'Enterprise MySQL migrations', 'High-concurrency e-commerce backends']
-  },
-  oracle: {
-    title: '🔶 Oracle Database',
-    desc: 'A premium, highly secure proprietary relational database engine. Packed with advanced enterprise features, heavy-duty processing, and licensing flexibility.',
-    specs: [
-      { k: 'Default Port', v: '1521' },
-      { k: 'Max Storage', v: '64 TiB' },
-      { k: 'High Availability', v: 'Multi-AZ Standby' },
-      { k: 'Read Replicas', v: '❌ Not supported on standard RDS' }
-    ],
-    cases: ['Corporate ERP systems and core banking', 'Legacy migration pipelines', 'Highly demanding enterprise transactional storage']
-  },
-  mssql: {
-    title: '🪟 Microsoft SQL Server',
-    desc: 'Microsoft\'s proprietary enterprise relational database. Extensively integrated with Windows ecosystem, active directories, and corporate tooling.',
-    specs: [
-      { k: 'Default Port', v: '1433' },
-      { k: 'Max Storage', v: '64 TiB' },
-      { k: 'High Availability', v: 'Multi-AZ Standby (AlwaysOn)' },
-      { k: 'Read Replicas', v: '❌ Not supported on standard RDS' }
-    ],
-    cases: ['Windows-backed web and desktop apps', 'Enterprise .NET backends', 'Active Directory integrated storage environments']
-  },
-  aurora: {
-    title: '🌌 Amazon Aurora (Cloud-Native) ⭐',
-    desc: 'AWS\'s premium, cloud-native relational database. Built on a shared, log-structured distributed storage system that heals and auto-scales natively up to 128 TiB.',
-    specs: [
-      { k: 'Compatibility', v: 'PostgreSQL or MySQL compliant' },
-      { k: 'Max Storage', v: '128 TiB (auto-scales)' },
-      { k: 'High Availability', v: 'Storage replication 6-ways across 3 AZs' },
-      { k: 'Read Replicas', v: 'Up to 15 active replicas with near-zero lag' }
-    ],
-    cases: ['Enterprise SaaS platforms with extreme write/read workloads', 'Highly auto-scaling microservices', 'Mission-critical database setups with ultra-fast failover']
+// Provider-Specific Engine Data Definition
+const getProviderEngineDetails = (prov: string): Record<EngineType, { title: string; desc: string; specs: { k: string; v: string }[]; cases: string[] }> => {
+  if (prov === 'azure') {
+    return {
+      postgres: {
+        title: '🐘 Azure Database for PostgreSQL (Flexible Server)',
+        desc: 'Fully managed PostgreSQL engine on Azure Linux VMs. Features Zone-Redundant High Availability, auto-growing storage up to 16 TiB, and native pgvector integration for AI workloads.',
+        specs: [
+          { k: 'Default Port', v: '5432' },
+          { k: 'Max Storage', v: '16 TiB (Auto-grow)' },
+          { k: 'High Availability', v: 'Zone-Redundant Standby (Same/Cross Zone)' },
+          { k: 'Read Replicas', v: 'Up to 5 active Flexible Server replicas' }
+        ],
+        cases: ['Enterprise PostgreSQL applications', 'Vector embeddings & AI similarity search via pgvector', 'GIS and spatial mapping with PostGIS']
+      },
+      mysql: {
+        title: '🐬 Azure Database for MySQL (Flexible Server)',
+        desc: 'Fully managed MySQL database engine providing fine-grained database tuning, burstable and memory-optimized compute tier scaling, and automated backups.',
+        specs: [
+          { k: 'Default Port', v: '3306' },
+          { k: 'Max Storage', v: '16 TiB (Auto-grow)' },
+          { k: 'High Availability', v: 'Zone-Redundant Standby' },
+          { k: 'Read Replicas', v: 'Up to 10 active read replicas' }
+        ],
+        cases: ['LAMP stack web services on Azure', 'E-commerce transactional backends', 'High-concurrency web portals']
+      },
+      maria: {
+        title: '🦭 MariaDB on Azure (Legacy / Retired)',
+        desc: 'Azure MariaDB Single Server is retired. Microsoft recommends migrating existing MariaDB instances to Azure Database for MySQL Flexible Server.',
+        specs: [
+          { k: 'Default Port', v: '3306' },
+          { k: 'Max Storage', v: '4 TiB (Legacy)' },
+          { k: 'Lifecycle Status', v: '⚠️ Retired — Migrate to MySQL Flexible' },
+          { k: 'Read Replicas', v: 'Legacy read-replica support' }
+        ],
+        cases: ['Legacy MariaDB workloads', 'Migration paths toward MySQL Flexible Server']
+      },
+      oracle: {
+        title: '🔶 Oracle Database@Azure',
+        desc: 'Oracle Database services running natively on dedicated OCI Exadata infrastructure co-located inside Microsoft Azure datacenters for zero-latency integration.',
+        specs: [
+          { k: 'Default Port', v: '1521' },
+          { k: 'Max Storage', v: '100+ TiB (Exadata Storage Nodes)' },
+          { k: 'High Availability', v: 'Oracle Real Application Clusters (RAC)' },
+          { k: 'Read Replicas', v: 'Active Data Guard Replicas' }
+        ],
+        cases: ['Core banking and enterprise ERP systems', 'Mission-critical Oracle workloads on Azure', 'Exadata cloud migration']
+      },
+      mssql: {
+        title: '🪟 Azure SQL Database / Managed Instance',
+        desc: 'Microsoft\'s flagship cloud-native SQL Server database engine. Offers serverless auto-scaling, Active Directory / Entra ID authentication, and Hyperscale storage.',
+        specs: [
+          { k: 'Default Port', v: '1433' },
+          { k: 'Max Storage', v: '100 TiB (Hyperscale Tier)' },
+          { k: 'High Availability', v: 'AlwaysOn Availability Groups / Zone-Redundant' },
+          { k: 'Read Replicas', v: 'Up to 30 Read-Scale Replicas (Hyperscale)' }
+        ],
+        cases: ['Corporate .NET / C# enterprise applications', 'Active Directory integrated storage', 'Multi-tenant SaaS backends']
+      },
+      aurora: {
+        title: '🌌 Azure SQL Hyperscale (Cloud-Native) ⭐',
+        desc: 'Azure\'s tier for massive scaling. Built on a decoupled log-structured storage architecture with auto-scaling compute, rapid database clones, and instant snapshot restores.',
+        specs: [
+          { k: 'Compatibility', v: 'SQL Server / T-SQL Compliant' },
+          { k: 'Max Storage', v: '100 TiB (Auto-scales in 10 GB increments)' },
+          { k: 'High Availability', v: 'Multi-zone Page Server replication' },
+          { k: 'Read Replicas', v: 'Up to 30 Read-Scale Replicas' }
+        ],
+        cases: ['Large-scale enterprise databases (> 10 TiB)', 'High-concurrency analytics and transaction processing', 'Instant database copy/cloning pipelines']
+      }
+    };
   }
+
+  if (prov === 'gcp') {
+    return {
+      postgres: {
+        title: '🐘 Google Cloud SQL for PostgreSQL',
+        desc: 'Fully managed PostgreSQL service on Google Cloud infrastructure. Supports automatic storage expansion, point-in-time recovery, and Cloud IAM database authentication.',
+        specs: [
+          { k: 'Default Port', v: '5432' },
+          { k: 'Max Storage', v: '64 TiB (Auto-resize)' },
+          { k: 'High Availability', v: 'Regional HA (Primary + Standby in 2 Zones)' },
+          { k: 'Read Replicas', v: 'Up to 10 active read replicas' }
+        ],
+        cases: ['High-throughput web applications', 'Geospatial mapping via PostGIS', 'Microservices backend datastores']
+      },
+      mysql: {
+        title: '🐬 Google Cloud SQL for MySQL',
+        desc: 'Google Cloud\'s fully managed relational database for MySQL. Offers automated maintenance, continuous WAL backups, and Cloud SQL Auth Proxy for secure zero-IP access.',
+        specs: [
+          { k: 'Default Port', v: '3306' },
+          { k: 'Max Storage', v: '64 TiB (Auto-resize)' },
+          { k: 'High Availability', v: 'Regional HA Standby' },
+          { k: 'Read Replicas', v: 'Up to 10 active read replicas' }
+        ],
+        cases: ['GCP-hosted web applications', 'E-commerce transactional stores', 'Analytics staging databases']
+      },
+      maria: {
+        title: '🦭 MariaDB on Google Cloud (Marketplace / GCE)',
+        desc: 'MariaDB deployments running on Google Compute Engine VMs or pre-configured GCP Marketplace images with persistent disk attach.',
+        specs: [
+          { k: 'Default Port', v: '3306' },
+          { k: 'Max Storage', v: '64 TiB (Persistent Disk)' },
+          { k: 'High Availability', v: 'Regional Managed Instance Groups (MIG)' },
+          { k: 'Read Replicas', v: 'Custom Galera / Async replication' }
+        ],
+        cases: ['Custom MariaDB engine configurations', 'Self-managed enterprise MariaDB on GCP']
+      },
+      oracle: {
+        title: '🔶 Oracle on Google Bare Metal Solution (BMS)',
+        desc: 'Dedicated, unshared bare-metal hardware infrastructure running in GCP datacenters with sub-millisecond interconnect to Google Cloud services.',
+        specs: [
+          { k: 'Default Port', v: '1521' },
+          { k: 'Max Storage', v: 'Multi-TB SAN Storage Arrays' },
+          { k: 'High Availability', v: 'Oracle Data Guard / RAC' },
+          { k: 'Read Replicas', v: 'Active Data Guard Replicas' }
+        ],
+        cases: ['Enterprise legacy Oracle migration to GCP', 'High IOPS transaction engines']
+      },
+      mssql: {
+        title: '🪟 Google Cloud SQL for SQL Server',
+        desc: 'Fully managed Microsoft SQL Server on Google Cloud. Includes Microsoft license mobility, automated backups, and cross-region replica failover.',
+        specs: [
+          { k: 'Default Port', v: '1433' },
+          { k: 'Max Storage', v: '64 TiB' },
+          { k: 'High Availability', v: 'Regional HA (AlwaysOn Availability Groups)' },
+          { k: 'Read Replicas', v: 'Up to 10 read replicas' }
+        ],
+        cases: ['Enterprise .NET applications on GCP', 'Windows Server compute workloads', 'Corporate reporting datastores']
+      },
+      aurora: {
+        title: '🌌 Google AlloyDB for PostgreSQL (Cloud-Native) ⭐',
+        desc: 'Google\'s cloud-native, PostgreSQL-compatible database. Features a decoupled log-structured storage engine, 4x faster execution than standard PostgreSQL, and built-in Vertex AI ML integrations.',
+        specs: [
+          { k: 'Compatibility', v: '100% PostgreSQL Compliant' },
+          { k: 'Max Storage', v: 'Auto-scaling storage pool (Elastic)' },
+          { k: 'High Availability', v: 'Regional HA with ultra-fast failover (< 1s)' },
+          { k: 'Read Replicas', v: 'Up to 20 Read Pool instances' }
+        ],
+        cases: ['High-concurrency enterprise SaaS applications', 'Real-time hybrid transactional and analytical processing (HTAP)', 'In-database Vertex AI ML scoring']
+      }
+    };
+  }
+
+  return {
+    postgres: {
+      title: '🐘 PostgreSQL Engine',
+      desc: 'An advanced, enterprise-grade open-source relational database. Highly popular for complex queries, JSON-based document storage, and spatial indexing.',
+      specs: [
+        { k: 'Default Port', v: '5432' },
+        { k: 'Max Storage', v: '64 TiB' },
+        { k: 'High Availability', v: 'Multi-AZ Standby' },
+        { k: 'Read Replicas', v: 'Up to 5 active replicas' }
+      ],
+      cases: ['Complex analytics and reporting systems', 'JSON document hybrid relational structures', 'GIS and spatial mapping applications']
+    },
+    mysql: {
+      title: '🐬 MySQL Engine',
+      desc: 'The world\'s most popular open-source relational database. Renowned for its speed, reliability, simplicity, and massive developer ecosystem.',
+      specs: [
+        { k: 'Default Port', v: '3306' },
+        { k: 'Max Storage', v: '64 TiB' },
+        { k: 'High Availability', v: 'Multi-AZ Standby' },
+        { k: 'Read Replicas', v: 'Up to 5 active replicas' }
+      ],
+      cases: ['High-traffic web logs and CMS sites', 'LAMP-stack web applications', 'Standard transactional catalog stores']
+    },
+    maria: {
+      title: '🦭 MariaDB Engine',
+      desc: 'A community-developed, commercially supported fork of MySQL. Designed as a drop-in replacement with additional storage engines and security features.',
+      specs: [
+        { k: 'Default Port', v: '3306' },
+        { k: 'Max Storage', v: '64 TiB' },
+        { k: 'High Availability', v: 'Multi-AZ Standby' },
+        { k: 'Read Replicas', v: 'Up to 5 active replicas' }
+      ],
+      cases: ['Standard web applications', 'Enterprise MySQL migrations', 'High-concurrency e-commerce backends']
+    },
+    oracle: {
+      title: '🔶 Oracle Database',
+      desc: 'A premium, highly secure proprietary relational database engine. Packed with advanced enterprise features, heavy-duty processing, and licensing flexibility.',
+      specs: [
+        { k: 'Default Port', v: '1521' },
+        { k: 'Max Storage', v: '64 TiB' },
+        { k: 'High Availability', v: 'Multi-AZ Standby' },
+        { k: 'Read Replicas', v: '❌ Not supported on standard RDS' }
+      ],
+      cases: ['Corporate ERP systems and core banking', 'Legacy migration pipelines', 'Highly demanding enterprise transactional storage']
+    },
+    mssql: {
+      title: '🪟 Microsoft SQL Server',
+      desc: 'Microsoft\'s proprietary enterprise relational database. Extensively integrated with Windows ecosystem, active directories, and corporate tooling.',
+      specs: [
+        { k: 'Default Port', v: '1433' },
+        { k: 'Max Storage', v: '64 TiB' },
+        { k: 'High Availability', v: 'Multi-AZ Standby (AlwaysOn)' },
+        { k: 'Read Replicas', v: '❌ Not supported on standard RDS' }
+      ],
+      cases: ['Windows-backed web and desktop apps', 'Enterprise .NET backends', 'Active Directory integrated storage environments']
+    },
+    aurora: {
+      title: '🌌 Amazon Aurora (Cloud-Native) ⭐',
+      desc: 'AWS\'s premium, cloud-native relational database. Built on a shared, log-structured distributed storage system that heals and auto-scales natively up to 128 TiB.',
+      specs: [
+        { k: 'Compatibility', v: 'PostgreSQL or MySQL compliant' },
+        { k: 'Max Storage', v: '128 TiB (auto-scales)' },
+        { k: 'High Availability', v: 'Storage replication 6-ways across 3 AZs' },
+        { k: 'Read Replicas', v: 'Up to 15 active replicas with near-zero lag' }
+      ],
+      cases: ['Enterprise SaaS platforms with extreme write/read workloads', 'Highly auto-scaling microservices', 'Mission-critical database setups with ultra-fast failover']
+    }
+  };
 };
 
-export default function RDSVisualizer() {
+interface RDSVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function RDSVisualizer({ provider = 'aws', setProvider }: RDSVisualizerProps) {
   const [activeSection, setActiveSection] = useState<TabType>('overview');
   const [selectedEngine, setSelectedEngine] = useState<EngineType>('postgres');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const engineDetails = getProviderEngineDetails(provider);
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', section: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveSection((section === 'storage' || section === 'backup') ? 'overview' : section);
+  };
 
   // Simulator State
   const [mode, setMode] = useState<'single' | 'multi' | 'multi_rr'>('multi');
@@ -94,7 +258,7 @@ export default function RDSVisualizer() {
   const [tps, setTps] = useState(120);
   const [lag, setLag] = useState(3);
   const [azFailed, setAzFailed] = useState(false);
-  const [logHtml, setLogHtml] = useState('Click "Simulate WRITE/READ" to see which endpoint is used, then toggle AZ failure to see failover behavior.');
+  const [logHtml, setLogHtml] = useState('Click "Simulate WRITE/READ" to see which endpoint is used, then toggle zone failure to see failover behavior.');
 
   // Best practice Tab & Sub-tabs State
   const [bestTab, setBestTab] = useState<'arch' | 'sg' | 'proxy' | 'multiaz' | 'replicas' | 'engines' | 'checklist'>('arch');
@@ -111,7 +275,7 @@ export default function RDSVisualizer() {
   // Premium Interactive Multi-AZ failover stepper states
   const [failoverStep, setFailoverStep] = useState<number>(0);
   const [failoverLogs, setFailoverLogs] = useState<string[]>([
-    '💡 Click "Trigger Failover State Transition ⏭" to simulate an Availability Zone disaster recovery failover.'
+    '💡 Click "Trigger Failover State Transition ⏭" to simulate a Cloud Zone disaster recovery failover.'
   ]);
 
   // Premium Interactive Replica lag slider state
@@ -122,7 +286,7 @@ export default function RDSVisualizer() {
   const [mlOutput, setMlOutput] = useState<any[]>([]);
   const [mlIsLoading, setMlIsLoading] = useState<boolean>(false);
 
-  // New sandbox states for PITR slider & Database Cloning CoW allocations
+  // Sandbox states for PITR slider & Database Cloning CoW allocations
   const [pitrTargetTime, setPitrTargetTime] = useState<number>(720); // 720 minutes = 12:00 PM
   const [cloneDivergedBlocks, setCloneDivergedBlocks] = useState<number>(0);
   const [cloneLogs, setCloneLogs] = useState<string[]>([
@@ -134,18 +298,55 @@ export default function RDSVisualizer() {
     setFailoverLogs((prev) => [`${time} — ${msg}`, ...prev].slice(0, 40));
   };
 
-  const [secItems, setSecItems] = useState([
-    { label: 'Encryption at rest (KMS Key)', done: true },
-    { label: 'TLS enforced (force_ssl=1 in parameter group)', done: true },
-    { label: 'RDS placed in Private Subnets (No route to IGW)', done: true },
-    { label: 'Publicly Accessible flag set to FALSE', done: false },
-    { label: 'Security Group restricts inbound strictly to App SG', done: true },
-    { label: 'IAM Database Authentication enabled', done: false },
-    { label: 'Secrets Manager configured with automated credential rotation', done: true },
-    { label: 'Database Deletion Protection turned ON', done: false },
-    { label: 'AWS CloudTrail logging enabled for all database API calls', done: true },
-    { label: 'Enhanced Monitoring and Performance Insights enabled', done: false }
-  ]);
+  // Provider-aware Security Checklist Items
+  const getProviderSecItems = (prov: string) => {
+    if (prov === 'azure') {
+      return [
+        { label: 'Encryption at rest enabled using Azure Key Vault CMEK Key', done: true },
+        { label: 'TLS enforced (require_secure_transport = ON in server parameters)', done: true },
+        { label: 'Placed in Delegated VNet Subnet / Private Endpoint (No public route)', done: true },
+        { label: 'Public Network Access flag set to DISABLED', done: false },
+        { label: 'Network Security Group (NSG) restricts inbound strictly to App NSG', done: true },
+        { label: 'Microsoft Entra ID (Azure AD) Database Authentication enabled', done: false },
+        { label: 'Azure Key Vault configured with automated credential rotation', done: true },
+        { label: 'Azure Resource Locks (CanNotDelete) turned ON', done: false },
+        { label: 'Azure Activity Log enabled for all management API calls', done: true },
+        { label: 'Azure Monitor and Query Performance Insight enabled', done: false }
+      ];
+    }
+    if (prov === 'gcp') {
+      return [
+        { label: 'Encryption at rest enabled using Cloud KMS CMEK Key', done: true },
+        { label: 'TLS enforced (require_ssl = ON in database flags)', done: true },
+        { label: 'Cloud SQL connected via Private IP / Private Service Access (PSA)', done: true },
+        { label: 'Public IP interface set to DISABLED', done: false },
+        { label: 'VPC Firewall Rules restrict inbound strictly to App Tag', done: true },
+        { label: 'Google Cloud IAM Database Authentication enabled', done: false },
+        { label: 'GCP Secret Manager configured with automated credential rotation', done: true },
+        { label: 'Database Instance Deletion Protection flag turned ON', done: false },
+        { label: 'Cloud Audit Logs enabled for all Data Access and Admin Activity', done: true },
+        { label: 'Cloud Monitoring and Query Insights enabled', done: false }
+      ];
+    }
+    return [
+      { label: 'Encryption at rest (KMS Key)', done: true },
+      { label: 'TLS enforced (force_ssl=1 in parameter group)', done: true },
+      { label: 'RDS placed in Private Subnets (No route to IGW)', done: true },
+      { label: 'Publicly Accessible flag set to FALSE', done: false },
+      { label: 'Security Group restricts inbound strictly to App SG', done: true },
+      { label: 'IAM Database Authentication enabled', done: false },
+      { label: 'Secrets Manager configured with automated credential rotation', done: true },
+      { label: 'Database Deletion Protection turned ON', done: false },
+      { label: 'AWS CloudTrail logging enabled for all database API calls', done: true },
+      { label: 'Enhanced Monitoring and Performance Insights enabled', done: false }
+    ];
+  };
+
+  const [secItems, setSecItems] = useState(getProviderSecItems(provider));
+
+  useEffect(() => {
+    setSecItems(getProviderSecItems(provider));
+  }, [provider]);
 
   const toggleSecItem = (index: number) => {
     setSecItems((prev) => {
@@ -169,17 +370,20 @@ export default function RDSVisualizer() {
     setMlIsLoading(true);
     setMlLogs([`[INIT] Spawning asynchronous query worker...`]);
     setMlOutput([]);
+
+    const serviceName = isAzure ? 'Azure OpenAI REST API' : isGcp ? 'Vertex AI Prediction API' : 'PostgreSQL SageMaker API';
+    const endpointName = isAzure ? 'sp_invoke_external_rest_endpoint' : isGcp ? 'ml_predict_row' : `aws-sagemaker-model-${activeMlQuery}`;
     
     setTimeout(() => {
-      setMlLogs(prev => [...prev, `[INFO] Establishing TCP session with PostgreSQL SageMaker API...`]);
+      setMlLogs(prev => [...prev, `[INFO] Establishing TCP session with ${serviceName}...`]);
     }, 300);
 
     setTimeout(() => {
-      setMlLogs(prev => [...prev, `[INFO] Invoking SageMaker model server endpoint: 'aws-sagemaker-model-${activeMlQuery}'...`]);
+      setMlLogs(prev => [...prev, `[INFO] Invoking model server endpoint: '${endpointName}'...`]);
     }, 600);
 
     setTimeout(() => {
-      setMlLogs(prev => [...prev, `[SUCCESS] SageMaker returned payload in 28ms. Replaying table grid...`]);
+      setMlLogs(prev => [...prev, `[SUCCESS] Model service returned payload in 28ms. Replaying table grid...`]);
       setMlIsLoading(false);
       if (activeMlQuery === 'sentiment') {
         setMlOutput([
@@ -203,21 +407,56 @@ export default function RDSVisualizer() {
     }, 1000);
   };
 
-
-  const mlFlows = {
-    lambda: {
-      sql: `-- RDS does NOT have native ML SQL functions\n-- Use Lambda bridge pattern:\n\n1. EventBridge rule or App triggers Lambda\n2. Lambda: SELECT data FROM rds_table\n3. Lambda: calls SageMaker.invoke_endpoint()\n4. Lambda: UPDATE rds_table SET score = result\n5. Done — ML result stored back in RDS`,
-      note: '→ Best for: batch scoring, async ML cron jobs, offloaded processing'
-    },
-    app: {
-      sql: `-- App-layer inference pattern:\n\n1. User HTTP request hits your App API\n2. App queries features/data from RDS\n3. App calls SageMaker/Comprehend API\n4. App evaluates prediction results\n5. App returns ML result to user\n6. Optionally: cache prediction back to RDS\n\n-- Real-time, synchronous execution`,
-      note: '→ Best for: real-time predictions at request time, low-latency API routes'
-    },
-    pgml: {
-      sql: `-- PostgreSQL pgml extension (RDS PG 15+ & Aurora PG):\n\nSELECT pgml.predict(\n  project_name => 'fraud_model',\n  features => ARRAY[amount, merchant_id]\n) AS fraud_score\nFROM transactions;\n\n-- Train directly in your database using SQL:\nSELECT pgml.train(\n  'churn_model', \n  'classification',\n  'SELECT * FROM training_data',\n  'label'\n);`,
-      note: '→ Best for: in-database ML, high-throughput feature queries without external calls'
+  const getProviderMlFlows = (prov: string) => {
+    if (prov === 'azure') {
+      return {
+        lambda: {
+          sql: `-- Invoke Azure OpenAI Sentiment Analysis via REST in SQL\nDECLARE @response NVARCHAR(MAX);\nEXEC sp_invoke_external_rest_endpoint\n  @url = N'https://cog-openai.openai.azure.com/openai/deployments/gpt-4/chat/completions?api-version=2023-05-15',\n  @method = N'POST',\n  @payload = N'{"messages":[{"role":"user","content":"Analyze sentiment of feedback"}]}',\n  @response = @response OUTPUT;\nSELECT customer_id, feedback_text, @response AS azure_openai_sentiment\nFROM feedback_reviews LIMIT 3;`,
+          note: '→ Best for: Azure OpenAI chat completions & sentiment scoring directly inside T-SQL / Azure SQL'
+        },
+        app: {
+          sql: `-- Invoke Azure Machine Learning model endpoint from SQL\nDECLARE @response NVARCHAR(MAX);\nEXEC sp_invoke_external_rest_endpoint\n  @url = N'https://fraud-eval.eastus.inference.ml.azure.com/score',\n  @method = N'POST',\n  @payload = N'{"amount": 8400, "client_ip": "198.51.100.12"}',\n  @response = @response OUTPUT;\nSELECT txn_id, amount_usd, @response AS risk_score\nFROM pending_transactions WHERE risk_score > 0.8;`,
+          note: '→ Best for: Real-time fraud scoring via Azure Machine Learning REST endpoints'
+        },
+        pgml: {
+          sql: `-- Call Azure Cognitive Services Churn Predictor\nDECLARE @response NVARCHAR(MAX);\nEXEC sp_invoke_external_rest_endpoint\n  @url = N'https://churn-eval.cognitiveservices.azure.com/predict',\n  @method = N'POST',\n  @payload = N'{"active_weeks": 4, "tickets": 9}',\n  @response = @response OUTPUT;\nSELECT user_account, active_weeks, @response AS churn_probability\nFROM premium_members ORDER BY churn_probability DESC LIMIT 2;`,
+          note: '→ Best for: Customer churn scoring using Azure Cognitive Services'
+        }
+      };
     }
+    if (prov === 'gcp') {
+      return {
+        lambda: {
+          sql: `-- Invoke Vertex AI sentiment analysis directly inside Cloud SQL / AlloyDB SQL\nSELECT customer_id, review_text,\n  ml_predict_row(\n    'projects/my-gcp-project/locations/us-central1/models/sentiment-v2',\n    json_build_object('text', review_text)\n  ) -> 'predictions' -> 0 AS sentiment_result\nFROM feedback_reviews\nLIMIT 3;`,
+          note: '→ Best for: Direct SQL row streaming to Vertex AI online prediction models'
+        },
+        app: {
+          sql: `-- Call Vertex AI Fraud Classifier model endpoint inside SQL\nSELECT txn_id, amount_usd,\n  ml_predict_row(\n    'projects/my-gcp-project/locations/us-central1/models/fraud-v4',\n    json_build_object('amount', amount_usd, 'ip', client_ip)\n  ) -> 'risk_score' AS risk_score\nFROM pending_transactions\nWHERE risk_score > 0.8;`,
+          note: '→ Best for: In-database real-time fraud risk classification'
+        },
+        pgml: {
+          sql: `-- Call Vertex AI Customer Churn Evaluator in SQL\nSELECT user_account, active_weeks,\n  ml_predict_row(\n    'projects/my-gcp-project/locations/us-central1/models/churn-v1',\n    json_build_object('weeks', active_weeks, 'tickets', support_tickets)\n  ) -> 'churn_probability' AS churn_probability\nFROM premium_members\nORDER BY churn_probability DESC LIMIT 2;`,
+          note: '→ Best for: Automated churn probability calculations in AlloyDB / Cloud SQL'
+        }
+      };
+    }
+    return {
+      lambda: {
+        sql: `-- RDS Lambda Bridge Pattern:\nSELECT customer_id, feedback_text,\n  aws_comprehend.detect_sentiment(\n    feedback_text, 'en'\n  ) AS sentiment\nFROM feedback_reviews\nLIMIT 3;`,
+        note: '→ Best for: batch scoring, async ML cron jobs, offloaded processing'
+      },
+      app: {
+        sql: `-- App-Layer / SageMaker Inference Pattern:\nSELECT txn_id, amount_usd,\n  aws_sagemaker.invoke_endpoint(\n    'fraud-classification-v4',\n    'application/json',\n    amount_usd, client_ip\n  ) AS risk_score\nFROM pending_transactions\nWHERE risk_score > 0.8;`,
+        note: '→ Best for: real-time predictions at request time, low-latency API routes'
+      },
+      pgml: {
+        sql: `-- PostgreSQL pgml Extension:\nSELECT user_account, active_weeks,\n  pgml.predict(\n    'churn_model',\n    ARRAY[active_weeks, support_tickets]\n  ) AS churn_probability\nFROM premium_members\nORDER BY churn_probability DESC LIMIT 2;`,
+        note: '→ Best for: in-database ML, high-throughput feature queries without external calls'
+      }
+    };
   };
+
+  const mlFlows = getProviderMlFlows(provider);
 
   // Metrics calculation
   const [metrics, setMetrics] = useState<Metrics>({
@@ -254,7 +493,6 @@ export default function RDSVisualizer() {
     return m === 'multi_rr' ? 'replicas' : 'writer';
   };
 
-
   const badge = (cls: string, txt: string) => `<span class="rds-badge ${cls}">${txt}</span>`;
   const log = (msg: string) => {
     setLogHtml((prev) => `<b>${new Date().toLocaleTimeString()}</b> — ${msg}<br><span style="color:var(--color-text-tertiary)">${prev}</span>`);
@@ -286,10 +524,12 @@ export default function RDSVisualizer() {
 
   const sendWrite = () => {
     lastWriteAtRef.current = Date.now();
+    const zoneName = isAzure ? 'East US Zone 1' : isGcp ? 'us-central1-a' : 'AZ-a';
+    const standbyZone = isAzure ? 'East US Zone 2' : isGcp ? 'us-central1-b' : 'AZ-b';
     if (azFailed && mode === 'single') {
-      log(`${badge('rds-bbad', 'WRITE failed')} Database Instance is down in AZ-a. Single-AZ configuration has no recovery standby.`);
+      log(`${badge('rds-bbad', 'WRITE failed')} Database Instance is down in ${zoneName}. Single-zone configuration has no recovery standby.`);
     } else if (azFailed) {
-      log(`${badge('rds-bwarn', 'WRITE ok')} Route successfully redirected to Standby in AZ-b. App endpoint stays the same.`);
+      log(`${badge('rds-bwarn', 'WRITE ok')} Route successfully redirected to Standby in ${standbyZone}. Endpoint stays the same.`);
     } else {
       log(`${badge('rds-bok', 'WRITE ok')} Transaction successfully committed to <b>Primary DB Instance</b> writer endpoint.`);
     }
@@ -300,31 +540,32 @@ export default function RDSVisualizer() {
     if (azFailed && mode === 'single') {
       log(`${badge('rds-bbad', 'READ failed')} Database Instance is down. App cannot retrieve data.`);
     } else if (target === 'writer') {
-      log(`${badge('rds-binfo', 'READ ok')} Strongly Consistent read successfully fetched directly from the **Primary Writer**.`);
+      log(`${badge('rds-binfo', 'READ ok')} Strongly Consistent read successfully fetched directly from the <b>Primary Writer</b>.`);
     } else {
       const risk = staleRisk(mode, readRoute, lag);
       const cls = risk === 'High' ? 'rds-bbad' : risk === 'Med' ? 'rds-bwarn' : 'rds-binfo';
-      log(`${badge(cls, 'READ')} Asynchronous read served from **Read Replicas**. lag: ~${lag}s. Stale-read risk evaluation: <b>${risk}</b>.`);
+      log(`${badge(cls, 'READ')} Asynchronous read served from <b>Read Replicas</b>. lag: ~${lag}s. Stale-read risk evaluation: <b>${risk}</b>.`);
     }
   };
 
   const toggleAzFail = () => {
     setAzFailed((s) => !s);
+    const zoneName = isAzure ? 'East US Zone 1' : isGcp ? 'us-central1-a' : 'AZ-a';
     if (!azFailed) {
       if (mode === 'single') {
-        log(`${badge('rds-bbad', 'CRITICAL OUTAGE')} AZ-a suffered a physical datacenter power event. Writer DB is DOWN.`);
+        log(`${badge('rds-bbad', 'CRITICAL OUTAGE')} ${zoneName} suffered a physical datacenter power event. Writer DB is DOWN.`);
       } else {
-        log(`${badge('rds-bwarn', 'AZ failover triggered')} AZ-a offline. Standby promotion triggered. DNS shifts records automatically. App reconnects in ~30s.`);
+        log(`${badge('rds-bwarn', 'Zone failover triggered')} ${zoneName} offline. Standby promotion triggered. Gateway shifts records automatically. App reconnects in ~30s.`);
       }
     } else {
-      log(`${badge('rds-bok', 'Restored')} AZ-a power restored. Subnets and nodes are in normal cluster synchronization state.`);
+      log(`${badge('rds-bok', 'Restored')} ${zoneName} power restored. Subnets and nodes are in normal cluster synchronization state.`);
     }
   };
 
   const resetSim = () => {
     setAzFailed(false);
     lastWriteAtRef.current = 0;
-    setLogHtml('Click "Simulate WRITE/READ" to see which endpoint is used, then toggle AZ failover.');
+    setLogHtml('Click "Simulate WRITE/READ" to see which endpoint is used, then toggle zone failure.');
   };
 
   return (
@@ -390,7 +631,6 @@ export default function RDSVisualizer() {
           --g-replica-1: #f5f3ff;
           --g-replica-2: #e0e7ff;
 
-          /* Subnet overlays and regions background */
           --rds-subnets-bg: rgba(255, 255, 255, 0.7);
           --rds-inner-card-bg: #f8fafc;
           --rds-inner-card-border: #e2e8f0;
@@ -398,7 +638,6 @@ export default function RDSVisualizer() {
           --rds-row-hover-bg: #ffffff;
           --rds-row-hover-border: #cbd5e1;
 
-          /* General text variables */
           --color-text-primary: #1e293b;
           --color-text-secondary: #475569;
           --color-text-tertiary: #64748b;
@@ -813,7 +1052,6 @@ export default function RDSVisualizer() {
           color: #334155;
         }
         
-        /* Subtabs styling */
         .rds-subtabs {
           display: flex;
           gap: 6px;
@@ -955,32 +1193,13 @@ export default function RDSVisualizer() {
           box-shadow: 0 4px 20px rgba(22, 163, 74, 0.05);
         }
 
-        .rds-gcard-title {
-          font-weight: 700;
-          font-size: 13.5px;
-          color: #166534;
-          margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        /* 3D database cylinder styles */
-        .cylinder-lid {
-          stroke-width: 1px;
-        }
-        .cylinder-body {
-          stroke-width: 1px;
-        }
-
-        /* Centralized Dark Mode Overrides for RDSVisualizer.tsx */
+        /* Dark Mode Overrides */
         .dark .rds-container {
           background: #020617 !important;
           color: #f8fafc !important;
 
           --rds-bg-gradient: radial-gradient(circle at 10% 20%, #0f172a 0%, #020617 90%);
 
-          /* Gradients and colors for 3D database cylinders (dark mode overrides) */
           --metal-ok-1: #064e3b;
           --metal-ok-2: #065f46;
           --metal-ok-3: #047857;
@@ -1032,7 +1251,6 @@ export default function RDSVisualizer() {
           --g-replica-1: #2e1065;
           --g-replica-2: #3b0764;
 
-          /* Subnet overlays and regions background */
           --rds-subnets-bg: rgba(15, 23, 42, 0.4);
           --rds-inner-card-bg: rgba(15, 23, 42, 0.6);
           --rds-inner-card-border: rgba(51, 65, 85, 0.6);
@@ -1040,7 +1258,6 @@ export default function RDSVisualizer() {
           --rds-row-hover-bg: rgba(30, 41, 59, 0.8);
           --rds-row-hover-border: rgba(100, 116, 139, 0.8);
 
-          /* General text variables */
           --color-text-primary: #f8fafc;
           --color-text-secondary: #94a3b8;
           --color-text-tertiary: #64748b;
@@ -1085,8 +1302,7 @@ export default function RDSVisualizer() {
           font-weight: 600 !important;
           box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
         }
-        .dark .rds-sec,
-        .dark .rds-kk {
+        .dark .rds-sec {
           color: #94a3b8 !important;
         }
         .dark .rds-log,
@@ -1104,53 +1320,6 @@ export default function RDSVisualizer() {
           background: rgba(30, 41, 59, 0.8) !important;
           color: #ffffff !important;
         }
-        .dark .rds-met {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark ul.rds-ck li {
-          color: #cbd5e1 !important;
-        }
-        .dark .rds-inst,
-        .dark .rds-instance {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-        .dark .rds-inst .meta,
-        .dark .rds-instance .meta {
-          color: #94a3b8 !important;
-        }
-        .dark .rds-svg-bg {
-          background-color: #020617 !important;
-          background-image: radial-gradient(rgba(51, 65, 85, 0.5) 1.2px, transparent 1.2px) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-        }
-        
-        /* Node Status Overrides */
-        .dark .rds-ok {
-          border-color: #10b981 !important;
-          background: rgba(16, 185, 129, 0.15) !important;
-          color: #4ade80 !important;
-        }
-        .dark .rds-warm {
-          border-color: #f59e0b !important;
-          background: rgba(245, 158, 11, 0.15) !important;
-          color: #fbbf24 !important;
-        }
-        .dark .rds-drain {
-          border-color: #3b82f6 !important;
-          background: rgba(59, 130, 246, 0.15) !important;
-          color: #60a5fa !important;
-        }
-        .dark .rds-down {
-          border-color: #ef4444 !important;
-          background: rgba(239, 68, 68, 0.15) !important;
-          color: #f87171 !important;
-        }
-        
-        /* General form overrides */
         .dark select,
         .dark input,
         .dark textarea {
@@ -1163,7 +1332,6 @@ export default function RDSVisualizer() {
           color: #f1f5f9 !important;
         }
 
-        /* Sub-tabs and lists overrides */
         .dark .rds-subtabs {
           border-bottom-color: rgba(51, 65, 85, 0.6) !important;
         }
@@ -1181,13 +1349,6 @@ export default function RDSVisualizer() {
           color: #ffffff !important;
           border-color: #3b82f6 !important;
           box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
-          font-weight: 600 !important;
-        }
-        .dark .rds-subtb.rds-on-purple {
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
-          color: #ffffff !important;
-          border-color: #8b5cf6 !important;
-          box-shadow: 0 4px 12px rgba(167, 139, 250, 0.2) !important;
           font-weight: 600 !important;
         }
 
@@ -1210,9 +1371,6 @@ export default function RDSVisualizer() {
           border-color: rgba(51, 65, 85, 0.6) !important;
           color: #cbd5e1 !important;
         }
-        .dark .rds-table tr:nth-child(even) {
-          background: rgba(15, 23, 42, 0.4) !important;
-        }
 
         .dark .rds-code-container {
           background: rgba(15, 23, 42, 0.5) !important;
@@ -1222,28 +1380,7 @@ export default function RDSVisualizer() {
           color: #38bdf8 !important;
         }
 
-        .dark .arch-scenario-btn {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #94a3b8 !important;
-        }
-        .dark .arch-scenario-btn:hover {
-          background: rgba(30, 41, 59, 0.8) !important;
-          color: #f8fafc !important;
-        }
-        .dark .arch-scenario-btn.active {
-          background: rgba(16, 185, 129, 0.15) !important;
-          border-color: #10b981 !important;
-          color: #4ade80 !important;
-        }
-
-        .dark .asg-card {
-          background: rgba(15, 23, 42, 0.6) !important;
-          border-color: rgba(51, 65, 85, 0.6) !important;
-          color: #cbd5e1 !important;
-        }
-
-        /* Custom inner cards colors */
+        /* Inner cards */
         .rds-inner-card-grey {
           background: var(--rds-inner-card-bg) !important;
           border: 1px solid var(--rds-inner-card-border) !important;
@@ -1306,12 +1443,6 @@ export default function RDSVisualizer() {
           color: #ffffff !important;
         }
 
-        .text-red { color: var(--color-red) !important; }
-        .text-amber { color: var(--color-amber) !important; }
-        .text-green { color: var(--color-green) !important; }
-        .text-blue { color: var(--color-blue) !important; }
-        .text-purple { color: var(--color-purple) !important; }
-
         .rds-btn-purple {
           background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
           border-color: #6d28d9 !important;
@@ -1334,24 +1465,42 @@ export default function RDSVisualizer() {
           background: rgba(239, 68, 68, 0.15) !important;
         }
 
-        /* SVG generic dynamic overrides */
         .rds-svg-text-primary {
           fill: var(--color-text-primary) !important;
         }
         .rds-svg-text-secondary {
           fill: var(--color-text-secondary) !important;
         }
-          `}</style>
+      `}</style>
 
       {/* Flagship Header */}
       <div style={{ padding: '14px 16px 4px' }}>
-          <div className="rds-h">🛢️ Amazon RDS — Relational Database Service Visualizer</div>
-          <div className="rds-sub">
-            Managed database server engine inside your VPC boundaries. Easily scale compute, handle synchronous Multi-AZ failovers, configure read replicas, pool database connections with RDS Proxy, and leverage built-in machine learning models.
-          </div>
+        <div className="rds-h">
+          {isComparative ? (
+            <span>⚖️ Multi-Cloud Database Comparison — AWS RDS vs Azure DB vs GCP Cloud SQL</span>
+          ) : isAzure ? (
+            <span>🛢️ Azure Database for PostgreSQL / MySQL Flexible Server</span>
+          ) : isGcp ? (
+            <span>🛢️ Google Cloud SQL &amp; AlloyDB Database Services</span>
+          ) : (
+            <span>🛢️ Amazon RDS — Relational Database Service Visualizer</span>
+          )}
         </div>
+        <div className="rds-sub">
+          {isComparative ? (
+            <span>Side-by-side architectural comparison of managed relational databases across AWS, Azure, and GCP.</span>
+          ) : isAzure ? (
+            <span>Managed database server instances in Azure VNet boundaries. Auto-grow storage, zone-redundant HA, and read replicas.</span>
+          ) : isGcp ? (
+            <span>Managed relational databases in GCP VPC boundaries. High Availability failovers, WAL read replicas, and Cloud SQL Auth Proxy.</span>
+          ) : (
+            <span>Managed database server engine inside your VPC boundaries. Easily scale compute, handle synchronous Multi-AZ failovers, configure read replicas, pool database connections with RDS Proxy, and leverage built-in machine learning models.</span>
+          )}
+        </div>
+      </div>
 
-        {/* Main Navigation Tabs */}
+      {/* Main Navigation Tabs */}
+      {!isComparative && (
         <div className="rds-tabs">
           <button className={`rds-tb ${activeSection === 'overview' ? 'rds-on' : ''}`} onClick={() => setActiveSection('overview')}>⚖️ 1) Concept &amp; Engines</button>
           <button className={`rds-tb ${activeSection === 'connect' ? 'rds-on' : ''}`} onClick={() => setActiveSection('connect')}>🔌 2) Connectivity &amp; SGs</button>
@@ -1360,2373 +1509,1659 @@ export default function RDSVisualizer() {
           <button className={`rds-tb ${activeSection === 'sim' ? 'rds-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 5) Live Simulation</button>
           <button className={`rds-tb ${activeSection === 'advanced' ? 'rds-on' : ''}`} onClick={() => setActiveSection('advanced')}>🚀 6) Advanced Features</button>
           <button className={`rds-tb ${activeSection === 'best' ? 'rds-on' : ''}`} onClick={() => setActiveSection('best')}>🏗️ 7) Best-Practice Guides</button>
+          <button className={`rds-tb ${activeSection === 'unique' ? 'rds-on' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
         </div>
+      )}
 
-        {/* Tab 1: Concept & Engines */}
-        {activeSection === 'overview' && (
-          <div>
-            <div className="rds-sec">Amazon RDS — Managed DB Instances inside VPC</div>
-            <div className="rds-card">
-              <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
-                RDS manages the patching, automated backups, software licensing, scaling, and operational overhead of relational engines. Your applications connect directly to standard SQL protocols via managed DNS endpoints.
+      {isComparative && (
+        <RDSComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeSection === 'unique' && (
+        <UniqueRDSFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+      )}
+
+      {!isComparative && activeSection !== 'unique' && (
+        <>
+          {/* Tab 1: Concept & Engines */}
+          {activeSection === 'overview' && (
+            <div>
+              <div className="rds-sec">
+                {isAzure ? 'Azure Database Flexible Server — Managed DB Instances in VNet' : isGcp ? 'Google Cloud SQL — Managed DB Instances in VPC' : 'Amazon RDS — Managed DB Instances inside VPC'}
               </div>
-              <div className="rds-grid2" style={{ marginBottom: '16px' }}>
-                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#16a34a' }}>Core Architectural Components</div>
-                  <div className="rds-row"><div className="rds-dot">A</div><div><b>DB Instance (Writer):</b> The primary read/write database server instance containing target compute (vCPU) and storage (EBS gp3/io2).</div></div>
-                  <div className="rds-row"><div className="rds-dot">B</div><div><b>DB Subnet Group:</b> List of subnets spanning at least two Availability Zones (AZs) in your VPC where RDS can launch resources.</div></div>
-                  <div className="rds-row"><div className="rds-dot">C</div><div><b>Security Groups:</b> Network firewall rules limiting inbound access to target DB engines (5432 / 3306) at the elastic network interface.</div></div>
-                  <div className="rds-row"><div className="rds-dot">D</div><div><b>DNS Endpoint:</b> Fully Qualified Domain Name (FQDN) mapped to the primary server IP (survives instance recreation).</div></div>
+              <div className="rds-card">
+                <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '14px' }}>
+                  {isAzure ? 'Azure Flexible Server manages patching, automated backups, storage auto-growth, zone-redundant HA, and scaling of PostgreSQL & MySQL engines in your Azure VNet.' : isGcp ? 'Cloud SQL handles OS patching, automated WAL backups, storage auto-resizing, regional HA failover, and scaling of PostgreSQL, MySQL & SQL Server engines in GCP VPC networks.' : 'RDS manages patching, automated backups, software licensing, scaling, and operational overhead of relational engines. Your applications connect directly to standard SQL protocols via managed DNS endpoints.'}
                 </div>
-                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#1d4ed8' }}>Common Topologies &amp; Features</div>
-                  <div className="rds-row"><div className="rds-dot">1</div><div><b>Multi-AZ Standby:</b> Replicated standby database in an alternate AZ. Receives synchronous transaction updates for immediate DR failover.</div></div>
-                  <div className="rds-row"><div className="rds-dot">2</div><div><b>Read Replicas:</b> Scaling nodes receiving asynchronous log streaming. Offload select queries from the primary server.</div></div>
-                  <div className="rds-row"><div className="rds-dot">3</div><div><b>RDS Proxy:</b> Highly available connection pooling engine. Mitigates connection bottlenecks and reduces failover interruption time.</div></div>
-                </div>
-              </div>
-
-              {/* Subnet Groups Zonal SVG */}
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                  📐 Engine-Aware VPC Subnet Group Zonal Topology
-                </div>
-
-                <svg width="100%" viewBox="0 0 680 160" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
-                  <defs>
-                    {/* Metallic side-reflections */}
-                    <linearGradient id="m-ok" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--metal-ok-1)" />
-                      <stop offset="35%" stopColor="var(--metal-ok-2)" />
-                      <stop offset="70%" stopColor="var(--metal-ok-3)" />
-                      <stop offset="100%" stopColor="var(--metal-ok-4)" />
-                    </linearGradient>
-                    <linearGradient id="m-warn" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--metal-warn-1)" />
-                      <stop offset="35%" stopColor="var(--metal-warn-2)" />
-                      <stop offset="70%" stopColor="var(--metal-warn-3)" />
-                      <stop offset="100%" stopColor="var(--metal-warn-4)" />
-                    </linearGradient>
-                    <linearGradient id="m-rep" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--metal-rep-1)" />
-                      <stop offset="35%" stopColor="var(--metal-rep-2)" />
-                      <stop offset="70%" stopColor="var(--metal-rep-3)" />
-                      <stop offset="100%" stopColor="var(--metal-rep-4)" />
-                    </linearGradient>
-
-                    {/* Lids */}
-                    <linearGradient id="l-ok" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--lid-ok-1)" />
-                      <stop offset="100%" stopColor="var(--lid-ok-2)" />
-                    </linearGradient>
-                    <linearGradient id="l-warn" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--lid-warn-1)" />
-                      <stop offset="100%" stopColor="var(--lid-warn-2)" />
-                    </linearGradient>
-                    <linearGradient id="l-rep" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--lid-replica-1)" />
-                      <stop offset="100%" stopColor="var(--lid-replica-2)" />
-                    </linearGradient>
-
-                    <marker id="arr-sync" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                    <marker id="arr-async" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
-                    <marker id="arr-aurora" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
-                  </defs>
-
-                  {/* AZ boundaries */}
-                  {/* us-east-1a */}
-                  <rect x="15" y="15" width="200" height="130" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="115" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">us-east-1a Subnet</text>
-                  
-                  {/* us-east-1b */}
-                  <rect x="240" y="15" width="200" height="130" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="340" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">us-east-1b Subnet</text>
-
-                  {/* us-east-1c */}
-                  <rect x="465" y="15" width="200" height="130" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3" />
-                  <text x="565" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">us-east-1c Subnet</text>
-
-                  {/* Dynamic Nodes Renders */}
-                  {selectedEngine === 'aurora' ? (
-                    <>
-                      {/* Aurora: Cloud-Native Shared Storage 6-way replicated */}
-                      {/* Primary Writer in AZ-a */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 70 48 L 70 76 A 45 7 0 0 0 160 76 L 160 48 A 45 7 0 0 1 70 48 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1" />
-                        <ellipse cx="115" cy="48" rx="45" ry="7" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1" />
-                        <text x="115" y="66" textAnchor="middle" fontSize="9.5" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
-                        <text x="115" y="86" textAnchor="middle" fontSize="7" fill="#047857" fontFamily="monospace">Active (AZ-a)</text>
-                      </g>
-
-                      {/* Aurora Reader in AZ-b */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 295 48 L 295 76 A 45 7 0 0 0 385 76 L 385 48 A 45 7 0 0 1 295 48 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
-                        <ellipse cx="340" cy="48" rx="45" ry="7" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
-                        <text x="340" y="66" textAnchor="middle" fontSize="9.5" fill="#4c1d95" fontWeight="bold">📖 Aurora Reader</text>
-                        <text x="340" y="86" textAnchor="middle" fontSize="7" fill="#6d28d9" fontFamily="monospace">Lag &lt; 20ms (AZ-b)</text>
-                      </g>
-
-                      {/* Shared Storage Pooling representing Aurora Storage Pool across all AZs */}
-                      <rect x="30" y="96" width="620" height="42" rx="8" fill="var(--rds-inner-card-bg)" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,2" />
-                      <text x="340" y="107" textAnchor="middle" fontSize="9" fill="#0284c7" fontWeight="bold">🌌 Cloud-Native Shared Storage Pool (Replicated 6-Ways)</text>
-                      
-                      {/* Storage Nodes in each AZ */}
-                      <rect x="50" y="114" width="60" height="18" rx="3" fill="var(--rds-container-bg, #ffffff)" stroke="#0284c7" strokeWidth="0.5"/>
-                      <text x="80" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk A1 / A2</text>
-
-                      <rect x="275" y="114" width="60" height="18" rx="3" fill="var(--rds-container-bg, #ffffff)" stroke="#0284c7" strokeWidth="0.5"/>
-                      <text x="305" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk B1 / B2</text>
-
-                      <rect x="500" y="114" width="60" height="18" rx="3" fill="var(--rds-container-bg, #ffffff)" stroke="#0284c7" strokeWidth="0.5"/>
-                      <text x="530" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk C1 / C2</text>
-
-                      {/* Continuous replication trace paths */}
-                      <path d="M 115 84 L 115 96" stroke="#0284c7" strokeWidth="1.5" className="flow-active-line" markerEnd="url(#arr-aurora)"/>
-                      <path d="M 340 84 L 340 96" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,2"/>
-                    </>
-                  ) : (selectedEngine === 'oracle' || selectedEngine === 'mssql') ? (
-                    <>
-                      {/* Proprietary Engines: Multi-AZ standby copy, no replicas supported */}
-                      {/* Primary Writer in AZ-a */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 65 52 L 65 92 A 50 10 0 0 0 165 92 L 165 52 A 50 10 0 0 1 65 52 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1.5" />
-                        <ellipse cx="115" cy="52" rx="50" ry="10" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1.5" />
-                        <text x="115" y="72" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
-                        <text x="115" y="86" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary" fontFamily="monospace">In-Service (Active)</text>
-                      </g>
-
-                      {/* Standby Copy in AZ-b */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 290 52 L 290 92 A 50 10 0 0 0 390 92 L 390 52 A 50 10 0 0 1 290 52 Z" fill="url(#m-warn)" stroke="#d97706" strokeWidth="1" />
-                        <ellipse cx="340" cy="52" rx="50" ry="10" fill="url(#l-warn)" stroke="#d97706" strokeWidth="1" />
-                        <text x="340" y="72" textAnchor="middle" fontSize="10" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
-                        <text x="340" y="86" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary" fontFamily="monospace">Passive (No Reads)</text>
-                      </g>
-
-                      {/* Standby Replication line */}
-                      <line x1="165" y1="72" x2="290" y2="72" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
-                      <text x="227.5" y="62" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
-
-                      {/* Replicas Blocked / Not Supported in AZ-c */}
-                      <g opacity="0.65">
-                        <rect x="475" y="42" width="180" height="65" rx="6" fill="#fef2f2" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="565" y="65" textAnchor="middle" fontSize="10.5" fill="#ef4444" fontWeight="bold" style={{ textDecoration: 'line-through' }}>📖 Read Replica</text>
-                        <text x="565" y="80" textAnchor="middle" fontSize="8.5" fill="#ef4444" fontWeight="bold">❌ NOT SUPPORTED</text>
-                        <text x="565" y="93" textAnchor="middle" fontSize="7" fill="#b91c1c" fontFamily="monospace">Engine Restriction</text>
-                        <path d="M 470 37 L 660 112 M 660 37 L 470 112" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
-                      </g>
-                    </>
-                  ) : (
-                    <>
-                      {/* Standard Engines: Postgres / MySQL / MariaDB standard multi-az and replicas */}
-                      {/* Primary Writer in AZ-a */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 65 52 L 65 92 A 50 10 0 0 0 165 92 L 165 52 A 50 10 0 0 1 65 52 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1.5" />
-                        <ellipse cx="115" cy="52" rx="50" ry="10" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1.5" />
-                        <text x="115" y="72" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
-                        <text x="115" y="86" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary" fontFamily="monospace">In-Service (Active)</text>
-                      </g>
-
-                      {/* Standby Copy in AZ-b */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 290 52 L 290 92 A 50 10 0 0 0 390 92 L 390 52 A 50 10 0 0 1 290 52 Z" fill="url(#m-warn)" stroke="#d97706" strokeWidth="1" />
-                        <ellipse cx="340" cy="52" rx="50" ry="10" fill="url(#l-warn)" stroke="#d97706" strokeWidth="1" />
-                        <text x="340" y="72" textAnchor="middle" fontSize="10" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
-                        <text x="340" y="86" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary" fontFamily="monospace">Passive (Standby)</text>
-                      </g>
-
-                      {/* Read Replica in AZ-c */}
-                      <g className="active-glow-node" style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
-                        {/* Cylinder */}
-                        <path d="M 515 52 L 515 92 A 50 10 0 0 0 615 92 L 615 52 A 50 10 0 0 1 515 52 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
-                        <ellipse cx="565" cy="52" rx="50" ry="10" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
-                        <text x="565" y="72" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold">📖 Read Replica</text>
-                        <text x="565" y="86" textAnchor="middle" fontSize="7" fill="#6d28d9" fontFamily="monospace">Asynchronous WAL</text>
-                      </g>
-
-                      {/* Standby Replication line */}
-                      <line x1="165" y1="72" x2="290" y2="72" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
-                      <text x="227.5" y="62" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
-
-                      {/* Replica replication line */}
-                      <path d="M 165 72 Q 340 135 515 72" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-async)" />
-                      <text x="340" y="132" textAnchor="middle" fontSize="8.5" fill="#7c3aed" fontWeight="bold" fontFamily="monospace">Async WAL ➡️</text>
-                    </>
-                  )}
-                </svg>
-              </div>
-
-              {/* Engine Selector details */}
-              <div style={{ marginTop: '14px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Supported Relational Database Engines</div>
-                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                  {(Object.keys(engineDetails) as EngineType[]).map((eng) => (
-                    <button
-                      key={eng}
-                      onClick={() => setSelectedEngine(eng)}
-                      className={`rds-subtb ${selectedEngine === eng ? 'rds-on' : ''}`}
-                    >
-                      {engineDetails[eng].title.split(' ')[0]} {engineDetails[eng].title.substring(2)}
-                    </button>
-                  ))}
-                </div>
-                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px', color: '#16a34a' }}>
-                    {engineDetails[selectedEngine].title}
+                <div className="rds-grid2" style={{ marginBottom: '16px' }}>
+                  <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#16a34a' }}>Core Architectural Components</div>
+                    <div className="rds-row"><div className="rds-dot">A</div><div><b>DB Instance (Writer):</b> {isAzure ? 'Primary Flexible Server instance with vCPU, RAM, and Managed Premium SSD (io1/gp3).' : isGcp ? 'Primary Cloud SQL instance compute node with Persistent Disk SSD.' : 'The primary read/write database server instance containing target compute (vCPU) and storage (EBS gp3/io2).'}</div></div>
+                    <div className="rds-row"><div className="rds-dot">B</div><div><b>DB Subnet / VPC Network:</b> {isAzure ? 'Delegated VNet Subnet (Microsoft.DBforPostgreSQL/flexibleServers) spanning Availability Zones.' : isGcp ? 'Private Service Access (PSA) subnets spanning GCP Availability Zones in your VPC network.' : 'List of subnets spanning at least two Availability Zones (AZs) in your VPC where RDS can launch resources.'}</div></div>
+                    <div className="rds-row"><div className="rds-dot">C</div><div><b>Firewall Rules / Security Groups:</b> {isAzure ? 'Network Security Group (NSG) rules filtering port 5432/3306 inbound traffic.' : isGcp ? 'VPC Firewall Rules filtering port 5432/3306 inbound traffic.' : 'Network firewall rules limiting inbound access to target DB engines (5432 / 3306) at the elastic network interface.'}</div></div>
+                    <div className="rds-row"><div className="rds-dot">D</div><div><b>DNS Endpoint:</b> {isAzure ? 'Flexible Server FQDN (database.postgres.database.azure.com) mapped to primary server IP.' : isGcp ? 'Cloud SQL Private IP or Auth Proxy endpoint mapped to primary instance.' : 'Fully Qualified Domain Name (FQDN) mapped to the primary server IP (survives instance recreation).'}</div></div>
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.45' }}>
-                    {engineDetails[selectedEngine].desc}
-                  </div>
-                  <div className="rds-grid2" style={{ gap: '10px' }}>
-                    <div>
-                      <div className="rds-sec">Engine Specifications</div>
-                      {engineDetails[selectedEngine].specs.map((sp, i) => (
-                        <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '4px' }} key={i}>
-                          <span style={{ color: 'var(--color-text-tertiary)' }}>{sp.k}:</span> <b>{sp.v}</b>
-                        </div>
-                      ))}
-                    </div>
-                    <div>
-                      <div className="rds-sec">Ideal workloads</div>
-                      <ul className="rds-ck">
-                        {engineDetails[selectedEngine].cases.map((cs, i) => (
-                          <li key={i}>{cs}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* Tab 2: Connectivity & SGs */}
-        {activeSection === 'connect' && (
-          <div>
-            <div className="rds-sec">Interactive Network Topology &amp; Security Group Ingress Sandbox</div>
-            
-            {/* Ingress Selector buttons */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
-              <button 
-                className={`arch-scenario-btn ${ingressSource === 'app' ? 'active' : ''}`}
-                onClick={() => setIngressSource('app')}
-              >
-                🟢 Route 1: Standard Application Traffic (Allowed)
-              </button>
-              <button 
-                className={`arch-scenario-btn ${ingressSource === 'bastion' ? 'active' : ''}`}
-                onClick={() => setIngressSource('bastion')}
-                style={{ borderColor: '#8b5cf6', color: ingressSource === 'bastion' ? '#8b5cf6' : '' }}
-              >
-                🟤 Route 2: Administrative SSH Bastion Tunnel (Allowed)
-              </button>
-              <button 
-                className={`arch-scenario-btn ${ingressSource === 'internet' ? 'active' : ''}`}
-                onClick={() => setIngressSource('internet')}
-                style={{ borderColor: '#ef4444', color: ingressSource === 'internet' ? '#ef4444' : '' }}
-              >
-                🔴 Route 3: Public Internet Connection (Blocked!)
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
-              
-              {/* Left Column: State-Responsive SVG Map */}
-              <div className="rds-card rds-inner-card-grey" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
-                <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
-                    🔍 {ingressSource === 'app' ? 'App-to-DB Connection Flow' : ingressSource === 'bastion' ? 'Bastion SSH SQL Tunnel Ingress' : 'Unauthenticated Public Attack Route'}
-                  </span>
-                  <span style={{ fontSize: '11px', color: ingressSource === 'internet' ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
-                    ● {ingressSource === 'internet' ? 'ACCESS BLOCKED' : 'SECURE INBOUND ACTIVE'}
-                  </span>
-                </div>
-
-                <svg width="100%" viewBox="0 0 680 240" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
-                  <defs>
-                    <linearGradient id="c-app" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--metal-app-1)" />
-                      <stop offset="100%" stopColor="var(--metal-app-2)" />
-                    </linearGradient>
-                    <linearGradient id="c-db-ok" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--c-db-ok-1)" />
-                      <stop offset="35%" stopColor="var(--c-db-ok-2)" />
-                      <stop offset="70%" stopColor="var(--c-db-ok-3)" />
-                      <stop offset="100%" stopColor="var(--c-db-ok-4)" />
-                    </linearGradient>
-                    <linearGradient id="c-db-fail" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--c-db-fail-1)" />
-                      <stop offset="35%" stopColor="var(--c-db-fail-2)" />
-                      <stop offset="70%" stopColor="var(--c-db-fail-3)" />
-                      <stop offset="100%" stopColor="var(--c-db-fail-4)" />
-                    </linearGradient>
-
-                    <linearGradient id="l-db-ok" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--l-db-ok-1)" />
-                      <stop offset="100%" stopColor="var(--l-db-ok-2)" />
-                    </linearGradient>
-                    <linearGradient id="l-db-fail" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--l-db-fail-1)" />
-                      <stop offset="100%" stopColor="var(--l-db-fail-2)" />
-                    </linearGradient>
-
-                    <marker id="acn-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
-                    <marker id="acn-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                    <marker id="acn-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
-                    <marker id="acn-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
-                  </defs>
-
-                  {/* Public Internet Border Left */}
-                  <line x1="10" y1="5" x2="10" y2="235" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3"/>
-                  <text x="18" y="16" fontSize="8" className="rds-svg-text-secondary" fontFamily="monospace">PUBLIC INTERNET BOUNDARY</text>
-
-                  {/* VPC boundary */}
-                  <rect x="55" y="15" width="615" height="210" rx="12" fill="none" stroke="var(--rds-svg-line-stroke)" strokeWidth="1.2" />
-                  <text x="362.5" y="27" textAnchor="middle" fontSize="10.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">VPC (10.0.0.0/16)</text>
-
-                  {/* Public Subnets Area */}
-                  <rect x="65" y="42" width="165" height="172" rx="8" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
-                  <text x="147.5" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">Public Subnets (0.0.0.0/0)</text>
-                  
-                  {/* ALB Block */}
-                  <g opacity={ingressSource === 'app' ? 1 : 0.65}>
-                    <rect x="80" y="68" width="135" height="42" rx="6" fill="var(--rds-inner-card-bg)" stroke={ingressSource === 'app' ? '#3b82f6' : 'var(--rds-inner-card-border)'} strokeWidth={1} />
-                    <text x="147.5" y="85" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-primary">🌐 sg-alb (ALB)</text>
-                    <text x="147.5" y="98" textAnchor="middle" fontSize="7.5" fill="#2563eb" fontFamily="monospace">Allow: Port 443</text>
-                  </g>
-
-                  {/* Bastion Host */}
-                  <g opacity={ingressSource === 'bastion' ? 1 : 0.65}>
-                    <rect x="80" y="132" width="135" height="42" rx="6" fill="var(--rds-inner-card-bg)" stroke={ingressSource === 'bastion' ? '#f59e0b' : 'var(--rds-inner-card-border)'} strokeWidth={1} />
-                    <text x="147.5" y="149" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-primary">🔒 sg-bastion (Jump)</text>
-                    <text x="147.5" y="162" textAnchor="middle" fontSize="7.5" fill="#b45309" fontFamily="monospace">Allow: Port 22 SSH</text>
-                  </g>
-
-                  {/* Private App Subnets Area */}
-                  <rect x="250" y="42" width="170" height="172" rx="8" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
-                  <text x="335" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">Private App Subnets</text>
-                  
-                  {/* EC2 Instance Block */}
-                  <g opacity={ingressSource === 'app' ? 1 : 0.65}>
-                    <rect x="265" y="90" width="140" height="52" rx="6" fill="var(--rds-inner-card-bg)" stroke={ingressSource === 'app' ? '#10b981' : 'var(--rds-inner-card-border)'} strokeWidth={1} />
-                    <text x="335" y="112" textAnchor="middle" fontSize="10.5" fontWeight="bold" className="rds-svg-text-primary">⚙️ sg-app (App Server)</text>
-                    <text x="335" y="127" textAnchor="middle" fontSize="7.5" fill="#16a34a" fontFamily="monospace">Allow: from sg-alb</text>
-                  </g>
-
-                  {/* Private DB Subnets Area */}
-                  <rect x="440" y="42" width="220" height="172" rx="8" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
-                  <text x="550" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">Private DB Subnets</text>
-                  
-                  {/* RDS 3D Cylinder Block */}
-                  <g opacity={ingressSource !== 'internet' ? 1 : 0.4} className={ingressSource !== 'internet' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
-                    <path d="M 475 110 L 475 140 A 55 12 0 0 0 585 140 L 585 110 A 55 12 0 0 1 475 110 Z" fill={ingressSource === 'internet' ? 'url(#c-db-fail)' : 'url(#c-db-ok)'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth="1.5" />
-                    <ellipse cx="530" cy="110" rx="55" ry="12" fill={ingressSource === 'internet' ? 'url(#l-db-fail)' : 'url(#l-db-ok)'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth="1.5" />
-                    
-                    <text x="530" y="90" textAnchor="middle" fontSize="11.5" fontWeight="bold" className="rds-svg-text-primary">🗄️ sg-db (Amazon RDS)</text>
-                    <text x="530" y="128" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill={ingressSource === 'internet' ? '#991b1b' : '#5b21b6'}>
-                      {ingressSource === 'app' ? 'allowed from sg-app' : ingressSource === 'bastion' ? 'allowed from sg-bastion' : '❌ Public Ingress BLOCKED'}
-                    </text>
-                  </g>
-
-                  {/* Connection tracer paths */}
-                  {/* App route: ALB -> App -> DB */}
-                  {ingressSource === 'app' && (
-                    <>
-                      {/* Public to ALB */}
-                      <line x1="5" y1="90" x2="80" y2="90" stroke="#3b82f6" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#acn-blue)"/>
-                      
-                      {/* ALB to App */}
-                      <path d="M 215 90 L 265 110" fill="none" stroke="#3b82f6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-blue)"/>
-                      <text x="240" y="93" fontSize="7.5" fill="#2563eb" fontWeight="bold">HTTP 8080</text>
-
-                      {/* App to DB */}
-                      <path d="M 405 120 L 470 120" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#acn-green)" />
-                      <text x="435" y="112" fontSize="7.5" fill="#16a34a" fontWeight="bold">SQL Port 5432</text>
-                    </>
-                  )}
-
-                  {/* Bastion route: Bastion -> DB */}
-                  {ingressSource === 'bastion' && (
-                    <>
-                      {/* Public to Bastion */}
-                      <line x1="5" y1="154" x2="80" y2="154" stroke="#f59e0b" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)"/>
-                      <text x="42.5" y="145" fontSize="7.5" fill="#b45309" fontWeight="bold">SSH Tunneled</text>
-
-                      {/* Bastion to DB */}
-                      <path d="M 215 154 L 470 125" fill="none" stroke="#8b5cf6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)" />
-                      <text x="330" y="148" fontSize="8" fill="#7c3aed" fontWeight="bold">SQL Forwarding</text>
-                    </>
-                  )}
-
-                  {/* Internet Blocked route */}
-                  {ingressSource === 'internet' && (
-                    <>
-                      {/* Public attempt directly to DB */}
-                      <path d="M 5 120 L 440 120" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="5,3" className="flow-active-line" markerEnd="url(#acn-red)"/>
-                      <text x="220" y="112" fontSize="9.5" fill="#ef4444" fontWeight="bold">💥 Public TCP Query (Direct Attack)</text>
-
-                      {/* Blocked Stop Sign at Private DB subnet border */}
-                      <g transform="translate(440, 120)">
-                        <circle cx="0" cy="0" r="14" fill="#ef4444" />
-                        <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#fff" fontWeight="bold">STOP</text>
-                      </g>
-                    </>
-                  )}
-                </svg>
-              </div>
-
-              {/* Right Column: Explanations HUD */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                
-                {/* Telemetry/Rules Details */}
-                <div className="asg-card rds-inner-card-grey" style={{ borderLeft: '3px solid #2563eb', padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
-                    🔒 Ingress Policy Status
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                    {ingressSource === 'app' && '🟢 Compliant Access Path'}
-                    {ingressSource === 'bastion' && '🟣 Secure Admin Tunnel'}
-                    {ingressSource === 'internet' && '🔴 Boundary Threat Blocked'}
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>Internet IGW Route:</span>
-                      <span style={{ fontWeight: 'bold', color: '#ef4444' }}>BLOCKED</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>Security Group Chain:</span>
-                      <span style={{ fontWeight: 'bold', color: '#16a34a' }}>ENFORCED</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px' }}>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>Public IP Address:</span>
-                      <span style={{ fontWeight: 'bold', color: '#ef4444' }}>NONE</span>
-                    </div>
+                  <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#1d4ed8' }}>Common Topologies &amp; Features</div>
+                    <div className="rds-row"><div className="rds-dot">1</div><div><b>High Availability Standby:</b> {isAzure ? 'Zone-Redundant Standby server in alternate availability zone with synchronous WAL replication.' : isGcp ? 'Regional HA Standby node in secondary GCP zone with synchronous disk replication.' : 'Multi-AZ Standby database in an alternate AZ receiving synchronous transaction updates for DR failover.'}</div></div>
+                    <div className="rds-row"><div className="rds-dot">2</div><div><b>Read Replicas:</b> {isAzure ? 'Up to 5 (or 10) Flexible Server Read Replicas receiving async log streams.' : isGcp ? 'Up to 10 Cloud SQL Read Replicas (20 in AlloyDB) receiving async WAL streams.' : 'Scaling nodes receiving asynchronous log streaming to offload select queries from primary.'}</div></div>
+                    <div className="rds-row"><div className="rds-dot">3</div><div><b>Connection Proxy / Pool:</b> {isAzure ? 'Built-in PgBouncer on Azure Flexible Server for high-performance socket pooling.' : isGcp ? 'Cloud SQL Auth Proxy & built-in PgBouncer for secure zero-IP connection multiplexing.' : 'RDS Proxy connection pooling engine that mitigates connection bottlenecks and speeds up failover.'}</div></div>
                   </div>
                 </div>
 
-                {/* Path explanation card */}
-                <div className="asg-card rds-inner-card-grey" style={{ padding: '12px 14px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '6px' }}>
-                    ⚙️ Network Engineering Explanation
+                {/* Subnet Groups Zonal SVG */}
+                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
+                    📐 Engine-Aware {isAzure ? 'Azure VNet Subnet' : isGcp ? 'GCP VPC Network' : 'AWS VPC Subnet'} Zonal Topology
                   </div>
-                  <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                    {ingressSource === 'app' && (
-                      <span>
-                        **Production Best Practice:** The client app in the private subnet is the ONLY node whitelisted to query the database. The database Security Group (`sg-db`) whitelists ingress only from the `sg-app` security group ID rather than static IP CIDRs.
-                      </span>
-                    )}
-                    {ingressSource === 'bastion' && (
-                      <span>
-                        **Secure Admin Operations:** When DBAs need to run migrations or manual queries, they establish a secure SSH local port forwarding tunnel through a bastion jump box (`sg-bastion`) located in the public subnet. The SQL traffic is fully encrypted inside the SSH wrapper and whitelisted by `sg-db`.
-                      </span>
-                    )}
-                    {ingressSource === 'internet' && (
-                      <span>
-                        **Absolute Isolation:** Because the database has `PubliclyAccessible = False` and resides in subnets lacking routes pointing to an Internet Gateway (IGW), direct connections from the internet cannot be established. Bot attacks are physically stopped at the subnet network card level.
-                      </span>
-                    )}
-                  </div>
-                </div>
 
-              </div>
-
-            </div>
-
-            {/* Standard Best Practices detail card underneath */}
-            <div className="rds-grid2" style={{ gap: '12px', marginTop: '14px' }}>
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#1e3a8a' }}>Standard Connectivity Best Practices</div>
-                <ul className="rds-ck">
-                  <li><b>Publicly Accessible = False:</b> Disables generation of internet-routable IP addresses. Even if VPC gateways are present, DNS resolves strictly to internal private IPs.</li>
-                  <li><b>Private VPC Subnets:</b> Always associate RDS Subnet Groups with subnets that lack a route pointing to the Internet Gateway (IGW) route table.</li>
-                  <li><b>Port Enforcements:</b> Configure custom default listening ports (e.g. 5439 for PostgreSQL instead of 5432) to avoid passive bot scanner detection in degraded states.</li>
-                </ul>
-              </div>
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#166534' }}>IAM Database Authentication</div>
-                <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '6px' }}>
-                  Instead of standard static database usernames and passwords, applications request short-lived IAM credentials (token validity limit is 15 minutes) using IAM signature V4.
-                </div>
-                <ul className="rds-ck">
-                  <li>No long-term passwords stored on instance or configuration files</li>
-                  <li>Fine-grained IAM policy bindings restrict access by role/identity</li>
-                  <li>Mandates SSL/TLS connections for all authenticating users</li>
-                </ul>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Tab 3: High Availability Multi-AZ */}
-        {activeSection === 'multiaz' && (
-          <div>
-            <div className="rds-sec">Interactive Multi-AZ Disaster Recovery Failover Sandbox</div>
-            
-            {/* Stepper controls */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <button 
-                className="asg-btn asg-on" 
-                onClick={() => {
-                  const next = (failoverStep + 1) % 6;
-                  setFailoverStep(next);
-                  if (next === 0) {
-                    setFailoverLogs(['💡 Sandbox reset. Database cluster in normal, synchronized Multi-AZ operational state.']);
-                  } else if (next === 1) {
-                    logFailover('💥 [0s] DISASTER EVENT: Hypervisor hardware failure in us-east-1a! Primary DB is unreachable.');
-                  } else if (next === 2) {
-                    logFailover('⚙️ [10s] EVICTION: RDS cluster manager fencing off primary node in us-east-1a to prevent split-brain writes.');
-                  } else if (next === 3) {
-                    logFailover('🌐 [20s] DNS PROPAGATION: Dynamic DNS starting CNAME record shift from us-east-1a (10.0.1.18) to us-east-1b (10.0.2.99).');
-                  } else if (next === 4) {
-                    logFailover('⚡ [30s] PROMOTION: Standby node in us-east-1b mounting block volumes and mounting transaction logs recovery journals.');
-                  } else if (next === 5) {
-                    logFailover('🟢 [45s] IN-SERVICE: Recovery complete! us-east-1b promoted to Writer. Client App connections restored successfully.');
-                  }
-                }}
-                style={{ fontSize: '11.5px', padding: '7px' }}
-              >
-                {failoverStep === 5 ? '🔄 Reset Simulator' : '⏭ Trigger Failover State Transition'}
-              </button>
-              <button 
-                className="asg-btn"
-                onClick={() => {
-                  setFailoverStep(0);
-                  setFailoverLogs(['💡 Sandbox reset. Database cluster in normal, synchronized Multi-AZ operational state.']);
-                }}
-                style={{ fontSize: '11.5px', padding: '7px' }}
-              >
-                🔄 Reset
-              </button>
-
-              <span style={{ fontSize: '12px', color: '#475569', marginLeft: '10px' }}>
-                Active Phase: <b style={{ color: '#0f172a' }}>{failoverStep} of 5</b> — {
-                  failoverStep === 0 ? 'Normal Active Cluster' :
-                  failoverStep === 1 ? 'Primary Node Crash' :
-                  failoverStep === 2 ? 'Active Writer Eviction' :
-                  failoverStep === 3 ? 'DNS CNAME Propagation' :
-                  failoverStep === 4 ? 'Standby Crash Recovery' : 'Failover In-Service'
-                }
-              </span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div className="rds-card rds-inner-card-grey" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
-                  <svg width="100%" viewBox="0 0 680 180" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
+                  <svg width="100%" viewBox="0 0 680 160" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
                     <defs>
-                      {/* Gradients */}
-                      <linearGradient id="ha-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <linearGradient id="m-ok" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="var(--metal-ok-1)" />
                         <stop offset="35%" stopColor="var(--metal-ok-2)" />
                         <stop offset="70%" stopColor="var(--metal-ok-3)" />
                         <stop offset="100%" stopColor="var(--metal-ok-4)" />
                       </linearGradient>
-                      <linearGradient id="ha-fail" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="var(--c-db-fail-1)" />
-                        <stop offset="35%" stopColor="var(--c-db-fail-2)" />
-                        <stop offset="70%" stopColor="var(--c-db-fail-3)" />
-                        <stop offset="100%" stopColor="var(--c-db-fail-4)" />
-                      </linearGradient>
-                      <linearGradient id="ha-warn" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <linearGradient id="m-warn" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="var(--metal-warn-1)" />
                         <stop offset="35%" stopColor="var(--metal-warn-2)" />
                         <stop offset="70%" stopColor="var(--metal-warn-3)" />
                         <stop offset="100%" stopColor="var(--metal-warn-4)" />
                       </linearGradient>
-
-                      <linearGradient id="hl-ok" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--lid-ok-1)" />
-                        <stop offset="100%" stopColor="var(--lid-ok-2)" />
-                      </linearGradient>
-                      <linearGradient id="hl-fail" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--l-db-fail-1)" />
-                        <stop offset="100%" stopColor="var(--l-db-fail-2)" />
-                      </linearGradient>
-                      <linearGradient id="hl-warn" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--lid-warn-1)" />
-                        <stop offset="100%" stopColor="var(--lid-warn-2)" />
-                      </linearGradient>
-
-                      <marker id="arr-ha-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                      <marker id="arr-ha-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
-                      <marker id="arr-ha-b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
-                    </defs>
-
-                    {/* us-east-1a Subnet Zone */}
-                    <rect x="15" y="15" width="290" height="150" rx="10" fill="var(--rds-subnets-bg)" stroke={failoverStep >= 1 && failoverStep <= 3 ? '#ef4444' : 'var(--rds-svg-line-stroke)'} strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="160" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">us-east-1a (Primary Zone)</text>
-
-                    {/* Primary DB Node in AZ-a */}
-                    {failoverStep === 0 ? (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(45, 45)">
-                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-ok)" stroke="#10b981" strokeWidth="1.5" />
-                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-ok)" stroke="#10b981" strokeWidth="1.5" />
-                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#064e3b">✍️ Writer DB</text>
-                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace">10.0.1.18 (Healthy)</text>
-                       </g>
-                    ) : failoverStep === 1 ? (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#ef4444' } as React.CSSProperties} transform="translate(45, 45)">
-                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-fail)" stroke="#ef4444" strokeWidth="2" />
-                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-fail)" stroke="#ef4444" strokeWidth="2" />
-                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#9f1239">💥 Crashed DB</text>
-                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontFamily="monospace">Hardware Fault</text>
-                       </g>
-                    ) : (
-                       <g opacity="0.4" transform="translate(45, 45)">
-                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-fail)" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
-                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-fail)" stroke="#ef4444" strokeWidth="1.5" />
-                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#ef4444" style={{ textDecoration: 'line-through' }}>✍️ Writer DB</text>
-                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontFamily="monospace">Evicted Cluster</text>
-                        <path d="M 10 15 L 110 80 M 110 15 L 10 80" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
-                       </g>
-                    )}
-
-                    {/* us-east-1b Subnet Zone */}
-                    <rect x="375" y="15" width="290" height="150" rx="10" fill="var(--rds-subnets-bg)" stroke={failoverStep === 5 ? '#10b981' : 'var(--rds-svg-line-stroke)'} strokeWidth="1" strokeDasharray="3,3" />
-                    <text x="520" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">us-east-1b (Standby Zone)</text>
-
-                    {/* Standby DB Node in AZ-b */}
-                    {failoverStep <= 3 ? (
-                       <g transform="translate(405, 45)">
-                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="var(--rds-inner-card-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="1" />
-                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="var(--rds-inner-card-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="1" />
-                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" className="rds-svg-text-primary">🛡️ Standby DB</text>
-                         <text x="60" y="55" textAnchor="middle" fontSize="8" className="rds-svg-text-secondary" fontFamily="monospace">10.0.2.99 (Passive)</text>
-                       </g>
-                    ) : failoverStep === 4 ? (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties} transform="translate(405, 45)">
-                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-warn)" stroke="#d97706" strokeWidth="1.5" />
-                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-warn)" stroke="#d97706" strokeWidth="1.5" />
-                         <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#78350f">⚡ Recovering DB</text>
-                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#b45309" fontFamily="monospace">Replaying Journals</text>
-                       </g>
-                    ) : (
-                       <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(405, 45)">
-                         <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-ok)" stroke="#10b981" strokeWidth="2" />
-                         <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-ok)" stroke="#10b981" strokeWidth="2" />
-                         <text x="60" y="20" textAnchor="middle" fontSize="11.5" fontWeight="bold" fill="#064e3b">✍️ Promoted DB</text>
-                         <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#16a34a" fontFamily="monospace">10.0.2.99 (Writer)</text>
-                       </g>
-                    )}
-
-                    {/* Sync Block Replication line */}
-                    {failoverStep === 0 ? (
-                       <>
-                         <path d="M 305 95 L 375 95" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-ha-g)" />
-                         <text x="340" y="84" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">SYNC 🔄</text>
-                         <text x="340" y="112" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary">Block Copy</text>
-                       </>
-                    ) : (
-                       <>
-                         <path d="M 305 95 L 375 95" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
-                         <text x="340" y="84" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold" fontFamily="monospace">BLOCKED</text>
-                         <text x="340" y="112" textAnchor="middle" fontSize="7" fill="#ef4444">No sync</text>
-                       </>
-                    )}
-                  </svg>
-                </div>
-
-                {/* Log Event Terminal */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
-                    📟 disaster recovery (DR) Event logs
-                  </div>
-                  <div className="asg-log" style={{ minHeight: '100px', maxHeight: '140px', overflowY: 'auto' }}>
-                    {failoverLogs.map((entry, idx) => (
-                      <div key={idx} style={{ marginBottom: idx === failoverLogs.length - 1 ? 0 : 5 }}>
-                        {entry}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Right Column: Explanations & Telemetry HUD */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                
-                {/* Active Phase details */}
-                <div className="asg-card rds-inner-card-grey" style={{ borderLeft: '3px solid #f59e0b', padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
-                    ⚙️ Failover Active Phase
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                    {failoverStep === 0 && '🟢 Cluster Healthy'}
-                    {failoverStep === 1 && '🚨 Hardware Outage'}
-                    {failoverStep === 2 && '🚧 Fencing Old Writer'}
-                    {failoverStep === 3 && '🌐 DNS Record Shifting'}
-                    {failoverStep === 4 && '⚡ Mounting Recovery Logs'}
-                    {failoverStep === 5 && '🏆 Promotion Complete'}
-                  </div>
-
-                  <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45' }}>
-                    {failoverStep === 0 && 'Normal operating conditions. Writes are mirrored synchronously to us-east-1b before client receives success commits.'}
-                    {failoverStep === 1 && 'Physical hypervisor crash in us-east-1a. Database process is completely dead. Client requests start hanging or timing out.'}
-                    {failoverStep === 2 && 'RDS API isolates us-east-1a networking layer. This prevents split-brain (two nodes claiming writes simultaneously) upon reboot.'}
-                    {failoverStep === 3 && 'DNS Canonical Name (CNAME) starts updating records from old writer IP (10.0.1.18) to standby IP (10.0.2.99).'}
-                    {failoverStep === 4 && 'standby server in us-east-1b starts replaying transaction block logs to align disk state before mounting database engine.'}
-                    {failoverStep === 5 && 'Failover complete in 45s! us-east-1b is now the primary active writer. Client traffic successfully redirects without manual code updates.'}
-                  </div>
-                </div>
-
-                {/* Timeline Stats */}
-                <div className="asg-card rds-inner-card-grey" style={{ padding: '12px 14px', fontSize: '12px' }}>
-                  <div style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '6px' }}>⏱️ Failover Timeline KPI</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px', marginBottom: '4px' }}>
-                    <span style={{ color: 'var(--color-text-secondary)' }}>Outage detected:</span>
-                    <span style={{ fontWeight: 'bold', color: '#ef4444' }}>~5s</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px', marginBottom: '4px' }}>
-                    <span style={{ color: 'var(--color-text-secondary)' }}>DNS shifts complete:</span>
-                    <span style={{ fontWeight: 'bold', color: 'var(--color-text-primary)' }}>~25s</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '4px' }}>
-                    <span style={{ color: 'var(--color-text-secondary)' }}>Standard failover:</span>
-                    <span style={{ fontWeight: 'bold', color: '#38bdf8' }}>30–60s</span>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Standard comparison gotchas cards from original file */}
-            <div className="rds-grid2" style={{ gap: '12px', marginTop: '14px' }}>
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#16a34a' }}>What You Get (Benefits)</div>
-                <ul className="rds-ck">
-                  <li><b>High Availability &amp; DR:</b> Mitigates hardware errors, hypervisor crashes, network path outages, and total datacenter failures.</li>
-                  <li><b>Zero App Code Changes:</b> RDS handles physical IP modifications on the DNS mapping. The connection endpoint FQDN remains identical.</li>
-                  <li><b>Zero Data Loss:</b> Synchronous commits guarantee Standby has exact identical transaction pages before returning.</li>
-                  <li><b>Backups offloaded:</b> Automated daily snapshots are conducted directly from the Standby, avoiding I/O suspension on Primary.</li>
-                </ul>
-              </div>
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#dc2626' }}>Important Trade-offs</div>
-                <ul className="rds-wn">
-                  <li><b>Standby is NOT readable:</b> You pay for double compute and storage, but Standby serves zero application queries.</li>
-                  <li><b>Slight Write Latency:</b> Because blocks must commit on alternate hardware/network AZs before returning, writes are marginally slower than Single-AZ.</li>
-                  <li><b>Failover Timeline (30–60s):</b> Standard failover takes time (Detect &rarr; Evict primary &rarr; Propagate DNS CNAME change &rarr; Standby starts recovery &rarr; In-service).</li>
-                </ul>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Tab 4: Read Replicas & Scaling */}
-        {activeSection === 'replicas' && (
-          <div>
-            <div className="rds-sec">Interactive WAL Replication Lag &amp; Stale-Read Sandbox</div>
-            
-            {/* Interactive WAL lag controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', marginBottom: '14px', alignItems: 'center' }}>
-              <div className="rds-inner-card-grey" style={{ padding: '12px 14px', borderRadius: '8px' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '6px' }}>
-                  ⏳ Simulate WAL Replication Lag Delay: <b style={{ color: replicaWalLag >= 15 ? '#ef4444' : replicaWalLag >= 5 ? '#f59e0b' : '#10b981' }}>{replicaWalLag} seconds</b>
-                </label>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="30" 
-                  value={replicaWalLag} 
-                  onChange={(e) => setReplicaWalLag(Number(e.target.value))}
-                  style={{ width: '100%', accentColor: '#7c3aed', cursor: 'ew-resize' }}
-                />
-                <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>
-                  CloudWatch metric: `ReplicaLag` (WAL streaming replication backpressure)
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <button 
-                  className="asg-btn asg-on" 
-                  onClick={() => {
-                    const timeNow = new Date();
-                    const staleTime = new Date(timeNow.getTime() - replicaWalLag * 1000);
-                    if (replicaWalLag <= 2) {
-                      log(`🟢 [Replica Query] Retrieved active record state: '${timeNow.toLocaleTimeString()}' (Up-to-date / strong consistency).`);
-                    } else {
-                      log(`🚨 [stale read event] Retrieved active record state: '${staleTime.toLocaleTimeString()}' (STALE DATA served from Replica). Lag: ${replicaWalLag}s.`);
-                    }
-                  }}
-                  style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed', fontSize: '11.5px', padding: '7px' }}
-                >
-                  📖 Query Read Replica
-                </button>
-                <button 
-                  className="asg-btn" 
-                  onClick={() => setReplicaWalLag(0)}
-                  style={{ fontSize: '11.5px', padding: '7px' }}
-                >
-                  ⚡ Sync Replica (0s lag)
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
-              
-              {/* Left Column: State-Responsive SVG Map */}
-              <div className="rds-card rds-inner-card-grey" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
-                <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
-                    🔍 Asynchronous replication streaming map
-                  </span>
-                  <span style={{ fontSize: '11px', color: replicaWalLag >= 15 ? '#ef4444' : replicaWalLag >= 5 ? '#f59e0b' : '#10b981', fontWeight: 'bold' }}>
-                    ● {replicaWalLag === 0 ? 'REAL-TIME SYNC' : replicaWalLag >= 15 ? 'CRITICAL LAG' : 'WAL STREAMING'}
-                  </span>
-                </div>
-
-                <svg width="100%" viewBox="0 0 680 180" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
-                  <defs>
-                    <linearGradient id="r-ok" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--metal-ok-1)" />
-                      <stop offset="35%" stopColor="var(--metal-ok-2)" />
-                      <stop offset="70%" stopColor="var(--metal-ok-3)" />
-                      <stop offset="100%" stopColor="var(--metal-ok-4)" />
-                    </linearGradient>
-                    <linearGradient id="r-rep" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="var(--metal-rep-1)" />
-                      <stop offset="35%" stopColor="var(--metal-rep-2)" />
-                      <stop offset="70%" stopColor="var(--metal-rep-3)" />
-                      <stop offset="100%" stopColor="var(--metal-rep-4)" />
-                    </linearGradient>
-
-                    <linearGradient id="rl-ok" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--lid-ok-1)" />
-                      <stop offset="100%" stopColor="var(--lid-ok-2)" />
-                    </linearGradient>
-                    <linearGradient id="rl-rep" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="var(--lid-replica-1)" />
-                      <stop offset="100%" stopColor="var(--lid-replica-2)" />
-                    </linearGradient>
-
-                    <marker id="arr-rep-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
-                    <marker id="arr-rep-y" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#f59e0b" /></marker>
-                    <marker id="arr-rep-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
-                  </defs>
-
-                  {/* Primary DB in AZ-a */}
-                  <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(45, 45)">
-                    {/* Cylinder */}
-                    <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#r-ok)" stroke="#10b981" strokeWidth="1.5" />
-                    <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#rl-ok)" stroke="#10b981" strokeWidth="1.5" />
-                    <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#064e3b">✍️ Primary Writer</text>
-                    <text x="60" y="55" textAnchor="middle" fontSize="8.5" className="rds-svg-text-secondary" fontFamily="monospace">db.writer.cluster</text>
-                  </g>
-
-                  {/* Read Replica 1 in AZ-c */}
-                  <g className="active-glow-node" style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties} transform="translate(470, 20)">
-                    <path d="M 12 24 L 12 52 A 36 8 0 0 0 84 52 L 84 24 A 36 8 0 0 1 12 24 Z" fill="url(#r-rep)" stroke="#7c3aed" strokeWidth="1" />
-                    <ellipse cx="48" cy="24" rx="36" ry="8" fill="url(#rl-rep)" stroke="#7c3aed" strokeWidth="1" />
-                    <text x="48" y="12" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#4c1d95">📖 Replica 1</text>
-                    <text x="48" y="42" textAnchor="middle" fontSize="7.5" className="rds-svg-text-secondary" fontFamily="monospace">replica-1.domain</text>
-                  </g>
-
-                  {/* Read Replica 2 in AZ-b */}
-                  <g className="active-glow-node" style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties} transform="translate(470, 100)">
-                    <path d="M 12 24 L 12 52 A 36 8 0 0 0 84 52 L 84 24 A 36 8 0 0 1 12 24 Z" fill="url(#r-rep)" stroke="#7c3aed" strokeWidth="1" />
-                    <ellipse cx="48" cy="24" rx="36" ry="8" fill="url(#rl-rep)" stroke="#7c3aed" strokeWidth="1" />
-                    <text x="48" y="12" textAnchor="middle" fontSize="10.5" fontWeight="bold" fill="#4c1d95">📖 Replica 2</text>
-                    <text x="48" y="42" textAnchor="middle" fontSize="7.5" className="rds-svg-text-secondary" fontFamily="monospace">replica-2.domain</text>
-                  </g>
-
-                  {/* Replication stream connector paths */}
-                  {/* Primary -> Replica 1 */}
-                  <path 
-                    d="M 210 75 Q 330 35 470 45" 
-                    fill="none" 
-                    stroke={replicaWalLag >= 15 ? '#ef4444' : replicaWalLag >= 5 ? '#f59e0b' : '#10b981'} 
-                    strokeWidth="1.5" 
-                    className="flow-active-line"
-                    markerEnd={replicaWalLag >= 15 ? 'url(#arr-rep-r)' : replicaWalLag >= 5 ? 'url(#arr-rep-y)' : 'url(#arr-rep-g)'}
-                  />
-
-                  {/* Primary -> Replica 2 */}
-                  <path 
-                    d="M 210 105 Q 330 145 470 125" 
-                    fill="none" 
-                    stroke={replicaWalLag >= 15 ? '#ef4444' : replicaWalLag >= 5 ? '#f59e0b' : '#10b981'} 
-                    strokeWidth="1.5" 
-                    className="flow-active-line"
-                    markerEnd={replicaWalLag >= 15 ? 'url(#arr-rep-r)' : replicaWalLag >= 5 ? 'url(#arr-rep-y)' : 'url(#arr-rep-g)'}
-                  />
-
-                  <text x="330" y="65" textAnchor="middle" fontSize="9" fontWeight="bold" fill={replicaWalLag >= 15 ? '#b91c1c' : '#2563eb'} fontFamily="monospace">
-                    {replicaWalLag === 0 ? 'SYNCHRONIZED' : `ASYNCHRONOUS WAL LAG: ${replicaWalLag}s`}
-                  </text>
-                  <text x="330" y="120" textAnchor="middle" fontSize="7.5" className="rds-svg-text-secondary">Binary replication stream</text>
-                </svg>
-              </div>
-
-              {/* Right Column: Eventual Consistency HUD */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                
-                {/* Eventual consistency warning card */}
-                {replicaWalLag > 2 ? (
-                  <div className="asg-card rds-inner-card-amber" style={{ borderLeft: '3px solid #f59e0b', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px' }}>
-                      ⚠️ Eventual Consistency Risk
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                      Primary writer updated rows at `T-0`. Replicas are still catching up with WAL log offsets.
-                      <br /><br />
-                      Reading from replicas now will serve **stale data** that is {replicaWalLag} seconds behind real-time.
-                    </div>
-                  </div>
-                ) : (
-                  <div className="asg-card rds-inner-card-green" style={{ borderLeft: '3px solid #10b981', padding: '12px 14px' }}>
-                    <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: '#10b981', marginBottom: '4px' }}>
-                      🟢 Strong Read Consistency
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                      Minimal WAL lag delay of {replicaWalLag}s.
-                      <br /><br />
-                      Replicas are fully caught up. Reads served are near-100% strongly consistent with zero risk of stale data.
-                    </div>
-                  </div>
-                )}
-
-                {/* Stale read logic details */}
-                <div className="asg-card rds-inner-card-grey" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4' }}>
-                  <div style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '4px' }}>🛡️ Mitigating Replica Lag</div>
-                  To prevent serving stale data to a user who just wrote something:
-                  <ul style={{ paddingLeft: '14px', margin: '4px 0 0 0' }}>
-                    <li><b>Read-Your-Own-Writes:</b> Force queries to go to the **Primary Writer** for 10-15s immediately following a transaction write.</li>
-                    <li><b>ElastiCache:</b> Cache updates synchronously in Redis for instant read-backs.</li>
-                  </ul>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Standard lists from original file */}
-            <div className="rds-grid2" style={{ gap: '12px', marginTop: '14px' }}>
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#1d4ed8' }}>Ideal Scaling Workloads</div>
-                <ul className="rds-ck">
-                  <li><b>Read Scaling:</b> Distribute heavy query traffic (reporting dashboards, read-only feeds, search routes) across up to 5 individual replicas.</li>
-                  <li><b>Offload Analytics:</b> Run complex SQL analytics queries without locking rows or utilizing compute resources on your Primary transaction DB.</li>
-                  <li><b>Cross-Region DR:</b> Build replicas in different geographical regions to achieve local low-latency reads for global users and warm backup disaster recovery.</li>
-                </ul>
-              </div>
-              <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#dc2626' }}>Gotchas &amp; Replica Lag</div>
-                <ul className="rds-wn">
-                  <li><b>Asynchronous Lag:</b> Replicas are usually split seconds or even minutes behind the primary. Monitor the `ReplicaLag` CloudWatch metric.</li>
-                  <li><b>Stale Reads:</b> Reading a row immediately after updating it on the writer may return the old data if the client gets routed to a lagging replica.</li>
-                  <li><b>Promotion Overhead:</b> Replicas can be promoted to a primary standalone database, but this is a manual lifecycle event that severs replication pipelines.</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Sub-tab grids */}
-            <div style={{ marginTop: '14px' }}>
-              <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Replica Parameters by Database Engine</div>
-              <div className="rds-grid3">
-                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px', color: '#16a34a' }}>PostgreSQL / MySQL</div>
-                  <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '3px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Limit:</span> 5 active replicas</div>
-                  <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '3px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Replication:</span> WAL / binlog streams</div>
-                  <div className="rds-mono" style={{ fontSize: '11px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Cross-Region:</span> ✅ Fully Supported</div>
-                </div>
-                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px', color: '#7c3aed' }}>Amazon Aurora</div>
-                  <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '3px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Limit:</span> 15 cluster replicas</div>
-                  <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '3px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Replication:</span> Shared storage (no lag)</div>
-                  <div className="rds-mono" style={{ fontSize: '11px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Promotion:</span> Automatic (&lt; 30s failover)</div>
-                </div>
-                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '10px' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px', color: '#dc2626' }}>SQL Server / Oracle</div>
-                  <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '3px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Limit:</span> ❌ Not supported on standard RDS</div>
-                  <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '3px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>HA Type:</span> Multi-AZ only (standby)</div>
-                  <div className="rds-mono" style={{ fontSize: '11px' }}><span style={{ color: 'var(--color-text-tertiary)' }}>Scale alternative:</span> ElastiCache / Redis caching</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Tab 5: Live Simulation */}
-        {activeSection === 'sim' && (
-          <div>
-            <div className="rds-sec">Interactive Traffic Routing, Replication Lag &amp; Failover Simulation</div>
-            <div className="rds-card">
-              <div className="rds-controls">
-                <div className="rds-ctrl">
-                  <label>Deployment Mode</label>
-                  <select value={mode} onChange={(e) => setMode(e.target.value as any)}>
-                    <option value="single">Single-AZ (Writer instance only)</option>
-                    <option value="multi">Multi-AZ HA (Writer + Synchronous Standby)</option>
-                    <option value="multi_rr">Multi-AZ + 2 Read Replicas (HA &amp; Read Scaled)</option>
-                  </select>
-                  <div className="out">Mode: <b>{mode === 'single' ? 'Single-AZ' : mode === 'multi' ? 'Multi-AZ' : 'Multi-AZ + 2 Replicas'}</b></div>
-                </div>
-
-                <div className="rds-ctrl">
-                  <label>Read Routing Configuration</label>
-                  <select value={readRoute} onChange={(e) => setReadRoute(e.target.value as any)}>
-                    <option value="writer">Reads &rarr; Writer endpoint directly (Strong Consistency)</option>
-                    <option value="replicas">Reads &rarr; Replicas (if present, else Writer)</option>
-                    <option value="smart">Smart Routing: force Writer within 10s of writes, else Replicas</option>
-                  </select>
-                  <div className="out">Strategy: <b>{readRoute.toUpperCase()}</b></div>
-                </div>
-
-                <div className="rds-ctrl">
-                  <label>Client Traffic Volume (TPS Load)</label>
-                  <input type="range" min="10" max="400" value={tps} onChange={(e) => setTps(Number(e.target.value))} />
-                  <div className="out">Total Load: <b>{tps} TPS</b> (Writes: 25% | Reads: 75%)</div>
-                </div>
-
-                <div className="rds-ctrl">
-                  <label>Replica Lag Delay (seconds)</label>
-                  <input type="range" min="0" max="30" value={lag} onChange={(e) => setLag(Number(e.target.value))} disabled={mode !== 'multi_rr'} />
-                  <div className="out">Active Delay: <b>{lag} seconds</b></div>
-                </div>
-              </div>
-
-              {/* KPI metrics block */}
-              <div className="rds-kpi">
-                <div className="rds-k">
-                  <div className="t">Writer TPS Load</div>
-                  <div className="rds-v">{metrics.writerTps} TPS</div>
-                </div>
-                <div className="rds-k">
-                  <div className="t">Replica TPS (each)</div>
-                  <div className="rds-v">{metrics.replicaEach !== null ? `${metrics.replicaEach} TPS` : '—'}</div>
-                </div>
-                <div className="rds-k">
-                  <div className="t">Failover Cluster State</div>
-                  <div className="rds-v" style={{ color: azFailed ? (mode === 'single' ? 'var(--color-red)' : 'var(--color-amber)') : 'var(--color-green)' }}>{metrics.failState}</div>
-                </div>
-                <div className="rds-k">
-                  <div className="t">Stale Read Risk</div>
-                  <div className="rds-v" style={{ color: metrics.stale === 'High' ? 'var(--color-red)' : metrics.stale === 'Med' ? 'var(--color-amber)' : 'var(--color-green)' }}>{metrics.stale}</div>
-                </div>
-              </div>
-
-              {/* Action button bar */}
-              <div className="rds-btnbar">
-                <button className="rds-btn rds-primary" onClick={sendWrite}>✍️ Simulate WRITE</button>
-                <button className="rds-btn" onClick={sendRead}>📖 Simulate READ</button>
-                <button className="rds-btn rds-btn-danger" onClick={toggleAzFail}>⚡ Toggle AZ Failure</button>
-                <button className="rds-btn" onClick={resetSim}>🔄 Reset Sim</button>
-              </div>
-
-              {/* Live diagram & Active Log side-by-side */}
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch', marginTop: '16px' }}>
-                <div className="rds-card rds-inner-card-grey" style={{ flex: 7, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.02)', margin: 0 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'activeNodePulse 1.5s infinite', '--pulse-color': 'rgba(16, 185, 129, 0.5)' } as React.CSSProperties}></span>
-                      Live Active Traffic Ingress Diagram
-                    </div>
-                    
-                    <svg width="100%" viewBox="0 0 680 260" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
-                      <defs>
-                        {/* 3D Cylinder Metallic Body Gradients */}
-                        <linearGradient id="metal-writer-ok" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="var(--metal-ok-1)" />
-                          <stop offset="35%" stopColor="var(--metal-ok-2)" />
-                          <stop offset="70%" stopColor="var(--metal-ok-3)" />
-                          <stop offset="100%" stopColor="var(--metal-ok-4)" />
-                        </linearGradient>
-                        <linearGradient id="metal-writer-fail" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="var(--c-db-fail-1)" />
-                          <stop offset="35%" stopColor="var(--c-db-fail-2)" />
-                          <stop offset="70%" stopColor="var(--c-db-fail-3)" />
-                          <stop offset="100%" stopColor="var(--c-db-fail-4)" />
-                        </linearGradient>
-                        <linearGradient id="metal-standby-ok" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="var(--metal-warn-1)" />
-                          <stop offset="35%" stopColor="var(--metal-warn-2)" />
-                          <stop offset="70%" stopColor="var(--metal-warn-3)" />
-                          <stop offset="100%" stopColor="var(--metal-warn-4)" />
-                        </linearGradient>
-                        <linearGradient id="metal-replica" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="var(--metal-rep-1)" />
-                          <stop offset="35%" stopColor="var(--metal-rep-2)" />
-                          <stop offset="70%" stopColor="var(--metal-rep-3)" />
-                          <stop offset="100%" stopColor="var(--metal-rep-4)" />
-                        </linearGradient>
-                        <linearGradient id="metal-app" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="var(--metal-app-1)" />
-                          <stop offset="35%" stopColor="var(--metal-app-2)" />
-                          <stop offset="70%" stopColor="var(--metal-app-3)" />
-                          <stop offset="100%" stopColor="var(--metal-app-4)" />
-                        </linearGradient>
-
-                        {/* Top Lids Gradient fills */}
-                        <linearGradient id="lid-writer-ok" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--lid-ok-1)" />
-                          <stop offset="100%" stopColor="var(--lid-ok-2)" />
-                        </linearGradient>
-                        <linearGradient id="lid-writer-fail" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--l-db-fail-1)" />
-                          <stop offset="100%" stopColor="var(--l-db-fail-2)" />
-                        </linearGradient>
-                        <linearGradient id="lid-standby-ok" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--lid-warn-1)" />
-                          <stop offset="100%" stopColor="var(--lid-warn-2)" />
-                        </linearGradient>
-                        <linearGradient id="lid-replica" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--lid-replica-1)" />
-                          <stop offset="100%" stopColor="var(--lid-replica-2)" />
-                        </linearGradient>
-                        <linearGradient id="lid-app" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--lid-app-1)" />
-                          <stop offset="100%" stopColor="var(--lid-app-2)" />
-                        </linearGradient>
-
-                        {/* Route connection arrows */}
-                        <marker id="arr-write" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-blue)" />
-                        </marker>
-                        <marker id="arr-read" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-purple)" />
-                        </marker>
-                        <marker id="arr-sync" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-green)" />
-                        </marker>
-                        <marker id="arr-async" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-purple)" />
-                        </marker>
-                        <marker id="arr-fail" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                          <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-red)" />
-                        </marker>
-                      </defs>
-
-                      {/* Availability Zones Boundaries */}
-                      {/* AZ-A (Primary Subnet) */}
-                      <rect x="215" y="30" width="220" height="205" rx="12" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="4,4" />
-                      <text x="325" y="44" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--color-text-secondary)" letterSpacing="0.02em" fontFamily="inherit">us-east-1a Subnet (Primary Zone)</text>
-
-                      {/* AZ-B/C (Secondary Subnets) */}
-                      <rect x="445" y="30" width="220" height="205" rx="12" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="4,4" />
-                      <text x="555" y="44" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--color-text-secondary)" letterSpacing="0.02em" fontFamily="inherit">
-                        {mode === 'multi_rr' ? 'us-east-1b & us-east-1c Zones' : 'us-east-1b Subnet (Standby Zone)'}
-                      </text>
-
-                      {/* APP TIER: Detailed high-fidelity Server Stack */}
-                      <g transform="translate(20, 75)">
-                        {/* Server container frame */}
-                        <rect x="0" y="0" width="165" height="110" rx="16" fill="url(#metal-app)" stroke="#2563eb" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.25)' } as React.CSSProperties} />
-                        <rect x="5" y="5" width="155" height="100" rx="11" fill="#1e293b" />
-                        
-                        {/* Server Blades/Drawers */}
-                        {/* Drawer 1 */}
-                        <rect x="12" y="16" width="141" height="20" rx="4" fill="#0f172a" stroke="#334155" />
-                        <circle cx="22" cy="26" r="3" fill="#10b981" />
-                        <circle cx="30" cy="26" r="1.5" fill="#3b82f6" style={{ animation: 'activeNodePulse 1s infinite', '--pulse-color': '#3b82f6' } as React.CSSProperties} />
-                        <rect x="45" y="24" width="70" height="4" rx="2" fill="#1e293b" />
-                        <rect x="45" y="24" width="45" height="4" rx="2" fill="#10b981" />
-                        
-                        {/* Drawer 2 */}
-                        <rect x="12" y="42" width="141" height="20" rx="4" fill="#0f172a" stroke="#334155" />
-                        <circle cx="22" cy="52" r="3" fill="#10b981" />
-                        <circle cx="30" cy="52" r="1.5" fill="#3b82f6" style={{ animation: 'activeNodePulse 1.2s infinite', '--pulse-color': '#3b82f6' } as React.CSSProperties} />
-                        <rect x="45" y="50" width="70" height="4" rx="2" fill="#1e293b" />
-                        <rect x="45" y="50" width="60" height="4" rx="2" fill="#0284c7" />
-
-                        {/* Server Rack Labels */}
-                        <text x="82.5" y="78" textAnchor="middle" fontSize="10" fill="#e2e8f0" fontWeight="bold" fontFamily="inherit">💻 sg-app compute-tier</text>
-                        <text x="82.5" y="92" textAnchor="middle" fontSize="8" fill="#94a3b8" fontFamily="monospace">Load: {tps} TPS (25% W | 75% R)</text>
-                      </g>
-
-                      {/* State computation variables */}
-                      {(() => {
-                        const writerIsActive = !azFailed;
-                        const writerIsSingleDown = azFailed && mode === 'single';
-                        const writerIsMultiFailed = azFailed && mode !== 'single';
-
-                        // 1. Primary DB Instance (AZ-a)
-                        let wBodyFill = 'url(#metal-writer-ok)';
-                        let wLidFill = 'url(#lid-writer-ok)';
-                        let wStroke = 'var(--color-green)';
-                        let wText = 'var(--color-green)';
-                        let wStatus = 'WRITER: WAL committing';
-                        let wGlow = 'active-glow-node';
-                        let wPulse = 'rgba(16, 185, 129, 0.35)';
-
-                        if (writerIsSingleDown) {
-                          wBodyFill = 'url(#metal-writer-fail)';
-                          wLidFill = 'url(#lid-writer-fail)';
-                          wStroke = 'var(--color-red)';
-                          wText = 'var(--color-red)';
-                          wStatus = '🚨 OFFLINE (NO HA)';
-                          wGlow = '';
-                          wPulse = '';
-                        } else if (writerIsMultiFailed) {
-                          wBodyFill = 'url(#metal-writer-fail)';
-                          wLidFill = 'url(#lid-writer-fail)';
-                          wStroke = 'var(--color-red)';
-                          wText = 'var(--color-red)';
-                          wStatus = '❌ EVICTED (Zone Crash)';
-                          wGlow = '';
-                          wPulse = '';
-                        }
-
-                        // 2. Standby HA Instance (AZ-b) Promotion
-                        const standbyActive = mode !== 'single';
-                        const standbyIsPromoted = azFailed && standbyActive;
-
-                        let sBodyFill = 'url(#metal-standby-ok)';
-                        let sLidFill = 'url(#lid-standby-ok)';
-                        let sStroke = 'var(--color-amber)';
-                        let sText = 'var(--color-amber)';
-                        let sStatus = '🛡️ PASSIVE HOT STANDBY';
-                        let sGlow = '';
-                        let sPulse = 'rgba(251, 191, 36, 0.15)';
-
-                        if (standbyIsPromoted) {
-                          sBodyFill = 'url(#metal-writer-ok)';
-                          sLidFill = 'url(#lid-writer-ok)';
-                          sStroke = 'var(--color-green)';
-                          sText = 'var(--color-green)';
-                          sStatus = '✍️ PROMOTED ACTIVE WRITER';
-                          sGlow = 'active-glow-node';
-                          sPulse = 'rgba(16, 185, 129, 0.4)';
-                        }
-
-                        // Active writer y coordinate for dynamic routing
-                        const activeWriterY = standbyIsPromoted ? 180 : 90;
-
-                        return (
-                          <>
-                            {/* CONNECTIONS PIPELINES (STATE RESPONSIVE ROUTES) */}
-                            {writerIsSingleDown ? (
-                              <>
-                                {/* Blocked line */}
-                                <path d="M 185 130 C 210 130, 220 95, 235 90" fill="none" stroke="var(--color-red)" strokeWidth="2.5" strokeDasharray="4,4" />
-                                <text x="215" y="112" fontSize="8" fontWeight="bold" fill="var(--color-red)" textAnchor="middle">❌ OFFLINE</text>
-                                <circle cx="205" cy="130" r="10" fill="var(--color-red)" />
-                                <text x="205" y="130" dominantBaseline="central" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#ffffff">X</text>
-                              </>
-                            ) : (
-                              <>
-                                {/* 1. Active WRITE Endpoint Route (Blue conduit) */}
-                                <path d={`M 185 120 C 210 120, 220 ${activeWriterY - 10}, 245 ${activeWriterY - 10}`} fill="none" stroke="var(--color-blue)" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-write)" />
-                                <text x="215" y={activeWriterY - 15} fontSize="8.5" fontWeight="bold" fill="var(--color-blue)" textAnchor="middle">Writes: {metrics.writes} TPS</text>
-
-                                {/* 2. Active READ Endpoint Route */}
-                                {metrics.readTarget === 'writer' ? (
-                                  <>
-                                    <path d={`M 185 140 C 210 140, 220 ${activeWriterY + 10}, 245 ${activeWriterY + 10}`} fill="none" stroke="var(--color-blue)" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-write)" />
-                                    <text x="215" y={activeWriterY + 22} fontSize="8.5" fontWeight="bold" fill="var(--color-blue)" textAnchor="middle">Reads: {metrics.reads} TPS</text>
-                                  </>
-                                ) : (
-                                  mode === 'multi_rr' && (
-                                    <>
-                                      {/* Eventual Consistency reads route to replicas (Purple) */}
-                                      <path d="M 185 140 C 220 140, 360 85, 480 85" fill="none" stroke="var(--color-purple)" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-read)" />
-                                      <path d="M 185 145 C 220 145, 360 165, 480 165" fill="none" stroke="var(--color-purple)" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-read)" />
-                                      <text x="235" y="160" fontSize="8.5" fontWeight="bold" fill="var(--color-purple)" textAnchor="middle">Reads (Split): {metrics.reads} TPS</text>
-                                    </>
-                                  )
-                                )}
-                              </>
-                            )}
-
-                            {/* ----------------- PRIMARY WRITER DATABASE (AZ-A) ----------------- */}
-                            <g transform="translate(250, 52)" className={wGlow} style={{ '--pulse-color': wGlow ? wPulse : '' } as React.CSSProperties}>
-                              {/* 3D Cylinder Shape */}
-                              {/* Metallic Body */}
-                              <path d="M 15 40 L 15 80 A 45 12 0 0 0 105 80 L 105 40 A 45 12 0 0 1 15 40 Z" fill={wBodyFill} stroke={wStroke} strokeWidth="1.5" />
-                              {/* Glowing Top Lid Ellipse */}
-                              <ellipse cx="60" cy="40" rx="45" ry="12" fill={wLidFill} stroke={wStroke} strokeWidth="1.5" />
-                              {/* Server Rack Lining cues inside database */}
-                              <line x1="28" y1="56" x2="92" y2="56" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
-                              <line x1="28" y1="68" x2="92" y2="68" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
-                              
-                              {/* Text descriptions inside/above cylinder */}
-                              <text x="60" y="24" textAnchor="middle" fontSize="10.5" fontWeight="800" fill={wText}>🐘 Primary DB Writer</text>
-                              <text x="60" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill={wText} opacity="0.95">{wStatus}</text>
-                              <text x="60" y="98" textAnchor="middle" fontSize="9" fontWeight="800" fill={wText}>{writerIsActive ? `Load: ${metrics.writerTps} TPS` : '0 TPS — Unreachable'}</text>
-                            </g>
-
-                            {/* ----------------- HIGH AVAILABILITY STANDBY (AZ-B) ----------------- */}
-                            {standbyActive && (
-                              <g transform="translate(250, 142)" className={sGlow} style={{ '--pulse-color': sGlow ? sPulse : '' } as React.CSSProperties}>
-                                {/* 3D Cylinder Shape */}
-                                <path d="M 15 40 L 15 80 A 45 12 0 0 0 105 80 L 105 40 A 45 12 0 0 1 15 40 Z" fill={sBodyFill} stroke={sStroke} strokeWidth="1.5" />
-                                <ellipse cx="60" cy="40" rx="45" ry="12" fill={sLidFill} stroke={sStroke} strokeWidth="1.5" />
-                                <line x1="28" y1="56" x2="92" y2="56" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
-                                <line x1="28" y1="68" x2="92" y2="68" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
-
-                                <text x="60" y="24" textAnchor="middle" fontSize="10.5" fontWeight="800" fill={sText}>{standbyIsPromoted ? '🛡️ Promoted DB Writer' : '🛡️ HA Standby DB'}</text>
-                                <text x="60" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill={sText} opacity="0.95">{sStatus}</text>
-                                <text x="60" y="98" textAnchor="middle" fontSize="9" fontWeight="800" fill={sText}>{standbyIsPromoted ? `Load: ${metrics.writerTps} TPS` : 'State: Mirrored Commit (0 lag)'}</text>
-                              </g>
-                            )}
-
-                            {/* 1. Synchronous Replication link (Green Sync conduit) */}
-                            {standbyActive && (
-                              writerIsActive ? (
-                                <>
-                                  <path d="M 310 135 L 310 180" fill="none" stroke="var(--color-green)" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-sync)" />
-                                  <text x="345" y="158" fontSize="8" fontWeight="bold" fill="var(--color-green)" textAnchor="middle">SYNC COMMITS 🔄</text>
-                                </>
-                              ) : (
-                                <>
-                                  <path d="M 310 135 L 310 180" fill="none" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,3" />
-                                  <text x="345" y="158" fontSize="8" fontWeight="bold" fill="var(--color-red)" textAnchor="middle">LINK BROKEN ❌</text>
-                                </>
-                              )
-                            )}
-
-                            {/* ----------------- READ REPLICAS (AZ-B / AZ-C) ----------------- */}
-                            {mode === 'multi_rr' && (
-                              <>
-                                {/* Replica #1 */}
-                                <g transform="translate(485, 48)" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.25)' } as React.CSSProperties}>
-                                  <path d="M 12 32 L 12 64 A 36 10 0 0 0 84 64 L 84 32 A 36 10 0 0 1 12 32 Z" fill="url(#metal-replica)" stroke="var(--color-purple)" strokeWidth="1" />
-                                  <ellipse cx="48" cy="32" rx="36" ry="10" fill="url(#lid-replica)" stroke="var(--color-purple)" strokeWidth="1" />
-                                  <line x1="22" y1="45" x2="74" y2="45" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-                                  
-                                  <text x="48" y="18" textAnchor="middle" fontSize="10" fontWeight="800" fill="var(--color-purple)">📖 Read Replica 1</text>
-                                  <text x="48" y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontFamily="monospace">Lag: {lag}s | {metrics.replicaEach} TPS</text>
-                                </g>
-
-                                {/* Replica #2 */}
-                                <g transform="translate(485, 138)" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.25)' } as React.CSSProperties}>
-                                  <path d="M 12 32 L 12 64 A 36 10 0 0 0 84 64 L 84 32 A 36 10 0 0 1 12 32 Z" fill="url(#metal-replica)" stroke="var(--color-purple)" strokeWidth="1" />
-                                  <ellipse cx="48" cy="32" rx="36" ry="10" fill="url(#lid-replica)" stroke="var(--color-purple)" strokeWidth="1" />
-                                  <line x1="22" y1="45" x2="74" y2="45" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-
-                                  <text x="48" y="18" textAnchor="middle" fontSize="10" fontWeight="800" fill="var(--color-purple)">📖 Read Replica 2</text>
-                                  <text x="48" y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontFamily="monospace">Lag: {lag}s | {metrics.replicaEach} TPS</text>
-                                </g>
-
-                                {/* Async streaming lines from writer to replicas */}
-                                {writerIsActive ? (
-                                  <>
-                                    <path d="M 370 90 C 400 90, 420 70, 480 70" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
-                                    <path d="M 370 100 C 400 100, 420 150, 480 150" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
-                                    <text x="420" y="62" fontSize="7.5" fontWeight="bold" fill="var(--color-purple)" textAnchor="middle">Async WAL ➡️</text>
-                                  </>
-                                ) : (
-                                  <>
-                                    {/* Standby Promoted DB routes WAL replication stream to replicas */}
-                                    <path d="M 370 180 C 400 180, 420 100, 480 80" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-async)" />
-                                    <path d="M 370 190 C 400 190, 420 170, 480 160" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(--arr-async)" />
-                                    <text x="415" y="195" fontSize="7.5" fontWeight="bold" fill="var(--color-purple)" textAnchor="middle">Async WAL ➡️</text>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </svg>
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.5' }}>
-                    💡 <b>Tip:</b> Toggling AZ failure with Multi-AZ enabled demonstrates automatic node shift: traffic is seamlessly routed to the us-east-1b promoted standby writer, and replica connections are maintained without downtime. In Single-AZ, writes fail immediately.
-                  </div>
-                </div>
-
-                <div style={{ flex: 3, position: 'relative' }}>
-                  <div className="rds-log" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, marginTop: 0, minHeight: 'unset', maxHeight: 'none', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: logHtml }} />
-                </div>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* Tab 6: Advanced Features */}
-        {activeSection === 'advanced' && (
-          <div>
-            <div className="rds-sec">Advanced Enterprise Features: Backup Sandbox, CoW Cloning, Compliance HUD, ML SQL &amp; RDS Proxy</div>
-            <div className="rds-card">
-              
-              {/* Feature sub-tabs */}
-              <div className="rds-subtabs">
-                <button className={`rds-subtb ${activeFeatureTab === 'backup' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('backup')}>💾 6.1) Backup PITR Sandbox</button>
-                <button className={`rds-subtb ${activeFeatureTab === 'clone' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('clone')}>🧬 6.2) DB Cloning Sandbox</button>
-                <button className={`rds-subtb ${activeFeatureTab === 'security' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('security')}>🔒 6.3) Security HUD Grade</button>
-                <button className={`rds-subtb ${activeFeatureTab === 'ml' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('ml')}>🤖 6.4) ML SQL Sandbox</button>
-                <button className={`rds-subtb ${activeFeatureTab === 'proxy' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('proxy')}>🔀 6.5) RDS Proxy Pooling</button>
-              </div>
-
-              {/* Sub-tab 6.1: Backup & Restore */}
-              {activeFeatureTab === 'backup' && (() => {
-                const formatPitrTime = (m: number) => {
-                  const hh = String(Math.floor(m / 60)).padStart(2, '0');
-                  const mm = String(m % 60).padStart(2, '0');
-                  return `${hh}:${mm}:00 UTC`;
-                };
-
-                const pitrTimeFormatted = formatPitrTime(pitrTargetTime);
-                const isLateTime = pitrTargetTime > 720;
-                
-                return (
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-amber)' }}>💾 Point-in-Time Recovery (PITR) Daily Snapshots &amp; WAL Timeline Simulator</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
-                      RDS combines **Daily automated incremental backups** with **5-minute transaction Write-Ahead Log (WAL) streams** uploaded to Amazon S3. Restore your cluster down to any exact millisecond commit within the retention window.
-                    </div>
-                    
-                    <div className="rds-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
-                      <div className="rds-ctrl">
-                        <label>1. Set Backup Retention Window (Days)</label>
-                        <input type="range" min="1" max="35" value={pitrDays} onChange={(e) => setPitrDays(Number(e.target.value))} />
-                        <div className="out" style={{ color: 'var(--color-amber)' }}>Retention Period: <b>{pitrDays} days</b> (Range: 1–35 days)</div>
-                      </div>
-
-                      <div className="rds-ctrl">
-                        <label>2. Drag Target Recovery Point (Timeline Time)</label>
-                        <input type="range" min="0" max="1439" value={pitrTargetTime} onChange={(e) => setPitrTargetTime(Number(e.target.value))} />
-                        <div className="out" style={{ color: 'var(--color-blue)' }}>Point-In-Time: <b>{pitrTimeFormatted}</b></div>
-                      </div>
-                    </div>
-
-                    {/* Timeline Interactive Vector */}
-                    <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
-                        📊 RDS Point-In-Time Recovery Timeline (Active Restore Frame)
-                      </div>
-                      
-                      <svg width="100%" height="90" viewBox="0 0 640 90" className="rds-svg-bg" style={{ borderRadius: '6px' }}>
-                        {/* Timeline Base Bar */}
-                        <rect x="30" y="45" width="580" height="8" rx="4" fill="var(--rds-inner-card-border)" />
-                        <rect x="30" y="45" width="580" height="8" rx="4" fill="var(--color-green)" opacity="0.3" />
-                        
-                        {/* Daily snapshot nodes */}
-                        <circle cx="50" cy="49" r="6" fill="var(--color-green)" />
-                        <text x="50" y="32" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Snapshot 00:00</text>
-                        
-                        <circle cx="240" cy="49" r="6" fill="var(--color-green)" />
-                        <text x="240" y="32" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Snapshot 08:00</text>
-
-                        <circle cx="430" cy="49" r="6" fill="var(--color-green)" />
-                        <text x="430" y="32" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Snapshot 16:00</text>
-                        
-                        {/* Selected recovery point indicator */}
-                        {(() => {
-                          const px = 30 + (pitrTargetTime / 1439) * 580;
-                          return (
-                            <g>
-                              <line x1={px} y1="12" x2={px} y2="78" stroke="var(--color-blue)" strokeWidth="2" strokeDasharray="2,2" />
-                              <polygon points={`${px},40 ${px - 5},30 ${px + 5},30`} fill="var(--color-blue)" />
-                              <circle cx={px} cy="49" r="8" fill="var(--color-blue)" className="active-glow-node" style={{ '--pulse-color': 'rgba(2, 132, 199, 0.4)' } as React.CSSProperties} />
-                              <text x={px} y="74" textAnchor="middle" fontSize="9" fill="var(--color-blue)" fontWeight="bold">Target Point: {pitrTimeFormatted}</text>
-                            </g>
-                          );
-                        })()}
-                        
-                        {/* S3 WAL Segments continuous label */}
-                        <text x="590" y="18" textAnchor="end" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">Continuous WAL Streams ➡️ Amazon S3</text>
-                      </svg>
-                    </div>
-
-                    <div className="rds-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
-                      {/* Restoration Log Monospace Terminal */}
-                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--color-blue)', marginBottom: '8px', fontFamily: 'monospace' }}>
-                          ⚡ Monospace Recovery Journal Logs
-                        </div>
-                        <div className="rds-mono" style={{ fontSize: '10.5px', color: 'var(--color-text-primary)', lineHeight: '1.5', minHeight: '120px' }}>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>[1/4]</span> Probing S3 catalog for base daily snapshot...<br/>
-                          <span style={{ color: 'var(--color-green)' }}>[SUCCESS]</span> Found snapshot <span style={{ color: 'var(--color-green)', fontWeight: 'bold' }}>`rds-backup-snap-daily-t00`</span><br/>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>[2/4]</span> Deploying new database compute node in isolated VPC subnet...<br/>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>[3/4]</span> Replaying S3 Write-Ahead Log (WAL) segments...<br/>
-                          <span style={{ color: 'var(--color-blue)' }}>[INFO]</span> Streamed {isLateTime ? '1,592' : '482'} WAL logs from snapshot to target restore frame {pitrTimeFormatted}<br/>
-                          <span style={{ color: 'var(--color-amber)' }}>[SUCCESS]</span> DB cluster fully recovered to T-minus {pitrTimeFormatted}. Status: <span style={{ color: 'var(--color-green)', fontWeight: 'bold' }}>ACTIVE</span>
-                        </div>
-                      </div>
-
-                      {/* Technical specifications */}
-                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-green)', marginBottom: '6px' }}>Recovery Action Metrics</div>
-                        <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>Backup Window Active:</span> <b>{pitrDays} Days</b>
-                        </div>
-                        <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>Recovery Target Point:</span> <b style={{ color: 'var(--color-blue)' }}>{pitrTimeFormatted}</b>
-                        </div>
-                        <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>Est. Restoration time:</span> <b style={{ color: 'var(--color-amber)' }}>{isLateTime ? '18.4 seconds' : '7.2 seconds'}</b>
-                        </div>
-                        <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.4' }}>
-                          💡 <b>System Note:</b> Point-in-time recovery builds a completely *new* database instance. The source production database suffers **zero downtime** and **zero system latency** during restore workflows.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Sub-tab 6.2: DB Cloning */}
-              {activeFeatureTab === 'clone' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-purple)' }}>🧬 Amazon Aurora Copy-on-Write Instant Database Cloning</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
-                    Unlike standard snapshot restores that physically duplicate raw database sectors (taking hours), **Aurora Database Cloning** uses a **Copy-on-Write metadata pointer mapping**. Create instant clones for staging/analytics that cost nothing and share storage pages until records actually diverge!
-                  </div>
-
-                  <div className="rds-grid2" style={{ gap: '14px', alignItems: 'stretch' }}>
-                    {/* Cloning SVG Sandbox */}
-                    <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
-                          📐 Copy-on-Write Database Metadata Storage Mapping
-                        </div>
-                        
-                        <svg width="100%" height="150" viewBox="0 0 310 150" className="rds-svg-bg" style={{ borderRadius: '6px' }}>
-                          {/* Production Node */}
-                          <path d="M 25 12 L 25 32 A 40 8 0 0 0 105 32 L 105 12 A 40 8 0 0 1 25 12 Z" fill="url(#metal-writer-ok)" stroke="var(--color-green)" strokeWidth="1" />
-                          <ellipse cx="65" cy="12" rx="40" ry="8" fill="url(#lid-writer-ok)" stroke="var(--color-green)" strokeWidth="1" />
-                          <text x="65" y="26" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Production DB</text>
-
-                          {/* Cloned Node */}
-                          <path d="M 205 12 L 205 32 A 40 8 0 0 0 285 32 L 285 12 A 40 8 0 0 1 205 12 Z" fill="url(#metal-replica)" stroke="var(--color-purple)" strokeWidth="1" />
-                          <ellipse cx="245" cy="12" rx="40" ry="8" fill="url(#lid-replica)" stroke="var(--color-purple)" strokeWidth="1" />
-                          <text x="245" y="26" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">Staging Clone DB</text>
-
-                          {/* Base Storage Pool */}
-                          <rect x="15" y="90" width="280" height="45" rx="5" fill="var(--rds-inner-card-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="1" />
-                          <text x="155" y="102" textAnchor="middle" fontSize="8.5" fill="var(--color-text-secondary)" fontWeight="bold">Shared Quorum Physical Volume (500 GiB)</text>
-
-                          {/* Shared Storage Blocks */}
-                          <rect x="25" y="112" width="30" height="16" rx="2" fill="var(--rds-inner-card-border)" stroke="var(--color-green)" strokeWidth="0.5" />
-                          <text x="40" y="120" textAnchor="middle" fontSize="8" fill="var(--color-green)">Blk A</text>
-
-                          <rect x="65" y="112" width="30" height="16" rx="2" fill="var(--rds-inner-card-border)" stroke="var(--color-green)" strokeWidth="0.5" />
-                          <text x="80" y="120" textAnchor="middle" fontSize="8" fill="var(--color-green)">Blk B</text>
-
-                          <rect x="105" y="112" width="30" height="16" rx="2" fill="var(--rds-inner-card-border)" stroke="var(--color-green)" strokeWidth="0.5" />
-                          <text x="120" y="120" textAnchor="middle" fontSize="8" fill="var(--color-green)">Blk C</text>
-
-                          {/* Pointers lines */}
-                          <path d="M 65 32 L 65 90" fill="none" stroke="var(--color-green)" strokeWidth="1" strokeDasharray="3,3" />
-                          <path d="M 245 32 L 245 90" fill="none" stroke="var(--color-purple)" strokeWidth="1" strokeDasharray="3,3" />
-
-                          {/* Diverged Blocks inside the storage or above */}
-                          {cloneDivergedBlocks > 0 ? (
-                            <>
-                              <rect x="200" y="112" width="80" height="16" rx="2" fill="rgba(239, 68, 68, 0.15)" stroke="var(--color-red)" strokeWidth="0.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(239, 68, 68, 0.4)' } as React.CSSProperties} />
-                              <text x="240" y="120" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">Diverged ({cloneDivergedBlocks} Blk)</text>
-                              <path d="M 245 32 L 240 110" fill="none" stroke="var(--color-red)" strokeWidth="1.5" />
-                            </>
-                          ) : (
-                            <text x="210" y="122" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)">Zero Diverge</text>
-                          )}
-                        </svg>
-                      </div>
-
-                      <div style={{ marginTop: '10px' }}>
-                        <button className="rds-btn rds-btn-purple" onClick={handleCloneWrite} style={{ width: '100%', justifyContent: 'center' }}>
-                          ✍️ Simulate WRITE on Clone DB (Trigger Storage Divergence)
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Clone activity terminal console */}
-                    <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--color-purple)', marginBottom: '8px', fontFamily: 'monospace' }}>
-                        📟 Copy-On-Write Storage Allocation Real-time Streams
-                      </div>
-                      
-                      <div className="rds-mono" style={{ fontSize: '10.5px', color: 'var(--color-text-primary)', height: '140px', overflowY: 'auto', lineHeight: '1.6' }}>
-                        {cloneLogs.map((lg, idx) => (
-                          <div key={idx} dangerouslySetInnerHTML={{ __html: lg }} />
-                        ))}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--rds-inner-card-border)', paddingTop: '10px', marginTop: '10px', fontSize: '11px', color: 'var(--color-text-primary)' }}>
-                        <div>Production Size: <b style={{ color: 'var(--color-green)' }}>500 GiB</b></div>
-                        <div>Clone Diverged Cost: <b style={{ color: cloneDivergedBlocks > 0 ? 'var(--color-red)' : 'var(--color-text-secondary)' }}>{cloneDivergedBlocks * 4} GiB</b></div>
-                        <div>Storage Saved: <b style={{ color: 'var(--color-green)' }}>{cloneDivergedBlocks > 0 ? `${(1 - (cloneDivergedBlocks * 4 / 500)) * 100}%` : '100%'}</b></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Sub-tab 6.3: Security Checklist */}
-              {activeFeatureTab === 'security' && (() => {
-                const passed = secItems.filter(i => i.done).length;
-                const total = secItems.length;
-                const pct = Math.round((passed / total) * 100);
-
-                let grade = 'F';
-                let gColor = 'var(--color-red)';
-                let gDesc = 'Critical Insecure';
-                if (pct >= 90) { grade = 'A+'; gColor = 'var(--color-green)'; gDesc = 'Highly Hardened (Production Ready)'; }
-                else if (pct >= 80) { grade = 'A'; gColor = 'var(--color-green)'; gDesc = 'Excellent Security Grade'; }
-                else if (pct >= 70) { grade = 'B'; gColor = 'var(--color-blue)'; gDesc = 'Secure Configuration'; }
-                else if (pct >= 50) { grade = 'C'; gColor = 'var(--color-amber)'; gDesc = 'Basic Security (Needs Hardening)'; }
-                else if (pct >= 30) { grade = 'D'; gColor = 'var(--color-amber)'; gDesc = 'Vulnerable Configuration'; }
-
-                // Stroke dash circumference calculations
-                const radius = 36;
-                const circumference = 2 * Math.PI * radius; // ~226.19
-                const strokeDashoffset = circumference - (pct / 100) * circumference;
-
-                return (
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-green)' }}>🔒 Production Grade Database Security Compliance Hardening Auditor</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
-                      Security Group inbound filters, SSL enforcement, Database encryption at rest, and deletion locks are crucial for databases. Complete target checks below to audit compliance score.
-                    </div>
-
-                    <div className="rds-inner-card-grey" style={{ display: 'flex', gap: '14px', alignItems: 'center', borderRadius: '8px', padding: '14px', marginBottom: '14px' }}>
-                      {/* Security Circular Progress Circle Ring */}
-                      <div style={{ position: 'relative', width: '90px', height: '90px', flexShrink: 0 }}>
-                        <svg width="90" height="90" viewBox="0 0 90 90">
-                          {/* Base circle background track */}
-                          <circle cx="45" cy="45" r={radius} fill="none" stroke="var(--rds-inner-card-border)" strokeWidth="6" />
-                          {/* Progress circle track */}
-                          <circle
-                            cx="45"
-                            cy="45"
-                            r={radius}
-                            fill="none"
-                            stroke={gColor}
-                            strokeWidth="6"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={strokeDashoffset}
-                            strokeLinecap="round"
-                            transform="rotate(-90 45 45)"
-                            style={{ transition: 'stroke-dashoffset 0.35s' }}
-                          />
-                        </svg>
-                        {/* Text center displays */}
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
-                          <span style={{ fontSize: '18px', fontWeight: 'bold', color: gColor }}>{grade}</span>
-                          <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>{pct}%</span>
-                        </div>
-                      </div>
-
-                      {/* Score metrics */}
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>Compliance Grade: <span style={{ color: gColor }}>{grade} — {gDesc}</span></div>
-                        <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>
-                          Your database currently satisfies <b>{passed} out of {total}</b> verified hardening guidelines. AWS Well-Architected Framework requires an A/A+ grade configuration before exposing active tables to any external compute sources.
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Hardening Checklist Grid */}
-                    <div className="rds-grid2" style={{ gap: '8px', marginBottom: '12px' }}>
-                      {secItems.map((item, idx) => (
-                        <div
-                          key={idx}
-                          onClick={() => toggleSecItem(idx)}
-                          className={item.done ? "rds-inner-card-green" : "rds-inner-card-grey"}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '10px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            transition: 'all 0.15s'
-                          }}
-                        >
-                          <div style={{ fontSize: '14px' }}>{item.done ? '✅' : '⬜'}</div>
-                          <div style={{ fontSize: '11.5px', fontWeight: 600, color: item.done ? 'var(--color-green)' : 'var(--color-text-primary)' }}>
-                            {item.label}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Sub-tab 6.4: ML Integration */}
-              {activeFeatureTab === 'ml' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-purple)' }}>🤖 High-Throughput SQL Machine Learning Inference Sandbox (pgml)</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
-                    AWS RDS PostgreSQL and Aurora support machine learning inferences directly inside relational SQL queries! Call SageMaker endpoints synchronously, train linear models inside PostgreSQL schemas, or delegate classification via Lambda pipelines.
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                    <button
-                      className={`rds-subtb ${activeMlQuery === 'sentiment' ? 'rds-on-purple' : ''}`}
-                      onClick={() => { setActiveMlQuery('sentiment'); setMlOutput([]); setMlLogs([]); }}
-                    >
-                      🗣️ Sentiment Analyzer (SageMaker Endpoint)
-                    </button>
-                    <button
-                      className={`rds-subtb ${activeMlQuery === 'fraud' ? 'rds-on-purple' : ''}`}
-                      onClick={() => { setActiveMlQuery('fraud'); setMlOutput([]); setMlLogs([]); }}
-                    >
-                      💳 Transaction Fraud Evaluator (In-Database pgml)
-                    </button>
-                    <button
-                      className={`rds-subtb ${activeMlQuery === 'churn' ? 'rds-on-purple' : ''}`}
-                      onClick={() => { setActiveMlQuery('churn'); setMlOutput([]); setMlLogs([]); }}
-                    >
-                      📈 Churn Prediction Models (SageMaker Bridge)
-                    </button>
-                  </div>
-
-                  <div className="rds-grid2" style={{ gap: '12px', marginBottom: '12px' }}>
-                    <div>
-                      <div className="rds-sec" style={{ color: 'var(--color-purple)' }}>Active SQL Inference Query Block</div>
-                      <div className="rds-code-container">
-                        <div className="rds-code">
-                          {activeMlQuery === 'sentiment' && mlFlows.lambda.sql}
-                          {activeMlQuery === 'fraud' && mlFlows.app.sql}
-                          {activeMlQuery === 'churn' && mlFlows.pgml.sql}
-                        </div>
-                      </div>
-                      <button className="rds-btn rds-btn-purple" onClick={runMlInference} style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }}>
-                        ⚡ Run ML Inference Query inside DB
-                      </button>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {/* Active Monospace Terminal Logs */}
-                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontFamily: 'monospace' }}>
-                          📟 Query ML Inference Terminal Streams
-                        </div>
-                        <div className="rds-mono" style={{ fontSize: '10px', color: 'var(--color-text-primary)', minHeight: '80px', lineHeight: '1.5' }}>
-                          {mlIsLoading ? (
-                            <div style={{ color: 'var(--color-amber)', animation: 'activeNodePulse 1s infinite', '--pulse-color': 'var(--color-amber)' } as React.CSSProperties}>
-                              Connecting to AWS SageMaker Inference Cluster... 🚀
-                            </div>
-                          ) : mlLogs.length === 0 ? (
-                            <span style={{ color: 'var(--color-text-tertiary)' }}>Click "Run ML Inference Query inside DB" to view inference executions.</span>
-                          ) : null}
-                          {mlLogs.map((log, idx) => (
-                            <div key={idx}>{log}</div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* SQL Output Table Response */}
-                      {mlOutput.length > 0 && (
-                        <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
-                          <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--color-green)', marginBottom: '6px', fontFamily: 'monospace' }}>
-                            📊 SQL GRID RESULT SET (SageMaker Returns)
-                          </div>
-                          <table className="rds-table" style={{ fontSize: '10px' }}>
-                            <thead>
-                              <tr>
-                                {activeMlQuery === 'sentiment' && (
-                                  <>
-                                    <th>Customer Feedback Comment</th>
-                                    <th>Sentiment</th>
-                                    <th>Confidence</th>
-                                  </>
-                                )}
-                                {activeMlQuery === 'fraud' && (
-                                  <>
-                                    <th>Inbound Transaction ID</th>
-                                    <th>ML Score</th>
-                                    <th>Action Result</th>
-                                  </>
-                                )}
-                                {activeMlQuery === 'churn' && (
-                                  <>
-                                    <th>Target Customer Account</th>
-                                    <th>Churn Propensity</th>
-                                    <th>Engagement Status</th>
-                                  </>
-                                )}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {mlOutput.map((row, idx) => (
-                                <tr key={idx}>
-                                  {activeMlQuery === 'sentiment' && (
-                                    <>
-                                      <td>{row.review}</td>
-                                      <td style={{ color: row.sentiment === 'NEGATIVE' ? 'var(--color-red)' : 'var(--color-green)', fontWeight: 'bold' }}>{row.sentiment}</td>
-                                      <td style={{ color: 'var(--color-blue)' }}>{row.confidence}</td>
-                                    </>
-                                  )}
-                                  {activeMlQuery === 'fraud' && (
-                                    <>
-                                      <td>{row.txn}</td>
-                                      <td style={{ color: row.risk.includes('HIGH') ? 'var(--color-red)' : 'var(--color-green)', fontWeight: 'bold' }}>{row.risk}</td>
-                                      <td style={{ color: 'var(--color-blue)' }}>{row.action}</td>
-                                    </>
-                                  )}
-                                  {activeMlQuery === 'churn' && (
-                                    <>
-                                      <td>{row.user}</td>
-                                      <td style={{ color: row.score.includes('High') ? 'var(--color-red)' : 'var(--color-green)', fontWeight: 'bold' }}>{row.score}</td>
-                                      <td style={{ color: 'var(--color-purple)' }}>{row.status}</td>
-                                    </>
-                                  )}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Sub-tab 6.5: RDS Proxy Pool Simulator */}
-              {activeFeatureTab === 'proxy' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>🔀 RDS Proxy Serverless Connection Multiplexing Pool Simulator</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
-                    Standard serverless architectures (like AWS Lambda concurrent runs) create thousands of instantaneous TCP sockets. RDS Proxy acts as a high-performance proxy pool, scaling connections down to small persistent pipes to avoid database out-of-memory errors.
-                  </div>
-
-                  <div className="rds-ctrl rds-inner-card-grey" style={{ marginBottom: '14px' }}>
-                    <label style={{ color: 'var(--color-text-secondary)' }}>Set Active App / Lambda Ingress Connection Surge (TCP Clients)</label>
-                    <input type="range" min="10" max="1000" value={proxyConcurrency} onChange={(e) => setProxyConcurrency(Number(e.target.value))} />
-                    <div className="out" style={{ color: 'var(--color-blue)', background: 'var(--rds-inner-card-bg)', border: '1px solid var(--rds-inner-card-border)' }}>Incoming Surge Load: <b>{proxyConcurrency} Active TCP Clients</b></div>
-                  </div>
-
-                  <div className="rds-grid3" style={{ marginBottom: '14px' }}>
-                    <div className="rds-k">
-                      <div className="t" style={{ color: 'var(--color-red)' }}>Incoming Surge</div>
-                      <div className="v" style={{ color: 'var(--color-red)' }}>{proxyConcurrency} Sockets</div>
-                    </div>
-                    <div className="rds-k">
-                      <div className="t" style={{ color: 'var(--color-green)' }}>Pooled DB Backends</div>
-                      <div className="v" style={{ color: 'var(--color-green)' }}>
-                        {Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))} Pipes
-                      </div>
-                    </div>
-                    <div className="rds-k">
-                      <div className="t" style={{ color: 'var(--color-blue)' }}>CPU Context Savings</div>
-                      <div className="v" style={{ color: 'var(--color-blue)' }}>
-                        {Math.round((1 - (Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8))) / proxyConcurrency)) * 100)}%
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Interactive pooling diagram vector */}
-                  <div className="rds-inner-card-grey" style={{ padding: '12px', marginBottom: '14px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text-tertiary)' }}>
-                      🔀 Real-Time Connection Pooling Multiplexing Path
-                    </div>
-                    
-                    <svg width="100%" height="100" viewBox="0 0 640 100" className="rds-svg-bg" style={{ borderRadius: '6px' }}>
-                      <defs>
-                        <linearGradient id="p-db-body" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="var(--metal-ok-1)" />
-                          <stop offset="35%" stopColor="var(--metal-ok-2)" />
-                          <stop offset="70%" stopColor="var(--metal-ok-3)" />
-                          <stop offset="100%" stopColor="var(--metal-ok-4)" />
-                        </linearGradient>
-                        <linearGradient id="p-db-lid" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="var(--lid-ok-1)" />
-                          <stop offset="100%" stopColor="var(--lid-ok-2)" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Client Side Nodes */}
-                      <rect x="20" y="15" width="100" height="70" rx="6" fill="var(--g-public-1)" stroke="var(--color-blue)" strokeWidth="1" />
-                      <line x1="20" y1="36" x2="120" y2="36" stroke="rgba(37,99,235,0.15)" strokeWidth="1" />
-                      <line x1="20" y1="56" x2="120" y2="56" stroke="rgba(37,99,235,0.15)" strokeWidth="1" />
-                      <text x="70" y="32" textAnchor="middle" fontSize="9" fill="var(--color-blue)" fontWeight="bold">⚡ Lambda Surge</text>
-                      <text x="70" y="50" textAnchor="middle" fontSize="12" fill="var(--color-text-primary)" fontWeight="bold">{proxyConcurrency}</text>
-                      <text x="70" y="66" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600">TCP Sockets</text>
-
-                      {/* Proxy Node */}
-                      <rect x="250" y="15" width="140" height="70" rx="6" fill="var(--g-app-1)" stroke="var(--color-blue)" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'var(--color-blue)' } as React.CSSProperties} />
-                      <circle cx="265" cy="28" r="2.5" fill="var(--color-green)" />
-                      <circle cx="273" cy="28" r="2.5" fill="var(--color-green)" />
-                      <circle cx="281" cy="28" r="2.5" fill="var(--color-blue)" />
-                      <circle cx="289" cy="28" r="2.5" fill="var(--rds-inner-card-border)" />
-                      <text x="320" y="38" textAnchor="middle" fontSize="10.5" fill="var(--color-text-primary)" fontWeight="bold">🔄 RDS Proxy Pool</text>
-                      <text x="320" y="58" textAnchor="middle" fontSize="8.5" fill="var(--color-blue)" fontWeight="bold">Multiplexing Active</text>
-                      <text x="320" y="72" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">Queue Draining</text>
-
-                      {/* Database Node */}
-                      <path d="M 532 25 L 532 65 A 38 7 0 0 0 608 65 L 608 25 A 38 7 0 0 1 532 25 Z" fill="url(#p-db-body)" stroke="var(--color-green)" strokeWidth="1" />
-                      <ellipse cx="570" cy="25" rx="38" ry="7" fill="url(#p-db-lid)" stroke="var(--color-green)" strokeWidth="1" />
-                      <line x1="542" y1="38" x2="598" y2="38" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-                      <line x1="542" y1="48" x2="598" y2="48" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-                      <text x="570" y="16" textAnchor="middle" fontSize="9" fill="var(--color-green)" fontWeight="bold">🐘 PostgreSQL DB</text>
-                      <text x="570" y="58" textAnchor="middle" fontSize="11" fill="var(--color-text-primary)" fontWeight="bold">{Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))}</text>
-                      <text x="570" y="74" textAnchor="middle" fontSize="7.5" fill="var(--color-green)">Stable Sockets</text>
-
-                      {/* Streaming Connection paths */}
-                      {/* Flow Surge -> Proxy */}
-                      <path d="M 120 30 L 250 45" fill="none" stroke="var(--color-red)" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2', animationDuration: proxyConcurrency > 600 ? '0.2s' : '0.5s' } as React.CSSProperties} />
-                      <path d="M 120 50 L 250 50" fill="none" stroke="var(--color-red)" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2', animationDuration: proxyConcurrency > 600 ? '0.1s' : '0.4s' } as React.CSSProperties} />
-                      <path d="M 120 70 L 250 55" fill="none" stroke="var(--color-red)" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2', animationDuration: proxyConcurrency > 600 ? '0.2s' : '0.5s' } as React.CSSProperties} />
-
-                      {/* Flow Proxy -> DB (Slow, stable green flow) */}
-                      <path d="M 390 50 L 532 50" fill="none" stroke="var(--color-green)" strokeWidth="3" className="flow-active-line" style={{ strokeDasharray: '8, 4', animationDuration: '2s' } as React.CSSProperties} />
-                    </svg>
-                  </div>
-
-                  <div className="rds-inner-card-green" style={{ borderRadius: '8px', padding: '12px', fontSize: '12px', lineHeight: '1.5' }}>
-                    🚀 <b>Proxy Connection Pooling Advantage:</b> Without RDS Proxy, launching {proxyConcurrency} lambdas opens {proxyConcurrency} direct TCP connections, exhausting base database backend thread limits (`max_connections` exhaust) and triggering SQL execution faults. With RDS Proxy, all connections are pooled down to a highly optimized socket pool of just <b>{Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))}</b>!
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </div>
-        )}
-
-        {/* Tab 7: Best-Practice Guides */}
-        {activeSection === 'best' && (
-          <div>
-            <div className="rds-sec">Best-Practice RDS Architecture, SGs, Proxy &amp; Checklist Guides</div>
-            <div className="rds-card">
-              
-              {/* Guides Sub-tabs */}
-              <div className="rds-subtabs">
-                <button className={`rds-subtb ${bestTab === 'arch' ? 'rds-on' : ''}`} onClick={() => setBestTab('arch')}>🏗️ Architecture Map</button>
-                <button className={`rds-subtb ${bestTab === 'sg' ? 'rds-on' : ''}`} onClick={() => setBestTab('sg')}>🔒 Security Group Chain</button>
-                <button className={`rds-subtb ${bestTab === 'proxy' ? 'rds-on' : ''}`} onClick={() => setBestTab('proxy')}>🔄 RDS Proxy Guides</button>
-                <button className={`rds-subtb ${bestTab === 'multiaz' ? 'rds-on' : ''}`} onClick={() => setBestTab('multiaz')}>🛡️ Multi-AZ Comparison</button>
-                <button className={`rds-subtb ${bestTab === 'replicas' ? 'rds-on' : ''}`} onClick={() => setBestTab('replicas')}>📖 Replica Strategies</button>
-                <button className={`rds-subtb ${bestTab === 'engines' ? 'rds-on' : ''}`} onClick={() => setBestTab('engines')}>⚖️ Engines Grid</button>
-                <button className={`rds-subtb ${bestTab === 'checklist' ? 'rds-on' : ''}`} onClick={() => setBestTab('checklist')}>✅ Audit Checklist</button>
-              </div>
-
-              {/* Sub-tab bestTab: arch */}
-              {bestTab === 'arch' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>Production Grade AWS RDS Topology Map</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
-                    Multi-AZ Standby combined with scale-out Read Replicas and RDS Proxy in a private VPC layout.
-                  </div>
-
-                  <svg width="100%" viewBox="0 0 660 480" className="rds-svg-bg" style={{ display: 'block', borderRadius: '8px' }}>
-                    <defs>
-                      <linearGradient id="g-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--g-dark-1)" />
-                        <stop offset="100%" stopColor="var(--g-dark-2)" />
-                      </linearGradient>
-                      <linearGradient id="g-public" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--g-public-1)" />
-                        <stop offset="100%" stopColor="var(--g-public-2)" />
-                      </linearGradient>
-                      <linearGradient id="g-app" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--g-app-1)" />
-                        <stop offset="100%" stopColor="var(--g-app-2)" />
-                      </linearGradient>
-                      <linearGradient id="g-replica" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--g-replica-1)" />
-                        <stop offset="100%" stopColor="var(--g-replica-2)" />
-                      </linearGradient>
-
-                      <linearGradient id="g-db-writer-body" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="var(--metal-ok-1)" />
-                        <stop offset="35%" stopColor="var(--metal-ok-2)" />
-                        <stop offset="70%" stopColor="var(--metal-ok-3)" />
-                        <stop offset="100%" stopColor="var(--metal-ok-4)" />
-                      </linearGradient>
-                      <linearGradient id="g-db-writer-lid" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--lid-ok-1)" />
-                        <stop offset="100%" stopColor="var(--lid-ok-2)" />
-                      </linearGradient>
-
-                      <linearGradient id="g-db-standby-body" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="var(--metal-warn-1)" />
-                        <stop offset="35%" stopColor="var(--metal-warn-2)" />
-                        <stop offset="70%" stopColor="var(--metal-warn-3)" />
-                        <stop offset="100%" stopColor="var(--metal-warn-4)" />
-                      </linearGradient>
-                      <linearGradient id="g-db-standby-lid" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="var(--lid-warn-1)" />
-                        <stop offset="100%" stopColor="var(--lid-warn-2)" />
-                      </linearGradient>
-
-                      <linearGradient id="g-db-replica-body" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <linearGradient id="m-rep" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="var(--metal-rep-1)" />
                         <stop offset="35%" stopColor="var(--metal-rep-2)" />
                         <stop offset="70%" stopColor="var(--metal-rep-3)" />
                         <stop offset="100%" stopColor="var(--metal-rep-4)" />
                       </linearGradient>
-                      <linearGradient id="g-db-replica-lid" x1="0%" y1="0%" x2="100%" y2="100%">
+
+                      <linearGradient id="l-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="var(--lid-ok-1)" />
+                        <stop offset="100%" stopColor="var(--lid-ok-2)" />
+                      </linearGradient>
+                      <linearGradient id="l-warn" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="var(--lid-warn-1)" />
+                        <stop offset="100%" stopColor="var(--lid-warn-2)" />
+                      </linearGradient>
+                      <linearGradient id="l-rep" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="var(--lid-replica-1)" />
                         <stop offset="100%" stopColor="var(--lid-replica-2)" />
                       </linearGradient>
-                      
-                      <marker id="arr-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)" /></marker>
-                      <marker id="arr-b" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)" /></marker>
-                      <marker id="arr-p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-purple)" /></marker>
+
+                      <marker id="arr-sync" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                      <marker id="arr-async" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                      <marker id="arr-aurora" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#0284c7" /></marker>
                     </defs>
 
-                    {/* Base grid background */}
-                    <rect x="0" y="0" width="660" height="480" fill="url(#g-dark)" />
+                    {/* Zone 1 */}
+                    <rect x="15" y="15" width="200" height="130" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="115" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                      {isAzure ? 'East US Zone 1' : isGcp ? 'us-central1-a' : 'us-east-1a Subnet'}
+                    </text>
                     
-                    <text x="330" y="24" textAnchor="middle" fontSize="11" fill="var(--color-text-tertiary)" fontWeight="600" fontFamily="sans-serif">VPC (Spanning 3 Availability Zones)</text>
+                    {/* Zone 2 */}
+                    <rect x="240" y="15" width="200" height="130" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="340" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                      {isAzure ? 'East US Zone 2' : isGcp ? 'us-central1-b' : 'us-east-1b Subnet'}
+                    </text>
 
-                    {/* PUBLIC SUBNETS */}
-                    <rect x="20" y="38" width="620" height="60" rx="6" fill="var(--rds-subnets-bg)" stroke="var(--color-blue)" strokeWidth="1" opacity="0.8"/>
-                    <text x="330" y="52" textAnchor="middle" fontSize="9" fill="var(--color-blue)" fontWeight="bold" fontFamily="monospace">PUBLIC INGRESS SUBNETS</text>
-                    
-                    <rect x="50" y="60" width="160" height="28" rx="4" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="130" y="77" textAnchor="middle" fontSize="10" fill="var(--color-text-primary)" fontWeight="600" fontFamily="sans-serif">🌐 Internet ALB</text>
-                    
-                    <rect x="250" y="60" width="160" height="28" rx="4" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="330" y="77" textAnchor="middle" fontSize="10" fill="var(--color-text-primary)" fontWeight="600" fontFamily="sans-serif">🔒 WAF Firewall</text>
-                    
-                    <rect x="450" y="60" width="160" height="28" rx="4" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="530" y="77" textAnchor="middle" fontSize="10" fill="var(--color-text-primary)" fontWeight="600" fontFamily="sans-serif">🌍 NAT Gateway</text>
+                    {/* Zone 3 */}
+                    <rect x="465" y="15" width="200" height="130" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3" />
+                    <text x="565" y="28" textAnchor="middle" fontSize="9" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                      {isAzure ? 'East US Zone 3' : isGcp ? 'us-central1-c' : 'us-east-1c Subnet'}
+                    </text>
 
-                    {/* PRIVATE APP SUBNETS */}
-                    <rect x="20" y="112" width="620" height="75" rx="6" fill="var(--rds-subnets-bg)" stroke="var(--color-green)" strokeWidth="1" opacity="0.8"/>
-                    <text x="330" y="125" textAnchor="middle" fontSize="9" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">PRIVATE APPLICATION SUBNETS</text>
-                    
-                    <rect x="50" y="135" width="160" height="40" rx="4" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="130" y="152" textAnchor="middle" fontSize="10" fill="var(--color-text-primary)" fontWeight="600" fontFamily="sans-serif">⚙️ App EC2 / ECS</text>
-                    <text x="130" y="165" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">runs database driver</text>
-                    
-                    <rect x="250" y="135" width="160" height="40" rx="4" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="330" y="152" textAnchor="middle" fontSize="10" fill="var(--color-text-primary)" fontWeight="600" fontFamily="sans-serif">🔄 RDS Proxy Endpoint</text>
-                    <text x="330" y="165" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">Survives Failovers Instantly</text>
+                    {/* Nodes Render */}
+                    {selectedEngine === 'aurora' ? (
+                      <>
+                        <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
+                          <path d="M 70 48 L 70 76 A 45 7 0 0 0 160 76 L 160 48 A 45 7 0 0 1 70 48 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1" />
+                          <ellipse cx="115" cy="48" rx="45" ry="7" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1" />
+                          <text x="115" y="66" textAnchor="middle" fontSize="9.5" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
+                          <text x="115" y="86" textAnchor="middle" fontSize="7" fill="#047857" fontFamily="monospace">Active (Zone 1)</text>
+                        </g>
 
-                    <rect x="450" y="135" width="160" height="40" rx="4" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="530" y="152" textAnchor="middle" fontSize="10" fill="var(--color-text-primary)" fontWeight="600" fontFamily="sans-serif">🔑 Secrets Manager</text>
-                    <text x="530" y="165" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">IAM password rotations</text>
+                        <g className="active-glow-node" style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
+                          <path d="M 295 48 L 295 76 A 45 7 0 0 0 385 76 L 385 48 A 45 7 0 0 1 295 48 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                          <ellipse cx="340" cy="48" rx="45" ry="7" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                          <text x="340" y="66" textAnchor="middle" fontSize="9.5" fill="#4c1d95" fontWeight="bold">📖 {isAzure ? 'Hyperscale Reader' : isGcp ? 'AlloyDB Read Pool' : 'Aurora Reader'}</text>
+                          <text x="340" y="86" textAnchor="middle" fontSize="7" fill="#6d28d9" fontFamily="monospace">Lag &lt; 20ms (Zone 2)</text>
+                        </g>
 
-                    {/* PRIVATE DB SUBNETS */}
-                    <rect x="20" y="200" width="620" height="260" rx="6" fill="var(--rds-subnets-bg)" stroke="var(--color-amber)" strokeWidth="1" opacity="0.8"/>
-                    <text x="330" y="215" textAnchor="middle" fontSize="9" fill="var(--color-amber)" fontWeight="bold" fontFamily="monospace">ISOLATED PRIVATE DB SUBNETS</text>
+                        <rect x="30" y="96" width="620" height="42" rx="8" fill="var(--rds-inner-card-bg)" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="3,2" />
+                        <text x="340" y="107" textAnchor="middle" fontSize="9" fill="#0284c7" fontWeight="bold">
+                          {isAzure ? '🌌 Azure SQL Hyperscale Page Server Shards' : isGcp ? '🌌 AlloyDB Log-Structured Distributed Storage' : '🌌 Cloud-Native Shared Storage Pool (Replicated 6-Ways)'}
+                        </text>
+                        
+                        <rect x="50" y="114" width="60" height="18" rx="3" fill="var(--rds-container-bg, #ffffff)" stroke="#0284c7" strokeWidth="0.5"/>
+                        <text x="80" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk A1 / A2</text>
 
-                    {/* AZ-a */}
-                    <rect x="35" y="225" width="180" height="220" rx="6" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="125" y="240" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-amber)" fontFamily="monospace">Subnet AZ-a</text>
-                    
-                    {/* 3D Cylinder Shape - Primary Writer */}
-                    <g className="active-glow-node" style={{ '--pulse-color': 'var(--color-green)' } as React.CSSProperties}>
-                      <path d="M 87 262 L 87 287 A 38 7 0 0 0 163 287 L 163 262 A 38 7 0 0 1 87 262 Z" fill="url(#g-db-writer-body)" stroke="var(--color-green)" strokeWidth="1.5" />
-                      <ellipse cx="125" cy="262" rx="38" ry="7" fill="url(#g-db-writer-lid)" stroke="var(--color-green)" strokeWidth="1.5" />
-                      <line x1="97" y1="274" x2="153" y2="274" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
-                      <text x="125" y="248" textAnchor="middle" fontSize="9.5" fill="var(--color-green)" fontWeight="bold" fontFamily="sans-serif">✍️ Primary Writer</text>
-                      <text x="125" y="280" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">sg-db | Active</text>
-                    </g>
+                        <rect x="275" y="114" width="60" height="18" rx="3" fill="var(--rds-container-bg, #ffffff)" stroke="#0284c7" strokeWidth="0.5"/>
+                        <text x="305" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk B1 / B2</text>
 
-                    {/* 3D Cylinder Shape - Read Replica 1 */}
-                    <g className="active-glow-node" style={{ '--pulse-color': 'var(--color-purple)' } as React.CSSProperties}>
-                      <path d="M 87 337 L 87 362 A 38 7 0 0 0 163 362 L 163 337 A 38 7 0 0 1 87 337 Z" fill="url(#g-db-replica-body)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <ellipse cx="125" cy="337" rx="38" ry="7" fill="url(#g-db-replica-lid)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <text x="125" y="325" textAnchor="middle" fontSize="9.5" fill="var(--color-purple)" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 1</text>
-                      <text x="125" y="352" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontWeight="bold" fontFamily="monospace">Asynchronous Copy</text>
-                    </g>
+                        <rect x="500" y="114" width="60" height="18" rx="3" fill="var(--rds-container-bg, #ffffff)" stroke="#0284c7" strokeWidth="0.5"/>
+                        <text x="530" y="124" textAnchor="middle" fontSize="7.5" fill="#0284c7" fontFamily="monospace">Disk C1 / C2</text>
 
-                    {/* AZ-b */}
-                    <rect x="240" y="225" width="180" height="220" rx="6" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="330" y="240" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-amber)" fontFamily="monospace">Subnet AZ-b</text>
-                    
-                    {/* 3D Cylinder Shape - Standby Replica */}
-                    <g>
-                      <path d="M 292 262 L 292 287 A 38 7 0 0 0 368 287 L 368 262 A 38 7 0 0 1 292 262 Z" fill="url(#g-db-standby-body)" stroke="var(--color-amber)" strokeWidth="1" />
-                      <ellipse cx="330" cy="262" rx="38" ry="7" fill="url(#g-db-standby-lid)" stroke="var(--color-amber)" strokeWidth="1" />
-                      <text x="330" y="248" textAnchor="middle" fontSize="9.5" fill="var(--color-amber)" fontWeight="bold" fontFamily="sans-serif">🛡️ Standby Replica</text>
-                      <text x="330" y="280" textAnchor="middle" fontSize="7.5" fill="var(--color-amber)" fontWeight="bold" fontFamily="monospace">Sync HA Mirror</text>
-                    </g>
+                        <path d="M 115 84 L 115 96" stroke="#0284c7" strokeWidth="1.5" className="flow-active-line" markerEnd="url(#arr-aurora)"/>
+                        <path d="M 340 84 L 340 96" stroke="#0284c7" strokeWidth="1" strokeDasharray="2,2"/>
+                      </>
+                    ) : (
+                      <>
+                        <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties}>
+                          <path d="M 65 52 L 65 92 A 50 10 0 0 0 165 92 L 165 52 A 50 10 0 0 1 65 52 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1.5" />
+                          <ellipse cx="115" cy="52" rx="50" ry="10" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1.5" />
+                          <text x="115" y="72" textAnchor="middle" fontSize="10" fill="#064e3b" fontWeight="bold">🐘 Primary Writer</text>
+                          <text x="115" y="86" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary" fontFamily="monospace">In-Service (Active)</text>
+                        </g>
 
-                    {/* 3D Cylinder Shape - Read Replica 2 */}
-                    <g className="active-glow-node" style={{ '--pulse-color': 'var(--color-purple)' } as React.CSSProperties}>
-                      <path d="M 292 337 L 292 362 A 38 7 0 0 0 368 362 L 368 337 A 38 7 0 0 1 292 337 Z" fill="url(#g-db-replica-body)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <ellipse cx="330" cy="337" rx="38" ry="7" fill="url(#g-db-replica-lid)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <text x="330" y="325" textAnchor="middle" fontSize="9.5" fill="var(--color-purple)" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 2</text>
-                      <text x="330" y="352" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontWeight="bold" fontFamily="monospace">Asynchronous Copy</text>
-                    </g>
+                        <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties}>
+                          <path d="M 290 52 L 290 92 A 50 10 0 0 0 390 92 L 390 52 A 50 10 0 0 1 290 52 Z" fill="url(#m-warn)" stroke="#d97706" strokeWidth="1" />
+                          <ellipse cx="340" cy="52" rx="50" ry="10" fill="url(#l-warn)" stroke="#d97706" strokeWidth="1" />
+                          <text x="340" y="72" textAnchor="middle" fontSize="10" fill="#78350f" fontWeight="bold">🛡️ Standby Replica</text>
+                          <text x="340" y="86" textAnchor="middle" fontSize="7" className="rds-svg-text-secondary" fontFamily="monospace">Passive (Standby)</text>
+                        </g>
 
-                    {/* AZ-c */}
-                    <rect x="445" y="225" width="180" height="220" rx="6" fill="var(--rds-row-hover-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="0.5"/>
-                    <text x="535" y="240" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-amber)" fontFamily="monospace">Subnet AZ-c</text>
-                    
-                    {/* 3D Cylinder Shape - Read Replica 3 */}
-                    <g className="active-glow-node" style={{ '--pulse-color': 'var(--color-purple)' } as React.CSSProperties}>
-                      <path d="M 497 262 L 497 287 A 38 7 0 0 0 573 287 L 573 262 A 38 7 0 0 1 497 262 Z" fill="url(#g-db-replica-body)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <ellipse cx="535" cy="262" rx="38" ry="7" fill="url(#g-db-replica-lid)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <text x="535" y="248" textAnchor="middle" fontSize="9.5" fill="var(--color-purple)" fontWeight="bold" fontFamily="sans-serif">📖 Read Replica 3</text>
-                      <text x="535" y="280" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontWeight="bold" fontFamily="monospace">Asynchronous Copy</text>
-                    </g>
+                        <g className="active-glow-node" style={{ '--pulse-color': '#8b5cf6' } as React.CSSProperties}>
+                          <path d="M 515 52 L 515 92 A 50 10 0 0 0 615 92 L 615 52 A 50 10 0 0 1 515 52 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                          <ellipse cx="565" cy="52" rx="50" ry="10" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                          <text x="565" y="72" textAnchor="middle" fontSize="10.5" fill="#4c1d95" fontWeight="bold">📖 Read Replica</text>
+                          <text x="565" y="86" textAnchor="middle" fontSize="7" fill="#6d28d9" fontFamily="monospace">Asynchronous WAL</text>
+                        </g>
 
-                    {/* Replication paths connectors */}
-                    {/* Primary -> Standby Sync */}
-                    <line x1="163" y1="274" x2="292" y2="274" stroke="var(--color-green)" strokeWidth="2" strokeDasharray="3,1" className="flow-active-line" markerEnd="url(#arr-g)" />
-                    <text x="227.5" y="268" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
+                        <line x1="165" y1="72" x2="290" y2="72" stroke="#10b981" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-sync)" />
+                        <text x="227.5" y="62" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">Sync 🔄</text>
 
-                    {/* Primary -> RR1 Async */}
-                    <line x1="125" y1="287" x2="125" y2="337" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
-                    
-                    {/* Primary -> RR2 Async */}
-                    <path d="M 163 280 Q 220 295 292 330" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
-                    
-                    {/* Primary -> RR3 Async */}
-                    <path d="M 163 275 Q 330 310 497 262" fill="none" stroke="var(--color-purple)" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-p)" />
+                        <path d="M 165 72 Q 340 135 515 72" fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4,2" className="flow-active-line" markerEnd="url(#arr-async)" />
+                        <text x="340" y="132" textAnchor="middle" fontSize="8.5" fill="#7c3aed" fontWeight="bold" fontFamily="monospace">Async WAL ➡️</text>
+                      </>
+                    )}
                   </svg>
                 </div>
-              )}
 
-              {/* Sub-tab bestTab: sg */}
-              {bestTab === 'sg' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>🔒 Least-Privilege VPC Security Group Rules Chain</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
-                    Production best practices dictate mapping security group reference IDs rather than static CIDR subnets.
+                {/* Engine Selector details */}
+                <div style={{ marginTop: '14px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Supported Relational Database Engines</div>
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                    {(Object.keys(engineDetails) as EngineType[]).map((eng) => (
+                      <button
+                        key={eng}
+                        onClick={() => setSelectedEngine(eng)}
+                        className={`rds-subtb ${selectedEngine === eng ? 'rds-on' : ''}`}
+                      >
+                        {engineDetails[eng].title.split(' ')[0]} {engineDetails[eng].title.substring(2)}
+                      </button>
+                    ))}
                   </div>
-
-                  <div className="rds-row rds-inner-card-blue">
-                    <div style={{ fontWeight: 600, minWidth: '90px' }}>🌐 sg-alb</div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                      <b>Inbound:</b> HTTPS/443 and HTTP/80 from `0.0.0.0/0` (public access bounds)<br/>
-                      <b>Outbound:</b> Target Application ports (e.g. 8080) pointing strictly to target app destination `sg-app`.
+                  <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                    <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px', color: '#16a34a' }}>
+                      {engineDetails[selectedEngine].title}
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--color-text-secondary)', margin: '2px 0' }}>↓</div>
-                  
-                  <div className="rds-row rds-inner-card-green">
-                    <div style={{ fontWeight: 600, minWidth: '90px' }}>⚙️ sg-app</div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                      <b>Inbound:</b> Inbound compute ports restricted to traffic initiating from `sg-alb` reference.<br/>
-                      <b>Outbound:</b> Database Port (5432 / 3306) pointing strictly to target backend destination `sg-proxy` or `sg-db`.
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.45' }}>
+                      {engineDetails[selectedEngine].desc}
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--color-text-secondary)', margin: '2px 0' }}>↓</div>
-
-                  <div className="rds-row rds-inner-card-purple">
-                    <div style={{ fontWeight: 600, minWidth: '90px' }}>🔄 sg-proxy</div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                      <b>Inbound:</b> Database Port (5432 / 3306) restricted strictly to transactions coming from application `sg-app`.<br/>
-                      <b>Outbound:</b> Database Port pointing to target database engines `sg-db`.
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--color-text-secondary)', margin: '2px 0' }}>↓</div>
-
-                  <div className="rds-row rds-inner-card-amber">
-                    <div style={{ fontWeight: 600, minWidth: '90px' }}>🗄️ sg-db</div>
-                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                      <b>Inbound:</b> Port 5432 / 3306 restricted strictly to traffic initiating from `sg-proxy` (or `sg-app` if no proxy). Allow port 22 tunnel from `sg-bastion` if manual administrative queries are needed.
-                    </div>
-                  </div>
-
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginTop: '14px', marginBottom: '6px', color: 'var(--color-amber)' }}>Database Engine Standard Port Directory</div>
-                  <div className="rds-grid3">
-                    <div className="rds-inner-card-grey" style={{ padding: '10px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-green)' }}>🐘 PostgreSQL</div>
-                      <div style={{ fontSize: '11px', marginTop: '4px', color: 'var(--color-text-primary)' }}>Standard Port: <b>5432</b></div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>Aurora PG: <b>5432</b></div>
-                    </div>
-                    <div className="rds-inner-card-grey" style={{ padding: '10px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-blue)' }}>🐬 MySQL / MariaDB</div>
-                      <div style={{ fontSize: '11px', marginTop: '4px', color: 'var(--color-text-primary)' }}>Standard Port: <b>3306</b></div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>Aurora MySQL: <b>3306</b></div>
-                    </div>
-                    <div className="rds-inner-card-grey" style={{ padding: '10px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-amber)' }}>🪟 SQL Server / Oracle</div>
-                      <div style={{ fontSize: '11px', marginTop: '4px', color: 'var(--color-text-primary)' }}>SQL Server Port: <b>1433</b></div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>Oracle Port: <b>1521</b></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Sub-tab bestTab: proxy */}
-              {bestTab === 'proxy' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>RDS Proxy Architecture Advantages</div>
-                  
-                  <div className="rds-row rds-inner-card-grey">
-                    <div className="rds-dot" style={{ background: 'var(--color-blue)' }}>1</div>
-                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)' }}><b>Survive DNS TTL Caching:</b> Applications cache standard SQL DNS lookups. On raw database failover, apps continue attempting to write to the old IP address during standard DNS TTL windows. RDS Proxy endpoint is static and processes target IP Shifts internally in ~10 seconds.</div>
-                  </div>
-                  
-                  <div className="rds-row rds-inner-card-grey">
-                    <div className="rds-dot" style={{ background: 'var(--color-blue)' }}>2</div>
-                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)' }}><b>Mitigate Thread Context Switches:</b> High transaction concurrency spikes launch thousands of system database processes. The database spends more CPU scheduling threads than executing SQL logic. RDS Proxy intercepts this, queuing transactions down to small, highly optimized connection pools.</div>
-                  </div>
-                  
-                  <div className="rds-row rds-inner-card-grey">
-                    <div className="rds-dot" style={{ background: 'var(--color-blue)' }}>3</div>
-                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)' }}><b>IAM Auth &amp; Secrets Management:</b> Proxy utilizes AWS IAM to authorize app identities. Password storage and physical credentials rotation schedules are managed automatically inside Secrets Manager.</div>
-                  </div>
-
-                  <div style={{ fontWeight: 600, fontSize: '13px', marginTop: '14px', marginBottom: '6px', color: 'var(--color-amber)' }}>Engine Integration Support Directory</div>
-                  <div className="rds-grid2" style={{ gap: '10px' }}>
-                    <div className="rds-inner-card-green" style={{ padding: '10px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-green)', marginBottom: '4px' }}>✅ Fully Supported Engines</div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                        PostgreSQL (10.x and above)<br/>
-                        MySQL (5.6, 5.7, 8.0)<br/>
-                        MariaDB (10.x and above)<br/>
-                        Amazon Aurora clusters (PostgreSQL and MySQL compatible)
+                    <div className="rds-grid2" style={{ gap: '10px' }}>
+                      <div>
+                        <div className="rds-sec">Engine Specifications</div>
+                        {engineDetails[selectedEngine].specs.map((sp, i) => (
+                          <div className="rds-mono" style={{ fontSize: '11px', marginBottom: '4px' }} key={i}>
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>{sp.k}:</span> <b>{sp.v}</b>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                    <div className="rds-inner-card-red" style={{ padding: '10px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-red)', marginBottom: '4px' }}>❌ Unsupported Database Engines</div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
-                        Microsoft SQL Server<br/>
-                        Oracle Database engines<br/>
-                        RDS Custom deployment parameters<br/>
-                        Legacy Aurora Serverless v1 databases
+                      <div>
+                        <div className="rds-sec">Ideal workloads</div>
+                        <ul className="rds-ck">
+                          {engineDetails[selectedEngine].cases.map((cs, i) => (
+                            <li key={i}>{cs}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* Sub-tab bestTab: multiaz */}
-              {bestTab === 'multiaz' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>RDS Multi-AZ vs Amazon Aurora Multi-AZ Shared Storage</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
-                    Understanding the core differences between standard block-level volume mirroring in standard RDS vs cluster quorum writes in Aurora.
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Connectivity & Security Groups */}
+          {activeSection === 'connect' && (
+            <div>
+              <div className="rds-sec">
+                {isAzure ? 'Interactive Azure VNet Security & NSG Rules Sandbox' : isGcp ? 'Interactive GCP VPC Network & Firewall Rules Sandbox' : 'Interactive Network Topology & Security Group Ingress Sandbox'}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                <button 
+                  className={`arch-scenario-btn ${ingressSource === 'app' ? 'active' : ''}`}
+                  onClick={() => setIngressSource('app')}
+                >
+                  🟢 Route 1: Standard Application Traffic (Allowed)
+                </button>
+                <button 
+                  className={`arch-scenario-btn ${ingressSource === 'bastion' ? 'active' : ''}`}
+                  onClick={() => setIngressSource('bastion')}
+                  style={{ borderColor: '#8b5cf6', color: ingressSource === 'bastion' ? '#8b5cf6' : '' }}
+                >
+                  🟤 Route 2: Administrative Tunnel / Proxy Ingress (Allowed)
+                </button>
+                <button 
+                  className={`arch-scenario-btn ${ingressSource === 'internet' ? 'active' : ''}`}
+                  onClick={() => setIngressSource('internet')}
+                  style={{ borderColor: '#ef4444', color: ingressSource === 'internet' ? '#ef4444' : '' }}
+                >
+                  🔴 Route 3: Public Internet Connection (Blocked!)
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
+                
+                <div className="rds-card rds-inner-card-grey" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
+                  <div style={{ alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                      🔍 {ingressSource === 'app' ? 'App-to-DB Connection Flow' : ingressSource === 'bastion' ? 'Admin SSH / Proxy SQL Tunnel Ingress' : 'Unauthenticated Public Attack Route'}
+                    </span>
+                    <span style={{ fontSize: '11px', color: ingressSource === 'internet' ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
+                      ● {ingressSource === 'internet' ? 'ACCESS BLOCKED' : 'SECURE INBOUND ACTIVE'}
+                    </span>
                   </div>
 
-                  <div className="rds-grid2" style={{ gap: '12px' }}>
-                    <div className="rds-inner-card-grey" style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-amber)', marginBottom: '6px' }}>Standard RDS Multi-AZ</div>
-                      <ul className="rds-ck" style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)' }}>
-                        <li style={{ color: 'var(--color-text-secondary)' }}><b>Synchronous volume write mirroring:</b> Transactions commit to both the active primary instance and the secondary disk arrays in AZ-b.</li>
-                        <li style={{ color: 'var(--color-text-secondary)' }}><b>Standby is idle:</b> The standby instance operates passive compute. You cannot route read queries here.</li>
-                        <li style={{ color: 'var(--color-text-secondary)' }}><b>Failover speed (30–60s):</b> Standard failover requires shifting the CNAME entry in DNS records and completing transactional crash recovery.</li>
-                      </ul>
+                  <svg width="100%" viewBox="0 0 680 240" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
+                    <defs>
+                      <linearGradient id="c-app" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="var(--metal-app-1)" />
+                        <stop offset="100%" stopColor="var(--metal-app-2)" />
+                      </linearGradient>
+                      <linearGradient id="c-db-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="var(--c-db-ok-1)" />
+                        <stop offset="35%" stopColor="var(--c-db-ok-2)" />
+                        <stop offset="70%" stopColor="var(--c-db-ok-3)" />
+                        <stop offset="100%" stopColor="var(--c-db-ok-4)" />
+                      </linearGradient>
+                      <linearGradient id="c-db-fail" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="var(--c-db-fail-1)" />
+                        <stop offset="35%" stopColor="var(--c-db-fail-2)" />
+                        <stop offset="70%" stopColor="var(--c-db-fail-3)" />
+                        <stop offset="100%" stopColor="var(--c-db-fail-4)" />
+                      </linearGradient>
+
+                      <linearGradient id="l-db-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="var(--l-db-ok-1)" />
+                        <stop offset="100%" stopColor="var(--l-db-ok-2)" />
+                      </linearGradient>
+                      <linearGradient id="l-db-fail" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="var(--l-db-fail-1)" />
+                        <stop offset="100%" stopColor="var(--l-db-fail-2)" />
+                      </linearGradient>
+
+                      <marker id="acn-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#3b82f6" /></marker>
+                      <marker id="acn-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                      <marker id="acn-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                      <marker id="acn-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                    </defs>
+
+                    <line x1="10" y1="5" x2="10" y2="235" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="3,3"/>
+                    <text x="18" y="16" fontSize="8" className="rds-svg-text-secondary" fontFamily="monospace">PUBLIC INTERNET BOUNDARY</text>
+
+                    <rect x="55" y="15" width="615" height="210" rx="12" fill="none" stroke="var(--rds-svg-line-stroke)" strokeWidth="1.2" />
+                    <text x="362.5" y="27" textAnchor="middle" fontSize="10.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                      {isAzure ? 'Azure VNet (10.0.0.0/16)' : isGcp ? 'GCP VPC Network (10.0.0.0/16)' : 'VPC (10.0.0.0/16)'}
+                    </text>
+
+                    <rect x="65" y="42" width="165" height="172" rx="8" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
+                    <text x="147.5" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">Public Subnets (0.0.0.0/0)</text>
+                    
+                    <g opacity={ingressSource === 'app' ? 1 : 0.65}>
+                      <rect x="80" y="68" width="135" height="42" rx="6" fill="var(--rds-inner-card-bg)" stroke={ingressSource === 'app' ? '#3b82f6' : 'var(--rds-inner-card-border)'} strokeWidth={1} />
+                      <text x="147.5" y="85" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-primary">
+                        {isAzure ? '🌐 Azure App Gateway' : isGcp ? '🌐 Cloud Load Balancer' : '🌐 sg-alb (ALB)'}
+                      </text>
+                      <text x="147.5" y="98" textAnchor="middle" fontSize="7.5" fill="#2563eb" fontFamily="monospace">Allow: Port 443</text>
+                    </g>
+
+                    <g opacity={ingressSource === 'bastion' ? 1 : 0.65}>
+                      <rect x="80" y="132" width="135" height="42" rx="6" fill="var(--rds-inner-card-bg)" stroke={ingressSource === 'bastion' ? '#f59e0b' : 'var(--rds-inner-card-border)'} strokeWidth={1} />
+                      <text x="147.5" y="149" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-primary">
+                        {isAzure ? '🔒 Bastion / Proxy' : isGcp ? '🔒 Identity Proxy' : '🔒 sg-bastion (Jump)'}
+                      </text>
+                      <text x="147.5" y="162" textAnchor="middle" fontSize="7.5" fill="#b45309" fontFamily="monospace">Allow: Port 22 / Proxy</text>
+                    </g>
+
+                    <rect x="250" y="42" width="170" height="172" rx="8" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
+                    <text x="335" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">Private App Subnets</text>
+                    
+                    <g opacity={ingressSource === 'app' ? 1 : 0.65}>
+                      <rect x="265" y="90" width="140" height="52" rx="6" fill="var(--rds-inner-card-bg)" stroke={ingressSource === 'app' ? '#10b981' : 'var(--rds-inner-card-border)'} strokeWidth={1} />
+                      <text x="335" y="112" textAnchor="middle" fontSize="10.5" fontWeight="bold" className="rds-svg-text-primary">
+                        {isAzure ? '⚙️ App Service / VM' : isGcp ? '⚙️ GKE / App Engine' : '⚙️ sg-app (App Server)'}
+                      </text>
+                      <text x="335" y="127" textAnchor="middle" fontSize="7.5" fill="#16a34a" fontFamily="monospace">
+                        {isAzure ? 'Allow: from App NSG' : isGcp ? 'Allow: from App Tag' : 'Allow: from sg-alb'}
+                      </text>
+                    </g>
+
+                    <rect x="440" y="42" width="220" height="172" rx="8" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
+                    <text x="550" y="54" textAnchor="middle" fontSize="8.5" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                      {isAzure ? 'Delegated DB Subnet' : isGcp ? 'Private Service Access' : 'Private DB Subnets'}
+                    </text>
+                    
+                    <g opacity={ingressSource !== 'internet' ? 1 : 0.4} className={ingressSource !== 'internet' ? 'active-glow-node' : ''} style={{ '--pulse-color': '#7c3aed' } as React.CSSProperties}>
+                      <path d="M 475 110 L 475 140 A 55 12 0 0 0 585 140 L 585 110 A 55 12 0 0 1 475 110 Z" fill={ingressSource === 'internet' ? 'url(#c-db-fail)' : 'url(#c-db-ok)'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth="1.5" />
+                      <ellipse cx="530" cy="110" rx="55" ry="12" fill={ingressSource === 'internet' ? 'url(#l-db-fail)' : 'url(#l-db-ok)'} stroke={ingressSource === 'internet' ? '#ef4444' : '#8b5cf6'} strokeWidth="1.5" />
+                      
+                      <text x="530" y="90" textAnchor="middle" fontSize="11.5" fontWeight="bold" className="rds-svg-text-primary">
+                        {isAzure ? '🗄️ Azure Flexible Server' : isGcp ? '🗄️ Cloud SQL / AlloyDB' : '🗄️ Amazon RDS'}
+                      </text>
+                      <text x="530" y="128" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill={ingressSource === 'internet' ? '#991b1b' : '#5b21b6'}>
+                        {ingressSource === 'app' ? 'allowed from App Subnet' : ingressSource === 'bastion' ? 'allowed from Admin Proxy' : '❌ Public Ingress BLOCKED'}
+                      </text>
+                    </g>
+
+                    {ingressSource === 'app' && (
+                      <>
+                        <line x1="5" y1="90" x2="80" y2="90" stroke="#3b82f6" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#acn-blue)"/>
+                        <path d="M 215 90 L 265 110" fill="none" stroke="#3b82f6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-blue)"/>
+                        <text x="240" y="93" fontSize="7.5" fill="#2563eb" fontWeight="bold">HTTP 8080</text>
+                        <path d="M 405 120 L 470 120" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#acn-green)" />
+                        <text x="435" y="112" fontSize="7.5" fill="#16a34a" fontWeight="bold">SQL Port 5432</text>
+                      </>
+                    )}
+
+                    {ingressSource === 'bastion' && (
+                      <>
+                        <line x1="5" y1="154" x2="80" y2="154" stroke="#f59e0b" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)"/>
+                        <text x="42.5" y="145" fontSize="7.5" fill="#b45309" fontWeight="bold">Tunneled</text>
+                        <path d="M 215 154 L 470 125" fill="none" stroke="#8b5cf6" strokeWidth="2" className="flow-active-line" markerEnd="url(#acn-purple)" />
+                        <text x="330" y="148" fontSize="8" fill="#7c3aed" fontWeight="bold">SQL Forwarding</text>
+                      </>
+                    )}
+
+                    {ingressSource === 'internet' && (
+                      <>
+                        <path d="M 5 120 L 440 120" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeDasharray="5,3" className="flow-active-line" markerEnd="url(#acn-red)"/>
+                        <text x="220" y="112" fontSize="9.5" fill="#ef4444" fontWeight="bold">💥 Public TCP Query (Direct Attack)</text>
+                        <g transform="translate(440, 120)">
+                          <circle cx="0" cy="0" r="14" fill="#ef4444" />
+                          <text x="0" y="0" textAnchor="middle" dominantBaseline="central" fontSize="8" fill="#fff" fontWeight="bold">STOP</text>
+                        </g>
+                      </>
+                    )}
+                  </svg>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="asg-card rds-inner-card-grey" style={{ borderLeft: '3px solid #2563eb', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                      🔒 Ingress Policy Status
                     </div>
-                    <div className="rds-inner-card-grey" style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-purple)', marginBottom: '6px' }}>Amazon Aurora Shared Storage HA</div>
-                      <ul className="rds-ck" style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)' }}>
-                        <li style={{ color: 'var(--color-text-secondary)' }}><b>Quorum storage:</b> Data is replicated in 6 physical copies spanning 3 separate AZs. Every write only requires 4 out of 6 nodes to acknowledge.</li>
-                        <li style={{ color: 'var(--color-text-secondary)' }}><b>Replicas ARE readable:</b> Compute instances in AZ-b/AZ-c access the same shared storage. Replicas serve real read queries with near-zero lag.</li>
-                        <li style={{ color: 'var(--color-text-secondary)' }}><b>Ultra-fast failovers (10–30s):</b> Promotion is instant since storage volumes do not need to resynchronize or recover pages.</li>
-                      </ul>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                      {ingressSource === 'app' && '🟢 Compliant Access Path'}
+                      {ingressSource === 'bastion' && '🟣 Secure Admin Tunnel'}
+                      {ingressSource === 'internet' && '🔴 Boundary Threat Blocked'}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px' }}>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Internet Gateway Route:</span>
+                        <span style={{ fontWeight: 'bold', color: '#ef4444' }}>BLOCKED</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px' }}>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Security Firewall Chain:</span>
+                        <span style={{ fontWeight: 'bold', color: '#16a34a' }}>ENFORCED</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '4px' }}>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Public IP Address:</span>
+                        <span style={{ fontWeight: 'bold', color: '#ef4444' }}>DISABLED</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="asg-card rds-inner-card-grey" style={{ padding: '12px 14px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '6px' }}>
+                      ⚙️ Network Engineering Explanation
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                      {ingressSource === 'app' && (
+                        <span>
+                          <b>Production Best Practice:</b> The client app in the private subnet is the ONLY node whitelisted to query the database. Network rules restrict ingress strictly to app server security scopes rather than static public IPs.
+                        </span>
+                      )}
+                      {ingressSource === 'bastion' && (
+                        <span>
+                          <b>Secure Admin Operations:</b> DBAs establish an SSH or Auth Proxy tunnel. SQL traffic is fully encrypted inside the secure wrapper and whitelisted by backend firewall rules.
+                        </span>
+                      )}
+                      {ingressSource === 'internet' && (
+                        <span>
+                          <b>Absolute Isolation:</b> Public access is disabled, and database instances reside in subnets lacking public routes. Direct internet probes are physically stopped at the network perimeter.
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* Sub-tab bestTab: replicas */}
-              {bestTab === 'replicas' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>Read Replica Ingress Strategies</div>
-                  
-                  <div className="rds-row rds-inner-card-green">
-                    <div style={{ fontWeight: 600, minWidth: '50px', color: 'var(--color-green)' }}>WRITE</div>
-                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Always connect to the **Primary Writer Endpoint**. Sending transactional write logs to replicas will fail immediately or raise access exceptions.</div>
-                  </div>
-                  
-                  <div className="rds-row rds-inner-card-purple">
-                    <div style={{ fontWeight: 600, minWidth: '50px', color: 'var(--color-purple)' }}>READ</div>
-                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Route heavy queries to individual **Replica endpoints**. Maintain a load balancer configuration or use application layers to balance query counts across replicas.</div>
-                  </div>
-                  
-                  <div className="rds-row rds-inner-card-red">
-                    <div style={{ fontWeight: 600, minWidth: '50px', color: 'var(--color-red)' }}>STALE</div>
-                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}><b>Read-Your-Writes Mitigation:</b> When users insert a row and refresh, route their subsequent read queries strictly to the Primary Writer for a brief window (~1–2 seconds) to allow asynchronous replica log synchronization.</div>
-                  </div>
-                </div>
-              )}
+              </div>
 
-              {/* Sub-tab bestTab: engines */}
-              {bestTab === 'engines' && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-amber)' }}>Feature Support Directory Across Relational Engines</div>
-                  <table className="rds-table">
-                    <thead>
-                      <tr>
-                        <th>Capability</th>
-                        <th>Aurora PostgreSQL</th>
-                        <th>Aurora MySQL</th>
-                        <th>RDS PostgreSQL</th>
-                        <th>RDS MySQL</th>
-                        <th>SQL Server</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><b>RDS Proxy</b></td>
-                        <td style={{ color: 'var(--color-green)' }}>✅ Yes</td>
-                        <td style={{ color: 'var(--color-green)' }}>✅ Yes</td>
-                        <td style={{ color: 'var(--color-green)' }}>✅ Yes</td>
-                        <td style={{ color: 'var(--color-green)' }}>✅ Yes</td>
-                        <td style={{ color: 'var(--color-red)' }}>❌ No</td>
-                      </tr>
-                      <tr>
-                        <td><b>Max Replicas</b></td>
-                        <td style={{ color: 'var(--color-green)', fontWeight: 600 }}>15 Replicas</td>
-                        <td style={{ color: 'var(--color-green)', fontWeight: 600 }}>15 Replicas</td>
-                        <td>5 Replicas</td>
-                        <td>5 Replicas</td>
-                        <td style={{ color: 'var(--color-red)' }}>❌ None</td>
-                      </tr>
-                      <tr>
-                        <td><b>Failover Recovery</b></td>
-                        <td style={{ color: 'var(--color-green)', fontWeight: 600 }}>&lt; 30 seconds</td>
-                        <td style={{ color: 'var(--color-green)', fontWeight: 600 }}>&lt; 30 seconds</td>
-                        <td>30–60 seconds</td>
-                        <td>30–60 seconds</td>
-                        <td>30–60 seconds</td>
-                      </tr>
-                      <tr>
-                        <td><b>Storage Auto-scale</b></td>
-                        <td style={{ color: 'var(--color-green)', fontWeight: 600 }}>Auto (128 TiB)</td>
-                        <td style={{ color: 'var(--color-green)', fontWeight: 600 }}>Auto (128 TiB)</td>
-                        <td>Manual / Scheduled</td>
-                        <td>Manual / Scheduled</td>
-                        <td>Manual / Scheduled</td>
-                      </tr>
-                      <tr>
-                        <td><b>Global DR Databases</b></td>
-                        <td style={{ color: 'var(--color-green)' }}>✅ Yes</td>
-                        <td style={{ color: 'var(--color-green)' }}>✅ Yes</td>
-                        <td>Cross-Region Replica</td>
-                        <td>Cross-Region Replica</td>
-                        <td style={{ color: 'var(--color-red)' }}>❌ No</td>
-                      </tr>
-                    </tbody>
-                  </table>
+              <div className="rds-grid2" style={{ gap: '12px', marginTop: '14px' }}>
+                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#1e3a8a' }}>Standard Connectivity Best Practices</div>
+                  <ul className="rds-ck">
+                    <li><b>Public Network Access = Disabled:</b> Prevents generation of internet-routable public IPs. Internal private endpoints ensure database queries remain within cloud boundaries.</li>
+                    <li><b>Private VPC / VNet Subnets:</b> Place databases in subnets lacking routes pointing to an Internet Gateway (IGW) route table.</li>
+                    <li><b>Port Enforcements:</b> Enforce SSL/TLS encryption (`require_ssl=1`) to encrypt data in transit between app instances and database nodes.</li>
+                  </ul>
                 </div>
-              )}
-
-              {/* Sub-tab bestTab: checklist */}
-              {bestTab === 'checklist' && (
-                <div>
-                  <div className="rds-grid2" style={{ gap: '14px' }}>
-                    <div className="rds-inner-card-green" style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-green)', marginBottom: '8px' }}>Must-Have Controls (In Production)</div>
-                      <ul className="rds-ck">
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>RDS instances configured in Isolated Private Subnets with no default internet route</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Multi-AZ deployments enabled to support fast automatic high-availability failovers</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Automated backups scheduled with minimum retention of 7 days</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>RDS Proxy deployed in serverless compute setups (such as AWS Lambda)</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Security group rules configured with explicit SG-ID mappings instead of CIDRs</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>KMS Customer Managed Keys (CMK) configured for robust storage volume encryption</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Inbound SSL/TLS queries enforced (`force_ssl=1` in DB parameter group)</li>
-                      </ul>
-                    </div>
-                    <div className="rds-inner-card-red" style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-red)', marginBottom: '8px' }}>Common Anti-patterns &amp; Mistakes</div>
-                      <ul className="rds-wn">
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Attempting to execute write operations (INSERT/UPDATE) pointing to replica endpoints</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Placing the database in public VPC subnets with `PubliclyAccessible = true`</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Hardcoding database credentials inside application container environment configurations</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Bypassing connection limits without utilizing poolers like RDS Proxy or PgBouncer</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Omitting alerts on critical CloudWatch limits (`FreeableMemory` and `DiskQueueDepth`)</li>
-                        <li style={{ color: 'var(--color-text-secondary)', fontSize: '11.5px' }}>Assuming the Multi-AZ Standby instance can be read from (it operates passive block mirrors only)</li>
-                      </ul>
-                    </div>
+                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#166534' }}>Identity-Based DB Authentication</div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.5', marginBottom: '6px' }}>
+                    {isAzure ? 'Use Microsoft Entra ID (Azure AD) tokens to authenticate database connections without hardcoded passwords.' : isGcp ? 'Use Google Cloud IAM database authentication tokens with automated 1-hour expiration limits.' : 'Instead of static database passwords, apps request short-lived IAM credentials (15-minute token validity) via IAM signature V4.'}
                   </div>
-                  <div className="rds-inner-card-grey" style={{ padding: '12px', marginTop: '14px', fontSize: '11.5px' }}>
-                    💡 <b>Pro Tip:</b> Use the AWS CLI to test active failover resilience by running: <code style={{ color: 'var(--color-blue)' }}>aws rds failover-db-cluster --db-cluster-identifier your-cluster-id</code> in your development/staging environments before committing code to production.
-                  </div>
+                  <ul className="rds-ck">
+                    <li>No long-term passwords stored on disk or in configuration files</li>
+                    <li>Fine-grained IAM policy bindings restrict access by role/identity</li>
+                    <li>Mandates SSL/TLS connections for all authenticating users</li>
+                  </ul>
                 </div>
-              )}
+              </div>
 
             </div>
-          </div>
-        )}
+          )}
 
-      </div>
+          {/* Tab 3: High Availability Multi-AZ */}
+          {activeSection === 'multiaz' && (
+            <div>
+              <div className="rds-sec">
+                {isAzure ? 'Interactive Azure Zone-Redundant High Availability Failover Sandbox' : isGcp ? 'Interactive Google Cloud SQL Regional High Availability Failover Sandbox' : 'Interactive Multi-AZ Disaster Recovery Failover Sandbox'}
+              </div>
+              
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <button 
+                  className="asg-btn asg-on" 
+                  onClick={() => {
+                    const next = (failoverStep + 1) % 6;
+                    setFailoverStep(next);
+                    const zone1 = isAzure ? 'East US Zone 1' : isGcp ? 'us-central1-a' : 'us-east-1a';
+                    const zone2 = isAzure ? 'East US Zone 2' : isGcp ? 'us-central1-b' : 'us-east-1b';
+
+                    if (next === 0) {
+                      setFailoverLogs(['💡 Sandbox reset. Database cluster in normal, synchronized HA operational state.']);
+                    } else if (next === 1) {
+                      logFailover(`💥 [0s] DISASTER EVENT: Datacenter power failure in ${zone1}! Primary DB is unreachable.`);
+                    } else if (next === 2) {
+                      logFailover(`⚙️ [10s] EVICTION: High availability manager fencing off primary node in ${zone1} to prevent split-brain writes.`);
+                    } else if (next === 3) {
+                      logFailover(`🌐 [20s] ROUTING PROPAGATION: Gateway record shifting from ${zone1} to ${zone2}.`);
+                    } else if (next === 4) {
+                      logFailover(`⚡ [30s] PROMOTION: Standby node in ${zone2} mounting block volumes and replaying transaction journals.`);
+                    } else if (next === 5) {
+                      logFailover(`🟢 [45s] IN-SERVICE: Recovery complete! Node in ${zone2} promoted to Primary Writer. App connections restored.`);
+                    }
+                  }}
+                  style={{ fontSize: '11.5px', padding: '7px' }}
+                >
+                  {failoverStep === 5 ? '🔄 Reset Simulator' : '⏭ Trigger Failover State Transition'}
+                </button>
+                <button 
+                  className="asg-btn"
+                  onClick={() => {
+                    setFailoverStep(0);
+                    setFailoverLogs(['💡 Sandbox reset. Database cluster in normal, synchronized HA operational state.']);
+                  }}
+                  style={{ fontSize: '11.5px', padding: '7px' }}
+                >
+                  🔄 Reset
+                </button>
+
+                <span style={{ fontSize: '12px', color: '#475569', marginLeft: '10px' }}>
+                  Active Phase: <b style={{ color: '#0f172a' }}>{failoverStep} of 5</b> — {
+                    failoverStep === 0 ? 'Normal Active Cluster' :
+                    failoverStep === 1 ? 'Primary Node Crash' :
+                    failoverStep === 2 ? 'Active Writer Eviction' :
+                    failoverStep === 3 ? 'Gateway Traffic Routing' :
+                    failoverStep === 4 ? 'Standby Journal Recovery' : 'Failover In-Service'
+                  }
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="rds-card rds-inner-card-grey" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
+                    <svg width="100%" viewBox="0 0 680 180" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
+                      <defs>
+                        <linearGradient id="ha-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="var(--metal-ok-1)" />
+                          <stop offset="35%" stopColor="var(--metal-ok-2)" />
+                          <stop offset="70%" stopColor="var(--metal-ok-3)" />
+                          <stop offset="100%" stopColor="var(--metal-ok-4)" />
+                        </linearGradient>
+                        <linearGradient id="ha-fail" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="var(--c-db-fail-1)" />
+                          <stop offset="35%" stopColor="var(--c-db-fail-2)" />
+                          <stop offset="70%" stopColor="var(--c-db-fail-3)" />
+                          <stop offset="100%" stopColor="var(--c-db-fail-4)" />
+                        </linearGradient>
+                        <linearGradient id="ha-warn" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="var(--metal-warn-1)" />
+                          <stop offset="35%" stopColor="var(--metal-warn-2)" />
+                          <stop offset="70%" stopColor="var(--metal-warn-3)" />
+                          <stop offset="100%" stopColor="var(--metal-warn-4)" />
+                        </linearGradient>
+
+                        <linearGradient id="hl-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="var(--lid-ok-1)" />
+                          <stop offset="100%" stopColor="var(--lid-ok-2)" />
+                        </linearGradient>
+                        <linearGradient id="hl-fail" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="var(--l-db-fail-1)" />
+                          <stop offset="100%" stopColor="var(--l-db-fail-2)" />
+                        </linearGradient>
+                        <linearGradient id="hl-warn" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="var(--lid-warn-1)" />
+                          <stop offset="100%" stopColor="var(--lid-warn-2)" />
+                        </linearGradient>
+
+                        <marker id="arr-ha-g" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#10b981" /></marker>
+                        <marker id="arr-ha-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ef4444" /></marker>
+                      </defs>
+
+                      {/* Primary Zone */}
+                      <rect x="15" y="15" width="290" height="150" rx="10" fill="var(--rds-subnets-bg)" stroke={failoverStep >= 1 && failoverStep <= 3 ? '#ef4444' : 'var(--rds-svg-line-stroke)'} strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="160" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                        {isAzure ? 'East US Zone 1 (Primary)' : isGcp ? 'us-central1-a (Primary Zone)' : 'us-east-1a (Primary Zone)'}
+                      </text>
+
+                      {failoverStep === 0 ? (
+                         <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(45, 45)">
+                           <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-ok)" stroke="#10b981" strokeWidth="1.5" />
+                           <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-ok)" stroke="#10b981" strokeWidth="1.5" />
+                           <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#064e3b">✍️ Primary Writer</text>
+                           <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace">Active (Healthy)</text>
+                         </g>
+                      ) : failoverStep === 1 ? (
+                         <g className="active-glow-node" style={{ '--pulse-color': '#ef4444' } as React.CSSProperties} transform="translate(45, 45)">
+                           <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-fail)" stroke="#ef4444" strokeWidth="2" />
+                           <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-fail)" stroke="#ef4444" strokeWidth="2" />
+                           <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#9f1239">💥 Crashed DB</text>
+                           <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontFamily="monospace">Hardware Fault</text>
+                         </g>
+                      ) : (
+                         <g opacity="0.4" transform="translate(45, 45)">
+                           <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-fail)" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                           <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-fail)" stroke="#ef4444" strokeWidth="1.5" />
+                           <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#ef4444" style={{ textDecoration: 'line-through' }}>✍️ Writer DB</text>
+                           <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#ef4444" fontFamily="monospace">Evicted Node</text>
+                           <path d="M 10 15 L 110 80 M 110 15 L 10 80" stroke="#ef4444" strokeWidth="1.5" opacity="0.4" />
+                         </g>
+                      )}
+
+                      {/* Standby Zone */}
+                      <rect x="375" y="15" width="290" height="150" rx="10" fill="var(--rds-subnets-bg)" stroke={failoverStep === 5 ? '#10b981' : 'var(--rds-svg-line-stroke)'} strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="520" y="28" textAnchor="middle" fontSize="10" fontWeight="bold" className="rds-svg-text-secondary" fontFamily="monospace">
+                        {isAzure ? 'East US Zone 2 (Standby)' : isGcp ? 'us-central1-b (Standby Zone)' : 'us-east-1b (Standby Zone)'}
+                      </text>
+
+                      {failoverStep <= 3 ? (
+                         <g transform="translate(405, 45)">
+                           <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="var(--rds-inner-card-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="1" />
+                           <ellipse cx="60" cy="35" rx="45" ry="10" fill="var(--rds-inner-card-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="1" />
+                           <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" className="rds-svg-text-primary">🛡️ Standby DB</text>
+                           <text x="60" y="55" textAnchor="middle" fontSize="8" className="rds-svg-text-secondary" fontFamily="monospace">Passive (Standby)</text>
+                         </g>
+                      ) : failoverStep === 4 ? (
+                         <g className="active-glow-node" style={{ '--pulse-color': '#f59e0b' } as React.CSSProperties} transform="translate(405, 45)">
+                           <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-warn)" stroke="#d97706" strokeWidth="1.5" />
+                           <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-warn)" stroke="#d97706" strokeWidth="1.5" />
+                           <text x="60" y="20" textAnchor="middle" fontSize="11" fontWeight="bold" fill="#78350f">⚡ Recovering DB</text>
+                           <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#b45309" fontFamily="monospace">Replaying Journals</text>
+                         </g>
+                      ) : (
+                         <g className="active-glow-node" style={{ '--pulse-color': '#10b981' } as React.CSSProperties} transform="translate(405, 45)">
+                           <path d="M 15 35 L 15 75 A 45 10 0 0 0 105 75 L 105 35 A 45 10 0 0 1 15 35 Z" fill="url(#ha-ok)" stroke="#10b981" strokeWidth="2" />
+                           <ellipse cx="60" cy="35" rx="45" ry="10" fill="url(#hl-ok)" stroke="#10b981" strokeWidth="2" />
+                           <text x="60" y="20" textAnchor="middle" fontSize="11.5" fontWeight="bold" fill="#064e3b">✍️ Promoted DB</text>
+                           <text x="60" y="55" textAnchor="middle" fontSize="8" fill="#16a34a" fontFamily="monospace">Writer (Active)</text>
+                         </g>
+                      )}
+
+                      {failoverStep === 0 ? (
+                         <>
+                           <path d="M 305 95 L 375 95" fill="none" stroke="#10b981" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-ha-g)" />
+                           <text x="340" y="84" textAnchor="middle" fontSize="7.5" fill="#15803d" fontWeight="bold" fontFamily="monospace">SYNC 🔄</text>
+                         </>
+                      ) : (
+                         <>
+                           <path d="M 305 95 L 375 95" fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                           <text x="340" y="84" textAnchor="middle" fontSize="7.5" fill="#ef4444" fontWeight="bold" fontFamily="monospace">BLOCKED</text>
+                         </>
+                      )}
+                    </svg>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--color-text-secondary)' }}>
+                      📟 Disaster Recovery (DR) Event Logs
+                    </div>
+                    <div className="asg-log" style={{ minHeight: '100px', maxHeight: '140px', overflowY: 'auto' }}>
+                      {failoverLogs.map((entry, idx) => (
+                        <div key={idx} style={{ marginBottom: idx === failoverLogs.length - 1 ? 0 : 5 }}>
+                          {entry}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="asg-card rds-inner-card-grey" style={{ borderLeft: '3px solid #f59e0b', padding: '12px 14px' }}>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                      ⚙️ Failover Active Phase
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+                      {failoverStep === 0 && '🟢 Cluster Healthy'}
+                      {failoverStep === 1 && '🚨 Zone Outage'}
+                      {failoverStep === 2 && '🚧 Evicting Old Primary'}
+                      {failoverStep === 3 && '🌐 Gateway Traffic Shift'}
+                      {failoverStep === 4 && '⚡ Standby Journal Recovery'}
+                      {failoverStep === 5 && '🟢 Standby Promoted to Writer'}
+                    </div>
+
+                    <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                      {isAzure ? (
+                        <span>Zone-Redundant Flexible Server maintains synchronous storage replication between Zone 1 and Zone 2. In case of a zone failure, Azure Gateway automatically redirects incoming connections to the promoted standby.</span>
+                      ) : isGcp ? (
+                        <span>Cloud SQL Regional HA leverages synchronous disk replication between primary and standby zones. In an outage, regional failover takes under 60 seconds with zero data loss (RPO = 0).</span>
+                      ) : (
+                        <span>RDS Multi-AZ maintains synchronous physical block replication between AZ-a and AZ-b. On failure, RDS shifts DNS CNAME records to point to the new Primary node without changing app connection strings.</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="asg-card rds-inner-card-grey" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4' }}>
+                    <div style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                      📊 Target RPO &amp; RTO Guarantees
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div><b>RPO (Recovery Point Objective):</b> 0 seconds (Synchronous replication ensures zero data loss).</div>
+                      <div><b>RTO (Recovery Time Objective):</b> 30 – 60 seconds automatic failover time.</div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {/* Tab 4: Read Scaling & Replicas */}
+          {activeSection === 'replicas' && (
+            <div>
+              <div className="rds-sec">
+                {isAzure ? 'Interactive Azure Flexible Server Read Replica Scaling & Lag Sandbox' : isGcp ? 'Interactive Google Cloud SQL Read Replica Scaling & Lag Sandbox' : 'Interactive Read Replica Scaling & Replication Lag Sandbox'}
+              </div>
+
+              <div className="rds-ctrl rds-inner-card-grey" style={{ marginBottom: '14px' }}>
+                <label style={{ color: 'var(--color-text-secondary)' }}>Simulate Read-Ahead Log (WAL) Streaming Lag Delay (seconds)</label>
+                <input type="range" min="0" max="30" value={replicaWalLag} onChange={(e) => setReplicaWalLag(Number(e.target.value))} />
+                <div className="out" style={{ color: replicaWalLag > 5 ? 'var(--color-red)' : replicaWalLag > 2 ? 'var(--color-amber)' : 'var(--color-green)' }}>
+                  Active WAL Lag: <b>{replicaWalLag} seconds</b>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: '16px', alignItems: 'start' }}>
+                <div className="rds-card rds-inner-card-grey" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px' }}>
+                  <svg width="100%" viewBox="0 0 680 180" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
+                    <defs>
+                      <marker id="arr-rep-p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8b5cf6" /></marker>
+                    </defs>
+
+                    <rect x="25" y="25" width="180" height="130" rx="10" fill="var(--g-app-1)" stroke="#10b981" strokeWidth="1.5" />
+                    <text x="115" y="42" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#064e3b">✍️ Primary Writer</text>
+                    <text x="115" y="55" textAnchor="middle" fontSize="7.5" fill="#047857" fontFamily="monospace">Commit Log: LSN 0/1A9F400</text>
+                    
+                    <g transform="translate(65, 65)">
+                      <path d="M 10 20 L 10 50 A 40 8 0 0 0 90 50 L 90 20 A 40 8 0 0 1 10 20 Z" fill="url(#m-ok)" stroke="#10b981" strokeWidth="1" />
+                      <ellipse cx="50" cy="20" rx="40" ry="8" fill="url(#l-ok)" stroke="#10b981" strokeWidth="1" />
+                      <text x="50" y="38" textAnchor="middle" fontSize="8.5" fill="#064e3b" fontWeight="bold">Primary DB Node</text>
+                    </g>
+
+                    <rect x="360" y="15" width="295" height="150" rx="10" fill="var(--g-replica-1)" stroke="#8b5cf6" strokeWidth="1.5" />
+                    <text x="507.5" y="30" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#4c1d95">📖 Asynchronous Read Replicas</text>
+                    
+                    <g transform="translate(380, 42)">
+                      <rect x="0" y="0" width="120" height="110" rx="8" fill="var(--rds-inner-card-bg)" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="60" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#4c1d95">Replica 1</text>
+                      <text x="60" y="28" textAnchor="middle" fontSize="7" fill={replicaWalLag > 5 ? '#ef4444' : '#6d28d9'} fontFamily="monospace">Lag: ~{replicaWalLag}s</text>
+
+                      <path d="M 20 50 L 20 75 A 40 7 0 0 0 100 75 L 100 50 A 40 7 0 0 1 20 50 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                      <ellipse cx="60" cy="50" rx="40" ry="7" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="60" y="66" textAnchor="middle" fontSize="8" fill="#4c1d95" fontWeight="bold">Read Replica #1</text>
+                    </g>
+
+                    <g transform="translate(515, 42)">
+                      <rect x="0" y="0" width="120" height="110" rx="8" fill="var(--rds-inner-card-bg)" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="60" y="16" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#4c1d95">Replica 2</text>
+                      <text x="60" y="28" textAnchor="middle" fontSize="7" fill={replicaWalLag > 5 ? '#ef4444' : '#6d28d9'} fontFamily="monospace">Lag: ~{replicaWalLag}s</text>
+
+                      <path d="M 20 50 L 20 75 A 40 7 0 0 0 100 75 L 100 50 A 40 7 0 0 1 20 50 Z" fill="url(#m-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                      <ellipse cx="60" cy="50" rx="40" ry="7" fill="url(#l-rep)" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="60" y="66" textAnchor="middle" fontSize="8" fill="#4c1d95" fontWeight="bold">Read Replica #2</text>
+                    </g>
+
+                    <path d="M 205 90 C 270 90, 300 65, 380 65" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-rep-p)" />
+                    <path d="M 205 90 C 270 90, 380 115, 515 115" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="5,2" className="flow-active-line" markerEnd="url(#arr-rep-p)" />
+                    <text x="330" y="80" textAnchor="middle" fontSize="8.5" fill="#7c3aed" fontWeight="bold" fontFamily="monospace">Async Log Stream</text>
+                  </svg>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {replicaWalLag > 2 ? (
+                    <div className="asg-card rds-inner-card-amber" style={{ borderLeft: '3px solid #f59e0b', padding: '12px 14px' }}>
+                      <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px' }}>
+                        ⚠️ Eventual Consistency Risk
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                        Primary writer updated rows at `T-0`. Replicas are still catching up with WAL log offsets.
+                        <br /><br />
+                        Reading from replicas now will serve <b>stale data</b> that is {replicaWalLag} seconds behind real-time.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="asg-card rds-inner-card-green" style={{ borderLeft: '3px solid #10b981', padding: '12px 14px' }}>
+                      <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 'bold', color: '#10b981', marginBottom: '4px' }}>
+                        🟢 Strong Read Consistency
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                        Minimal WAL lag delay of {replicaWalLag}s.
+                        <br /><br />
+                        Replicas are fully caught up. Reads served are near-100% strongly consistent with zero risk of stale data.
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="asg-card rds-inner-card-grey" style={{ padding: '12px 14px', fontSize: '11px', lineHeight: '1.4' }}>
+                    <div style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '4px' }}>🛡️ Mitigating Replica Lag</div>
+                    To prevent serving stale data to a user who just wrote something:
+                    <ul style={{ paddingLeft: '14px', margin: '4px 0 0 0' }}>
+                      <li><b>Read-Your-Own-Writes:</b> Force queries to go to the <b>Primary Writer</b> for 10-15s immediately following a transaction write.</li>
+                      <li><b>Redis Caching:</b> Cache updates synchronously in Redis / MemoryStore for instant read-backs.</li>
+                    </ul>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="rds-grid2" style={{ gap: '12px', marginTop: '14px' }}>
+                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#1d4ed8' }}>Ideal Scaling Workloads</div>
+                  <ul className="rds-ck">
+                    <li><b>Read Scaling:</b> Distribute heavy query traffic (reporting dashboards, read-only feeds) across active read replicas.</li>
+                    <li><b>Offload Analytics:</b> Run complex SQL analytics queries without locking rows or utilizing compute resources on your Primary transaction DB.</li>
+                    <li><b>Cross-Region Disaster Recovery:</b> Build replicas in different geographical regions to achieve local low-latency reads for global users.</li>
+                  </ul>
+                </div>
+                <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px', color: '#dc2626' }}>Gotchas &amp; Replica Lag</div>
+                  <ul className="rds-wn">
+                    <li><b>Asynchronous Lag:</b> Replicas are split seconds behind the primary. Monitor replica lag telemetry metrics.</li>
+                    <li><b>Stale Reads:</b> Reading a row immediately after updating it on the writer may return old data if routed to a lagging replica.</li>
+                    <li><b>Promotion Overhead:</b> Replicas can be promoted to a primary standalone database, but this is a manual lifecycle event that severs replication pipelines.</li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* Tab 5: Live Simulation */}
+          {activeSection === 'sim' && (
+            <div>
+              <div className="rds-sec">
+                {isAzure ? 'Interactive Azure Traffic Routing, Replication Lag & Zone Failover Simulation' : isGcp ? 'Interactive GCP Traffic Routing, Replication Lag & Regional Failover Simulation' : 'Interactive Traffic Routing, Replication Lag & Failover Simulation'}
+              </div>
+              <div className="rds-card">
+                <div className="rds-controls">
+                  <div className="rds-ctrl">
+                    <label>Deployment Mode</label>
+                    <select value={mode} onChange={(e) => setMode(e.target.value as any)}>
+                      <option value="single">Single-Zone (Writer instance only)</option>
+                      <option value="multi">High Availability (Writer + Synchronous Standby)</option>
+                      <option value="multi_rr">HA + 2 Read Replicas (HA &amp; Read Scaled)</option>
+                    </select>
+                    <div className="out">Mode: <b>{mode === 'single' ? 'Single-Zone' : mode === 'multi' ? 'High Availability' : 'HA + 2 Replicas'}</b></div>
+                  </div>
+
+                  <div className="rds-ctrl">
+                    <label>Read Routing Configuration</label>
+                    <select value={readRoute} onChange={(e) => setReadRoute(e.target.value as any)}>
+                      <option value="writer">Reads &rarr; Writer endpoint directly (Strong Consistency)</option>
+                      <option value="replicas">Reads &rarr; Replicas (if present, else Writer)</option>
+                      <option value="smart">Smart Routing: force Writer within 10s of writes, else Replicas</option>
+                    </select>
+                    <div className="out">Strategy: <b>{readRoute.toUpperCase()}</b></div>
+                  </div>
+
+                  <div className="rds-ctrl">
+                    <label>Client Traffic Volume (TPS Load)</label>
+                    <input type="range" min="10" max="400" value={tps} onChange={(e) => setTps(Number(e.target.value))} />
+                    <div className="out">Total Load: <b>{tps} TPS</b> (Writes: 25% | Reads: 75%)</div>
+                  </div>
+
+                  <div className="rds-ctrl">
+                    <label>Replica Lag Delay (seconds)</label>
+                    <input type="range" min="0" max="30" value={lag} onChange={(e) => setLag(Number(e.target.value))} disabled={mode !== 'multi_rr'} />
+                    <div className="out">Active Delay: <b>{lag} seconds</b></div>
+                  </div>
+                </div>
+
+                <div className="rds-kpi">
+                  <div className="rds-k">
+                    <div className="t">Writer TPS Load</div>
+                    <div className="rds-v">{metrics.writerTps} TPS</div>
+                  </div>
+                  <div className="rds-k">
+                    <div className="t">Replica TPS (each)</div>
+                    <div className="rds-v">{metrics.replicaEach !== null ? `${metrics.replicaEach} TPS` : '—'}</div>
+                  </div>
+                  <div className="rds-k">
+                    <div className="t">Failover Cluster State</div>
+                    <div className="rds-v" style={{ color: azFailed ? (mode === 'single' ? 'var(--color-red)' : 'var(--color-amber)') : 'var(--color-green)' }}>{metrics.failState}</div>
+                  </div>
+                  <div className="rds-k">
+                    <div className="t">Stale Read Risk</div>
+                    <div className="rds-v" style={{ color: metrics.stale === 'High' ? 'var(--color-red)' : metrics.stale === 'Med' ? 'var(--color-amber)' : 'var(--color-green)' }}>{metrics.stale}</div>
+                  </div>
+                </div>
+
+                <div className="rds-btnbar">
+                  <button className="rds-btn rds-primary" onClick={sendWrite}>✍️ Simulate WRITE</button>
+                  <button className="rds-btn" onClick={sendRead}>📖 Simulate READ</button>
+                  <button className="rds-btn rds-btn-danger" onClick={toggleAzFail}>⚡ Toggle Zone Failure</button>
+                  <button className="rds-btn" onClick={resetSim}>🔄 Reset Sim</button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch', marginTop: '16px' }}>
+                  <div className="rds-card rds-inner-card-grey" style={{ flex: 7, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.02)', margin: 0 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'activeNodePulse 1.5s infinite', '--pulse-color': 'rgba(16, 185, 129, 0.5)' } as React.CSSProperties}></span>
+                        Live Active Traffic Ingress Diagram
+                      </div>
+                      
+                      <svg width="100%" viewBox="0 0 680 260" className="rds-svg-bg" style={{ borderRadius: '12px' }}>
+                        <defs>
+                          <linearGradient id="metal-writer-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--metal-ok-1)" />
+                            <stop offset="35%" stopColor="var(--metal-ok-2)" />
+                            <stop offset="70%" stopColor="var(--metal-ok-3)" />
+                            <stop offset="100%" stopColor="var(--metal-ok-4)" />
+                          </linearGradient>
+                          <linearGradient id="metal-writer-fail" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--c-db-fail-1)" />
+                            <stop offset="35%" stopColor="var(--c-db-fail-2)" />
+                            <stop offset="70%" stopColor="var(--c-db-fail-3)" />
+                            <stop offset="100%" stopColor="var(--c-db-fail-4)" />
+                          </linearGradient>
+                          <linearGradient id="metal-standby-ok" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--metal-warn-1)" />
+                            <stop offset="35%" stopColor="var(--metal-warn-2)" />
+                            <stop offset="70%" stopColor="var(--metal-warn-3)" />
+                            <stop offset="100%" stopColor="var(--metal-warn-4)" />
+                          </linearGradient>
+                          <linearGradient id="metal-replica" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--metal-rep-1)" />
+                            <stop offset="35%" stopColor="var(--metal-rep-2)" />
+                            <stop offset="70%" stopColor="var(--metal-rep-3)" />
+                            <stop offset="100%" stopColor="var(--metal-rep-4)" />
+                          </linearGradient>
+                          <linearGradient id="metal-app" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--metal-app-1)" />
+                            <stop offset="35%" stopColor="var(--metal-app-2)" />
+                            <stop offset="70%" stopColor="var(--metal-app-3)" />
+                            <stop offset="100%" stopColor="var(--metal-app-4)" />
+                          </linearGradient>
+
+                          <linearGradient id="lid-writer-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--lid-ok-1)" />
+                            <stop offset="100%" stopColor="var(--lid-ok-2)" />
+                          </linearGradient>
+                          <linearGradient id="lid-writer-fail" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--l-db-fail-1)" />
+                            <stop offset="100%" stopColor="var(--l-db-fail-2)" />
+                          </linearGradient>
+                          <linearGradient id="lid-standby-ok" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--lid-warn-1)" />
+                            <stop offset="100%" stopColor="var(--lid-warn-2)" />
+                          </linearGradient>
+                          <linearGradient id="lid-replica" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--lid-replica-1)" />
+                            <stop offset="100%" stopColor="var(--lid-replica-2)" />
+                          </linearGradient>
+                          <linearGradient id="lid-app" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--lid-app-1)" />
+                            <stop offset="100%" stopColor="var(--lid-app-2)" />
+                          </linearGradient>
+
+                          <marker id="arr-write" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-blue)" />
+                          </marker>
+                          <marker id="arr-read" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-purple)" />
+                          </marker>
+                          <marker id="arr-sync" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-green)" />
+                          </marker>
+                        </defs>
+
+                        {/* Zone Boundaries */}
+                        <rect x="215" y="30" width="220" height="205" rx="12" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="4,4" />
+                        <text x="325" y="44" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--color-text-secondary)" letterSpacing="0.02em" fontFamily="inherit">
+                          {isAzure ? 'East US Zone 1 (Primary)' : isGcp ? 'us-central1-a (Primary Zone)' : 'us-east-1a (Primary Zone)'}
+                        </text>
+
+                        <rect x="445" y="30" width="220" height="205" rx="12" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" strokeDasharray="4,4" />
+                        <text x="555" y="44" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="var(--color-text-secondary)" letterSpacing="0.02em" fontFamily="inherit">
+                          {isAzure ? 'East US Zone 2 (Standby)' : isGcp ? 'us-central1-b (Standby Zone)' : 'us-east-1b (Standby Zone)'}
+                        </text>
+
+                        {/* APP TIER */}
+                        <g transform="translate(20, 75)">
+                          <rect x="0" y="0" width="165" height="110" rx="16" fill="url(#metal-app)" stroke="#2563eb" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'rgba(37, 99, 235, 0.25)' } as React.CSSProperties} />
+                          <rect x="5" y="5" width="155" height="100" rx="11" fill="#1e293b" />
+                          
+                          <rect x="12" y="16" width="141" height="20" rx="4" fill="#0f172a" stroke="#334155" />
+                          <circle cx="22" cy="26" r="3" fill="#10b981" />
+                          <circle cx="30" cy="26" r="1.5" fill="#3b82f6" style={{ animation: 'activeNodePulse 1s infinite', '--pulse-color': '#3b82f6' } as React.CSSProperties} />
+                          <rect x="45" y="24" width="70" height="4" rx="2" fill="#1e293b" />
+                          <rect x="45" y="24" width="45" height="4" rx="2" fill="#10b981" />
+                          
+                          <rect x="12" y="42" width="141" height="20" rx="4" fill="#0f172a" stroke="#334155" />
+                          <circle cx="22" cy="52" r="3" fill="#10b981" />
+                          <circle cx="30" cy="52" r="1.5" fill="#3b82f6" style={{ animation: 'activeNodePulse 1.2s infinite', '--pulse-color': '#3b82f6' } as React.CSSProperties} />
+                          <rect x="45" y="50" width="70" height="4" rx="2" fill="#1e293b" />
+                          <rect x="45" y="50" width="60" height="4" rx="2" fill="#0284c7" />
+
+                          <text x="82.5" y="78" textAnchor="middle" fontSize="10" fill="#e2e8f0" fontWeight="bold" fontFamily="inherit">💻 App Compute Tier</text>
+                          <text x="82.5" y="92" textAnchor="middle" fontSize="8" fill="#94a3b8" fontFamily="monospace">Load: {tps} TPS (25% W | 75% R)</text>
+                        </g>
+
+                        {(() => {
+                          const writerIsActive = !azFailed;
+                          const writerIsSingleDown = azFailed && mode === 'single';
+                          const writerIsMultiFailed = azFailed && mode !== 'single';
+
+                          let wBodyFill = 'url(#metal-writer-ok)';
+                          let wLidFill = 'url(#lid-writer-ok)';
+                          let wStroke = 'var(--color-green)';
+                          let wText = 'var(--color-green)';
+                          let wStatus = 'WRITER: Active WAL';
+                          let wGlow = 'active-glow-node';
+                          let wPulse = 'rgba(16, 185, 129, 0.35)';
+
+                          if (writerIsSingleDown || writerIsMultiFailed) {
+                            wBodyFill = 'url(#metal-writer-fail)';
+                            wLidFill = 'url(#lid-writer-fail)';
+                            wStroke = 'var(--color-red)';
+                            wText = 'var(--color-red)';
+                            wStatus = writerIsSingleDown ? '🚨 OFFLINE (NO HA)' : '❌ EVICTED (Zone Crash)';
+                            wGlow = '';
+                            wPulse = '';
+                          }
+
+                          const standbyActive = mode !== 'single';
+                          const standbyIsPromoted = azFailed && standbyActive;
+
+                          let sBodyFill = 'url(#metal-standby-ok)';
+                          let sLidFill = 'url(#lid-standby-ok)';
+                          let sStroke = 'var(--color-amber)';
+                          let sText = 'var(--color-amber)';
+                          let sStatus = '🛡️ PASSIVE HOT STANDBY';
+                          let sGlow = '';
+                          let sPulse = 'rgba(251, 191, 36, 0.15)';
+
+                          if (standbyIsPromoted) {
+                            sBodyFill = 'url(#metal-writer-ok)';
+                            sLidFill = 'url(#lid-writer-ok)';
+                            sStroke = 'var(--color-green)';
+                            sText = 'var(--color-green)';
+                            sStatus = '✍️ PROMOTED ACTIVE WRITER';
+                            sGlow = 'active-glow-node';
+                            sPulse = 'rgba(16, 185, 129, 0.4)';
+                          }
+
+                          const activeWriterY = standbyIsPromoted ? 180 : 90;
+
+                          return (
+                            <>
+                              {writerIsSingleDown ? (
+                                <>
+                                  <path d="M 185 130 C 210 130, 220 95, 235 90" fill="none" stroke="var(--color-red)" strokeWidth="2.5" strokeDasharray="4,4" />
+                                  <text x="215" y="112" fontSize="8" fontWeight="bold" fill="var(--color-red)" textAnchor="middle">❌ OFFLINE</text>
+                                </>
+                              ) : (
+                                <>
+                                  <path d={`M 185 120 C 210 120, 220 ${activeWriterY - 10}, 245 ${activeWriterY - 10}`} fill="none" stroke="var(--color-blue)" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-write)" />
+                                  <text x="215" y={activeWriterY - 15} fontSize="8.5" fontWeight="bold" fill="var(--color-blue)" textAnchor="middle">Writes: {metrics.writes} TPS</text>
+
+                                  {metrics.readTarget === 'writer' ? (
+                                    <>
+                                      <path d={`M 185 140 C 210 140, 220 ${activeWriterY + 10}, 245 ${activeWriterY + 10}`} fill="none" stroke="var(--color-blue)" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-write)" />
+                                      <text x="215" y={activeWriterY + 22} fontSize="8.5" fontWeight="bold" fill="var(--color-blue)" textAnchor="middle">Reads: {metrics.reads} TPS</text>
+                                    </>
+                                  ) : (
+                                    mode === 'multi_rr' && (
+                                      <>
+                                        <path d="M 185 140 C 220 140, 360 85, 480 85" fill="none" stroke="var(--color-purple)" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-read)" />
+                                        <path d="M 185 145 C 220 145, 360 165, 480 165" fill="none" stroke="var(--color-purple)" strokeWidth="2" className="flow-active-line" markerEnd="url(#arr-read)" />
+                                        <text x="235" y="160" fontSize="8.5" fontWeight="bold" fill="var(--color-purple)" textAnchor="middle">Reads (Split): {metrics.reads} TPS</text>
+                                      </>
+                                    )
+                                  )}
+                                </>
+                              )}
+
+                              {/* PRIMARY WRITER */}
+                              <g transform="translate(250, 52)" className={wGlow} style={{ '--pulse-color': wGlow ? wPulse : '' } as React.CSSProperties}>
+                                <path d="M 15 40 L 15 80 A 45 12 0 0 0 105 80 L 105 40 A 45 12 0 0 1 15 40 Z" fill={wBodyFill} stroke={wStroke} strokeWidth="1.5" />
+                                <ellipse cx="60" cy="40" rx="45" ry="12" fill={wLidFill} stroke={wStroke} strokeWidth="1.5" />
+                                <text x="60" y="24" textAnchor="middle" fontSize="10.5" fontWeight="800" fill={wText}>🐘 Primary DB Writer</text>
+                                <text x="60" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill={wText} opacity="0.95">{wStatus}</text>
+                                <text x="60" y="98" textAnchor="middle" fontSize="9" fontWeight="800" fill={wText}>{writerIsActive ? `Load: ${metrics.writerTps} TPS` : '0 TPS — Unreachable'}</text>
+                              </g>
+
+                              {/* STANDBY */}
+                              {standbyActive && (
+                                <g transform="translate(250, 142)" className={sGlow} style={{ '--pulse-color': sGlow ? sPulse : '' } as React.CSSProperties}>
+                                  <path d="M 15 40 L 15 80 A 45 12 0 0 0 105 80 L 105 40 A 45 12 0 0 1 15 40 Z" fill={sBodyFill} stroke={sStroke} strokeWidth="1.5" />
+                                  <ellipse cx="60" cy="40" rx="45" ry="12" fill={sLidFill} stroke={sStroke} strokeWidth="1.5" />
+                                  <text x="60" y="24" textAnchor="middle" fontSize="10.5" fontWeight="800" fill={sText}>{standbyIsPromoted ? '🛡️ Promoted DB Writer' : '🛡️ HA Standby DB'}</text>
+                                  <text x="60" y="65" textAnchor="middle" fontSize="8" fontWeight="bold" fill={sText} opacity="0.95">{sStatus}</text>
+                                  <text x="60" y="98" textAnchor="middle" fontSize="9" fontWeight="800" fill={sText}>{standbyIsPromoted ? `Load: ${metrics.writerTps} TPS` : 'State: Mirrored Commit'}</text>
+                                </g>
+                              )}
+
+                              {standbyActive && (
+                                writerIsActive ? (
+                                  <>
+                                    <path d="M 310 135 L 310 180" fill="none" stroke="var(--color-green)" strokeWidth="2.5" className="flow-active-line" markerEnd="url(#arr-sync)" />
+                                    <text x="345" y="158" fontSize="8" fontWeight="bold" fill="var(--color-green)" textAnchor="middle">SYNC COMMITS 🔄</text>
+                                  </>
+                                ) : (
+                                  <>
+                                    <path d="M 310 135 L 310 180" fill="none" stroke="var(--color-red)" strokeWidth="1.5" strokeDasharray="3,3" />
+                                    <text x="345" y="158" fontSize="8" fontWeight="bold" fill="var(--color-red)" textAnchor="middle">LINK BROKEN ❌</text>
+                                  </>
+                                )
+                              )}
+
+                              {/* REPLICAS */}
+                              {mode === 'multi_rr' && (
+                                <>
+                                  <g transform="translate(485, 48)" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.25)' } as React.CSSProperties}>
+                                    <path d="M 12 32 L 12 64 A 36 10 0 0 0 84 64 L 84 32 A 36 10 0 0 1 12 32 Z" fill="url(#metal-replica)" stroke="var(--color-purple)" strokeWidth="1" />
+                                    <ellipse cx="48" cy="32" rx="36" ry="10" fill="url(#lid-replica)" stroke="var(--color-purple)" strokeWidth="1" />
+                                    <text x="48" y="18" textAnchor="middle" fontSize="10" fontWeight="800" fill="var(--color-purple)">📖 Read Replica 1</text>
+                                    <text x="48" y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontFamily="monospace">Lag: {lag}s | {metrics.replicaEach} TPS</text>
+                                  </g>
+
+                                  <g transform="translate(485, 138)" className="active-glow-node" style={{ '--pulse-color': 'rgba(139, 92, 246, 0.25)' } as React.CSSProperties}>
+                                    <path d="M 12 32 L 12 64 A 36 10 0 0 0 84 64 L 84 32 A 36 10 0 0 1 12 32 Z" fill="url(#metal-replica)" stroke="var(--color-purple)" strokeWidth="1" />
+                                    <ellipse cx="48" cy="32" rx="36" ry="10" fill="url(#lid-replica)" stroke="var(--color-purple)" strokeWidth="1" />
+                                    <text x="48" y="18" textAnchor="middle" fontSize="10" fontWeight="800" fill="var(--color-purple)">📖 Read Replica 2</text>
+                                    <text x="48" y="52" textAnchor="middle" fontSize="7.5" fill="var(--color-purple)" fontFamily="monospace">Lag: {lag}s | {metrics.replicaEach} TPS</text>
+                                  </g>
+                                </>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.5' }}>
+                      💡 <b>Tip:</b> Toggling zone failure with HA enabled demonstrates automatic node shift: traffic is seamlessly routed to the promoted standby writer, maintaining app availability.
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 3, position: 'relative' }}>
+                    <div className="rds-log" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, marginTop: 0, minHeight: 'unset', maxHeight: 'none', overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: logHtml }} />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* Tab 6: Advanced Features */}
+          {activeSection === 'advanced' && (
+            <div>
+              <div className="rds-sec">Advanced Enterprise Features: Backup Sandbox, CoW Cloning, Security Grade, ML SQL &amp; Connection Proxy</div>
+              <div className="rds-card">
+                
+                <div className="rds-subtabs">
+                  <button className={`rds-subtb ${activeFeatureTab === 'backup' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('backup')}>💾 6.1) Backup PITR Sandbox</button>
+                  <button className={`rds-subtb ${activeFeatureTab === 'clone' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('clone')}>🧬 6.2) DB Cloning Sandbox</button>
+                  <button className={`rds-subtb ${activeFeatureTab === 'security' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('security')}>🔒 6.3) Security HUD Grade</button>
+                  <button className={`rds-subtb ${activeFeatureTab === 'ml' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('ml')}>🤖 6.4) ML SQL Sandbox</button>
+                  <button className={`rds-subtb ${activeFeatureTab === 'proxy' ? 'rds-on' : ''}`} onClick={() => setActiveFeatureTab('proxy')}>🔀 6.5) Connection Pooling</button>
+                </div>
+
+                {/* Sub-tab 6.1: Backup & Restore */}
+                {activeFeatureTab === 'backup' && (() => {
+                  const formatPitrTime = (m: number) => {
+                    const hh = String(Math.floor(m / 60)).padStart(2, '0');
+                    const mm = String(m % 60).padStart(2, '0');
+                    return `${hh}:${mm}:00 UTC`;
+                  };
+
+                  const pitrTimeFormatted = formatPitrTime(pitrTargetTime);
+                  
+                  return (
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-amber)' }}>💾 Point-in-Time Recovery (PITR) Snapshots &amp; Log Timeline Simulator</div>
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
+                        {isAzure ? 'Azure Flexible Server combines daily automated backups with continuous Write-Ahead Log (WAL) archiving to Azure Storage. Restore your database down to any exact millisecond commit.' : isGcp ? 'Cloud SQL combines daily automated disk snapshots with continuous WAL archiving in Google Cloud Storage. Restore down to any target second.' : 'RDS combines daily automated incremental backups with 5-minute transaction Write-Ahead Log (WAL) streams uploaded to Amazon S3. Restore your cluster down to any exact millisecond commit.'}
+                      </div>
+                      
+                      <div className="rds-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
+                        <div className="rds-ctrl">
+                          <label>1. Set Backup Retention Window (Days)</label>
+                          <input type="range" min="1" max="35" value={pitrDays} onChange={(e) => setPitrDays(Number(e.target.value))} />
+                          <div className="out" style={{ color: 'var(--color-amber)' }}>Retention Period: <b>{pitrDays} days</b> (Range: 1–35 days)</div>
+                        </div>
+
+                        <div className="rds-ctrl">
+                          <label>2. Drag Target Recovery Point (Timeline Time)</label>
+                          <input type="range" min="0" max="1439" value={pitrTargetTime} onChange={(e) => setPitrTargetTime(Number(e.target.value))} />
+                          <div className="out" style={{ color: 'var(--color-blue)' }}>Point-In-Time: <b>{pitrTimeFormatted}</b></div>
+                        </div>
+                      </div>
+
+                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
+                        <div style={{ fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', marginBottom: '8px', color: 'var(--color-text-secondary)' }}>
+                          📊 Point-In-Time Recovery Timeline (Active Restore Frame)
+                        </div>
+                        
+                        <svg width="100%" height="90" viewBox="0 0 640 90" className="rds-svg-bg" style={{ borderRadius: '6px' }}>
+                          <rect x="30" y="45" width="580" height="8" rx="4" fill="var(--rds-inner-card-border)" />
+                          <rect x="30" y="45" width="580" height="8" rx="4" fill="var(--color-green)" opacity="0.3" />
+                          
+                          <circle cx="50" cy="49" r="6" fill="var(--color-green)" />
+                          <text x="50" y="32" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Snapshot 00:00</text>
+                          
+                          <circle cx="240" cy="49" r="6" fill="var(--color-green)" />
+                          <text x="240" y="32" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Snapshot 08:00</text>
+
+                          <circle cx="430" cy="49" r="6" fill="var(--color-green)" />
+                          <text x="430" y="32" textAnchor="middle" fontSize="8" fill="var(--color-green)" fontWeight="bold">Snapshot 16:00</text>
+                          
+                          {(() => {
+                            const px = 30 + (pitrTargetTime / 1439) * 580;
+                            return (
+                              <g>
+                                <line x1={px} y1="12" x2={px} y2="78" stroke="var(--color-blue)" strokeWidth="2" strokeDasharray="2,2" />
+                                <polygon points={`${px},40 ${px - 5},30 ${px + 5},30`} fill="var(--color-blue)" />
+                                <circle cx={px} cy="49" r="8" fill="var(--color-blue)" className="active-glow-node" style={{ '--pulse-color': 'rgba(2, 132, 199, 0.4)' } as React.CSSProperties} />
+                                <text x={px} y="74" textAnchor="middle" fontSize="9" fill="var(--color-blue)" fontWeight="bold">Target Point: {pitrTimeFormatted}</text>
+                              </g>
+                            );
+                          })()}
+                          
+                          <text x="590" y="18" textAnchor="end" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">Continuous WAL Streams ➡️ Cloud Storage</text>
+                        </svg>
+                      </div>
+
+                      <div className="rds-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
+                        <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', display: 'flex', flexDirection: 'column' }}>
+                          <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--color-blue)', marginBottom: '8px', fontFamily: 'monospace' }}>
+                            ⚡ Monospace Recovery Journal Logs
+                          </div>
+                          <div className="rds-mono" style={{ fontSize: '10.5px', color: 'var(--color-text-primary)', lineHeight: '1.5', minHeight: '120px' }}>
+                            <span style={{ color: 'var(--color-text-secondary)' }}>[1/4]</span> Probing storage catalog for base daily snapshot...<br/>
+                            <span style={{ color: 'var(--color-green)' }}>[SUCCESS]</span> Found base snapshot <span style={{ color: 'var(--color-green)', fontWeight: 'bold' }}>`db-snap-daily-t00`</span><br/>
+                            <span style={{ color: 'var(--color-text-secondary)' }}>[2/4]</span> Deploying new database compute node in isolated subnet...<br/>
+                            <span style={{ color: 'var(--color-text-secondary)' }}>[3/4]</span> Replaying Write-Ahead Log (WAL) segments...<br/>
+                            <span style={{ color: 'var(--color-blue)' }}>[INFO]</span> Streamed WAL logs from snapshot to target restore frame {pitrTimeFormatted}<br/>
+                            <span style={{ color: 'var(--color-amber)' }}>[SUCCESS]</span> Database fully recovered to {pitrTimeFormatted}. Status: <span style={{ color: 'var(--color-green)', fontWeight: 'bold' }}>ACTIVE</span>
+                          </div>
+                        </div>
+
+                        <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                          <div style={{ fontWeight: 600, fontSize: '12.5px', color: 'var(--color-green)', marginBottom: '6px' }}>
+                            🛡️ Automatic Restoration Guarantees
+                          </div>
+                          <ul className="rds-ck" style={{ fontSize: '11.5px' }}>
+                            <li><b>Zero Downtime Impact:</b> Restores create a new separate database instance, leaving the active production database untouched.</li>
+                            <li><b>RPO Precision:</b> Restore resolution down to the exact second or millisecond timestamp.</li>
+                            <li><b>Automated Cleanup:</b> Retention policies automatically purge obsolete snapshots beyond the specified retention window.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Sub-tab 6.2: Database Cloning */}
+                {activeFeatureTab === 'clone' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-purple)' }}>🧬 Copy-on-Write Database Fast Cloning Sandbox</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
+                      {isAzure ? 'Azure SQL Hyperscale and Flexible Server support fast Copy-on-Write database cloning. Clones share underlying physical storage pages until rows are modified.' : isGcp ? 'AlloyDB and Cloud SQL support fast Point-In-Time Database Clones without copying physical disk blocks upfront.' : 'Amazon RDS / Aurora supports Copy-on-Write database cloning. Creating a clone takes seconds regardless of database size because data blocks are shared until modified.'}
+                    </div>
+
+                    <div className="rds-grid2" style={{ gap: '14px', marginBottom: '14px' }}>
+                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                        <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#10b981' }}>Original DB Storage Blocks</div>
+                        <div className="rds-row"><div className="rds-dot" style={{ background: '#10b981' }}>P1</div><div>Physical Page 1042 (Base Data)</div></div>
+                        <div className="rds-row"><div className="rds-dot" style={{ background: '#10b981' }}>P2</div><div>Physical Page 1043 (Shared Read-Only)</div></div>
+                      </div>
+                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                        <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: '#8b5cf6' }}>Cloned DB CoW Blocks (Allocated: {cloneDivergedBlocks})</div>
+                        <div className="rds-row"><div className="rds-dot" style={{ background: '#8b5cf6' }}>C1</div><div>Pointers to Page 1042/1043 (0 GB added)</div></div>
+                        {cloneDivergedBlocks > 0 && (
+                          <div className="rds-row"><div className="rds-dot" style={{ background: '#ef4444' }}>C2</div><div><b>New CoW Block #{cloneDivergedBlocks}:</b> Diverged Delta Page</div></div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+                      <button className="rds-btn rds-primary" onClick={handleCloneWrite}>✍️ Simulate Write on Cloned DB</button>
+                      <button className="rds-btn" onClick={() => { setCloneDivergedBlocks(0); setCloneLogs(['💡 Reset clone pointers.']); }}>🔄 Reset Clone Blocks</button>
+                    </div>
+
+                    <div className="asg-log" style={{ minHeight: '80px', maxHeight: '120px', overflowY: 'auto' }}>
+                      {cloneLogs.map((entry, idx) => (
+                        <div key={idx}>{entry}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-tab 6.3: Security HUD Grade */}
+                {activeFeatureTab === 'security' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-green)' }}>
+                      🔒 {isAzure ? 'Azure Database Security Compliance HUD' : isGcp ? 'Google Cloud SQL Security Compliance HUD' : 'Amazon RDS Security Compliance HUD'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px' }}>
+                      Interactive security posture assessment. Toggle compliance items to calculate your real-time security grade.
+                    </div>
+
+                    <div className="rds-grid2" style={{ gap: '14px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {secItems.map((item, idx) => (
+                          <div key={idx} className="rds-row" style={{ cursor: 'pointer' }} onClick={() => toggleSecItem(idx)}>
+                            <input type="checkbox" checked={item.done} onChange={() => {}} style={{ marginTop: '3px' }} />
+                            <span style={{ fontSize: '11.5px', color: item.done ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)', textDecoration: item.done ? 'none' : 'line-through' }}>
+                              {item.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>Security Posture Score</div>
+                        {(() => {
+                          const doneCount = secItems.filter(i => i.done).length;
+                          const pct = Math.round((doneCount / secItems.length) * 100);
+                          const grade = pct >= 90 ? 'A+' : pct >= 70 ? 'B' : pct >= 50 ? 'C' : 'F';
+                          const gradeColor = pct >= 90 ? '#10b981' : pct >= 70 ? '#3b82f6' : pct >= 50 ? '#f59e0b' : '#ef4444';
+                          
+                          return (
+                            <>
+                              <div style={{ fontSize: '48px', fontWeight: '800', color: gradeColor, margin: '8px 0' }}>{grade}</div>
+                              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>{pct}% Compliant ({doneCount} / {secItems.length} Controls)</div>
+                              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '6px', textAlign: 'center' }}>
+                                {pct >= 90 ? '🔒 Production Grade: Enterprise hardening policies enforced!' : '⚠️ Warning: Unenforced security controls detected!'}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-tab 6.4: ML SQL Sandbox */}
+                {activeFeatureTab === 'ml' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-purple)' }}>
+                      🤖 {isAzure ? 'In-Database Azure OpenAI & Azure ML SQL Sandbox' : isGcp ? 'In-Database Vertex AI ML SQL Sandbox' : 'In-Database Machine Learning (ML) SQL Sandbox'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+                      {isAzure ? 'Execute Machine Learning and OpenAI sentiment analysis directly inside SQL queries using REST endpoints.' : isGcp ? 'Execute Vertex AI online predictions directly inside Cloud SQL or AlloyDB SQL queries using ml_predict_row.' : 'Execute machine learning models directly inside SQL queries using Amazon Comprehend, SageMaker, or pgml extension.'}
+                    </div>
+
+                    <div className="rds-subtabs">
+                      <button
+                        className={`rds-subtb ${activeMlQuery === 'sentiment' ? 'rds-on-purple' : ''}`}
+                        onClick={() => { setActiveMlQuery('sentiment'); setMlOutput([]); setMlLogs([]); }}
+                      >
+                        💬 Sentiment Analysis ({isAzure ? 'Azure OpenAI' : isGcp ? 'Vertex AI' : 'Comprehend'})
+                      </button>
+                      <button
+                        className={`rds-subtb ${activeMlQuery === 'fraud' ? 'rds-on-purple' : ''}`}
+                        onClick={() => { setActiveMlQuery('fraud'); setMlOutput([]); setMlLogs([]); }}
+                      >
+                        💳 Transaction Fraud Evaluator ({isAzure ? 'Azure ML' : isGcp ? 'Vertex AI' : 'SageMaker'})
+                      </button>
+                      <button
+                        className={`rds-subtb ${activeMlQuery === 'churn' ? 'rds-on-purple' : ''}`}
+                        onClick={() => { setActiveMlQuery('churn'); setMlOutput([]); setMlLogs([]); }}
+                      >
+                        📈 Churn Prediction Models
+                      </button>
+                    </div>
+
+                    <div className="rds-grid2" style={{ gap: '12px', marginBottom: '12px' }}>
+                      <div>
+                        <div className="rds-sec" style={{ color: 'var(--color-purple)' }}>Active SQL Inference Query Block</div>
+                        <div className="rds-code-container">
+                          <div className="rds-code">
+                            {activeMlQuery === 'sentiment' && mlFlows.lambda.sql}
+                            {activeMlQuery === 'fraud' && mlFlows.app.sql}
+                            {activeMlQuery === 'churn' && mlFlows.pgml.sql}
+                          </div>
+                        </div>
+                        <button className="rds-btn rds-btn-purple" onClick={runMlInference} style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }}>
+                          ⚡ Run ML Inference Query inside DB
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px', flex: 1 }}>
+                          <div style={{ fontWeight: 600, fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontFamily: 'monospace' }}>
+                            📟 Query ML Inference Terminal Streams
+                          </div>
+                          <div className="rds-mono" style={{ fontSize: '10px', color: 'var(--color-text-primary)', minHeight: '80px', lineHeight: '1.5' }}>
+                            {mlIsLoading ? (
+                              <div style={{ color: 'var(--color-amber)', animation: 'activeNodePulse 1s infinite', '--pulse-color': 'var(--color-amber)' } as React.CSSProperties}>
+                                Connecting to Cloud ML Inference Endpoint... 🚀
+                              </div>
+                            ) : mlLogs.length === 0 ? (
+                              <span style={{ color: 'var(--color-text-tertiary)' }}>Click "Run ML Inference Query inside DB" to view inference executions.</span>
+                            ) : null}
+                            {mlLogs.map((log, idx) => (
+                              <div key={idx}>{log}</div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {mlOutput.length > 0 && (
+                          <div className="rds-inner-card-grey" style={{ borderRadius: '8px', padding: '12px' }}>
+                            <div style={{ fontWeight: 600, fontSize: '11px', color: 'var(--color-green)', marginBottom: '6px', fontFamily: 'monospace' }}>
+                              📊 SQL GRID RESULT SET (Model Returns)
+                            </div>
+                            <table className="rds-table" style={{ fontSize: '10px' }}>
+                              <thead>
+                                <tr>
+                                  {activeMlQuery === 'sentiment' && (
+                                    <>
+                                      <th>Customer Feedback Comment</th>
+                                      <th>Sentiment</th>
+                                      <th>Confidence</th>
+                                    </>
+                                  )}
+                                  {activeMlQuery === 'fraud' && (
+                                    <>
+                                      <th>Inbound Transaction ID</th>
+                                      <th>ML Score</th>
+                                      <th>Action Result</th>
+                                    </>
+                                  )}
+                                  {activeMlQuery === 'churn' && (
+                                    <>
+                                      <th>Target Customer Account</th>
+                                      <th>Churn Propensity</th>
+                                      <th>Engagement Status</th>
+                                    </>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {mlOutput.map((row, idx) => (
+                                  <tr key={idx}>
+                                    {activeMlQuery === 'sentiment' && (
+                                      <>
+                                        <td>{row.review}</td>
+                                        <td style={{ color: row.sentiment === 'NEGATIVE' ? 'var(--color-red)' : 'var(--color-green)', fontWeight: 'bold' }}>{row.sentiment}</td>
+                                        <td style={{ color: 'var(--color-blue)' }}>{row.confidence}</td>
+                                      </>
+                                    )}
+                                    {activeMlQuery === 'fraud' && (
+                                      <>
+                                        <td>{row.txn}</td>
+                                        <td style={{ color: row.risk.includes('HIGH') ? 'var(--color-red)' : 'var(--color-green)', fontWeight: 'bold' }}>{row.risk}</td>
+                                        <td style={{ color: 'var(--color-blue)' }}>{row.action}</td>
+                                      </>
+                                    )}
+                                    {activeMlQuery === 'churn' && (
+                                      <>
+                                        <td>{row.user}</td>
+                                        <td style={{ color: row.score.includes('High') ? 'var(--color-red)' : 'var(--color-green)', fontWeight: 'bold' }}>{row.score}</td>
+                                        <td style={{ color: 'var(--color-purple)' }}>{row.status}</td>
+                                      </>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sub-tab 6.5: Connection Pooling */}
+                {activeFeatureTab === 'proxy' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>
+                      🔀 {isAzure ? 'Built-in PgBouncer & Azure Connection Proxy Pool' : isGcp ? 'Cloud SQL Auth Proxy & Built-in PgBouncer Pool' : 'RDS Proxy Serverless Connection Multiplexing Pool Simulator'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.45' }}>
+                      {isAzure ? 'Azure Flexible Server includes built-in PgBouncer for high-concurrency connection pooling, preventing thread memory exhaustion.' : isGcp ? 'Cloud SQL Auth Proxy and built-in PgBouncer manage secure client sockets, multiplexing incoming app requests down to stable database backend connections.' : 'RDS Proxy acts as a high-performance proxy pool, scaling connections down to small persistent pipes to avoid database out-of-memory errors.'}
+                    </div>
+
+                    <div className="rds-ctrl rds-inner-card-grey" style={{ marginBottom: '14px' }}>
+                      <label style={{ color: 'var(--color-text-secondary)' }}>Set Active App Ingress Connection Surge (TCP Clients)</label>
+                      <input type="range" min="10" max="1000" value={proxyConcurrency} onChange={(e) => setProxyConcurrency(Number(e.target.value))} />
+                      <div className="out" style={{ color: 'var(--color-blue)', background: 'var(--rds-inner-card-bg)', border: '1px solid var(--rds-inner-card-border)' }}>Incoming Surge Load: <b>{proxyConcurrency} Active TCP Clients</b></div>
+                    </div>
+
+                    <div className="rds-grid3" style={{ marginBottom: '14px' }}>
+                      <div className="rds-k">
+                        <div className="t" style={{ color: 'var(--color-red)' }}>Incoming Surge</div>
+                        <div className="v" style={{ color: 'var(--color-red)' }}>{proxyConcurrency} Sockets</div>
+                      </div>
+                      <div className="rds-k">
+                        <div className="t" style={{ color: 'var(--color-green)' }}>Pooled DB Backends</div>
+                        <div className="v" style={{ color: 'var(--color-green)' }}>
+                          {Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))} Pipes
+                        </div>
+                      </div>
+                      <div className="rds-k">
+                        <div className="t" style={{ color: 'var(--color-blue)' }}>CPU Context Savings</div>
+                        <div className="v" style={{ color: 'var(--color-blue)' }}>
+                          {Math.round((1 - (Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8))) / proxyConcurrency)) * 100)}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rds-inner-card-grey" style={{ padding: '12px', marginBottom: '14px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '10px', textTransform: 'uppercase', marginBottom: '6px', color: 'var(--color-text-tertiary)' }}>
+                        🔀 Real-Time Connection Pooling Multiplexing Path
+                      </div>
+                      
+                      <svg width="100%" height="100" viewBox="0 0 640 100" className="rds-svg-bg" style={{ borderRadius: '6px' }}>
+                        <defs>
+                          <linearGradient id="p-db-body" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="var(--metal-ok-1)" />
+                            <stop offset="35%" stopColor="var(--metal-ok-2)" />
+                            <stop offset="70%" stopColor="var(--metal-ok-3)" />
+                            <stop offset="100%" stopColor="var(--metal-ok-4)" />
+                          </linearGradient>
+                          <linearGradient id="p-db-lid" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="var(--lid-ok-1)" />
+                            <stop offset="100%" stopColor="var(--lid-ok-2)" />
+                          </linearGradient>
+                        </defs>
+
+                        <rect x="20" y="15" width="100" height="70" rx="6" fill="var(--g-public-1)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <text x="70" y="32" textAnchor="middle" fontSize="9" fill="var(--color-blue)" fontWeight="bold">⚡ App Surge</text>
+                        <text x="70" y="50" textAnchor="middle" fontSize="12" fill="var(--color-text-primary)" fontWeight="bold">{proxyConcurrency}</text>
+                        <text x="70" y="66" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontWeight="600">TCP Sockets</text>
+
+                        <rect x="250" y="15" width="140" height="70" rx="6" fill="var(--g-app-1)" stroke="var(--color-blue)" strokeWidth="1.5" className="active-glow-node" style={{ '--pulse-color': 'var(--color-blue)' } as React.CSSProperties} />
+                        <text x="320" y="38" textAnchor="middle" fontSize="10.5" fill="var(--color-text-primary)" fontWeight="bold">
+                          {isAzure ? '🔄 PgBouncer Pool' : isGcp ? '🔄 Cloud SQL Auth Proxy' : '🔄 RDS Proxy Pool'}
+                        </text>
+                        <text x="320" y="58" textAnchor="middle" fontSize="8.5" fill="var(--color-blue)" fontWeight="bold">Multiplexing Active</text>
+                        <text x="320" y="72" textAnchor="middle" fontSize="8" fill="var(--color-text-secondary)" fontFamily="monospace">Queue Draining</text>
+
+                        <path d="M 532 25 L 532 65 A 38 7 0 0 0 608 65 L 608 25 A 38 7 0 0 1 532 25 Z" fill="url(#p-db-body)" stroke="var(--color-green)" strokeWidth="1" />
+                        <ellipse cx="570" cy="25" rx="38" ry="7" fill="url(#p-db-lid)" stroke="var(--color-green)" strokeWidth="1" />
+                        <text x="570" y="16" textAnchor="middle" fontSize="9" fill="var(--color-green)" fontWeight="bold">🐘 DB Node</text>
+                        <text x="570" y="58" textAnchor="middle" fontSize="11" fill="var(--color-text-primary)" fontWeight="bold">{Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))}</text>
+                        <text x="570" y="74" textAnchor="middle" fontSize="7.5" fill="var(--color-green)">Stable Sockets</text>
+
+                        <path d="M 120 30 L 250 45" fill="none" stroke="var(--color-red)" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2' } as React.CSSProperties} />
+                        <path d="M 120 50 L 250 50" fill="none" stroke="var(--color-red)" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2' } as React.CSSProperties} />
+                        <path d="M 120 70 L 250 55" fill="none" stroke="var(--color-red)" strokeWidth="1.5" className="flow-active-line" style={{ strokeDasharray: '4, 2' } as React.CSSProperties} />
+                        <path d="M 390 50 L 532 50" fill="none" stroke="var(--color-green)" strokeWidth="3" className="flow-active-line" style={{ strokeDasharray: '8, 4' } as React.CSSProperties} />
+                      </svg>
+                    </div>
+
+                    <div className="rds-inner-card-green" style={{ borderRadius: '8px', padding: '12px', fontSize: '12px', lineHeight: '1.5' }}>
+                      🚀 <b>Proxy Connection Pooling Advantage:</b> Without proxy pooling, launching {proxyConcurrency} app connections opens {proxyConcurrency} direct TCP sockets, exhausting backend memory. With proxy multiplexing, connections are pooled down to just <b>{Math.max(10, Math.min(60, Math.round(proxyConcurrency * 0.05 + 8)))}</b> backend pipes!
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          )}
+
+          {/* Tab 7: Best-Practice Guides */}
+          {activeSection === 'best' && (
+            <div>
+              <div className="rds-sec">Best-Practice Architecture, Security Chains &amp; Guides</div>
+              <div className="rds-card">
+                <div className="rds-subtabs">
+                  <button className={`rds-subtb ${bestTab === 'arch' ? 'rds-on' : ''}`} onClick={() => setBestTab('arch')}>🏗️ Architecture Map</button>
+                  <button className={`rds-subtb ${bestTab === 'sg' ? 'rds-on' : ''}`} onClick={() => setBestTab('sg')}>🔒 Firewall &amp; Security Rules</button>
+                  <button className={`rds-subtb ${bestTab === 'proxy' ? 'rds-on' : ''}`} onClick={() => setBestTab('proxy')}>🔄 Connection Proxy Guides</button>
+                  <button className={`rds-subtb ${bestTab === 'multiaz' ? 'rds-on' : ''}`} onClick={() => setBestTab('multiaz')}>🛡️ High Availability Comparison</button>
+                  <button className={`rds-subtb ${bestTab === 'replicas' ? 'rds-on' : ''}`} onClick={() => setBestTab('replicas')}>📖 Replica Strategies</button>
+                  <button className={`rds-subtb ${bestTab === 'checklist' ? 'rds-on' : ''}`} onClick={() => setBestTab('checklist')}>✅ Audit Checklist</button>
+                </div>
+
+                {bestTab === 'arch' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>
+                      Production Grade {isAzure ? 'Azure Flexible Server' : isGcp ? 'Google Cloud SQL' : 'AWS RDS'} Topology Map
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+                      High Availability Standby combined with scale-out Read Replicas and connection proxies in a private network layout.
+                    </div>
+
+                    <svg width="100%" viewBox="0 0 660 380" className="rds-svg-bg" style={{ display: 'block', borderRadius: '8px' }}>
+                      <rect x="20" y="20" width="620" height="340" rx="10" fill="var(--rds-subnets-bg)" stroke="var(--rds-svg-line-stroke)" strokeWidth="1" />
+                      <text x="330" y="40" textAnchor="middle" fontSize="11" fill="var(--color-text-tertiary)" fontWeight="bold">
+                        {isAzure ? 'Azure VNet Network (Spanning 3 Zones)' : isGcp ? 'GCP VPC Network (Spanning 3 Zones)' : 'AWS VPC Network (Spanning 3 Zones)'}
+                      </text>
+
+                      <rect x="40" y="60" width="170" height="80" rx="6" fill="var(--rds-inner-card-bg)" stroke="#10b981" strokeWidth="1" />
+                      <text x="125" y="80" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#064e3b">✍️ Primary Writer</text>
+                      <text x="125" y="98" textAnchor="middle" fontSize="8" fill="#047857" fontFamily="monospace">Zone 1 (In-Service)</text>
+
+                      <rect x="245" y="60" width="170" height="80" rx="6" fill="var(--rds-inner-card-bg)" stroke="#f59e0b" strokeWidth="1" />
+                      <text x="330" y="80" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#78350f">🛡️ HA Standby</text>
+                      <text x="330" y="98" textAnchor="middle" fontSize="8" fill="#b45309" fontFamily="monospace">Zone 2 (Sync Copy)</text>
+
+                      <rect x="450" y="60" width="170" height="80" rx="6" fill="var(--rds-inner-card-bg)" stroke="#8b5cf6" strokeWidth="1" />
+                      <text x="535" y="80" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#4c1d95">📖 Read Replica</text>
+                      <text x="535" y="98" textAnchor="middle" fontSize="8" fill="#6d28d9" fontFamily="monospace">Zone 3 (Async Copy)</text>
+
+                      <rect x="40" y="180" width="580" height="150" rx="8" fill="var(--rds-inner-card-bg)" stroke="var(--rds-inner-card-border)" strokeWidth="1" />
+                      <text x="330" y="205" textAnchor="middle" fontSize="11" fontWeight="bold" className="rds-svg-text-primary">
+                        🔒 Security Controls &amp; Management Layer
+                      </text>
+                      <text x="330" y="230" textAnchor="middle" fontSize="9.5" fill="var(--color-text-secondary)">
+                        {isAzure ? 'Entra ID Auth • Key Vault CMEK • Automated Backups • Activity Logs' : isGcp ? 'Cloud IAM Auth • Cloud KMS CMEK • Continuous WAL Backups • Audit Logs' : 'IAM DB Auth • KMS Key Encryption • S3 WAL Backups • CloudTrail Logs'}
+                      </text>
+                    </svg>
+                  </div>
+                )}
+
+                {bestTab === 'sg' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>Least-Privilege Security Rules Chain</div>
+                    <div className="rds-row rds-inner-card-blue">
+                      <div style={{ fontWeight: 600, minWidth: '90px' }}>🌐 App Gateway</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Inbound HTTPS 443 from public internet. Outbound restricted to app tier.</div>
+                    </div>
+                    <div className="rds-row rds-inner-card-green">
+                      <div style={{ fontWeight: 600, minWidth: '90px' }}>⚙️ App Tier</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Inbound restricted to gateway. Outbound database port (5432/3306) restricted to proxy/database.</div>
+                    </div>
+                    <div className="rds-row rds-inner-card-amber">
+                      <div style={{ fontWeight: 600, minWidth: '90px' }}>🗄️ DB Tier</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Inbound port restricted strictly to app/proxy tier security scope. Public access disabled.</div>
+                    </div>
+                  </div>
+                )}
+
+                {bestTab === 'proxy' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-blue)' }}>Connection Proxy Advantages</div>
+                    <ul className="rds-ck">
+                      <li><b>Survive Failovers:</b> Applications maintain proxy connections during database zone failovers without dropping client sessions.</li>
+                      <li><b>Thread Pooling:</b> Multiplexes high-concurrency connection spikes down to small, stable backend database thread pools.</li>
+                      <li><b>Secrets Rotation:</b> Integrates with cloud secret management to handle credential rotation transparently.</li>
+                    </ul>
+                  </div>
+                )}
+
+                {bestTab === 'multiaz' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-amber)' }}>High Availability Standby Mechanics</div>
+                    <ul className="rds-ck">
+                      <li><b>Synchronous Replication:</b> Transactions commit to both primary and standby nodes before acknowledging success.</li>
+                      <li><b>Automatic Failover:</b> High availability monitors detect primary node faults and initiate failovers within 30-60s.</li>
+                    </ul>
+                  </div>
+                )}
+
+                {bestTab === 'replicas' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-purple)' }}>Read Replica Scaling Strategies</div>
+                    <ul className="rds-ck">
+                      <li><b>Offload Read Load:</b> Route reporting queries and read-only traffic away from the primary writer.</li>
+                      <li><b>Async WAL Streaming:</b> Log-based replication keeps replicas updated with low latency.</li>
+                    </ul>
+                  </div>
+                )}
+
+                {bestTab === 'checklist' && (
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-green)' }}>Database Security Audit Checklist</div>
+                    <ul className="rds-ck">
+                      <li>Public Access Disabled (Private Endpoint / Private IP active)</li>
+                      <li>KMS / Key Vault Encryption at Rest Enabled</li>
+                      <li>SSL/TLS Data-in-Transit Enforcement ON</li>
+                      <li>IAM / Entra ID Database Authentication Configured</li>
+                      <li>Automated Backups &amp; Point-in-Time Recovery Active</li>
+                    </ul>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }

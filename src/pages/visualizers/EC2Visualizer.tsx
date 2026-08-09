@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen,
   ChevronRight,
@@ -10,6 +10,8 @@ import {
   Sliders,
   Globe
 } from 'lucide-react';
+import EC2ComparativeView from '../../components/visualizers/EC2ComparativeView';
+import UniqueComputeFeatures from '../../components/visualizers/UniqueComputeFeatures';
 
 // Types & Configs for EC2 Visualizer
 interface InstanceFamily {
@@ -82,8 +84,9 @@ const INSTANCE_FAMILIES: Record<string, InstanceFamily> = {
   }
 };
 
-const BASH_BOOTSTRAPS = {
-  nginx: `#!/bin/bash
+const COMPUTE_BOOTSTRAPS: Record<'aws' | 'azure' | 'gcp', Record<'nginx' | 'docker' | 'appsec', string>> = {
+  aws: {
+    nginx: `#!/bin/bash
 # ----------------------------------------------------
 # Bootstrapping Script: Install Nginx & Custom Homepage
 # ----------------------------------------------------
@@ -120,7 +123,7 @@ echo "=== Step 4: Restoring Nginx Service ==="
 systemctl restart nginx
 echo "=== Bootstrapping Complete: Web Server Online ==="`,
 
-  docker: `#!/bin/bash
+    docker: `#!/bin/bash
 # ----------------------------------------------------
 # Bootstrapping Script: Install Docker & Run Node App
 # ----------------------------------------------------
@@ -148,7 +151,7 @@ echo "=== Step 4: Verifying Service Ports ==="
 docker ps
 echo "=== Bootstrapping Complete: Docker Container Operational ==="`,
 
-  appsec: `#!/bin/bash
+    appsec: `#!/bin/bash
 # ----------------------------------------------------
 # Bootstrapping Script: Security Hardening & Agent Setup
 # ----------------------------------------------------
@@ -175,10 +178,360 @@ chmod +x /usr/local/bin/sys-mon.sh
 nohup /usr/local/bin/sys-mon.sh > /var/log/sys-mon.log 2>&1 &
 
 echo "=== Bootstrapping Complete: Host Hardened ==="`
+  },
+  azure: {
+    nginx: `#!/bin/bash
+# ----------------------------------------------------
+# Bootstrapping Script: Install Nginx & Custom Homepage
+# ----------------------------------------------------
+echo "=== Step 1: Updating System Repositories ==="
+apt-get update -y
+
+echo "=== Step 2: Installing Nginx Server ==="
+apt-get install nginx -y
+systemctl start nginx
+systemctl enable nginx
+
+echo "=== Step 3: Fetching Metadata & Injecting Content ==="
+VM_NAME=$(curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance/compute/name?api-version=2021-02-01&format=text")
+LOCAL_IP=$(curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2021-02-01&format=text")
+
+cat <<HTML > /var/www/html/index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Azure VM Host Bootstrap</title>
+  <style>body { font-family: sans-serif; text-align: center; padding: 50px; background: #f8fafc; }</style>
+</head>
+<body>
+  <h1 style="color: #0078d4;">🚀 Azure VM Active Web server!</h1>
+  <p><b>VM Name:</b> \${VM_NAME}</p>
+  <p><b>Private IP:</b> \${LOCAL_IP}</p>
+  <p>Status: Successfully bootstrapped via VM Custom Data!</p>
+</body>
+</html>
+HTML
+
+echo "=== Step 4: Restoring Nginx Service ==="
+systemctl restart nginx
+echo "=== Bootstrapping Complete: Web Server Online ==="`,
+
+    docker: `#!/bin/bash
+# ----------------------------------------------------
+# Bootstrapping Script: Install Docker & Run Node App
+# ----------------------------------------------------
+echo "=== Step 1: Preparing Docker Engine Packages ==="
+apt-get update -y
+apt-get install docker.io -y
+systemctl start docker
+systemctl enable docker
+
+echo "=== Step 2: Granting permissions to azureuser ==="
+usermod -aG docker azureuser
+
+echo "=== Step 3: Launching Node Application Container ==="
+docker run -d -p 80:3000 --name node-web-service \\
+  -e DB_HOST="database.internal.vpc" \\
+  node:18-alpine -e "
+    const http = require('http');
+    http.createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('Hello from Azure VM containerized inside Docker!\\\\n');
+    }).listen(3000);
+  "
+
+echo "=== Step 4: Verifying Service Ports ==="
+docker ps
+echo "=== Bootstrapping Complete: Docker Container Operational ==="`,
+
+    appsec: `#!/bin/bash
+# ----------------------------------------------------
+# Bootstrapping Script: Security Hardening & Agent Setup
+# ----------------------------------------------------
+echo "=== Step 1: Installing Security Audit Utilities ==="
+apt-get update -y
+apt-get install -y fail2ban auditd clamav
+
+echo "=== Step 2: Hardening File Permissions & SSHD ==="
+chmod 700 /home/azureuser/.ssh
+chmod 600 /home/azureuser/.ssh/authorized_keys
+sed -i 's/#PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
+systemctl restart ssh
+
+echo "=== Step 3: Launching System Monitor Agent ==="
+cat << 'EOF' > /usr/local/bin/sys-mon.sh
+#!/bin/bash
+while true; do
+  CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}')
+  echo "📊 System Monitor: CPU Load is at \${CPU}%"
+  sleep 60
+done
+EOF
+chmod +x /usr/local/bin/sys-mon.sh
+nohup /usr/local/bin/sys-mon.sh > /var/log/sys-mon.log 2>&1 &
+
+echo "=== Bootstrapping Complete: Host Hardened ==="`
+  },
+  gcp: {
+    nginx: `#!/bin/bash
+# ----------------------------------------------------
+# Bootstrapping Script: Install Nginx & Custom Homepage
+# ----------------------------------------------------
+echo "=== Step 1: Updating System Repositories ==="
+apt-get update -y
+
+echo "=== Step 2: Installing Nginx Server ==="
+apt-get install nginx -y
+systemctl start nginx
+systemctl enable nginx
+
+echo "=== Step 3: Fetching Metadata & Injecting Content ==="
+VM_NAME=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/name)
+LOCAL_IP=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)
+
+cat <<HTML > /var/www/html/index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GCP VM Host Bootstrap</title>
+  <style>body { font-family: sans-serif; text-align: center; padding: 50px; background: #f8fafc; }</style>
+</head>
+<body>
+  <h1 style="color: #0f9d58;">🚀 GCP VM Active Web server!</h1>
+  <p><b>VM Name:</b> \${VM_NAME}</p>
+  <p><b>Private IP:</b> \${LOCAL_IP}</p>
+  <p>Status: Successfully bootstrapped via VM Startup Script!</p>
+</body>
+</html>
+HTML
+
+echo "=== Step 4: Restoring Nginx Service ==="
+systemctl restart nginx
+echo "=== Bootstrapping Complete: Web Server Online ==="`,
+
+    docker: `#!/bin/bash
+# ----------------------------------------------------
+# Bootstrapping Script: Install Docker & Run Node App
+# ----------------------------------------------------
+echo "=== Step 1: Preparing Docker Engine Packages ==="
+apt-get update -y
+apt-get install docker.io -y
+systemctl start docker
+systemctl enable docker
+
+echo "=== Step 2: Granting permissions to gcpuser ==="
+usermod -aG docker gcpuser
+
+echo "=== Step 3: Launching Node Application Container ==="
+docker run -d -p 80:3000 --name node-web-service \\
+  -e DB_HOST="database.internal.vpc" \\
+  node:18-alpine -e "
+    const http = require('http');
+    http.createServer((req, res) => {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('Hello from GCP VM containerized inside Docker!\\\\n');
+    }).listen(3000);
+  "
+
+echo "=== Step 4: Verifying Service Ports ==="
+docker ps
+echo "=== Bootstrapping Complete: Docker Container Operational ==="`,
+
+    appsec: `#!/bin/bash
+# ----------------------------------------------------
+# Bootstrapping Script: Security Hardening & Agent Setup
+# ----------------------------------------------------
+echo "=== Step 1: Installing Security Audit Utilities ==="
+apt-get update -y
+apt-get install -y fail2ban auditd clamav
+
+echo "=== Step 2: Hardening File Permissions & SSHD ==="
+chmod 700 /home/gcpuser/.ssh
+chmod 600 /home/gcpuser/.ssh/authorized_keys
+sed -i 's/#PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
+systemctl restart ssh
+
+echo "=== Step 3: Launching System Monitor Agent ==="
+cat << 'EOF' > /usr/local/bin/sys-mon.sh
+#!/bin/bash
+while true; do
+  CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}')
+  echo "📊 System Monitor: CPU Load is at \${CPU}%"
+  sleep 60
+done
+EOF
+chmod +x /usr/local/bin/sys-mon.sh
+nohup /usr/local/bin/sys-mon.sh > /var/log/sys-mon.log 2>&1 &
+
+echo "=== Bootstrapping Complete: Host Hardened ==="`
+  }
 };
 
-export default function EC2Visualizer() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'purchasing' | 'storage' | 'lifecycle' | 'best' | 'notebook'>('notebook');
+interface EC2VisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2VisualizerProps) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'purchasing' | 'storage' | 'lifecycle' | 'best' | 'notebook' | 'unique'>('notebook');
+
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+  const isComparative = provider === 'comparative';
+
+  const t = (text: string) => {
+    if (provider === 'aws') return text;
+    if (provider === 'gcp') {
+      return text
+        .replace(/AWS EC2/g, 'Google Cloud Compute Engine')
+        .replace(/Amazon EC2/g, 'Google Cloud Compute Engine')
+        .replace(/EC2/g, 'Compute Engine')
+        .replace(/Elastic Compute Cloud/g, 'Compute Engine VM Instances')
+        .replace(/instance/g, 'VM instance')
+        .replace(/instances/g, 'VM instances')
+        .replace(/Instance/g, 'VM Instance')
+        .replace(/Instances/g, 'VM Instances')
+        .replace(/User Data/g, 'Startup Script')
+        .replace(/user data/g, 'startup script')
+        .replace(/Security Group/g, 'VPC Firewall Rule')
+        .replace(/Security Groups/g, 'VPC Firewall Rules')
+        .replace(/security group/g, 'VPC firewall rule')
+        .replace(/security groups/g, 'VPC firewall rules')
+        .replace(/bastion proxy/g, 'IAP Bastion Host')
+        .replace(/Bastion proxy/g, 'IAP Bastion Host')
+        .replace(/Spot Instance/g, 'Preemptible VM')
+        .replace(/Spot Instances/g, 'Preemptible VMs')
+        .replace(/Spot Fleets/g, 'Managed Instance Groups (MIGs)')
+        .replace(/Spot Fleet/g, 'Managed Instance Group (MIG)')
+        .replace(/EBS/g, 'Persistent Disk')
+        .replace(/Elastic Block Store/g, 'Persistent Disk (PD)')
+        .replace(/EFS/g, 'Filestore')
+        .replace(/Elastic File System/g, 'Google Cloud Filestore')
+        .replace(/AMI/g, 'Public/Custom VM Image')
+        .replace(/Amazon Machine Image/g, 'Compute Engine Machine Image')
+        .replace(/Key Pair/g, 'SSH Key')
+        .replace(/Key Pairs/g, 'SSH Keys')
+        .replace(/Amazon Linux/g, 'Debian / Rocky Linux')
+        .replace(/IAM Role/g, 'Service Account')
+        .replace(/IAM Roles/g, 'Service Accounts')
+        .replace(/EC2 Metadata Token/g, 'Metadata Server Token')
+        .replace(/IMDSv2/g, 'Metadata Server v1')
+        .replace(/AWS/g, 'Google Cloud')
+        .replace(/aws/g, 'gcloud')
+        .replace(/t3, m6g, m7i/g, 'e2, n2, n2d')
+        .replace(/c6g, c7i, c8g/g, 'c2, c2d, c3')
+        .replace(/r6g, r7i, x2gd, z1d/g, 'r2d, m3, r3')
+        .replace(/i3en, i4g, d3, h1/g, 'n2-local-ssd, h3')
+        .replace(/g5, p4de, trn1/g, 'a2, a3, g2')
+        .replace(/169.254.169.254\/latest\/api\/token/g, 'metadata.google.internal')
+        .replace(/X-aws-ec2-metadata-token-ttl-seconds/g, 'Metadata-Flavor: Google')
+        .replace(/X-aws-ec2-metadata-token/g, 'Metadata-Flavor: Google')
+        .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/instance-id/g, 'http://metadata.google.internal/computeMetadata/v1/instance/id')
+        .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/local-ipv4/g, 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip')
+        .replace(/bastion/g, 'iap-bastion')
+        .replace(/T \/ M/g, 'E2 / N2')
+        .replace(/C/g, 'C2 / C3')
+        .replace(/R \/ X \/ Z/g, 'R2D / M3')
+        .replace(/I \/ D \/ H/g, 'Local SSD')
+        .replace(/G \/ P \/ Trn \/ Inf/g, 'A2 / G2')
+        .replace(/Trainium/g, 'TPUs');
+    }
+    if (provider === 'azure') {
+      return text
+        .replace(/AWS EC2/g, 'Azure Virtual Machines')
+        .replace(/Amazon EC2/g, 'Azure Virtual Machines')
+        .replace(/EC2/g, 'Virtual Machines')
+        .replace(/Elastic Compute Cloud/g, 'Azure Virtual Machines')
+        .replace(/instance/g, 'VM')
+        .replace(/instances/g, 'VMs')
+        .replace(/Instance/g, 'VM')
+        .replace(/Instances/g, 'VMs')
+        .replace(/User Data/g, 'Custom Data')
+        .replace(/user data/g, 'custom data')
+        .replace(/Security Group/g, 'Network Security Group (NSG)')
+        .replace(/Security Groups/g, 'Network Security Groups (NSGs)')
+        .replace(/security group/g, 'network security group (NSG)')
+        .replace(/security groups/g, 'network security groups (NSGs)')
+        .replace(/bastion proxy/g, 'Azure Bastion Host')
+        .replace(/Bastion proxy/g, 'Azure Bastion Host')
+        .replace(/Spot Instance/g, 'Azure Spot VM')
+        .replace(/Spot Instances/g, 'Azure Spot VMs')
+        .replace(/Spot Fleets/g, 'Virtual Machine Scale Sets (VMSS)')
+        .replace(/Spot Fleet/g, 'Virtual Machine Scale Set (VMSS)')
+        .replace(/EBS/g, 'Managed Disk')
+        .replace(/Elastic Block Store/g, 'Azure Managed Disk')
+        .replace(/EFS/g, 'Azure Files')
+        .replace(/Elastic File System/g, 'Azure Files Share')
+        .replace(/AMI/g, 'Azure Marketplace Image')
+        .replace(/Amazon Machine Image/g, 'Azure Marketplace Image')
+        .replace(/Key Pair/g, 'SSH Key')
+        .replace(/Key Pairs/g, 'SSH Keys')
+        .replace(/Amazon Linux/g, 'Ubuntu / RHEL')
+        .replace(/IAM Role/g, 'Managed Identity')
+        .replace(/IAM Roles/g, 'Managed Identities')
+        .replace(/EC2 Metadata Token/g, 'IMDS Header')
+        .replace(/IMDSv2/g, 'Azure Instance Metadata Service (IMDS)')
+        .replace(/AWS/g, 'Azure')
+        .replace(/aws/g, 'az')
+        .replace(/t3, m6g, m7i/g, 'B, Dsv5, Dasv5')
+        .replace(/c6g, c7i, c8g/g, 'Fsv2, FX')
+        .replace(/r6g, r7i, x2gd, z1d/g, 'Esv5, Msv2')
+        .replace(/i3en, i4g, d3, h1/g, 'Lsv3')
+        .replace(/g5, p4de, trn1/g, 'NC, ND, NV')
+        .replace(/169.254.169.254\/latest\/api\/token/g, '169.254.169.254/metadata/instance')
+        .replace(/X-aws-ec2-metadata-token-ttl-seconds/g, 'Metadata: true')
+        .replace(/X-aws-ec2-metadata-token/g, 'Metadata: true')
+        .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/instance-id/g, 'http://169.254.169.254/metadata/instance/compute/vmId?api-version=2021-02-01&format=text')
+        .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/local-ipv4/g, 'http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2021-02-01&format=text')
+        .replace(/bastion/g, 'azure-bastion')
+        .replace(/T \/ M/g, 'B / D')
+        .replace(/C/g, 'F')
+        .replace(/R \/ X \/ Z/g, 'E / M')
+        .replace(/I \/ D \/ H/g, 'L')
+        .replace(/G \/ P \/ Trn \/ Inf/g, 'NC / ND')
+        .replace(/Trainium/g, 'NPUs');
+    }
+    return text;
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'ec2-terminal'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (selectedProvider: 'aws' | 'azure' | 'gcp', targetTab: 'overview' | 'security' | 'purchasing' | 'storage' | 'lifecycle' | 'best' | 'notebook' | 'unique') => {
+    if (setProvider) setProvider(selectedProvider);
+    setActiveTab(targetTab);
+  };
 
   // Visual Architect Academy Notebook states
   const [selectedNote, setSelectedNote] = useState<string>('ec2_bootstrap');
@@ -368,9 +721,13 @@ export default function EC2Visualizer() {
   const executeBootstrapTest = () => {
     if (isBootstrapping) return;
     setIsBootstrapping(true);
-    setBootTerminalLogs(['[system] Initializing EC2 Bootloader...', '[system] Fetching metadata token...']);
     
-    const lines = BASH_BOOTSTRAPS[selectedBootstrap].split('\n');
+    const bootloaderMsg = provider === 'azure' ? 'Initializing Azure VM Bootloader...' : provider === 'gcp' ? 'Initializing Compute Engine Bootloader...' : 'Initializing EC2 Bootloader...';
+    const metadataMsg = provider === 'azure' ? 'Requesting IMDS Header authentication...' : provider === 'gcp' ? 'Requesting Metadata-Flavor verification...' : 'Fetching IMDSv2 token...';
+    setBootTerminalLogs([`[system] ${bootloaderMsg}`, `[system] ${metadataMsg}`]);
+    
+    const boots = COMPUTE_BOOTSTRAPS[provider === 'comparative' ? 'aws' : provider];
+    const lines = boots[selectedBootstrap].split('\n');
     let idx = 0;
     
     const nextLine = () => {
@@ -686,11 +1043,49 @@ export default function EC2Visualizer() {
           --ec-error-text-bold: #f87171;
         }
 
-        .ec2-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 10px; }
+        /* CSS Variable System matching LoadBalancerVisualizer */
+        .ec2-container {
+          --color-background-primary: #ffffff;
+          --color-background-secondary: #f8fafc;
+          --color-background-tertiary: #f1f5f9;
+          --color-border-tertiary: #cbd5e1;
+          --color-border-secondary: #94a3b8;
+          --color-text-primary: #0f172a;
+          --color-text-secondary: #475569;
+          --color-text-tertiary: #64748b;
+        }
+
+        .dark .ec2-container {
+          --color-background-primary: #0f172a;
+          --color-background-secondary: rgba(30, 41, 59, 0.6);
+          --color-background-tertiary: rgba(51, 65, 85, 0.4);
+          --color-border-tertiary: rgba(51, 65, 85, 0.6);
+          --color-border-secondary: rgba(100, 116, 139, 0.6);
+          --color-text-primary: #f8fafc;
+          --color-text-secondary: #cbd5e1;
+          --color-text-tertiary: #94a3b8;
+        }
+
+        .ec2-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; }
+        .ec2-tb { padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 11.5px; font-family: 'Outfit', sans-serif; cursor: pointer; background: #ffffff; color: #475569; transition: all 0.15s ease; outline: none; font-weight: 500; }
+        .ec2-tb:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+        
+        .ec2-tb.ec2-on-notebook { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #ffffff !important; border-color: #d97706 !important; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2); }
+        .ec2-tb.ec2-on-overview { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff !important; border-color: #ea580c !important; box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2); }
+        .ec2-tb.ec2-on-security { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: #ffffff !important; border-color: #0284c7 !important; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2); }
+        .ec2-tb.ec2-on-purchasing { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2); }
+        .ec2-tb.ec2-on-storage { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: #ffffff !important; border-color: #7c3aed !important; box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2); }
+        .ec2-tb.ec2-on-lifecycle { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2); }
+        .ec2-tb.ec2-on-best { background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff !important; border-color: #0d9488 !important; box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2); }
+        .ec2-tb.ec2-on-unique { background: linear-gradient(135deg, #475569 0%, #64748b 100%); color: #ffffff !important; border-color: #475569 !important; box-shadow: 0 2px 4px rgba(71, 85, 105, 0.2); }
+
+        .dark .ec2-tb { background: rgba(15, 23, 42, 0.6); border-color: rgba(51, 65, 85, 0.6); color: #94a3b8; }
+        .dark .ec2-tb:hover { background: rgba(30, 41, 59, 0.8); color: #f8fafc; }
+
         .ec2-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--ec-tab-bg); color: var(--color-text-secondary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
         .ec2-tb:hover { background: var(--ec-tab-hover-bg); color: var(--color-text-primary); transform: translateY(-1px); }
         .ec2-tb.ec2-on { background: var(--color-blue); color: #fff; border-color: var(--color-blue); font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2); }
-        .ec2-card { border: 1.5px solid var(--ec-card-border); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: var(--ec-card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--ec-card-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: var(--color-text-primary); }
+        .ec2-card { border: 1.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: var(--color-background-primary); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--ec-card-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: var(--color-text-primary); }
         .ec2-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
         .ec2-sec:first-child { margin-top: 0; }
         .ec2-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -703,7 +1098,7 @@ export default function EC2Visualizer() {
         .ec2-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .ec2-btn.ec2-on { background: var(--color-blue); color: #fff; border-color: var(--color-blue); box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15); }
         .ec2-terminal { background: var(--ec-terminal-bg); color: var(--ec-terminal-color); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid var(--ec-terminal-border); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
-        .ec2-svg-bg { background-color: var(--ec-bg); background-image: radial-gradient(var(--ec-svg-grid-line) 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid var(--ec-card-border); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
+        .ec2-svg-bg { background-color: var(--ec-bg); background-image: radial-gradient(var(--ec-svg-grid-line) 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid var(--color-border-tertiary); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
         
         /* Unified Dropdown Selection Visual Cues */
         .ec2-card select {
@@ -777,8 +1172,8 @@ export default function EC2Visualizer() {
 
         /* Modern Architect Learning Center styles */
         .da-edu-card {
-          background: var(--ec-card-bg);
-          border: 1px solid var(--ec-card-border);
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
           border-radius: 16px;
           padding: 24px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
@@ -793,14 +1188,14 @@ export default function EC2Visualizer() {
         
         /* Premium Academy Directory Styles */
         .acad-dir-container {
-          background: var(--ec-card-bg);
-          border: 1px solid var(--ec-card-border);
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
           border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
         .acad-dir-header {
-          background: var(--ec-terminal-border);
+          background: var(--color-background-secondary);
           color: var(--color-text-primary);
           padding: 16px;
           font-weight: 800;
@@ -810,6 +1205,7 @@ export default function EC2Visualizer() {
           display: flex;
           align-items: center;
           gap: 8px;
+          border-bottom: 1px solid var(--color-border-tertiary);
         }
         .acad-dir-folder-btn {
           width: 100%;
@@ -817,9 +1213,9 @@ export default function EC2Visualizer() {
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: var(--ec-metric-card-bg);
+          background: var(--color-background-primary);
           border: none;
-          border-bottom: 1px solid var(--ec-card-border);
+          border-bottom: 1px solid var(--color-border-tertiary);
           font-size: 10px;
           font-weight: 850;
           color: var(--color-text-secondary);
@@ -829,7 +1225,7 @@ export default function EC2Visualizer() {
           cursor: pointer;
         }
         .acad-dir-folder-btn:hover {
-          background: var(--ec-tab-hover-bg);
+          background: var(--color-background-secondary);
           color: var(--color-text-primary);
         }
         .acad-dir-item-btn {
@@ -840,37 +1236,42 @@ export default function EC2Visualizer() {
           padding: 10px 18px;
           font-size: 12px;
           font-weight: 600;
-          color: var(--color-text-tertiary);
+          color: var(--color-text-secondary);
           border: none;
           border-left: 3px solid transparent;
-          background: var(--ec-card-bg);
+          background: var(--color-background-primary);
           transition: all 0.15s ease;
           text-align: left;
           cursor: pointer;
         }
         .acad-dir-item-btn:hover {
-          background: var(--ec-tab-hover-bg);
-          color: var(--color-purple);
-          border-left-color: var(--color-border-secondary);
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--color-border-tertiary);
         }
         .acad-dir-item-btn.acad-active {
-          background: rgba(124, 58, 237, 0.1);
-          color: var(--color-purple);
-          border-left-color: var(--color-purple);
+          background: #eff6ff;
+          color: #0284c7;
+          border-left-color: #0ea5e9;
           font-weight: 800;
         }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(14, 165, 233, 0.15) !important;
+          color: #38bdf8 !important;
+          border-left-color: #38bdf8 !important;
+        }
         .acad-detail-card {
-          background: var(--ec-card-bg);
-          border: 1px solid var(--ec-card-border);
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
           border-radius: 16px;
           padding: 28px;
-          box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
           color: var(--color-text-primary);
         }
         .acad-hero-badge {
-          background: rgba(16, 185, 129, 0.1);
-          border: 1.5px solid var(--color-green);
-          color: var(--color-green);
+          background: #e0f2fe;
+          border: 1.5px solid #bae6fd;
+          color: #0369a1;
           font-size: 9.5px;
           font-weight: 900;
           letter-spacing: 0.08em;
@@ -881,15 +1282,23 @@ export default function EC2Visualizer() {
           align-items: center;
           gap: 5px;
         }
+        .dark .acad-hero-badge {
+          background: rgba(3, 105, 161, 0.2) !important;
+          border-color: rgba(3, 105, 161, 0.4) !important;
+          color: #38bdf8 !important;
+        }
         .acad-takeaway-box {
-          background: var(--ec-metric-card-bg);
-          border-left: 4px solid var(--color-purple);
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #0ea5e9;
           border-radius: 12px;
           padding: 18px;
           font-size: 12px;
           line-height: 1.6;
           color: var(--color-text-secondary);
           font-weight: 600;
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
         }
         .acad-table {
           width: 100%;
@@ -897,27 +1306,27 @@ export default function EC2Visualizer() {
           font-size: 12px;
           border-radius: 12px;
           overflow: hidden;
-          border: 1px solid var(--ec-card-border);
+          border: 1px solid var(--color-border-tertiary);
         }
         .acad-table th {
-          background: var(--ec-metric-card-bg);
+          background: var(--color-background-secondary);
           color: var(--color-text-primary);
           font-weight: 800;
           padding: 12px 14px;
-          border-bottom: 1.5px solid var(--ec-card-border);
+          border-bottom: 1.5px solid var(--color-border-tertiary);
           text-align: left;
         }
         .acad-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid var(--ec-card-border);
+          border-bottom: 1px solid var(--color-border-tertiary);
           color: var(--color-text-secondary);
         }
         .acad-table tr:last-child td {
           border-bottom: none;
         }
         .acad-sim-diagram {
-          background: var(--ec-card-bg);
-          border: 1.5px solid var(--ec-card-border);
+          background: var(--color-background-primary);
+          border: 1.5px solid var(--color-border-tertiary);
           border-radius: 16px;
           padding: 18px;
           box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
@@ -987,37 +1396,68 @@ export default function EC2Visualizer() {
       <div style={{ padding: '14px 16px 4px' }}>
         <div style={{ marginBottom: '14px' }}>
           <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            💻 AWS EC2 — Elastic Compute Cloud · Instances · Security · Storage · Spot Fleets
+            {isComparative ? (
+              <span>⚖️ Multi-Cloud Compute Comparison — AWS EC2 vs Azure VM vs GCP GCE</span>
+            ) : isAzure ? (
+              <span>💻 Azure Virtual Machines — VMs · Bootstrapping · NSGs · Spot VMs · Managed Disks</span>
+            ) : isGcp ? (
+              <span>💻 Google Cloud Compute Engine — VM Instances · Startup Scripts · Firewalls · Preemptible VMs · Persistent Disks</span>
+            ) : (
+              <span>💻 AWS EC2 — Elastic Compute Cloud · Instances · Security · Storage · Spot Fleets</span>
+            )}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-            Secure, rescalable virtual servers in the cloud — learn bootstrapping, security groups, spot instances, EBS, EFS lifecycles, and direct state machine consoles interactively.
+            {isComparative ? (
+              <span>Side-by-side architectural mapping and simulation control comparison between AWS EC2, Azure VM, and GCP Compute Engine VM architectures.</span>
+            ) : isAzure ? (
+              <span>Secure, rescalable virtual servers in Azure — learn VM custom-data bootstrapping, Network Security Groups, Spot VMs, Managed Disks, and VM lifecycle states interactively.</span>
+            ) : isGcp ? (
+              <span>Secure, rescalable virtual servers in Google Cloud — learn startup script bootstrapping, VPC firewall rules, Preemptible VMs, Persistent Disks, and VM lifecycle states interactively.</span>
+            ) : (
+              <span>Secure, rescalable virtual servers in the cloud — learn bootstrapping, security groups, spot instances, EBS, EFS lifecycles, and direct state machine consoles interactively.</span>
+            )}
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="ec2-tabs">
-          <button className={`ec2-tb ${activeTab === 'notebook' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
-          <button className={`ec2-tb ${activeTab === 'overview' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('overview')}>💻 Core &amp; Bootstrap</button>
-          <button className={`ec2-tb ${activeTab === 'security' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Security Groups &amp; Network</button>
-          <button className={`ec2-tb ${activeTab === 'purchasing' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('purchasing')}>💰 Spot &amp; Purchasing</button>
-          <button className={`ec2-tb ${activeTab === 'storage' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('storage')}>💾 Storage: EBS vs EFS</button>
-          <button className={`ec2-tb ${activeTab === 'lifecycle' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('lifecycle')}>🎮 Virtual Console</button>
-          <button className={`ec2-tb ${activeTab === 'best' ? 'ec2-on' : ''}`} onClick={() => setActiveTab('best')}>🏗️ Architecture &amp; Audit</button>
-        </div>
+        {!isComparative && (
+          <div className="ec2-tabs">
+            <button className={`ec2-tb ${activeTab === 'notebook' ? 'ec2-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
+            <button className={`ec2-tb ${activeTab === 'overview' ? 'ec2-on-overview' : ''}`} onClick={() => setActiveTab('overview')}>💻 Core &amp; Bootstrap</button>
+            <button className={`ec2-tb ${activeTab === 'security' ? 'ec2-on-security' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Security Groups &amp; Network</button>
+            <button className={`ec2-tb ${activeTab === 'purchasing' ? 'ec2-on-purchasing' : ''}`} onClick={() => setActiveTab('purchasing')}>💰 Spot &amp; Purchasing</button>
+            <button className={`ec2-tb ${activeTab === 'storage' ? 'ec2-on-storage' : ''}`} onClick={() => setActiveTab('storage')}>💾 Storage: EBS vs EFS</button>
+            <button className={`ec2-tb ${activeTab === 'lifecycle' ? 'ec2-on-lifecycle' : ''}`} onClick={() => setActiveTab('lifecycle')}>🎮 Virtual Console</button>
+            <button className={`ec2-tb ${activeTab === 'best' ? 'ec2-on-best' : ''}`} onClick={() => setActiveTab('best')}>🏗️ Architecture &amp; Audit</button>
+            <button className={`ec2-tb ${activeTab === 'unique' ? 'ec2-on-unique' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
+          </div>
+        )}
       </div>
 
       {/* Content Panels */}
       <div style={{ padding: '0 16px' }}>
+        {isComparative && (
+          <EC2ComparativeView onNavigateToDemo={handleNavigateToDemo} />
+        )}
 
-        {/* VISUAL ARCHITECT ACADEMY NOTEBOOK PANEL */}
+        {!isComparative && activeTab === 'unique' && (
+          <UniqueComputeFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+        )}
+
+        {!isComparative && activeTab !== 'unique' && (
+          <Translate>
+            <>
         {activeTab === 'notebook' && (() => {
-          const imdsCodeSnippet = `# Request 60-second metadata token (IMDSv2)
+          const getProviderSnippets = (prov: 'aws' | 'azure' | 'gcp' | 'comparative') => {
+            const p = prov === 'comparative' ? 'aws' : prov;
+            const data = {
+              aws: {
+                imds: `# Request 60-second metadata token (IMDSv2)
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
 
 # Read local instance IP using the token
-curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4`;
-
-          const sgCodeSnippet = `# Authorize SSH access (port 22) restricted to Bastion proxy IP
+curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4`,
+                sg: `# Authorize SSH access (port 22) restricted to Bastion proxy IP
 aws ec2 authorize-security-group-ingress \\
   --group-id sg-0851f98d301c \\
   --protocol tcp \\
@@ -1029,20 +1469,100 @@ aws ec2 authorize-security-group-ingress \\
   --group-id sg-0851f98d301c \\
   --protocol tcp \\
   --port 80 \\
-  --cidr 0.0.0.0/0`;
-
-          const spotCodeSnippet = `# Request Spot Fleet using lowest-price allocation strategy
+  --cidr 0.0.0.0/0`,
+                spot: `# Request Spot Instance with max price limit set
 aws ec2 request-spot-instances \\
   --spot-price-limit "0.05" \\
   --instance-count 3 \\
   --type "persistent" \\
-  --launch-specification file://spot-spec.json`;
-
-          const mountCodeSnippet = `# Format attached EBS block device volume (/dev/xvdf) as ext4
+  --launch-specification file://spot-spec.json`,
+                mount: `# Format attached EBS block device volume (/dev/xvdf) as ext4
 sudo mkfs -t ext4 /dev/xvdf
 
 # Mount the volume to the local application directory
-sudo mount /dev/xvdf /var/www/html`;
+sudo mount /dev/xvdf /var/www/html`
+              },
+              azure: {
+                imds: `# Query Azure Instance Metadata Service (IMDS) with required header
+curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+
+# Extract local private IP address using IMDS directly
+curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2021-02-01&format=text"`,
+                sg: `# Create Inbound NSG rule for SSH (Port 22) from a secure Bastion source
+az network nsg rule create \\
+  --resource-group myRG \\
+  --nsg-name myNSG \\
+  --name AllowSSH \\
+  --priority 100 \\
+  --source-address-prefixes 10.0.1.50/32 \\
+  --destination-port-ranges 22 \\
+  --access Allow \\
+  --protocol Tcp
+
+# Create Inbound NSG rule to allow HTTP (Port 80) globally
+az network nsg rule create \\
+  --resource-group myRG \\
+  --nsg-name myNSG \\
+  --name AllowHTTP \\
+  --priority 110 \\
+  --source-address-prefixes '*' \\
+  --destination-port-ranges 80 \\
+  --access Allow \\
+  --protocol Tcp`,
+                spot: `# Create Spot VM with eviction policy set to Deallocate
+az vm create \\
+  --resource-group myRG \\
+  --name mySpotVM \\
+  --image Ubuntu2204 \\
+  --priority Spot \\
+  --max-price 0.05 \\
+  --eviction-policy Deallocate`,
+                mount: `# Format Azure Managed Disk volume (/dev/sdc) as ext4
+sudo mkfs -t ext4 /dev/sdc
+
+# Mount the Managed Disk volume to the local folder
+sudo mount /dev/sdc /var/www/html`
+              },
+              gcp: {
+                imds: `# Query GCP Metadata Server using required metadata header
+curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/
+
+# Extract local private IP address directly from instance properties
+curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip`,
+                sg: `# Create VPC firewall rule allowing SSH from a secure bastion source tag
+gcloud compute firewall-rules create allow-ssh-bastion \\
+  --network=default \\
+  --allow=tcp:22 \\
+  --source-tags=bastion-host \\
+  --target-tags=backend-servers
+
+# Create VPC firewall rule allowing HTTP traffic globally to target tag
+gcloud compute firewall-rules create allow-http-public \\
+  --network=default \\
+  --allow=tcp:80 \\
+  --source-ranges=0.0.0.0/0 \\
+  --target-tags=web-servers`,
+                spot: `# Create Google Cloud Spot VM (replaces Preemptible VMs)
+gcloud compute instances create my-spot-vm \\
+  --zone=us-central1-a \\
+  --machine-type=e2-medium \\
+  --provisioning-model=SPOT \\
+  --instance-termination-action=STOP`,
+                mount: `# Format GCP Persistent Disk volume (/dev/sdb) as ext4
+sudo mkfs -t ext4 /dev/sdb
+
+# Mount the Persistent Disk volume to local directory
+sudo mount /dev/sdb /var/www/html`
+              }
+            };
+            return data[p];
+          };
+
+          const snippets = getProviderSnippets(provider);
+          const imdsCodeSnippet = snippets.imds;
+          const sgCodeSnippet = snippets.sg;
+          const spotCodeSnippet = snippets.spot;
+          const mountCodeSnippet = snippets.mount;
 
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
@@ -1080,7 +1600,7 @@ sudo mount /dev/xvdf /var/www/html`;
                         {expandedCategory === 'ec2_fundamentals' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'ec2_fundamentals' && (
-                        <div style={{ background: 'var(--ec-metric-card-bg)', padding: '4px 0' }}>
+                        <div style={{ background: 'var(--color-background-secondary)', padding: '4px 0' }}>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'ec2_bootstrap' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('ec2_bootstrap')}
@@ -1110,7 +1630,7 @@ sudo mount /dev/xvdf /var/www/html`;
                         {expandedCategory === 'purchasing_options' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'purchasing_options' && (
-                        <div style={{ background: 'var(--ec-metric-card-bg)', padding: '4px 0' }}>
+                        <div style={{ background: 'var(--color-background-secondary)', padding: '4px 0' }}>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'purchasing_models' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('purchasing_models')}
@@ -1140,7 +1660,7 @@ sudo mount /dev/xvdf /var/www/html`;
                         {expandedCategory === 'storage_audit' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'storage_audit' && (
-                        <div style={{ background: 'var(--ec-metric-card-bg)', padding: '4px 0' }}>
+                        <div style={{ background: 'var(--color-background-secondary)', padding: '4px 0' }}>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'storage_comparison' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('storage_comparison')}
@@ -1161,9 +1681,9 @@ sudo mount /dev/xvdf /var/www/html`;
 
                   </div>
 
-                  <div style={{ background: 'var(--ec-terminal-bg)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', marginTop: '16px', border: '1px solid var(--ec-terminal-border)', lineHeight: '1.5' }}>
+                  <div style={{ background: 'var(--color-background-primary)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', marginTop: '16px', border: '1px solid var(--color-border-tertiary)', lineHeight: '1.5' }}>
                     <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
-                      <Info style={{ width: '14px', height: '14px', color: 'var(--ec-terminal-color)' }} /> Academy Guidance
+                      <Info style={{ width: '14px', height: '14px', color: '#0ea5e9' }} /> Academy Guidance
                     </span>
                     You can switch directly to target interactive simulations inside standard visualizer tabs using the action buttons in each note.
                   </div>
@@ -1194,7 +1714,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>CLI Command Reference: Requesting IMDSv2 Token</h4>
-                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>imds_fetch.sh</span>
                           <button
@@ -1206,7 +1726,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
                             <code>{imdsCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1246,7 +1766,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Authorizing Security Group Inbound Rules</h4>
-                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>security_rules.sh</span>
                           <button
@@ -1258,7 +1778,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
                             <code>{sgCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1334,7 +1854,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Requesting Spot Instances</h4>
-                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>spot_request.sh</span>
                           <button
@@ -1346,7 +1866,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
                             <code>{spotCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1386,7 +1906,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       {/* Interactive Widget: Credit Accumulator Simulator */}
-                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
+                      <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
                         <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 12px' }}>
                           📈 Burstable CPU Credit Simulator
                         </h4>
@@ -1539,7 +2059,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </div>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Bash Command: Formatting and Mounting attached EBS volume</h4>
-                      <div style={{ background: 'var(--ec-metric-card-bg)', border: '1px solid var(--ec-card-border)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>ebs_mount.sh</span>
                           <button
@@ -1551,7 +2071,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           </button>
                         </div>
                         <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: 'var(--color-text-primary)', overflowX: 'auto' }}>
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
                             <code>{mountCodeSnippet}</code>
                           </pre>
                         </div>
@@ -1687,7 +2207,7 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* SVG Baking Flow */}
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-card-border)', textAlign: 'center' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', textAlign: 'center' }}>
                   <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>AMI Baking &amp; Auto-Scaling Launch Pipeline</div>
                   <svg viewBox="0 0 470 160" width="100%" className="ec2-svg-bg">
                     <defs>
@@ -1748,20 +2268,20 @@ sudo mount /dev/xvdf /var/www/html`;
 
                     {/* Source EC2 3D Rack */}
                     <g transform="translate(15, 40)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#blue-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Source EC2</text>
                       
                       {/* Rack units */}
-                      <rect x="5" y="25" width="70" height="8" rx="1.5" fill="var(--ec-metric-card-bg)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                      <rect x="5" y="25" width="70" height="8" rx="1.5" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
                       <circle cx="12" cy="29" r="1.5" fill="var(--color-green)" />
                       <rect x="20" y="28" width="45" height="2" rx="1" fill="var(--color-border-secondary)" />
                       
-                      <rect x="5" y="37" width="70" height="8" rx="1.5" fill="var(--ec-metric-card-bg)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                      <rect x="5" y="37" width="70" height="8" rx="1.5" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
                       <circle cx="12" cy="41" r="1.5" fill="var(--color-green)" />
                       <rect x="20" y="40" width="45" height="2" rx="1" fill="var(--color-border-secondary)" />
 
-                      <rect x="5" y="49" width="70" height="8" rx="1.5" fill="var(--ec-metric-card-bg)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
+                      <rect x="5" y="49" width="70" height="8" rx="1.5" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="0.5" />
                       <circle cx="12" cy="53" r="1.5" fill="var(--color-red)" />
                       <rect x="20" y="52" width="45" height="2" rx="1" fill="var(--color-border-secondary)" />
                       
@@ -1770,27 +2290,27 @@ sudo mount /dev/xvdf /var/www/html`;
 
                     {/* Snapshot Storage Cylinder */}
                     <g transform="translate(130, 40)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#pink-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Snapshot</text>
                       
                       {/* 3D database disk cylinder outline */}
-                      <ellipse cx="40" cy="32" rx="20" ry="6" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <path d="M20,32 L20,44 A20,6 0 0,0 60,44 L60,32" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
-                      <path d="M20,44 L20,56 A20,6 0 0,0 60,56 L60,44" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
+                      <ellipse cx="40" cy="32" rx="20" ry="6" fill="var(--color-background-secondary)" stroke="var(--color-purple)" strokeWidth="1" />
+                      <path d="M20,32 L20,44 A20,6 0 0,0 60,44 L60,32" fill="var(--color-background-secondary)" stroke="var(--color-purple)" strokeWidth="1" />
+                      <path d="M20,44 L20,56 A20,6 0 0,0 60,56 L60,44" fill="var(--color-background-secondary)" stroke="var(--color-purple)" strokeWidth="1" />
                       
                       <text x="40" y="66" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="500">(Root EBS Copy)</text>
                     </g>
 
                     {/* Golden AMI (Baked disc) */}
                     <g transform="translate(250, 40)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-amber)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="70" rx="6" fill="var(--color-background-primary)" stroke="var(--color-amber)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="15" rx="3" fill="url(#orange-grad)" />
                       <text x="40" y="15" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">Golden AMI</text>
                       
                       {/* Compact Disc shape */}
-                      <circle cx="40" cy="38" r="14" fill="var(--ec-card-bg)" stroke="var(--color-amber)" strokeWidth="1.5" />
-                      <circle cx="40" cy="38" r="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-amber)" strokeWidth="1" />
+                      <circle cx="40" cy="38" r="14" fill="var(--color-background-primary)" stroke="var(--color-amber)" strokeWidth="1.5" />
+                      <circle cx="40" cy="38" r="4" fill="var(--color-background-secondary)" stroke="var(--color-amber)" strokeWidth="1" />
                       <path d="M 40,24 A 14,14 0 0, 1 54,38" stroke="var(--color-amber)" strokeWidth="1" strokeDasharray="2,2" fill="none" />
                       
                       <text x="40" y="66" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="500">(Template Image)</text>
@@ -1799,26 +2319,26 @@ sudo mount /dev/xvdf /var/www/html`;
                     {/* Replicas (Green Racks) */}
                     {/* Replica 1 */}
                     <g transform="translate(370, 10)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
                       <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 1</text>
                       
                       {/* mini rack lines */}
-                      <rect x="10" y="24" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
-                      <rect x="10" y="32" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
+                      <rect x="10" y="24" width="60" height="4" rx="1" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.5" />
+                      <rect x="10" y="32" width="60" height="4" rx="1" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.5" />
                       
                       <text x="40" y="48" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Active</text>
                     </g>
 
                     {/* Replica 2 */}
                     <g transform="translate(370, 85)" filter="url(#ec2-shadow-net)">
-                      <rect x="0" y="0" width="80" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="80" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.5" />
                       <rect x="5" y="5" width="70" height="12" rx="3" fill="url(#green-grad)" />
                       <text x="40" y="13" textAnchor="middle" fontSize="7.5" fill="#fff" fontWeight="bold">EC2 Replica 2</text>
                       
                       {/* mini rack lines */}
-                      <rect x="10" y="24" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
-                      <rect x="10" y="32" width="60" height="4" rx="1" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.5" />
+                      <rect x="10" y="24" width="60" height="4" rx="1" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.5" />
+                      <rect x="10" y="32" width="60" height="4" rx="1" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.5" />
                       
                       <text x="40" y="48" textAnchor="middle" fontSize="7" fill="var(--color-green)" fontWeight="bold">Active</text>
                     </g>
@@ -1848,7 +2368,7 @@ sudo mount /dev/xvdf /var/www/html`;
               </div>
 
               {selectedFamily && (
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '8px', marginBottom: '12px' }}>
                     <div style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-primary)' }}>
                       <span>{INSTANCE_FAMILIES[selectedFamily].icon}</span>
@@ -1975,7 +2495,7 @@ sudo mount /dev/xvdf /var/www/html`;
                   </div>
 
                   {/* Visual packet trace */}
-                  <div style={{ flex: 1, border: '1.5px solid var(--ec-card-border)', background: 'var(--ec-metric-card-bg)', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
+                  <div style={{ flex: 1, border: '1.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
                     <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
                       
                       {/* Interactive SVG Sandbox */}
@@ -2064,25 +2584,25 @@ sudo mount /dev/xvdf /var/www/html`;
                         {/* Left Clients / Nodes */}
                         {/* 1. Public Client */}
                         <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(12, 23)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" />
                           <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🌐 Public (Port 80)</text>
                         </g>
 
                         {/* 2. Bastion */}
                         <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(12, 60)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1" />
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1" />
                           <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🔒 Bastion (Port 22)</text>
                         </g>
 
                         {/* 3. Corporate Intranet */}
                         <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(12, 97)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
                           <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🏢 Corp App (Port 8080)</text>
                         </g>
 
                         {/* 4. Anonymous Hacker */}
                         <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(12, 134)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-red)" strokeWidth="1" />
+                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-red)" strokeWidth="1" />
                           <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🚨 Hacker (Port 22)</text>
                         </g>
 
@@ -2114,13 +2634,13 @@ sudo mount /dev/xvdf /var/www/html`;
 
                         {/* Destination EC2 Host on Right */}
                         <g transform="translate(305, 45)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="115" height="90" rx="8" fill="var(--ec-card-bg)" 
-                            stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--ec-card-border)'} 
+                          <rect x="0" y="0" width="115" height="90" rx="8" fill="var(--color-background-primary)" 
+                            stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--color-border-tertiary)'} 
                             strokeWidth={firewallTestResult?.status === 'ALLOW' ? '2.5' : '1.5'} 
                           />
                           
                           {/* Server header */}
-                          <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? 'rgba(16, 185, 129, 0.15)' : 'var(--ec-metric-card-bg)'} />
+                          <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-background-secondary)'} />
                           <text x="57.5" y="17" textAnchor="middle" fontSize="8.5" fill="var(--color-text-primary)" fontWeight="bold">EC2 Guest Host</text>
 
                           {/* Interactive status bulb */}
@@ -2144,7 +2664,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       </svg>
 
                       {/* Stateful text explanation below SVG */}
-                      <div style={{ textAlign: 'center', background: 'var(--ec-card-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--ec-card-border)' }}>
+                      <div style={{ textAlign: 'center', background: 'var(--color-background-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border-tertiary)' }}>
                         {sendingPacket ? (
                           <div style={{ fontSize: '11px', color: 'var(--color-amber)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                             <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-amber)', animation: 'ping 1s infinite' }} />
@@ -2186,7 +2706,7 @@ sudo mount /dev/xvdf /var/www/html`;
 
               <div className="ec2-g3">
                 {/* Cluster PG */}
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ color: 'var(--color-amber)' }}>📍</span> Cluster Group
                   </div>
@@ -2201,7 +2721,7 @@ sudo mount /dev/xvdf /var/www/html`;
                       <text x="100" y="15" textAnchor="middle" fontSize="6.5" fill="var(--color-amber)" fontWeight="bold">📍 HIGH-PERFORMANCE RACK ZONE</text>
                       
                       {/* Top Switch */}
-                      <rect x="50" y="24" width="100" height="18" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-amber)" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }} />
+                      <rect x="50" y="24" width="100" height="18" rx="4" fill="var(--color-background-primary)" stroke="var(--color-amber)" strokeWidth="1.2" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }} />
                       <text x="100" y="35" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-amber)">⚡ 100Gbps Switch</text>
  
                        {/* Connections */}
@@ -2222,19 +2742,19 @@ sudo mount /dev/xvdf /var/www/html`;
  
                        {/* Clustered EC2 nodes */}
                       <g transform="translate(20, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
                         <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-A</text>
                       </g>
                       
                       <g transform="translate(77, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
                         <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-B</text>
                       </g>
  
                        <g transform="translate(135, 75)">
-                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
+                        <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
                         <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-C</text>
                       </g>
@@ -2244,7 +2764,7 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* Spread PG */}
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ color: 'var(--color-green)' }}>📍</span> Spread Group
                   </div>
@@ -2262,14 +2782,14 @@ sudo mount /dev/xvdf /var/www/html`;
                         
                         {/* 3D server */}
                         <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
-                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
                           <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-1</text>
                         </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-A</text>
                         <text x="25" y="70" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔌 Net-A</text>
                         <circle cx="25" cy="85" r="4.5" fill="var(--color-green)" />
-                        <circle cx="25" cy="85" r="2" fill="var(--ec-card-bg)" />
+                        <circle cx="25" cy="85" r="2" fill="var(--color-background-primary)" />
                       </g>
 
                       {/* Rack 2 */}
@@ -2278,14 +2798,14 @@ sudo mount /dev/xvdf /var/www/html`;
                         <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">RACK B DOMAIN</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
-                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
                           <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-2</text>
                         </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-B</text>
                         <text x="25" y="70" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔌 Net-B</text>
                         <circle cx="25" cy="85" r="4.5" fill="var(--color-green)" />
-                        <circle cx="25" cy="85" r="2" fill="var(--ec-card-bg)" />
+                        <circle cx="25" cy="85" r="2" fill="var(--color-background-primary)" />
                       </g>
 
                       {/* Rack 3 */}
@@ -2294,14 +2814,14 @@ sudo mount /dev/xvdf /var/www/html`;
                         <text x="25" y="10" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">RACK C DOMAIN</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
-                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1" />
+                          <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
                           <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-3</text>
                         </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-C</text>
                         <text x="25" y="70" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔌 Net-C</text>
                         <circle cx="25" cy="85" r="4.5" fill="var(--color-green)" />
-                        <circle cx="25" cy="85" r="2" fill="var(--ec-card-bg)" />
+                        <circle cx="25" cy="85" r="2" fill="var(--color-background-primary)" />
                       </g>
                     </svg>
                   </div>
@@ -2309,7 +2829,7 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* Partition PG */}
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12.5px', marginBottom: '6px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ color: 'var(--color-blue)' }}>📍</span> Partition Group
                   </div>
@@ -2326,17 +2846,17 @@ sudo mount /dev/xvdf /var/www/html`;
                         <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ COMPUTE PARTITION 1</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
                           <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-1</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
                           <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-2</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
                           <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-3</text>
                         </g>
                         
@@ -2353,17 +2873,17 @@ sudo mount /dev/xvdf /var/www/html`;
                         <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ COMPUTE PARTITION 2</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
                           <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-4</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
                           <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-5</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                          <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="0.8" />
+                          <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
                           <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-6</text>
                         </g>
                         
@@ -2456,7 +2976,7 @@ sudo mount /dev/xvdf /var/www/html`;
             <div className="ec2-card">
               <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ background: 'var(--ec-metric-card-bg)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
+                  <tr style={{ background: 'var(--color-background-secondary)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
                     <th style={{ padding: '8px' }}>Purchase Model</th>
                     <th style={{ padding: '8px' }}>Discount Range</th>
                     <th style={{ padding: '8px' }}>Commitment Bounds</th>
@@ -2756,7 +3276,7 @@ sudo mount /dev/xvdf /var/www/html`;
 
                       {/* EFS Standard */}
                       <g transform="translate(6, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="82" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-std-grad)" />
                         <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">Standard</text>
                         <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Frequent Access)</text>
@@ -2766,7 +3286,7 @@ sudo mount /dev/xvdf /var/www/html`;
 
                       {/* EFS Infrequent Access */}
                       <g transform="translate(118, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="82" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="82" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="74" height="12" rx="3" fill="url(#efs-ia-grad)" />
                         <text x="41" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS IA</text>
                         <text x="41" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Idle {efsLifecycleDays} Days)</text>
@@ -2776,7 +3296,7 @@ sudo mount /dev/xvdf /var/www/html`;
 
                       {/* EFS Archive */}
                       <g transform="translate(230, 24)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="84" height="60" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="84" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="76" height="12" rx="3" fill="url(#efs-arc-grad)" />
                         <text x="42" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EFS Archive</text>
                         <text x="42" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Idle 90+ Days)</text>
@@ -2791,7 +3311,7 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* EBS Multi-Attach & Encryption */}
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>💾 EBS Multi-Attach (io1/io2) &amp; KMS Encryption</div>
                   <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '10px', flex: 1 }}>
                     - <b>EBS Multi-Attach:</b> Enables mounting a single high-performance **Provisioned IOPS (io1 or io2)** volume concurrently to up to 16 Nitro-based EC2 instances within the *same* AZ. Requires a cluster-aware filesystem (e.g. GFS2) to prevent data corruption.
@@ -2835,26 +3355,26 @@ sudo mount /dev/xvdf /var/www/html`;
 
                       {/* EC2 instances (3D) */}
                       <g transform="translate(10, 20)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" />
                         <rect x="3" y="3" width="54" height="4" rx="1" fill="var(--color-blue)" />
                         <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2 Host A</text>
                       </g>
 
                       <g transform="translate(10, 58)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" />
                         <rect x="3" y="3" width="54" height="4" rx="1" fill="var(--color-blue)" />
                         <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2 Host B</text>
                       </g>
 
                       <g transform="translate(10, 96)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" />
                         <rect x="3" y="3" width="54" height="4" rx="1" fill="var(--color-blue)" />
                         <text x="30" y="17" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2 Host C</text>
                       </g>
 
                       {/* Shared KMS Encrypted EBS Cylinder */}
                       <g transform="translate(158, 20)" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.1))' }}>
-                        <rect x="0" y="0" width="150" height="90" rx="6" fill="var(--ec-card-bg)" stroke="var(--color-red)" strokeWidth="1.2" />
+                        <rect x="0" y="0" width="150" height="90" rx="6" fill="var(--color-background-primary)" stroke="var(--color-red)" strokeWidth="1.2" />
                         <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#multi-ebs-grad)" />
                         <text x="75" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Shared EBS io1/io2</text>
                         
@@ -2972,7 +3492,7 @@ sudo mount /dev/xvdf /var/www/html`;
                 </div>
 
                 {/* Hypervisor status screen */}
-                <div style={{ background: 'var(--ec-metric-card-bg)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--ec-metric-card-border)', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>🖥️ Virtual Motherboard Chassis:</span>
                     <span className="ec2-badge" style={{ 
@@ -2990,7 +3510,7 @@ sudo mount /dev/xvdf /var/www/html`;
                     const isNvmePresent = consoleStorageType === 'ephemeral' || consoleStorageType === 'both' || consoleInstanceType === 'i3.xlarge';
                     return (
                       <div style={{ margin: '6px 0', textAlign: 'center' }}>
-                        <svg viewBox="0 0 320 170" width="100%" style={{ background: '#070a13', borderRadius: '10px', border: '1.5px solid var(--color-border-secondary)' }}>
+                        <svg viewBox="0 0 320 170" width="100%" className="ec2-svg-bg" style={{ borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)' }}>
                           {/* Grid background on board */}
                           <defs>
                             <pattern id="motherboard-grid" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -3004,8 +3524,8 @@ sudo mount /dev/xvdf /var/www/html`;
                               <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="var(--color-blue)" floodOpacity="0.4" />
                             </filter>
                           </defs>
-                          <rect width="320" height="170" fill="#070a13" />
-                          <rect width="320" height="170" fill="url(#motherboard-grid)" />
+                          <rect width="320" height="170" fill="var(--color-background-secondary)" />
+                          <rect width="320" height="170" fill="url(#motherboard-grid)" opacity="0.6" />
                           
                           {/* Circuits / Buses */}
                           <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
@@ -3014,7 +3534,7 @@ sudo mount /dev/xvdf /var/www/html`;
  
                            {/* CPU Socket */}
                           <g transform="translate(20, 40)" style={vmState === 'Running' ? { filter: 'url(#motherboard-glow)' } : {}}>
-                            <rect x="0" y="0" width="60" height="60" rx="6" fill="var(--ec-terminal-bg)" stroke="var(--color-border-secondary)" strokeWidth="1.5" />
+                            <rect x="0" y="0" width="60" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="1.5" />
                             <rect x="10" y="10" width="40" height="40" rx="4" fill="url(#board-cpu-grad)" opacity={vmState === 'Running' ? '0.3' : '0.05'} />
                             <text x="30" y="32" textAnchor="middle" fontSize="9" fill="var(--color-text-secondary)" fontWeight="bold">CPU</text>
                             <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">vCPU Cores</text>
@@ -3032,7 +3552,7 @@ sudo mount /dev/xvdf /var/www/html`;
  
                            {/* RAM DIMMs */}
                           <g transform="translate(120, 22)">
-                            <rect x="0" y="0" width="80" height="34" rx="4" fill="var(--ec-terminal-bg)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                            <rect x="0" y="0" width="80" height="34" rx="4" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
                             <text x="40" y="10" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">RAM slots</text>
                             
                             {/* DIMM sticks */}
@@ -3059,7 +3579,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           {isEbsRendered && (
                             <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`} style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
                               <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={isEbsDetached ? 'var(--ec-terminal-bg)' : 'var(--ec-card-bg)'} 
+                                fill={isEbsDetached ? 'var(--color-background-secondary)' : 'var(--color-background-primary)'} 
                                 stroke={isEbsDetached ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
                                 strokeWidth="1.2" 
                               />
@@ -3086,7 +3606,7 @@ sudo mount /dev/xvdf /var/www/html`;
                           {isNvmePresent && (
                             <g transform="translate(215, 90)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
                               <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={['Stopped', 'Terminated'].includes(vmState) ? 'rgba(239, 68, 68, 0.05)' : 'var(--ec-card-bg)'} 
+                                fill={['Stopped', 'Terminated'].includes(vmState) ? 'rgba(239, 68, 68, 0.05)' : 'var(--color-background-primary)'} 
                                 stroke={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
                                 strokeWidth="1.2" 
                               />
@@ -3123,7 +3643,7 @@ sudo mount /dev/xvdf /var/www/html`;
                     );
                   })()}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'var(--ec-metric-card-bg)', padding: '6px', borderRadius: '4px', border: '1px solid var(--ec-metric-card-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'var(--color-background-secondary)', padding: '6px', borderRadius: '4px', border: '1px solid var(--ec-metric-card-border)' }}>
                     <span>Compute CPU Meter:</span>
                     <b style={{ color: consoleCpuGauge > 50 ? 'var(--color-red)' : 'var(--color-green)' }}>{consoleCpuGauge}%</b>
                   </div>
@@ -3214,7 +3734,7 @@ sudo mount /dev/xvdf /var/www/html`;
 
                   {/* Public Internet */}
                   <g transform="translate(10, 48)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.05))' }}>
-                    <rect x="0" y="0" width="100" height="70" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
+                    <rect x="0" y="0" width="100" height="70" rx="8" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.5" />
                     <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-green-grad)" />
                     <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🌐 Internet</text>
                     <text x="50" y="42" textAnchor="middle" fontSize="9.5" fill="var(--color-text-primary)" fontWeight="bold">Public Clients</text>
@@ -3223,7 +3743,7 @@ sudo mount /dev/xvdf /var/www/html`;
                   
                   {/* ALB */}
                   <g transform="translate(160, 28)" style={{ filter: 'drop-shadow(0 2px 2px rgba(29,78,216,0.1))' }}>
-                    <rect x="0" y="0" width="100" height="110" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-blue)" strokeWidth="1.5" />
+                    <rect x="0" y="0" width="100" height="110" rx="8" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1.5" />
                     <rect x="4" y="4" width="92" height="15" rx="3" fill="url(#ha-blue-grad)" />
                     <text x="50" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">🍪 Application LB</text>
                     
@@ -3237,35 +3757,35 @@ sudo mount /dev/xvdf /var/www/html`;
 
                   {/* Private AZ-A */}
                   <g transform="translate(330, 15)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(219,39,119,0.05))' }}>
-                    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.2" />
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1.2" />
                     <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
                     <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-a (sg-app-fleet)</text>
                     
-                    <rect x="15" y="32" width="120" height="16" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="0.8" />
+                    <rect x="15" y="32" width="120" height="16" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-purple)" strokeWidth="0.8" />
                     <text x="75" y="43" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">EC2 Instance (10.0.1.x)</text>
                     <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">Healthy in Private Subnet</text>
                   </g>
 
                   {/* Private AZ-B */}
                   <g transform="translate(330, 85)" style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(219,39,119,0.05))' }}>
-                    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.2" />
+                    <rect x="0" y="0" width="150" height="70" rx="8" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1.2" />
                     <rect x="4" y="4" width="142" height="15" rx="3" fill="url(#ha-pink-grad)" />
                     <text x="75" y="14" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="#fff">🔒 AZ-b (sg-app-fleet)</text>
                     
-                    <rect x="15" y="32" width="120" height="16" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-purple)" strokeWidth="0.8" />
+                    <rect x="15" y="32" width="120" height="16" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-purple)" strokeWidth="0.8" />
                     <text x="75" y="43" textAnchor="middle" fontSize="8" fill="var(--color-purple)" fontWeight="bold">EC2 Instance (10.0.2.x)</text>
                     <text x="75" y="62" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">Healthy in Private Subnet</text>
                   </g>
 
                   {/* EFS Mount */}
                   <g transform="translate(545, 48)" style={{ filter: 'drop-shadow(0 2px 2px rgba(5,150,105,0.1))' }}>
-                    <rect x="0" y="0" width="120" height="80" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
+                    <rect x="0" y="0" width="120" height="80" rx="8" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.5" />
                     <rect x="4" y="4" width="112" height="15" rx="3" fill="url(#ha-green-grad)" />
                     <text x="60" y="14" textAnchor="middle" fontSize="9" fontWeight="bold" fill="#fff">📁 Shared NAS (EFS)</text>
                     
                     {/* Database disks drawing inside */}
-                    <ellipse cx="60" cy="42" rx="16" ry="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
-                    <path d="M44,42 L44,52 A16,4 0 0,0 76,52 L76,42" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
+                    <ellipse cx="60" cy="42" rx="16" ry="4" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.8" />
+                    <path d="M44,42 L44,52 A16,4 0 0,0 76,52 L76,42" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.8" />
                     
                     <text x="60" y="70" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">Multi-AZ Mount Targets</text>
                   </g>
@@ -3326,14 +3846,14 @@ sudo mount /dev/xvdf /var/www/html`;
 
                     {/* Hypervisor Host Motherboard */}
                     <g transform="translate(15, 15)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.05))' }}>
-                      <rect x="0" y="0" width="200" height="120" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-purple)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="200" height="120" rx="8" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1.5" />
                       <rect x="4" y="4" width="192" height="15" rx="3" fill="url(#host-grad)" />
                       <text x="100" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">Physical Motherboard (Hypervisor Host)</text>
                     </g>
 
                     {/* CPU RAM Core */}
                     <g transform="translate(30, 45)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                      <rect x="0" y="0" width="170" height="28" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-blue)" strokeWidth="1.2" />
+                      <rect x="0" y="0" width="170" height="28" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-blue)" strokeWidth="1.2" />
                       <text x="85" y="17" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-blue)">Virtual Guest VM (vCPU &amp; RAM)</text>
                     </g>
 
@@ -3341,7 +3861,7 @@ sudo mount /dev/xvdf /var/www/html`;
 
                     {/* Local Instance Store SSD */}
                     <g transform="translate(35, 96)" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
-                      <rect x="0" y="0" width="80" height="32" rx="4" fill="var(--ec-metric-card-bg)" stroke="var(--color-red)" strokeWidth="1.2" />
+                      <rect x="0" y="0" width="80" height="32" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-red)" strokeWidth="1.2" />
                       <text x="40" y="12" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-red)">Instance Store</text>
                       <text x="40" y="24" textAnchor="middle" fontSize="6" fill="var(--color-red)" fontWeight="extrabold">💥 Ephemeral NVMe</text>
                     </g>
@@ -3350,13 +3870,13 @@ sudo mount /dev/xvdf /var/www/html`;
 
                     {/* Remote EBS SAN Cluster */}
                     <g transform="translate(268, 15)" style={{ filter: 'drop-shadow(0 2px 2px rgba(5,150,105,0.1))' }}>
-                      <rect x="0" y="0" width="160" height="120" rx="8" fill="var(--ec-card-bg)" stroke="var(--color-green)" strokeWidth="1.5" />
+                      <rect x="0" y="0" width="160" height="120" rx="8" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.5" />
                       <rect x="4" y="4" width="152" height="15" rx="3" fill="url(#san-grad)" />
                       <text x="80" y="14" textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fff">EBS Storage SAN Cluster</text>
                       
                       {/* EBS volume cylinders */}
-                      <ellipse cx="80" cy="50" rx="30" ry="8" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
-                      <path d="M50,50 L50,68 A30,8 0 0,0 110,68 L110,50" fill="var(--ec-metric-card-bg)" stroke="var(--color-green)" strokeWidth="0.8" />
+                      <ellipse cx="80" cy="50" rx="30" ry="8" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.8" />
+                      <path d="M50,50 L50,68 A30,8 0 0,0 110,68 L110,50" fill="var(--color-background-secondary)" stroke="var(--color-green)" strokeWidth="0.8" />
 
                       <text x="80" y="94" textAnchor="middle" fontSize="7.5" fill="var(--color-green)" fontWeight="bold">✅ Data Persists on VM Stop</text>
                       <text x="80" y="106" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">(Network Detached &amp; Detourable)</text>
@@ -3453,7 +3973,9 @@ sudo mount /dev/xvdf /var/www/html`;
             </div>
           </div>
         )}
-
+            </>
+          </Translate>
+        )}
       </div>
     </div>
   );

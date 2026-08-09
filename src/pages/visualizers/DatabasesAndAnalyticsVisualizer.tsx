@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Database,
   Sliders,
@@ -14,8 +14,10 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import DatabasesAndAnalyticsComparativeView from '../../components/visualizers/DatabasesAndAnalyticsComparativeView';
+import UniqueDatabasesAndAnalyticsFeatures from '../../components/visualizers/UniqueDatabasesAndAnalyticsFeatures';
 
-type TabType = 'intro' | 'rdbms' | 'nosql' | 'lakehouse' | 'warehousing' | 'streaming' | 'ingestion';
+type TabType = 'intro' | 'rdbms' | 'nosql' | 'lakehouse' | 'warehousing' | 'streaming' | 'ingestion' | 'unique';
 
 interface DataLakeRecord {
   timestamp: string;
@@ -162,8 +164,134 @@ const CATEGORY_MAP: Record<string, DBDetails> = {
   }
 };
 
-export default function DatabasesAndAnalyticsVisualizer() {
+interface DatabasesAndAnalyticsVisualizerProps {
+  provider?: 'aws' | 'azure' | 'gcp' | 'comparative';
+  setProvider?: (provider: 'aws' | 'azure' | 'gcp' | 'comparative') => void;
+}
+
+export default function DatabasesAndAnalyticsVisualizer({ provider = 'aws', setProvider }: DatabasesAndAnalyticsVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('intro');
+
+  const isComparative = provider === 'comparative';
+  const isAzure = provider === 'azure';
+  const isGcp = provider === 'gcp';
+
+  const t = (text: string) => {
+    if (provider === 'azure') {
+      return text
+        .replace(/Amazon RDS/gi, 'Azure SQL Database / Azure DB for PostgreSQL')
+        .replace(/Amazon Aurora/gi, 'Azure SQL Hyperscale')
+        .replace(/Amazon DynamoDB/gi, 'Azure Cosmos DB')
+        .replace(/DynamoDB/g, 'Cosmos DB')
+        .replace(/Amazon DocumentDB/gi, 'Azure Cosmos DB (MongoDB API)')
+        .replace(/Amazon Redshift/gi, 'Azure Synapse Analytics')
+        .replace(/Redshift/g, 'Synapse')
+        .replace(/Amazon Athena/gi, 'Azure Synapse Serverless SQL')
+        .replace(/Amazon OpenSearch/gi, 'Azure AI Search')
+        .replace(/Amazon Neptune/gi, 'Azure Cosmos DB Gremlin API')
+        .replace(/Amazon QLDB/gi, 'Azure Confidential Ledger')
+        .replace(/Amazon Timestream/gi, 'Azure Data Explorer (Kusto)')
+        .replace(/Amazon EMR/gi, 'Azure HDInsight / Databricks')
+        .replace(/AWS Glue/gi, 'Azure Data Factory')
+        .replace(/CloudWatch/g, 'Azure Monitor')
+        .replace(/Amazon S3/gi, 'Azure Blob Storage / ADLS Gen2');
+    }
+    if (provider === 'gcp') {
+      return text
+        .replace(/Amazon RDS/gi, 'Google Cloud SQL')
+        .replace(/Amazon Aurora/gi, 'AlloyDB / Cloud Spanner')
+        .replace(/Amazon DynamoDB/gi, 'Google Cloud Bigtable / Firestore')
+        .replace(/DynamoDB/g, 'Bigtable')
+        .replace(/Amazon DocumentDB/gi, 'Google Cloud Firestore')
+        .replace(/Amazon Redshift/gi, 'Google BigQuery')
+        .replace(/Redshift/g, 'BigQuery')
+        .replace(/Amazon Athena/gi, 'BigQuery Serverless / Omni')
+        .replace(/Amazon OpenSearch/gi, 'Vertex AI Search / Cloud Search')
+        .replace(/Amazon Neptune/gi, 'Google Cloud Spanner Graph')
+        .replace(/Amazon QLDB/gi, 'Google Cloud Ledger')
+        .replace(/Amazon Timestream/gi, 'Cloud Bigtable Time-Series')
+        .replace(/Amazon EMR/gi, 'Google Cloud Dataproc')
+        .replace(/AWS Glue/gi, 'Google Cloud Dataflow / Data Catalog')
+        .replace(/CloudWatch/g, 'Cloud Monitoring')
+        .replace(/Amazon S3/gi, 'Google Cloud Storage (GCS)');
+    }
+    return text;
+  };
+
+  const getProviderServices = (key: string): string => {
+    if (isAzure) {
+      switch (key) {
+        case 'rdbms': return 'Azure SQL Database, Azure DB for PostgreSQL, Azure DB for MySQL';
+        case 'nosql_kv': return 'Azure Cosmos DB (Table & Cassandra API)';
+        case 'nosql_doc': return 'Azure Cosmos DB (MongoDB API & NoSQL API)';
+        case 'object': return 'Azure Blob Storage, Azure Data Lake Storage Gen2';
+        case 'analytics': return 'Azure Synapse Analytics, Azure Databricks, Microsoft Fabric';
+        case 'search': return 'Azure AI Search (formerly Cognitive Search)';
+        case 'graph': return 'Azure Cosmos DB (Gremlin Graph API)';
+        case 'ledger': return 'Azure Confidential Ledger';
+        case 'timeseries': return 'Azure Data Explorer (Kusto Engine)';
+        case 'etl': return 'Azure Data Factory, Azure Purview';
+        default: return 'Azure Managed Database Services';
+      }
+    }
+    if (isGcp) {
+      switch (key) {
+        case 'rdbms': return 'Google Cloud SQL, Cloud Spanner, AlloyDB';
+        case 'nosql_kv': return 'Google Cloud Bigtable, Cloud Firestore (Key-Value)';
+        case 'nosql_doc': return 'Google Cloud Firestore (Document store API)';
+        case 'object': return 'Google Cloud Storage (GCS Standard/Coldline/Archive)';
+        case 'analytics': return 'Google BigQuery, BigQuery Serverless, BigQuery Omni';
+        case 'search': return 'Google Vertex AI Search / Cloud Search';
+        case 'graph': return 'Google Cloud Spanner Graph';
+        case 'ledger': return 'Google Cloud Ledger / Blockchain Engine';
+        case 'timeseries': return 'Google Cloud Bigtable (Time-Series Mode)';
+        case 'etl': return 'Google Cloud Dataflow, Cloud Data Catalog, Dataplex';
+        default: return 'Google Cloud Database Services';
+      }
+    }
+    return CATEGORY_MAP[key]?.awsServices || '';
+  };
+
+  const Translate = ({ children }: { children: React.ReactNode }): React.ReactElement => {
+    if (provider === 'aws') {
+      return <>{children}</>;
+    }
+
+    const translateNode = (node: React.ReactNode): React.ReactNode => {
+      if (typeof node === 'string') {
+        return t(node);
+      }
+      if (typeof node === 'number') {
+        return node;
+      }
+      if (React.isValidElement(node)) {
+        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'da-terminal' || node.props.className === 'da-code-card'))) {
+          return node;
+        }
+        if (node.props && node.props.children) {
+          if (typeof node.props.children === 'function') {
+            return node;
+          }
+          const translatedChildren = React.Children.map(node.props.children, translateNode);
+          return React.cloneElement(node, { ...node.props, children: translatedChildren });
+        }
+        return node;
+      }
+      if (Array.isArray(node)) {
+        return node.map((child, index) => <React.Fragment key={index}>{translateNode(child)}</React.Fragment>);
+      }
+      return node;
+    };
+
+    return <>{translateNode(children)}</>;
+  };
+
+  const handleNavigateToDemo = (prov: 'aws' | 'azure' | 'gcp', tab: any) => {
+    if (setProvider) {
+      setProvider(prov);
+    }
+    setActiveTab(tab === 'dynamo' ? 'nosql' : tab === 'redshift' ? 'warehousing' : tab === 'emr' ? 'streaming' : tab);
+  };
   const [isDark, setIsDark] = useState<boolean>(
     typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : false
   );
@@ -1458,40 +1586,65 @@ export default function DatabasesAndAnalyticsVisualizer() {
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6">
         <div className="flex items-center gap-2">
-          <span className="p-2 bg-sky-500 rounded-lg text-white">
+          <span className={`p-2 rounded-lg text-white ${provider === 'azure' ? 'bg-blue-600' : provider === 'gcp' ? 'bg-emerald-600' : 'bg-sky-500'}`}>
             <Database className="w-6 h-6" />
           </span>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">AWS Databases &amp; Analytics Visualizer</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Explore RDBMS failures, NoSQL partitions, Lakehouse governance, Redshift warehouses, MSK Streams, and Flink sliding window engines</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {provider === 'azure' ? 'Azure Databases & Analytics Visualizer' :
+               provider === 'gcp' ? 'Google Cloud Databases & Analytics Visualizer' :
+               'AWS Databases & Analytics Visualizer'}
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {provider === 'azure' ? 'Explore Azure SQL, Cosmos DB partitioning, Synapse Data Lakehouse, Data Factory ETL, Event Hubs, and Stream Analytics' :
+               provider === 'gcp' ? 'Explore Cloud SQL/Spanner, Cloud Bigtable, BigQuery Lakehouse, Dataflow ETL, Pub/Sub Streams, and Dataproc Analytics' :
+               'Explore RDBMS failures, NoSQL partitions, Lakehouse governance, Redshift warehouses, MSK Streams, and Flink sliding window engines'}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Tabs navigation bar */}
-      <div className="da-tabs">
-        <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-          <BookOpen className="w-4 h-4" /> 1. Choosing the Right DB &amp; Theory
-        </button>
-        <button className={`da-tb ${activeTab === 'rdbms' ? 'da-on' : ''}`} onClick={() => setActiveTab('rdbms')}>
-          <Server className="w-4 h-4" /> 2. RDS &amp; Aurora Cluster
-        </button>
-        <button className={`da-tb ${activeTab === 'nosql' ? 'da-on' : ''}`} onClick={() => setActiveTab('nosql')}>
-          <Database className="w-4 h-4" /> 3. NoSQL Suite &amp; Cache-Aside
-        </button>
-        <button className={`da-tb ${activeTab === 'lakehouse' ? 'da-on' : ''}`} onClick={() => setActiveTab('lakehouse')}>
-          <Shield className="w-4 h-4" /> 4. Athena &amp; Lake Governance
-        </button>
-        <button className={`da-tb ${activeTab === 'warehousing' ? 'da-on' : ''}`} onClick={() => setActiveTab('warehousing')}>
-          <TrendingUp className="w-4 h-4" /> 5. Redshift Warehousing &amp; DR
-        </button>
-        <button className={`da-tb ${activeTab === 'streaming' ? 'da-on' : ''}`} onClick={() => setActiveTab('streaming')}>
-          <Activity className="w-4 h-4" /> 6. Streaming Kafka &amp; Flink
-        </button>
-        <button className={`da-tb ${activeTab === 'ingestion' ? 'da-on' : ''}`} onClick={() => setActiveTab('ingestion')}>
-          <LayoutDashboard className="w-4 h-4" /> 7. Ingestion Sandbox &amp; OpenSearch
-        </button>
-      </div>
+      {!isComparative && (
+        <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
+            <BookOpen className="w-4 h-4" /> 1. Choosing the Right DB &amp; Theory
+          </button>
+          <button className={`da-tb ${activeTab === 'rdbms' ? 'da-on' : ''}`} onClick={() => setActiveTab('rdbms')}>
+            <Server className="w-4 h-4" /> 2. {provider === 'azure' ? 'Azure SQL & Cosmos DB' : provider === 'gcp' ? 'Cloud SQL & Cloud Spanner' : 'RDS & Aurora Cluster'}
+          </button>
+          <button className={`da-tb ${activeTab === 'nosql' ? 'da-on' : ''}`} onClick={() => setActiveTab('nosql')}>
+            <Database className="w-4 h-4" /> 3. NoSQL Suite &amp; Cache-Aside
+          </button>
+          <button className={`da-tb ${activeTab === 'lakehouse' ? 'da-on' : ''}`} onClick={() => setActiveTab('lakehouse')}>
+            <Shield className="w-4 h-4" /> 4. {provider === 'azure' ? 'Synapse & Data Lake Governance' : provider === 'gcp' ? 'BigQuery & Dataplex Governance' : 'Athena & Lake Governance'}
+          </button>
+          <button className={`da-tb ${activeTab === 'warehousing' ? 'da-on' : ''}`} onClick={() => setActiveTab('warehousing')}>
+            <TrendingUp className="w-4 h-4" /> 5. {provider === 'azure' ? 'Synapse Warehousing & DR' : provider === 'gcp' ? 'BigQuery Warehousing & DR' : 'Redshift Warehousing & DR'}
+          </button>
+          <button className={`da-tb ${activeTab === 'streaming' ? 'da-on' : ''}`} onClick={() => setActiveTab('streaming')}>
+            <Activity className="w-4 h-4" /> 6. {provider === 'azure' ? 'Event Hubs & Stream Analytics' : provider === 'gcp' ? 'Pub/Sub & Dataflow Analytics' : 'Streaming Kafka & Flink'}
+          </button>
+          <button className={`da-tb ${activeTab === 'ingestion' ? 'da-on' : ''}`} onClick={() => setActiveTab('ingestion')}>
+            <LayoutDashboard className="w-4 h-4" /> 7. {provider === 'azure' ? 'Data Factory & Ingestion' : provider === 'gcp' ? 'Dataflow & Dataprep Ingestion' : 'Ingestion Sandbox & OpenSearch'}
+          </button>
+          <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
+            ✨ Unique Features
+          </button>
+        </div>
+      )}
+
+      {isComparative && (
+        <DatabasesAndAnalyticsComparativeView onNavigateToDemo={handleNavigateToDemo} />
+      )}
+
+      {!isComparative && activeTab === 'unique' && (
+        <UniqueDatabasesAndAnalyticsFeatures provider={provider as 'aws' | 'azure' | 'gcp'} />
+      )}
+
+      {!isComparative && activeTab !== 'unique' && (
+        <Translate>
+          <>
 
       {/* ========================================================================= */}
       {/* TAB 1: HOW TO CHOOSE THE RIGHT DATABASE & SELECTOR WIZARD                  */}
@@ -1700,7 +1853,7 @@ export default function DatabasesAndAnalyticsVisualizer() {
                         {CATEGORY_MAP[selectedCategory].title}
                       </h4>
                       <p className="text-[10px] text-sky-700 font-bold mt-0.5">
-                        AWS Services: {CATEGORY_MAP[selectedCategory].awsServices}
+                        {isAzure ? 'Azure Services: ' : isGcp ? 'GCP Services: ' : 'AWS Services: '}{getProviderServices(selectedCategory)}
                       </p>
                     </div>
                     <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase self-start sm:self-center ${CATEGORY_MAP[selectedCategory].badgeClass}`}>
@@ -5253,6 +5406,9 @@ export default function DatabasesAndAnalyticsVisualizer() {
             </div>
           </div>
         </div>
+      )}
+          </>
+        </Translate>
       )}
     </div>
   );
