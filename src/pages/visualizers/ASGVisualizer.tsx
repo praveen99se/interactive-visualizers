@@ -5,11 +5,12 @@ import {
   Activity,
   ChevronRight,
   ChevronDown,
-  Info,
   Check,
   Copy,
-  Cpu,
-  Network
+  Network,
+  Lightbulb,
+  Sliders,
+  Zap
 } from 'lucide-react';
 import ASGComparativeView from '../../components/visualizers/ASGComparativeView';
 import UniqueScalingFeatures from '../../components/visualizers/UniqueScalingFeatures';
@@ -370,7 +371,7 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
   const [terminateHookApproved, setTerminateHookApproved] = useState<boolean>(false);
 
   // Visual Architect Notebook states
-  const [selectedNote, setSelectedNote] = useState<string>('launch_templates');
+  const [selectedNote, setSelectedNote] = useState<string>('asg_what_is');
   const [expandedCategory, setExpandedCategory] = useState<string>('asg_fundamentals');
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
@@ -861,6 +862,65 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
           border-top: 1px solid var(--color-border-tertiary);
           border-right: 1px solid var(--color-border-tertiary);
           border-bottom: 1px solid var(--color-border-tertiary);
+        }
+
+        /* Humanized Beginner Callout Boxes */
+        .acad-plain-english {
+          background: rgba(2, 132, 199, 0.07);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(56, 189, 248, 0.12);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-flow-step {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-radius: 8px;
+          border: 1px solid var(--color-border-tertiary);
+          font-size: 11.5px;
+          flex: 1 1 160px;
         }
         .acad-table {
           width: 100%;
@@ -2233,58 +2293,73 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
         {activeSection === 'notebook' && (
           <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
             
-            <div className="card text-left">
-              <h2 className="text-xl font-bold flex items-center gap-2 font-display">
-                <BookOpen className="w-5 h-5 text-indigo-600" /> Auto Scaling Groups (ASG) Architect Notes
-              </h2>
-              <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                This module covers fleet capacity thresholds, Launch Templates configurations, scaling policy mathematics, lifecycle transition hook stages, and multi-AZ zonal rebalancing mechanics to optimize applications for demand peaks.
-              </p>
+            {/* Header Hero Card */}
+            <div className="card text-left" style={{ borderLeft: '4px solid #10b981' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h2 className="text-xl font-bold flex items-center gap-2 font-display">
+                    <BookOpen className="w-5 h-5 text-emerald-600" /> Auto Scaling Groups (ASG) Notes &amp; Mental Models
+                  </h2>
+                  <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                    Simplified, beginner-friendly fleet auto-scaling concepts sorted from basic capacity boundaries to predictive AI scaling, lifecycle hooks, and multi-AZ zonal balancing with everyday real-world analogies.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <span className="acad-hero-badge" style={{ background: '#dcfce7', borderColor: '#86efac', color: '#15803d' }}>🎓 Beginner to Pro</span>
+                  <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Real-World Mental Models</span>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Sidebar Category Explorer */}
               <div className="lg:col-span-3 space-y-4 text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>ASG Directory Tree:</span>
+                <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
                 
                 <div className="acad-dir-container">
                   <div className="acad-dir-header">
                     <BookOpen className="w-4 h-4 text-emerald-600" />
-                    <span>Module Explorer</span>
+                    <span>Curriculum Modules</span>
                   </div>
 
-                  {/* CATEGORY 1: ASG FUNDAMENTALS */}
+                  {/* LEVEL 1: ASG FUNDAMENTALS */}
                   <div>
                     <button 
                       onClick={() => setExpandedCategory(expandedCategory === 'asg_fundamentals' ? '' : 'asg_fundamentals')}
                       className="acad-dir-folder-btn"
                     >
                       <span className="flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-emerald-500" />
-                        1. ASG Fundamentals
+                        <Sliders className="w-3.5 h-3.5 text-emerald-500" />
+                        🐣 Level 1 · Fundamentals
                       </span>
                       {expandedCategory === 'asg_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 'asg_fundamentals' && (
                       <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
                         <button 
+                          onClick={() => setSelectedNote('asg_what_is')}
+                          className={`acad-dir-item-btn ${selectedNote === 'asg_what_is' ? 'acad-active' : ''}`}
+                        >
+                          1.1 What is an ASG? (Restaurant Staff)
+                        </button>
+                        <button 
                           onClick={() => setSelectedNote('launch_templates')}
                           className={`acad-dir-item-btn ${selectedNote === 'launch_templates' ? 'acad-active' : ''}`}
                         >
-                          Launch Templates
+                          1.2 Launch Templates (Master Recipe)
                         </button>
                         <button 
                           onClick={() => setSelectedNote('capacity_boundaries')}
                           className={`acad-dir-item-btn ${selectedNote === 'capacity_boundaries' ? 'acad-active' : ''}`}
                         >
-                          Capacity Boundaries
+                          1.3 Capacity Boundaries: Min/Des/Max
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* CATEGORY 2: SCALING POLICIES */}
+                  {/* LEVEL 2: SCALING POLICIES */}
                   <div>
                     <button 
                       onClick={() => setExpandedCategory(expandedCategory === 'scaling_policies' ? '' : 'scaling_policies')}
@@ -2292,7 +2367,7 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                     >
                       <span className="flex items-center gap-1.5">
                         <Activity className="w-3.5 h-3.5 text-indigo-500" />
-                        2. Scaling Policies
+                        📈 Level 2 · Scaling Policies
                       </span>
                       {expandedCategory === 'scaling_policies' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
@@ -2302,25 +2377,25 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                           onClick={() => setSelectedNote('target_tracking')}
                           className={`acad-dir-item-btn ${selectedNote === 'target_tracking' ? 'acad-active' : ''}`}
                         >
-                          Target Tracking Math
+                          2.1 Target Tracking (Thermostat)
                         </button>
                         <button 
                           onClick={() => setSelectedNote('step_vs_simple')}
                           className={`acad-dir-item-btn ${selectedNote === 'step_vs_simple' ? 'acad-active' : ''}`}
                         >
-                          Step vs Simple Scaling
+                          2.2 Step vs Simple (Reaction Gears)
                         </button>
                         <button 
                           onClick={() => setSelectedNote('scheduled_scaling')}
                           className={`acad-dir-item-btn ${selectedNote === 'scheduled_scaling' ? 'acad-active' : ''}`}
                         >
-                          Scheduled Chron Scaling
+                          2.3 Scheduled &amp; Predictive AI
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* CATEGORY 3: HEALTH & LIFECYCLE */}
+                  {/* LEVEL 3: HEALTH & LIFECYCLE */}
                   <div>
                     <button 
                       onClick={() => setExpandedCategory(expandedCategory === 'health_lifecycle' ? '' : 'health_lifecycle')}
@@ -2328,7 +2403,7 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                     >
                       <span className="flex items-center gap-1.5">
                         <Shield className="w-3.5 h-3.5 text-red-500" />
-                        3. Health &amp; Lifecycles
+                        🛡️ Level 3 · Health &amp; Hooks
                       </span>
                       {expandedCategory === 'health_lifecycle' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
@@ -2338,25 +2413,25 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                           onClick={() => setSelectedNote('ec2_vs_elb_checks')}
                           className={`acad-dir-item-btn ${selectedNote === 'ec2_vs_elb_checks' ? 'acad-active' : ''}`}
                         >
-                          EC2 vs ELB Health Checks
+                          3.1 EC2 vs ELB Health Checks
                         </button>
                         <button 
                           onClick={() => setSelectedNote('lifecycle_hooks')}
                           className={`acad-dir-item-btn ${selectedNote === 'lifecycle_hooks' ? 'acad-active' : ''}`}
                         >
-                          Lifecycle Hook Hooks
+                          3.2 Lifecycle Hooks (Hotel Check-In)
                         </button>
                         <button 
                           onClick={() => setSelectedNote('cooldowns_warmups')}
                           className={`acad-dir-item-btn ${selectedNote === 'cooldowns_warmups' ? 'acad-active' : ''}`}
                         >
-                          Cooldowns &amp; Warmups
+                          3.3 Cooldowns &amp; Warmup Timers
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* CATEGORY 4: ZONAL ARCHITECTURE */}
+                  {/* LEVEL 4: ZONAL ARCHITECTURE */}
                   <div>
                     <button 
                       onClick={() => setExpandedCategory(expandedCategory === 'zonal_arch' ? '' : 'zonal_arch')}
@@ -2364,7 +2439,7 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                     >
                       <span className="flex items-center gap-1.5">
                         <Network className="w-3.5 h-3.5 text-teal-500" />
-                        4. Zonal Architecture
+                        🏗️ Level 4 · Zonal Architecture
                       </span>
                       {expandedCategory === 'zonal_arch' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
@@ -2374,13 +2449,13 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                           onClick={() => setSelectedNote('zonal_rebalancing')}
                           className={`acad-dir-item-btn ${selectedNote === 'zonal_rebalancing' ? 'acad-active' : ''}`}
                         >
-                          Zonal Rebalancing
+                          4.1 Multi-AZ Balancing &amp; Termination
                         </button>
                         <button 
                           onClick={() => setSelectedNote('lb_colocation')}
                           className={`acad-dir-item-btn ${selectedNote === 'lb_colocation' ? 'acad-active' : ''}`}
                         >
-                          ALB/NLB Registration
+                          4.2 Load Balancer Attachment
                         </button>
                       </div>
                     )}
@@ -2389,82 +2464,162 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
 
                 <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
                   <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
-                    <Info className="w-3.5 h-3.5 text-emerald-600" /> Academy Advice
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
                   </span>
-                  "Choose any auto scaling topic in the directory tree above to reveal architectural designs, interactive mathematical playbooks, and production configuration codes."
+                  Click any topic to reveal beginner-friendly mental models, real-world analogies, interactive widgets, and instant simulator links!
                 </div>
               </div>
 
               {/* Right Active Note Workspace */}
               <div className="lg:col-span-9 space-y-6 text-left">
 
-                {/* NOTE 1: LAUNCH TEMPLATES */}
-                {selectedNote === 'launch_templates' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
+                {/* NOTE 1.1: WHAT IS AN ASG */}
+                {selectedNote === 'asg_what_is' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
-                        <span className="acad-hero-badge">Fleet blueprint</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Launch Templates vs Launch Configurations</h3>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                        <h3 className="text-xl font-black mt-2 font-display">1.1 What is an Auto Scaling Group? (The Elastic Fleet)</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={() => setActiveSection('concept')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                         >
-                          <Activity className="w-3.5 h-3.5" /> Go to Simulator
+                          <Zap className="w-3.5 h-3.5" /> Open Concept Tab
                         </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 1 of 10</span>
                       </div>
                     </div>
 
-                    <p className="asg-note-desc">
-                      Before an Auto Scaling Group can provision a single EC2 instance, it needs a blueprint that specifies the configuration. Historically, AWS used <strong>Launch Configurations</strong>, but has replaced them with the modern, feature-rich <strong>Launch Templates</strong>.
-                    </p>
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> An Auto Scaling Group (ASG) is an <strong>automated manager for a collection of EC2 servers</strong>. When traffic surges, it launches new servers in minutes; when traffic dies down, it terminates unnecessary servers to save you money; and if any server crashes, it replaces it automatically!
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Elastic Restaurant Kitchen Staff
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        Imagine running a popular pizza restaurant. On Monday afternoon when only 5 customers walk in, you only need 2 chefs working. On Friday night at 8:00 PM when 200 hungry diners flood the dining room, the manager immediately calls in 4 backup chefs. At 11:30 PM when the crowd leaves, the backup chefs punch out and go home so you don&apos;t waste money paying salaries to empty chairs!
+                      </p>
+                    </div>
+
+                    <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>The 3 Core Superpowers of ASG</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+                      <div className="acad-flow-step">
+                        <Shield style={{ width: '20px', height: '20px', color: 'var(--color-green)', flexShrink: 0 }} />
+                        <div>
+                          <strong style={{ color: 'var(--color-text-primary)' }}>1. Auto-Healing</strong>
+                          <span style={{ fontSize: '10.5px' }}>If an EC2 server suffers a hardware fault or crash, ASG replaces it with a fresh node automatically.</span>
+                        </div>
+                      </div>
+                      <div className="acad-flow-step">
+                        <Activity style={{ width: '20px', height: '20px', color: 'var(--color-blue)', flexShrink: 0 }} />
+                        <div>
+                          <strong style={{ color: 'var(--color-text-primary)' }}>2. Cost Optimization</strong>
+                          <span style={{ fontSize: '10.5px' }}>Never pay for idle servers at 3:00 AM—scale down to minimum capacity during quiet periods.</span>
+                        </div>
+                      </div>
+                      <div className="acad-flow-step">
+                        <Network style={{ width: '20px', height: '20px', color: 'var(--color-purple)', flexShrink: 0 }} />
+                        <div>
+                          <strong style={{ color: 'var(--color-text-primary)' }}>3. Multi-AZ High Availability</strong>
+                          <span style={{ fontSize: '10.5px' }}>Spreads instances equally across multiple data centers so a building blackout never causes downtime.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Gotcha Warning */}
+                    <div className="acad-gotcha-box">
+                      <strong>⚠️ Common Beginner Trap: Setting Min Capacity to 0</strong>
+                      <p style={{ margin: '4px 0 0' }}>
+                        If you set <code>Min = 0</code> and traffic drops, your ASG will terminate <strong>every single server</strong> in your fleet. The next visitor will experience a &ldquo;cold start&rdquo; failure or 502 Bad Gateway until a new server boots up 2 to 3 minutes later! Always keep <code>Min &gt;= 2</code> in production for zero-downtime reliability.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                      <button 
+                        onClick={() => setActiveSection('concept')}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Open Concept Simulator Tab
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 1.2: LAUNCH TEMPLATES */}
+                {selectedNote === 'launch_templates' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                        <h3 className="text-xl font-black mt-2 font-display">1.2 Launch Templates &amp; Fleet Blueprints</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('arch')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Architecture Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> A <strong>Launch Template</strong> is the &ldquo;cookie-cutter master blueprint&rdquo; for your Auto Scaling Group. Whenever the ASG needs to build a new server, it reads the template to know which Operating System (AMI), CPU size (e.g. `t3.micro`), security firewall, and startup scripts (`User Data`) to use.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Standardized Burger Recipe Card
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        When a fast-food franchise hires a new chef, the manager doesn&apos;t spend 2 hours explaining how much ketchup to put on the burger. They hand the chef <strong>Recipe Card Version 2</strong>. If the franchise introduces a new spicy sauce, they release <strong>Recipe Card Version 3</strong>. Old burgers keep their recipe, all new burgers follow v3, and if customers hate the sauce, they can rollback to v2 with one click!
+                      </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Why Launch Templates Win:</span>
+                      <div className="space-y-4 text-xs">
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Why Launch Templates Beat Legacy Launch Configurations:</span>
                         
-                        <div className="space-y-2 font-mono text-[11px]">
-                          <div className="flex justify-between border-b pb-1.5" style={{ borderColor: 'var(--color-border-tertiary)' }}>
-                            <span>Versioning Support</span>
-                            <span className="text-green font-bold">Yes (Configurations: Immutable)</span>
-                          </div>
-                          <div className="flex justify-between border-b pb-1.5" style={{ borderColor: 'var(--color-border-tertiary)' }}>
-                            <span>Purchase Options</span>
-                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Mix Spot &amp; On-Demand in 1 ASG</span>
-                          </div>
-                          <div className="flex justify-between border-b pb-1.5" style={{ borderColor: 'var(--color-border-tertiary)' }}>
-                            <span>Parameter Inheritance</span>
-                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Extend baseline template settings</span>
-                          </div>
-                          <div className="flex justify-between pb-1.5">
-                            <span>Dynamic Updates</span>
-                            <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Roll updates using template version tags</span>
-                          </div>
-                        </div>
+                        <ul className="list-disc pl-4 space-y-2" style={{ color: 'var(--color-text-secondary)' }}>
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Versioning Support ($Default, $Latest):</strong> Maintain version history (v1, v2, v3) with instant rollbacks.
+                          </li>
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Spot &amp; On-Demand Mixing:</strong> Combine 70% cheaper Spot instances with reliable On-Demand instances in a single ASG!
+                          </li>
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>T2/T3 Unlimited CPU Credits:</strong> Toggle credit specifications and advanced network settings dynamically.
+                          </li>
+                        </ul>
 
                         <div className="acad-takeaway-box">
-                          <strong>💡 Professional Takeaway:</strong> Never hard-code your launch configurations. Modern CI/CD templates use versions of a launch template (e.g. <code>$Latest</code> or <code>$Default</code>). When updating your application code or patching AMI operating systems, simply deploy a new template version, and trigger an ASG Instance Refresh to roll it out safely!
+                          <strong>💡 Professional Practice:</strong> Configure your ASG to use <code>version = "$Latest"</code> or a pinned tested version (e.g. <code>version = 3</code>) to prevent accidental deployments during scale-out events.
                         </div>
                       </div>
 
-                      {/* Visual HCL Code block */}
+                      {/* Code Block */}
                       <div className="flex flex-col justify-between">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Deployment Template Snippet</span>
+                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Terraform Launch Template Snippet</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(terraformSnippet);
-                              setCopiedNoteId('lt-terraform');
+                              setCopiedNoteId('tf-asg');
                               setTimeout(() => setCopiedNoteId(null), 2000);
                             }}
-                            className="asg-copy-btn"
+                            className="asg-btn p-1 flex items-center gap-1 text-[10px]"
                           >
-                            {copiedNoteId === 'lt-terraform' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copiedNoteId === 'tf-asg' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
                         </div>
-                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-52">
                           {terraformSnippet}
                         </pre>
                       </div>
@@ -2472,656 +2627,722 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                   </div>
                 )}
 
-                {/* NOTE 2: CAPACITY BOUNDARIES */}
+                {/* NOTE 1.3: CAPACITY BOUNDARIES */}
                 {selectedNote === 'capacity_boundaries' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
-                        <span className="acad-hero-badge">Fleet Limits</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>ASG Capacity Boundaries Clamp</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveSection('concept')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Activity className="w-3.5 h-3.5" /> Go to Simulator
-                        </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 2 of 10</span>
-                      </div>
-                    </div>
-
-                    <p className="asg-note-desc">
-                      An Auto Scaling Group maintains a target size by scaling to its **Desired Capacity**. However, the ASG engine enforces strict boundary constraints. Desired capacity is mathematically clamped between the **Minimum** and **Maximum** sizes.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      
-                      {/* Interactive Boundary Clamp Widget */}
-                      <div className="asg-note-widget flex flex-col justify-between space-y-4">
-                        <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider font-mono block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Boundary Clamping Simulator</span>
-                          
-                          <div className="grid grid-cols-2 gap-2.5 text-xs mb-3">
-                            <div>
-                              <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Min Capacity</label>
-                              <input 
-                                type="number" 
-                                value={nbMinCap} 
-                                onChange={(e) => setNbMinCap(Math.max(0, parseInt(e.target.value) || 0))}
-                                className="asg-note-input w-full p-1 font-mono"
-                              />
-                            </div>
-                            <div>
-                              <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Max Capacity</label>
-                              <input 
-                                type="number" 
-                                value={nbMaxCap} 
-                                onChange={(e) => setNbMaxCap(Math.max(nbMinCap, parseInt(e.target.value) || 0))}
-                                className="asg-note-input w-full p-1 font-mono"
-                              />
-                            </div>
-                            <div className="col-span-2">
-                              <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Target Scaling Request</label>
-                              <input 
-                                type="range" 
-                                min="0" 
-                                max="15" 
-                                value={nbTargetScaleRequest} 
-                                onChange={(e) => setNbTargetScaleRequest(parseInt(e.target.value))}
-                                className="asg-note-range accent-emerald-600 w-full"
-                              />
-                              <div className="flex justify-between text-[9.5px] mt-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>
-                                <span>Requested: {nbTargetScaleRequest} nodes</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Clamping Mathematics output */}
-                          {(() => {
-                            const clampResult = Math.max(nbMinCap, Math.min(nbMaxCap, nbTargetScaleRequest));
-                            let clampReason = "Allowed (Within bounds)";
-                            let clampBadgeStyle = "asg-math-allowed";
-                            if (nbTargetScaleRequest < nbMinCap) {
-                              clampReason = "Clamped to Min (Cannot scale lower)";
-                              clampBadgeStyle = "asg-math-warning";
-                            } else if (nbTargetScaleRequest > nbMaxCap) {
-                              clampReason = "Clamped to Max (Ceiling budget cap)";
-                              clampBadgeStyle = "asg-math-danger";
-                            }
-                            return (
-                              <div className={`asg-note-math-box ${clampBadgeStyle} space-y-1.5`}>
-                                <p className="font-bold flex justify-between">
-                                  <span>Math: max({nbMinCap}, min({nbMaxCap}, {nbTargetScaleRequest}))</span>
-                                  <span>&rarr; Desired: {clampResult}</span>
-                                </p>
-                                <p className="text-[10px] opacity-90 font-sans italic">Status: {clampReason}</p>
-                              </div>
-                            );
-                          })()}
-                        </div>
-
-                        <div className="text-[10px] italic font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>
-                          * Adjust inputs to watch the Desired capacity clamp automatically.
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Boundary Mechanics &amp; Playbook:</h4>
-                        <ul className="list-disc pl-4 space-y-1.5">
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Minimum:</strong> Acts as your high-availability base baseline. The ASG will launch replacement nodes if hardware fails, but scaling alarms will never shrink the group below this boundary.
-                          </li>
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Maximum:</strong> Serves as a financial protection budget check. If your site suffers an active DDoS attack or process lock infinite loop, the max limit blocks the fleet from over-billing you.
-                          </li>
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Desired:</strong> The scaling policy engine's output. Any scaling alarm modifies this property directly, which triggers a scaling action to reconcile the differences.
-                          </li>
-                        </ul>
-                      </div>
-
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTE 3: TARGET TRACKING MATH */}
-                {selectedNote === 'target_tracking' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
-                      <div>
-                        <span className="acad-hero-badge">Dynamic scaling math</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Target Tracking Scaling Mathematics</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveSection('policies')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Activity className="w-3.5 h-3.5" /> Go to Policies
-                        </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 3 of 10</span>
-                      </div>
-                    </div>
-
-                    <p className="asg-note-desc">
-                      Target Tracking is the most common scaling policy type. It acts like a home thermostat: you define a target metric value (e.g. 50% average CPU), and the ASG engine increases or decreases Desired capacity dynamically to keep the metric near that target.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs animate-fadeIn" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>The Scaling Arithmetic:</span>
-                        <p className="leading-relaxed">
-                          The Auto Scaling engine calculates the target group size using the following ratio formula:
-                        </p>
-                        <div className="asg-formula-box">
-                          New Capacity = Current Capacity &times; (Current Metric / Target Metric)
-                        </div>
-                        <p className="leading-relaxed">
-                          Because the results are rounded up to the nearest whole integer, even a minor deviation above the target metric will trigger a scale-out action.
-                        </p>
-
-                        <div className="acad-takeaway-box">
-                          <strong>⚠️ Warning:</strong> Under Target Tracking, scale-in is more conservative than scale-out. Scale-in actions evaluate longer time periods (typically 15 minutes of cool stable metrics) before removing instances to prevent thrashing.
-                        </div>
-                      </div>
-
-                      {/* Interactive Calculator */}
-                      <div className="asg-note-widget flex flex-col justify-between space-y-3 font-mono text-xs">
-                        <span className="text-[10px] font-black uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Target Tracking calculator</span>
-                        
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center" style={{ color: 'var(--color-text-secondary)' }}>
-                            <span>Current Fleet Capacity</span>
-                            <span className="font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>4 Nodes</span>
-                          </div>
-                          
-                          <div>
-                            <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Current average CPU utilization: {nbCurrentCpu}%</label>
-                            <input 
-                              type="range" 
-                              min="10" 
-                              max="100" 
-                              value={nbCurrentCpu} 
-                              onChange={(e) => setNbCurrentCpu(parseInt(e.target.value))}
-                              className="asg-note-range accent-indigo-600 w-full"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block mb-1" style={{ color: 'var(--color-text-secondary)' }}>Target CPU Threshold: {nbTargetCpu}%</label>
-                            <input 
-                              type="range" 
-                              min="30" 
-                              max="80" 
-                              value={nbTargetCpu} 
-                              onChange={(e) => setNbTargetCpu(parseInt(e.target.value))}
-                              className="asg-note-range accent-indigo-600 w-full"
-                            />
-                          </div>
-                        </div>
-
-                        {(() => {
-                          const currentFleetSize = 4;
-                          const rawResult = currentFleetSize * (nbCurrentCpu / nbTargetCpu);
-                          const resultRounded = Math.ceil(rawResult);
-                          const delta = resultRounded - currentFleetSize;
-                          const actionText = delta > 0 
-                            ? `📈 SCALE OUT: Add ${delta} node(s)` 
-                            : delta < 0 
-                              ? `📉 SCALE IN: Remove ${Math.abs(delta)} node(s)` 
-                              : "🟢 NO ACTION: Fleet size stable";
-                          const textStyle = delta > 0 
-                            ? "text-orange font-bold" 
-                            : delta < 0 
-                              ? "text-blue font-bold" 
-                              : "text-green font-bold";
-                          
-                          return (
-                            <div className="border p-3 rounded-lg text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)', color: 'var(--color-text-secondary)' }}>
-                              <p>Raw Ratio: 4 &times; ({nbCurrentCpu} / {nbTargetCpu}) = <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{rawResult.toFixed(2)}</span></p>
-                              <p>Rounded Up Fleet Size: <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{resultRounded} Nodes</span></p>
-                              <p className={`mt-1 border-t pt-1.5 ${textStyle}`} style={{ borderColor: 'var(--color-border-tertiary)' }}>{actionText}</p>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTE 4: STEP VS SIMPLE SCALING */}
-                {selectedNote === 'step_vs_simple' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
-                      <div>
-                        <span className="acad-hero-badge">Policy Comparison</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Step Scaling vs Simple Scaling</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveSection('policies')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Activity className="w-3.5 h-3.5" /> Go to Policies
-                        </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 4 of 10</span>
-                      </div>
-                    </div>
-
-                    <p className="asg-note-desc">
-                      While Target Tracking handles standard capacity scaling automatically, custom alerting architectures often require **Step Scaling** or **Simple Scaling** policies triggered by CloudWatch alarms.
-                    </p>
-
-                    <table className="acad-table">
-                      <thead>
-                        <tr>
-                          <th>Capability</th>
-                          <th>Simple Scaling (Legacy)</th>
-                          <th>Step Scaling (Recommended)</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Scaling Adjustment</td>
-                          <td>Applies a single fixed node change (e.g. +1 node) when alarm triggers.</td>
-                          <td>Applies adjustments based on the **size of the alarm breach** (e.g. +1 node at 60%, +3 nodes at 85%).</td>
-                        </tr>
-                        <tr>
-                          <td className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Cooldown Periods</td>
-                          <td>Locks the entire ASG during cooldown. Alarms triggered during cooldown are ignored.</td>
-                          <td>Allows step scaling evaluations while warm-ups are in progress, dynamically adding more nodes.</td>
-                        </tr>
-                        <tr>
-                          <td className="font-bold" style={{ color: 'var(--color-text-primary)' }}>DDoS Response</td>
-                          <td>Slow response. Adds nodes one-by-one, lagging behind major traffic surges.</td>
-                          <td>Fast response. Instantly jumps to the highest tier adjustment to absorb high surges.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    <div className="acad-takeaway-box">
-                      <strong>💡 Recommended Design:</strong> Prefer **Target Tracking** for standard application workloads (CPU, Request count per target). Use **Step Scaling** when scaling based on custom complex metrics, such as Amazon SQS queue backlogs (e.g. scale out by +1 instance for every 10,000 backlog messages).
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTE 5: SCHEDULED SCALING */}
-                {selectedNote === 'scheduled_scaling' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
-                      <div>
-                        <span className="acad-hero-badge">Predictable loads</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Scheduled Chron-Driven Scaling</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveSection('policies')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Activity className="w-3.5 h-3.5" /> Go to Policies
-                        </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 5 of 10</span>
-                      </div>
-                    </div>
-
-                    <p className="asg-note-desc">
-                      Dynamic scaling takes time: instances must launch, boot, and pass health checks. If your traffic patterns are highly predictable (e.g. a retail business peaking at 9 AM, or a school testing application), you can pre-emptively scale the fleet using **Scheduled Actions** based on Unix cron expressions.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Production Cron Scaling Configuration:</span>
-                        
-                        <div className="space-y-3 font-mono text-[10.5px]">
-                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
-                            <span className="text-green font-bold">Morning Scale-Out (08:30 AM):</span>
-                            <p className="mt-1" style={{ color: 'var(--color-text-primary)' }}>Recurrence: <code style={{ background: 'var(--color-background-tertiary)', color: 'var(--color-text-primary)' }} className="px-1 py-0.5 rounded">30 8 * * 1-5</code> (Mon-Fri)</p>
-                            <p style={{ color: 'var(--color-text-secondary)' }}>Desired: 8 Nodes, Min: 8, Max: 15</p>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
-                            <span className="text-blue font-bold">Evening Scale-In (06:00 PM):</span>
-                            <p className="mt-1" style={{ color: 'var(--color-text-primary)' }}>Recurrence: <code style={{ background: 'var(--color-background-tertiary)', color: 'var(--color-text-primary)' }} className="px-1 py-0.5 rounded">0 18 * * 1-5</code> (Mon-Fri)</p>
-                            <p style={{ color: 'var(--color-text-secondary)' }}>Desired: 2 Nodes, Min: 2, Max: 15</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The Advantages of Scheduled Scaling:</h4>
-                        <p className="leading-relaxed">
-                          By scaling out 30 minutes <em>before</em> the daily workload peak starts, you guarantee that all servers are warm and ready, preventing latency spikes for your initial morning users.
-                        </p>
-                        
-                        <div className="acad-takeaway-box">
-                          <strong>💡 Hybrid Strategy:</strong> You can combine scheduled actions with dynamic scaling. Let a scheduled action scale out to 8 instances at 8:30 AM, and let Target Tracking scale the fleet even higher if CPU spikes during mid-day flash sales!
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTE 6: EC2 VS ELB HEALTH CHECKS */}
-                {selectedNote === 'ec2_vs_elb_checks' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
-                      <div>
-                        <span className="acad-hero-badge">Fleet diagnostics</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>EC2 vs ELB Active Target Group Health Checks</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveSection('health')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Activity className="w-3.5 h-3.5" /> Go to Health &amp; Lifecycles
-                        </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 6 of 10</span>
-                      </div>
-                    </div>
-
-                    <p className="asg-note-desc">
-                      By default, an Auto Scaling Group only monitors basic EC2 status checks. This means that if your underlying hardware is fine but your application process crashes, the ASG will report the instance as healthy, keeping it in rotation. To prevent this, you should enable **ELB Health Checks**.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The Health Diagnostics Breakdown:</h4>
-                        <ul className="list-disc pl-4 space-y-2">
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>EC2 Status Checks:</strong> Monitors hypervisor virtualization, memory allocation, and OS hardware level errors. Ignore application-level code crashes.
-                          </li>
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>ELB Health Checks:</strong> The ALB actively pings a target path (e.g. <code>HTTP /healthz</code>). If the application server returns a non-200 status code (e.g., 502 Bad Gateway), the ALB alerts the ASG to replace the node.
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="asg-note-widget flex flex-col justify-between font-mono text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="text-[10px] font-black uppercase tracking-wider block mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Self-Healing Diagnostics Flow</span>
-                        
-                        <div className="space-y-2.5">
-                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
-                            <span style={{ color: 'var(--color-text-primary)' }}>App crash (502 return)</span>
-                            <span className="text-red-500 font-bold">&bull; ALB marks Fail</span>
-                          </div>
-                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
-                            <span style={{ color: 'var(--color-text-primary)' }}>Evict target group</span>
-                            <span className="text-orange font-bold">&bull; Route bypass</span>
-                          </div>
-                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
-                            <span style={{ color: 'var(--color-text-primary)' }}>Reconcile Desired size</span>
-                            <span className="text-blue font-bold">&bull; Provision i-new</span>
-                          </div>
-                        </div>
-
-                        <div className="text-[9.5px] mt-3 leading-normal" style={{ color: 'var(--color-text-tertiary)' }}>
-                          * Always set the health check grace period to allow your application to boot fully before health checks begin.
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTE 7: LIFECYCLE HOOKS */}
-                {selectedNote === 'lifecycle_hooks' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
-                      <div>
-                        <span className="acad-hero-badge">Instance Transition Hooks</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Lifecycle Hooks &amp; State Interrupts</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveSection('health')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Activity className="w-3.5 h-3.5" /> Go to Health &amp; Lifecycles
-                        </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 7 of 10</span>
-                      </div>
-                    </div>
-
-                    <p className="asg-note-desc">
-                      By default, instances transition straight from creation to in-service. With **Lifecycle Hooks**, the ASG pauses instances at the state boundaries (<code>Pending:Wait</code> or <code>Terminating:Wait</code>) for up to 1 hour, letting you run orchestration scripts before instances accept traffic or get terminated.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Common Hook Use Cases:</span>
-                        
-                        <ol className="list-decimal pl-4 space-y-2">
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Pending Launch:</strong> Wait for Lambda / EventBridge to precache dynamic assets, download system keys, or run database migrations before the node joins the ALB target group.
-                          </li>
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Terminating Terminate:</strong> Pause node destruction to upload logs to S3, finalize transaction state buffers, or back up local states.
-                          </li>
-                        </ol>
-
-                        <div className="acad-takeaway-box">
-                          <strong>💡 Timeout Actions:</strong> If your hook orchestration script fails to return a <code>CONTINUE</code> signal within the timeout window, the ASG will enforce the default fallback action: either <code>CONTINUE</code> (putting the node in rotation anyway) or <code>ABANDON</code> (destroying and replacing the node).
-                        </div>
-                      </div>
-
-                      {/* Lambda Hook code block */}
-                      <div className="flex flex-col justify-between">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Python Lambda Hook Completer</span>
-                          <button 
-                            onClick={() => {
-                              navigator.clipboard.writeText(lifecycleSnippet);
-                              setCopiedNoteId('lh-lambda');
-                              setTimeout(() => setCopiedNoteId(null), 2000);
-                            }}
-                            className="asg-copy-btn"
-                          >
-                            {copiedNoteId === 'lh-lambda' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-64">
-                          {lifecycleSnippet}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* NOTE 8: COOLDOWNS & WARMUPS */}
-                {selectedNote === 'cooldowns_warmups' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
-                      <div>
-                        <span className="acad-hero-badge">Fleet stabilization</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Cooldown Periods vs Instance Warmup</h3>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                        <h3 className="text-xl font-black mt-2 font-display">1.3 Capacity Boundaries: Min, Desired, Max</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={() => setActiveSection('sim')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                         >
-                          <Activity className="w-3.5 h-3.5" /> Go to Fleet Simulator
+                          <Activity className="w-3.5 h-3.5" /> Go to Simulator
                         </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 8 of 10</span>
                       </div>
                     </div>
 
-                    <p className="asg-note-desc">
-                      To prevent an Auto Scaling Group from scaling too quickly (e.g., launching new instances before the previously launched ones have finished booting), AWS uses **Cooldown Periods** and **Instance Warmup** parameters to stabilize the fleet size.
-                    </p>
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Auto Scaling groups operate inside 3 strict guardrails:
+                      <br />• <strong>Minimum Capacity:</strong> The absolute floor limit (never terminate below this, even with zero visitors).
+                      <br />• <strong>Desired Capacity:</strong> The target number of servers you want running right now.
+                      <br />• <strong>Maximum Capacity:</strong> The emergency ceiling limit (prevents scaling runaway from running up huge credit card bills).
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Community Pool Lifeguards &amp; Elevator Limits
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        The city pool has a strict safety law: <strong>Min = 2 Lifeguards</strong> must be on duty even if the pool is empty. Today, 4 lifeguards are actively watching the water (<strong>Desired = 4</strong>). If 500 kids arrive for a summer party, the pool can call in up to <strong>Max = 10 Lifeguards</strong>, but never 50, because the pool deck only has 10 chairs!
+                      </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Fleet Stabilization Mechanics:</span>
+                      
+                      {/* Interactive Boundary Clamp HUD */}
+                      <div className="asg-card p-5 space-y-4 rounded-xl">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Boundary Clamp Calculator</span>
                         
-                        <ul className="list-disc pl-4 space-y-2">
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Scaling Cooldown (Default: 300s):</strong> The period after a scaling activity completes during which the ASG ignores other alarms. This ensures the fleet has time to process traffic and lower metric levels before another scale action runs.
-                          </li>
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Instance Warmup:</strong> Used in Target Tracking. Specifies how long it takes an instance to boot and begin sending metric data. Warmup metrics are excluded from target group averages to prevent metric distortion.
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="asg-note-widget flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest block mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Cooldown Loop Safeguard</span>
-                        
-                        <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono">
-                          <div className="asg-status-widget-orange p-2.5 rounded-lg">
-                            <p className="font-bold text-orange">📈 Scale Out</p>
-                            <span>Launch Instance</span>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <label className="block mb-1 font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Min Cap</label>
+                            <input 
+                              type="number" 
+                              value={nbMinCap} 
+                              onChange={(e) => setNbMinCap(Math.max(0, parseInt(e.target.value) || 0))}
+                              className="asg-number-input w-full font-mono font-bold"
+                            />
                           </div>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
-                          <div className="asg-status-widget-blue p-2.5 rounded-lg">
-                            <p className="font-bold text-blue">⏳ Cooldown</p>
-                            <span>Lock: 300s</span>
+                          <div>
+                            <label className="block mb-1 font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Max Cap</label>
+                            <input 
+                              type="number" 
+                              value={nbMaxCap} 
+                              onChange={(e) => setNbMaxCap(Math.max(nbMinCap, parseInt(e.target.value) || nbMinCap))}
+                              className="asg-number-input w-full font-mono font-bold"
+                            />
                           </div>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
-                          <div className="asg-status-widget-green p-2.5 rounded-lg">
-                            <p className="font-bold text-green">🛡️ Safe Evaluation</p>
-                            <span>Release locks</span>
+                          <div>
+                            <label className="block mb-1 font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Scale Trigger</label>
+                            <input 
+                              type="number" 
+                              value={nbTargetScaleRequest} 
+                              onChange={(e) => setNbTargetScaleRequest(parseInt(e.target.value) || 0)}
+                              className="asg-number-input w-full font-mono font-bold"
+                            />
                           </div>
                         </div>
 
-                        <p className="text-[10px] mt-4 leading-normal max-w-xs mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
-                          Cooldown guards block rapid scaling actions, protecting you from over-provisioning servers due to lag in boot processes.
+                        {/* Clamped Outcome Result */}
+                        <div className="p-3 rounded-lg font-mono text-[11px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                          <p>Requested Scale Target: <span className="font-bold">{nbTargetScaleRequest} instances</span></p>
+                          <p>Allowed Range: <span className="text-blue font-bold">[{nbMinCap}, {nbMaxCap}]</span></p>
+                          <p>Final Clamped Capacity: <span className="text-green font-bold font-semibold">
+                            {Math.max(nbMinCap, Math.min(nbMaxCap, nbTargetScaleRequest))} instances
+                          </span></p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs">
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>The Invariant Mathematical Rule:</span>
+                        <div className="asg-formula-box">
+                          Min Capacity &lt;= Desired Capacity &lt;= Max Capacity
+                        </div>
+                        <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                          If a CloudWatch alarm triggers a scale-out to 15 servers, but your Max is set to 8, the ASG will clamp the fleet at 8 servers to preserve your budget and notify you of the ceiling breach.
                         </p>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2.1: TARGET TRACKING SCALING */}
+                {selectedNote === 'target_tracking' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">📈 Level 2 · Scaling Policies</span>
+                        <h3 className="text-xl font-black mt-2 font-display">2.1 Target Tracking Policies (The Home Thermostat)</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Target Tracking is the easiest and most recommended scaling policy in AWS. You pick a single goal metric—like &ldquo;keep average fleet CPU at 50%&rdquo;—and AWS automatically calculates how many servers to add or remove to stay right at 50%.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Living Room Thermostat / Cruise Control
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        When you set your car&apos;s cruise control to 65 MPH (50% CPU), you don&apos;t manually adjust the fuel injection valve when going uphill. The car presses the gas pedal harder on hills (adds servers) and lets off the gas when going downhill (removes servers) to keep you cruising at exactly 65 MPH!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Interactive Target Tracking Tool */}
+                      <div className="asg-card p-5 space-y-4 rounded-xl">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Target Tracking Math Simulator</span>
+                        
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div>
+                            <label className="block mb-1 font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Current Average CPU (%)</label>
+                            <input 
+                              type="number" 
+                              value={nbCurrentCpu} 
+                              onChange={(e) => setNbCurrentCpu(Math.max(1, parseInt(e.target.value) || 1))}
+                              className="asg-number-input w-full font-mono font-bold"
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-1 font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Target CPU Goal (%)</label>
+                            <input 
+                              type="number" 
+                              value={nbTargetCpu} 
+                              onChange={(e) => setNbTargetCpu(Math.max(1, parseInt(e.target.value) || 1))}
+                              className="asg-number-input w-full font-mono font-bold"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Calculated Target Instances Output */}
+                        <div className="p-3 rounded-lg font-mono text-[11px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                          <p>Baseline Capacity: <span className="font-bold">4 instances</span></p>
+                          <p>Scaling Ratio: <span className="text-blue font-bold">{nbCurrentCpu}% / {nbTargetCpu}% = {(nbCurrentCpu / nbTargetCpu).toFixed(2)}x</span></p>
+                          <p>New Desired Fleet: <span className="text-green font-bold font-semibold">
+                            {Math.ceil(4 * (nbCurrentCpu / nbTargetCpu))} instances
+                          </span></p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 text-xs">
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>The 4 Predefined Target Metrics in AWS:</span>
+                        
+                        <ol className="list-decimal pl-4 space-y-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>ASGAverageCPUUtilization:</strong> Average CPU load across instances.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>ALBRequestCountPerTarget:</strong> Number of requests per server (e.g. 100 req/sec).</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>ASGAverageNetworkIn:</strong> Inbound bandwidth per instance (MB/sec).</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>ASGAverageNetworkOut:</strong> Outbound streaming bandwidth per instance.</li>
+                        </ol>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Pro Tip:</strong> For web apps behind an ALB, <code>ALBRequestCountPerTarget</code> is often more responsive than CPU, scaling up instantly before CPU spikes!
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2.2: STEP VS SIMPLE SCALING */}
+                {selectedNote === 'step_vs_simple' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">📈 Level 2 · Scaling Policies</span>
+                        <h3 className="text-xl font-black mt-2 font-display">2.2 Step Scaling vs Simple Scaling (Reaction Gears)</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Simple Scaling only adds a single fixed increment (like +1 server) and locks up during cooldowns. <strong>Step Scaling</strong> reacts proportionally: if CPU goes slightly high (+10%), it adds 1 server; if a massive traffic tsunami hits (+40%), it adds 5 servers in one shot!
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Fire Department Alarm Levels
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>Simple Scaling (1 truck only)</strong>: Whether there is a small kitchen trashcan fire or a 10-story inferno, the fire department sends 1 truck and waits 10 minutes before checking again.
+                        <br />• <strong>Step Scaling (Smart Tiers)</strong>: Small smoke (60% CPU) &rarr; send 1 truck. Major blaze (75% CPU) &rarr; send 3 trucks. 5-Alarm inferno (90%+ CPU) &rarr; immediately dispatch 8 trucks and ladder units simultaneously!
+                      </p>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Scaling Policy Type</th>
+                            <th>Reaction Agility</th>
+                            <th>Cooldown Lockout</th>
+                            <th>Best Used For</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong style={{ color: 'var(--color-text-primary)' }}>Simple Scaling</strong></td>
+                            <td>Fixed increment (e.g. +1 instance)</td>
+                            <td>Enforces strict 300s cooldown lock</td>
+                            <td>Legacy architectures or predictable background batches</td>
+                          </tr>
+                          <tr>
+                            <td><strong className="text-green">Step Scaling</strong></td>
+                            <td>Proportional multi-step tiers (+1, +3, +5)</td>
+                            <td>No cooldown lockout (supports warmup timers)</td>
+                            <td>Sudden spiky traffic, flash sales, breaking news</td>
+                          </tr>
+                          <tr>
+                            <td><strong className="text-blue">Target Tracking</strong></td>
+                            <td>Dynamic mathematical calculation</td>
+                            <td>Self-tuning feedback loop</td>
+                            <td><strong>90% of modern web applications &amp; APIs</strong></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2.3: SCHEDULED SCALING */}
+                {selectedNote === 'scheduled_scaling' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">📈 Level 2 · Scaling Policies</span>
+                        <h3 className="text-xl font-black mt-2 font-display">2.3 Scheduled &amp; Predictive Scaling (The Calendar Alarm)</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Don&apos;t wait for servers to melt before reacting! <strong>Scheduled Scaling</strong> scales your fleet based on known calendar dates and times (like 8:30 AM on weekdays or Black Friday midnight). <strong>Predictive Scaling</strong> uses AWS Machine Learning to forecast traffic patterns 48 hours in advance.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Pre-heating the Pizza Oven Before Super Bowl Kickoff
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        A pizza shop doesn&apos;t wait for 500 pizza orders to ring in at 6:00 PM kickoff before turning on the ovens (it takes 30 minutes for an oven to get hot!). Instead, the chef sets an alarm and pre-heats all 10 ovens at 4:30 PM so every oven is blazing hot and ready the second orders arrive!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs">
+                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Cron-Based Scheduled Scaling Examples:</span>
+                        
+                        <div className="space-y-2 font-mono text-[11px]" style={{ color: 'var(--color-text-secondary)' }}>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p className="font-bold text-green">Weekday Morning Scale-Up:</p>
+                            <p>Cron: <code>0 8 * * MON-FRI</code> &rarr; Desired=10 (Pre-warmed for 8:30 AM)</p>
+                          </div>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p className="font-bold text-orange">Nightly Cost-Saving Scale-Down:</p>
+                            <p>Cron: <code>0 20 * * MON-FRI</code> &rarr; Desired=2 (Save 80% on compute)</p>
+                          </div>
+                        </div>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Predictive AI Power:</strong> AWS Predictive Scaling analyzes past CloudWatch history and provisions instances 15 minutes before the daily peak so your app never experiences warm-up lag!
+                        </div>
+                      </div>
+
+                      <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Predictive Scaling 24-Hour Cycle</span>
+                        
+                        <div className="space-y-2 font-mono text-[10px] text-left">
+                          <div className="p-2 rounded flex justify-between items-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-orange font-bold">03:00 AM (Quiet)</span>
+                            <span className="text-green font-bold">2 Nodes ($0.04/hr)</span>
+                          </div>
+                          <div className="p-2 rounded flex justify-between items-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-blue font-bold">08:45 AM (AI Pre-Warm)</span>
+                            <span className="text-blue font-bold">8 Nodes (Ready)</span>
+                          </div>
+                          <div className="p-2 rounded flex justify-between items-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-green font-bold">01:00 PM (Lunch Peak)</span>
+                            <span className="text-green font-bold">12 Nodes (Handling 10k RPS)</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* NOTE 9: ZONAL REBALANCING */}
-                {selectedNote === 'zonal_rebalancing' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
+                {/* NOTE 3.1: EC2 VS ELB HEALTH CHECKS */}
+                {selectedNote === 'ec2_vs_elb_checks' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
-                        <span className="acad-hero-badge">zonal distribution</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>Zonal Rebalancing Mechanics</h3>
+                        <span className="acad-hero-badge">🛡️ Level 3 · Health &amp; Hooks</span>
+                        <h3 className="text-xl font-black mt-2 font-display">3.1 EC2 vs ELB Health Checks</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('health')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Shield className="w-3.5 h-3.5" /> Go to Health Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> By default, ASG only uses <strong>EC2 Health Checks</strong>, which only check if the hardware has power. If your web app crashes and returns 500 error pages, EC2 checks still say &ldquo;Healthy&rdquo;! You must enable <strong>ELB Health Checks</strong> so ASG replaces any server whose web app actually crashes.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Checking if a Bus Driver is Breathing vs Checking if they can Drive
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>EC2 Health Check (Physical Vitals)</strong>: Is the driver breathing? (Yes, the CPU motherboard has electricity).
+                        <br />• <strong>ELB Health Check (Job Performance)</strong>: Can the driver actually steer the bus? If the driver has fainted at the wheel (Web App 500 Error), they are unfit for duty! Enabling ELB health checks immediately replaces the driver with a fresh backup driver.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs">
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Health Check Grace Period (The Bootup Shield):</h4>
+                        <p className="leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+                          When a new server launches, it needs 2 to 3 minutes to run User Data scripts, pull Docker images, and start the web server. The <strong>Health Check Grace Period (Default: 300 seconds)</strong> tells ASG: <em>&ldquo;Do NOT check or terminate this newborn server for the first 5 minutes while it is still waking up!&rdquo;</em>
+                        </p>
+
+                        <div className="acad-gotcha-box">
+                          <strong>⚠️ Trap: Grace Period Too Short</strong>
+                          <p style={{ margin: '4px 0 0' }}>
+                            If your app takes 2 minutes to boot but your grace period is set to 30 seconds, the ASG will think the server is dead, kill it, launch another one, kill that one too, and get stuck in an endless reboot loop!
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Health Check Replacement Flow</span>
+                        
+                        <div className="space-y-2 font-mono text-[10px] text-left">
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid #fca5a5' }}>
+                            <span className="text-red font-bold">1. Node Fails ELB Probe (HTTP 500)</span>
+                            <span className="text-red font-bold">Unhealthy</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid #fde68a' }}>
+                            <span className="text-orange font-bold">2. ASG Terminates Broken Node</span>
+                            <span className="text-orange font-bold">Evicting...</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                            <span className="text-green font-bold">3. ASG Provisions Fresh Node from LT</span>
+                            <span className="text-green font-bold">Healthy In-Service</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3.2: LIFECYCLE HOOKS */}
+                {selectedNote === 'lifecycle_hooks' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🛡️ Level 3 · Health &amp; Hooks</span>
+                        <h3 className="text-xl font-black mt-2 font-display">3.2 Lifecycle Transition Hooks (Check-In &amp; Check-Out)</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('health')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Shield className="w-3.5 h-3.5" /> Go to Health Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Lifecycle hooks let you pause a server in a &ldquo;Wait&rdquo; state during launch (to pre-warm caches or run database migrations before taking traffic) or during termination (to backup log files to S3 before the hard drive is destroyed).
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Hotel Room Housekeeping &amp; Lost-and-Found
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>Launch Hook (`Pending:Wait`)</strong>: The hotel guest is not given the room key until housekeeping inspects the room, makes the bed, and stocks the minibar.
+                        <br />• <strong>Terminate Hook (`Terminating:Wait`)</strong>: Before demolishing the building, security walks through every room to retrieve left-behind laptops and upload security footage to permanent storage!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 2 Main Hook Stages:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>autoscaling:EC2_INSTANCE_LAUNCHING:</strong> Instance enters <code>Pending:Wait</code>. Run your custom bash scripts/Ansible, then signal <code>COMPLETE</code> to put the instance In-Service.
+                          </li>
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>autoscaling:EC2_INSTANCE_TERMINATING:</strong> Instance enters <code>Terminating:Wait</code>. Send application metrics, flush Redis queues, upload <code>/var/log</code> to S3, then signal termination.
+                          </li>
+                        </ul>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Timeout Safety:</strong> Default timeout is 3,600 seconds (1 hour). If your script hangs, the ASG will proceed with the default action (<code>CONTINUE</code> or <code>ABANDON</code>).
+                        </div>
+                      </div>
+
+                      <div className="asg-card p-4 rounded-xl flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-2 text-center" style={{ color: 'var(--color-text-tertiary)' }}>Lifecycle Hook State Machine</span>
+                          
+                          <div className="flex flex-col items-center gap-1 text-[9.5px] font-mono mb-3">
+                            <div className="p-1.5 rounded w-full text-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              🚀 Pending:Wait (Hook: Warming Cache)
+                            </div>
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>&darr; CompleteLifecycleAction</span>
+                            <div className="p-1.5 rounded w-full text-center text-green font-bold" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              🟢 InService (Routing Live Traffic)
+                            </div>
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>&darr; Scale-In Triggered</span>
+                            <div className="p-1.5 rounded w-full text-center text-orange font-bold" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid #fde68a' }}>
+                              📦 Terminating:Wait (Hook: Upload Logs)
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-[9.5px] font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Lifecycle Hook Terraform Snippet</span>
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(lifecycleSnippet);
+                                setCopiedNoteId('tf-lh');
+                                setTimeout(() => setCopiedNoteId(null), 2000);
+                              }}
+                              className="asg-btn p-0.5 flex items-center gap-1 text-[9.5px]"
+                            >
+                              {copiedNoteId === 'tf-lh' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                          <pre className="acad-terminal text-[9.5px] leading-snug overflow-x-auto h-28">
+                            {lifecycleSnippet}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3.3: COOLDOWNS & WARMUPS */}
+                {selectedNote === 'cooldowns_warmups' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🛡️ Level 3 · Health &amp; Hooks</span>
+                        <h3 className="text-xl font-black mt-2 font-display">3.3 Scaling Cooldowns &amp; Instance Warmup</h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveSection('policies')}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        >
+                          <Activity className="w-3.5 h-3.5" /> Go to Policies Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> When a new server launches, it takes a few minutes to start taking traffic. A <strong>Scaling Cooldown (Default: 300 seconds / 5 mins)</strong> prevents your ASG from launching 50 duplicate servers in panic while waiting for the first new server to start taking traffic.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Pressing the Elevator Call Button
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        If you press the elevator call button and it takes 30 seconds to arrive, furiously mashing the button 20 times won&apos;t make the elevator arrive any faster! The cooldown timer tells ASG: <em>&ldquo;I already sent the call for a new server; wait 300 seconds for it to boot before checking if we need another one.&rdquo;</em>
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Cooldowns vs Warmup Timers:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Default ASG Cooldown (Simple Scaling):</strong> Pauses ALL scaling activities fleet-wide for 300 seconds.
+                          </li>
+                          <li>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Instance Warmup Timer (Target Tracking &amp; Step Scaling):</strong> Does NOT lock the whole fleet! It only ignores the metric contributions of newly booting nodes until their warmup timer (e.g. 120s) expires.
+                          </li>
+                        </ul>
+
+                        <div className="acad-takeaway-box">
+                          <strong>💡 Pro Tip:</strong> If your servers boot in 45 seconds using pre-baked AMIs, lower your default cooldown from 300s to 60s for faster, more agile scaling!
+                        </div>
+                      </div>
+
+                      <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Cooldown Timing Cycle</span>
+                        
+                        <div className="space-y-2 text-[10.5px] text-left">
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="font-bold">0:00 &rarr; Alarm Fires</span>
+                            <span className="text-green font-bold">+1 Server Launched</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="font-bold">0:00 - 5:00 &rarr; Cooldown Active</span>
+                            <span className="text-orange font-bold">⏸️ Scaling Locked</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="font-bold">5:01 &rarr; Cooldown Expired</span>
+                            <span className="text-blue font-bold">🟢 Metrics Re-evaluated</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 4.1: ZONAL REBALANCING & TERMINATION */}
+                {selectedNote === 'zonal_rebalancing' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🏗️ Level 4 · Zonal Architecture</span>
+                        <h3 className="text-xl font-black mt-2 font-display">4.1 Multi-AZ Balancing &amp; Termination Policies</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={() => setActiveSection('arch')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                         >
-                          <Cpu className="w-3.5 h-3.5" /> Go to VPC Architecture
+                          <Network className="w-3.5 h-3.5" /> Go to Architecture Tab
                         </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 9 of 10</span>
                       </div>
                     </div>
 
-                    <p className="asg-note-desc">
-                      To ensure high availability, an Auto Scaling Group always tries to keep instances distributed evenly across all enabled Availability Zones (AZs). When an AZ goes down or the fleet scales in, the ASG engine uses rebalancing mechanics to restore symmetry.
-                    </p>
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> ASG automatically balances your servers across multiple physical data centers (Availability Zones). If one zone has more servers than the others, ASG terminates from the crowded zone first during scale-in to keep your high availability balanced.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Three-Legged Stool &amp; Eviction Rules
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        A 3-legged stool needs equal weight on all 3 legs (Zone A, Zone B, Zone C) so it doesn&apos;t tip over. If Leg A has 3 supports and Leg B has 2 supports, when you need to remove a support, you <strong>always remove from Leg A first</strong>.
+                      </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>ASG Rebalancing Steps:</span>
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Default Termination Policy Order:</h4>
                         
-                        <ol className="list-decimal pl-4 space-y-1.5 leading-relaxed">
-                          <li>
-                            ASG monitors instance counts per AZ.
-                          </li>
-                          <li>
-                            If an instance is terminated in AZ-A, the ASG immediately launches a replacement.
-                          </li>
-                          <li>
-                            If the ASG is rebalancing a lopsided group (e.g. 3 nodes in AZ-A, 1 node in AZ-B), it launches a new instance in AZ-B first, and then terminates an instance in AZ-A to keep desired capacity stable.
-                          </li>
+                        <ol className="list-decimal pl-4 space-y-2">
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>1. Find the Most Crowded AZ:</strong> Select the Availability Zone that has the highest number of instances.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>2. Oldest Launch Template:</strong> Within that AZ, pick instances using the oldest template version.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>3. Closest to Billing Hour:</strong> Terminate the instance closest to its next hourly billing tick.</li>
                         </ol>
 
                         <div className="acad-takeaway-box">
-                          <strong>💡 Availability Priority:</strong> During rebalancing, the ASG launches the new instance <em>before</em> terminating the old one. This ensures that the group remains at or above desired capacity, avoiding performance degradation during rebalancing.
+                          <strong>💡 Scale-In Protection:</strong> You can enable &ldquo;Instance Scale-In Protection&rdquo; on individual servers (e.g. while processing a critical batch payment) so ASG never terminates them during scale-in!
                         </div>
                       </div>
 
-                      <div className="asg-note-widget flex flex-col justify-center text-center font-mono text-xs">
-                        <span className="text-[10px] font-bold uppercase tracking-widest block mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Symmetric Fleet Rebalance</span>
+                      <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Zonal Equalization Distribution</span>
                         
-                        <div className="space-y-2 text-left max-w-xs mx-auto">
-                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
-                            <span className="text-green font-bold">Subnet us-east-1a</span>
-                            <span style={{ color: 'var(--color-text-primary)' }}>2 Nodes</span>
+                        <div className="space-y-2 text-left">
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-orange font-bold">us-east-1a (Subnet 1)</span>
+                            <span className="text-green font-bold">2 Instances (Balanced)</span>
                           </div>
-                          <div className="border p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-secondary)', borderColor: 'var(--color-border-tertiary)' }}>
-                            <span className="text-green font-bold">Subnet us-east-1b</span>
-                            <span style={{ color: 'var(--color-text-primary)' }}>2 Nodes</span>
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-blue font-bold">us-east-1b (Subnet 2)</span>
+                            <span className="text-green font-bold">2 Instances (Balanced)</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="text-purple font-bold">us-east-1c (Subnet 3)</span>
+                            <span className="text-green font-bold">2 Instances (Balanced)</span>
                           </div>
                         </div>
 
-                        <p className="text-[10.5px] mt-4 leading-normal" style={{ color: 'var(--color-text-secondary)' }}>
-                          If an Availability Zone suffers a hardware outage, the ASG will provision all desired nodes in the surviving zone automatically.
+                        <p className="text-[10px] mt-3 leading-normal" style={{ color: 'var(--color-text-secondary)' }}>
+                          If AZ-1c loses power, ASG automatically scales up +1 in AZ-1a and +1 in AZ-1b.
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* NOTE 10: LB CO-LOCATION */}
+                {/* NOTE 4.2: LOAD BALANCER ATTACHMENT */}
                 {selectedNote === 'lb_colocation' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 asg-note-header">
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
                       <div>
-                        <span className="acad-hero-badge">Ingress Integration</span>
-                        <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--color-text-primary)' }}>ALB/NLB Target Group Integration</h3>
+                        <span className="acad-hero-badge">🏗️ Level 4 · Zonal Architecture</span>
+                        <h3 className="text-xl font-black mt-2 font-display">4.2 Load Balancer Target Group Attachment</h3>
                       </div>
                       <div className="flex items-center gap-3">
                         <button 
                           onClick={() => setActiveSection('sim')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
                         >
-                          <Activity className="w-3.5 h-3.5" /> Go to Fleet Simulator
+                          <Activity className="w-3.5 h-3.5" /> Go to Simulator
                         </button>
-                        <span className="text-xs font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Concept 10 of 10</span>
                       </div>
                     </div>
 
-                    <p className="asg-note-desc">
-                      An Auto Scaling Group does not route user traffic itself; it only manages compute instances. Outward-facing traffic is received by a Load Balancer (ALB or NLB), which distributes requests across the instances registered in its **Target Group**.
-                    </p>
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Auto Scaling Groups work hand-in-hand with Elastic Load Balancers (ALB). Whenever the ASG launches a new server, it automatically registers it into the ALB&apos;s Target Group; and before terminating a server, it tells the ALB to gracefully drain existing users.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport Gate Check-in &amp; Departure Lounge
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        When a new flight gate opens (new EC2 instance), the airport displays show the gate number on the central billboard (ALB Target Group registration). When a gate is closing for maintenance, the boarding agent stops accepting new passengers while allowing seated passengers to finish boarding (Connection Draining)!
+                      </p>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-                        <span className="font-extrabold block" style={{ color: 'var(--color-text-primary)' }}>Registration &amp; Scale-In Cycle:</span>
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The Registration Lifecycle:</h4>
                         
-                        <ul className="list-disc pl-4 space-y-1.5">
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Ingress:</strong> When the ASG launches a new instance, it automatically registers its private IP and port with the associated ALB target group.
-                          </li>
-                          <li>
-                            <strong style={{ color: 'var(--color-text-primary)' }}>Egress (Draining):</strong> When scaling in, the ALB sets the instance status to <code>draining</code>. The load balancer immediately stops sending new connections to the instance, while allowing active connections to complete before termination.
-                          </li>
-                        </ul>
+                        <div className="space-y-2 font-mono text-[11px]">
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="font-bold text-green">1. Scale-Out &rarr; Auto Registration:</span>
+                            <p style={{ color: 'var(--color-text-secondary)' }}>ASG notifies Target Group &rarr; ALB sends health check probes &rarr; Marks Healthy.</p>
+                          </div>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <span className="font-bold text-orange">2. Scale-In &rarr; Connection Draining:</span>
+                            <p style={{ color: 'var(--color-text-secondary)' }}>ALB stops new requests &rarr; waits 300s for active HTTP requests to finish &rarr; ASG terminates.</p>
+                          </div>
+                        </div>
 
                         <div className="acad-takeaway-box">
-                          <strong>💡 Professional Practice:</strong> Set your target group's Deregistration Delay (connection draining timeout) to match your application's longest request duration (e.g. 30s for web APIs, 300s for large document generation).
+                          <strong>💡 Zero-Downtime Deployments:</strong> Combine ASG Instance Refresh with ALB connection draining to roll out new code versions with 0 dropped requests!
                         </div>
                       </div>
 
-                      <div className="asg-note-widget flex flex-col justify-center text-center">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Load Balancer Registration Flow</span>
+                      <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>ALB + ASG Interaction Pipeline</span>
                         
                         <div className="flex items-center justify-center gap-1.5 text-[9.5px] font-mono">
-                          <div className="asg-status-widget-blue p-2.5 rounded-lg">
-                            <p className="font-bold text-blue">⚖️ ALB/NLB</p>
-                            <span>Ingress ingress</span>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                            <p className="font-bold text-blue">⚖️ ALB / NLB</p>
+                            <span>Traffic Ingress</span>
                           </div>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
-                          <div className="asg-status-widget-orange p-2.5 rounded-lg">
+                          <span style={{ color: 'var(--color-text-tertiary)' }}>&rarr;</span>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid #fde68a' }}>
                             <p className="font-bold text-orange">📈 ASG Group</p>
-                            <span>Auto Scale</span>
+                            <span>Fleet Controller</span>
                           </div>
-                          <span style={{ color: 'var(--color-text-secondary)' }}>&rarr;</span>
-                          <div className="asg-status-widget-green p-2.5 rounded-lg">
-                            <p className="font-bold text-green">🖥️ target node</p>
-                            <span>Reg / Drain</span>
+                          <span style={{ color: 'var(--color-text-tertiary)' }}>&rarr;</span>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                            <p className="font-bold text-green">🖥️ EC2 Target</p>
+                            <span>Serve &amp; Drain</span>
                           </div>
                         </div>
 
                         <p className="text-[10px] mt-4 leading-normal max-w-xs mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
-                          Decoupling scale management from traffic routing allows your application to scale smoothly without interrupting user sessions.
+                          Decoupling traffic routing (ALB) from fleet elasticity (ASG) guarantees rock-solid reliability under massive demand spikes.
                         </p>
                       </div>
                     </div>

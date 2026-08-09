@@ -3,17 +3,13 @@ import {
   BookOpen,
   ChevronRight,
   ChevronDown,
-  Info,
+  Lightbulb,
   Copy,
-  Network,
+  Check,
   Zap,
   Sliders,
   Globe,
-  Database,
-  Check,
-  Server,
-  HelpCircle,
-  Activity
+  Server
 } from 'lucide-react';
 import IntegrationAndMessagingComparativeView from '../../components/visualizers/IntegrationAndMessagingComparativeView';
 import UniqueIntegrationAndMessagingFeatures from '../../components/visualizers/UniqueIntegrationAndMessagingFeatures';
@@ -134,6 +130,10 @@ export default function IntegrationAndMessagingVisualizer({ provider = 'aws', se
   const [selectedNote, setSelectedNote] = useState<string>('sqs_queues');
   const [expandedCategory, setExpandedCategory] = useState<string>('queues_topics');
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive SQS Calculator State
+  const [nbSqsMsgRate, setNbSqsMsgRate] = useState<number>(200);
+  const [nbProcessingTimeMs, setNbProcessingTimeMs] = useState<number>(1500);
 
   const handleCopyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -905,6 +905,384 @@ export default function IntegrationAndMessagingVisualizer({ provider = 'aws', se
           .im-grid {
             grid-template-columns: 1fr;
           }
+        }
+
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--im-border-secondary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--im-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--im-text-primary);
+          border-bottom: 1px solid var(--im-border-secondary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--im-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--im-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--im-text-primary);
+          border-left-color: var(--im-border-secondary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eef2ff;
+          color: #4f46e5;
+          border-left-color: #6366f1;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(99, 102, 241, 0.15);
+          color: #818cf8;
+          border-left-color: #818cf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--im-border-secondary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #ede9fe;
+          border: 1.5px solid #c4b5fd;
+          color: #6d28d9;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #6366f1;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--im-text-secondary);
+          border-top: 1px solid var(--im-border-secondary);
+          border-right: 1px solid var(--im-border-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+        }
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--im-text-primary);
+          border-top: 1px solid var(--im-border-secondary);
+          border-right: 1px solid var(--im-border-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--im-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--im-text-secondary);
+          border-top: 1px solid var(--im-border-secondary);
+          border-right: 1px solid var(--im-border-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--im-border-secondary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--im-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--im-border-secondary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--im-border-secondary);
+          color: var(--im-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--im-border-secondary);
+          color: var(--im-text-secondary);
+        }
+
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--im-border-secondary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--im-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--im-text-primary);
+          border-bottom: 1px solid var(--im-border-secondary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--im-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--im-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--im-text-primary);
+          border-left-color: var(--im-border-secondary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eef2ff;
+          color: #4f46e5;
+          border-left-color: #6366f1;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(99, 102, 241, 0.15);
+          color: #818cf8;
+          border-left-color: #818cf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--im-border-secondary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #ede9fe;
+          border: 1.5px solid #c4b5fd;
+          color: #6d28d9;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #6366f1;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--im-text-secondary);
+          border-top: 1px solid var(--im-border-secondary);
+          border-right: 1px solid var(--im-border-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+        }
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--im-text-primary);
+          border-top: 1px solid var(--im-border-secondary);
+          border-right: 1px solid var(--im-border-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--im-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--im-text-secondary);
+          border-top: 1px solid var(--im-border-secondary);
+          border-right: 1px solid var(--im-border-secondary);
+          border-bottom: 1px solid var(--im-border-secondary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--im-border-secondary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--im-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--im-border-secondary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--im-border-secondary);
+          color: var(--im-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--im-border-secondary);
+          color: var(--im-text-secondary);
         }
 
         .im-card {
@@ -2030,25 +2408,25 @@ export default function IntegrationAndMessagingVisualizer({ provider = 'aws', se
       {!isComparative && (
         <div className="im-tab-nav">
           <button className={`im-tab-btn ${activeTab === 'notebook' ? 'im-active' : ''}`} onClick={() => setActiveTab('notebook')}>
-            📓 Visual Architect Notes
+            📖 1) Visual Notes &amp; Theories
           </button>
           <button className={`im-tab-btn ${activeTab === 'sqs' ? 'im-active' : ''}`} onClick={() => setActiveTab('sqs')}>
-            📤 SQS Queues &amp; Locks
+            📤 2) SQS Queues &amp; Locks
           </button>
           <button className={`im-tab-btn ${activeTab === 'sns' ? 'im-active' : ''}`} onClick={() => setActiveTab('sns')}>
-            📢 SNS Pub/Sub Filtering
+            📢 3) SNS Pub/Sub Filtering
           </button>
           <button className={`im-tab-btn ${activeTab === 'fanout' ? 'im-active' : ''}`} onClick={() => setActiveTab('fanout')}>
-            🔀 FIFO Fanout &amp; Firehose
+            🔀 4) FIFO Fanout &amp; Firehose
           </button>
           <button className={`im-tab-btn ${activeTab === 'kinesis' ? 'im-active' : ''}`} onClick={() => setActiveTab('kinesis')}>
-            🌊 Kinesis clickstreams
+            🌊 5) Kinesis Clickstreams
           </button>
           <button className={`im-tab-btn ${activeTab === 'amazonmq' ? 'im-active' : ''}`} onClick={() => setActiveTab('amazonmq')}>
-            🐹 Amazon MQ AZ Failover
+            🐹 6) Amazon MQ AZ Failover
           </button>
           <button className={`im-tab-btn ${activeTab === 'comparison' ? 'im-active' : ''}`} onClick={() => setActiveTab('comparison')}>
-            📊 Interactive Comparison Matrix
+            📊 7) Interactive Comparison Matrix
           </button>
           <button className={`im-tab-btn ${activeTab === 'unique' ? 'im-active' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
@@ -2071,115 +2449,154 @@ export default function IntegrationAndMessagingVisualizer({ provider = 'aws', se
       {/* ==========================================
           TAB 0: VISUAL ARCHITECT NOTES
           ========================================== */}
-      {activeTab === 'notebook' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
+                        {activeTab === 'notebook' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out', color: 'var(--im-text-primary)' }}>
           
-          {/* Header Card */}
-          <div className="im-card" style={{ marginBottom: '14px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--im-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> Integration &amp; Messaging Architecture Notes
-            </h2>
-            <p style={{ fontSize: '12px', color: 'var(--im-text-secondary)', marginTop: '6px', lineHeight: '1.45' }}>
-              Master decoupling patterns, SQS queue locks, SNS topic pub/sub fanout, Kinesis stream sharding, and enterprise message broker topologies.
-            </p>
+          {/* Header Hero Card */}
+          <div className="im-card text-left" style={{ borderLeft: '4px solid #6366f1' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--im-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> AWS Integration &amp; Messaging Notes &amp; Mental Models
+                </h2>
+                <p style={{ fontSize: '12px', color: 'var(--im-text-secondary)', marginTop: '6px', lineHeight: '1.45', marginBottom: 0 }}>
+                  Simplified, beginner-friendly cloud decoupling theories sorted progressively from SQS Visibility Timeout locks to SNS Fanout, EventBridge rule filtering, Step Functions state machines, Kinesis shard streaming, and Amazon MQ enterprise brokers.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge" style={{ background: '#ede9fe', borderColor: '#c4b5fd', color: '#6d28d9' }}>🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
           </div>
 
-          {/* Grid Layout */}
-          <div className="acad-grid-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            {/* Left Sidebar Menu */}
-            <div className="acad-col-3">
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--im-text-secondary)' }}>Curriculum Directory:</span>
+              
               <div className="acad-dir-container">
                 <div className="acad-dir-header">
-                  <BookOpen style={{ width: '16px', height: '16px', color: '#818cf8' }} />
-                  <span>Module Index</span>
+                  <BookOpen className="w-4 h-4 text-indigo-500" />
+                  <span>Integration Modules</span>
                 </div>
 
-                {/* Category 1: Queues & Topics */}
+                {/* LEVEL 1: QUEUES & TOPICS (SQS & SNS) */}
                 <div>
-                  <button
-                    className="acad-dir-folder-btn"
+                  <button 
                     onClick={() => setExpandedCategory(expandedCategory === 'queues_topics' ? '' : 'queues_topics')}
+                    className="acad-dir-folder-btn"
                   >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Sliders style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
-                      1. Queues &amp; Topics
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                      🐣 Level 1 · Queues &amp; Topics
                     </span>
-                    {expandedCategory === 'queues_topics' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                    {expandedCategory === 'queues_topics' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'queues_topics' && (
-                    <div style={{ background: 'var(--im-svg-bg)', padding: '4px 0' }}>
-                      <button
-                        className={`acad-dir-item-btn ${selectedNote === 'sqs_queues' ? 'acad-active' : ''}`}
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--im-border-secondary)' }}>
+                      <button 
                         onClick={() => setSelectedNote('sqs_queues')}
+                        className={`acad-dir-item-btn ${selectedNote === 'sqs_queues' ? 'acad-active' : ''}`}
                       >
-                        SQS Queues &amp; Locks
+                        1.1 SQS Standard vs FIFO &amp; Locks (PO Box Hold)
                       </button>
-                      <button
-                        className={`acad-dir-item-btn ${selectedNote === 'sns_pubsub' ? 'acad-active' : ''}`}
+                      <button 
                         onClick={() => setSelectedNote('sns_pubsub')}
+                        className={`acad-dir-item-btn ${selectedNote === 'sns_pubsub' ? 'acad-active' : ''}`}
                       >
-                        SNS Pub/Sub Filtering
+                        1.2 SNS Pub/Sub &amp; Fanout (Megaphone Broadcaster)
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Category 2: Streaming & Hybrid */}
+                {/* LEVEL 2: EVENT ROUTING & ORCHESTRATION */}
                 <div>
-                  <button
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'event_orchestration' ? '' : 'event_orchestration')}
                     className="acad-dir-folder-btn"
-                    onClick={() => setExpandedCategory(expandedCategory === 'streaming_hybrid' ? '' : 'streaming_hybrid')}
                   >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Globe style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
-                      2. Streaming &amp; Hybrid
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                      ⚡ Level 2 · Event Bus &amp; Step Functions
                     </span>
-                    {expandedCategory === 'streaming_hybrid' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                    {expandedCategory === 'event_orchestration' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
-                  {expandedCategory === 'streaming_hybrid' && (
-                    <div style={{ background: 'var(--im-svg-bg)', padding: '4px 0' }}>
-                      <button
-                        className={`acad-dir-item-btn ${selectedNote === 'kinesis_streams' ? 'acad-active' : ''}`}
+                  {expandedCategory === 'event_orchestration' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--im-border-secondary)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('eventbridge_bus')}
+                        className={`acad-dir-item-btn ${selectedNote === 'eventbridge_bus' ? 'acad-active' : ''}`}
+                      >
+                        2.1 EventBridge Bus &amp; Rules (Smart Post Office)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('step_functions')}
+                        className={`acad-dir-item-btn ${selectedNote === 'step_functions' ? 'acad-active' : ''}`}
+                      >
+                        2.2 Step Functions State Machine (Conveyor Flowchart)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: STREAMING DATA */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'kinesis_streaming' ? '' : 'kinesis_streaming')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-emerald-500" />
+                      🌊 Level 3 · Kinesis Streaming
+                    </span>
+                    {expandedCategory === 'kinesis_streaming' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'kinesis_streaming' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--im-border-secondary)' }}>
+                      <button 
                         onClick={() => setSelectedNote('kinesis_streams')}
+                        className={`acad-dir-item-btn ${selectedNote === 'kinesis_streams' ? 'acad-active' : ''}`}
                       >
-                        Kinesis Streams Sharding
+                        3.1 Kinesis Data Streams vs SQS (Multi-Lane Highway)
                       </button>
-                      <button
-                        className={`acad-dir-item-btn ${selectedNote === 'amazon_mq' ? 'acad-active' : ''}`}
-                        onClick={() => setSelectedNote('amazon_mq')}
+                      <button 
+                        onClick={() => setSelectedNote('kinesis_firehose')}
+                        className={`acad-dir-item-btn ${selectedNote === 'kinesis_firehose' ? 'acad-active' : ''}`}
                       >
-                        ActiveMQ Failover Broker
+                        3.2 Kinesis Data Firehose (Zero-Code Pipe)
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Category 3: Enterprise Pipelines */}
+                {/* LEVEL 4: BROKERS & DLQ RECOVERY */}
                 <div>
-                  <button
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'mq_dlq' ? '' : 'mq_dlq')}
                     className="acad-dir-folder-btn"
-                    onClick={() => setExpandedCategory(expandedCategory === 'enterprise_pipelines' ? '' : 'enterprise_pipelines')}
                   >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Network style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
-                      3. Enterprise Pipelines
+                    <span className="flex items-center gap-1.5">
+                      <Server className="w-3.5 h-3.5 text-purple-500" />
+                      🐹 Level 4 · Amazon MQ &amp; DLQ
                     </span>
-                    {expandedCategory === 'enterprise_pipelines' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                    {expandedCategory === 'mq_dlq' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
-                  {expandedCategory === 'enterprise_pipelines' && (
-                    <div style={{ background: 'var(--im-svg-bg)', padding: '4px 0' }}>
-                      <button
-                        className={`acad-dir-item-btn ${selectedNote === 'fanout_firehose' ? 'acad-active' : ''}`}
-                        onClick={() => setSelectedNote('fanout_firehose')}
+                  {expandedCategory === 'mq_dlq' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('amazon_mq')}
+                        className={`acad-dir-item-btn ${selectedNote === 'amazon_mq' ? 'acad-active' : ''}`}
                       >
-                        FIFO Fanout &amp; Firehose
+                        4.1 Amazon MQ (ActiveMQ/RabbitMQ Legacy)
                       </button>
-                      <button
-                        className={`acad-dir-item-btn ${selectedNote === 'comparison_matrix' ? 'acad-active' : ''}`}
-                        onClick={() => setSelectedNote('comparison_matrix')}
+                      <button 
+                        onClick={() => setSelectedNote('dlq_redrive')}
+                        className={`acad-dir-item-btn ${selectedNote === 'dlq_redrive' ? 'acad-active' : ''}`}
                       >
-                        Services Comparison
+                        4.2 Dead Letter Queues &amp; Redrive (Returns Box)
                       </button>
                     </div>
                   )}
@@ -2187,853 +2604,507 @@ export default function IntegrationAndMessagingVisualizer({ provider = 'aws', se
 
               </div>
 
-              {/* Academy Tips Box */}
-              <div style={{ background: 'var(--color-background-primary, #ffffff)', border: '1px solid var(--im-border-secondary)', borderRadius: '16px', padding: '16px', color: 'var(--im-text-secondary)', fontSize: '11px', marginTop: '16px', lineHeight: '1.5' }}>
-                <span style={{ color: 'var(--im-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
-                  <Info style={{ width: '14px', height: '14px', color: '#6366f1' }} /> Academy Tips
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--im-text-primary)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
                 </span>
-                Jump to target simulations directly using the buttons in the note view. All notes are optimized for AWS Solutions Architect exam prep.
+                Click any integration concept to explore real-world analogies, interactive visibility timeout calculators, and direct simulator links!
               </div>
             </div>
 
-            {/* Right Content Panel */}
-            <div className="acad-col-9">
-            
-            {/* NOTE 1: SQS Queues & Message Locks */}
-            {selectedNote === 'sqs_queues' && (
-              <div>
-                <div className="acad-note-header">
-                  <div className="acad-note-title-area">
-                    <span className="acad-note-badge">Queues &amp; Topics</span>
-                    <h2 className="acad-note-title">
-                      <Sliders size={20} style={{ color: '#0f766e' }} /> SQS Queues &amp; Message Locks
-                    </h2>
-                    <p className="acad-note-desc">
-                      Understand SQS visibility timeout locks, short vs. long polling differences, Dead-Letter Queue (DLQ) isolation thresholds, and ordering semantics between standard and FIFO queues.
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* NOTE 1.1: SQS QUEUES & LOCKS */}
+              {selectedNote === 'sqs_queues' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Queues &amp; Topics</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        1.1 Amazon SQS: Visibility Timeout Locks &amp; Long Polling
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('sqs')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to SQS Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon SQS (Simple Queue Service)** decouples microservices by acting as a shock-absorbing buffer queue. When a worker pulls a message, SQS temporarily hides it from all other workers for the duration of the **Visibility Timeout** (default: 30 seconds). If the worker finishes and calls <code>DeleteMessage</code>, the item is removed. If the worker crashes, the timeout expires and another worker automatically retries!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The PO Box Hold &amp; The Concert Ticket Line
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Visibility Timeout (PO Box Hold)</strong>: A mail clerk hands you a package slip and puts a 30-minute sticky note over the PO box saying &ldquo;Being Handled&rdquo;. If you don&apos;t confirm delivery in 30 minutes, the clerk assumes you fainted, removes the sticky note, and lets the next customer handle the package!
+                      <br />• <strong>SQS Standard vs FIFO (Concert Ticket Line)</strong>: Standard SQS is like a loose crowd at a festival gate (unlimited throughput, but messages might arrive slightly out of order). SQS FIFO is a strict single-file velvet rope line (exact First-In, First-Out sequence with zero duplicate tickets!).
                     </p>
                   </div>
-                  <div className="acad-action-area">
-                    <button className="acad-simulate-btn" onClick={() => setActiveTab('sqs')}>
-                      <Activity size={14} /> Simulate SQS Locks
-                    </button>
+
+                  {/* Interactive SQS Visibility Timeout Calculator */}
+                  <div className="im-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--im-border-secondary)' }}>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--im-text-secondary)' }}>Interactive SQS Visibility Timeout &amp; Duplicate Prevention HUD</span>
+                    
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--im-text-secondary)' }}>
+                          <span>Inbound Message Ingestion Rate: {nbSqsMsgRate} msgs/sec</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="1000" 
+                          step="10" 
+                          value={nbSqsMsgRate} 
+                          onChange={(e) => setNbSqsMsgRate(parseInt(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--im-text-secondary)' }}>
+                          <span>Worker Execution Duration: {nbProcessingTimeMs} ms</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="100" 
+                          max="10000" 
+                          step="100" 
+                          value={nbProcessingTimeMs} 
+                          onChange={(e) => setNbProcessingTimeMs(parseInt(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const requiredWorkers = Math.ceil((nbSqsMsgRate * (nbProcessingTimeMs / 1000)));
+                      const safeVisTimeoutSec = Math.ceil((nbProcessingTimeMs / 1000) * 6); // 6x processing time rule of thumb
+                      return (
+                        <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--im-border-secondary)' }}>
+                          <p>Minimum Worker Concurrency Needed: <span className="text-indigo-600 font-bold">{requiredWorkers} concurrent EC2 / Lambda instances</span></p>
+                          <p>Recommended Visibility Timeout Setting: <span className="text-emerald-500 font-bold">{safeVisTimeoutSec} seconds</span> (prevents race condition duplicates!)</p>
+                          <p>Short Polling vs Long Polling: <span className="text-blue font-bold">Use Long Polling (WaitTimeSeconds=20) to reduce 98% empty API calls</span></p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
+              )}
 
-                <div className="acad-grid">
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Visibility Timeout Locks</span>
+              {/* NOTE 1.2: SNS PUB/SUB & FANOUT */}
+              {selectedNote === 'sns_pubsub' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Queues &amp; Topics</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        1.2 Amazon SNS Pub/Sub &amp; The SNS+SQS Fanout Pattern
+                      </h3>
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>The Lock Window:</strong> When a consumer retrieves a message via <code>ReceiveMessage</code>, AWS locks the message by making it invisible to other consumers for the duration of the <strong>Visibility Timeout</strong> (default: 30 seconds).
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Race Condition:</strong> If processing takes longer than the timeout, the message becomes visible again, allowing another consumer to poll it. This causes duplicate processing.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Resolution:</strong> The consumer must either delete the message via <code>DeleteMessage</code> after success, or extend the visibility window dynamically via <code>ChangeMessageVisibility</code> if more time is needed.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Polling Mechanism Differences</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('sns')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to SNS Tab
+                      </button>
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Short Polling (Default):</strong> Queries only a subset of SQS host servers to find available messages. Can return empty responses even if the queue contains messages, causing high API costs.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Long Polling (Recommended):</strong> Set <code>WaitTimeSeconds</code> (up to 20s). The API call blocks and waits for a message to arrive, eliminating empty responses, reducing network traffic, and lowering costs.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>DLQ &amp; Retries:</strong> When a message's delivery count exceeds the <code>maxReceiveCount</code> policy (e.g. due to constant consumer failures), it is redirected to a Dead-Letter Queue (DLQ) for analysis.
-                      </li>
-                    </ul>
                   </div>
 
-                  <div className="acad-card acad-deep-dive-card">
-                    <div className="acad-card-header">
-                      <BookOpen size={16} style={{ color: '#16a34a' }} />
-                      <span className="acad-card-title">Architecture Deep-Dive: Standard vs. FIFO Queues</span>
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon SNS (Simple Notification Service)** is a 1-to-many **Publisher/Subscriber (Pub/Sub)** notification engine. When a publisher sends 1 event (e.g. <code>OrderPlaced</code>) to an SNS topic, SNS immediately **fans out** duplicate copies of that event to multiple SQS queues, Lambda functions, HTTP webhooks, SMS messages, and emails simultaneously!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Emergency Megaphone Broadcaster
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Standard Queues:</strong> Infinite throughput. Offers <em>at-least-once</em> delivery (messages may occasionally be duplicated) and best-effort ordering. Use for decoupled tasks where order is not critical.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>FIFO Queues:</strong> High reliability. Limited to 300 transactions/sec (TPS) by default (or up to 3000 TPS with batching). Guarantees <em>exactly-once</em> delivery and strict first-in, first-out ordering using message group IDs.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Deduplication Keys:</strong> FIFO utilizes a <code>MessageDeduplicationId</code>. Messages sent with identical deduplication IDs within a 5-minute interval are accepted but not delivered to consumers, preventing duplicates.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Message Grouping:</strong> The <code>MessageGroupId</code> acts as a partition key. All messages belonging to the same group ID are processed sequentially in a strict ordered sequence by consumers.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>AWS CLI Cheat Sheet (Standard &amp; FIFO Queue Setup)</h3>
-                
-                {/* Terminal 1 */}
-                <div className="acad-terminal">
-                  <div className="acad-terminal-header">
-                    <div className="acad-terminal-title">SQS Queue Management Commands</div>
-                    <button 
-                      className={`acad-copy-btn ${copiedNoteId === 'cli_sqs' ? 'copied' : ''}`}
-                      onClick={() => handleCopyCode(
-`# 1. Create a Standard SQS Queue with 30s Visibility Timeout & 20s Long Polling
-aws sqs create-queue \\
-  --queue-name app-order-queue \\
-  --attributes VisibilityTimeout=30,ReceiveMessageWaitTimeSeconds=20
-
-# 2. Create a FIFO SQS Queue with Content-Based Deduplication enabled
-aws sqs create-queue \\
-  --queue-name app-payment-queue.fifo \\
-  --attributes FifoQueue=true,ContentBasedDeduplication=true
-
-# 3. Publish a Message to the FIFO Queue specifying Group and Deduplication IDs
-aws sqs send-message \\
-  --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/app-payment-queue.fifo \\
-  --message-body '{"order_id": 9942, "amount": 120.50, "action": "checkout"}' \\
-  --message-group-id "user-group-101" \\
-  --message-deduplication-id "tx-9942-abc"
-
-# 4. Long Poll (20s) to Retrieve Messages from the Standard Queue
-aws sqs receive-message \\
-  --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/app-order-queue \\
-  --max-number-of-messages 10 \\
-  --wait-time-seconds 20`, 
-                        'cli_sqs'
-                      )}
-                    >
-                      {copiedNoteId === 'cli_sqs' ? <Check size={12} /> : <Copy size={12} />}
-                      {copiedNoteId === 'cli_sqs' ? 'Copied' : 'Copy Code'}
-                    </button>
-                  </div>
-                  <pre className="acad-terminal-content">
-{`# 1. Create a Standard SQS Queue with 30s Visibility Timeout & 20s Long Polling
-aws sqs create-queue \\
-  --queue-name app-order-queue \\
-  --attributes VisibilityTimeout=30,ReceiveMessageWaitTimeSeconds=20
-
-# 2. Create a FIFO SQS Queue with Content-Based Deduplication enabled
-aws sqs create-queue \\
-  --queue-name app-payment-queue.fifo \\
-  --attributes FifoQueue=true,ContentBasedDeduplication=true
-
-# 3. Publish a Message to the FIFO Queue specifying Group and Deduplication IDs
-aws sqs send-message \\
-  --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/app-payment-queue.fifo \\
-  --message-body '{"order_id": 9942, "amount": 120.50, "action": "checkout"}' \\
-  --message-group-id "user-group-101" \\
-  --message-deduplication-id "tx-9942-abc"
-
-# 4. Long Poll (20s) to Retrieve Messages from the Standard Queue
-aws sqs receive-message \\
-  --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/app-order-queue \\
-  --max-number-of-messages 10 \\
-  --wait-time-seconds 20`}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {/* NOTE 2: SNS Pub/Sub Filtering */}
-            {selectedNote === 'sns_pubsub' && (
-              <div>
-                <div className="acad-note-header">
-                  <div className="acad-note-title-area">
-                    <span className="acad-note-badge">Queues &amp; Topics</span>
-                    <h2 className="acad-note-title">
-                      <Globe size={20} style={{ color: '#0f766e' }} /> SNS Pub/Sub Filtering Policies
-                    </h2>
-                    <p className="acad-note-desc">
-                      Implement the pub/sub fanout pattern using Amazon SNS, and configure advanced JSON filter policies on subscriptions to route messages selectively based on metadata attributes.
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of calling 5 different departments 1-by-1 (Billing, Shipping, Analytics, SMS, Fraud), the manager speaks once into an <strong>emergency megaphone (SNS Topic)</strong>. Instantly, the shipping department, accounting clerk, security guard, and customer text alerts all hear the message at the exact same second!
                     </p>
                   </div>
-                  <div className="acad-action-area">
-                    <button className="acad-simulate-btn" onClick={() => setActiveTab('sns')}>
-                      <Activity size={14} /> Simulate SNS Router
-                    </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 text-xs" style={{ color: 'var(--im-text-secondary)' }}>
+                      <h4 className="font-bold text-xs" style={{ color: 'var(--im-text-primary)' }}>Why Combine SNS + SQS (Fanout Pattern)?</h4>
+                      
+                      <ul className="list-disc pl-4 space-y-2">
+                        <li><strong style={{ color: 'var(--im-text-primary)' }}>Asynchronous Isolation:</strong> If the Fraud detection service goes down for maintenance, messages accumulate safely in its SQS queue without breaking Shipping or Billing!</li>
+                        <li><strong style={{ color: 'var(--im-text-primary)' }}>Subscription Filter Policies:</strong> Subscribers can define JSON attribute filters (e.g. <code>"region": ["EU"]</code>) so European queues only receive EU orders!</li>
+                      </ul>
+                    </div>
+
+                    <div className="im-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--im-text-secondary)' }}>SNS Subscription Filter Policy JSON</span>
+                        <button 
+                          onClick={() => handleCopyCode(`{\n  "store_location": ["US-East", "US-West"],\n  "order_total": [{ "numeric": [">=", 100] }]\n}`, 'sns-filter-policy')}
+                          className="im-tab-btn text-[10px] p-1 flex items-center gap-1"
+                        >
+                          {copiedNoteId === 'sns-filter-policy' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                      
+                      <pre className="acad-terminal text-[9px] leading-relaxed text-left overflow-x-auto">
+{`{
+  "store_location": ["US-East", "US-West"],
+  "order_total": [{ "numeric": [">=", 100] }]
+}`}
+                      </pre>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <div className="acad-grid">
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">SNS Topic Broadcasting &amp; Fanout</span>
+              {/* NOTE 2.1: EVENTBRIDGE BUS & RULES */}
+              {selectedNote === 'eventbridge_bus' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">⚡ Level 2 · Event Bus &amp; Step Functions</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        2.1 Amazon EventBridge: Serverless Event Bus &amp; Schema Registry
+                      </h3>
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Decoupled Pub/Sub:</strong> Publishers push events to a single SNS topic without knowing who receives them. SNS broadcasts the messages asynchronously to all verified subscribers.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Fanout Architecture:</strong> Standard architectural pattern where an SNS topic is subscribed to by multiple SQS queues. This creates isolated queues for different microservices, preventing thread blocking.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Cross-Region Routing:</strong> SNS supports cross-region delivery, allowing a topic in <code>us-east-1</code> to natively deliver messages directly to SQS queues located in <code>eu-central-1</code> or <code>ap-southeast-1</code>.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Subscription Filter Policies</span>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('fanout')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Event Bus Tab
+                      </button>
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Attribute Filtering:</strong> Subscriptions can specify a JSON <code>FilterPolicy</code>. SNS will inspect the <code>MessageAttributes</code> key-value pairs of published messages.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Filtering Logic:</strong> If attributes match the subscription's filter policy, the message is delivered. If not, the message is silently discarded for that subscription, avoiding downstream processing costs.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Evaluation Rules:</strong> Policies support string matching, prefix matching, numeric range operations (e.g. <code>{"{ \"amount\": [ { \"numeric\": [ \">=\", 100 ] } ] }"}</code>), and logical OR logic.
-                      </li>
-                    </ul>
                   </div>
 
-                  <div className="acad-card acad-deep-dive-card">
-                    <div className="acad-card-header">
-                      <BookOpen size={16} style={{ color: '#16a34a' }} />
-                      <span className="acad-card-title">Deep Dive: SNS Message Formatting &amp; Delivery Policies</span>
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon EventBridge** is a modern serverless event bus that connects application data from custom microservices, AWS services (S3 uploads, EC2 state changes), and 3rd-party SaaS applications (Zendesk, Shopify, Stripe). EventBridge evaluates rules against JSON payload patterns to route events to over 20+ AWS targets with zero custom glue code!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Smart Automated Corporate Sorting Post Office
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Raw Message Delivery:</strong> By default, SNS wraps the published payload in a JSON metadata envelope containing the MessageId, Timestamp, and TopicArn. Enabling <code>RawMessageDelivery</code> strips this wrapper and forwards only the raw body string to the SQS queue.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Retry &amp; Backoff Policies:</strong> For HTTP/S webhooks, SNS allows you to configure delivery retry policies (exponential backoff, immediate retry) and Dead-Letter Queues at the subscription level to catch unroutable events.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>AWS CLI Cheat Sheet (SNS Topic, Subscriptions &amp; JSON Filter Policy)</h3>
-                
-                {/* Terminal 2 */}
-                <div className="acad-terminal">
-                  <div className="acad-terminal-header">
-                    <div className="acad-terminal-title">SNS Pub/Sub CLI Snippets</div>
-                    <button 
-                      className={`acad-copy-btn ${copiedNoteId === 'cli_sns' ? 'copied' : ''}`}
-                      onClick={() => handleCopyCode(
-`# 1. Create a Standard SNS Topic
-aws sns create-topic --name billing-events-topic
-
-# 2. Subscribe an SQS Queue to the Topic
-aws sns subscribe \\
-  --topic-arn arn:aws:sns:us-east-1:123456789012:billing-events-topic \\
-  --protocol sqs \\
-  --notification-endpoint arn:aws:sqs:us-east-1:123456789012:us-billing-queue
-
-# 3. Apply a JSON Filter Policy to the Subscription (only route US region events with amount >= 100)
-aws sns set-subscription-attributes \\
-  --subscription-arn arn:aws:sns:us-east-1:123456789012:billing-events-topic:456db72a-12ab-45cd-8ef1-901234567890 \\
-  --attribute-name FilterPolicy \\
-  --attribute-value '{"region": ["us-east", "us-west"], "amount": [{"numeric": [">=", 100]}]}'
-
-# 4. Publish an Event to the SNS Topic with Attributes to match the policy
-aws sns publish \\
-  --topic-arn arn:aws:sns:us-east-1:123456789012:billing-events-topic \\
-  --message "{\\"invoice_id\\": 8831, \\"action\\": \\"generated\\"}" \\
-  --message-attributes '{
-    "region": {"DataType": "String", "StringValue": "us-east"},
-    "amount": {"DataType": "Number", "StringValue": "150"}
-  }'`, 
-                        'cli_sns'
-                      )}
-                    >
-                      {copiedNoteId === 'cli_sns' ? <Check size={12} /> : <Copy size={12} />}
-                      {copiedNoteId === 'cli_sns' ? 'Copied' : 'Copy Code'}
-                    </button>
-                  </div>
-                  <pre className="acad-terminal-content">
-{`# 1. Create a Standard SNS Topic
-aws sns create-topic --name billing-events-topic
-
-# 2. Subscribe an SQS Queue to the Topic
-aws sns subscribe \\
-  --topic-arn arn:aws:sns:us-east-1:123456789012:billing-events-topic \\
-  --protocol sqs \\
-  --notification-endpoint arn:aws:sqs:us-east-1:123456789012:us-billing-queue
-
-# 3. Apply a JSON Filter Policy to the Subscription (only route US region events with amount >= 100)
-aws sns set-subscription-attributes \\
-  --subscription-arn arn:aws:sns:us-east-1:123456789012:billing-events-topic:456db72a-12ab-45cd-8ef1-901234567890 \\
-  --attribute-name FilterPolicy \\
-  --attribute-value '{"region": ["us-east", "us-west"], "amount": [{"numeric": [">=", 100]}]}'
-
-# 4. Publish an Event to the SNS Topic with Attributes to match the policy
-aws sns publish \\
-  --topic-arn arn:aws:sns:us-east-1:123456789012:billing-events-topic \\
-  --message "{\\"invoice_id\\": 8831, \\"action\\": \\"generated\\"}" \\
-  --message-attributes '{
-    "region": {"DataType": "String", "StringValue": "us-east"},
-    "amount": {"DataType": "Number", "StringValue": "150"}
-  }'`}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {/* NOTE 3: Kinesis Streams Partitioning */}
-            {selectedNote === 'kinesis_streams' && (
-              <div>
-                <div className="acad-note-header">
-                  <div className="acad-note-title-area">
-                    <span className="acad-note-badge">Streaming &amp; Hybrid Ingestion</span>
-                    <h2 className="acad-note-title">
-                      <Network size={20} style={{ color: '#0f766e' }} /> Kinesis Partitioning &amp; Resharding
-                    </h2>
-                    <p className="acad-note-desc">
-                      Explore partition keys, MD5 hashing to specific shards, scale capacity using shard splitting/merging, and handle 429 write congestion throttles.
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      10,000 packages arrive at the central post office from international airlines, local couriers, and online stores. An optical laser scanner (EventBridge Rules) inspects the JSON zip code and delivery label on every package—automatically routing express letters to the airmail jet (Lambda), heavy packages to freight trucks (SQS), and corporate invoices to accounting (API Destinations)!
                     </p>
                   </div>
-                  <div className="acad-action-area">
-                    <button className="acad-simulate-btn" onClick={() => setActiveTab('kinesis')}>
-                      <Activity size={14} /> Simulate Shard Traffic
-                    </button>
-                  </div>
-                </div>
 
-                <div className="acad-grid">
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Partition Keys &amp; MD5 Hashing</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Hashing Mechanism:</strong> Producers specify a <code>partition-key</code> for each record. Kinesis hashes the key string using MD5 to produce a 128-bit hash integer value.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Shard Map:</strong> Each active shard is assigned a contiguous hash key range (from 0 to 2^128-1). The record is written to the shard whose hash range contains the key's hash value.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Ordered Processing:</strong> Because identical keys produce identical MD5 hashes, all records with the same partition key will always land on the exact same shard. This guarantees strict sequencing for consumers.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Capacity Boundaries &amp; Throttling</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Provisioned Shard Limits:</strong> A single shard supports up to <strong>1 MB/sec write</strong> rate or <strong>1,000 records/sec write</strong>, and <strong>2 MB/sec read</strong> throughput.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Hot Shards &amp; 429s:</strong> If a producer selects a poorly distributed partition key (e.g. <code>sensor_1</code> for 90% of requests), it concentrates traffic onto a single shard. This causes <code>ProvisionedThroughputExceededException</code> (429 Throttling).
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>On-Demand Mode:</strong> Automatically scales the number of shards based on past peak ingestion, while Provisioned mode requires manual resharding.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card acad-deep-dive-card-kinesis">
-                    <div className="acad-card-header">
-                      <BookOpen size={16} style={{ color: '#b91c1c' }} />
-                      <span className="acad-card-title">Advanced Resharding: Splitting vs. Merging</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Shard Splitting:</strong> Divides a single "hot" shard into two new shards. You specify the parent shard and the starting hash key, which is the midpoint of the parent shard's range. This increases provisioned capacity and relieves throttling.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Shard Merging:</strong> Combines two adjacent "cold" (under-utilized) shards into one shard to reduce running cost. The combined shard inherits the sum of the hash ranges of its parent shards.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Parent Shard Lifecycle:</strong> After a split or merge, parent shards enter a <code>CLOSED</code> state. Consumers read the remaining buffer before the parent shards expire (typically after a 24-hour retention period).
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>AWS CLI Cheat Sheet (Kinesis Stream Operations &amp; Resharding)</h3>
-                
-                {/* Terminal 3 */}
-                <div className="acad-terminal">
-                  <div className="acad-terminal-header">
-                    <div className="acad-terminal-title">Kinesis Data Streams CLI Commands</div>
-                    <button 
-                      className={`acad-copy-btn ${copiedNoteId === 'cli_kinesis' ? 'copied' : ''}`}
-                      onClick={() => handleCopyCode(
-`# 1. Create a Kinesis Stream with 2 Shards
-aws kinesis create-stream \\
-  --stream-name user-clickstreams \\
-  --shard-count 2
-
-# 2. Put a JSON Record into the stream with a custom Partition Key
-aws kinesis put-record \\
-  --stream-name user-clickstreams \\
-  --data "{\\"user_id\\": 2049, \\"event\\": \\"click_search\\"}" \\
-  --partition-key "user-2049"
-
-# 3. Split a Hot Shard (requires the starting shard ID and the mid-hash value)
-aws kinesis split-shard \\
-  --stream-name user-clickstreams \\
-  --shard-to-split shardId-000000000000 \\
-  --new-starting-hash-key "170141183460469231731687303715884105728"
-
-# 4. Merge Two Adjacent Cold Shards back into a single unit
-aws kinesis merge-shards \\
-  --stream-name user-clickstreams \\
-  --shard-to-merge shardId-000000000001 \\
-  --adjacent-shard-to-merge shardId-000000000002`, 
-                        'cli_kinesis'
-                      )}
-                    >
-                      {copiedNoteId === 'cli_kinesis' ? <Check size={12} /> : <Copy size={12} />}
-                      {copiedNoteId === 'cli_kinesis' ? 'Copied' : 'Copy Code'}
-                    </button>
-                  </div>
-                  <pre className="acad-terminal-content">
-{`# 1. Create a Kinesis Stream with 2 Shards
-aws kinesis create-stream \\
-  --stream-name user-clickstreams \\
-  --shard-count 2
-
-# 2. Put a JSON Record into the stream with a custom Partition Key
-aws kinesis put-record \\
-  --stream-name user-clickstreams \\
-  --data "{\\"user_id\\": 2049, \\"event\\": \\"click_search\\"}" \\
-  --partition-key "user-2049"
-
-# 3. Split a Hot Shard (requires the starting shard ID and the mid-hash value)
-aws kinesis split-shard \\
-  --stream-name user-clickstreams \\
-  --shard-to-split shardId-000000000000 \\
-  --new-starting-hash-key "170141183460469231731687303715884105728"
-
-# 4. Merge Two Adjacent Cold Shards back into a single unit
-aws kinesis merge-shards \\
-  --stream-name user-clickstreams \\
-  --shard-to-merge shardId-000000000001 \\
-  --adjacent-shard-to-merge shardId-000000000002`}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {/* NOTE 4: Amazon MQ AZ Failover */}
-            {selectedNote === 'amazon_mq' && (
-              <div>
-                <div className="acad-note-header">
-                  <div className="acad-note-title-area">
-                    <span className="acad-note-badge">Streaming &amp; Hybrid Ingestion</span>
-                    <h2 className="acad-note-title">
-                      <Server size={20} style={{ color: '#0f766e' }} /> Amazon MQ Active-Standby Failover
-                    </h2>
-                    <p className="acad-note-desc">
-                      Deploy highly-available message brokers using AMQP, JMS, or MQTT protocols, configured with active/standby replication over shared Amazon EFS storage.
-                    </p>
-                  </div>
-                  <div className="acad-action-area">
-                    <button className="acad-simulate-btn" onClick={() => setActiveTab('amazonmq')}>
-                      <Activity size={14} /> Simulate MQ Failover
-                    </button>
-                  </div>
-                </div>
-
-                <div className="acad-grid">
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Active-Standby Topology</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Dual-AZ Deployment:</strong> Relies on active-standby instances provisioned in two separate Availability Zones (e.g. Subnet AZ-a and Subnet AZ-b).
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Automatic Promotion:</strong> Active broker serves connections. If the active instance fails (hardware, AZ outage), Amazon MQ promotes the standby broker to active.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Client Swapping:</strong> DNS routing is swapped automatically, or the client reconnects via failover transport endpoints.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">EFS Shared Storage &amp; Fencing</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Shared EFS Mount:</strong> Both brokers are connected to a shared Amazon Elastic File System (EFS) that replicates persistent messages across AZs.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>File Locking:</strong> The active broker acquires an exclusive write-lock on EFS message store files. Standby broker remains in boot state, waiting to acquire lock.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Split-Brain Fencing:</strong> Lock mechanisms guarantee that only one broker writes to EFS at any time, preventing data corruption.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card acad-deep-dive-card-mq">
-                    <div className="acad-card-header">
-                      <BookOpen size={16} style={{ color: '#2563eb' }} />
-                      <span className="acad-card-title">JMS / AMQP Broker Configurations</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Standard Protocols:</strong> Supports industry-standard messaging APIs: JMS (Java Message Service) via OpenWire, AMQP (Advanced Message Queuing Protocol), MQTT, and STOMP.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Failover URI:</strong> Java applications configuration: <code>{"failover:(ssl://primary:61617,ssl://secondary:61617)?randomize=false"}</code>. This forces local client reconnection.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Network of Brokers:</strong> Can connect multiple active-active or active-standby brokers across regions, establishing store-and-forward routes for global message processing.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>ActiveMQ Configuration (Broker Transport Connectors &amp; Client failover URI)</h3>
-                
-                {/* Terminal 4 */}
-                <div className="acad-terminal">
-                  <div className="acad-terminal-header">
-                    <div className="acad-terminal-title">ActiveMQ Broker Config &amp; Client URL</div>
-                    <button 
-                      className={`acad-copy-btn ${copiedNoteId === 'cli_mq' ? 'copied' : ''}`}
-                      onClick={() => handleCopyCode(
-`<!-- Java JMS Client Failover Connection String -->
-failover:(ssl://b-1234a-1.mq.us-east-1.amazonaws.com:61617,ssl://b-1234a-2.mq.us-east-1.amazonaws.com:61617)?randomize=false&priorityBackup=true
-
-<!-- ActiveMQ Broker XML Configuration (Transport Connectors definition) -->
-<transportConnectors>
-  <transportConnector 
-    name="openwire" 
-    uri="tcp://0.0.0.0:61616?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
-  <transportConnector 
-    name="amqp" 
-    uri="amqp://0.0.0.0:5672?maximumConnections=1000"/>
-  <transportConnector 
-    name="stomp" 
-    uri="stomp://0.0.0.0:61613?maximumConnections=1000"/>
-</transportConnectors>`, 
-                        'cli_mq'
-                      )}
-                    >
-                      {copiedNoteId === 'cli_mq' ? <Check size={12} /> : <Copy size={12} />}
-                      {copiedNoteId === 'cli_mq' ? 'Copied' : 'Copy Code'}
-                    </button>
-                  </div>
-                  <pre className="acad-terminal-content">
-{`<!-- Java JMS Client Failover Connection String -->
-failover:(ssl://b-1234a-1.mq.us-east-1.amazonaws.com:61617,ssl://b-1234a-2.mq.us-east-1.amazonaws.com:61617)?randomize=false&priorityBackup=true
-
-<!-- ActiveMQ Broker XML Configuration (Transport Connectors definition) -->
-<transportConnectors>
-  <transportConnector 
-    name="openwire" 
-    uri="tcp://0.0.0.0:61616?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
-  <transportConnector 
-    name="amqp" 
-    uri="amqp://0.0.0.0:5672?maximumConnections=1000"/>
-  <transportConnector 
-    name="stomp" 
-    uri="stomp://0.0.0.0:61613?maximumConnections=1000"/>
-</transportConnectors>`}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {/* NOTE 5: FIFO Fanout & Firehose */}
-            {selectedNote === 'fanout_firehose' && (
-              <div>
-                <div className="acad-note-header">
-                  <div className="acad-note-title-area">
-                    <span className="acad-note-badge">Enterprise Pipelines</span>
-                    <h2 className="acad-note-title">
-                      <Zap size={20} style={{ color: '#0f766e' }} /> FIFO Fanout &amp; Kinesis Firehose
-                    </h2>
-                    <p className="acad-note-desc">
-                      Master strict end-to-end ordered delivery using SNS FIFO to SQS FIFO subscription fanouts, and customize Kinesis Firehose buffering settings for raw storage streaming.
-                    </p>
-                  </div>
-                  <div className="acad-action-area">
-                    <button className="acad-simulate-btn" onClick={() => setActiveTab('fanout')}>
-                      <Activity size={14} /> Simulate Pipelines
-                    </button>
-                  </div>
-                </div>
-
-                <div className="acad-grid">
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">SNS SQS FIFO Ordering Preservation</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Strict Sequence preservation:</strong> Broadcast events to multiple queues without losing order. Standard SNS cannot route to SQS FIFO. You must deploy an **SNS FIFO topic**.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Sequence Numbering:</strong> SNS FIFO forwards <code>MessageGroupId</code> and preserves message sequencing using an internal sequence token, writing to SQS FIFO queues in order.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Deduplication Preservation:</strong> Deduplication tokens are passed from SNS FIFO down to the SQS FIFO queue to prevent duplicates across any branch of the fanout.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <Info size={16} style={{ color: '#3b82f6' }} />
-                      <span className="acad-card-title">Firehose Buffering Settings</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Batching Architecture:</strong> Kinesis Data Firehose buffers incoming streaming records before writing to S3, Redshift, OpenSearch, or Splunk.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Dual Buffer Thresholds:</strong> Controlled by **Buffer Size** (1 MB to 128 MB) and **Buffer Interval** (60 to 900 seconds). Whichever threshold is hit first triggers the batch flush.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Lambda In-line Transformation:</strong> Firehose can execute a Lambda function synchronously to transform, parse, format, or clean raw payloads prior to S3 file writing.
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="acad-card acad-deep-dive-card-fanout">
-                    <div className="acad-card-header">
-                      <BookOpen size={16} style={{ color: '#7c3aed' }} />
-                      <span className="acad-card-title">Architecture Deep-Dive: Delivery Formats &amp; Compression</span>
-                    </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>S3 Prefix Partitioning:</strong> Firehose can dynamically group target folders using timestamps: <code>{"analytics/year=!{timestamp:yyyy}/month=!{timestamp:MM}/"}</code>.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Data Conversion:</strong> Firehose natively converts JSON records to Parquet or ORC columnar formats (using AWS Glue schemas) to speed up downstream Athena queries.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Data Compression:</strong> Compresses target logs (GZIP, Snappy, LZO, Zip) to save storage cost and network load.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>AWS CLI Cheat Sheet (FIFO Topic Subscriptions &amp; Firehose Buffering Hints)</h3>
-                
-                {/* Terminal 5 */}
-                <div className="acad-terminal">
-                  <div className="acad-terminal-header">
-                    <div className="acad-terminal-title">FIFO Fanout &amp; Firehose CLI Snippets</div>
-                    <button 
-                      className={`acad-copy-btn ${copiedNoteId === 'cli_fanout' ? 'copied' : ''}`}
-                      onClick={() => handleCopyCode(
-`# 1. Create an SNS FIFO Topic
-aws sns create-topic \\
-  --name transactions-topic.fifo \\
-  --attributes FifoTopic=true,ContentBasedDeduplication=true
-
-# 2. Subscribe an SQS FIFO Queue to the SNS FIFO Topic
-aws sns subscribe \\
-  --topic-arn arn:aws:sns:us-east-1:123456789012:transactions-topic.fifo \\
-  --protocol sqs \\
-  --notification-endpoint arn:aws:sqs:us-east-1:123456789012:billing-orders.fifo
-
-# 3. Update Firehose Destination Buffers (5MB Size limit or 300s Time limit)
-aws firehose update-destination \\
-  --delivery-stream-name clickstream-delivery \\
-  --current-delivery-stream-version-id "1" \\
-  --destination-id "destinationId-000000000001" \\
-  --extended-s3-destination-update '{
-    "BufferingHints": {
-      "SizeInMBs": 5,
-      "IntervalInSeconds": 300
-    },
-    "CompressionFormat": "GZIP",
-    "Prefix": "raw-analytics/year=!{timestamp:yyyy}/month=!{timestamp:MM}/"
-  }'`, 
-                        'cli_fanout'
-                      )}
-                    >
-                      {copiedNoteId === 'cli_fanout' ? <Check size={12} /> : <Copy size={12} />}
-                      {copiedNoteId === 'cli_fanout' ? 'Copied' : 'Copy Code'}
-                    </button>
-                  </div>
-                  <pre className="acad-terminal-content">
-{`# 1. Create an SNS FIFO Topic
-aws sns create-topic \\
-  --name transactions-topic.fifo \\
-  --attributes FifoTopic=true,ContentBasedDeduplication=true
-
-# 2. Subscribe an SQS FIFO Queue to the SNS FIFO Topic
-aws sns subscribe \\
-  --topic-arn arn:aws:sns:us-east-1:123456789012:transactions-topic.fifo \\
-  --protocol sqs \\
-  --notification-endpoint arn:aws:sqs:us-east-1:123456789012:billing-orders.fifo
-
-# 3. Update Firehose Destination Buffers (5MB Size limit or 300s Time limit)
-aws firehose update-destination \\
-  --delivery-stream-name clickstream-delivery \\
-  --current-delivery-stream-version-id "1" \\
-  --destination-id "destinationId-000000000001" \\
-  --extended-s3-destination-update '{
-    "BufferingHints": {
-      "SizeInMBs": 5,
-      "IntervalInSeconds": 300
-    },
-    "CompressionFormat": "GZIP",
-    "Prefix": "raw-analytics/year=!{timestamp:yyyy}/month=!{timestamp:MM}/"
-  }'`}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {/* NOTE 6: Messaging Comparison Matrix */}
-            {selectedNote === 'comparison_matrix' && (
-              <div>
-                <div className="acad-note-header">
-                  <div className="acad-note-title-area">
-                    <span className="acad-note-badge">Reference Worksheets</span>
-                    <h2 className="acad-note-title">
-                      <Database size={20} style={{ color: '#0f766e' }} /> Services Comparison &amp; Decision Guide
-                    </h2>
-                    <p className="acad-note-desc">
-                      Evaluate technical trade-offs between SQS, SNS, Kinesis, Amazon MQ, and EventBridge to select the appropriate messaging pattern for your system.
-                    </p>
-                  </div>
-                  <div className="acad-action-area">
-                    <button className="acad-simulate-btn" onClick={() => setActiveTab('comparison')}>
-                      <Activity size={14} /> View Interactive Matrix
-                    </button>
-                  </div>
-                </div>
-
-                <div className="acad-card" style={{ marginBottom: '24px' }}>
-                  <div className="acad-card-header">
-                    <Info size={16} style={{ color: '#3b82f6' }} />
-                    <span className="acad-card-title">Technical Trade-offs Comparison Matrix</span>
-                  </div>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table className="acad-matrix-table">
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
                       <thead>
                         <tr>
-                          <th>Service</th>
-                          <th>Throughput Scaling</th>
-                          <th>Message Size</th>
-                          <th>Ordered Delivery</th>
-                          <th>Routing Support</th>
-                          <th>Protocols</th>
-                          <th>Primary Use Case</th>
+                          <th>Feature</th>
+                          <th>Amazon EventBridge</th>
+                          <th>Amazon SNS</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td><strong>Amazon SQS</strong></td>
-                          <td>Infinite (Standard) / 3000 TPS (FIFO)</td>
-                          <td>Up to 256 KB</td>
-                          <td>Yes (with FIFO Queue)</td>
-                          <td>None (Queue pull)</td>
-                          <td>HTTPS Query API</td>
-                          <td>Simple point-to-point decoupling, buffer leveling</td>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>Target Options</strong></td>
+                          <td>20+ AWS Targets (Lambda, Step Functions, Kinesis, ECS, API Destinations)</td>
+                          <td>Limited (SQS, Lambda, HTTP/S, SMS, Email)</td>
                         </tr>
                         <tr>
-                          <td><strong>Amazon SNS</strong></td>
-                          <td>Infinite scaling</td>
-                          <td>Up to 256 KB</td>
-                          <td>Yes (with FIFO Topic)</td>
-                          <td>JSON Subscription Filters</td>
-                          <td>HTTPS Query API</td>
-                          <td>High throughput pub/sub broadcast fanout</td>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>Pattern Matching</strong></td>
+                          <td>Advanced JSON rule matching (Prefix, Numeric ranges, Anything-but, Exists)</td>
+                          <td>Basic message attribute string matching</td>
                         </tr>
                         <tr>
-                          <td><strong>Amazon Kinesis</strong></td>
-                          <td>Provisioned (1MB/s write per Shard)</td>
-                          <td>Up to 1 MB</td>
-                          <td>Strictly ordered per Shard</td>
-                          <td>Shard partition keys</td>
-                          <td>Kinesis Streams API</td>
-                          <td>Clickstreams, metrics ingestion, IoT real-time streaming</td>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>SaaS Integration</strong></td>
+                          <td>Native partner integrations (Shopify, Zendesk, Datadog, Auth0)</td>
+                          <td>Custom integration code required</td>
                         </tr>
                         <tr>
-                          <td><strong>Amazon MQ</strong></td>
-                          <td>Instance-bound limit</td>
-                          <td>Broker limited (typ. 100MB+)</td>
-                          <td>Yes (within protocol order)</td>
-                          <td>Broker routing (Topics/Queues)</td>
-                          <td>JMS, AMQP, MQTT, OpenWire</td>
-                          <td>Enterprise migration requiring legacy protocol standards</td>
-                        </tr>
-                        <tr>
-                          <td><strong>EventBridge</strong></td>
-                          <td>Throttle throttled (auto-scales)</td>
-                          <td>Up to 256 KB</td>
-                          <td>No (Best-effort)</td>
-                          <td>JSON Rules (Schema registry)</td>
-                          <td>HTTPS CloudEvents</td>
-                          <td>SaaS integration, microservice orchestrations</td>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>Schema Registry</strong></td>
+                          <td>Autodiscovers event schemas and generates code bindings in Java/Python/TypeScript</td>
+                          <td>No Schema Registry</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
+              )}
 
-                <div className="acad-grid">
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <HelpCircle size={16} style={{ color: '#0ea5e9' }} />
-                      <span className="acad-card-title">When to Choose Amazon EventBridge?</span>
+              {/* NOTE 2.2: STEP FUNCTIONS STATE MACHINE */}
+              {selectedNote === 'step_functions' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">⚡ Level 2 · Event Bus &amp; Step Functions</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        2.2 AWS Step Functions: Visual Serverless Workflows &amp; State Machines
+                      </h3>
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Event-Driven Architecture:</strong> Perfect for routing events from custom microservices, SaaS applications (e.g. Zendesk, Datadog), and AWS services (e.g. S3 upload notifications).
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Rich Filtering:</strong> Allows checking nested fields, array checking, prefix routing, and schema validation.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Target Routing:</strong> Delivers events to over 20+ AWS targets (Lambda, ECS, Step Functions, Kinesis, API Destinations).
-                      </li>
-                    </ul>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('comparison')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to State Machines Tab
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="acad-card">
-                    <div className="acad-card-header">
-                      <HelpCircle size={16} style={{ color: '#0ea5e9' }} />
-                      <span className="acad-card-title">When to Choose Kinesis Data Streams vs. SQS?</span>
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> When an e-commerce checkout involves charging a credit card, updating inventory, generating a shipping label, and sending a receipt, writing complex <code>try/catch</code> loops inside Lambda functions leads to fragile code. **AWS Step Functions** orchestrates microservices into a visual **State Machine** with automatic retries, branching logic, parallel execution, and human-in-the-loop approvals!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Airport Luggage &amp; Passport Conveyor Flowchart
                     </div>
-                    <ul className="acad-list">
-                      <li className="acad-list-item">
-                        <strong>Consumer Patterns:</strong> SQS follows a "pull" pattern where multiple consumers pull and delete messages (competing consumers). Kinesis follows a "replayable log" pattern where multiple independent groups of consumers read from the same stream offsets.
-                      </li>
-                      <li className="acad-list-item">
-                        <strong>Data Retention:</strong> SQS deletes messages immediately after processing. Kinesis retains records for 24 hours (up to 365 days), allowing you to replay historical streams to fix bugs or train models.
-                      </li>
-                    </ul>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Step 1: Check-in luggage (Task State). If bag is over 50 lbs, detour to oversize counter (Choice State). Step 2: X-Ray Scanner (Parallel Branching). If scanner detects suspicious items, pause and illuminate red light until security officer pushes physical approval button (Human Task Token)!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 text-xs" style={{ color: 'var(--im-text-secondary)' }}>
+                      <h4 className="font-bold text-xs" style={{ color: 'var(--im-text-primary)' }}>Standard Workflows vs Express Workflows:</h4>
+                      
+                      <div className="p-2.5 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--im-border-secondary)' }}>
+                        <strong className="text-indigo-600 font-bold block">1. Standard Workflows (Up to 1 Year):</strong>
+                        <p>Exactly-once execution for long-running business workflows (order processing, ETL pipelines, human approvals). Complete visual execution history saved.</p>
+                      </div>
+                      <div className="p-2.5 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--im-border-secondary)' }}>
+                        <strong className="text-emerald-600 font-bold block">2. Express Workflows (Up to 5 Mins):</strong>
+                        <p>At-least-once execution for high-volume event ingestion (IoT telemetry, microservice APIs) up to 100,000 executions/sec at ultra-low cost.</p>
+                      </div>
+                    </div>
+
+                    <div className="im-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--im-text-secondary)' }}>ASL Retry Block</span>
+                        <button 
+                          onClick={() => handleCopyCode(`"Retry": [{\n  "ErrorEquals": ["States.Timeout", "PaymentFailed"],\n  "IntervalSeconds": 3,\n  "MaxAttempts": 5,\n  "BackoffRate": 2.0\n}]`, 'asl-retry')}
+                          className="im-tab-btn text-[10px] p-1 flex items-center gap-1"
+                        >
+                          {copiedNoteId === 'asl-retry' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                      
+                      <pre className="acad-terminal text-[9px] leading-relaxed text-left overflow-x-auto">
+{`"Retry": [{
+  "ErrorEquals": ["States.Timeout", "PaymentFailed"],
+  "IntervalSeconds": 3,
+  "MaxAttempts": 5,
+  "BackoffRate": 2.0
+}]`}
+                      </pre>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* NOTE 3.1: KINESIS DATA STREAMS VS SQS */}
+              {selectedNote === 'kinesis_streams' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🌊 Level 3 · Kinesis Streaming</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        3.1 Amazon Kinesis Data Streams vs SQS (Streaming vs Queues)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('kinesis')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Kinesis Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> While SQS is designed for worker job queues where messages are deleted once read, **Amazon Kinesis Data Streams** is designed for real-time streaming data (clickstreams, financial stock tickers, IoT sensors). Messages stay in Kinesis shards for 24 hours to 365 days—allowing multiple applications to read and replay the exact same stream concurrently!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Multi-Lane Highway Express vs Individual Postal Envelopes
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>SQS (Individual Postal Envelopes)</strong>: A worker opens an envelope, takes the letter, and shreds it so no one else sees it.
+                      <br />• <strong>Kinesis Data Streams (Multi-Lane Highway Traffic Camera)</strong>: Vehicles (data records) speed past continuously on 4 separate lanes (Shards). A traffic sensor (Analytics App #1), toll monitor (Security App #2), and speed camera (Fraud App #3) can all record the exact same cars simultaneously without taking them off the road!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Feature</th>
+                          <th>Amazon SQS</th>
+                          <th>Amazon Kinesis Data Streams</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>Data Retention</strong></td>
+                          <td>Messages deleted immediately upon worker completion</td>
+                          <td>Records retained in stream for 24h to 365 days (Replay capability)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>Multiple Readers</strong></td>
+                          <td>❌ No (Competing consumers pull from same queue)</td>
+                          <td>✅ Yes (Multiple independent applications read from same Shard)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--im-text-primary)' }}>Ordering &amp; Partitioning</strong></td>
+                          <td>Ordering guaranteed only in SQS FIFO (300 msg/s)</td>
+                          <td>Strict per-partition-key ordering per Shard (1 MB/s write per shard)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: KINESIS DATA FIREHOSE */}
+              {selectedNote === 'kinesis_firehose' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🌊 Level 3 · Kinesis Streaming</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        3.2 Amazon Data Firehose: Zero-Code Continuous Data Delivery
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('kinesis')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Firehose Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon Data Firehose (formerly Kinesis Data Firehose)** is a serverless, zero-code ingestion service that captures streaming data, automatically converts formats (JSON to Apache Parquet/ORC for Athena cost optimization), and dumps batches into Amazon S3, Redshift, OpenSearch, or Splunk!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Automatic Industrial Conveyor Pipe
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of hiring 10 workers to manually shovel dirt into buckets, you install an automatic industrial conveyor pipe. As water and gravel flow through the pipe, an inline filter compresses the gravel into neat bricks (Parquet compression) and dumps them directly into the storage warehouse every 60 seconds!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: AMAZON MQ */}
+              {selectedNote === 'amazon_mq' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🐹 Level 4 · Amazon MQ &amp; DLQ</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        4.1 Amazon MQ: Managed Apache ActiveMQ &amp; RabbitMQ Broker
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('amazonmq')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Amazon MQ Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Legacy enterprise applications built on industry-standard message protocols (AMQP, STOMP, MQTT, JMS) cannot easily be rewritten for SQS or SNS APIs. **Amazon MQ** provides a managed **Apache ActiveMQ or RabbitMQ** broker in AWS—allowing lift-and-shift migration of legacy enterprise systems without changing a single line of code!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Legacy Office Mailroom Moved to the Cloud
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      If your corporate office uses traditional paper inter-office envelopes with specialized stamps (JMS/AMQP), moving to SQS would mean forcing every employee to learn a completely new language. Amazon MQ moves your exact old mailroom into the cloud—preserving all existing envelopes, stamps, and mailboxes so employees notice zero disruption!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: DEAD LETTER QUEUES & REDRIVE */}
+              {selectedNote === 'dlq_redrive' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🐹 Level 4 · Amazon MQ &amp; DLQ</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--im-text-primary)', marginTop: '8px' }}>
+                        4.2 Dead-Letter Queues (DLQ) &amp; Automated Redrive Mechanism
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('sqs')}
+                        className="im-tab-btn im-active"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to DLQ Simulator
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> A **Poison Pill Message** is a corrupted payload (e.g. invalid JSON or divide-by-zero bug) that causes a worker server to crash repeatedly. Without protection, a single poison pill message can block your entire queue forever! A **Dead-Letter Queue (DLQ)** isolates unparseable messages after a threshold of failed attempts (<code>maxReceiveCount</code>), and **SQS Redrive** lets you re-inject fixed messages back into the main queue with 1 click after fixing code bugs.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Rejected Returns Quarantine Box
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      If a package at the conveyor belt has a torn label that jams the barcode scanner 5 times in a row (<code>maxReceiveCount=5</code>), the system doesn&apos;t halt the entire factory line! An automated mechanical arm sweeps the torn package into a **Quarantine Box (DLQ)**. Once the manager repairs the label, they push the Redrive button to place the package back onto the main conveyor line!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         </div>
-      </div>
       )}
 
-      {/* ==========================================
-          TAB 1: SQS QUEUES & LOCKS
-          ========================================== */}
+
       {activeTab === 'sqs' && (
         <div className="im-grid">
           {/* Controls */}

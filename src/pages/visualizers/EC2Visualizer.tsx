@@ -3,84 +3,247 @@ import {
   BookOpen,
   ChevronRight,
   ChevronDown,
-  Info,
   Copy,
-  Network,
   Zap,
   Sliders,
-  Globe
+  Globe,
+  Search,
+  CheckCircle2,
+  AlertTriangle,
+  Cpu,
+  Layers,
+  Sparkles,
+  X,
+  LayoutGrid,
+  Table as TableIcon,
+  ShieldCheck,
+  HardDrive,
+  DollarSign,
+  Lightbulb,
+  Server,
+  Activity,
+  Lock
 } from 'lucide-react';
 import EC2ComparativeView from '../../components/visualizers/EC2ComparativeView';
 import UniqueComputeFeatures from '../../components/visualizers/UniqueComputeFeatures';
 
 // Types & Configs for EC2 Visualizer
-interface InstanceFamily {
+export interface SampleInstanceType {
   name: string;
+  vcpu: number;
+  ramGiB: number;
+  storage: string;
+  network: string;
+  hourlyEst: string;
+  useCase: string;
+}
+
+export interface InstanceFamily {
+  id: string;
+  name: string;
+  category: 'general' | 'compute' | 'memory' | 'storage' | 'gpu';
   classCode: string;
+  prefixList: string[];
+  ratio: string;
+  ratioScore: number;
   vcpuRange: string;
   ramRange: string;
   networkBandwidth: string;
   ebsBandwidth: string;
+  storageType: string;
+  storageBadge: string;
+  hardwareTech: string;
+  keyDifferentiator: string;
   useCase: string;
+  idealFor: string[];
+  tradeoffs: string[];
   icon: string;
   desc: string;
+  themeColor: string;
+  accentBg: string;
+  cloudEquivalents: {
+    aws: string;
+    azure: string;
+    gcp: string;
+  };
+  sampleInstances: SampleInstanceType[];
 }
 
 const INSTANCE_FAMILIES: Record<string, InstanceFamily> = {
   general: {
+    id: 'general',
     name: 'General Purpose (t3, m6g, m7i)',
+    category: 'general',
     classCode: 'T / M',
+    prefixList: ['t3', 't4g', 'm6g', 'm6i', 'm7g', 'm7i', 'm7a'],
+    ratio: '4:1 (Balanced)',
+    ratioScore: 4,
     vcpuRange: '2 to 128 vCPUs',
     ramRange: '0.5 GiB to 512 GiB',
-    networkBandwidth: 'Up to 25 Gbps',
+    networkBandwidth: 'Up to 25 Gbps (ENA)',
     ebsBandwidth: 'Up to 20 Gbps',
-    useCase: 'Standard web servers, microservices backends, test/dev pipelines, caching fleets.',
+    storageType: 'EBS-Optimized (NVMe on "d" variants)',
+    storageBadge: 'EBS / Local NVMe',
+    hardwareTech: 'Graviton2/3/4, Intel Xeon 4th Gen, AMD EPYC 4th Gen',
+    keyDifferentiator: 'Balanced CPU-to-Memory ratio (4 GiB per vCPU) + Burstable CPU Credit mechanism on T-series for cost efficiency.',
+    useCase: 'Standard web servers, microservices backends, test/dev pipelines, caching fleets, enterprise apps.',
+    idealFor: ['Web & App Servers', 'Microservices Fleets', 'Small-to-Medium Databases', 'Development & CI/CD Pipelines'],
+    tradeoffs: ['Burstable T-series can throttle if CPU credits deplete under continuous load', 'Not cost-optimal for memory-only or GPU workloads'],
     icon: '💻',
-    desc: 'Balanced resource allocation. Standard baseline compute with capacity to burst (t-series burstable credits) or sustained performance (m-series).',
+    desc: 'Balanced resource allocation across compute, memory, and networking. Features burstable T-series (accumulates CPU credits when idle) and sustained M-series for steady enterprise production.',
+    themeColor: '#0284c7',
+    accentBg: 'rgba(2, 132, 199, 0.1)',
+    cloudEquivalents: {
+      aws: 't4g, t3, m6g, m7i, m7a',
+      azure: 'B-series, Dsv5, Dasv5, Dpsv5',
+      gcp: 'E2, N2, N2D, N4, Tau T2D'
+    },
+    sampleInstances: [
+      { name: 't4g.nano', vcpu: 2, ramGiB: 0.5, storage: 'EBS-Only', network: 'Up to 5 Gbps', hourlyEst: '~$0.0042/hr', useCase: 'Low-traffic microservice / IoT telemetry' },
+      { name: 't3.medium', vcpu: 2, ramGiB: 4.0, storage: 'EBS-Only', network: 'Up to 5 Gbps', hourlyEst: '~$0.0416/hr', useCase: 'Standard web frontend / dev environment' },
+      { name: 'm7g.xlarge', vcpu: 4, ramGiB: 16.0, storage: 'EBS-Only', network: 'Up to 12.5 Gbps', hourlyEst: '~$0.1632/hr', useCase: 'Production microservice cluster / Graviton3' },
+      { name: 'm7i.8xlarge', vcpu: 32, ramGiB: 128.0, storage: 'EBS-Only', network: 'Up to 25 Gbps', hourlyEst: '~$1.4208/hr', useCase: 'High-throughput enterprise backend API' }
+    ]
   },
   compute: {
+    id: 'compute',
     name: 'Compute Optimized (c6g, c7i, c8g)',
+    category: 'compute',
     classCode: 'C',
+    prefixList: ['c6g', 'c6i', 'c7g', 'c7i', 'c7a', 'c8g'],
+    ratio: '2:1 (Compute-Dominant)',
+    ratioScore: 2,
     vcpuRange: '2 to 192 vCPUs',
     ramRange: '4 GiB to 384 GiB',
     networkBandwidth: 'Up to 100 Gbps',
     ebsBandwidth: 'Up to 80 Gbps',
-    useCase: 'High-performance web apps, scientific modeling, game servers, video rendering, machine learning inference.',
+    storageType: 'EBS-Optimized (Local NVMe SSD on "d" variants)',
+    storageBadge: 'EBS / Local NVMe',
+    hardwareTech: 'AWS Graviton3/4, Intel Xeon Platinum (3.8 GHz Turbo), AMD EPYC 9004',
+    keyDifferentiator: 'Highest raw clock speeds and lowest price-per-vCPU. 2 GiB memory per vCPU core avoids paying for unused RAM.',
+    useCase: 'High-performance web apps, scientific compute, dedicated game servers, video rendering, machine learning inference.',
+    idealFor: ['Batch Processing & Transcoding', 'Scientific Modeling & HPC', 'Multiplayer Dedicated Game Servers', 'High-Traffic Web Servers'],
+    tradeoffs: ['Low RAM:vCPU ratio (2:1) can cause Out-Of-Memory errors if applications cache heavily in RAM'],
     icon: '⚡',
-    desc: 'High ratio of vCPUs to memory. Tailored for compute-heavy workloads running dedicated raw thread processing.',
+    desc: 'Engineered for compute-bound applications that demand raw thread execution speed. Delivers leading price-to-performance ratio without over-provisioning memory.',
+    themeColor: '#ea580c',
+    accentBg: 'rgba(234, 88, 12, 0.1)',
+    cloudEquivalents: {
+      aws: 'c6g, c7i, c8g, c7a',
+      azure: 'Fsv2, FX-series',
+      gcp: 'C2, C2D, C3, C3D'
+    },
+    sampleInstances: [
+      { name: 'c7g.medium', vcpu: 1, ramGiB: 2.0, storage: 'EBS-Only', network: 'Up to 12.5 Gbps', hourlyEst: '~$0.0361/hr', useCase: 'Lightweight CPU worker / Queue consumer' },
+      { name: 'c6i.xlarge', vcpu: 4, ramGiB: 8.0, storage: 'EBS-Only', network: 'Up to 12.5 Gbps', hourlyEst: '~$0.1700/hr', useCase: 'CI/CD Build & Test Runner Node' },
+      { name: 'c7i.4xlarge', vcpu: 16, ramGiB: 32.0, storage: 'EBS-Only', network: 'Up to 12.5 Gbps', hourlyEst: '~$0.7104/hr', useCase: 'Video Transcoding & High-Load API gateway' },
+      { name: 'c7a.16xlarge', vcpu: 64, ramGiB: 128.0, storage: 'EBS-Only', network: 'Up to 25 Gbps', hourlyEst: '~$3.3280/hr', useCase: 'HPC & Parallel Batch Simulation Grid' }
+    ]
   },
   memory: {
+    id: 'memory',
     name: 'Memory Optimized (r6g, r7i, x2gd, z1d)',
-    classCode: 'R / X / Z',
-    vcpuRange: '2 to 256 vCPUs',
-    ramRange: '16 GiB to 4,096 GiB',
+    category: 'memory',
+    classCode: 'R / X / Z / U',
+    prefixList: ['r6g', 'r7g', 'r7i', 'x2gd', 'x2idn', 'z1d', 'u-series'],
+    ratio: '8:1 to 32:1 (Memory-Heavy)',
+    ratioScore: 8,
+    vcpuRange: '2 to 448 vCPUs',
+    ramRange: '16 GiB to 24,576 GiB (24 TiB)',
     networkBandwidth: 'Up to 100 Gbps',
     ebsBandwidth: 'Up to 80 Gbps',
-    useCase: 'In-memory databases (Redis, Memcached), high-scale SAP workloads, large database cluster primary instances.',
+    storageType: 'EBS-Optimized + NVMe SSD options (up to 3.8 TB)',
+    storageBadge: 'High-Speed NVMe / EBS',
+    hardwareTech: 'Custom Intel Xeon / Graviton3 with massive multi-socket DDR5 NUMA architecture',
+    keyDifferentiator: 'Huge memory footprint (8 to 32 GiB RAM per vCPU core, up to 24 TiB on bare-metal U-instances) for processing datasets in-RAM.',
+    useCase: 'In-memory databases (Redis, Memcached), high-scale SAP HANA workloads, large database cluster primary instances, real-time analytics.',
+    idealFor: ['In-Memory Caches (Redis/KeyDB)', 'Enterprise SAP HANA & Oracle DBs', 'Big Data In-Memory Spark/Presto', 'Real-time Geospatial Processing'],
+    tradeoffs: ['Higher hourly cost due to large RAM hardware footprints', 'Underutilized if workload is CPU-bound'],
     icon: '🧠',
-    desc: 'Designed for processing enormous datasets in-memory. Exceptional RAM allocations per vCPU core.',
+    desc: 'Tailored for memory-intensive enterprise workloads. Enables in-memory analytics and processing of giant memory datasets with zero disk I/O bottleneck.',
+    themeColor: '#7c3aed',
+    accentBg: 'rgba(124, 58, 237, 0.1)',
+    cloudEquivalents: {
+      aws: 'r6g, r7i, x2gd, z1d, u-series',
+      azure: 'Esv5, Edsv5, Msv2, M-series',
+      gcp: 'M2, M3, R2D, Memory-Optimized X4'
+    },
+    sampleInstances: [
+      { name: 'r7g.large', vcpu: 2, ramGiB: 16.0, storage: 'EBS-Only', network: 'Up to 12.5 Gbps', hourlyEst: '~$0.1062/hr', useCase: 'High-Throughput Redis Cache Primary' },
+      { name: 'r7i.4xlarge', vcpu: 16, ramGiB: 128.0, storage: 'EBS-Only', network: 'Up to 12.5 Gbps', hourlyEst: '~$1.0656/hr', useCase: 'Production PostgreSQL / MySQL Cluster Node' },
+      { name: 'x2gd.8xlarge', vcpu: 32, ramGiB: 512.0, storage: '1x 1.9TB NVMe', network: 'Up to 25 Gbps', hourlyEst: '~$2.6880/hr', useCase: 'Real-Time In-Memory Apache Spark Fleet' },
+      { name: 'u-6tb1.metal', vcpu: 448, ramGiB: 6144.0, storage: 'EBS-Optimized', network: '100 Gbps', hourlyEst: 'Bare Metal Quote', useCase: 'Mission-Critical Enterprise SAP HANA ERP' }
+    ]
   },
   storage: {
+    id: 'storage',
     name: 'Storage Optimized (i3en, i4g, d3, h1)',
-    classCode: 'I / D / H',
+    category: 'storage',
+    classCode: 'I / D / H / Im',
+    prefixList: ['i3en', 'i4g', 'i4i', 'd3', 'd3en', 'h1', 'im4gn'],
+    ratio: '4:1 to 8:1 (Storage-Focused)',
+    ratioScore: 6,
     vcpuRange: '4 to 128 vCPUs',
     ramRange: '32 GiB to 1,024 GiB',
     networkBandwidth: 'Up to 100 Gbps',
     ebsBandwidth: 'Up to 80 Gbps',
-    useCase: 'NoSQL storage fleets (Cassandra, MongoDB), distributed databases, Kafka clusters, big data parallel processing.',
+    storageType: 'Direct-Attached Local NVMe SSDs (Up to 30 TB raw)',
+    storageBadge: '⚡ Local NVMe PCIe (Non-Volatile)',
+    hardwareTech: 'Custom AWS Nitro SSDs with up to 3.4M Random Read IOPS',
+    keyDifferentiator: 'Direct physical PCIe hardware bus connection to ultra-fast NVMe flash or massive magnetic HDDs with millions of low-latency IOPS.',
+    useCase: 'NoSQL storage fleets (Cassandra, ScyllaDB, MongoDB), distributed Kafka message brokers, data warehouses, Elasticsearch/OpenSearch clusters.',
+    idealFor: ['High-IOPS NoSQL (Cassandra/MongoDB)', 'Distributed Kafka / Kinesis Brokers', 'Search Index Clusters (Elasticsearch)', 'Massive MapReduce Data Warehousing'],
+    tradeoffs: ['Instance Store data is EPHEMERAL: data is lost upon VM stop/terminate (requires replication software)'],
     icon: '💾',
-    desc: 'Equipped with ultra-fast direct-attached local NVMe physical drives (Instance Store) or massive magnetic disk capacities.',
+    desc: 'Equipped with ultra-fast direct-attached local NVMe physical drives (Instance Store) delivering microsecond latencies and sequential throughput.',
+    themeColor: '#059669',
+    accentBg: 'rgba(5, 150, 105, 0.1)',
+    cloudEquivalents: {
+      aws: 'i3en, i4g, d3, h1, im4gn',
+      azure: 'Lsv3, Lsv2, Storage-Optimized',
+      gcp: 'Local SSD, Z3, N2-Local-SSD'
+    },
+    sampleInstances: [
+      { name: 'im4gn.large', vcpu: 2, ramGiB: 8.0, storage: '1x 937 GB NVMe', network: 'Up to 25 Gbps', hourlyEst: '~$0.1147/hr', useCase: 'Distributed Log Collector & Ingest Node' },
+      { name: 'i3en.2xlarge', vcpu: 8, ramGiB: 64.0, storage: '2x 2.5 TB NVMe', network: 'Up to 25 Gbps', hourlyEst: '~$0.9040/hr', useCase: 'High-Throughput Apache Kafka Message Broker' },
+      { name: 'i4i.8xlarge', vcpu: 32, ramGiB: 256.0, storage: '4x 3.75 TB NVMe', network: 'Up to 37.5 Gbps', hourlyEst: '~$3.4240/hr', useCase: 'Cassandra / ScyllaDB Low-Latency Cluster' },
+      { name: 'd3en.12xlarge', vcpu: 48, ramGiB: 192.0, storage: '24x 14 TB HDD (336 TB)', network: 'Up to 75 Gbps', hourlyEst: '~$4.9920/hr', useCase: 'Massive MapReduce / Data Lake Storage' }
+    ]
   },
   gpu: {
+    id: 'gpu',
     name: 'Accelerated Computing (g5, p4de, trn1)',
+    category: 'gpu',
     classCode: 'G / P / Trn / Inf',
-    vcpuRange: '4 to 96 vCPUs',
-    ramRange: '16 GiB to 768 GiB (plus VRAM)',
-    networkBandwidth: 'Up to 800 Gbps',
-    ebsBandwidth: 'Up to 40 Gbps',
-    useCase: 'Deep learning model training, AI LLM tuning (trn1), hardware graphics compilation, heavy parallel math, crypto workflows.',
+    prefixList: ['g5', 'g6', 'p4de', 'p5', 'trn1', 'inf2'],
+    ratio: 'Specialized + High-Bandwidth VRAM',
+    ratioScore: 16,
+    vcpuRange: '4 to 192 vCPUs',
+    ramRange: '16 GiB to 2,048 GiB + 640 GB HBM3',
+    networkBandwidth: 'Up to 3,200 Gbps (EFAv2)',
+    ebsBandwidth: 'Up to 80 Gbps',
+    storageType: 'Local NVMe with GPUDirect Storage Support',
+    storageBadge: 'GPUDirect NVMe + Ultra-EFA',
+    hardwareTech: 'NVIDIA H100/A100/L4 GPUs, AWS Trainium & Inferentia2 Custom Silicon',
+    keyDifferentiator: 'Specialized co-processor hardware execution (CUDA Tensor Cores / Trainium NeuronCores) + multi-terabit Elastic Fabric Adapter cluster networking.',
+    useCase: 'Deep learning model training, AI LLM fine-tuning, hardware graphics rendering, computational fluid dynamics, autonomous vehicle simulation.',
+    idealFor: ['LLM Pre-Training & Fine-Tuning', 'High-Throughput AI Inference', '3D Graphics & Unreal/Unity Cloud Rendering', 'Autonomous Driving Simulations'],
+    tradeoffs: ['Highest cost category', 'Requires specialized CUDA/Neuron drivers and frameworks'],
     icon: '🎨',
-    desc: 'Co-processor acceleration backed by specialized hardware (NVIDIA Tensor Core GPUs or custom AWS Trainium chips).',
+    desc: 'Co-processor acceleration backed by specialized hardware (NVIDIA Tensor Core GPUs or custom AWS Trainium/Inferentia chips) connected via EFA clusters.',
+    themeColor: '#e11d48',
+    accentBg: 'rgba(225, 29, 72, 0.1)',
+    cloudEquivalents: {
+      aws: 'g5, p4de, trn1, p5, inf2',
+      azure: 'NC-series, NDv4, NVv4, ND H100',
+      gcp: 'A2, A3, G2, Cloud TPU v5e'
+    },
+    sampleInstances: [
+      { name: 'g5.xlarge', vcpu: 4, ramGiB: 16.0, storage: 'EBS-Only', network: 'Up to 10 Gbps', hourlyEst: '~$1.0060/hr', useCase: 'NVIDIA A10G (24GB) AI Inference & 3D Render' },
+      { name: 'g6.4xlarge', vcpu: 16, ramGiB: 64.0, storage: 'EBS-Only', network: 'Up to 25 Gbps', hourlyEst: '~$1.4390/hr', useCase: 'NVIDIA L4 (24GB) Real-time Speech & Vision AI' },
+      { name: 'trn1.32xlarge', vcpu: 128, ramGiB: 512.0, storage: '4x 1.9TB NVMe', network: '800 Gbps EFA', hourlyEst: '~$21.50/hr', useCase: '16x AWS Trainium ASICs for Large Scale LLM Tuning' },
+      { name: 'p5.48xlarge', vcpu: 192, ramGiB: 2048.0, storage: '8x 3.8TB NVMe', network: '3,200 Gbps EFAv2', hourlyEst: '~$98.32/hr', useCase: '8x NVIDIA H100 (640GB HBM3) Foundation AI Models' }
+    ]
   }
 };
 
@@ -383,14 +546,20 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
     if (provider === 'aws') return text;
     if (provider === 'gcp') {
       return text
+        .replace(/EC2-([0-9A-Za-z]+)/g, 'VM-$1')
+        .replace(/EC2 Replica ([0-9]+)/g, 'VM Replica $1')
+        .replace(/Placement Groups/g, 'Resource Placement Policies')
+        .replace(/Placement Group/g, 'Resource Placement Policy')
+        .replace(/placement groups/g, 'resource placement policies')
+        .replace(/placement group/g, 'resource placement policy')
         .replace(/AWS EC2/g, 'Google Cloud Compute Engine')
         .replace(/Amazon EC2/g, 'Google Cloud Compute Engine')
-        .replace(/EC2/g, 'Compute Engine')
+        .replace(/\bEC2\b/g, 'Compute Engine')
         .replace(/Elastic Compute Cloud/g, 'Compute Engine VM Instances')
-        .replace(/instance/g, 'VM instance')
-        .replace(/instances/g, 'VM instances')
-        .replace(/Instance/g, 'VM Instance')
-        .replace(/Instances/g, 'VM Instances')
+        .replace(/\binstances\b/g, 'VM instances')
+        .replace(/\binstance\b/g, 'VM instance')
+        .replace(/\bInstances\b/g, 'VM Instances')
+        .replace(/\bInstance\b/g, 'VM Instance')
         .replace(/User Data/g, 'Startup Script')
         .replace(/user data/g, 'startup script')
         .replace(/Security Group/g, 'VPC Firewall Rule')
@@ -429,23 +598,30 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/instance-id/g, 'http://metadata.google.internal/computeMetadata/v1/instance/id')
         .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/local-ipv4/g, 'http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip')
         .replace(/bastion/g, 'iap-bastion')
-        .replace(/T \/ M/g, 'E2 / N2')
-        .replace(/C/g, 'C2 / C3')
-        .replace(/R \/ X \/ Z/g, 'R2D / M3')
-        .replace(/I \/ D \/ H/g, 'Local SSD')
-        .replace(/G \/ P \/ Trn \/ Inf/g, 'A2 / G2')
+        .replace(/Prefix Class: T \/ M\b/g, 'Prefix Class: E2 / N2')
+        .replace(/Prefix Class: C\b/g, 'Prefix Class: C2 / C3')
+        .replace(/Class Code: C\b/g, 'Class Code: C2 / C3')
+        .replace(/Prefix Class: R \/ X \/ Z\b/g, 'Prefix Class: R2D / M3')
+        .replace(/Prefix Class: I \/ D \/ H\b/g, 'Prefix Class: Local SSD')
+        .replace(/Prefix Class: G \/ P \/ Trn \/ Inf\b/g, 'Prefix Class: A2 / G2')
         .replace(/Trainium/g, 'TPUs');
     }
     if (provider === 'azure') {
       return text
+        .replace(/EC2-([0-9A-Za-z]+)/g, 'VM-$1')
+        .replace(/EC2 Replica ([0-9]+)/g, 'VM Replica $1')
+        .replace(/Placement Groups/g, 'Proximity Placement Groups')
+        .replace(/Placement Group/g, 'Proximity Placement Group')
+        .replace(/placement groups/g, 'proximity placement groups')
+        .replace(/placement group/g, 'proximity placement group')
         .replace(/AWS EC2/g, 'Azure Virtual Machines')
         .replace(/Amazon EC2/g, 'Azure Virtual Machines')
-        .replace(/EC2/g, 'Virtual Machines')
+        .replace(/\bEC2\b/g, 'Virtual Machines')
         .replace(/Elastic Compute Cloud/g, 'Azure Virtual Machines')
-        .replace(/instance/g, 'VM')
-        .replace(/instances/g, 'VMs')
-        .replace(/Instance/g, 'VM')
-        .replace(/Instances/g, 'VMs')
+        .replace(/\binstances\b/g, 'VMs')
+        .replace(/\binstance\b/g, 'VM')
+        .replace(/\bInstances\b/g, 'VMs')
+        .replace(/\bInstance\b/g, 'VM')
         .replace(/User Data/g, 'Custom Data')
         .replace(/user data/g, 'custom data')
         .replace(/Security Group/g, 'Network Security Group (NSG)')
@@ -484,11 +660,12 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/instance-id/g, 'http://169.254.169.254/metadata/instance/compute/vmId?api-version=2021-02-01&format=text')
         .replace(/http:\/\/169.254.169.254\/latest\/meta-data\/local-ipv4/g, 'http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2021-02-01&format=text')
         .replace(/bastion/g, 'azure-bastion')
-        .replace(/T \/ M/g, 'B / D')
-        .replace(/C/g, 'F')
-        .replace(/R \/ X \/ Z/g, 'E / M')
-        .replace(/I \/ D \/ H/g, 'L')
-        .replace(/G \/ P \/ Trn \/ Inf/g, 'NC / ND')
+        .replace(/Prefix Class: T \/ M\b/g, 'Prefix Class: B / D')
+        .replace(/Prefix Class: C\b/g, 'Prefix Class: F')
+        .replace(/Class Code: C\b/g, 'Class Code: F')
+        .replace(/Prefix Class: R \/ X \/ Z\b/g, 'Prefix Class: E / M')
+        .replace(/Prefix Class: I \/ D \/ H\b/g, 'Prefix Class: L')
+        .replace(/Prefix Class: G \/ P \/ Trn \/ Inf\b/g, 'Prefix Class: NC / ND')
         .replace(/Trainium/g, 'NPUs');
     }
     return text;
@@ -507,7 +684,12 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         return node;
       }
       if (React.isValidElement(node)) {
-        if (node.type === 'pre' || node.type === 'code' || (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'ec2-terminal'))) {
+        if (
+          node.type === 'pre' ||
+          node.type === 'code' ||
+          node.type === 'svg' ||
+          (node.props && (node.props.className === 'acad-terminal' || node.props.className === 'ec2-terminal' || node.props.className === 'ec2-svg-bg'))
+        ) {
           return node;
         }
         if (node.props && node.props.children) {
@@ -534,7 +716,7 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
   };
 
   // Visual Architect Academy Notebook states
-  const [selectedNote, setSelectedNote] = useState<string>('ec2_bootstrap');
+  const [selectedNote, setSelectedNote] = useState<string>('ec2_what_is');
   const [expandedCategory, setExpandedCategory] = useState<string>('ec2_fundamentals');
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
@@ -591,8 +773,12 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
     setTimeout(() => setCopiedNoteId(null), 2000);
   };
 
-  // Tab 1: Overview States
+  // Tab 1: Overview States & Instance Families Directory States
   const [selectedFamily, setSelectedFamily] = useState<string>('general');
+  const [familySearchQuery, setFamilySearchQuery] = useState<string>('');
+  const [familyCategoryFilter, setFamilyCategoryFilter] = useState<'all' | 'general' | 'compute' | 'memory' | 'storage' | 'gpu'>('all');
+  const [familyViewMode, setFamilyViewMode] = useState<'table' | 'cards'>('table');
+  const [familyAdvisorWorkload, setFamilyAdvisorWorkload] = useState<string>('');
   const [selectedBootstrap, setSelectedBootstrap] = useState<'nginx' | 'docker' | 'appsec'>('nginx');
   const [bootTerminalLogs, setBootTerminalLogs] = useState<string[]>([]);
   const [isBootstrapping, setIsBootstrapping] = useState<boolean>(false);
@@ -1067,24 +1253,22 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         }
 
         .ec2-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; }
-        .ec2-tb { padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 11.5px; font-family: 'Outfit', sans-serif; cursor: pointer; background: #ffffff; color: #475569; transition: all 0.15s ease; outline: none; font-weight: 500; }
-        .ec2-tb:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+        .ec2-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--ec-tab-bg); color: var(--color-text-secondary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; font-family: 'Outfit', sans-serif; }
+        .ec2-tb:hover:not([class*="ec2-on"]) { background: var(--ec-tab-hover-bg); color: var(--color-text-primary); transform: translateY(-1px); }
         
-        .ec2-tb.ec2-on-notebook { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #ffffff !important; border-color: #d97706 !important; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2); }
-        .ec2-tb.ec2-on-overview { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff !important; border-color: #ea580c !important; box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2); }
-        .ec2-tb.ec2-on-security { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: #ffffff !important; border-color: #0284c7 !important; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2); }
-        .ec2-tb.ec2-on-purchasing { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2); }
-        .ec2-tb.ec2-on-storage { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%); color: #ffffff !important; border-color: #7c3aed !important; box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2); }
-        .ec2-tb.ec2-on-lifecycle { background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2); }
-        .ec2-tb.ec2-on-best { background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff !important; border-color: #0d9488 !important; box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2); }
-        .ec2-tb.ec2-on-unique { background: linear-gradient(135deg, #475569 0%, #64748b 100%); color: #ffffff !important; border-color: #475569 !important; box-shadow: 0 2px 4px rgba(71, 85, 105, 0.2); }
+        .ec2-tb.ec2-on-notebook { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important; color: #ffffff !important; border-color: #d97706 !important; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2); }
+        .ec2-tb.ec2-on-overview { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%) !important; color: #ffffff !important; border-color: #ea580c !important; box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2); }
+        .ec2-tb.ec2-on-security { background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important; color: #ffffff !important; border-color: #0284c7 !important; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2); }
+        .ec2-tb.ec2-on-purchasing { background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important; color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2); }
+        .ec2-tb.ec2-on-storage { background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%) !important; color: #ffffff !important; border-color: #7c3aed !important; box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2); }
+        .ec2-tb.ec2-on-lifecycle { background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important; color: #ffffff !important; border-color: #059669 !important; box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2); }
+        .ec2-tb.ec2-on-best { background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important; color: #ffffff !important; border-color: #0d9488 !important; box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2); }
+        .ec2-tb.ec2-on-unique { background: linear-gradient(135deg, #475569 0%, #64748b 100%) !important; color: #ffffff !important; border-color: #475569 !important; box-shadow: 0 2px 4px rgba(71, 85, 105, 0.2); }
+        .ec2-tb.ec2-on { background: var(--color-blue) !important; color: #fff !important; border-color: var(--color-blue) !important; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2); }
 
         .dark .ec2-tb { background: rgba(15, 23, 42, 0.6); border-color: rgba(51, 65, 85, 0.6); color: #94a3b8; }
-        .dark .ec2-tb:hover { background: rgba(30, 41, 59, 0.8); color: #f8fafc; }
+        .dark .ec2-tb:hover:not([class*="ec2-on"]) { background: rgba(30, 41, 59, 0.8); color: #f8fafc; }
 
-        .ec2-tb { padding: 8px 16px; border-radius: var(--border-radius-lg, 12px); border: 1.5px solid var(--color-border-secondary); font-size: 12px; cursor: pointer; background: var(--ec-tab-bg); color: var(--color-text-secondary); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; font-weight: 500; }
-        .ec2-tb:hover { background: var(--ec-tab-hover-bg); color: var(--color-text-primary); transform: translateY(-1px); }
-        .ec2-tb.ec2-on { background: var(--color-blue); color: #fff; border-color: var(--color-blue); font-weight: 600; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2), 0 2px 4px -2px rgba(2, 132, 199, 0.2); }
         .ec2-card { border: 1.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg, 12px); padding: 18px 20px; background: var(--color-background-primary); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--ec-card-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: var(--color-text-primary); }
         .ec2-sec { font-size: 12.5px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 20px 0 10px; }
         .ec2-sec:first-child { margin-top: 0; }
@@ -1093,10 +1277,12 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         .ec2-kv { display: flex; gap: 8px; font-size: 13px; margin: 6px 0; align-items: baseline; }
         .ec2-kk { min-width: 160px; color: var(--color-text-secondary); flex-shrink: 0; font-weight: 500; }
         .ec2-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+        
         .ec2-btn { font-size: 12.5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid var(--color-border-secondary); background: var(--ec-btn-bg); color: var(--color-text-primary); cursor: pointer; transition: all 0.2s; outline: none; font-weight: 500; }
-        .ec2-btn:hover:not(:disabled) { background: var(--ec-btn-hover-bg); border-color: var(--color-border-secondary); transform: translateY(-1px); }
+        .ec2-btn:hover:not(:disabled):not(.ec2-on) { background: var(--ec-btn-hover-bg); border-color: var(--color-border-secondary); transform: translateY(-1px); }
         .ec2-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .ec2-btn.ec2-on { background: var(--color-blue); color: #fff; border-color: var(--color-blue); box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15); }
+        .ec2-btn.ec2-on { background: var(--color-blue) !important; color: #fff !important; border-color: var(--color-blue) !important; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.15); }
+        
         .ec2-terminal { background: var(--ec-terminal-bg); color: var(--ec-terminal-color); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11.5px; padding: 14px; border-radius: 10px; border: 1px solid var(--ec-terminal-border); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); max-height: 220px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; }
         .ec2-svg-bg { background-color: var(--ec-bg); background-image: radial-gradient(var(--ec-svg-grid-line) 1.2px, transparent 1.2px); background-size: 16px 16px; border-radius: 8px; border: 1.5px solid var(--color-border-tertiary); box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
         
@@ -1168,6 +1354,137 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
           transform: translateY(-2px);
           box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08);
           border-color: var(--color-blue);
+        }
+
+        /* EC2 Instance Families Table & Specs Directory Styles */
+        .ec2-fam-table-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          border-radius: 12px;
+          border: 1.5px solid var(--color-border-tertiary);
+          background: var(--color-background-primary);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+        .ec2-fam-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          text-align: left;
+          min-width: 960px;
+        }
+        .ec2-fam-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding: 12px 14px;
+          border-bottom: 1.5px solid var(--color-border-tertiary);
+          white-space: nowrap;
+        }
+        .ec2-fam-table td {
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+          vertical-align: middle;
+          transition: background 0.15s ease;
+        }
+        .ec2-fam-table tbody tr {
+          cursor: pointer;
+          transition: all 0.18s ease;
+        }
+        .ec2-fam-table tbody tr:hover {
+          background: var(--ec-tab-hover-bg) !important;
+        }
+        .ec2-fam-table tbody tr.ec2-fam-row-active {
+          background: rgba(2, 132, 199, 0.08) !important;
+        }
+        .dark .ec2-fam-table tbody tr.ec2-fam-row-active {
+          background: rgba(14, 165, 233, 0.16) !important;
+        }
+        .ec2-ratio-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-weight: 700;
+          font-size: 11px;
+        }
+        .ec2-ratio-meter {
+          height: 4px;
+          border-radius: 2px;
+          background: var(--color-border-tertiary);
+          margin-top: 4px;
+          overflow: hidden;
+          width: 100%;
+        }
+        .ec2-ratio-meter-fill {
+          height: 100%;
+          border-radius: 2px;
+          transition: width 0.3s ease;
+        }
+        .ec2-filter-pill {
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 11.5px;
+          font-weight: 600;
+          cursor: pointer;
+          border: 1px solid var(--color-border-tertiary);
+          background: var(--color-background-primary);
+          color: var(--color-text-secondary);
+          transition: all 0.18s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .ec2-filter-pill:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-color: var(--color-border-secondary);
+        }
+        .ec2-filter-pill.active {
+          background: var(--color-blue);
+          color: #ffffff !important;
+          border-color: var(--color-blue);
+          box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+        }
+        .ec2-advisor-chip {
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          border: 1px solid var(--color-border-tertiary);
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          transition: all 0.18s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .ec2-advisor-chip:hover {
+          border-color: var(--color-blue);
+          transform: translateY(-1px);
+        }
+        .ec2-advisor-chip.selected {
+          border-color: var(--color-blue);
+          background: rgba(2, 132, 199, 0.12);
+          color: var(--color-blue);
+          font-weight: 700;
+        }
+        .ec2-tag-pill {
+          display: inline-block;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 10px;
+          font-weight: 600;
+          background: var(--color-background-secondary);
+          border: 0.5px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+          margin-right: 4px;
+          margin-bottom: 3px;
         }
 
         /* Modern Architect Learning Center styles */
@@ -1340,6 +1657,65 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
           font-family: 'Fira Code', 'Courier New', Courier, monospace;
           color: var(--color-text-primary);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* Humanized Beginner Callout Boxes */
+        .acad-plain-english {
+          background: rgba(2, 132, 199, 0.07);
+          border-left: 4px solid var(--color-blue);
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(56, 189, 248, 0.12);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid var(--color-red);
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-flow-step {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-radius: 8px;
+          border: 1px solid var(--color-border-tertiary);
+          font-size: 11.5px;
+          flex: 1 1 160px;
         }
 
         /* Academy Grid Layouts */
@@ -1560,20 +1936,29 @@ sudo mount /dev/sdb /var/www/html`
 
           const snippets = getProviderSnippets(provider);
           const imdsCodeSnippet = snippets.imds;
+          const mountCodeSnippet = snippets.mount;
           const sgCodeSnippet = snippets.sg;
           const spotCodeSnippet = snippets.spot;
-          const mountCodeSnippet = snippets.mount;
 
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
               
-              <div className="card text-left">
-                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--color-text-primary)' }}>
-                  <BookOpen className="w-5 h-5" style={{ color: 'var(--color-purple)' }} /> EC2 Compute &amp; Storage Notes
-                </h2>
-                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
-                  This guide outlines EC2 instance types, purchasing strategies (On-Demand, Spot, Reserved), EBS block storage mapping, stateful security groups, and burstable CPU credit behaviors.
-                </p>
+              {/* Header Hero Card */}
+              <div className="card text-left" style={{ borderLeft: '4px solid var(--color-purple)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--color-text-primary)' }}>
+                      <BookOpen className="w-5 h-5" style={{ color: 'var(--color-purple)' }} /> EC2 Visual Architect Notes &amp; Mental Models
+                    </h2>
+                    <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                      Simplified, beginner-friendly cloud computing concepts sorted from absolute fundamentals to advanced production architectures with everyday real-world analogies.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                    <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Real-World Mental Models</span>
+                  </div>
+                </div>
               </div>
 
               {/* Grid Layout */}
@@ -1584,10 +1969,10 @@ sudo mount /dev/sdb /var/www/html`
                   <div className="acad-dir-container">
                     <div className="acad-dir-header">
                       <BookOpen style={{ width: '16px', height: '16px', color: 'var(--color-blue)' }} />
-                      <span>Module Index</span>
+                      <span>Curriculum Modules</span>
                     </div>
 
-                    {/* Category 1: EC2 Fundamentals */}
+                    {/* Level 1: EC2 Fundamentals */}
                     <div>
                       <button
                         className="acad-dir-folder-btn"
@@ -1595,37 +1980,61 @@ sudo mount /dev/sdb /var/www/html`
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Sliders style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
-                          1. EC2 Fundamentals
+                          🐣 Level 1 · Fundamentals
                         </span>
                         {expandedCategory === 'ec2_fundamentals' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
                       {expandedCategory === 'ec2_fundamentals' && (
                         <div style={{ background: 'var(--color-background-secondary)', padding: '4px 0' }}>
                           <button
+                            className={`acad-dir-item-btn ${selectedNote === 'ec2_what_is' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('ec2_what_is')}
+                          >
+                            1.1 What is EC2? (Rent-a-Laptop)
+                          </button>
+                          <button
                             className={`acad-dir-item-btn ${selectedNote === 'ec2_bootstrap' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('ec2_bootstrap')}
                           >
-                            User Data &amp; IMDSv2
-                          </button>
-                          <button
-                            className={`acad-dir-item-btn ${selectedNote === 'security_groups' ? 'acad-active' : ''}`}
-                            onClick={() => setSelectedNote('security_groups')}
-                          >
-                            Stateful Security Groups
+                            1.2 Setup Scripts &amp; Digital ID (IMDS)
                           </button>
                         </div>
                       )}
                     </div>
 
-                    {/* Category 2: Purchasing Options */}
+                    {/* Level 2: Network & Access */}
+                    <div>
+                      <button
+                        className="acad-dir-folder-btn"
+                        onClick={() => setExpandedCategory(expandedCategory === 'security_access' ? '' : 'security_access')}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <ShieldCheck style={{ width: '14px', height: '14px', color: 'var(--color-green)' }} />
+                          🛡️ Level 2 · Network Security
+                        </span>
+                        {expandedCategory === 'security_access' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                      </button>
+                      {expandedCategory === 'security_access' && (
+                        <div style={{ background: 'var(--color-background-secondary)', padding: '4px 0' }}>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'security_groups' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('security_groups')}
+                          >
+                            2.1 Doorman vs Customs (SG &amp; NACL)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Level 3: Purchasing Options */}
                     <div>
                       <button
                         className="acad-dir-folder-btn"
                         onClick={() => setExpandedCategory(expandedCategory === 'purchasing_options' ? '' : 'purchasing_options')}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Globe style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
-                          2. Purchasing Options
+                          <DollarSign style={{ width: '14px', height: '14px', color: 'var(--color-amber)' }} />
+                          💰 Level 3 · Pricing &amp; Savings
                         </span>
                         {expandedCategory === 'purchasing_options' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
@@ -1635,27 +2044,27 @@ sudo mount /dev/sdb /var/www/html`
                             className={`acad-dir-item-btn ${selectedNote === 'purchasing_models' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('purchasing_models')}
                           >
-                            Pricing &amp; Spot Fleets
+                            3.1 Pricing Models (Uber vs Lease vs Standby)
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'burstable_performance' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('burstable_performance')}
                           >
-                            Burstable CPU Credits
+                            3.2 Burstable CPU Credit Bank
                           </button>
                         </div>
                       )}
                     </div>
 
-                    {/* Category 3: Storage & Auditing */}
+                    {/* Level 4: Storage Types */}
                     <div>
                       <button
                         className="acad-dir-folder-btn"
                         onClick={() => setExpandedCategory(expandedCategory === 'storage_audit' ? '' : 'storage_audit')}
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <Network style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
-                          3. Storage &amp; Auditing
+                          <HardDrive style={{ width: '14px', height: '14px', color: 'var(--color-purple)' }} />
+                          💾 Level 4 · Storage Types
                         </span>
                         {expandedCategory === 'storage_audit' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
@@ -1664,16 +2073,38 @@ sudo mount /dev/sdb /var/www/html`
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'storage_comparison' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('storage_comparison')}
-                            style={{ borderLeft: '3px solid transparent' }}
                           >
-                            EBS vs Instance Store vs EFS
+                            4.1 USB Drive vs Scratchpad vs Google Drive
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Level 5: Architecture & HA */}
+                    <div>
+                      <button
+                        className="acad-dir-folder-btn"
+                        onClick={() => setExpandedCategory(expandedCategory === 'ha_architecture' ? '' : 'ha_architecture')}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Layers style={{ width: '14px', height: '14px', color: '#0ea5e9' }} />
+                          🏗️ Level 5 · High Availability
+                        </span>
+                        {expandedCategory === 'ha_architecture' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                      </button>
+                      {expandedCategory === 'ha_architecture' && (
+                        <div style={{ background: 'var(--color-background-secondary)', padding: '4px 0' }}>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'placement_groups' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('placement_groups')}
+                          >
+                            5.1 Placement Groups Explained
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'best_practices' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('best_practices')}
-                            style={{ borderLeft: '3px solid transparent' }}
                           >
-                            HA Architecture &amp; Audit
+                            5.2 The 4 Golden Rules of Cloud HA
                           </button>
                         </div>
                       )}
@@ -1683,40 +2114,131 @@ sudo mount /dev/sdb /var/www/html`
 
                   <div style={{ background: 'var(--color-background-primary)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', marginTop: '16px', border: '1px solid var(--color-border-tertiary)', lineHeight: '1.5' }}>
                     <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
-                      <Info style={{ width: '14px', height: '14px', color: '#0ea5e9' }} /> Academy Guidance
+                      <Lightbulb style={{ width: '14px', height: '14px', color: '#f59e0b' }} /> Interactive Visualizer Link
                     </span>
-                    You can switch directly to target interactive simulations inside standard visualizer tabs using the action buttons in each note.
+                    Each note includes direct quick-launch buttons to open the live interactive simulations for that specific topic!
                   </div>
                 </div>
 
                 {/* Right Content Panel */}
                 <div className="acad-col-9">
 
-                  {/* NOTE 1: User Data & IMDSv2 */}
-                  {selectedNote === 'ec2_bootstrap' && (
+                  {/* NOTE 1.1: What is EC2 */}
+                  {selectedNote === 'ec2_what_is' && (
                     <div className="acad-detail-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>EC2 Bootstrapping &amp; Instance Metadata</h3>
-                        <span className="acad-hero-badge">Core Compute</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          1.1 What is Amazon EC2? (Elastic Compute Cloud)
+                        </h3>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
                       </div>
-                      
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        Instance initialization relies on User Data scripts and configuration blueprints. Understanding the sequence of system execution and retrieval of dynamic runtime values secures virtual hosts.
-                      </p>
 
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>💡 Key Takeaways:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
-                          <li><strong>User Data:</strong> Shell scripts executed **exactly once** during the very first boot of the instance as the <code>root</code> user. Used to install patches, start servers, and mount drives.</li>
-                          <li><strong>Golden Image:</strong> Pre-configuring system packages and baking them into a custom **Amazon Machine Image (AMI)** avoids bootstrapping startup delays during scaling events.</li>
-                          <li><strong>IMDSv2 Endpoint:</strong> Non-routable local IP <code>169.254.169.254</code> serving metadata. Enforces a session-based token (PUT request) to block SSRF proxy attacks.</li>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> EC2 is simply <strong>renting a virtual computer in Amazon&apos;s data center</strong> instead of buying a heavy physical computer box. You pick how much CPU, memory, and disk space you need, and you only pay for the exact seconds it runs.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Rent-a-Laptop Store
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Imagine walking into an electronic rental store. Instead of paying $2,000 to buy a server, you tell the clerk: <em>&ldquo;I need a machine with 4 CPU cores and 16 GB RAM with Linux installed for the next 3 hours.&rdquo;</em> They hand you the computer. You run your web application, shut it down when done, and pay 15 cents. If tomorrow you get 10,000 customers, you can instantly rent 50 more identical laptops in 60 seconds. That is the &ldquo;Elastic&rdquo; in EC2!
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>The 3 Core Anatomy Layers of an EC2 Instance</h4>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                        <div className="acad-flow-step">
+                          <Server style={{ width: '20px', height: '20px', color: 'var(--color-blue)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)', display: 'block' }}>1. Physical Host &amp; Nitro</strong>
+                            <span style={{ fontSize: '10.5px' }}>Giant server rack with hypervisor card that manages hardware resources safely.</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <Cpu style={{ width: '20px', height: '20px', color: 'var(--color-purple)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)', display: 'block' }}>2. Virtual Machine (vCPU &amp; RAM)</strong>
+                            <span style={{ fontSize: '10.5px' }}>Your dedicated slice of computing power isolated from other AWS customers.</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <HardDrive style={{ width: '20px', height: '20px', color: 'var(--color-green)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)', display: 'block' }}>3. Operating System (Guest OS)</strong>
+                            <span style={{ fontSize: '10.5px' }}>Amazon Linux, Ubuntu, Debian, Red Hat, or Windows Server.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Lifecycle Flow */}
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>The 5 Instance Lifecycle States</h4>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '10px 0 16px' }}>
+                        <span className="ec2-badge" style={{ background: '#64748b', color: '#fff', fontSize: '10.5px' }}>⏹️ Pending (Starting up)</span>
+                        <span style={{ color: 'var(--color-text-secondary)', alignSelf: 'center' }}>➔</span>
+                        <span className="ec2-badge" style={{ background: 'var(--color-green)', color: '#fff', fontSize: '10.5px' }}>🟢 Running (Billed per second)</span>
+                        <span style={{ color: 'var(--color-text-secondary)', alignSelf: 'center' }}>➔</span>
+                        <span className="ec2-badge" style={{ background: 'var(--color-amber)', color: '#fff', fontSize: '10.5px' }}>⏸️ Stopped (No CPU cost!)</span>
+                        <span style={{ color: 'var(--color-text-secondary)', alignSelf: 'center' }}>➔</span>
+                        <span className="ec2-badge" style={{ background: 'var(--color-red)', color: '#fff', fontSize: '10.5px' }}>🗑️ Terminated (Deleted forever)</span>
+                      </div>
+
+                      {/* Gotcha Warning Box */}
+                      <div className="acad-gotcha-box">
+                        <strong>⚠️ Common Beginner Trap: &ldquo;Stopped&rdquo; vs &ldquo;Terminated&rdquo; Billing</strong>
+                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px' }}>
+                          <li>When you <strong>Stop</strong> an EC2 instance, AWS stops charging for CPU and RAM. However, the attached <strong>EBS storage disk is still holding your files</strong>, so storage costs continue until you Terminate it!</li>
+                          <li>When you <strong>Terminate</strong> an instance, the virtual computer is deleted and the root storage is released.</li>
                         </ul>
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>CLI Command Reference: Requesting IMDSv2 Token</h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '22px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Ready to try building a virtual machine?</span>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('overview')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Open Core &amp; Bootstrap Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 1.2: User Data & IMDSv2 */}
+                  {selectedNote === 'ec2_bootstrap' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          1.2 Bootstrapping (User Data), AMIs &amp; Digital ID (IMDSv2)
+                        </h3>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> When you spin up a brand-new cloud server, how do you install software, start Nginx, or download your website files without logging in manually? You use a <strong>User Data Startup Script</strong>.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The New Phone Setup Wizard
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.8px', lineHeight: '1.6' }}>
+                          <li><strong>User Data:</strong> Like the initial setup wizard on a new iPhone. It runs automatically <strong>exactly once on the first boot</strong> as the administrator (<code>root</code>) to install updates, configure settings, and launch apps.</li>
+                          <li><strong>Golden AMI (Amazon Machine Image):</strong> Like saving a complete backup clone of your perfectly set-up laptop onto a USB flash drive. Whenever you need 20 more servers, you clone from this template in seconds with zero startup lag!</li>
+                          <li><strong>IMDSv2 (169.254.169.254):</strong> Like a secure digital building ID badge. Your server asks AWS &ldquo;Who am I? What is my private IP and IAM role?&rdquo; using a tamper-proof session token that blocks malicious web attacks.</li>
+                        </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>CLI Command Reference: Querying IMDSv2 Metadata</h4>
                       <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>imds_fetch.sh</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>fetch_metadata_imdsv2.sh</span>
                           <button
                             onClick={() => handleCopyCode(imdsCodeSnippet, 'imds_sh')}
                             style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
@@ -1739,33 +2261,99 @@ sudo mount /dev/sdb /var/www/html`
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Core &amp; Bootstrap Simulator Tab
+                          Test Bootstrapping in Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 2: Stateful Security Groups */}
+                  {/* NOTE 2.1: Stateful Security Groups vs Stateless NACLs */}
                   {selectedNote === 'security_groups' && (
                     <div className="acad-detail-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Stateful Security Groups vs Stateless NACLs</h3>
-                        <span className="acad-hero-badge">Network Security</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          2.1 Security Groups vs Network ACLs (Firewalls Decoded)
+                        </h3>
+                        <span className="acad-hero-badge" style={{ background: '#dcfce7', borderColor: '#bbf7d0', color: '#15803d' }}>🛡️ Level 2 · Network Security</span>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        Security Groups acts as virtual firewalls directly on the EC2 Elastic Network Interface (ENI) layer, monitoring state connections to simplify security rules.
-                      </p>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> In AWS, firewalls decide who is allowed to talk to your computer (Inbound) and what your computer is allowed to send out (Outbound). AWS gives you two firewall guards: <strong>Security Groups (Instance level)</strong> and <strong>Network ACLs (Subnet level)</strong>.
+                      </div>
 
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>🛡️ Stateful vs Stateless Mechanics:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'circle' }}>
-                          <li><strong>Stateful (Security Groups):</strong> If you authorize an inbound rule (e.g. port 80), return traffic is **automatically allowed** outbound. It evaluates *allow* rules only (default drops everything else).</li>
-                          <li><strong>Stateless (Network ACLs):</strong> Evaluates traffic entering and leaving VPC subnets. You must explicitly configure both inbound and outbound rules, including ephemeral port ranges (e.g., 1024-65535). Supports both *allow* and *deny* rules.</li>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Hotel Doorman vs Airport Customs
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.8px', lineHeight: '1.6' }}>
+                          <li><strong>Security Group (Stateful) = The Friendly Hotel Doorman:</strong> Has a guest list. If he checks your name and lets you enter through the front door (Inbound HTTP Port 80), he <em>automatically remembers your face</em> and lets you walk back out (Outbound) without asking for ID again! (Stateful means return traffic is auto-approved).</li>
+                          <li><strong>Network ACL (Stateless) = Strict Airport Border Customs:</strong> There are two completely separate gates (Arrivals and Departures). Even if you were inspected when entering the country, you must show a separate approved exit passport when leaving (Stateless requires explicit Inbound AND Outbound rules!).</li>
                         </ul>
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Authorizing Security Group Inbound Rules</h4>
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>Side-by-Side Comparison Matrix</h4>
+                      <div style={{ overflowX: 'auto', margin: '10px 0 18px' }}>
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Feature</th>
+                              <th>Security Group (SG)</th>
+                              <th>Network ACL (NACL)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong>Scope / Layer</strong></td>
+                              <td>Virtual Network Interface (ENI) of each VM</td>
+                              <td>VPC Subnet boundary</td>
+                            </tr>
+                            <tr>
+                              <td><strong>State Behavior</strong></td>
+                              <td><strong>Stateful</strong> (Return traffic auto-allowed)</td>
+                              <td><strong>Stateless</strong> (Must open inbound &amp; outbound)</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Rule Types</strong></td>
+                              <td><strong>Allow rules only</strong> (Drops everything else)</td>
+                              <td>Supports both <strong>Allow AND Deny rules</strong></td>
+                            </tr>
+                            <tr>
+                              <td><strong>Evaluation Order</strong></td>
+                              <td>Evaluates all rules before deciding</td>
+                              <td>Evaluates rules in numbered order (100, 200, *)</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>Public vs Private IPs &amp; Bastion Host (Jump Box)</h4>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                        <div className="acad-flow-step">
+                          <Globe style={{ width: '20px', height: '20px', color: 'var(--color-blue)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Public IP = Postal Street Address</strong>
+                            <span style={{ fontSize: '10.5px' }}>Accessible to the entire internet for web visitors.</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <Lock style={{ width: '20px', height: '20px', color: 'var(--color-green)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Private IP = Internal Room Extension</strong>
+                            <span style={{ fontSize: '10.5px' }}>Only reachable inside the private VPC network (safe for databases).</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <ShieldCheck style={{ width: '20px', height: '20px', color: 'var(--color-purple)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>Bastion Host = Security Gatehouse</strong>
+                            <span style={{ fontSize: '10.5px' }}>Single hardened jump server allowing engineers to SSH securely into private DBs.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>CLI Command Reference: Authorizing Security Firewall Rules</h4>
                       <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>security_rules.sh</span>
@@ -1774,7 +2362,7 @@ sudo mount /dev/sdb /var/www/html`
                             style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
                           >
                             <Copy style={{ width: '12px', height: '12px' }} />
-                            {copiedNoteId === 'sg_sh' ? 'Copied!' : 'Copy Commands'}
+                            {copiedNoteId === 'sg_sh' ? 'Copied!' : 'Copy Script'}
                           </button>
                         </div>
                         <div className="acad-terminal">
@@ -1791,69 +2379,95 @@ sudo mount /dev/sdb /var/www/html`
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Security Groups Simulator Tab
+                          Open Stateful Security Groups Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 3: Pricing & Spot Fleets */}
+                  {/* NOTE 3.1: Pricing Models */}
                   {selectedNote === 'purchasing_models' && (
                     <div className="acad-detail-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>EC2 Purchasing Models &amp; Spot Fleets</h3>
-                        <span className="acad-hero-badge">Cost Optimization</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          3.1 EC2 Pricing Models: How to Buy Compute Smartly
+                        </h3>
+                        <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💰 Level 3 · Cost Optimization</span>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        AWS offers diverse billing options tailored for specific workload lifecycle requirements. Aligning compute demands to the correct purchasing strategy optimizes costs.
-                      </p>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Running servers in the cloud can be very expensive if you pay default prices. AWS gives you <strong>4 different purchasing options</strong> with massive discounts (up to 90%) if you plan ahead.
+                      </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Billing Framework Comparison</h4>
-                      <div style={{ overflowX: 'auto', margin: '12px 0 20px' }}>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Uber vs Apartment Lease vs Standby Flights
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.8px', lineHeight: '1.6' }}>
+                          <li><strong>On-Demand = Calling an Uber:</strong> Zero commitment. You pay per second and can cancel whenever you want. Great for quick development or sudden unpredicted traffic spikes.</li>
+                          <li><strong>Reserved Instances (RI) = Signing a 1-Year Apartment Lease:</strong> You commit to a specific room for 1 or 3 years. Because you guarantee long-term rent, AWS gives you up to a <strong>72% discount</strong>!</li>
+                          <li><strong>Savings Plans = Coffee Spend Subscription ($/hour):</strong> You commit to spending e.g. $10/hour across any compute (EC2, Fargate, Lambda) for 1 or 3 years for up to <strong>72% savings</strong> with flexible instance switching.</li>
+                          <li><strong>Spot Instances = Standby Airline Tickets at the Gate:</strong> AWS has unused computers sitting idle in data centers. They sell them at up to <strong>90% discount</strong>! The only catch: if a full-price customer books that seat, AWS gives you a <strong>2-minute warning</strong> and takes it back.</li>
+                          <li><strong>Dedicated Hosts = Renting the Entire Private Villa:</strong> You get the entire physical server rack to yourself. Essential for compliance or strict corporate software licenses.</li>
+                        </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>Purchasing Models Comparison Table</h4>
+                      <div style={{ overflowX: 'auto', margin: '10px 0 18px' }}>
                         <table className="acad-table">
                           <thead>
                             <tr>
-                              <th>Purchase Model</th>
-                              <th>Discount Rate</th>
-                              <th>Commitment Requirement</th>
-                              <th>Best Match Workload</th>
+                              <th>Purchasing Model</th>
+                              <th>Discount</th>
+                              <th>Commitment</th>
+                              <th>Best Used For</th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr>
                               <td><strong>On-Demand</strong></td>
                               <td>0% (Standard)</td>
-                              <td>None (Billed per second)</td>
-                              <td>Unpredictable spikes, short-term devs</td>
+                              <td>None (Per second)</td>
+                              <td>New apps, unpredictable spikes, short tests</td>
                             </tr>
                             <tr>
                               <td><strong>Reserved Instances (RI)</strong></td>
                               <td>Up to 72%</td>
-                              <td>1 or 3 years (Specific instances)</td>
-                              <td>Steady-state, constant database hosts</td>
+                              <td>1 or 3 Years (Fixed Type)</td>
+                              <td>Steady 24/7 databases and core backend servers</td>
                             </tr>
                             <tr>
-                              <td><strong>Savings Plans</strong></td>
+                              <td><strong>Compute Savings Plans</strong></td>
                               <td>Up to 72%</td>
-                              <td>1 or 3 years ($ / hour spend)</td>
-                              <td>Dynamic microservices, Lambda + Fargate fleets</td>
+                              <td>1 or 3 Years ($ / hour)</td>
+                              <td>Modern cloud apps switching between EC2 &amp; containers</td>
                             </tr>
                             <tr>
                               <td><strong>Spot Instances</strong></td>
                               <td>Up to 90%</td>
-                              <td>None (Subject to termination)</td>
-                              <td>Batch processing, stateless web tiers, CI/CD</td>
+                              <td>None (Can be reclaimed)</td>
+                              <td>Batch data crunching, AI rendering, CI/CD pipelines</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Dedicated Host</strong></td>
+                              <td>License savings</td>
+                              <td>On-demand or 1/3 yr</td>
+                              <td>Bring-Your-Own-License (BYOL), strict compliance</td>
                             </tr>
                           </tbody>
                         </table>
                       </div>
 
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>⚠️ Spot Reclaim Warning:</strong> AWS can reclaim Spot capacity at any time when On-Demand demand rises. Route 53 or the Auto-Scaling Group receives a **2-minute warning notification** before shutdown. Spot Fleets manage allocations across instance pools to automatically replace reclaimed instances.
+                      <div className="acad-gotcha-box">
+                        <strong>⚠️ The 2-Minute Spot Reclaim Rule:</strong>
+                        <p style={{ margin: '4px 0 0' }}>
+                          Never run a non-replicated database on a Spot Instance! Always use <strong>Spot Fleets</strong> with stateless worker nodes so that if one instance is reclaimed, other spot instances in different pools automatically take over.
+                        </p>
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>AWS CLI: Requesting Spot Instances</h4>
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>CLI Command Reference: Requesting Spot Instances</h4>
                       <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>spot_request.sh</span>
@@ -1862,7 +2476,7 @@ sudo mount /dev/sdb /var/www/html`
                             style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
                           >
                             <Copy style={{ width: '12px', height: '12px' }} />
-                            {copiedNoteId === 'spot_sh' ? 'Copied!' : 'Copy Command'}
+                            {copiedNoteId === 'spot_sh' ? 'Copied!' : 'Copy Script'}
                           </button>
                         </div>
                         <div className="acad-terminal">
@@ -1879,43 +2493,56 @@ sudo mount /dev/sdb /var/www/html`
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Spot &amp; Purchasing Simulator Tab
+                          Open Spot Reclaim Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 4: Burstable CPU Credits */}
+                  {/* NOTE 3.2: Burstable CPU Credits */}
                   {selectedNote === 'burstable_performance' && (
                     <div className="acad-detail-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Burstable CPU Credits &amp; Performance Limits</h3>
-                        <span className="acad-hero-badge">Instance Specs</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          3.2 Burstable Performance &amp; The CPU Credit Bank (T-Series)
+                        </h3>
+                        <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💰 Level 3 · Instance Economics</span>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        T-series burstable performance instances (t3, t3a, t4g) provide a baseline CPU capacity with the ability to burst above it. They accumulate "CPU credits" when running below baseline and burn them during CPU spikes.
-                      </p>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Most small websites are quiet 90% of the day, with occasional bursts when someone clicks a button. <strong>T-series instances (t3, t4g)</strong> are super cheap servers designed for this exact pattern.
+                      </div>
 
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>⚡ Standard vs Unlimited Mode:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
-                          <li><strong>Standard Mode:</strong> If you burn through all accumulated credits, AWS throttles the instance CPU directly down to the baseline limit. Excellent for development environments.</li>
-                          <li><strong>Unlimited Mode:</strong> Allows the instance to burst indefinitely above baseline. If the credit bucket exhausts, AWS charges extra billing rates per vCPU-hour. Highly recommended for production workloads.</li>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Smartphone Battery Bank &amp; Coffee Punch Card
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.8px', lineHeight: '1.6' }}>
+                          <li><strong>Charging Credits:</strong> When your website is idle (e.g. at 5% CPU while waiting for traffic), your server plugs into the charger and deposits <strong>CPU Credits</strong> into its bank account every hour.</li>
+                          <li><strong>Spending Credits:</strong> When a rush of 500 visitors suddenly arrives, the server spends its accumulated credits to run at <strong>100% turbo CPU speed</strong> without any lag!</li>
+                          <li><strong>Standard Mode vs Unlimited Mode:</strong>
+                            <ul style={{ margin: '4px 0 0', paddingLeft: '16px' }}>
+                              <li><em>Standard Mode:</em> If your credit bank drops to zero, the server is capped back down to its baseline speed (e.g. 20%). Great for dev servers.</li>
+                              <li><em>Unlimited Mode:</em> The server continues running at 100% turbo speed without slowing down, and AWS simply bills a few extra cents on your monthly invoice. Recommended for production!</li>
+                            </ul>
+                          </li>
                         </ul>
                       </div>
 
                       {/* Interactive Widget: Credit Accumulator Simulator */}
                       <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
-                        <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 12px' }}>
-                          📈 Burstable CPU Credit Simulator
+                        <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Activity style={{ width: '16px', height: '16px', color: 'var(--color-blue)' }} />
+                          Interactive 24-Hour CPU Credit Simulation
                         </h4>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                             <div style={{ flex: '1 1 200px' }}>
                               <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '6px' }}>
-                                Select Burstable Instance Type:
+                                Select Burstable Instance Size:
                               </label>
                               <div style={{ display: 'flex', gap: '6px' }}>
                                 {(['nano', 'micro', 'small'] as const).map((size) => (
@@ -1934,7 +2561,7 @@ sudo mount /dev/sdb /var/www/html`
                             <div style={{ flex: '1 1 200px' }}>
                               <label style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                                 <span>Simulated Average CPU load:</span>
-                                <span style={{ color: 'var(--color-blue)' }}>{nbCpuUtilization}%</span>
+                                <span style={{ color: 'var(--color-blue)', fontWeight: 800 }}>{nbCpuUtilization}%</span>
                               </label>
                               <input
                                 type="range"
@@ -1958,10 +2585,10 @@ sudo mount /dev/sdb /var/www/html`
                           </div>
 
                           <div className="acad-terminal" style={{ maxHeight: '150px' }}>
-                            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>burstable-performance-telemetry logs</span>
+                            <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>telemetry-credit-monitor.log</span>
                             {nbCreditLog.length === 0 ? (
                               <div style={{ fontSize: '11.5px', color: 'var(--color-text-tertiary)', fontStyle: 'italic', padding: '16px 0', textAlign: 'center' }}>
-                                Click the button above to simulate how the credit bucket behaves over a 24-hour cycle.
+                                Click the button above to simulate how the credit bank charges and spends over 24 hours.
                               </div>
                             ) : (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '10.5px' }}>
@@ -1992,73 +2619,95 @@ sudo mount /dev/sdb /var/www/html`
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Virtual Console Simulator Tab
+                          Open Instance Lifecycle Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 5: EBS vs Instance Store vs EFS */}
+                  {/* NOTE 4.1: EBS vs Instance Store vs EFS */}
                   {selectedNote === 'storage_comparison' && (
                     <div className="acad-detail-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>EBS vs Instance Store vs EFS</h3>
-                        <span className="acad-hero-badge">Instance Storage</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          4.1 Storage Types Decoded: EBS vs Instance Store vs EFS
+                        </h3>
+                        <span className="acad-hero-badge" style={{ background: '#f3e8ff', borderColor: '#e9d5ff', color: '#7e22ce' }}>💾 Level 4 · Storage Systems</span>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        AWS hosts support multiple persistent and ephemeral disk mounts, matching IOPS and file system capabilities to access requirements.
-                      </p>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Where do your files and databases live when you run a cloud computer? AWS offers different storage types based on whether you need <strong>permanent files (EBS)</strong>, <strong>blazing temporary speed (Instance Store)</strong>, or a <strong>shared team drive (EFS)</strong>.
+                      </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Storage Category comparison</h4>
-                      <div style={{ overflowX: 'auto', margin: '12px 0 20px' }}>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: External Drive vs Whiteboard vs Google Drive
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.8px', lineHeight: '1.6' }}>
+                          <li><strong>EBS (Elastic Block Store) = External USB SSD Hard Drive:</strong> Plugged into your server over a fast network cable. If your computer crashes or restarts, your files stay 100% safe. You can even unplug the drive and plug it into a different server!</li>
+                          <li><strong>Instance Store (NVMe SSD) = A Whiteboard Scratchpad:</strong> Built physically right into the server motherboard. It is insanely fast (millions of read/write operations per second), but if you turn off or stop the computer, the whiteboard is <strong>completely wiped clean</strong>! (Ephemeral).</li>
+                          <li><strong>EFS (Elastic File System) = Shared Google Drive / Dropbox:</strong> A shared network drive where 1,000+ EC2 servers can read and write the exact same files at the exact same second across multiple availability zones.</li>
+                          <li><strong>Amazon S3 = Infinite Cloud Locker:</strong> An object store for pictures, videos, and backups accessible over simple web URLs.</li>
+                        </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>Storage Category Comparison Table</h4>
+                      <div style={{ overflowX: 'auto', margin: '10px 0 18px' }}>
                         <table className="acad-table">
                           <thead>
                             <tr>
-                              <th>Feature / Metric</th>
+                              <th>Feature</th>
                               <th>EBS (Elastic Block Store)</th>
-                              <th>Instance Store (SSD)</th>
+                              <th>Instance Store (NVMe)</th>
                               <th>EFS (Elastic File System)</th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr>
-                              <td><strong>Type</strong></td>
-                              <td>Network Block device (SAN)</td>
-                              <td>Direct physical SSD attach</td>
-                              <td>Network File System (NFS)</td>
+                              <td><strong>Analogy</strong></td>
+                              <td>External USB Hard Drive</td>
+                              <td>Whiteboard Scratchpad</td>
+                              <td>Shared Team Google Drive</td>
                             </tr>
-                              <tr>
+                            <tr>
                               <td><strong>Persistence</strong></td>
-                              <td>✅ Persistent (Survives VM stops/terminations)</td>
-                              <td>❌ Ephemeral (Data wiped on instance stop)</td>
-                              <td>✅ Persistent (Survives VM terminations)</td>
+                              <td>✅ Persistent (Survives stops)</td>
+                              <td>❌ Ephemeral (Wiped on stop)</td>
+                              <td>✅ Persistent (Survives terminations)</td>
                             </tr>
                             <tr>
-                              <td><strong>Throughput</strong></td>
-                              <td>Up to 10,000 MB/s (io2 Block Express)</td>
-                              <td>Ultra-high low-latency local IOPS</td>
-                              <td>Elastic scaling up to GBs/second</td>
+                              <td><strong>Speed / IOPS</strong></td>
+                              <td>Fast (Up to 10,000 MB/s)</td>
+                              <td>Ultra-fast (Microsecond latency)</td>
+                              <td>Scales automatically with files</td>
                             </tr>
                             <tr>
-                              <td><strong>Shared Access</strong></td>
-                              <td>❌ Single VM mount (except EBS Multi-Attach)</td>
-                              <td>❌ Restricted to a single physical VM host</td>
-                              <td>✅ Multi-mount (thousands of EC2s concurrently)</td>
+                              <td><strong>Multi-VM Mount</strong></td>
+                              <td>❌ 1 instance at a time (mostly)</td>
+                              <td>❌ Locked to 1 physical host</td>
+                              <td>✅ Thousands of VMs simultaneously</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Best Match</strong></td>
+                              <td>Boot drives, MySQL, Postgres</td>
+                              <td>Temporary caches, Kafka buffers</td>
+                              <td>WordPress media, shared CMS files</td>
                             </tr>
                           </tbody>
                         </table>
                       </div>
 
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>⚠️ Stop / Termination Data Loss warning:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px' }}>
-                          <li><strong>Instance Store:</strong> Stopping an instance releases the underlying hypervisor hardware, formatting local SSD drives. Data is **permanently lost** on instance stops!</li>
-                          <li><strong>Delete On Termination:</strong> EBS volumes default to `DeleteOnTermination = true` for root disks. Always flag critical volumes to `false` to prevent accidental deletion during VM teardown.</li>
-                        </ul>
+                      {/* Gotcha Warning Box */}
+                      <div className="acad-gotcha-box">
+                        <strong>⚠️ The #1 Beginner Disaster: Storing Databases on Instance Store</strong>
+                        <p style={{ margin: '4px 0 0' }}>
+                          Never store your production database files on an Instance Store disk without continuous replication! When an instance is stopped, the underlying physical hardware is released and all data on the Instance Store is lost forever.
+                        </p>
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Bash Command: Formatting and Mounting attached EBS volume</h4>
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>Bash Command: Formatting &amp; Mounting an Attached EBS Volume</h4>
                       <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>ebs_mount.sh</span>
@@ -2084,38 +2733,71 @@ sudo mount /dev/sdb /var/www/html`
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Storage: EBS vs EFS Simulator Tab
+                          Open Storage: EBS vs EFS Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 6: HA Architecture & Audit */}
-                  {selectedNote === 'best_practices' && (
+                  {/* NOTE 5.1: Placement Groups */}
+                  {selectedNote === 'placement_groups' && (
                     <div className="acad-detail-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>High Availability &amp; Well-Architected Auditing</h3>
-                        <span className="acad-hero-badge">Pro Architect</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          5.1 EC2 Placement Groups: Where Your Physical Servers Live
+                        </h3>
+                        <span className="acad-hero-badge" style={{ background: '#e0f2fe', borderColor: '#bae6fd', color: '#0369a1' }}>🏗️ Level 5 · High Availability</span>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        Designing fault-tolerant, resilient compute configurations requires leveraging specific instance grouping frameworks and well-architected operational policies.
-                      </p>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> When you launch 10 servers in AWS, by default AWS scatters them randomly in the data center. A <strong>Placement Group</strong> lets you give AWS specific instructions on whether to pack them close together for ultra-fast speed or spread them apart for maximum disaster safety.
+                      </div>
 
-                      <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>EC2 Placement Groups</h4>
-                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <li><strong>Cluster Placement Groups:</strong> Packs instances close together inside a single Availability Zone. Delivers ultra-low latency and 10 Gbps network bandwidth. Ideal for high-performance computing (HPC).</li>
-                        <li><strong>Spread Placement Groups:</strong> Places instances across distinct physical hardware racks (maximum 7 per AZ). Minimizes simultaneous hardware failure risks. Ideal for critical database replicas.</li>
-                        <li><strong>Partition Placement Groups:</strong> Divides instances across logical partitions. No two partitions share hardware racks. Ideal for distributed platforms (Hadoop, Cassandra, Kafka).</li>
-                      </ul>
-
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>🧠 Well-Architected Compute Checklist:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
-                          <li><strong>Stateless Web Servers:</strong> Offload all local session storage to DynamoDB or ElastiCache to enable seamless Auto Scaling.</li>
-                          <li><strong>Golden Image Pipelines:</strong> Regularly audit base AMIs for security patches and automate baking using EC2 Image Builder.</li>
-                          <li><strong>Multi-AZ Deployment:</strong> Always distribute instance fleets across multiple availability zones under a Load Balancer to guarantee 99.99% system availability.</li>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Seating Your Office Team
+                        </div>
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '11.8px', lineHeight: '1.6' }}>
+                          <li><strong>1. Cluster Group = Putting everyone in the same small conference room:</strong> Everyone sits at the same table. Zero delay when whispering to each other! Delivers ultra-low latency and 100 Gbps network speeds. <em>(Best for AI Model Training, HPC, and big math clusters).</em></li>
+                          <li><strong>2. Spread Group = Putting 3 teammates in 3 separate buildings with separate generators:</strong> If lightning strikes Building A, Buildings B and C are 100% fine! Max 7 servers per AZ. <em>(Best for Primary Database + Replicas that can never crash together).</em></li>
+                          <li><strong>3. Partition Group = Splitting an army into separate barracks:</strong> Divides your servers into partitions (e.g. Partition 1, Partition 2). Partitions never share physical racks with each other. <em>(Best for Kafka brokers, Cassandra nodes, and Hadoop clusters).</em></li>
                         </ul>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>Placement Groups Quick Cheat-Sheet</h4>
+                      <div style={{ overflowX: 'auto', margin: '10px 0 18px' }}>
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Placement Strategy</th>
+                              <th>Physical Hardware Arrangement</th>
+                              <th>Core Superpower</th>
+                              <th>Target Workload</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong>Cluster</strong></td>
+                              <td>Same physical rack inside 1 Availability Zone</td>
+                              <td>⚡ 100 Gbps Low-Latency Network</td>
+                              <td>AI/LLM training, HPC, video rendering</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Spread</strong></td>
+                              <td>Strictly separate power racks (Max 7 / AZ)</td>
+                              <td>🛡️ Maximum physical fault tolerance</td>
+                              <td>Critical database primaries and replicas</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Partition</strong></td>
+                              <td>Divided into isolated hardware partition groups</td>
+                              <td>📊 Scalable partition isolation</td>
+                              <td>Apache Kafka, Cassandra, HDFS pools</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
@@ -2125,7 +2807,73 @@ sudo mount /dev/sdb /var/www/html`
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Architecture &amp; Audit Simulator Tab
+                          View Placement Groups Diagram in Best Practices Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 5.2: Best Practices & The 4 Golden Rules */}
+                  {selectedNote === 'best_practices' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                          5.2 The 4 Golden Rules of Cloud Architecture &amp; HA
+                        </h3>
+                        <span className="acad-hero-badge" style={{ background: '#e0f2fe', borderColor: '#bae6fd', color: '#0369a1' }}>🏗️ Level 5 · High Availability</span>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> In the cloud, assume hardware can fail at any time. Professional cloud engineers design systems so that even if an entire data center goes dark, users never notice a single second of downtime.
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', margin: '18px 0' }}>
+                        <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
+                          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                            <span style={{ color: 'var(--color-blue)' }}>🌐</span> Rule 1: Make Web Servers Stateless
+                          </div>
+                          <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.55' }}>
+                            Never save user login sessions or uploaded files directly inside the EC2 hard drive! Offload sessions to <strong>ElastiCache (Redis)</strong> and files to <strong>S3</strong>. That way, any server can crash or scale down without kicking users off.
+                          </p>
+                        </div>
+
+                        <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
+                          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                            <span style={{ color: 'var(--color-green)' }}>🛡️</span> Rule 2: Multi-AZ + Load Balancer
+                          </div>
+                          <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.55' }}>
+                            Never put all your servers in a single Availability Zone. Always place your instances across <strong>at least 2 different AZs</strong> behind an <strong>Application Load Balancer (ALB)</strong> to guarantee 99.99% uptime.
+                          </p>
+                        </div>
+
+                        <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
+                          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                            <span style={{ color: 'var(--color-amber)' }}>📈</span> Rule 3: Automate with Auto Scaling (ASG)
+                          </div>
+                          <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.55' }}>
+                            Never manually click &ldquo;Launch Instance&rdquo; in production. Configure an <strong>Auto Scaling Group</strong> with a target CPU metric (e.g. 60%) to automatically add servers during traffic rushes and terminate them when quiet.
+                          </p>
+                        </div>
+
+                        <div style={{ background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '12px', padding: '16px' }}>
+                          <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                            <span style={{ color: 'var(--color-purple)' }}>🔑</span> Rule 4: Use IAM Roles (No Hardcoded Keys!)
+                          </div>
+                          <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.55' }}>
+                            Never save AWS access keys in config files inside your server! Attach an <strong>IAM Role</strong> directly to the EC2 instance so AWS automatically rotates temporary credentials securely via IMDSv2.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="ec2-btn ec2-on"
+                          onClick={() => setActiveTab('best')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Open Architecture &amp; Audit Simulator Tab
                         </button>
                       </div>
                     </div>
@@ -2347,51 +3095,545 @@ sudo mount /dev/sdb /var/www/html`
               </div>
             </div>
 
-            <div className="ec2-sec">EC2 Instance Families Specs Directory</div>
-            <div className="ec2-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
-                Choosing an instance type corresponds directly to the hardware profiles assigned to the hypervisor host. AWS classifies these configurations by family focus. Select a class below:
+            {/* EC2 INSTANCE FAMILIES SPECS DIRECTORY (TABULAR COMPARISON & DIFFERENTIATION MATRIX) */}
+            <div className="ec2-sec" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Cpu style={{ width: '16px', height: '16px', color: 'var(--color-blue)' }} />
+                <span>EC2 Instance Families Specs Directory &amp; Comparison Matrix</span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <button
+                  className={`ec2-filter-pill ${familyViewMode === 'table' ? 'active' : ''}`}
+                  onClick={() => setFamilyViewMode('table')}
+                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                >
+                  <TableIcon style={{ width: '12px', height: '12px' }} /> Table Matrix
+                </button>
+                <button
+                  className={`ec2-filter-pill ${familyViewMode === 'cards' ? 'active' : ''}`}
+                  onClick={() => setFamilyViewMode('cards')}
+                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                >
+                  <LayoutGrid style={{ width: '12px', height: '12px' }} /> Visual Cards
+                </button>
+              </div>
+            </div>
+
+            <div className="ec2-card" style={{ padding: '20px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.5' }}>
+                Choosing an EC2 instance type determines the physical hardware allocated by the Nitro hypervisor. AWS classifies over 500+ instance configurations into <b>5 core hardware families</b>. Compare CPU-to-memory ratios, maximum throughput, storage architectures, and trade-offs side-by-side below:
               </div>
 
-              <div className="ec2-g3" style={{ marginBottom: '14px' }}>
-                {Object.keys(INSTANCE_FAMILIES).map((famKey) => (
-                  <button 
-                    key={famKey} 
-                    className={`ec2-btn ${selectedFamily === famKey ? 'ec2-on' : ''}`}
-                    onClick={() => setSelectedFamily(famKey)}
-                    style={{ padding: '8px', textAlign: 'center', fontSize: '11px' }}
-                  >
-                    <span style={{ fontSize: '18px', display: 'block', marginBottom: '4px' }}>{INSTANCE_FAMILIES[famKey].icon}</span>
-                    {INSTANCE_FAMILIES[famKey].name.split(' ')[0]} Family
-                  </button>
-                ))}
+              {/* Instant Workload Matcher / Advisor */}
+              <div style={{ background: 'var(--color-background-secondary)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <Sparkles style={{ width: '14px', height: '14px', color: 'var(--color-amber)' }} />
+                  <span>🎯 Quick Workload Matcher (Click your scenario to highlight best family):</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { id: 'general', label: '🌐 Web Apps & Microservices', match: 'General Purpose (T / M)' },
+                    { id: 'compute', label: '⚡ Batch Processing & Video Encoding', match: 'Compute Optimized (C)' },
+                    { id: 'memory', label: '🧠 In-Memory Redis / SAP HANA', match: 'Memory Optimized (R / X / Z)' },
+                    { id: 'storage', label: '💾 Kafka Brokers & NoSQL (Cassandra)', match: 'Storage Optimized (I / D / H)' },
+                    { id: 'gpu', label: '🎨 Generative AI, LLMs & 3D GPU', match: 'Accelerated Computing (G / P / Trn)' }
+                  ].map(scenario => (
+                    <button
+                      key={scenario.id}
+                      className={`ec2-advisor-chip ${selectedFamily === scenario.id ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedFamily(scenario.id);
+                        setFamilyAdvisorWorkload(scenario.label);
+                        setFamilyCategoryFilter('all');
+                      }}
+                    >
+                      {scenario.label}
+                    </button>
+                  ))}
+                </div>
+                {familyAdvisorWorkload && (
+                  <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed var(--color-border-tertiary)', fontSize: '11px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckCircle2 style={{ width: '13px', height: '13px', color: 'var(--color-green)' }} />
+                    <span>Active recommendation for <b>{familyAdvisorWorkload}</b>: Highlighting <b>{INSTANCE_FAMILIES[selectedFamily].name}</b> with hardware specifications below.</span>
+                  </div>
+                )}
               </div>
 
-              {selectedFamily && (
-                <div style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '8px', marginBottom: '12px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-primary)' }}>
-                      <span>{INSTANCE_FAMILIES[selectedFamily].icon}</span>
-                      {INSTANCE_FAMILIES[selectedFamily].name}
+              {/* Search & Category Filter Toolbar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                {/* Category Pills */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {[
+                    { id: 'all', label: 'All Families (5)' },
+                    { id: 'general', label: '💻 General (T/M)' },
+                    { id: 'compute', label: '⚡ Compute (C)' },
+                    { id: 'memory', label: '🧠 Memory (R/X)' },
+                    { id: 'storage', label: '💾 Storage (I/D)' },
+                    { id: 'gpu', label: '🎨 Accelerated (GPU/AI)' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      className={`ec2-filter-pill ${familyCategoryFilter === tab.id ? 'active' : ''}`}
+                      onClick={() => setFamilyCategoryFilter(tab.id as any)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search Input */}
+                <div style={{ position: 'relative', minWidth: '240px', flex: '1 1 240px', maxWidth: '360px' }}>
+                  <Search style={{ width: '13px', height: '13px', position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search by prefix (t4g, c7i, r7g, i4i, p5) or use-case..."
+                    value={familySearchQuery}
+                    onChange={(e) => setFamilySearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '6px 28px 6px 30px',
+                      fontSize: '11.5px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border-secondary)',
+                      background: 'var(--color-background-primary)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  />
+                  {familySearchQuery && (
+                    <button
+                      onClick={() => setFamilySearchQuery('')}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)' }}
+                    >
+                      <X style={{ width: '12px', height: '12px' }} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* TABLE VIEW */}
+              {familyViewMode === 'table' && (
+                <div className="ec2-fam-table-wrapper" style={{ marginBottom: '16px' }}>
+                  <table className="ec2-fam-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '190px' }}>Instance Family &amp; Class</th>
+                        <th style={{ width: '140px' }}>RAM : vCPU Ratio</th>
+                        <th style={{ width: '140px' }}>vCPU &amp; RAM Specs</th>
+                        <th style={{ width: '140px' }}>Storage Architecture</th>
+                        <th style={{ width: '130px' }}>Max Network / EBS</th>
+                        <th>Core Architectural Differentiator</th>
+                        <th style={{ width: '170px' }}>Best Target Workloads</th>
+                        <th style={{ width: '80px', textAlign: 'center' }}>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.keys(INSTANCE_FAMILIES)
+                        .filter(famKey => {
+                          const fam = INSTANCE_FAMILIES[famKey];
+                          if (familyCategoryFilter !== 'all' && fam.category !== familyCategoryFilter) return false;
+                          if (familySearchQuery.trim()) {
+                            const query = familySearchQuery.toLowerCase();
+                            const matchName = fam.name.toLowerCase().includes(query);
+                            const matchClass = fam.classCode.toLowerCase().includes(query);
+                            const matchPrefix = fam.prefixList.some(p => p.toLowerCase().includes(query));
+                            const matchUseCase = fam.useCase.toLowerCase().includes(query);
+                            const matchDiff = fam.keyDifferentiator.toLowerCase().includes(query);
+                            const matchIdeal = fam.idealFor.some(item => item.toLowerCase().includes(query));
+                            return matchName || matchClass || matchPrefix || matchUseCase || matchDiff || matchIdeal;
+                          }
+                          return true;
+                        })
+                        .map(famKey => {
+                          const fam = INSTANCE_FAMILIES[famKey];
+                          const isSelected = selectedFamily === famKey;
+                          return (
+                            <tr
+                              key={famKey}
+                              className={isSelected ? 'ec2-fam-row-active' : ''}
+                              onClick={() => setSelectedFamily(famKey)}
+                              style={{
+                                borderLeft: isSelected ? `4px solid ${fam.themeColor}` : '4px solid transparent'
+                              }}
+                            >
+                              {/* Column 1: Family & Class */}
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontSize: '20px' }}>{fam.icon}</span>
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      {fam.name.split(' ')[0]}
+                                      <span
+                                        style={{
+                                          fontSize: '9.5px',
+                                          fontWeight: 800,
+                                          padding: '1px 6px',
+                                          borderRadius: '4px',
+                                          background: fam.accentBg,
+                                          color: fam.themeColor,
+                                          border: `1px solid ${fam.themeColor}40`
+                                        }}
+                                      >
+                                        {fam.classCode}
+                                      </span>
+                                    </div>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                                      {fam.prefixList.slice(0, 4).join(', ')}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Column 2: Ratio */}
+                              <td>
+                                <div
+                                  className="ec2-ratio-badge"
+                                  style={{
+                                    background: fam.accentBg,
+                                    color: fam.themeColor,
+                                    border: `1px solid ${fam.themeColor}30`
+                                  }}
+                                >
+                                  {fam.ratio}
+                                </div>
+                                <div className="ec2-ratio-meter">
+                                  <div
+                                    className="ec2-ratio-meter-fill"
+                                    style={{
+                                      width: fam.id === 'compute' ? '25%' : fam.id === 'general' ? '50%' : fam.id === 'storage' ? '65%' : fam.id === 'memory' ? '90%' : '100%',
+                                      background: fam.themeColor
+                                    }}
+                                  />
+                                </div>
+                              </td>
+
+                              {/* Column 3: vCPU & RAM Specs */}
+                              <td>
+                                <div style={{ fontWeight: 600, fontSize: '11.5px', color: 'var(--color-text-primary)' }}>
+                                  {fam.vcpuRange}
+                                </div>
+                                <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', marginTop: '1px' }}>
+                                  {fam.ramRange}
+                                </div>
+                              </td>
+
+                              {/* Column 4: Storage */}
+                              <td>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                                  {fam.storageBadge}
+                                </div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '1px' }}>
+                                  {fam.storageType}
+                                </div>
+                              </td>
+
+                              {/* Column 5: Network & EBS */}
+                              <td>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                                  {fam.networkBandwidth}
+                                </div>
+                                <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', marginTop: '1px' }}>
+                                  EBS: {fam.ebsBandwidth}
+                                </div>
+                              </td>
+
+                              {/* Column 6: Differentiator */}
+                              <td>
+                                <div style={{ fontSize: '11px', lineHeight: '1.4', color: 'var(--color-text-secondary)' }}>
+                                  {fam.keyDifferentiator}
+                                </div>
+                              </td>
+
+                              {/* Column 7: Target Workloads */}
+                              <td>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+                                  {fam.idealFor.slice(0, 2).map((use, i) => (
+                                    <span key={i} className="ec2-tag-pill">
+                                      {use}
+                                    </span>
+                                  ))}
+                                  {fam.idealFor.length > 2 && (
+                                    <span className="ec2-tag-pill" style={{ opacity: 0.75 }}>
+                                      +{fam.idealFor.length - 2} more
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Column 8: Action */}
+                              <td style={{ textAlign: 'center' }}>
+                                <button
+                                  className={`ec2-btn ${isSelected ? 'ec2-on' : ''}`}
+                                  style={{ padding: '4px 8px', fontSize: '10.5px' }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedFamily(famKey);
+                                  }}
+                                >
+                                  {isSelected ? 'Active ✓' : 'Inspect'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* CARDS VIEW */}
+              {familyViewMode === 'cards' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+                  {Object.keys(INSTANCE_FAMILIES)
+                    .filter(famKey => {
+                      const fam = INSTANCE_FAMILIES[famKey];
+                      if (familyCategoryFilter !== 'all' && fam.category !== familyCategoryFilter) return false;
+                      if (familySearchQuery.trim()) {
+                        const query = familySearchQuery.toLowerCase();
+                        return fam.name.toLowerCase().includes(query) || fam.classCode.toLowerCase().includes(query) || fam.prefixList.some(p => p.includes(query)) || fam.useCase.toLowerCase().includes(query);
+                      }
+                      return true;
+                    })
+                    .map(famKey => {
+                      const fam = INSTANCE_FAMILIES[famKey];
+                      const isSelected = selectedFamily === famKey;
+                      return (
+                        <div
+                          key={famKey}
+                          onClick={() => setSelectedFamily(famKey)}
+                          style={{
+                            background: 'var(--color-background-primary)',
+                            border: isSelected ? `2px solid ${fam.themeColor}` : '1.5px solid var(--color-border-tertiary)',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: isSelected ? `0 8px 20px -4px ${fam.themeColor}30` : '0 2px 4px rgba(0,0,0,0.02)',
+                            position: 'relative'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '24px' }}>{fam.icon}</span>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                                  {fam.name.split(' ')[0]}
+                                </div>
+                                <div style={{ fontSize: '10.5px', color: 'var(--color-text-tertiary)' }}>
+                                  Prefix Class: {fam.classCode}
+                                </div>
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 800,
+                                padding: '2px 8px',
+                                borderRadius: '999px',
+                                background: fam.accentBg,
+                                color: fam.themeColor,
+                                border: `1px solid ${fam.themeColor}40`
+                              }}
+                            >
+                              {fam.ratio}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
+                            {fam.keyDifferentiator}
+                          </div>
+
+                          <div style={{ background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '8px', fontSize: '11px', marginBottom: '10px' }}>
+                            <div className="ec2-kv" style={{ margin: '3px 0' }}>
+                              <span className="ec2-kk" style={{ minWidth: '90px' }}>vCPU Range:</span>
+                              <b>{fam.vcpuRange}</b>
+                            </div>
+                            <div className="ec2-kv" style={{ margin: '3px 0' }}>
+                              <span className="ec2-kk" style={{ minWidth: '90px' }}>RAM Range:</span>
+                              <b>{fam.ramRange}</b>
+                            </div>
+                            <div className="ec2-kv" style={{ margin: '3px 0' }}>
+                              <span className="ec2-kk" style={{ minWidth: '90px' }}>Network:</span>
+                              <b>{fam.networkBandwidth}</b>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {fam.idealFor.slice(0, 3).map((use, i) => (
+                              <span key={i} className="ec2-tag-pill">
+                                {use}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* SELECTED FAMILY DEEP-DIVE & ARCHITECTURAL DIFFERENTIATOR DRAWER */}
+              {selectedFamily && INSTANCE_FAMILIES[selectedFamily] && (
+                <div
+                  style={{
+                    background: 'var(--color-background-secondary)',
+                    borderRadius: '12px',
+                    border: `1.5px solid ${INSTANCE_FAMILIES[selectedFamily].themeColor}50`,
+                    padding: '20px',
+                    marginTop: '12px',
+                    boxShadow: `0 8px 24px -6px ${INSTANCE_FAMILIES[selectedFamily].themeColor}20`
+                  }}
+                >
+                  {/* Drawer Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '12px', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '26px' }}>{INSTANCE_FAMILIES[selectedFamily].icon}</span>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {INSTANCE_FAMILIES[selectedFamily].name}
+                          <span
+                            style={{
+                              fontSize: '10.5px',
+                              fontWeight: 800,
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              background: INSTANCE_FAMILIES[selectedFamily].accentBg,
+                              color: INSTANCE_FAMILIES[selectedFamily].themeColor,
+                              border: `1px solid ${INSTANCE_FAMILIES[selectedFamily].themeColor}40`
+                            }}
+                          >
+                            Class Code: {INSTANCE_FAMILIES[selectedFamily].classCode}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                          Architecture: {INSTANCE_FAMILIES[selectedFamily].hardwareTech}
+                        </div>
+                      </div>
                     </div>
-                    <div className="ec2-badge" style={{ background: 'var(--color-blue)', color: '#fff', fontSize: '10px' }}>
-                      Prefix Class: {INSTANCE_FAMILIES[selectedFamily].classCode}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          background: INSTANCE_FAMILIES[selectedFamily].themeColor,
+                          color: '#ffffff'
+                        }}
+                      >
+                        Ratio: {INSTANCE_FAMILIES[selectedFamily].ratio}
+                      </span>
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
+                  {/* Architecture Description */}
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.6' }}>
                     {INSTANCE_FAMILIES[selectedFamily].desc}
                   </div>
 
-                  <div className="ec2-g2">
-                    <div>
-                      <div className="ec2-kv"><span className="ec2-kk">vCPU Allocation:</span><b>{INSTANCE_FAMILIES[selectedFamily].vcpuRange}</b></div>
-                      <div className="ec2-kv"><span className="ec2-kk">System Memory (RAM):</span><b>{INSTANCE_FAMILIES[selectedFamily].ramRange}</b></div>
-                      <div className="ec2-kv"><span className="ec2-kk">EBS Volume Speed:</span><b>{INSTANCE_FAMILIES[selectedFamily].ebsBandwidth}</b></div>
+                  {/* PROS & TRADE-OFFS DIFFERENTIATION COMPARISON GRID */}
+                  <div className="ec2-g2" style={{ marginBottom: '16px' }}>
+                    {/* Why Choose */}
+                    <div
+                      style={{
+                        background: 'var(--color-background-primary)',
+                        padding: '14px 16px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--ec-success-border, rgba(34, 197, 94, 0.3))'
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--color-green)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <CheckCircle2 style={{ width: '15px', height: '15px' }} />
+                        <span>✅ Why Choose This Family (Key Strengths)</span>
+                      </div>
+                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        {INSTANCE_FAMILIES[selectedFamily].idealFor.map((item, idx) => (
+                          <li key={idx} style={{ marginBottom: '4px' }}>
+                            <b>{item}</b>: Highly cost-effective and architecturally tuned for this profile.
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <div>
-                      <div className="ec2-kv"><span className="ec2-kk">Network Performance:</span><b>{INSTANCE_FAMILIES[selectedFamily].networkBandwidth}</b></div>
-                      <div className="ec2-kv"><span className="ec2-kk">Production Scenarios:</span><b style={{ color: 'var(--color-blue)' }}>{INSTANCE_FAMILIES[selectedFamily].useCase}</b></div>
+
+                    {/* When to Avoid / Trade-offs */}
+                    <div
+                      style={{
+                        background: 'var(--color-background-primary)',
+                        padding: '14px 16px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--ec-error-border, rgba(239, 68, 68, 0.3))'
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--color-red)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <AlertTriangle style={{ width: '15px', height: '15px' }} />
+                        <span>⚠️ When to Avoid &amp; Architectural Trade-offs</span>
+                      </div>
+                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+                        {INSTANCE_FAMILIES[selectedFamily].tradeoffs.map((item, idx) => (
+                          <li key={idx} style={{ marginBottom: '4px' }}>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Multi-Cloud Equivalents Matrix */}
+                  <div style={{ background: 'var(--color-background-primary)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)', marginBottom: '16px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Globe style={{ width: '13px', height: '13px', color: 'var(--color-blue)' }} />
+                      <span>Multi-Cloud Cross-Provider Equivalents:</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '11px' }}>
+                      <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #ff9900' }}>
+                        <div style={{ fontWeight: 700, color: '#ff9900', fontSize: '10px', textTransform: 'uppercase' }}>AWS Instances</div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{INSTANCE_FAMILIES[selectedFamily].cloudEquivalents.aws}</div>
+                      </div>
+                      <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #0078d4' }}>
+                        <div style={{ fontWeight: 700, color: '#0078d4', fontSize: '10px', textTransform: 'uppercase' }}>Azure VM Series</div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{INSTANCE_FAMILIES[selectedFamily].cloudEquivalents.azure}</div>
+                      </div>
+                      <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #0f9d58' }}>
+                        <div style={{ fontWeight: 700, color: '#0f9d58', fontSize: '10px', textTransform: 'uppercase' }}>Google Cloud (GCP) Machine Types</div>
+                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{INSTANCE_FAMILIES[selectedFamily].cloudEquivalents.gcp}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Representative Sample Instances Table */}
+                  <div style={{ background: 'var(--color-background-primary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
+                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Layers style={{ width: '14px', height: '14px', color: 'var(--color-purple)' }} />
+                      <span>Representative Real-World Configurations ({INSTANCE_FAMILIES[selectedFamily].name.split(' ')[0]} Family):</span>
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ background: 'var(--color-background-secondary)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
+                            <th style={{ padding: '8px 10px' }}>Instance Type</th>
+                            <th style={{ padding: '8px 10px' }}>vCPU Cores</th>
+                            <th style={{ padding: '8px 10px' }}>Memory (RAM)</th>
+                            <th style={{ padding: '8px 10px' }}>Storage</th>
+                            <th style={{ padding: '8px 10px' }}>Network Speed</th>
+                            <th style={{ padding: '8px 10px' }}>Hourly Est. (On-Demand)</th>
+                            <th style={{ padding: '8px 10px' }}>Target Application</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {INSTANCE_FAMILIES[selectedFamily].sampleInstances.map((sample, idx) => (
+                            <tr key={idx} style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                              <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>
+                                {sample.name}
+                              </td>
+                              <td style={{ padding: '8px 10px', fontWeight: 600 }}>{sample.vcpu} vCPUs</td>
+                              <td style={{ padding: '8px 10px', fontWeight: 600 }}>{sample.ramGiB} GiB</td>
+                              <td style={{ padding: '8px 10px', color: 'var(--color-text-secondary)' }}>{sample.storage}</td>
+                              <td style={{ padding: '8px 10px', color: 'var(--color-text-secondary)' }}>{sample.network}</td>
+                              <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--color-blue)' }}>{sample.hourlyEst}</td>
+                              <td style={{ padding: '8px 10px', color: 'var(--color-text-secondary)' }}>{sample.useCase}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
@@ -2739,24 +3981,24 @@ sudo mount /dev/sdb /var/www/html`
                       <circle r="2.5" fill="var(--color-amber)">
                         <animateMotion dur="1s" repeatCount="indefinite" path="M 155, 75 L 130, 42" />
                       </circle>
- 
-                       {/* Clustered EC2 nodes */}
+
+                      {/* Clustered nodes */}
                       <g transform="translate(20, 75)">
                         <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
-                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-A</text>
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">VM-A</text>
                       </g>
                       
                       <g transform="translate(77, 75)">
                         <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
-                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-B</text>
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">VM-B</text>
                       </g>
  
-                       <g transform="translate(135, 75)">
+                      <g transform="translate(135, 75)">
                         <rect x="0" y="0" width="45" height="30" rx="4" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }} />
                         <rect x="3" y="3" width="39" height="6" rx="1.5" fill="var(--color-blue)" />
-                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">EC2-C</text>
+                        <text x="22.5" y="20" textAnchor="middle" fontSize="7.5" fontWeight="bold" fill="var(--color-text-primary)">VM-C</text>
                       </g>
                     </svg>
                   </div>
@@ -2783,7 +4025,7 @@ sudo mount /dev/sdb /var/www/html`
                         {/* 3D server */}
                         <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
                           <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
-                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-1</text>
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">VM-1</text>
                         </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-A</text>
@@ -2799,7 +4041,7 @@ sudo mount /dev/sdb /var/www/html`
                         
                         <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
                           <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
-                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-2</text>
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">VM-2</text>
                         </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-B</text>
@@ -2815,7 +4057,7 @@ sudo mount /dev/sdb /var/www/html`
                         
                         <g style={{ filter: 'drop-shadow(0 1.5px 1.5px rgba(0,0,0,0.1))' }}>
                           <rect x="5" y="16" width="40" height="22" rx="3" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
-                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">EC2-3</text>
+                          <text x="25" y="30" textAnchor="middle" fontSize="8.5" fill="var(--color-green)" fontWeight="bold">VM-3</text>
                         </g>
                         
                         <text x="25" y="55" textAnchor="middle" fontSize="6" fill="var(--color-green)">🔋 Power-C</text>
@@ -2843,21 +4085,21 @@ sudo mount /dev/sdb /var/www/html`
                       {/* Partition 1 */}
                       <g transform="translate(6, 8)">
                         <rect x="0" y="0" width="90" height="104" rx="4" fill="var(--color-blue)" fillOpacity="0.05" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ COMPUTE PARTITION 1</text>
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ PARTITION 1</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
                           <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
-                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-1</text>
+                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">VM-1</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
                           <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
-                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-2</text>
+                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">VM-2</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
                           <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
-                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-3</text>
+                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">VM-3</text>
                         </g>
                         
                         <path d="M 15, 85 L 75, 85" stroke="var(--ec-svg-line-stroke)" strokeWidth="1.5" strokeDasharray="3,3" />
@@ -2870,21 +4112,21 @@ sudo mount /dev/sdb /var/www/html`
                       {/* Partition 2 */}
                       <g transform="translate(104, 8)">
                         <rect x="0" y="0" width="90" height="104" rx="4" fill="var(--color-blue)" fillOpacity="0.05" stroke="var(--color-blue)" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ COMPUTE PARTITION 2</text>
+                        <text x="45" y="10" textAnchor="middle" fontSize="6" fill="var(--color-blue)" fontWeight="bold">🛡️ PARTITION 2</text>
                         
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
                           <rect x="5" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
-                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-4</text>
+                          <text x="23" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">VM-4</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
                           <rect x="49" y="16" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
-                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-5</text>
+                          <text x="67" y="28" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">VM-5</text>
                         </g>
 
                         <g style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))' }}>
                           <rect x="27" y="44" width="36" height="20" rx="2" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="0.8" />
-                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">EC2-6</text>
+                          <text x="45" y="56" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="bold">VM-6</text>
                         </g>
                         
                         <path d="M 15, 85 L 75, 85" stroke="var(--ec-svg-line-stroke)" strokeWidth="1.5" strokeDasharray="3,3" />

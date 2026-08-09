@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Zap,
   Database,
   Sliders,
   Play,
@@ -7,7 +14,6 @@ import {
   Terminal,
   Activity,
   Server,
-  BookOpen,
   TrendingUp,
   Shield,
   Info,
@@ -17,7 +23,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Ba
 import DatabasesAndAnalyticsComparativeView from '../../components/visualizers/DatabasesAndAnalyticsComparativeView';
 import UniqueDatabasesAndAnalyticsFeatures from '../../components/visualizers/UniqueDatabasesAndAnalyticsFeatures';
 
-type TabType = 'intro' | 'rdbms' | 'nosql' | 'lakehouse' | 'warehousing' | 'streaming' | 'ingestion' | 'unique';
+type TabType = 'notebook' | 'intro' | 'rdbms' | 'nosql' | 'lakehouse' | 'warehousing' | 'streaming' | 'ingestion' | 'unique';
 
 interface DataLakeRecord {
   timestamp: string;
@@ -170,7 +176,17 @@ interface DatabasesAndAnalyticsVisualizerProps {
 }
 
 export default function DatabasesAndAnalyticsVisualizer({ provider = 'aws', setProvider }: DatabasesAndAnalyticsVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('rdbms_fundamentals');
+  const [expandedCategory, setExpandedCategory] = useState<string>('db_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Database Calculator State
+  const [nbReadTps, setNbReadTps] = useState<number>(1000);
+  const [nbWriteTps, setNbWriteTps] = useState<number>(200);
+  const [nbStorageGb, setNbStorageGb] = useState<number>(100);
 
   const isComparative = provider === 'comparative';
   const isAzure = provider === 'azure';
@@ -1269,6 +1285,171 @@ export default function DatabasesAndAnalyticsVisualizer({ provider = 'aws', setP
           --da-svg-node-border: rgba(51, 65, 85, 0.8);
         }
 
+        .acad-dir-container {
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: var(--da-card-shadow);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--da-tab-bg);
+          border-bottom: 1px solid var(--da-card-border);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--da-text-title);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--da-card-bg);
+          color: var(--da-text);
+          border-bottom: 1px solid var(--da-card-border);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--da-tab-hover-bg);
+          color: var(--da-text-title);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--da-text-muted);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--da-card-bg);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--da-tab-hover-bg);
+          color: var(--da-text-title);
+          border-left-color: var(--da-card-border);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: rgba(37, 99, 235, 0.12);
+          color: #2563eb;
+          border-left-color: #2563eb;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(96, 165, 250, 0.2);
+          color: #60a5fa;
+          border-left-color: #60a5fa;
+        }
+        .acad-detail-card {
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: var(--da-card-shadow);
+        }
+        .acad-hero-badge {
+          background: rgba(37, 99, 235, 0.1);
+          border: 1.5px solid rgba(37, 99, 235, 0.3);
+          color: #1d4ed8;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .dark .acad-hero-badge {
+          background: rgba(96, 165, 250, 0.18);
+          border-color: rgba(96, 165, 250, 0.4);
+          color: #93c5fd;
+        }
+        .acad-plain-english {
+          background: rgba(37, 99, 235, 0.08);
+          border-left: 4px solid #2563eb;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--da-text);
+          border-top: 1px solid var(--da-card-border);
+          border-right: 1px solid var(--da-card-border);
+          border-bottom: 1px solid var(--da-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(37, 99, 235, 0.18);
+          color: #f1f5f9;
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--da-text);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%);
+          border-color: rgba(245, 158, 11, 0.4);
+          color: #f1f5f9;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--da-table-border);
+        }
+        .acad-table th {
+          background: var(--da-table-th-bg);
+          color: var(--da-table-th-text);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--da-table-border);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--da-table-border);
+          color: var(--da-table-td-text);
+        }
+        .acad-terminal {
+          background: #090d16;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
+          color: var(--da-text-muted);
+        }
+
         .da-card {
           background: var(--da-card-bg);
           border: 1.5px solid var(--da-card-border);
@@ -1607,26 +1788,29 @@ export default function DatabasesAndAnalyticsVisualizer({ provider = 'aws', setP
       {/* Tabs navigation bar */}
       {!isComparative && (
         <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4 text-blue-500" /> 📖 1) Visual Notes &amp; Theories
+          </button>
           <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <BookOpen className="w-4 h-4" /> 1. Choosing the Right DB &amp; Theory
+            <Sliders className="w-4 h-4 text-emerald-500" /> 🎯 2) Choosing the Right Database
           </button>
           <button className={`da-tb ${activeTab === 'rdbms' ? 'da-on' : ''}`} onClick={() => setActiveTab('rdbms')}>
-            <Server className="w-4 h-4" /> 2. {provider === 'azure' ? 'Azure SQL & Cosmos DB' : provider === 'gcp' ? 'Cloud SQL & Cloud Spanner' : 'RDS & Aurora Cluster'}
+            <Server className="w-4 h-4" /> 📑 3) {provider === 'azure' ? 'Azure SQL & Cosmos DB' : provider === 'gcp' ? 'Cloud SQL & Cloud Spanner' : 'RDS & Aurora Cluster'}
           </button>
           <button className={`da-tb ${activeTab === 'nosql' ? 'da-on' : ''}`} onClick={() => setActiveTab('nosql')}>
-            <Database className="w-4 h-4" /> 3. NoSQL Suite &amp; Cache-Aside
+            <Database className="w-4 h-4" /> ⚡ 4) NoSQL Suite &amp; Cache-Aside
           </button>
           <button className={`da-tb ${activeTab === 'lakehouse' ? 'da-on' : ''}`} onClick={() => setActiveTab('lakehouse')}>
-            <Shield className="w-4 h-4" /> 4. {provider === 'azure' ? 'Synapse & Data Lake Governance' : provider === 'gcp' ? 'BigQuery & Dataplex Governance' : 'Athena & Lake Governance'}
+            <Shield className="w-4 h-4" /> 🏛️ 5) {provider === 'azure' ? 'Synapse & Data Lake Governance' : provider === 'gcp' ? 'BigQuery & Dataplex Governance' : 'Athena & Lake Governance'}
           </button>
           <button className={`da-tb ${activeTab === 'warehousing' ? 'da-on' : ''}`} onClick={() => setActiveTab('warehousing')}>
-            <TrendingUp className="w-4 h-4" /> 5. {provider === 'azure' ? 'Synapse Warehousing & DR' : provider === 'gcp' ? 'BigQuery Warehousing & DR' : 'Redshift Warehousing & DR'}
+            <TrendingUp className="w-4 h-4" /> 📊 6) {provider === 'azure' ? 'Synapse Warehousing & DR' : provider === 'gcp' ? 'BigQuery Warehousing & DR' : 'Redshift Warehousing & DR'}
           </button>
           <button className={`da-tb ${activeTab === 'streaming' ? 'da-on' : ''}`} onClick={() => setActiveTab('streaming')}>
-            <Activity className="w-4 h-4" /> 6. {provider === 'azure' ? 'Event Hubs & Stream Analytics' : provider === 'gcp' ? 'Pub/Sub & Dataflow Analytics' : 'Streaming Kafka & Flink'}
+            <Activity className="w-4 h-4" /> 🌊 7) {provider === 'azure' ? 'Event Hubs & Stream Analytics' : provider === 'gcp' ? 'Pub/Sub & Dataflow Analytics' : 'Streaming Kafka & Flink'}
           </button>
           <button className={`da-tb ${activeTab === 'ingestion' ? 'da-on' : ''}`} onClick={() => setActiveTab('ingestion')}>
-            <LayoutDashboard className="w-4 h-4" /> 7. {provider === 'azure' ? 'Data Factory & Ingestion' : provider === 'gcp' ? 'Dataflow & Dataprep Ingestion' : 'Ingestion Sandbox & OpenSearch'}
+            <LayoutDashboard className="w-4 h-4" /> 📥 8) {provider === 'azure' ? 'Data Factory & Ingestion' : provider === 'gcp' ? 'Dataflow & Dataprep Ingestion' : 'Ingestion Sandbox & OpenSearch'}
           </button>
           <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
@@ -1649,7 +1833,601 @@ export default function DatabasesAndAnalyticsVisualizer({ provider = 'aws', setP
       {/* ========================================================================= */}
       {/* TAB 1: HOW TO CHOOSE THE RIGHT DATABASE & SELECTOR WIZARD                  */}
       {/* ========================================================================= */}
-      {activeTab === 'intro' && (
+            {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--da-text)' }}>
+          
+          {/* Header Hero Card */}
+          <div className="da-card text-left" style={{ borderLeft: '4px solid #3b82f6', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-blue-600" /> Databases &amp; Analytics Visual Notes &amp; Architectural Theories
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--da-text-muted)' }}>
+                  Simplified, beginner-friendly database &amp; analytics theories sorted progressively from RDBMS vs NoSQL to In-Memory Caching, S3 Data Lakes, Athena Serverless Queries, Redshift Warehousing, and Real-Time Kafka/Flink Streaming.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--da-text-muted)' }}>Curriculum Directory:</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <Database className="w-4 h-4 text-blue-600" />
+                  <span>Database Modules</span>
+                </div>
+
+                {/* LEVEL 1: DATABASE FUNDAMENTALS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'db_fundamentals' ? '' : 'db_fundamentals')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-blue-500" />
+                      🐣 Level 1 · RDBMS vs NoSQL
+                    </span>
+                    {expandedCategory === 'db_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'db_fundamentals' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('rdbms_fundamentals')}
+                        className={`acad-dir-item-btn ${selectedNote === 'rdbms_fundamentals' ? 'acad-active' : ''}`}
+                      >
+                        1.1 Relational Databases (Accounting Ledger)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('nosql_fundamentals')}
+                        className={`acad-dir-item-btn ${selectedNote === 'nosql_fundamentals' ? 'acad-active' : ''}`}
+                      >
+                        1.2 NoSQL Databases (Keycard Locker)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: CACHING & STORAGE TIERING */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'cache_lakes' ? '' : 'cache_lakes')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Server className="w-3.5 h-3.5 text-amber-500" />
+                      ⚙️ Level 2 · Cache &amp; Data Lakes
+                    </span>
+                    {expandedCategory === 'cache_lakes' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'cache_lakes' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('in_memory_cache')}
+                        className={`acad-dir-item-btn ${selectedNote === 'in_memory_cache' ? 'acad-active' : ''}`}
+                      >
+                        2.1 In-Memory Caching (Post-It Note)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('s3_data_lakes')}
+                        className={`acad-dir-item-btn ${selectedNote === 's3_data_lakes' ? 'acad-active' : ''}`}
+                      >
+                        2.2 S3 Raw Data Lakes (Basement Storage)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: ANALYTICS & WAREHOUSING */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'analytics_warehousing' ? '' : 'analytics_warehousing')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                      🏛️ Level 3 · Athena &amp; Redshift
+                    </span>
+                    {expandedCategory === 'analytics_warehousing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'analytics_warehousing' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('athena_lakehouse')}
+                        className={`acad-dir-item-btn ${selectedNote === 'athena_lakehouse' ? 'acad-active' : ''}`}
+                      >
+                        3.1 Amazon Athena (Flashlight Inspector)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('redshift_warehousing')}
+                        className={`acad-dir-item-btn ${selectedNote === 'redshift_warehousing' ? 'acad-active' : ''}`}
+                      >
+                        3.2 Amazon Redshift (Sorting Factory)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: STREAMING & SEARCH */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'streaming_search' ? '' : 'streaming_search')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-purple-500" />
+                      🌊 Level 4 · Kafka, Flink &amp; Search
+                    </span>
+                    {expandedCategory === 'streaming_search' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'streaming_search' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('realtime_streaming')}
+                        className={`acad-dir-item-btn ${selectedNote === 'realtime_streaming' ? 'acad-active' : ''}`}
+                      >
+                        4.1 Real-Time Streaming (Conveyor Belt)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('opensearch_indexing')}
+                        className={`acad-dir-item-btn ${selectedNote === 'opensearch_indexing' ? 'acad-active' : ''}`}
+                      >
+                        4.2 Amazon OpenSearch (Card Catalog)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--da-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any database topic to explore real-world analogies, interactive cost calculators, and instant simulator links!
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* NOTE 1.1: RELATIONAL DATABASES */}
+              {selectedNote === 'rdbms_fundamentals' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.1 Relational Databases (Amazon RDS &amp; Aurora Cluster)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('rdbms')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to RDS &amp; Aurora Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Relational Databases (RDBMS)** store data in structured tables composed of rows and columns. They enforce strict data schemas, foreign key relationships (`JOIN`s), and 100% **ACID compliance** (Atomicity, Consistency, Isolation, Durability)—ensuring bank account transfers never drop money in transit!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Certified Bank Accounting Ledger
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Imagine a certified bank accounting ledger bound in leather. Every financial transaction must write both a debit line and a credit line on exact pre-printed columns. If the pen runs out of ink halfway through writing, the entire entry is scratched out and rolled back (ACID Rollback) so money is never created or lost out of thin air!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Feature</th>
+                          <th>Amazon RDS (Standard Instance)</th>
+                          <th>Amazon Aurora (Decoupled Cloud Native)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Storage Architecture</strong></td>
+                          <td>EBS volume tied directly to 1 EC2 VM</td>
+                          <td>Distributed 6-way log storage across 3 AZs</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Failover Time</strong></td>
+                          <td>60 to 120 seconds (DNS CNAME swap)</td>
+                          <td>Under 30 seconds (Automatic Multi-AZ failover)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Read Replicas</strong></td>
+                          <td>Up to 5 read replicas (EBS replication)</td>
+                          <td>Up to 15 read replicas with 0ms storage lag</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Auto-Scaling</strong></td>
+                          <td>Manual or Auto-scaling EBS blocks</td>
+                          <td>Aurora Serverless v2 auto-scales ACUs instantly</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--da-card-bg)' }}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--da-text-muted)' }}>AWS CloudFormation Aurora Serverless Cluster</span>
+                      <button 
+                        onClick={() => {
+                          const snippet = `Resources:\n  AuroraCluster:\n    Type: AWS::RDS::DBCluster\n    Properties:\n      Engine: aurora-postgresql\n      ServerlessV2ScalingConfiguration:\n        MinCapacity: 0.5\n        MaxCapacity: 16.0`;
+                          navigator.clipboard.writeText(snippet);
+                          setCopiedNoteId('aurora-template');
+                          setTimeout(() => setCopiedNoteId(null), 2000);
+                        }}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'aurora-template' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-24">
+{`Resources:
+  AuroraCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      ServerlessV2ScalingConfiguration:
+        MinCapacity: 0.5
+        MaxCapacity: 16.0`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 1.2: NOSQL DATABASES */}
+              {selectedNote === 'nosql_fundamentals' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.2 NoSQL Databases (Amazon DynamoDB &amp; DocumentDB)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('nosql')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to NoSQL Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **NoSQL Databases** trade rigid table schemas and complex SQL JOINs for **unlimited horizontal scaling** and sub-10 millisecond response times. **Amazon DynamoDB** uses partition key hashes to distribute data across thousands of SSD drives automatically!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Automated VIP Hotel Key Card Locker
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of filing papers in complex multi-folder filing cabinets (SQL JOINs), you walk up to an automated locker bank with 10,000 lockers. You scan keycard #804 (`Partition Key`), and locker #804 pops open in 2 milliseconds—whether the facility holds 10 lockers or 10 million lockers!
+                    </p>
+                  </div>
+
+                  {/* Interactive Database Cost & TPS Calculator HUD */}
+                  <div className="acad-detail-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--da-card-border)' }}>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--da-text-muted)' }}>Interactive Database Capacity &amp; Cost Estimator</span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--da-text-muted)' }}>
+                          <span>Read TPS: {nbReadTps.toLocaleString()} ops/sec</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="100" 
+                          max="20000" 
+                          step="100" 
+                          value={nbReadTps} 
+                          onChange={(e) => setNbReadTps(parseInt(e.target.value))}
+                          className="accent-blue-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--da-text-muted)' }}>
+                          <span>Write TPS: {nbWriteTps.toLocaleString()} ops/sec</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="50" 
+                          max="10000" 
+                          step="50" 
+                          value={nbWriteTps} 
+                          onChange={(e) => setNbWriteTps(parseInt(e.target.value))}
+                          className="accent-blue-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--da-text-muted)' }}>
+                          <span>Data Size: {nbStorageGb} GB</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="5000" 
+                          step="10" 
+                          value={nbStorageGb} 
+                          onChange={(e) => setNbStorageGb(parseInt(e.target.value))}
+                          className="accent-blue-600 w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const ddbReadCost = (nbReadTps / 4000) * 0.00013 * 730 * 3600;
+                      const ddbWriteCost = (nbWriteTps / 1000) * 0.00065 * 730 * 3600;
+                      const ddbStorageCost = nbStorageGb * 0.25;
+                      const totalDdbCost = ddbReadCost + ddbWriteCost + ddbStorageCost;
+                      return (
+                        <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--da-tab-bg)', border: '1px solid var(--da-card-border)' }}>
+                          <p>DynamoDB On-Demand Estimate: <span className="text-emerald-500 font-bold">${totalDdbCost.toFixed(2)} / month</span></p>
+                          <p>Architecture Recommendation: <span className="text-blue-500 font-bold">{nbReadTps > 5000 ? 'Use ElastiCache Redis in front of DynamoDB to cut read costs by 80%!' : 'DynamoDB On-Demand handles this workload effortlessly with zero capacity planning.'}</span></p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.1: IN-MEMORY CACHING */}
+              {selectedNote === 'in_memory_cache' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Cache &amp; Lakes</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.1 In-Memory Caching (Amazon ElastiCache Redis &amp; Memcached)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('nosql')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to NoSQL &amp; Cache Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Databases store data on disk (SSD), taking 5 to 20 milliseconds to fetch records. **Amazon ElastiCache** stores data directly in RAM memory, returning data in **sub-millisecond (&lt; 1ms)** latency while shielding underlying databases from traffic spikes!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Post-It Note on the Kitchen Refrigerator
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of walking down to the basement archives every single time you need the Wi-Fi password (Querying Database on Disk), you stick a yellow Post-It note on the kitchen refrigerator (ElastiCache RAM). Everyone gets the password in 1 second without disturbing the basement!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.2: S3 RAW DATA LAKES */}
+              {selectedNote === 's3_data_lakes' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Cache &amp; Lakes</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.2 Amazon S3 Raw Data Lakes &amp; Lifecycle Tiering
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('lakehouse')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Lakehouse Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> A **Data Lake** is a centralized repository that allows you to store all your structured, semi-structured, and unstructured data at any scale. **Amazon S3** acts as the primary data lake foundation with 99.999999999% (11 9s) durability and automatic lifecycle tiering to Glacier Deep Archive.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Unlimited Basement Storage Vault
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      You throw all raw photo albums, paper receipts, tax filings, and video tapes into labeled boxes in an infinite basement (S3 Data Lake). Active boxes stay near the stairs (S3 Standard), older boxes move to back shelves (S3 IA), and 10-year-old tax boxes are moved to a remote mountain vault (Glacier Deep Archive) for 99% cost savings!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: ATHENA LAKEHOUSE */}
+              {selectedNote === 'athena_lakehouse' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · Athena &amp; Redshift</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.1 Amazon Athena: Serverless S3 Data Lake SQL Queries
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('lakehouse')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Lakehouse Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon Athena** is an interactive serverless query service that makes it easy to analyze data in Amazon S3 using standard SQL. You pay strictly for the data scanned per query ($5 per TB scanned)—and converting JSON files into compressed Apache Parquet format cuts query costs by **90%**!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Flashlight Inspector Scanning Basement Boxes
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of hiring a moving crew to unpack every single box in the basement into a display room (Loading a Database), an inspector walks into the basement with a high-speed barcode flashlight (Amazon Athena), scans only the boxes labeled &ldquo;2024 Receipts&rdquo;, and gives you the exact answer in 3 seconds!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: REDSHIFT WAREHOUSING */}
+              {selectedNote === 'redshift_warehousing' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · Athena &amp; Redshift</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.2 Amazon Redshift: Cloud Data Warehousing &amp; Columnar Storage
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('warehousing')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Warehousing Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon Redshift** is a enterprise petabyte-scale data warehouse. Unlike transactional databases (RDS) that store data in row format, Redshift uses **Columnar Data Storage** and Massively Parallel Processing (MPP)—allowing complex analytical queries across 100 billion rows to execute in seconds!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The High-Speed Industrial Sorting Factory
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      In a standard library book, sentences are written horizontally row by row. If you want to sum up every single price in a 1,000-page book, you must read all 1,000 pages line by line (Row Storage). In Redshift (Columnar Storage), all prices are torn out and stacked in 1 single column pipe—allowing you to sum up 100 million prices in 0.1 seconds!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: REAL-TIME STREAMING */}
+              {selectedNote === 'realtime_streaming' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🌊 Level 4 · Streaming &amp; Search</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.1 Real-Time Streaming Analytics (Kinesis, MSK Kafka &amp; Apache Flink)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('streaming')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Streaming Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Batch processing waits hours or days to analyze data. **Real-time streaming** with Amazon Kinesis, MSK (Managed Streaming for Apache Kafka), and Managed Apache Flink processes clickstreams, IoT sensor telemetry, and credit card transactions in **milliseconds as events occur** using sliding time windows!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport Luggage Conveyor &amp; Scanner
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of waiting for all 500 luggage bags to land on the floor at the end of the day (Batch ETL), luggage flows continuously on a high-speed conveyor belt (Kinesis/Kafka). As bags pass through an inline X-ray scanner (Apache Flink), an alert triggers instantly the millisecond a contraband item is spotted!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: OPENSEARCH SEARCH ANALYTICS */}
+              {selectedNote === 'opensearch_indexing' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🌊 Level 4 · Streaming &amp; Search</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.2 Amazon OpenSearch Service: Full-Text Search &amp; Log Analytics
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('ingestion')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Ingestion &amp; Search Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> SQL databases struggle with full-text search queries like `WHERE description LIKE '%red running shoes%'`. **Amazon OpenSearch Service** (successor to Elasticsearch) uses inverted indexes for instantaneous autocomplete, fuzzy search, vector search for AI, and real-time log monitoring dashboards!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Public Library Card Catalog Index
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of walking through 50 miles of library aisles checking every single page of 100,000 books, you open the library card catalog index (Inverted Index). You look up the word &ldquo;Dinosaur&rdquo;, and the index card immediately gives you exact aisle numbers, shelf numbers, and book IDs in 1 second!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
+        {activeTab === 'intro' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             

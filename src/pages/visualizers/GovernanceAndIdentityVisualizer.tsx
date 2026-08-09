@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Zap,
   Shield,
   Users,
   Key,
@@ -10,14 +17,13 @@ import {
   SlidersHorizontal,
   Building,
   Plus,
-  BookOpen,
   Terminal,
   Network
 } from 'lucide-react';
 import GovernanceAndIdentityComparativeView from '../../components/visualizers/GovernanceAndIdentityComparativeView';
 import UniqueGovernanceAndIdentityFeatures from '../../components/visualizers/UniqueGovernanceAndIdentityFeatures';
 
-type TabType = 'intro' | 'organizations' | 'iam' | 'identitycenter' | 'compliance' | 'unique';
+type TabType = 'notebook' | 'intro' | 'organizations' | 'iam' | 'identitycenter' | 'compliance' | 'unique';
 
 interface AccountNode {
   id: string;
@@ -39,7 +45,12 @@ interface GovernanceAndIdentityVisualizerProps {
 }
 
 export default function GovernanceAndIdentityVisualizer({ provider = 'aws', setProvider }: GovernanceAndIdentityVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('iam_roles_policies');
+  const [expandedCategory, setExpandedCategory] = useState<string>('iam_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
   const isComparative = provider === 'comparative';
 
@@ -738,6 +749,171 @@ export default function GovernanceAndIdentityVisualizer({ provider = 'aws', setP
           --da-svg-node-border: rgba(51, 65, 85, 0.8);
         }
 
+        .acad-dir-container {
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: var(--da-card-shadow);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--da-tab-bg);
+          border-bottom: 1px solid var(--da-card-border);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--da-text-title);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--da-card-bg);
+          color: var(--da-text);
+          border-bottom: 1px solid var(--da-card-border);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--da-tab-hover-bg);
+          color: var(--da-text-title);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--da-text-muted);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--da-card-bg);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--da-tab-hover-bg);
+          color: var(--da-text-title);
+          border-left-color: var(--da-card-border);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: rgba(37, 99, 235, 0.12);
+          color: #2563eb;
+          border-left-color: #2563eb;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(96, 165, 250, 0.2);
+          color: #60a5fa;
+          border-left-color: #60a5fa;
+        }
+        .acad-detail-card {
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: var(--da-card-shadow);
+        }
+        .acad-hero-badge {
+          background: rgba(37, 99, 235, 0.1);
+          border: 1.5px solid rgba(37, 99, 235, 0.3);
+          color: #1d4ed8;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .dark .acad-hero-badge {
+          background: rgba(96, 165, 250, 0.18);
+          border-color: rgba(96, 165, 250, 0.4);
+          color: #93c5fd;
+        }
+        .acad-plain-english {
+          background: rgba(37, 99, 235, 0.08);
+          border-left: 4px solid #2563eb;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--da-text);
+          border-top: 1px solid var(--da-card-border);
+          border-right: 1px solid var(--da-card-border);
+          border-bottom: 1px solid var(--da-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(37, 99, 235, 0.18);
+          color: #f1f5f9;
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--da-text);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%);
+          border-color: rgba(245, 158, 11, 0.4);
+          color: #f1f5f9;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--da-table-border);
+        }
+        .acad-table th {
+          background: var(--da-table-th-bg);
+          color: var(--da-table-th-text);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--da-table-border);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--da-table-border);
+          color: var(--da-table-td-text);
+        }
+        .acad-terminal {
+          background: #090d16;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--da-card-bg);
+          border: 1px solid var(--da-card-border);
+          color: var(--da-text-muted);
+        }
+
         .da-card {
           background: var(--da-card-bg);
           border: 1.5px solid var(--da-card-border);
@@ -950,45 +1126,52 @@ export default function GovernanceAndIdentityVisualizer({ provider = 'aws', setP
           `}</style>
 
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
-        <div className="flex items-center gap-3">
-          <span className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20">
-            <Shield className="w-6 h-6 stroke-[2]" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-              AWS Governance, Identity &amp; Landing Zones
-              <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200">
-                PRO EDITION
-              </span>
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">Explore multi-account structures, hierarchical SCP evaluations, fine-grained IAM conditions, AD Single Sign-On syncing, and Control Tower landing zones.</p>
+      <Translate>
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6 text-left">
+          <div className="flex items-center gap-3">
+            <span className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20">
+              <Shield className="w-6 h-6 stroke-[2]" />
+            </span>
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                AWS Governance, Identity &amp; Landing Zones
+                <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200">
+                  PRO EDITION
+                </span>
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">Explore multi-account structures, hierarchical SCP evaluations, fine-grained IAM conditions, AD Single Sign-On syncing, and Control Tower landing zones.</p>
+            </div>
           </div>
         </div>
-      </div>
+      </Translate>
 
       {/* Tab navigation bar */}
       {!isComparative && (
+        <Translate>
         <div className="da-tabs">
+          <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4 text-blue-500" /> 📖 1) Visual Notes &amp; Theories
+          </button>
           <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <BookOpen className="w-4 h-4" /> 1. Governance Comparison &amp; EventBridge Security
+            <Sliders className="w-4 h-4 text-emerald-500" /> 🎯 2) Governance Comparison &amp; Security
           </button>
           <button className={`da-tb ${activeTab === 'organizations' ? 'da-on' : ''}`} onClick={() => setActiveTab('organizations')}>
-            <Building className="w-4 h-4" /> 2. SCP Multi-OU Hierarchy
+            <Building className="w-4 h-4" /> 🏢 3) SCP Multi-OU Hierarchy
           </button>
           <button className={`da-tb ${activeTab === 'iam' ? 'da-on' : ''}`} onClick={() => setActiveTab('iam')}>
-            <Key className="w-4 h-4" /> 3. Fine-Grained IAM Resolution
+            <Key className="w-4 h-4" /> 🔑 4) Fine-Grained IAM Resolution
           </button>
           <button className={`da-tb ${activeTab === 'identitycenter' ? 'da-on' : ''}`} onClick={() => setActiveTab('identitycenter')}>
-            <Users className="w-4 h-4" /> 4. SSO Active Directory Mapping
+            <Users className="w-4 h-4" /> 👥 5) SSO Active Directory Mapping
           </button>
           <button className={`da-tb ${activeTab === 'compliance' ? 'da-on' : ''}`} onClick={() => setActiveTab('compliance')}>
-            <Activity className="w-4 h-4" /> 5. Guardrails Compliance Auditor
+            <Activity className="w-4 h-4" /> 🛡️ 6) Guardrails Compliance Auditor
           </button>
           <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
           </button>
         </div>
+      </Translate>
       )}
 
       {isComparative && (
@@ -1006,7 +1189,585 @@ export default function GovernanceAndIdentityVisualizer({ provider = 'aws', setP
       {/* ========================================================================= */}
       {/* TAB 1: THEORETICAL MATRIX COMPARISON & EVENTBRIDGE SECURITY               */}
       {/* ========================================================================= */}
-      {activeTab === 'intro' && (
+            {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--da-text)' }}>
+          
+          {/* Header Hero Card */}
+          <div className="da-card text-left" style={{ borderLeft: '4px solid #2563eb', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-blue-600" /> AWS Governance, Identity &amp; Landing Zones Notes &amp; Mental Models
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--da-text-muted)' }}>
+                  Simplified, beginner-friendly governance theories sorted progressively from IAM Users, Roles &amp; Policies to SCP Multi-OU Hierarchies, Identity Center SSO, SAML 2.0 Directory Federation, and Control Tower Landing Zones.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--da-text-muted)' }}>Curriculum Directory:</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                  <span>Governance Modules</span>
+                </div>
+
+                {/* LEVEL 1: IAM & AUTHENTICATION */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'iam_fundamentals' ? '' : 'iam_fundamentals')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-blue-500" />
+                      🐣 Level 1 · IAM Fundamentals
+                    </span>
+                    {expandedCategory === 'iam_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'iam_fundamentals' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('iam_roles_policies')}
+                        className={`acad-dir-item-btn ${selectedNote === 'iam_roles_policies' ? 'acad-active' : ''}`}
+                      >
+                        1.1 Users vs Roles vs Policies (Airport Badge)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('iam_eval_logic')}
+                        className={`acad-dir-item-btn ${selectedNote === 'iam_eval_logic' ? 'acad-active' : ''}`}
+                      >
+                        1.2 Policy Evaluation Logic (Explicit Deny)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: ORGANIZATIONS & SCPS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'orgs_scps' ? '' : 'orgs_scps')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Building className="w-3.5 h-3.5 text-amber-500" />
+                      ⚙️ Level 2 · Multi-Account &amp; SCPs
+                    </span>
+                    {expandedCategory === 'orgs_scps' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'orgs_scps' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('multi_account_ou')}
+                        className={`acad-dir-item-btn ${selectedNote === 'multi_account_ou' ? 'acad-active' : ''}`}
+                      >
+                        2.1 Multi-Account Strategy &amp; OUs (HQ Franchises)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('service_control_policies')}
+                        className={`acad-dir-item-btn ${selectedNote === 'service_control_policies' ? 'acad-active' : ''}`}
+                      >
+                        2.2 Service Control Policies (Master Guardrails)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: IDENTITY CENTER & FEDERATION */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'sso_federation' ? '' : 'sso_federation')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-purple-500" />
+                      🏛️ Level 3 · Identity Center &amp; SSO
+                    </span>
+                    {expandedCategory === 'sso_federation' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'sso_federation' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('identity_center_sso')}
+                        className={`acad-dir-item-btn ${selectedNote === 'identity_center_sso' ? 'acad-active' : ''}`}
+                      >
+                        3.1 IAM Identity Center (Hotel Master Keycard)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('active_directory_saml')}
+                        className={`acad-dir-item-btn ${selectedNote === 'active_directory_saml' ? 'acad-active' : ''}`}
+                      >
+                        3.2 Active Directory &amp; SAML 2.0 (Passport Office)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: LANDING ZONES & CONTROL TOWER */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'control_tower' ? '' : 'control_tower')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                      🛡️ Level 4 · Control Tower &amp; Rules
+                    </span>
+                    {expandedCategory === 'control_tower' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'control_tower' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('control_tower_landing_zones')}
+                        className={`acad-dir-item-btn ${selectedNote === 'control_tower_landing_zones' ? 'acad-active' : ''}`}
+                      >
+                        4.1 AWS Control Tower (Turnkey Gated Community)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('guardrails_types')}
+                        className={`acad-dir-item-btn ${selectedNote === 'guardrails_types' ? 'acad-active' : ''}`}
+                      >
+                        4.2 Mandatory vs Proactive Guardrails
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--da-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any governance topic to test IAM policy evaluation rules, explore SCP guardrails, and copy security templates!
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* NOTE 1.1: IAM USERS VS ROLES VS POLICIES */}
+              {selectedNote === 'iam_roles_policies' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · IAM Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.1 IAM Users vs IAM Roles vs Policies
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('iam')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to IAM Resolution Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> AWS IAM controls access to cloud resources:
+                    <br />• <strong>IAM User</strong>: A permanent identity assigned to a single person with long-term credentials (password / API keys).
+                    <br />• <strong>IAM Role</strong>: A temporary identity assumed by applications, EC2 instances, or federated users using temporary credentials (`sts:AssumeRole`).
+                    <br />• <strong>IAM Policy</strong>: A JSON document defining exactly what actions are **Allowed** or **Denied** (`Effect`, `Action`, `Resource`, `Condition`).
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Name Badge vs Security Uniform vs Rulebook
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>IAM User (Personal ID Badge)</strong>: Your driver&apos;s license with your photo permanently printed on it.
+                      <br />• <strong>IAM Role (Security Guard Uniform)</strong>: An employee badge hung on a hook. Anyone who puts on the security guard jacket (Assumes Role) gains access to the security control room for 1 shift!
+                      <br />• <strong>IAM Policy (Building Rulebook)</strong>: A printed sheet stating &ldquo;Pass-holders may enter Floor 3, but cannot enter Vault 9&rdquo;.
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>IAM Primitive</th>
+                          <th>Credential Lifespan</th>
+                          <th>Best Suited For</th>
+                          <th>Security Best Practice</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>IAM User</strong></td>
+                          <td>Long-term (Static Access Keys)</td>
+                          <td>Legacy applications requiring hardcoded keys</td>
+                          <td>Avoid! Rotate keys every 90 days or use IAM Roles instead</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>IAM Role</strong></td>
+                          <td>Temporary (15 mins to 12 hours via STS)</td>
+                          <td>EC2 instances, Lambda functions, SSO users</td>
+                          <td>Recommended! Uses automatic temporary token rotation</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>IAM Policy</strong></td>
+                          <td>N/A (JSON Rule Definition)</td>
+                          <td>Defining granular permission boundaries</td>
+                          <td>Enforce Least Privilege (Never use `Action: "*"` in Prod)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Copyable IAM Role Trust Policy */}
+                  <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--da-card-bg)' }}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--da-text-muted)' }}>EC2 IAM Role Trust Policy Snippet</span>
+                      <button 
+                        onClick={() => {
+                          const snippet = `{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Effect": "Allow",\n      "Principal": { "Service": "ec2.amazonaws.com" },\n      "Action": "sts:AssumeRole"\n    }\n  ]\n}`;
+                          navigator.clipboard.writeText(snippet);
+                          setCopiedNoteId('trust-policy');
+                          setTimeout(() => setCopiedNoteId(null), 2000);
+                        }}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'trust-policy' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-24">
+{`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "ec2.amazonaws.com" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 1.2: IAM EVALUATION LOGIC */}
+              {selectedNote === 'iam_eval_logic' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · IAM Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.2 IAM Policy Evaluation Engine: Explicit Deny Overrides All
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('iam')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to IAM Resolution Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> By default, all requests to AWS resources are **Implicitly Denied**. To access a resource, an **Explicit Allow** statement must be present. However, if a single policy contains an **Explicit Deny** statement (`Effect: "Deny"`), the request is **IMMEDIATELY REJECTED**, overriding all Allows!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Strict Nightclub Bouncer Rulebook
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Imagine a nightclub bouncer checking tickets:
+                      <br />1. If you have no ticket, you are turned away by default (Implicit Deny).
+                      <br />2. If you have a VIP Pass (`Allow`), you are allowed inside.
+                      <br />3. But if the club owner puts your photo on the &ldquo;Banned Guest List&rdquo; (`Explicit Deny`), you are turned away immediately—even if you hold 10 VIP Passes!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.1: MULTI-ACCOUNT STRATEGY & OUS */}
+              {selectedNote === 'multi_account_ou' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Multi-Account &amp; SCPs</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.1 AWS Organizations: Multi-Account Strategy &amp; Organizational Units (OUs)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('organizations')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to SCP Hierarchy Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Running an entire company inside a single AWS account creates a massive blast radius. **AWS Organizations** allows you to consolidate multiple AWS accounts into a tree structure of **Organizational Units (OUs)** (e.g. `Workloads/Prod`, `Workloads/Test`, `Sandbox`, `Security`), isolating environments cleanly!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Corporate Headquarters &amp; Department Floors
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of putting 500 employees into 1 giant room with no walls (Single AWS Account), corporate headquarters builds separate floors: Accounting Floor, R&amp;D Sandbox, Production Manufacturing. If a chemical spill occurs on the Sandbox Floor, it never contaminates the Accounting department!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.2: SERVICE CONTROL POLICIES (SCPS) */}
+              {selectedNote === 'service_control_policies' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Multi-Account &amp; SCPs</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.2 Service Control Policies (SCPs): Organizational Guardrails
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('organizations')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to SCP Hierarchy Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Service Control Policies (SCPs)** set the maximum permissions boundary for member accounts in an organization. SCPs do **NOT grant permissions** by themselves; they restrict what member account Root and IAM administrators are allowed to do (e.g., blocking unapproved AWS regions or denying root user actions).
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Corporate Building Master Guardrail Height
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A store manager can write any employee rulebook they want (`IAM Policy`). However, corporate headquarters sets steel perimeter guardrails (`SCP`). No matter what the store manager writes, employees cannot open the store outside approved business hours!
+                    </p>
+                  </div>
+
+                  {/* Copyable SCP Policy Snippet */}
+                  <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--da-card-bg)' }}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--da-text-muted)' }}>SCP JSON: Restrict Unapproved Regions</span>
+                      <button 
+                        onClick={() => {
+                          const snippet = `{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Sid": "DenyUnapprovedRegions",\n      "Effect": "Deny",\n      "NotAction": [\n        "iam:*", "cloudfront:*", "route53:*", "support:*"\n      ],\n      "Resource": "*",\n      "Condition": {\n        "StringNotEquals": {\n          "aws:RequestedRegion": ["us-east-1", "eu-west-1"]\n        }\n      }\n    }\n  ]\n}`;
+                          navigator.clipboard.writeText(snippet);
+                          setCopiedNoteId('scp-policy');
+                          setTimeout(() => setCopiedNoteId(null), 2000);
+                        }}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'scp-policy' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-28">
+{`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyUnapprovedRegions",
+      "Effect": "Deny",
+      "NotAction": ["iam:*", "cloudfront:*", "route53:*"],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": { "aws:RequestedRegion": ["us-east-1"] }
+      }
+    }
+  ]
+}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: IAM IDENTITY CENTER */}
+              {selectedNote === 'identity_center_sso' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · Identity Center &amp; SSO</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.1 AWS IAM Identity Center (Successor to AWS Single Sign-On)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('identitycenter')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to SSO &amp; Directory Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Instead of creating individual IAM Users in 50 separate AWS accounts, **IAM Identity Center** lets users log in once with Single Sign-On (SSO) and access all assigned accounts and roles from a single web portal!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Hotel Master Wristband
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of carrying 50 separate room keys in your pocket (50 IAM user passwords), hotel reception hands you 1 electronic wristband (IAM Identity Center SSO). You tap your wristband at the pool, gym, restaurant, and penthouse suite!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: ACTIVE DIRECTORY & SAML 2.0 */}
+              {selectedNote === 'active_directory_saml' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · Identity Center &amp; SSO</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.2 Active Directory Federation &amp; SAML 2.0 Integration
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('identitycenter')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to SSO &amp; Directory Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Enterprise identity federation connects corporate directories (Microsoft Entra ID, Active Directory, Okta, Google Workspace) to AWS via **SAML 2.0**. Employees log into AWS using their corporate email and password—and when an employee leaves the company, revoking their corporate account instantly revokes all AWS access!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Corporate Passport Exchange Office
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      When visiting an international branch office (AWS), you don&apos;t apply for a local driver&apos;s license. You show your verified government passport (Active Directory SAML 2.0 assertion), and the branch office hands you a temp visitor badge!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: CONTROL TOWER */}
+              {selectedNote === 'control_tower_landing_zones' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · Control Tower &amp; Rules</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.1 AWS Control Tower &amp; Automated Landing Zones
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('compliance')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Guardrails Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AWS Control Tower** sets up an automated, secure multi-account environment called a **Landing Zone**. It provisions new AWS accounts in minutes via an Account Factory, pre-configured with AWS Organizations, IAM Identity Center, Config rules, and CloudTrail log archiving!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Pre-Fab Turnkey Gated Community Factory
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of building a house from scratch by laying bricks, digging plumbing, and wiring electricity (Manual AWS Setup), a pre-fab factory (AWS Control Tower) drops a fully finished modular home onto the lot in 15 minutes—complete with working smoke alarms, security locks, and power grid hookups!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: GUARDRAILS TYPES */}
+              {selectedNote === 'guardrails_types' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · Control Tower &amp; Rules</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.2 Mandatory, Preventive &amp; Proactive Guardrails
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('compliance')}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Guardrails Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Control Tower enforces 3 types of guardrails:
+                    <br />• <strong>Preventive (SCPs)</strong>: Blocks unapproved actions before they happen (e.g., prevents disallowing CloudTrail).
+                    <br />• <strong>Detecting (AWS Config)</strong>: Audit rules that flag non-compliant resources (e.g. unencrypted S3 buckets).
+                    <br />• <strong>Proactive (CloudFormation Hooks)</strong>: Scans IaC templates during deployment, stopping bad code before resource creation!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Locked Emergency Brake vs Inspection Siren vs Architectural Blueprint Check
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Preventive (Locked Emergency Brake)</strong>: Stops a driver from shifting into reverse while cruising at 70 MPH.
+                      <br />• <strong>Detecting (Oil Change Warning Light)</strong>: Sounds a chime when oil level drops below safety threshold.
+                      <br />• <strong>Proactive (Architectural Blueprint Inspection)</strong>: Rejects a house construction plan before the first brick is laid if walls are missing fireproofing!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
+        {activeTab === 'intro' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             

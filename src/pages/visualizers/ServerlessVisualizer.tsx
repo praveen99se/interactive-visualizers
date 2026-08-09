@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
   Zap,
   Server,
   Database,
@@ -28,6 +34,7 @@ import ServerlessComparativeView from '../../components/visualizers/ServerlessCo
 import UniqueServerlessFeatures from '../../components/visualizers/UniqueServerlessFeatures';
 
 type TabType = 
+  | 'notebook'
   | 'intro' 
   | 'lambda-core' 
   | 'concurrency-limits' 
@@ -68,26 +75,104 @@ interface ServerlessVisualizerProps {
 }
 
 export default function ServerlessVisualizer({ provider = 'aws', setProvider }: ServerlessVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('serverless_model');
+  const [expandedCategory, setExpandedCategory] = useState<string>('lambda_core');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Lambda Calculator State
+  const [nbRequestsPerMonth, setNbRequestsPerMonth] = useState<number>(5000000);
+  const [nbAvgDurationMs, setNbAvgDurationMs] = useState<number>(200);
+  const [nbMemoryMb, setNbMemoryMb] = useState<number>(512);
 
   const isComparative = provider === 'comparative';
 
   const t = (text: string) => {
     if (provider === 'azure') {
       return text
+        .replace(/AWS Lambda@Edge/gi, 'Azure Front Door Workers')
+        .replace(/Lambda@Edge/gi, 'Azure Front Door Workers')
+        .replace(/CloudFront Functions/gi, 'Azure Front Door Rules')
         .replace(/AWS Lambda/gi, 'Azure Functions')
+        .replace(/Amazon Lambda/gi, 'Azure Functions')
         .replace(/Lambda/g, 'Azure Function')
+        .replace(/Amazon DynamoDB/gi, 'Azure Cosmos DB')
         .replace(/DynamoDB/g, 'Azure Cosmos DB')
+        .replace(/Amazon API Gateway/gi, 'Azure API Management')
         .replace(/API Gateway/g, 'Azure API Management')
-        .replace(/CloudWatch/g, 'Azure Monitor');
+        .replace(/Amazon Cognito/gi, 'Azure AD B2C / Entra ID')
+        .replace(/Cognito/g, 'Azure Entra ID')
+        .replace(/Amazon EventBridge/gi, 'Azure Event Grid')
+        .replace(/EventBridge/g, 'Azure Event Grid')
+        .replace(/AWS Step Functions/gi, 'Azure Logic Apps')
+        .replace(/Step Functions/g, 'Azure Logic Apps')
+        .replace(/Amazon S3/gi, 'Azure Blob Storage')
+        .replace(/S3/g, 'Azure Blob Storage')
+        .replace(/Amazon SQS/gi, 'Azure Queue Storage')
+        .replace(/SQS/g, 'Azure Queue Storage')
+        .replace(/Amazon SNS/gi, 'Azure Event Grid')
+        .replace(/SNS/g, 'Azure Event Grid')
+        .replace(/AWS Secrets Manager/gi, 'Azure Key Vault')
+        .replace(/Secrets Manager/g, 'Azure Key Vault')
+        .replace(/CloudWatch Logs/gi, 'Azure Monitor Logs')
+        .replace(/CloudWatch/g, 'Azure Monitor')
+        .replace(/Amazon Aurora Serverless/gi, 'Azure SQL Database Serverless')
+        .replace(/Aurora Serverless/g, 'Azure SQL Serverless')
+        .replace(/Aurora/g, 'Azure Database')
+        .replace(/RDS Proxy/gi, 'Azure Database Proxy')
+        .replace(/Amazon RDS/gi, 'Azure SQL Database')
+        .replace(/RDS/g, 'Azure SQL')
+        .replace(/AWS Certified Developer/gi, 'Azure Developer Associate (AZ-204)')
+        .replace(/AWS Certified/gi, 'Azure Certified')
+        .replace(/IAM Role/gi, 'Azure Managed Identity')
+        .replace(/IAM/g, 'Azure Managed Identity')
+        .replace(/CloudFront/g, 'Azure Front Door / CDN')
+        .replace(/AWS/g, 'Azure')
+        .replace(/Amazon/g, 'Azure');
     }
     if (provider === 'gcp') {
       return text
+        .replace(/AWS Lambda@Edge/gi, 'Cloud CDN Edge Workers')
+        .replace(/Lambda@Edge/gi, 'Cloud CDN Edge Workers')
+        .replace(/CloudFront Functions/gi, 'Cloud CDN Edge Rules')
         .replace(/AWS Lambda/gi, 'Google Cloud Functions')
+        .replace(/Amazon Lambda/gi, 'Google Cloud Functions')
         .replace(/Lambda/g, 'Cloud Function')
-        .replace(/DynamoDB/g, 'Google Cloud Datastore / Firestore')
+        .replace(/Amazon DynamoDB/gi, 'Google Cloud Firestore / Spanner')
+        .replace(/DynamoDB/g, 'Cloud Firestore')
+        .replace(/Amazon API Gateway/gi, 'Google Cloud API Gateway')
         .replace(/API Gateway/g, 'GCP API Gateway')
-        .replace(/CloudWatch/g, 'Cloud Monitoring');
+        .replace(/Amazon Cognito/gi, 'Firebase Auth / Identity Platform')
+        .replace(/Cognito/g, 'Firebase Auth')
+        .replace(/Amazon EventBridge/gi, 'Google Eventarc')
+        .replace(/EventBridge/g, 'Eventarc')
+        .replace(/AWS Step Functions/gi, 'Google Cloud Workflows')
+        .replace(/Step Functions/g, 'Cloud Workflows')
+        .replace(/Amazon S3/gi, 'Google Cloud Storage (GCS)')
+        .replace(/S3/g, 'Cloud Storage')
+        .replace(/Amazon SQS/gi, 'Google Cloud Pub/Sub')
+        .replace(/SQS/g, 'Cloud Pub/Sub')
+        .replace(/Amazon SNS/gi, 'Google Cloud Pub/Sub')
+        .replace(/SNS/g, 'Cloud Pub/Sub')
+        .replace(/AWS Secrets Manager/gi, 'Google Secret Manager')
+        .replace(/Secrets Manager/g, 'Secret Manager')
+        .replace(/CloudWatch Logs/gi, 'Cloud Logging')
+        .replace(/CloudWatch/g, 'Cloud Monitoring')
+        .replace(/Amazon Aurora Serverless/gi, 'Google Cloud Spanner / AlloyDB')
+        .replace(/Aurora Serverless/g, 'Cloud Spanner')
+        .replace(/Aurora/g, 'AlloyDB')
+        .replace(/RDS Proxy/gi, 'Cloud SQL Auth Proxy')
+        .replace(/Amazon RDS/gi, 'Google Cloud SQL')
+        .replace(/RDS/g, 'Cloud SQL')
+        .replace(/AWS Certified Developer/gi, 'GCP Professional Cloud Developer')
+        .replace(/AWS Certified/gi, 'GCP Certified')
+        .replace(/IAM Role/gi, 'GCP Service Account')
+        .replace(/IAM/g, 'GCP Service Account / IAM')
+        .replace(/CloudFront/g, 'Google Cloud CDN')
+        .replace(/AWS/g, 'GCP')
+        .replace(/Amazon/g, 'Google Cloud');
     }
     return text;
   };
@@ -1370,6 +1455,252 @@ export default function ServerlessVisualizer({ provider = 'aws', setProvider }: 
       {/* Styles for premium animations & visual tokens */}
       <style>{`
         .sv-container {
+      .acad-dir-container {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.9)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+        backdrop-filter: blur(12px);
+      }
+      .dark .acad-dir-container {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-dir-header {
+        background: var(--da-tab-bg, rgba(248, 250, 252, 0.9));
+        color: var(--da-text-title, #0f172a);
+        border-bottom: 1.5px solid var(--da-card-border, rgba(226, 232, 240, 0.8));
+        padding: 14px 16px;
+        font-weight: 800;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dark .acad-dir-header {
+        background: rgba(15, 23, 42, 0.9);
+        color: #ffffff;
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-dir-folder-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--da-card-border, rgba(226, 232, 240, 0.6));
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--da-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .dark .acad-dir-folder-btn {
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+        color: #94a3b8;
+      }
+      .acad-dir-folder-btn:hover {
+        background: rgba(241, 245, 249, 0.6);
+      }
+      .dark .acad-dir-folder-btn:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+      .acad-dir-item-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--da-text-muted, #475569);
+        border: none;
+        border-left: 3px solid transparent;
+        background: transparent;
+        transition: all 0.15s ease;
+        text-align: left;
+        cursor: pointer;
+      }
+      .dark .acad-dir-item-btn {
+        color: #94a3b8;
+      }
+      .acad-dir-item-btn:hover {
+        background: rgba(241, 245, 249, 0.6);
+        color: var(--da-text-title, #0f172a);
+      }
+      .dark .acad-dir-item-btn:hover {
+        background: rgba(30, 41, 59, 0.6);
+        color: #f1f5f9;
+      }
+      .acad-dir-item-btn.acad-active {
+        background: rgba(2, 132, 199, 0.08);
+        color: #0284c7;
+        border-left-color: #0ea5e9;
+        font-weight: 800;
+      }
+      .dark .acad-dir-item-btn.acad-active {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border-left-color: #38bdf8;
+      }
+      .acad-detail-card {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.95)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        backdrop-filter: blur(16px);
+      }
+      .dark .acad-detail-card {
+        background: rgba(15, 23, 42, 0.75);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-hero-badge {
+        background: rgba(2, 132, 199, 0.08);
+        border: 1.5px solid rgba(2, 132, 199, 0.3);
+        color: #0284c7;
+        font-size: 9.5px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3.5px 10px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .dark .acad-hero-badge {
+        background: rgba(56, 189, 248, 0.15);
+        border-color: rgba(56, 189, 248, 0.3);
+        color: #38bdf8;
+      }
+      .acad-plain-english {
+        background: rgba(2, 132, 199, 0.07);
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: var(--da-text-title, var(--sl-text-title, #0f172a));
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-plain-english {
+        background: rgba(56, 189, 248, 0.12);
+        border-left-color: #38bdf8;
+        color: #f1f5f9;
+        border-top-color: rgba(51, 65, 85, 0.6);
+        border-right-color: rgba(51, 65, 85, 0.6);
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12px;
+        line-height: 1.65;
+        color: var(--da-text-title, var(--sl-text-title, #0f172a));
+      }
+      .dark .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #f1f5f9;
+      }
+      .acad-advice-box {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.8)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        color: var(--da-text-muted, var(--sl-text-muted, #64748b));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
+      .dark .acad-advice-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.06);
+        border-left: 4px solid #ef4444;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 16px 0;
+        font-size: 11.5px;
+        line-height: 1.55;
+        color: var(--da-text-muted, var(--sl-text-muted, #64748b));
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.12);
+        color: #fca5a5;
+      }
+      .acad-takeaway-box {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.9)));
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--da-text-muted, var(--sl-text-muted, #475569));
+        font-weight: 600;
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-takeaway-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-left-color: #38bdf8;
+        color: #cbd5e1;
+        border-top-color: rgba(51, 65, 85, 0.6);
+        border-right-color: rgba(51, 65, 85, 0.6);
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+      }
+      .acad-table th {
+        background: var(--da-table-th-bg, var(--sl-table-th-bg, #f8fafc));
+        color: var(--da-table-th-text, var(--sl-table-th-text, #475569));
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1.5px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+        text-align: left;
+      }
+      .dark .acad-table th {
+        background: rgba(15, 23, 42, 0.8);
+        color: #94a3b8;
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+        color: var(--da-table-td-text, var(--sl-table-td-text, #334155));
+      }
+      .dark .acad-table td {
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-table tr:last-child td {
+        border-bottom: none;
+      }
+
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
           color: var(--sl-text);
           background-color: var(--sl-bg);
@@ -1857,41 +2188,46 @@ export default function ServerlessVisualizer({ provider = 'aws', setProvider }: 
 
       {/* Navigation tabs */}
       {!isComparative && (
+        <Translate>
         <div className="sv-tabs">
+          <button className={`sv-tb ${activeTab === 'notebook' ? 'sv-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4 text-purple-500" /> 📖 1) Visual Notes &amp; Theories
+          </button>
           <button className={`sv-tb ${activeTab === 'intro' ? 'sv-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <Layers className="w-4 h-4" /> Serverless Ecosystem
+            <Layers className="w-4 h-4" /> ⚡ 2) Serverless Ecosystem
           </button>
           <button className={`sv-tb ${activeTab === 'lambda-core' ? 'sv-on' : ''}`} onClick={() => setActiveTab('lambda-core')}>
-            <Cpu className="w-4 h-4" /> Thumbnail Pipeline
+            <Cpu className="w-4 h-4" /> 🖼️ 3) Thumbnail Pipeline
           </button>
           <button className={`sv-tb ${activeTab === 'concurrency-limits' ? 'sv-on' : ''}`} onClick={() => setActiveTab('concurrency-limits')}>
-            <Sliders className="w-4 h-4" /> Concurrency &amp; SnapStart
+            <Sliders className="w-4 h-4" /> ⏱️ 4) Concurrency &amp; SnapStart
           </button>
           <button className={`sv-tb ${activeTab === 'edge-compute' ? 'sv-on' : ''}`} onClick={() => setActiveTab('edge-compute')}>
-            <Globe className="w-4 h-4" /> Edge Compute
+            <Globe className="w-4 h-4" /> 🌐 5) Edge Compute
           </button>
           <button className={`sv-tb ${activeTab === 'dynamodb' ? 'sv-on' : ''}`} onClick={() => setActiveTab('dynamodb')}>
-            <Database className="w-4 h-4" /> DynamoDB Deep Dive
+            <Database className="w-4 h-4" /> 🗄️ 6) DynamoDB Deep Dive
           </button>
           <button className={`sv-tb ${activeTab === 'api-gateway' ? 'sv-on' : ''}`} onClick={() => setActiveTab('api-gateway')}>
-            <Network className="w-4 h-4" /> API Gateway &amp; Orchestration
+            <Network className="w-4 h-4" /> 🚪 7) API Gateway &amp; Orchestration
           </button>
           <button className={`sv-tb ${activeTab === 'cognito' ? 'sv-on' : ''}`} onClick={() => setActiveTab('cognito')}>
-            <Lock className="w-4 h-4" /> Cognito Security
+            <Lock className="w-4 h-4" /> 🔑 8) Cognito Security
           </button>
           <button className={`sv-tb ${activeTab === 'serverless-architectures' ? 'sv-on' : ''}`} onClick={() => setActiveTab('serverless-architectures')}>
-            <Layers className="w-4 h-4" /> Serverless Architectures
+            <Layers className="w-4 h-4" /> 🏗️ 9) Serverless Architectures
           </button>
           <button className={`sv-tb ${activeTab === 'db-integration' ? 'sv-on' : ''}`} onClick={() => setActiveTab('db-integration')}>
-            <Shield className="w-4 h-4" /> VPC &amp; DB Integrations
+            <Shield className="w-4 h-4" /> 🛡️ 10) VPC &amp; DB Integrations
           </button>
           <button className={`sv-tb ${activeTab === 'simulation' ? 'sv-on' : ''}`} onClick={() => setActiveTab('simulation')}>
-            <Play className="w-4 h-4" /> Auto-Scaling Playground
+            <Play className="w-4 h-4" /> 🎮 11) Auto-Scaling Playground
           </button>
           <button className={`sv-tb ${activeTab === 'unique' ? 'sv-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
           </button>
         </div>
+      </Translate>
       )}
 
       {isComparative && (
@@ -1909,6 +2245,633 @@ export default function ServerlessVisualizer({ provider = 'aws', setProvider }: 
       {/* ========================================================================= */}
       {/* TAB 1: INTRO & AWS SERVERLESS CATALOG                                     */}
       {/* ========================================================================= */}
+            {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--sl-text)' }}>
+          
+          {/* Header Hero Card */}
+          <div className="sl-card text-left" style={{ borderLeft: '4px solid #8b5cf6', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-purple-600" /> Serverless Architecture (Lambda, DynamoDB &amp; API Gateway) Notes &amp; Mental Models
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--sl-text-muted)' }}>
+                  Simplified, beginner-friendly serverless theories sorted progressively from sub-second Lambda execution to Cold Start SnapStart, NoSQL DynamoDB keys, API Gateway throttling, EventBridge bus rules, and RDS Proxy connection pools.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--sl-text-muted)' }}>Curriculum Directory:</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <Zap className="w-4 h-4 text-purple-600" />
+                  <span>Serverless Modules</span>
+                </div>
+
+                {/* LEVEL 1: LAMBDA & COLD STARTS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'lambda_core' ? '' : 'lambda_core')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-purple-500" />
+                      🐣 Level 1 · Fundamentals
+                    </span>
+                    {expandedCategory === 'lambda_core' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'lambda_core' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--sl-card-bg)', borderBottom: '1px solid var(--sl-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('serverless_model')}
+                        className={`acad-dir-item-btn ${selectedNote === 'serverless_model' ? 'acad-active' : ''}`}
+                      >
+                        1.1 Serverless Model (F1 Pit Stop)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('cold_starts_snapstart')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cold_starts_snapstart' ? 'acad-active' : ''}`}
+                      >
+                        1.2 Cold Starts &amp; SnapStart (Microwave)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: DYNAMODB & COGNITO */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'storage_auth' ? '' : 'storage_auth')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Database className="w-3.5 h-3.5 text-amber-500" />
+                      ⚙️ Level 2 · Storage &amp; Auth
+                    </span>
+                    {expandedCategory === 'storage_auth' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'storage_auth' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--sl-card-bg)', borderBottom: '1px solid var(--sl-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('dynamodb_nosql')}
+                        className={`acad-dir-item-btn ${selectedNote === 'dynamodb_nosql' ? 'acad-active' : ''}`}
+                      >
+                        2.1 DynamoDB NoSQL (Key Card Vault)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('cognito_auth')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cognito_auth' ? 'acad-active' : ''}`}
+                      >
+                        2.2 Cognito Pools (Hotel Desk &amp; Keycard)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: API GATEWAY & ORCHESTRATION */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'api_events' ? '' : 'api_events')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Network className="w-3.5 h-3.5 text-emerald-500" />
+                      🔀 Level 3 · API &amp; Events
+                    </span>
+                    {expandedCategory === 'api_events' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'api_events' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--sl-card-bg)', borderBottom: '1px solid var(--sl-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('api_gateway')}
+                        className={`acad-dir-item-btn ${selectedNote === 'api_gateway' ? 'acad-active' : ''}`}
+                      >
+                        3.1 API Gateway (Airport Security Bouncer)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('eventbridge_step_functions')}
+                        className={`acad-dir-item-btn ${selectedNote === 'eventbridge_step_functions' ? 'acad-active' : ''}`}
+                      >
+                        3.2 EventBridge vs SQS vs Step Functions
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: RDS PROXY & EDGE COMPUTE */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'db_edge' ? '' : 'db_edge')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                      🛡️ Level 4 · RDS Proxy &amp; Edge
+                    </span>
+                    {expandedCategory === 'db_edge' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'db_edge' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--sl-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('rds_proxy')}
+                        className={`acad-dir-item-btn ${selectedNote === 'rds_proxy' ? 'acad-active' : ''}`}
+                      >
+                        4.1 RDS Proxy (Taxi Dispatch Coordinator)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('edge_compute')}
+                        className={`acad-dir-item-btn ${selectedNote === 'edge_compute' ? 'acad-active' : ''}`}
+                      >
+                        4.2 Lambda@Edge vs CloudFront Functions
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--sl-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any serverless concept to explore real-world analogies, interactive pricing calculators, and instant simulator links!
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* NOTE 1.1: SERVERLESS MODEL */}
+              {selectedNote === 'serverless_model' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        1.1 The Serverless Paradigm &amp; AWS Lambda Lifecycle
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('intro')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Ecosystem Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Serverless** does not mean there are no servers; it means **you never manage, patch, or pay for idle servers**! When an HTTP request, S3 image upload, or SQS message arrives, **AWS Lambda** instantly spins up an isolated execution environment, runs your code function, and scales to **0 when idle**—charging strictly for the exact milliseconds of execution!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Formula 1 Pit Stop Crew
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of paying 20 mechanics to sit around in a garage 24/7 playing cards on full salary (EC2 Virtual Machines), a Formula 1 pit stop crew (AWS Lambda) rests out of sight. The second a race car pulls in (Incoming Request), the pit crew springs onto the track, changes all 4 tires in 2.1 seconds (Function Execution), and vanishes off the track. You pay strictly for the 2.1 seconds of work!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Feature</th>
+                          <th>Virtual Machines (EC2)</th>
+                          <th>AWS Lambda (Serverless)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--sl-text-title)' }}>Idle Costs</strong></td>
+                          <td>Pays 100% 24/7 even with 0 traffic</td>
+                          <td>$0.00 when 0 requests arrive (Scales to 0)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--sl-text-title)' }}>Scaling Speed</strong></td>
+                          <td>1 to 5 Minutes (Auto Scaling Group)</td>
+                          <td>Milliseconds (Auto-scales up to 1,000s concurrent)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--sl-text-title)' }}>Max Execution Time</strong></td>
+                          <td>Unlimited (Days / Months)</td>
+                          <td>15 Minutes Hard Timeout Limit</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--sl-text-title)' }}>Maintenance</strong></td>
+                          <td>OS security patches &amp; AMI updates</td>
+                          <td>Zero OS maintenance (AWS handles everything)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div className="space-y-3 text-xs" style={{ color: 'var(--sl-text-muted)' }}>
+                      <h4 className="font-bold text-xs" style={{ color: 'var(--sl-text-title)' }}>Key Lambda Best Practices:</h4>
+                      <ul className="list-disc pl-4 space-y-1.5">
+                        <li><strong style={{ color: 'var(--sl-text-title)' }}>Initialize Outside Handler:</strong> Move database connections and SDK clients outside the handler to benefit from warm container reuse!</li>
+                        <li><strong style={{ color: 'var(--sl-text-title)' }}>Right-Size Memory:</strong> Increasing memory from 512 MB to 1024 MB proportionally allocates double the CPU speed!</li>
+                      </ul>
+                    </div>
+
+                    <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--sl-card-bg)' }}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--sl-text-muted)' }}>AWS SAM Serverless Template</span>
+                        <button 
+                          onClick={() => {
+                            const snippet = `Resources:\n  MyLambdaFunction:\n    Type: AWS::Serverless::Function\n    Properties:\n      Handler: index.handler\n      Runtime: nodejs20.x\n      MemorySize: 512\n      Timeout: 10\n      Events:\n        ApiEvent:\n          Type: Api\n          Properties:\n            Path: /orders\n            Method: get`;
+                            navigator.clipboard.writeText(snippet);
+                            setCopiedNoteId('sam-template');
+                            setTimeout(() => setCopiedNoteId(null), 2000);
+                          }}
+                          className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                        >
+                          {copiedNoteId === 'sam-template' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-32">
+{`Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs20.x
+      MemorySize: 512
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: get`}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 1.2: COLD STARTS & SNAPSTART */}
+              {selectedNote === 'cold_starts_snapstart' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        1.2 Cold Starts vs Warm Containers &amp; AWS Lambda SnapStart
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('concurrency-limits')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Concurrency &amp; SnapStart Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>Cold Start</strong>: When a request hits a Lambda function that hasn&apos;t run recently, AWS must download code, initialize the runtime (JVM/Node.js), and run global code (takes 100ms to 2s).
+                    <br />• <strong>Warm Execution</strong>: Subsequent requests reuse the active container instantly (sub-10ms latency).
+                    <br />• <strong>SnapStart (Java)</strong>: AWS initializes your function once during deployment, takes a Firecracker micro-VM memory snapshot, and restores pre-initialized snapshots in **sub-200ms**!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Microwave Pre-Heating vs Kept Warm on a Heating Pad
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Cold Start (Microwave Pre-Heating)</strong>: You order a soup. The chef opens a cold frozen box, puts it in the microwave for 2 minutes (Runtime Init), and then hands it to you.
+                      <br />• <strong>Warm Container (Kept Warm on Heating Pad)</strong>: The soup is sitting on a hot stove. The chef scoops it into a bowl in 3 seconds!
+                      <br />• <strong>SnapStart (Flash-Frozen Pre-Cooked Meal)</strong>: The chef pre-cooks 100 bowls, flash-freezes a 3D hologram snapshot, and instantly materializes hot soup in 100ms!
+                    </p>
+                  </div>
+
+                  {/* Interactive Lambda Billing Calculator HUD */}
+                  <div className="acad-detail-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--sl-card-border)' }}>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--sl-text-muted)' }}>Interactive Lambda Monthly Cost Estimator</span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--sl-text-muted)' }}>
+                          <span>Monthly Requests: {(nbRequestsPerMonth / 1000000).toFixed(1)}M</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="500000" 
+                          max="20000000" 
+                          step="500000"
+                          value={nbRequestsPerMonth} 
+                          onChange={(e) => setNbRequestsPerMonth(parseInt(e.target.value))}
+                          className="accent-purple-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--sl-text-muted)' }}>
+                          <span>Avg Duration: {nbAvgDurationMs} ms</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="20" 
+                          max="2000" 
+                          step="10" 
+                          value={nbAvgDurationMs} 
+                          onChange={(e) => setNbAvgDurationMs(parseInt(e.target.value))}
+                          className="accent-purple-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--sl-text-muted)' }}>
+                          <span>Memory: {nbMemoryMb} MB</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="128" 
+                          max="3072" 
+                          step="128" 
+                          value={nbMemoryMb} 
+                          onChange={(e) => setNbMemoryMb(parseInt(e.target.value))}
+                          className="accent-purple-600 w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const requestCost = Math.max(0, nbRequestsPerMonth - 1000000) * 0.0000002;
+                      const totalSeconds = nbRequestsPerMonth * (nbAvgDurationMs / 1000);
+                      const gbSeconds = totalSeconds * (nbMemoryMb / 1024);
+                      const billableGbSeconds = Math.max(0, gbSeconds - 400000); // 400k GB-sec free tier
+                      const computeCost = billableGbSeconds * 0.0000166667;
+                      const totalCost = requestCost + computeCost;
+                      return (
+                        <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--sl-tab-bg)', border: '1px solid var(--sl-card-border)' }}>
+                          <p>Total Compute Pool: <span className="text-purple-600 font-bold">{gbSeconds.toFixed(0)} GB-Seconds / month</span></p>
+                          <p>Estimated Monthly Bill: <span className="text-emerald-500 font-bold">${totalCost.toFixed(2)} / month</span> (Includes 1M Free Requests &amp; 400k GB-sec free tier!)</p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.1: DYNAMODB NOSQL */}
+              {selectedNote === 'dynamodb_nosql' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Storage &amp; Auth</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        2.1 Amazon DynamoDB: Serverless NoSQL &amp; Sub-10ms Single-Table Design
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('dynamodb')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to DynamoDB Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon DynamoDB** is a fully managed, serverless NoSQL database designed for consistent, single-digit millisecond performance at any scale. Instead of complex SQL JOINs, DynamoDB stores data key-value style with Partition Keys (`PK`) and Sort Keys (`SK`), handling millions of reads/writes per second with On-Demand auto-scaling.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Automated VIP Hotel Key Card Vault
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      In a traditional library (SQL Database), you must ask a librarian to search 5 different bookshelves, cross-reference index cards, and combine rows (SQL JOINs). In an automated VIP hotel key card vault (DynamoDB), you swipe room card #502 (`PK`), and the box instantly pops open in 3 milliseconds—no matter if the vault holds 10 items or 10 billion items!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.2: AMAZON COGNITO */}
+              {selectedNote === 'cognito_auth' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Storage &amp; Auth</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        2.2 Amazon Cognito: User Pools vs Identity Pools
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('cognito')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Cognito Security Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon Cognito** handles customer authentication and AWS access control:
+                    <br />• <strong>User Pools (Authentication - &ldquo;Who are you?&rdquo;)</strong>: Manages user sign-up, login, password reset, MFA, and issues JWT tokens (ID / Access Token).
+                    <br />• <strong>Identity Pools (Authorization - &ldquo;What can you access?&rdquo;)</strong>: Exchanges JWT tokens or social logins (Google/Apple) for temporary IAM AWS credentials to upload directly to S3 or query DynamoDB!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Hotel Reception Desk vs Room Passcard Key
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>User Pool (Hotel Reception Desk)</strong>: Checks your passport, verifies your email, and issues a wristband (JWT Token) confirming you are a registered guest.
+                      <br />• <strong>Identity Pool (Room Passcard Key Exchange)</strong>: Scans your wristband and hands you an electronic keycard (Temporary IAM Credentials) that unlocks the elevator, swimming pool (S3 bucket), and room #402!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: API GATEWAY */}
+              {selectedNote === 'api_gateway' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🔀 Level 3 · API &amp; Events</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        3.1 Amazon API Gateway: REST APIs, HTTP APIs &amp; WebSockets
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('api-gateway')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to API Gateway Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon API Gateway** acts as the front door for your serverless backend applications. It accepts HTTP requests, WebSocket connections, validates JWT tokens, enforces rate limiting &amp; throttling rules, caches responses, and seamlessly routes requests directly to Lambda, SQS, DynamoDB, or HTTP endpoints.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport Security Gate &amp; VIP Bouncer
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of letting 50,000 travelers run directly onto the airplane tarmac (Invoking Lambda functions directly), the airport security bouncer (API Gateway) inspects boarding passes (JWT Auth Tokens), blocks unruly passengers (Rate Limiting Throttling), and directs pass-holders smoothly to Gate A, B, or C!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: EVENTBRIDGE VS SQS VS STEP FUNCTIONS */}
+              {selectedNote === 'eventbridge_step_functions' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🔀 Level 3 · API &amp; Events</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        3.2 EventBridge vs SQS Queues vs Step Functions State Machines
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('serverless-architectures')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Architectures Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Choosing the right serverless integration pattern:
+                    <br />• <strong>EventBridge</strong>: Event router for 1-to-many asynchronous event routing based on JSON rules.
+                    <br />• <strong>Amazon SQS</strong>: Message queue holding messages safely until a worker processes them.
+                    <br />• <strong>AWS Step Functions</strong>: Visual state machine orchestrating multi-step workflows with retries and human approvals.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Automated Post Office vs PO Box vs Airport Luggage Flowchart
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>EventBridge (Automated Post Office)</strong>: Inspects package labels and routes urgent express letters to 10 different destinations simultaneously based on rules.
+                      <br />• <strong>SQS (Holding PO Box)</strong>: Holds mail securely in a locked box until the mail clerk arrives to pick it up.
+                      <br />• <strong>Step Functions (Luggage Conveyor Flowchart)</strong>: Follows a strict sequence: Check Passport &rarr; X-Ray Scan &rarr; Load Plane &rarr; If Failure, divert to Baggage Claim!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: RDS PROXY */}
+              {selectedNote === 'rds_proxy' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · RDS Proxy &amp; Edge</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        4.1 Amazon RDS Proxy &amp; Connection Pooling for Serverless
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('db-integration')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to VPC &amp; DB Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Traditional relational databases (PostgreSQL, MySQL) handle a limited number of open connections (e.g. 500 connections). When 5,000 Lambda functions burst simultaneously during traffic spikes, opening 5,000 database connections crashes the DB! **Amazon RDS Proxy** pools and multiplexes database connections, allowing thousands of Lambdas to share a small pool of database sockets safely!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport Taxi Dispatch Coordinator
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      If 1,000 arriving flight passengers run out to the curb and call 1,000 individual taxis at the exact same minute (Direct DB Connections), the airport traffic gridlocks and crashes. The airport taxi dispatch coordinator (RDS Proxy) organizes passengers into 10 high-capacity shuttle buses, transporting everyone quickly without clogging the roadway!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: EDGE COMPUTE */}
+              {selectedNote === 'edge_compute' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--sl-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · RDS Proxy &amp; Edge</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--sl-text-title)' }}>
+                        4.2 Lambda@Edge vs CloudFront Functions
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('edge-compute')}
+                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Edge Compute Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> AWS offers 2 edge compute choices for CloudFront CDN customization:
+                    <br />• <strong>CloudFront Functions (Lightweight JS)</strong>: Ultra-lightweight JavaScript running directly at 600+ Edge POP locations in <strong>sub-1 millisecond</strong> for URL rewrites, header manipulation, and token validation.
+                    <br />• <strong>Lambda@Edge (Full Node.js/Python)</strong>: Runs full Lambda functions across 13 Regional Edge Caches (up to 30s execution time) for network calls, rendering dynamic HTML, and heavy data processing.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Quick Gate Ticket Stamp vs In-Flight Chef
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>CloudFront Functions (Quick Gate Ticket Stamp)</strong>: Takes 0.1 seconds at the boarding gate to stamp your ticket (`/login` redirect to `/dashboard`).
+                      <br />• <strong>Lambda@Edge (In-Flight Chef on Airplane)</strong>: Prepares a custom multi-course meal (Full Node.js network requests &amp; server-side HTML rendering) right onboard while the plane flies over regional waters!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {activeTab === 'intro' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -3,7 +3,7 @@ import {
   BookOpen,
   ChevronRight,
   ChevronDown,
-  Info,
+  Lightbulb,
   Copy,
   Network,
   Zap,
@@ -379,6 +379,10 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
   const [selectedNote, setSelectedNote] = useState<string>('s3_namespace');
   const [expandedCategory, setExpandedCategory] = useState<string>('s3_fundamentals');
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive S3 Calculator states
+  const [nbStorageGb, setNbStorageGb] = useState<number>(5000);
+  const [nbGatewayEgressGb, setNbGatewayEgressGb] = useState<number>(2000);
 
   const handleCopyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -2216,6 +2220,53 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
           color: var(--color-text-primary);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
+
+        .acad-plain-english {
+          background: rgba(16, 185, 129, 0.07);
+          border-left: 4px solid #10b981;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--s3-card-border);
+          border-right: 1px solid var(--s3-card-border);
+          border-bottom: 1px solid var(--s3-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(16, 185, 129, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--s3-card-border);
+          border-right: 1px solid var(--s3-card-border);
+          border-bottom: 1px solid var(--s3-card-border);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
         .s3-theme-azure {
           --theme-color: #0078D4;
           --s3-btn-active-bg: linear-gradient(135deg, #0078D4 0%, #005A9E 100%);
@@ -2288,15 +2339,15 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
         {/* Tab Selection */}
         {!isComparative && (
           <div className="s3-tabs">
-            <button className={`s3-tb ${activeTab === 'notebook' ? 's3-on s3-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
-            <button className={`s3-tb ${activeTab === 'overview' ? 's3-on s3-on-overview' : ''}`} onClick={() => setActiveTab('overview')}>🪣 Namespace & CORS</button>
-            <button className={`s3-tb ${activeTab === 'security' ? 's3-on s3-on-security' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Policies & BPA</button>
-            <button className={`s3-tb ${activeTab === 'encryption' ? 's3-on s3-on-encryption' : ''}`} onClick={() => setActiveTab('encryption')}>🔒 SSE & KMS keys</button>
-            <button className={`s3-tb ${activeTab === 'versioning' ? 's3-on s3-on-versioning' : ''}`} onClick={() => setActiveTab('versioning')}>🔄 Versioning & WORM</button>
-            <button className={`s3-tb ${activeTab === 'storage' ? 's3-on s3-on-storage' : ''}`} onClick={() => setActiveTab('storage')}>📈 Classes & Lifecycle</button>
-            <button className={`s3-tb ${activeTab === 'networking' ? 's3-on s3-on-networking' : ''}`} onClick={() => setActiveTab('networking')}>🌐 Gateway Endpoints</button>
-            <button className={`s3-tb ${activeTab === 'transfer' ? 's3-on s3-on-transfer' : ''}`} onClick={() => setActiveTab('transfer')}>⚡ Replication & Accel</button>
-            <button className={`s3-tb ${activeTab === 'operations' ? 's3-on s3-on-operations' : ''}`} onClick={() => setActiveTab('operations')}>⚙️ Batch & Lens</button>
+            <button className={`s3-tb ${activeTab === 'notebook' ? 's3-on s3-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>📖 1. Visual Notes &amp; Theories</button>
+            <button className={`s3-tb ${activeTab === 'overview' ? 's3-on s3-on-overview' : ''}`} onClick={() => setActiveTab('overview')}>🪣 2. Namespace &amp; CORS</button>
+            <button className={`s3-tb ${activeTab === 'security' ? 's3-on s3-on-security' : ''}`} onClick={() => setActiveTab('security')}>🛡️ 3. Policies &amp; BPA</button>
+            <button className={`s3-tb ${activeTab === 'encryption' ? 's3-on s3-on-encryption' : ''}`} onClick={() => setActiveTab('encryption')}>🔒 4. SSE &amp; KMS Keys</button>
+            <button className={`s3-tb ${activeTab === 'versioning' ? 's3-on s3-on-versioning' : ''}`} onClick={() => setActiveTab('versioning')}>🔄 5. Versioning &amp; WORM</button>
+            <button className={`s3-tb ${activeTab === 'storage' ? 's3-on s3-on-storage' : ''}`} onClick={() => setActiveTab('storage')}>📈 6. Classes &amp; Lifecycle</button>
+            <button className={`s3-tb ${activeTab === 'networking' ? 's3-on s3-on-networking' : ''}`} onClick={() => setActiveTab('networking')}>🌐 7. Gateway Endpoints</button>
+            <button className={`s3-tb ${activeTab === 'transfer' ? 's3-on s3-on-transfer' : ''}`} onClick={() => setActiveTab('transfer')}>⚡ 8. Replication &amp; Accel</button>
+            <button className={`s3-tb ${activeTab === 'operations' ? 's3-on s3-on-operations' : ''}`} onClick={() => setActiveTab('operations')}>⚙️ 9. Batch &amp; Lens</button>
             <button className={`s3-tb ${activeTab === 'unique' ? 's3-on s3-on-unique' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
           </div>
         )}
@@ -2305,32 +2356,41 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
           <S3ComparativeView onNavigateToDemo={handleNavigateToDemo} />
         )}
 
-        {/* VISUAL ARCHITECT NOTES (NOTEBOOK WORKWHEETS) */}
+                {/* VISUAL ARCHITECT NOTES (NOTEBOOK WORKWHEETS) */}
         {!isComparative && activeTab === 'notebook' && (
-          <div className="space-y-6 animate-fadeIn text-left" style={{ marginTop: '16px' }}>
+          <div className="space-y-6 animate-fadeIn text-left" style={{ marginTop: '16px', color: 'var(--color-text-primary)' }}>
             
-            <div className="s3-card" style={{ marginBottom: '14px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> S3 Storage &amp; Security Notes
-              </h2>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45' }}>
-                Learn about Amazon S3 storage classes, cross-region replication architecture, Multi-Region Access Points, object versioning, and bucket policies to secure data at rest.
-              </p>
+            {/* Header Hero Card */}
+            <div className="s3-card" style={{ marginBottom: '14px', borderLeft: '4px solid #10b981' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <BookOpen style={{ width: '20px', height: '20px', color: '#10b981' }} /> Amazon S3 Cloud Storage Notes &amp; Mental Models
+                  </h2>
+                  <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45', marginBottom: 0 }}>
+                    Simplified, beginner-friendly cloud object storage theories sorted progressively from flat key-value namespaces to tiered storage classes, Block Public Access, WORM Object Lock, Gateway VPC Endpoints, and Global Multi-Region Access Points.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <span className="acad-hero-badge" style={{ background: '#d1fae5', borderColor: '#6ee7b7', color: '#065f46' }}>🎓 Beginner to Pro</span>
+                  <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Sidebar Category Explorer */}
               <div className="lg:col-span-3 space-y-4 text-left">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">S3 Directory Tree:</span>
+                <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
                 
                 <div className="acad-dir-container">
                   <div className="acad-dir-header">
-                    <BookOpen className="w-4 h-4 text-emerald-400" />
-                    <span>Module Explorer</span>
+                    <BookOpen className="w-4 h-4 text-emerald-500" />
+                    <span>S3 Storage Modules</span>
                   </div>
 
-                  {/* CATEGORY 1: S3 FUNDAMENTALS */}
+                  {/* LEVEL 1: FUNDAMENTALS & STORAGE CLASSES */}
                   <div>
                     <button 
                       onClick={() => setExpandedCategory(expandedCategory === 's3_fundamentals' ? '' : 's3_fundamentals')}
@@ -2338,226 +2398,772 @@ export default function S3Visualizer({ provider, setProvider }: S3VisualizerProp
                     >
                       <span className="flex items-center gap-1.5">
                         <Sliders className="w-3.5 h-3.5 text-emerald-500" />
-                        1. S3 Fundamentals
+                        🐣 Level 1 · Fundamentals &amp; Classes
                       </span>
                       {expandedCategory === 's3_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 's3_fundamentals' && (
-                      <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
                         <button 
                           onClick={() => setSelectedNote('s3_namespace')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_namespace' ? 'acad-active' : ''}`}
                         >
-                          Namespaces &amp; CORS
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('s3_security')}
-                          className={`acad-dir-item-btn ${selectedNote === 's3_security' ? 'acad-active' : ''}`}
-                        >
-                          Access Control Policies
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('s3_encryption')}
-                          className={`acad-dir-item-btn ${selectedNote === 's3_encryption' ? 'acad-active' : ''}`}
-                        >
-                          Security &amp; KMS Keys
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CATEGORY 2: DATA MANAGEMENT */}
-                  <div>
-                    <button 
-                      onClick={() => setExpandedCategory(expandedCategory === 's3_data_management' ? '' : 's3_data_management')}
-                      className="acad-dir-folder-btn"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Globe className="w-3.5 h-3.5 text-emerald-500" />
-                        2. Data Management
-                      </span>
-                      {expandedCategory === 's3_data_management' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
-                    {expandedCategory === 's3_data_management' && (
-                      <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
-                        <button 
-                          onClick={() => setSelectedNote('s3_versioning')}
-                          className={`acad-dir-item-btn ${selectedNote === 's3_versioning' ? 'acad-active' : ''}`}
-                        >
-                          Versioning &amp; WORM
+                          1.1 Object Storage &amp; Namespaces (Coat Check)
                         </button>
                         <button 
                           onClick={() => setSelectedNote('s3_storage')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_storage' ? 'acad-active' : ''}`}
                         >
-                          Storage &amp; Lifecycles
+                          1.2 Storage Classes &amp; Lifecycles (Kitchen to Vault)
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* CATEGORY 3: ADVANCED TOPOLOGIES */}
+                  {/* LEVEL 2: SECURITY & ENCRYPTION */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 's3_security_enc' ? '' : 's3_security_enc')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Zap className="w-3.5 h-3.5 text-amber-500" />
+                        🛡️ Level 2 · Security &amp; KMS
+                      </span>
+                      {expandedCategory === 's3_security_enc' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 's3_security_enc' && (
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                        <button 
+                          onClick={() => setSelectedNote('s3_security')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_security' ? 'acad-active' : ''}`}
+                        >
+                          2.1 Policies, BPA &amp; Pre-Signed URLs (Deadbolt)
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_encryption')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_encryption' ? 'acad-active' : ''}`}
+                        >
+                          2.2 Encryption &amp; S3 Bucket Keys (Biometric Safe)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* LEVEL 3: VERSIONING & REPLICATION */}
+                  <div>
+                    <button 
+                      onClick={() => setExpandedCategory(expandedCategory === 's3_resilience' ? '' : 's3_resilience')}
+                      className="acad-dir-folder-btn"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-blue-500" />
+                        🔄 Level 3 · Versioning &amp; DR
+                      </span>
+                      {expandedCategory === 's3_resilience' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    </button>
+                    {expandedCategory === 's3_resilience' && (
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                        <button 
+                          onClick={() => setSelectedNote('s3_versioning')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_versioning' ? 'acad-active' : ''}`}
+                        >
+                          3.1 Versioning &amp; Object Lock (Time Machine)
+                        </button>
+                        <button 
+                          onClick={() => setSelectedNote('s3_replication')}
+                          className={`acad-dir-item-btn ${selectedNote === 's3_replication' ? 'acad-active' : ''}`}
+                        >
+                          3.2 Cross-Region Replication (Mirror Office)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* LEVEL 4: NETWORKING & OPERATIONS */}
                   <div>
                     <button 
                       onClick={() => setExpandedCategory(expandedCategory === 's3_advanced' ? '' : 's3_advanced')}
                       className="acad-dir-folder-btn"
                     >
                       <span className="flex items-center gap-1.5">
-                        <Network className="w-3.5 h-3.5 text-emerald-500" />
-                        3. Advanced Topologies
+                        <Network className="w-3.5 h-3.5 text-purple-500" />
+                        🌐 Level 4 · Networking &amp; Lens
                       </span>
                       {expandedCategory === 's3_advanced' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                     </button>
                     {expandedCategory === 's3_advanced' && (
-                      <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1">
+                      <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
                         <button 
                           onClick={() => setSelectedNote('s3_networking')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_networking' ? 'acad-active' : ''}`}
                         >
-                          Gateway VPC Endpoints
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('s3_transfer')}
-                          className={`acad-dir-item-btn ${selectedNote === 's3_transfer' ? 'acad-active' : ''}`}
-                        >
-                          Acceleration &amp; Replication
+                          4.1 Gateway VPC Endpoints &amp; MRAP (Subway Tunnel)
                         </button>
                         <button 
                           onClick={() => setSelectedNote('s3_operations')}
                           className={`acad-dir-item-btn ${selectedNote === 's3_operations' ? 'acad-active' : ''}`}
                         >
-                          Event Notifications &amp; Batch
+                          4.2 Acceleration, Batch &amp; Lens (Jetway &amp; Drones)
                         </button>
                       </div>
                     )}
                   </div>
+
                 </div>
 
                 <div style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', lineHeight: '1.6', fontWeight: 600 }}>
                   <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', fontSize: '11.5px' }}>
-                    <Info style={{ width: '14px', height: '14px', color: '#10b981' }} /> Academy Advice
+                    <Lightbulb style={{ width: '14px', height: '14px', color: '#10b981' }} /> Interactive Quick-Launch
                   </span>
-                  "Choose any module from the tree above. Each view includes custom interactive elements, dynamic code blocks, or structural system architecture diagrams."
+                  Click any storage concept to explore real-world analogies, interactive cost calculators, and instant simulator links!
                 </div>
               </div>
 
               {/* Right Active Note Workspace */}
               <div className="lg:col-span-9 space-y-6 text-left">
 
-                {/* ========================================================================= */}
-                {/* CONCEPT 1: NAMESPACES & CORS                                              */}
-                {/* ========================================================================= */}
-                {(() => {
-                  const note = cloudProviders[provider].notebookNotes[selectedNote];
-                  if (!note) return null;
-
-                  const launchTab = 
-                    selectedNote === 's3_namespace' ? 'overview' :
-                    selectedNote === 's3_security' ? 'security' :
-                    selectedNote === 's3_encryption' ? 'encryption' :
-                    selectedNote === 's3_versioning' ? 'versioning' :
-                    selectedNote === 's3_storage' ? 'storage' :
-                    selectedNote === 's3_networking' ? 'networking' :
-                    selectedNote === 's3_transfer' ? 'transfer' :
-                    'operations';
-
-                  const launchLabel = 
-                    selectedNote === 's3_namespace' ? 'Namespace & CORS Simulator' :
-                    selectedNote === 's3_security' ? 'Policy Authorization Pipeline' :
-                    selectedNote === 's3_encryption' ? 'SSE & KMS Encryption Simulation' :
-                    selectedNote === 's3_versioning' ? 'Version Stack Simulator' :
-                    selectedNote === 's3_storage' ? 'Lifecycle Transition Timeline' :
-                    selectedNote === 's3_networking' ? 'VPC Gateway Routing Trace' :
-                    selectedNote === 's3_transfer' ? 'Speed Performance Test' :
-                    'Storage Lens Metrics Panel';
-
-                  return (
-                    <div className="acad-detail-card space-y-6 animate-fadeIn">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <div>
-                          <span className="acad-hero-badge">{note.heroBadge}</span>
-                          <h3 style={{ fontSize: "20px", fontWeight: 900, color: "var(--color-text-primary)", marginTop: "8px" }}>{note.title}</h3>
-                        </div>
-                        <span className="text-xs font-bold text-slate-400">
-                          Concept {
-                            selectedNote === 's3_namespace' ? '1' :
-                            selectedNote === 's3_security' ? '2' :
-                            selectedNote === 's3_encryption' ? '3' :
-                            selectedNote === 's3_versioning' ? '4' :
-                            selectedNote === 's3_storage' ? '5' :
-                            selectedNote === 's3_networking' ? '6' :
-                            selectedNote === 's3_transfer' ? '7' : '8'
-                          } of 8
-                        </span>
+                {/* NOTE 1.1: OBJECT STORAGE & NAMESPACES */}
+                {selectedNote === 's3_namespace' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          1.1 What is Object Storage &amp; Global Namespaces?
+                        </h3>
                       </div>
-
-                      <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", lineHeight: "1.5" }}>
-                        {note.desc}
-                      </p>
-
-                      <div className="s3-grid-edu" style={{ '--theme-color': 
-                        selectedNote === 's3_namespace' || selectedNote === 's3_networking' ? '#0891b2' :
-                        selectedNote === 's3_security' || selectedNote === 's3_transfer' ? '#ea580c' :
-                        selectedNote === 's3_encryption' || selectedNote === 's3_operations' ? '#16a34a' :
-                        '#6366f1'
-                      } as React.CSSProperties}>
-                        {note.termDefinitions.map((term, tIdx) => (
-                          <div key={tIdx} className="s3-edu-card-new">
-                            <span className={`s3-pill-badge ${
-                              term.pillType === 'why' ? 's3-pill-why' : 's3-pill-how'
-                            }`}>{term.pillText}</span>
-                            <div style={{ fontWeight: 'bold', fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                              {term.title}
-                            </div>
-                            <div style={{ fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
-                              {term.body}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="acad-takeaway-box">
-                        {note.takeaway}
-                      </div>
-
-                      <div className="space-y-4 pt-2">
-                        <div className="flex items-center justify-between">
-                          <span style={{ fontSize: '11.5px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>
-                            {note.cliTitle}
-                          </span>
-                          <button
-                            onClick={() => handleCopyCode(note.cliCommands, note.cliCopyId)}
-                            className="s3-btn"
-                            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '10.5px' }}
-                          >
-                            <Copy className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                            {copiedNoteId === note.cliCopyId ? "Copied!" : "Copy Commands"}
-                          </button>
-                        </div>
-                        <div style={{ borderRadius: '8px', background: 'var(--s3-terminal-bg)', border: '1.5px solid var(--s3-terminal-border)', padding: '12px', overflowX: 'auto' }}>
-                          <pre style={{ margin: 0, fontFamily: 'monospace', fontSize: '11px', color: 'var(--s3-terminal-text)', whiteSpace: 'pre' }}>
-                            {note.cliCommands}
-                          </pre>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-3">
                         <button 
-                          onClick={() => setActiveTab(launchTab)}
+                          onClick={() => setActiveTab('overview')}
                           className="s3-btn s3-on"
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
-                          <Zap className="w-4 h-4" /> Launch {launchLabel}
+                          <Zap className="w-3.5 h-3.5" /> Go to Namespace Tab
                         </button>
                       </div>
                     </div>
-                  );
-                })()}
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Traditional computer hard drives (EBS / Block Storage) organize files in complex tree folders like <code>/Users/praveen/2026/file.pdf</code>. <strong>Amazon S3 is an Object Store</strong>—it stores files as flat key-value pairs (Object Data + Key Name + Metadata) in massive &ldquo;Buckets&rdquo; with unlimited scale. Every S3 bucket name is <strong>globally unique</strong> across all AWS accounts worldwide.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Coat Check Cloakroom vs A 100-Drawer Filing Cabinet
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>Block Storage (Filing Cabinet)</strong>: You must remember the exact cabinet room, row, drawer number, and folder label to find a document.
+                        <br />• <strong>S3 Object Storage (Coat Check)</strong>: You hand your winter coat (File Data) to the attendant, receive a unique claim ticket string (<code>key="receipts/101.pdf"</code>), and whenever you present the ticket, the attendant hands you your exact coat in seconds without searching folders!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Key Architecture Pillars of S3:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>11 Nines of Durability (99.999999999%):</strong> Data is automatically replicated across at least 3 geographically separated Availability Zones. If you store 10,000,000 files, you would lose 1 file every 10,000 years on average!</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>Strong Read-After-Write Consistency:</strong> Immediately after a successful PUT or DELETE, any subsequent GET query returns the updated object instantly without lag.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>Max Object Size:</strong> Single objects can range from 0 bytes up to <strong>5 Terabytes (5 TB)</strong>. Any upload larger than 100 MB should use Multi-part Upload!</li>
+                        </ul>
+                      </div>
+
+                      <div className="s3-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Global URI Addressing Anatomy</span>
+                        
+                        <div className="space-y-2 text-left text-[10.5px]">
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p className="font-bold text-emerald-600">Virtual-Hosted Style (Standard):</p>
+                            <code>https://<strong>bucket-name</strong>.s3.<strong>us-east-1</strong>.amazonaws.com/<strong>images/photo.jpg</strong></code>
+                          </div>
+                          <div className="p-2.5 rounded-lg" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p className="font-bold text-blue">S3 Protocol URI:</p>
+                            <code>s3://<strong>bucket-name</strong>/<strong>images/photo.jpg</strong></code>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 1.2: STORAGE CLASSES & LIFECYCLES */}
+                {selectedNote === 's3_storage' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          1.2 S3 Storage Classes &amp; Automated Lifecycle Rules
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('storage')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Storage Classes Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Storing data in high-performance storage costs $0.023/GB. But 90% of files are rarely opened after 30 days. S3 tiered storage classes and <strong>Lifecycle Rules</strong> automatically transition aging objects to colder, cheaper tiers—saving up to <strong>95% on cloud storage bills</strong>!
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Kitchen Counter, Basement Boxes &amp; Mountain Vault
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>S3 Standard (Kitchen Counter)</strong>: Snacks and coffee you use multiple times every day ($0.023/GB).
+                        <br />• <strong>S3 Standard-IA (Basement Boxes)</strong>: Winter jackets and holiday lights you open once a year with millisecond access ($0.0125/GB).
+                        <br />• <strong>S3 Intelligent-Tiering (Smart Robot Butler)</strong>: Automatically moves items to the basement when you stop touching them, and brings them back when you ask with <strong>zero penalty fees</strong>!
+                        <br />• <strong>S3 Glacier Deep Archive (Deep Mountain Bunker)</strong>: Old tax returns and childhood baby film you preserve for 20 years for $0.00099/GB (&lt;$1/TB/month)!
+                      </p>
+                    </div>
+
+                    {/* Interactive Storage Cost Calculator HUD */}
+                    <div className="s3-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--color-border-tertiary)' }}>
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive S3 Storage Cost &amp; Savings Calculator</span>
+                      
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                            <span>Data Volume: {nbStorageGb.toLocaleString()} GB ({(nbStorageGb / 1000).toFixed(1)} TB)</span>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="100" 
+                            max="50000" 
+                            step="100" 
+                            value={nbStorageGb} 
+                            onChange={(e) => setNbStorageGb(parseInt(e.target.value))}
+                            className="accent-emerald-600 w-full"
+                          />
+                        </div>
+                      </div>
+
+                      {(() => {
+                        const standardCost = nbStorageGb * 0.023;
+                        const iaCost = nbStorageGb * 0.0125;
+                        const glacierCost = nbStorageGb * 0.0036;
+                        const deepCost = nbStorageGb * 0.00099;
+                        const deepSavings = ((standardCost - deepCost) / standardCost) * 100;
+                        return (
+                          <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p>S3 Standard Cost: <span className="text-amber font-bold">${standardCost.toFixed(2)}/mo</span></p>
+                            <p>S3 Standard-IA Cost: <span className="text-blue font-bold">${iaCost.toFixed(2)}/mo</span> (45% Savings)</p>
+                            <p>S3 Glacier Flexible: <span className="text-purple font-bold">${glacierCost.toFixed(2)}/mo</span> (84% Savings)</p>
+                            <p>S3 Glacier Deep Archive: <span className="text-green font-bold">${deepCost.toFixed(2)}/mo</span> (<strong className="text-emerald-500">{deepSavings.toFixed(1)}% Saved!</strong>)</p>
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="acad-table">
+                        <thead>
+                          <tr>
+                            <th>Storage Class</th>
+                            <th>Cost / GB / mo</th>
+                            <th>Min Duration</th>
+                            <th>Retrieval Time</th>
+                            <th>Best Use Case</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><strong style={{ color: 'var(--color-text-primary)' }}>S3 Standard</strong></td>
+                            <td>$0.023</td>
+                            <td>None</td>
+                            <td>Milliseconds</td>
+                            <td>Active web assets, hot big data</td>
+                          </tr>
+                          <tr>
+                            <td><strong style={{ color: 'var(--color-text-primary)' }}>S3 Intelligent-Tiering</strong></td>
+                            <td>$0.023 &rarr; $0.0125</td>
+                            <td>None</td>
+                            <td>Milliseconds</td>
+                            <td>Unknown or changing access patterns</td>
+                          </tr>
+                          <tr>
+                            <td><strong style={{ color: 'var(--color-text-primary)' }}>S3 Standard-IA</strong></td>
+                            <td>$0.0125</td>
+                            <td>30 Days</td>
+                            <td>Milliseconds</td>
+                            <td>Monthly backups, disaster recovery</td>
+                          </tr>
+                          <tr>
+                            <td><strong style={{ color: 'var(--color-text-primary)' }}>S3 Glacier Instant</strong></td>
+                            <td>$0.004</td>
+                            <td>90 Days</td>
+                            <td>Milliseconds</td>
+                            <td>Medical records, news photo archives</td>
+                          </tr>
+                          <tr>
+                            <td><strong style={{ color: 'var(--color-text-primary)' }}>S3 Glacier Deep Archive</strong></td>
+                            <td>$0.00099</td>
+                            <td>180 Days</td>
+                            <td>12–48 Hours</td>
+                            <td>7–10 year regulatory compliance vaults</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2.1: POLICIES & BLOCK PUBLIC ACCESS */}
+                {selectedNote === 's3_security' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🛡️ Level 2 · Security &amp; KMS</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          2.1 S3 Bucket Policies, Block Public Access &amp; Pre-Signed URLs
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('security')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Security Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> By default, all newly created S3 buckets are completely private. **S3 Block Public Access (BPA)** is an account-level and bucket-level central &ldquo;Deadbolt Lock&rdquo; that overrides all policies to block accidental data exposure. **Pre-Signed URLs** let you give temporary, time-expiring download or upload links (e.g. valid for 15 minutes) to users without creating AWS accounts for them!
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Bank Vault Deadbolt Lock &amp; The 15-Minute Guest Pass
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>Block Public Access (BPA)</strong>: Like welding the exterior bank vault doors shut—even if a new teller accidentally writes a permission slip saying &ldquo;Anyone can enter&rdquo;, the master deadbolt physically overrides it!
+                        <br />• <strong>Pre-Signed URL (Expiring Guest Pass)</strong>: When a customer orders concert tickets, you hand them a digital QR code that opens the gate for exactly 15 minutes. After 15 minutes, the QR code self-destructs without giving the customer master keys to the stadium!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 4 S3 Block Public Access Flags:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>BlockPublicAcls:</strong> Rejects new public ACLs uploaded with objects.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>IgnorePublicAcls:</strong> Ignores all existing public ACLs across the bucket.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>BlockPublicPolicy:</strong> Rejects new bucket policies that grant open public access.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>RestrictPublicBuckets:</strong> Restricts access to public and cross-account buckets to authorized AWS services.</li>
+                        </ul>
+                      </div>
+
+                      <div className="s3-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Enforcing HTTPS Only (TLS 1.2+)</span>
+                        
+                        <pre className="acad-terminal text-[9.5px] leading-relaxed text-left overflow-x-auto">
+{`{
+  "Effect": "Deny",
+  "Principal": "*",
+  "Action": "s3:*",
+  "Resource": "arn:aws:s3:::my-bucket/*",
+  "Condition": {
+    "Bool": { "aws:SecureTransport": "false" }
+  }
+}`}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 2.2: S3 ENCRYPTION */}
+                {selectedNote === 's3_encryption' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🛡️ Level 2 · Security &amp; KMS</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          2.2 S3 Encryption at Rest &amp; S3 Bucket Keys (99% KMS Cost Savings)
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('encryption')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Encryption Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> All S3 buckets are encrypted at rest by default using AES-256 (**SSE-S3**). When regulatory compliance requires audit logs and custom customer-managed keys (**SSE-KMS**), enabling **S3 Bucket Keys** creates a temporary bucket-level key inside S3—reducing expensive AWS KMS API calls and billing by up to **99%**!
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Hotel Built-in Safe vs Custom Biometric Safe with Token Caching
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>SSE-S3 (Hotel Safe)</strong>: The hotel provides a standard digital safe in every room for free.
+                        <br />• <strong>SSE-KMS (Custom Biometric Safe with Guard Log)</strong>: Every time you open the safe, the hotel guard charges you $0.01 and writes your name in an audit book (CloudTrail).
+                        <br />• <strong>S3 Bucket Key (Day Pass Token)</strong>: You show your ID to the guard once at the start of the day and receive a temporary wristband so you can open the safe 10,000 times without paying the guard 10,000 times!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 4 S3 Encryption Options:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>SSE-S3 (Default):</strong> Keys managed by S3 with zero extra cost. Uses AES-256.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>SSE-KMS (aws/s3 or CMK):</strong> User-managed keys with IAM permission controls, automatic key rotation, and CloudTrail audit logging.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>SSE-C (Customer Provided):</strong> You manage and supply raw encryption keys with every HTTP header request.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>Client-Side Encryption:</strong> Encrypts bytes locally on your client machine before transmitting over the wire to AWS.</li>
+                        </ul>
+                      </div>
+
+                      <div className="s3-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>S3 Bucket Key KMS Offload</span>
+                        
+                        <div className="space-y-2 text-left text-[10px]">
+                          <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid #fca5a5' }}>
+                            <span>Without Bucket Key (1M requests):</span>
+                            <span className="text-red font-bold">1,000,000 KMS API Calls</span>
+                          </div>
+                          <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                            <span className="text-green font-bold">With S3 Bucket Key Active:</span>
+                            <span className="text-green font-bold">~100 KMS Calls (99.9% Offload)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3.1: VERSIONING & OBJECT LOCK */}
+                {selectedNote === 's3_versioning' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🔄 Level 3 · Versioning &amp; DR</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          3.1 S3 Versioning, Delete Markers &amp; Object Lock (WORM)
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('versioning')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Versioning Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> Enabling **S3 Versioning** ensures you never lose data from accidental overwrites or deletes. When you delete an object, S3 creates a lightweight **Delete Marker** on top of the stack instead of wiping your file. **S3 Object Lock (WORM - Write Once, Read Many)** prevents even AWS Root Administrators from deleting or altering files during strict regulatory compliance retention periods (e.g. SEC Rule 17a-4).
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Digital Time Machine &amp; The Titanium Evidence Vault
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>Delete Marker</strong>: Instead of shredding a contract, an archivist places a &ldquo;Temporarily Withdrawn&rdquo; sticky note on top of the document. If you remove the sticky note, the original contract is right there intact!
+                        <br />• <strong>Object Lock (Compliance Mode)</strong>: Dropping legal courtroom evidence into a titanium vault with a physical mechanical timer that cannot be opened by anyone—not even the bank president—until January 1st, 2035!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Object Lock Modes Comparison:</h4>
+                        
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Mode</th>
+                              <th>Admin Override?</th>
+                              <th>Best For</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Governance Mode</strong></td>
+                              <td>✅ Yes (with special IAM permission)</td>
+                              <td>Accidental deletion protection</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Compliance Mode</strong></td>
+                              <td>❌ No (Strictly impossible even for Root)</td>
+                              <td>FINRA, SEC, legal compliance</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Legal Hold</strong></td>
+                              <td>✅ Yes (On/Off toggle with no expiration)</td>
+                              <td>Active litigation investigation</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="acad-gotcha-box">
+                        <strong>⚠️ Versioning Storage Billing Gotcha:</strong>
+                        <p style={{ margin: '4px 0 0' }}>
+                          When Versioning is enabled, overwriting a 10 GB file 5 times stores 50 GB of data in S3! Always attach an S3 Lifecycle Rule to automatically expire &ldquo;Noncurrent Versions&rdquo; after 30 or 60 days to avoid surprise storage bills!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 3.2: CROSS-REGION REPLICATION */}
+                {selectedNote === 's3_replication' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🔄 Level 3 · Versioning &amp; DR</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          3.2 Cross-Region Replication (CRR) &amp; Same-Region Replication (SRR)
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('transfer')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Replication Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> **Cross-Region Replication (CRR)** automatically copies new objects asynchronously across different AWS regions (e.g. <code>us-east-1</code> &rarr; <code>eu-west-1</code>) for multi-region disaster recovery and lower-latency global reads. S3 Replication Time Control (RTC) provides a 15-minute SLA on replication completion.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Carbon-Copy Mirror Office Across the Ocean
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        Every time you sign a contract at the New York headquarters (Primary Bucket), a high-speed secure courier automatically delivers an identical carbon copy to the London office vault (Destination Bucket in Europe) within minutes so European teams can read it locally without international delays!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Replication Requirements Checklist:</h4>
+                        
+                        <ul className="list-disc pl-4 space-y-2">
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>Versioning Must Be Enabled:</strong> Both source and destination buckets must have Versioning enabled.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>IAM Service Role:</strong> S3 needs an IAM role with permission to read source objects and replicate PUT into the destination bucket.</li>
+                          <li><strong style={{ color: 'var(--color-text-primary)' }}>Existing Objects:</strong> By default, CRR only replicates new objects uploaded after the rule is created. Use <strong>S3 Batch Replication</strong> to sync existing older files!</li>
+                        </ul>
+                      </div>
+
+                      <div className="s3-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Replication Architecture Types</span>
+                        
+                        <div className="space-y-2 text-left text-[10px]">
+                          <div className="p-2 rounded" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                            <p className="font-bold text-blue">CRR (Cross-Region):</p>
+                            <span>us-east-1 (Primary) &rarr; eu-west-1 (Disaster Recovery / GDPR Compliance)</span>
+                          </div>
+                          <div className="p-2 rounded" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                            <p className="font-bold text-green">SRR (Same-Region):</p>
+                            <span>Log aggregation from Prod Account &rarr; Central Security Audit Bucket</span>
+                          </div>
+                          <div className="p-2 rounded" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                            <p className="font-bold text-purple">Bi-Directional CRR:</p>
+                            <span>Active-Active two-way sync between US and Asia buckets</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 4.1: GATEWAY VPC ENDPOINTS & MRAP */}
+                {selectedNote === 's3_networking' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🌐 Level 4 · Networking &amp; Lens</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          4.1 Gateway VPC Endpoints &amp; Multi-Region Access Points (MRAP)
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('networking')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Gateway Endpoints Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> When EC2 instances upload to S3, data normally travels through public NAT Gateways—costing $0.045/GB in egress fees! An **S3 Gateway VPC Endpoint** is a completely <strong>FREE</strong> private tunnel inside your VPC route table that routes traffic directly into S3 across AWS private fiber. **Multi-Region Access Points (MRAP)** provide a single global DNS endpoint that automatically routes clients to the closest S3 bucket worldwide with 60% faster speeds!
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Free Private Underground Tunnel vs Paying Highway Tollbooths
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>NAT Gateway Egress</strong>: Driving your delivery truck onto the public highway and paying a toll fee ($0.045/GB) at every single tollbooth.
+                        <br />• <strong>Gateway VPC Endpoint</strong>: Building a free private underground subway tunnel directly connecting your office to the storage warehouse—100% private, faster, and zero tollbooth fees!
+                      </p>
+                    </div>
+
+                    {/* Interactive NAT Gateway Savings HUD */}
+                    <div className="s3-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--color-border-tertiary)' }}>
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Gateway VPC Endpoint Savings Calculator</span>
+                      
+                      <div className="space-y-2 text-xs">
+                        <div>
+                          <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                            <span>Monthly EC2-to-S3 Data Egress: {nbGatewayEgressGb.toLocaleString()} GB ({(nbGatewayEgressGb / 1000).toFixed(1)} TB)</span>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="500" 
+                            max="50000" 
+                            step="500" 
+                            value={nbGatewayEgressGb} 
+                            onChange={(e) => setNbGatewayEgressGb(parseInt(e.target.value))}
+                            className="accent-emerald-600 w-full"
+                          />
+                        </div>
+                      </div>
+
+                      {(() => {
+                        const natFee = nbGatewayEgressGb * 0.045;
+                        return (
+                          <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p>NAT Gateway Processing Fee: <span className="text-red font-bold">${natFee.toFixed(2)} / month</span></p>
+                            <p>S3 Gateway VPC Endpoint Cost: <span className="text-green font-bold">$0.00 (100% Free)</span></p>
+                            <p>Monthly Savings with Gateway Endpoint: <span className="text-emerald-500 font-bold">${natFee.toFixed(2)} / month saved!</span></p>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* NOTE 4.2: ACCELERATION, BATCH & LENS */}
+                {selectedNote === 's3_operations' && (
+                  <div className="acad-detail-card space-y-5 animate-fadeIn">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                      <div>
+                        <span className="acad-hero-badge">🌐 Level 4 · Networking &amp; Lens</span>
+                        <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                          4.2 S3 Transfer Acceleration, Batch Operations &amp; Storage Lens
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setActiveTab('operations')}
+                          className="s3-btn s3-on"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Go to Operations Tab
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Plain English Box */}
+                    <div className="acad-plain-english">
+                      <strong>✨ In Plain English:</strong> **S3 Transfer Acceleration** speeds up global uploads by routing data through the closest AWS CloudFront Edge location over optimized private fiber (up to 500% faster). **S3 Batch Operations** executes massive bulk changes (e.g. encrypting or copying 10 billion files) with 1 click. **S3 Storage Lens** provides 360-degree cost optimization analytics across your entire AWS Organization.
+                    </div>
+
+                    {/* Everyday Analogy Box */}
+                    <div className="acad-analogy-box">
+                      <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport VIP Fast Track &amp; The Organization-Wide Audit Drone
+                      </div>
+                      <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                        • <strong>Transfer Acceleration</strong>: Checking your heavy luggage at the local downtown airline counter (Edge Location) so you can ride the private express train to the main airport at 300 mph without city traffic jams!
+                        <br />• <strong>S3 Storage Lens</strong>: A fleet of smart audit drones scanning 50 warehouses in 10 seconds, generating a heat map showing which storage rooms have unused old furniture costing you money!
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Top 3 S3 Operational Power Tools:</h4>
+                        
+                        <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                          <strong className="text-amber font-bold block">1. S3 Event Notifications:</strong>
+                          <p>Automatically triggers AWS Lambda, SNS, or SQS queues whenever an object is uploaded (<code>s3:ObjectCreated:*</code>) to process image thumbnails or indexing in real-time!</p>
+                        </div>
+                        <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                          <strong className="text-emerald-600 font-bold block">2. S3 Batch Operations:</strong>
+                          <p>Perform bulk copy, replace tags, add Object Lock, or invoke Lambda across millions of objects using an S3 Inventory manifest CSV.</p>
+                        </div>
+                        <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                          <strong className="text-blue font-bold block">3. S3 Storage Lens:</strong>
+                          <p>Organization-wide dashboard analyzing cost metrics, noncurrent version bloat, and unencrypted bucket audit flags.</p>
+                        </div>
+                      </div>
+
+                      <div className="s3-card p-4 rounded-xl flex flex-col justify-between">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>S3 CLI Quick Snippet</span>
+                          <button 
+                            onClick={() => handleCopyCode(`aws s3 cp file.mp4 s3://my-bucket/video/ --endpoint-url https://s3-accelerate.amazonaws.com\n\naws s3api put-bucket-notification-configuration --bucket my-bucket --notification-configuration file://notification.json`, 's3-ops-code')}
+                            className="s3-btn text-[10px] p-1 flex items-center gap-1"
+                          >
+                            {copiedNoteId === 's3-ops-code' ? 'Copied!' : <Copy className="w-3 h-3" />}
+                          </button>
+                        </div>
+                        <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-48">
+{`# 1. Upload via S3 Transfer Acceleration
+aws s3 cp large-video.mp4 s3://my-bucket/ \
+  --endpoint-url https://s3-accelerate.amazonaws.com
+
+# 2. Sync folders in parallel
+aws s3 sync ./dist s3://my-static-site/ --delete
+
+# 3. Create S3 Batch Operation Job
+aws s3control create-job \
+  --account-id 123456789012 \
+  --operation '{"S3PutObjectTagging": {"TagSet": [{"Key": "Audited", "Value": "True"}]}}' \
+  --manifest '{"Spec": {"Format": "S3InventoryReport_CSV"}}'`}
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               </div>
             </div>
           </div>
         )}
+
 
         {/* TAB 1: OVERVIEW */}
         {!isComparative && activeTab === 'overview' && (

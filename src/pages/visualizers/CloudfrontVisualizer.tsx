@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
+import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Zap,
+  Sliders,
+  Globe,
+  Shield,
+  Activity
+} from 'lucide-react';
 import CloudfrontComparativeView from '../../components/visualizers/CloudfrontComparativeView';
 import UniqueCloudfrontFeatures from '../../components/visualizers/UniqueCloudfrontFeatures';
 
-type TabType = 'overview' | 'origins' | 'aga' | 'security' | 'sim' | 'pricing' | 'unique';
+type TabType = 'notebook' | 'overview' | 'origins' | 'aga' | 'security' | 'sim' | 'pricing' | 'unique';
 type ClientRegion = 'us' | 'eu' | 'asia';
 type OriginType = 's3' | 'alb_public' | 'alb_vpc';
 type HttpMethod = 'GET_STATIC' | 'GET_DYNAMIC' | 'POST';
@@ -20,7 +33,17 @@ interface CloudfrontVisualizerProps {
 }
 
 export default function CloudfrontVisualizer({ provider = 'aws', setProvider }: CloudfrontVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('cf_what_is');
+  const [expandedCategory, setExpandedCategory] = useState<string>('cf_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Edge Latency & Egress Savings Calculator State
+  const [nbEdgeHitRate, setNbEdgeHitRate] = useState<number>(85);
+  const [nbOriginLatencyMs, setNbOriginLatencyMs] = useState<number>(180);
+  const [nbMonthlyDataGb, setNbMonthlyDataGb] = useState<number>(5000);
 
   const isComparative = provider === 'comparative';
   const isAzure = provider === 'azure';
@@ -774,6 +797,386 @@ export default function CloudfrontVisualizer({ provider = 'aws', setProvider }: 
         .cf-card:hover {
           border-color: rgba(99, 102, 241, 0.35);
         }
+
+        /* Developer Academy Notes & Visual Mental Models Styling */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--cf-border-primary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--cf-border-primary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--color-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--cf-border-primary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eef2ff;
+          color: #4f46e5;
+          border-left-color: #6366f1;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(99, 102, 241, 0.15);
+          color: #818cf8;
+          border-left-color: #818cf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--cf-border-primary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #ede9fe;
+          border: 1.5px solid #c4b5fd;
+          color: #6d28d9;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #6366f1;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--cf-border-primary);
+          border-right: 1px solid var(--cf-border-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+        }
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--cf-border-primary);
+          border-right: 1px solid var(--cf-border-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--cf-border-primary);
+          border-right: 1px solid var(--cf-border-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--cf-border-primary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--cf-border-primary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--cf-border-primary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--cf-border-primary);
+          color: var(--color-text-secondary);
+        }
+
+        /* Developer Academy Notes & Visual Mental Models Styling */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--cf-border-primary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--cf-border-primary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--color-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--cf-border-primary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eef2ff;
+          color: #4f46e5;
+          border-left-color: #6366f1;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(99, 102, 241, 0.15);
+          color: #818cf8;
+          border-left-color: #818cf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--cf-border-primary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #ede9fe;
+          border: 1.5px solid #c4b5fd;
+          color: #6d28d9;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #6366f1;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--cf-border-primary);
+          border-right: 1px solid var(--cf-border-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+        }
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--cf-border-primary);
+          border-right: 1px solid var(--cf-border-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--cf-border-primary);
+          border-right: 1px solid var(--cf-border-primary);
+          border-bottom: 1px solid var(--cf-border-primary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--cf-border-primary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--cf-border-primary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--cf-border-primary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--cf-border-primary);
+          color: var(--color-text-secondary);
+        }
         .cf-sec {
           font-size: 12px;
           font-weight: 700;
@@ -1142,12 +1545,13 @@ export default function CloudfrontVisualizer({ provider = 'aws', setProvider }: 
 
         {!isComparative && (
           <div className="cf-tabs">
-            <button className={`cf-tb ${activeTab === 'overview' ? 'cf-on' : ''}`} onClick={() => setActiveTab('overview')}>🌐 1) Concept &amp; Delivery</button>
-            <button className={`cf-tb ${activeTab === 'origins' ? 'cf-on' : ''}`} onClick={() => setActiveTab('origins')}>🔌 2) Origins &amp; Integrations</button>
-            <button className={`cf-tb ${activeTab === 'aga' ? 'cf-on' : ''}`} onClick={() => setActiveTab('aga')}>🚀 3) Global Accelerator</button>
-            <button className={`cf-tb ${activeTab === 'security' ? 'cf-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ 4) OAC, Geo &amp; Purges</button>
-            <button className={`cf-tb ${activeTab === 'sim' ? 'cf-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 5) Live Global Request Simulator</button>
-            <button className={`cf-tb ${activeTab === 'pricing' ? 'cf-on' : ''}`} onClick={() => setActiveTab('pricing')}>💰 6) Pricing &amp; Shield</button>
+            <button className={`cf-tb ${activeTab === 'notebook' ? 'cf-on' : ''}`} onClick={() => setActiveTab('notebook')}>📖 1) Visual Notes &amp; Theories</button>
+            <button className={`cf-tb ${activeTab === 'overview' ? 'cf-on' : ''}`} onClick={() => setActiveTab('overview')}>🌐 2) Concept &amp; Delivery</button>
+            <button className={`cf-tb ${activeTab === 'origins' ? 'cf-on' : ''}`} onClick={() => setActiveTab('origins')}>🔌 3) Origins &amp; Integrations</button>
+            <button className={`cf-tb ${activeTab === 'aga' ? 'cf-on' : ''}`} onClick={() => setActiveTab('aga')}>🚀 4) Global Accelerator</button>
+            <button className={`cf-tb ${activeTab === 'security' ? 'cf-on' : ''}`} onClick={() => setActiveTab('security')}>🛡️ 5) OAC, Geo &amp; Purges</button>
+            <button className={`cf-tb ${activeTab === 'sim' ? 'cf-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 6) Live Global Request Simulator</button>
+            <button className={`cf-tb ${activeTab === 'pricing' ? 'cf-on' : ''}`} onClick={() => setActiveTab('pricing')}>💰 7) Pricing &amp; Shield</button>
             <button className={`cf-tb ${activeTab === 'unique' ? 'cf-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
           </div>
         )}
@@ -1163,6 +1567,811 @@ export default function CloudfrontVisualizer({ provider = 'aws', setProvider }: 
         {!isComparative && activeTab !== 'unique' && (
           <Translate>
             <>
+
+        {activeTab === 'notebook' && (
+            <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+              
+              {/* Header Hero Card */}
+              <div className="cf-card text-left" style={{ borderLeft: '4px solid #6366f1' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                      <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> Amazon CloudFront (CDN) &amp; Edge Delivery Notes &amp; Mental Models
+                    </h2>
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45', marginBottom: 0 }}>
+                      Simplified, beginner-friendly Content Delivery Network theories sorted progressively from Edge Location caching to Origin Shield, CloudFront vs Global Accelerator, OAC security, Signed Cookies, and sub-millisecond CloudFront Functions.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className="acad-hero-badge" style={{ background: '#ede9fe', borderColor: '#c4b5fd', color: '#6d28d9' }}>🎓 Beginner to Pro</span>
+                    <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Sidebar Category Explorer */}
+                <div className="lg:col-span-3 space-y-4 text-left">
+                  <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
+                  
+                  <div className="acad-dir-container">
+                    <div className="acad-dir-header">
+                      <Globe style={{ width: '16px', height: '16px', color: '#818cf8' }} />
+                      <span>CloudFront Modules</span>
+                    </div>
+
+                    {/* LEVEL 1: CDN FUNDAMENTALS & EDGE CACHING */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cf_fundamentals' ? '' : 'cf_fundamentals')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                          🐣 Level 1 · Fundamentals
+                        </span>
+                        {expandedCategory === 'cf_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cf_fundamentals' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--cf-border-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('cf_what_is')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_what_is' ? 'acad-active' : ''}`}
+                          >
+                            1.1 What is a CDN &amp; Edge Locations? (Corner Store)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('cf_hit_miss')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_hit_miss' ? 'acad-active' : ''}`}
+                          >
+                            1.2 Cache Hit vs Miss &amp; TTL (Vending Machine)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 2: ORIGINS & GLOBAL ACCELERATOR */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cf_origins_aga' ? '' : 'cf_origins_aga')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-amber-500" />
+                          🚀 Level 2 · Origins &amp; Accelerator
+                        </span>
+                        {expandedCategory === 'cf_origins_aga' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cf_origins_aga' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--cf-border-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('cf_origins_shield')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_origins_shield' ? 'acad-active' : ''}`}
+                          >
+                            2.1 Multi-Origins &amp; Origin Shield (Regional Warehouse)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('cf_vs_aga')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_vs_aga' ? 'acad-active' : ''}`}
+                          >
+                            2.2 CloudFront vs Global Accelerator (VIP Bullet Train)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 3: SECURITY & ACCESS CONTROL */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cf_security_oac' ? '' : 'cf_security_oac')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                          🛡️ Level 3 · OAC &amp; Auth
+                        </span>
+                        {expandedCategory === 'cf_security_oac' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cf_security_oac' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--cf-border-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('cf_oac_waf')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_oac_waf' ? 'acad-active' : ''}`}
+                          >
+                            3.1 Origin Access Control (OAC) &amp; WAF (VIP Secret Door)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('cf_signed_urls')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_signed_urls' ? 'acad-active' : ''}`}
+                          >
+                            3.2 Signed URLs vs Signed Cookies (Movie Ticket vs Wristband)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 4: EDGE COMPUTE & PRICING */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cf_compute_pricing' ? '' : 'cf_compute_pricing')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Activity className="w-3.5 h-3.5 text-sky-500" />
+                          ⚡ Level 4 · Compute &amp; Pricing
+                        </span>
+                        {expandedCategory === 'cf_compute_pricing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cf_compute_pricing' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('cf_functions_lambda')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_functions_lambda' ? 'acad-active' : ''}`}
+                          >
+                            4.1 CloudFront Functions vs Lambda@Edge (Tollbooth vs Chef)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('cf_pricing_invalidation')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cf_pricing_invalidation' ? 'acad-active' : ''}`}
+                          >
+                            4.2 Price Classes &amp; Cache Invalidation (Billboard Purge)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+
+                  <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                    <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                    </span>
+                    Click any edge caching concept to explore real-world analogies, interactive latency calculators, and instant simulator links!
+                  </div>
+                </div>
+
+                {/* Right Active Note Workspace */}
+                <div className="lg:col-span-9 space-y-6 text-left">
+
+                  {/* NOTE 1.1: WHAT IS A CDN & EDGE LOCATIONS */}
+                  {selectedNote === 'cf_what_is' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            1.1 What is a CDN &amp; Edge Locations? (Sub-20ms Global Speed)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('overview')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Concept Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> If your web server lives in Northern Virginia (<code>us-east-1</code>) and a customer in Tokyo or London visits your website, packets must travel 10,000 miles through undersea fiber cables—taking <strong>200 to 400 milliseconds</strong>. **Amazon CloudFront** caches your images, videos, stylesheets, and API responses across **600+ Edge Locations (Point of Presence - PoPs)** worldwide, delivering content to users from their local city in <strong>under 15 milliseconds</strong>!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Local Neighborhood Grocery Store vs Flying to the Central Factory
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If you want a bottle of fresh milk in London, you don&apos;t book a 14-hour flight to the dairy farm in Tokyo every morning (Raw Origin Server). You walk 2 minutes to the <strong>local corner supermarket down your street (CloudFront Edge Location)</strong> and pick up the bottle instantly in 30 seconds!
+                        </p>
+                      </div>
+
+                      {/* Interactive Latency & Egress Savings Calculator */}
+                      <div className="cf-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--cf-border-primary)' }}>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Global Latency &amp; Egress Cost Calculator</span>
+                        
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                              <span>Edge Cache Hit Rate: {nbEdgeHitRate}%</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={nbEdgeHitRate} 
+                              onChange={(e) => setNbEdgeHitRate(parseInt(e.target.value))}
+                              className="accent-indigo-600 w-full"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                              <span>Cross-Continent Origin Latency: {nbOriginLatencyMs} ms</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="50" 
+                              max="400" 
+                              value={nbOriginLatencyMs} 
+                              onChange={(e) => setNbOriginLatencyMs(parseInt(e.target.value))}
+                              className="accent-indigo-600 w-full"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                              <span>Monthly Outbound Data: {nbMonthlyDataGb.toLocaleString()} GB ({(nbMonthlyDataGb / 1000).toFixed(1)} TB)</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="500" 
+                              max="50000" 
+                              step="500" 
+                              value={nbMonthlyDataGb} 
+                              onChange={(e) => setNbMonthlyDataGb(parseInt(e.target.value))}
+                              className="accent-indigo-600 w-full"
+                            />
+                          </div>
+                        </div>
+
+                        {(() => {
+                          const edgeLatency = 12;
+                          const avgLatency = ((nbEdgeHitRate / 100) * edgeLatency) + (((100 - nbEdgeHitRate) / 100) * nbOriginLatencyMs);
+                          const directS3EgressFee = nbMonthlyDataGb * 0.09;
+                          const cfToS3EgressFee = 0.00;
+                          const cfDeliveryCost = nbMonthlyDataGb * 0.085;
+                          const cachedOffloadGb = Math.round(nbMonthlyDataGb * (nbEdgeHitRate / 100));
+                          return (
+                            <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--cf-border-primary)' }}>
+                              <p>Average End-User Response Time: <span className="text-green font-bold">{avgLatency.toFixed(1)} ms</span> (vs {nbOriginLatencyMs} ms)</p>
+                              <p>Bandwidth Served from Edge: <span className="text-blue font-bold">{cachedOffloadGb.toLocaleString()} GB</span> (&lt;15ms)</p>
+                              <p>Without CloudFront (Direct S3 Egress): <span className="text-red font-bold">${directS3EgressFee.toFixed(2)}/mo</span></p>
+                              <p>With CloudFront Delivery: <span className="text-emerald-500 font-bold">${cfDeliveryCost.toFixed(2)}/mo (S3 Fetch: ${cfToS3EgressFee.toFixed(2)})</span></p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 1.2: CACHE HIT VS MISS & TTL */}
+                  {selectedNote === 'cf_hit_miss' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            1.2 Cache Hit vs Miss, TTL Expiration &amp; Cache-Control Headers
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('sim')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Simulator Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> When a user requests a file, CloudFront checks if the Edge PoP already holds a fresh copy (**Cache Hit** &rarr; returns in 10ms). If not (**Cache Miss**), CloudFront fetches the object from your origin (S3/ALB), stores it in cache for the duration of its **TTL (Time-To-Live)**, and returns it to the user.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Office Vending Machine &amp; Fresh Croissant Expiration
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Cache Hit</strong>: You push the button on your office floor vending machine (Edge PoP) and get a cold drink in 3 seconds.
+                          <br />• <strong>Cache Miss</strong>: The drink slot is empty. The vending machine attendant drives to the central soda warehouse (Origin Server), stocks the slot, and hands you the drink.
+                          <br />• <strong>TTL Expiration (Freshness)</strong>: Like a &ldquo;Best Before 24 Hours&rdquo; sticker on a fresh croissant—once 24 hours pass, the vending machine discards the old croissant and fetches a freshly baked one!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Essential HTTP Cache Headers:</h4>
+                          
+                          <div className="p-2.5 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--cf-border-primary)' }}>
+                            <code className="font-bold text-emerald-600">Cache-Control: max-age=86400, public</code>
+                            <p>Instructs CloudFront and client browsers to cache the asset for 24 hours (86,400 seconds).</p>
+                          </div>
+                          <div className="p-2.5 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--cf-border-primary)' }}>
+                            <code className="font-bold text-amber-600">Cache-Control: no-cache, no-store</code>
+                            <p>Instructs CloudFront to never store dynamic payloads (e.g. checkout balances or JWT tokens).</p>
+                          </div>
+                        </div>
+
+                        <div className="cf-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>CloudFront Response Headers</span>
+                          
+                          <div className="space-y-2 text-left text-[10.5px]">
+                            <div className="p-2 rounded flex justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="font-bold text-green">X-Cache: Hit from cloudfront</span>
+                              <span className="text-green">~12 ms</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid #fde68a' }}>
+                              <span className="font-bold text-orange">X-Cache: Miss from cloudfront</span>
+                              <span className="text-orange">~180 ms</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <span className="font-bold text-blue">X-Cache: RefreshHit from cloudfront</span>
+                              <span className="text-blue">Revalidated</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.1: MULTI-ORIGINS & ORIGIN SHIELD */}
+                  {selectedNote === 'cf_origins_shield' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 2 · Origins &amp; Accelerator</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            2.1 Multi-Origin Path Routing &amp; CloudFront Origin Shield
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('origins')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Origins Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> A single CloudFront distribution can route different URL paths to different backend servers (e.g. <code>/images/*</code> to S3 and <code>/api/*</code> to an Application Load Balancer). **Origin Shield** is an additional centralized caching layer placed right in front of your origin that protects your servers from catastrophic traffic spikes during global flash sales or Super Bowl commercials!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Regional Mega-Warehouse Shielding the Master Factory
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If 600 neighborhood corner shops all call the central manufacturing plant at 9:00 AM on Black Friday, the factory phone lines crash (Origin Crash). With <strong>Origin Shield</strong>, a giant regional distribution hub absorbs all 600 orders, consolidates them into 1 master request to the factory, and distributes the goods smoothly!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Origin Shield Key Benefits:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Reduces Origin Load by Up to 95%:</strong> Eliminates redundant origin requests across multiple global Edge PoPs.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Origin Failover Groups:</strong> Automatically flips to a Secondary Origin (e.g. S3 backup bucket) if the Primary ALB returns 500, 502, 503, or 504 errors!</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Consolidated Request Collapse:</strong> Multiple concurrent misses for the exact same video or image collapse into a single origin fetch.</li>
+                          </ul>
+                        </div>
+
+                        <div className="cf-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Behavior Path Mapping Table</span>
+                          
+                          <table className="acad-table text-[10px]">
+                            <thead>
+                              <tr>
+                                <th>Path Pattern</th>
+                                <th>Target Origin</th>
+                                <th>Cache Policy</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><code>/static/*</code></td>
+                                <td>S3 Bucket</td>
+                                <td>CachingOptimized (1 Year TTL)</td>
+                              </tr>
+                              <tr>
+                                <td><code>/api/*</code></td>
+                                <td>ALB / EC2</td>
+                                <td>CachingDisabled (Pass-Through)</td>
+                              </tr>
+                              <tr>
+                                <td><code>/video/*</code></td>
+                                <td>MediaPackage</td>
+                                <td>Origin Shield Enabled</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.2: CLOUDFRONT VS GLOBAL ACCELERATOR */}
+                  {selectedNote === 'cf_vs_aga' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 2 · Origins &amp; Accelerator</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            2.2 Amazon CloudFront vs AWS Global Accelerator (Decision Guide)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('aga')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Global Accelerator Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> **CloudFront** is a Content Delivery Network (CDN) that <strong>caches HTTP/HTTPS content</strong> at edge locations. **AWS Global Accelerator (AGA)** does <strong>NOT cache data</strong>—instead, it provides <strong>2 static Anycast IP addresses</strong> and routes non-HTTP protocols (TCP/UDP, Gaming, VoIP, IoT) onto AWS&apos;s private global fiber network immediately at the closest edge PoP!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Local Corner Bakery vs The VIP Bullet Train
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>CloudFront (Corner Bakery)</strong>: Pre-bakes 10,000 croissants and stores them locally down your street for fast pickup (HTTP Caching).
+                          <br />• <strong>Global Accelerator (VIP Bullet Train)</strong>: Does not store bread. If you must send live live-streamed voice packets or multiplayer gaming coordinates (UDP), it boards a dedicated 300mph private bullet train with zero traffic stops straight to your server!
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Feature</th>
+                              <th>Amazon CloudFront</th>
+                              <th>AWS Global Accelerator</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Primary Purpose</strong></td>
+                              <td>Content Delivery &amp; Edge Caching</td>
+                              <td>Network Routing &amp; Fast Anycast Transit</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Supported Protocols</strong></td>
+                              <td>HTTP, HTTPS, WebSocket</td>
+                              <td>TCP, UDP, HTTP, HTTPS (Layer 3/4/7)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Edge Caching</strong></td>
+                              <td>✅ Yes (Stores static &amp; dynamic files)</td>
+                              <td>❌ No (Pure network packet routing)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>IP Addresses</strong></td>
+                              <td>Dynamic DNS hostnames</td>
+                              <td>2 Static Anycast IPv4 addresses (Whitelistable)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Best For</strong></td>
+                              <td>Websites, Videos, APIs, Static Single Page Apps</td>
+                              <td>Multiplayer Gaming, VoIP, Financial Trading, IoT</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.1: ORIGIN ACCESS CONTROL & WAF */}
+                  {selectedNote === 'cf_oac_waf' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🛡️ Level 3 · OAC &amp; Auth</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            3.1 Origin Access Control (OAC) &amp; AWS WAF Edge Protection
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('security')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Security Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> If users can bypass CloudFront and access your S3 bucket directly, they can steal private files or drive up your direct S3 egress bill. **Origin Access Control (OAC)** locks down your S3 bucket so ONLY authenticated CloudFront requests (using AWS SigV4) are accepted. **AWS WAF** attached to CloudFront blocks SQL injections, cross-site scripting (XSS), and DDoS bots at the edge before they touch your servers!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The VIP Secret Entrance Door &amp; The Club Bouncer
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>OAC (Secret Staff Entrance)</strong>: You lock the front public entrance to the storage warehouse (Disable public S3). The ONLY door open is a private reinforced steel door that only opens when the official security guard with an encrypted badge (CloudFront SigV4) turns the key!
+                          <br />• <strong>AWS WAF (Club Bouncer)</strong>: Stands at the street corner checking everyone&apos;s ID—kicking out troublemakers with fake IDs (SQL injection) before they even reach the door!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>OAC vs Legacy OAI:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Origin Access Control (OAC - Modern):</strong> Supports all S3 buckets in all regions, SSE-KMS encryption, dynamic bucket policies, and AWS SigV4 authentication.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Origin Access Identity (OAI - Legacy):</strong> Older mechanism that does NOT support KMS encryption or newer AWS regions. Always use OAC!</li>
+                          </ul>
+                        </div>
+
+                        <div className="cf-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>S3 OAC Bucket Policy Snippet</span>
+                            <button 
+                              onClick={() => {
+                                const snippet = `{\n  "Effect": "Allow",\n  "Principal": { "Service": "cloudfront.amazonaws.com" },\n  "Action": "s3:GetObject",\n  "Resource": "arn:aws:s3:::my-bucket/*",\n  "Condition": {\n    "StringEquals": {\n      "AWS:SourceArn": "arn:aws:cloudfront::123:distribution/EDFDVBD632BHDS5"\n    }\n  }\n}`;
+                                navigator.clipboard.writeText(snippet);
+                                setCopiedNoteId('oac-policy');
+                                setTimeout(() => setCopiedNoteId(null), 2000);
+                              }}
+                              className="cf-btn text-[10px] p-1 flex items-center gap-1"
+                            >
+                              {copiedNoteId === 'oac-policy' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                          
+                          <pre className="acad-terminal text-[9px] leading-relaxed text-left overflow-x-auto">
+{`{
+  "Effect": "Allow",
+  "Principal": { "Service": "cloudfront.amazonaws.com" },
+  "Action": "s3:GetObject",
+  "Resource": "arn:aws:s3:::my-bucket/*",
+  "Condition": {
+    "StringEquals": {
+      "AWS:SourceArn": "arn:aws:cloudfront::123:distribution/EDFDVBD632BHDS5"
+    }
+  }
+}`}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.2: SIGNED URLS VS SIGNED COOKIES */}
+                  {selectedNote === 'cf_signed_urls' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🛡️ Level 3 · OAC &amp; Auth</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            3.2 Signed URLs vs Signed Cookies (Securing Premium Content)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('security')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Security Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> When selling digital courses, movies, or paid software, you must prevent unauthorized users from sharing links. **Signed URLs** grant access to <strong>1 individual file</strong> (e.g. 1 video download). **Signed Cookies** grant access to <strong>multiple files or an entire directory of streaming chunks</strong> without changing URL query strings.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: A Movie Ticket vs An All-Day Theme Park Wristband
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Signed URL (Movie Ticket)</strong>: You buy a ticket with your seat number that lets you enter Theater Room #4 once to watch 1 movie.
+                          <br />• <strong>Signed Cookie (Theme Park Wristband)</strong>: You put a waterproof wristband on your arm. As you walk around Disneyland, ride attendants inspect your wristband and let you enter 50 different roller coasters and restaurants without buying 50 individual tickets!
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Feature</th>
+                              <th>Signed URLs</th>
+                              <th>Signed Cookies</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Access Scope</strong></td>
+                              <td>Individual single file (e.g. <code>installer.dmg</code>)</td>
+                              <td>Multiple files (e.g. 500 HLS video streaming fragments)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>URL Appearance</strong></td>
+                              <td>Appends long query parameters (<code>?Expires=123&amp;Signature=xyz</code>)</td>
+                              <td>Clean original URLs (Credentials sent in HTTP Cookie header)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Client Compatibility</strong></td>
+                              <td>Works everywhere (Browser, curl, smart TVs, mobile apps)</td>
+                              <td>Requires client browser/app that supports HTTP cookies</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.1: CLOUDFRONT FUNCTIONS VS LAMBDA@EDGE */}
+                  {selectedNote === 'cf_functions_lambda' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">⚡ Level 4 · Compute &amp; Pricing</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            4.1 CloudFront Functions vs Lambda@Edge (Edge Compute)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('overview')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Concept Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Edge compute lets you run lightweight code right next to users instead of on your main backend. **CloudFront Functions** is an ultra-fast JavaScript engine executing in <strong>sub-millisecond (&lt;1ms)</strong> time at 600+ PoPs for lightweight header rewrites and URL redirects. **Lambda@Edge** is a full Node.js/Python serverless environment executing in 10–50ms at Regional Edge Caches for heavy tasks like real-time image resizing or database lookups.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Instant Tollbooth Passport Stamp vs In-Flight Chef Kitchen
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>CloudFront Functions (Tollbooth Passport Stamp)</strong>: As you drive through the border, a mechanical arm stamps your passport in 0.1 seconds (Sub-millisecond header normalization).
+                          <br />• <strong>Lambda@Edge (In-Flight Master Chef)</strong>: A full kitchen onboard the plane that takes 5 minutes to chop vegetables, cook a steak, and plate a gourmet meal (DynamoDB lookups &amp; image resizing).
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Capability</th>
+                              <th>CloudFront Functions ⚡</th>
+                              <th>Lambda@Edge 🧠</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Execution Time</strong></td>
+                              <td>&lt; 1 millisecond (Sub-ms)</td>
+                              <td>Up to 5 seconds (Viewer) / 30 seconds (Origin)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Supported Runtimes</strong></td>
+                              <td>JavaScript (ECMAScript 5.1+)</td>
+                              <td>Node.js &amp; Python</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Network &amp; Body Access</strong></td>
+                              <td>❌ No internet/network or request body access</td>
+                              <td>✅ Full internet, DynamoDB, API calls &amp; body access</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Pricing Cost</strong></td>
+                              <td>1/6th the price of Lambda@Edge ($0.10/M)</td>
+                              <td>$0.60 per million invocations + duration ms</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.2: PRICE CLASSES & INVALIDATION */}
+                  {selectedNote === 'cf_pricing_invalidation' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">⚡ Level 4 · Compute &amp; Pricing</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            4.2 Price Classes &amp; Cache Invalidation (* vs File Paths)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('pricing')}
+                            className="cf-btn cf-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Pricing Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Edge locations in Australia, South America, and India have higher bandwidth transit costs. CloudFront offers **Price Classes** to let you balance latency vs budget. When deploying a new frontend build, **Cache Invalidation** purges old cached assets from all 600+ PoPs within seconds so users see your new release immediately!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Flight Travel Tiers &amp; Tearing Down City Billboards
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Price Class 100</strong>: Only delivery across US, Canada, and Europe (Cheapest flight route).
+                          <br />• <strong>Price Class All</strong>: First-class delivery to every country on Earth including South America and Australia.
+                          <br />• <strong>Invalidation (Billboard Replacement)</strong>: When a concert changes dates, workers instantly tear down all 600 advertising billboards across the city and paste the new date!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Best Practice: Cache Busting with Fingerprinted Hashes</h4>
+                          
+                          <p className="leading-relaxed">
+                            Instead of paying for massive wildcard invalidations (<code>/*</code>), modern frontend bundlers (Vite, Next.js) append content hashes like <code>app.8f3a1c.js</code>. When you deploy, the HTML points to the new hash—giving <strong>100% instant updates with ZERO invalidation fees</strong>!
+                          </p>
+
+                          <div className="acad-takeaway-box">
+                            <strong>💡 Free Tier:</strong> First 1,000 invalidation paths per month are <strong>100% Free</strong>. Afterwards, invalidations cost $0.005 per path.
+                          </div>
+                        </div>
+
+                        <div className="cf-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Price Class Comparison</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <p className="font-bold text-green">PriceClass_100 (Lowest Cost):</p>
+                              <span>USA, Canada, Europe, Israel</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <p className="font-bold text-blue">PriceClass_200 (Standard):</p>
+                              <span>Adds Asia, Africa, Middle East</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <p className="font-bold text-purple">PriceClass_All (Global Top Speed):</p>
+                              <span>All locations worldwide (Adds South America &amp; ANZ)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          )}
+
 
         {/* Tab 1: Concept & Delivery */}
         {activeTab === 'overview' && (

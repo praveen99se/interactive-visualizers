@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
   Cpu,
   Layers,
   Settings,
@@ -11,13 +17,15 @@ import {
   Clock,
   Database,
   RefreshCw,
-  ArrowUpRight
+  ArrowUpRight,
+  Sliders,
+  Zap
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ElasticContainersComparativeView from '../../components/visualizers/ElasticContainersComparativeView';
 import UniqueElasticContainersFeatures from '../../components/visualizers/UniqueElasticContainersFeatures';
 
-type TabType = 'intro' | 'ecs-core' | 'ecs-advanced' | 'eks-k8s' | 'runner-migration' | 'simulation' | 'unique';
+type TabType = 'notebook' | 'intro' | 'ecs-core' | 'ecs-advanced' | 'eks-k8s' | 'runner-migration' | 'simulation' | 'unique';
 
 interface SimTask {
   id: string;
@@ -35,7 +43,16 @@ interface ElasticContainersVisualizerProps {
 }
 
 export default function ElasticContainersVisualizer({ provider = 'aws', setProvider }: ElasticContainersVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('containers_vs_vms');
+  const [expandedCategory, setExpandedCategory] = useState<string>('docker_ecr');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Fargate Calculator State
+  const [nbFargateTasks, setNbFargateTasks] = useState<number>(10);
+  const [nbFargateCpu, setNbFargateCpu] = useState<number>(1);
 
   const isComparative = provider === 'comparative';
 
@@ -600,6 +617,195 @@ export default function ElasticContainersVisualizer({ provider = 'aws', setProvi
         }
         
         /* Glassmorphic card & solver elements */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--ecs-card-border);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--ecs-card-border);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--color-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--ecs-card-border);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--ecs-card-border);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eef2ff;
+          color: #4f46e5;
+          border-left-color: #6366f1;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(99, 102, 241, 0.15);
+          color: #818cf8;
+          border-left-color: #818cf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--ecs-card-border);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #ede9fe;
+          border: 1.5px solid #c4b5fd;
+          color: #6d28d9;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #6366f1;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--ecs-card-border);
+          border-right: 1px solid var(--ecs-card-border);
+          border-bottom: 1px solid var(--ecs-card-border);
+        }
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--ecs-card-border);
+          border-right: 1px solid var(--ecs-card-border);
+          border-bottom: 1px solid var(--ecs-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--ecs-card-border);
+          border-right: 1px solid var(--ecs-card-border);
+          border-bottom: 1px solid var(--ecs-card-border);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--ecs-card-border);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--ecs-card-border);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--ecs-card-border);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--ecs-card-border);
+          color: var(--color-text-secondary);
+        }
+
         .ecs-card {
           background: var(--ecs-card-bg);
           border: 1.5px solid var(--ecs-card-border);
@@ -1017,23 +1223,26 @@ export default function ElasticContainersVisualizer({ provider = 'aws', setProvi
       {/* Navigation tabs */}
       {!isComparative && (
         <div className="ecs-tabs">
+          <button className={`ecs-tb ${activeTab === 'notebook' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4 text-indigo-500" /> 📖 1) Visual Notes &amp; Theories
+          </button>
           <button className={`ecs-tb ${activeTab === 'intro' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <Layers className="w-4 h-4" /> Docker vs VMs
+            <Layers className="w-4 h-4" /> 🐳 2) Docker vs VMs
           </button>
           <button className={`ecs-tb ${activeTab === 'ecs-core' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('ecs-core')}>
-            <Cpu className="w-4 h-4" /> Amazon ECS &amp; ECR
+            <Cpu className="w-4 h-4" /> ⚙️ 3) Amazon ECS &amp; ECR
           </button>
           <button className={`ecs-tb ${activeTab === 'ecs-advanced' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('ecs-advanced')}>
-            <Settings className="w-4 h-4" /> ECS Advanced Patterns
+            <Settings className="w-4 h-4" /> 🔧 4) ECS Advanced Patterns
           </button>
           <button className={`ecs-tb ${activeTab === 'eks-k8s' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('eks-k8s')}>
-            <Database className="w-4 h-4" /> Amazon EKS (Kubernetes)
+            <Database className="w-4 h-4" /> ☸️ 5) Amazon EKS (Kubernetes)
           </button>
           <button className={`ecs-tb ${activeTab === 'runner-migration' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('runner-migration')}>
-            <RefreshCw className="w-4 h-4" /> App Runner &amp; Migrate
+            <RefreshCw className="w-4 h-4" /> ⚡ 6) App Runner &amp; Migrate
           </button>
           <button className={`ecs-tb ${activeTab === 'simulation' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('simulation')}>
-            <Play className="w-4 h-4" /> Auto-Scaling Playground
+            <Play className="w-4 h-4" /> 🎮 7) Auto-Scaling Playground
           </button>
           <button className={`ecs-tb ${activeTab === 'unique' ? 'ecs-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
@@ -1066,6 +1275,621 @@ export default function ElasticContainersVisualizer({ provider = 'aws', setProvi
                   </div>
                 </div>
               )}
+
+              {activeTab === 'notebook' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out', color: 'var(--color-text-primary)' }}>
+          
+          {/* Header Hero Card */}
+          <div className="ecs-card text-left" style={{ borderLeft: '4px solid #6366f1' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> AWS Containers &amp; Kubernetes Notes &amp; Mental Models
+                </h2>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45', marginBottom: 0 }}>
+                  Simplified, beginner-friendly container theories sorted progressively from Docker vs Virtual Machines to Amazon ECR, Amazon ECS, AWS Fargate serverless compute, Amazon EKS Kubernetes, and AWS App Runner.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge" style={{ background: '#ede9fe', borderColor: '#c4b5fd', color: '#6d28d9' }}>🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <Layers className="w-4 h-4 text-indigo-500" />
+                  <span>Container Modules</span>
+                </div>
+
+                {/* LEVEL 1: DOCKER & ECR */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'docker_ecr' ? '' : 'docker_ecr')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                      🐣 Level 1 · Docker &amp; ECR
+                    </span>
+                    {expandedCategory === 'docker_ecr' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'docker_ecr' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--ecs-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('containers_vs_vms')}
+                        className={`acad-dir-item-btn ${selectedNote === 'containers_vs_vms' ? 'acad-active' : ''}`}
+                      >
+                        1.1 Containers vs VMs (Cargo Ship)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('amazon_ecr')}
+                        className={`acad-dir-item-btn ${selectedNote === 'amazon_ecr' ? 'acad-active' : ''}`}
+                      >
+                        1.2 Amazon ECR Registry (Blueprint Vault)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: ECS & FARGATE */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'ecs_fargate' ? '' : 'ecs_fargate')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Cpu className="w-3.5 h-3.5 text-amber-500" />
+                      ⚙️ Level 2 · ECS &amp; Fargate
+                    </span>
+                    {expandedCategory === 'ecs_fargate' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'ecs_fargate' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--ecs-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('ecs_tasks_services')}
+                        className={`acad-dir-item-btn ${selectedNote === 'ecs_tasks_services' ? 'acad-active' : ''}`}
+                      >
+                        2.1 Task Defs, Tasks &amp; Services (Recipe &amp; Manager)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('fargate_vs_ec2')}
+                        className={`acad-dir-item-btn ${selectedNote === 'fargate_vs_ec2' ? 'acad-active' : ''}`}
+                      >
+                        2.2 EC2 Launch Type vs AWS Fargate (Own Vans vs Uber)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: EKS & KARPENTER */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'eks_k8s' ? '' : 'eks_k8s')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Database className="w-3.5 h-3.5 text-emerald-500" />
+                      ☸️ Level 3 · Amazon EKS (Kubernetes)
+                    </span>
+                    {expandedCategory === 'eks_k8s' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'eks_k8s' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--ecs-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('eks_control_plane')}
+                        className={`acad-dir-item-btn ${selectedNote === 'eks_control_plane' ? 'acad-active' : ''}`}
+                      >
+                        3.1 EKS Control Plane &amp; Pods (Airport Tower)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('karpenter_autoscaling')}
+                        className={`acad-dir-item-btn ${selectedNote === 'karpenter_autoscaling' ? 'acad-active' : ''}`}
+                      >
+                        3.2 EKS Karpenter Autoscaler (Tetris Master)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: APP RUNNER & NETWORKING */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'apprunner_net' ? '' : 'apprunner_net')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-purple-500" />
+                      ⚡ Level 4 · App Runner &amp; Networking
+                    </span>
+                    {expandedCategory === 'apprunner_net' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'apprunner_net' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('app_runner')}
+                        className={`acad-dir-item-btn ${selectedNote === 'app_runner' ? 'acad-active' : ''}`}
+                      >
+                        4.1 AWS App Runner (Zero-Infra Tesla Drive)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('ecs_networking')}
+                        className={`acad-dir-item-btn ${selectedNote === 'ecs_networking' ? 'acad-active' : ''}`}
+                      >
+                        4.2 ECS Networking Modes (awsvpc vs Bridge)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any container concept to explore real-world analogies, interactive Fargate pricing calculators, and direct simulator links!
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* NOTE 1.1: CONTAINERS VS VMS */}
+              {selectedNote === 'containers_vs_vms' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Docker &amp; ECR</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        1.1 Containers (Docker) vs Virtual Machines (VMs)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('intro')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Docker vs VMs Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> A **Virtual Machine (VM)** virtualizes the entire hardware—including a heavy operating system kernel (Linux/Windows) that takes gigabytes of RAM and minutes to boot. A **Docker Container** virtualizes only the application layer, sharing the host OS kernel. Containers launch in **sub-seconds**, consume minimal megabytes of RAM, and run identically on your laptop, AWS ECS, or production EKS!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Intermodal Shipping Containers on a Cargo Ship vs Buying Full Cargo Ships
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Virtual Machines (Buying Full Cargo Ships)</strong>: To transport 1 crate of shoes, you build a whole new cargo ship with its own engine room, captain, and crew (Heavy OS Kernel).
+                      <br />• <strong>Docker Containers (Standard Intermodal Shipping Containers)</strong>: You pack your shoes into a standard steel shipping container box. 1,000 different boxes fit onto 1 shared cargo ship (Host OS Kernel). You can load the container onto a truck, train, or ship without repacking the shoes!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Feature</th>
+                          <th>Virtual Machines (EC2)</th>
+                          <th>Docker Containers (ECS/EKS)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--color-text-primary)' }}>Kernel Sharing</strong></td>
+                          <td>Dedicated Guest OS Kernel per VM</td>
+                          <td>Shares Host OS Kernel (Lightweight process isolation)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--color-text-primary)' }}>Startup Time</strong></td>
+                          <td>1 to 5 Minutes</td>
+                          <td>Milliseconds to Seconds</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--color-text-primary)' }}>Resource Footprint</strong></td>
+                          <td>Gigabytes (GBs) of RAM &amp; Disk</td>
+                          <td>Megabytes (MBs) of RAM &amp; Disk</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--color-text-primary)' }}>Portability</strong></td>
+                          <td>Hypervisor dependent (AMI / VHD)</td>
+                          <td>100% Universal Docker Image (Runs anywhere)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 1.2: AMAZON ECR */}
+              {selectedNote === 'amazon_ecr' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Docker &amp; ECR</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        1.2 Amazon ECR (Elastic Container Registry) &amp; Image Scanning
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('ecs-core')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to ECS &amp; ECR Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Once you build a Docker container image on your laptop, you need a secure place in AWS to store and version it. **Amazon ECR** is a fully managed private Docker container registry with integrated IAM permissions, automatic vulnerability scanning for CVE security bugs, and KMS encryption at rest.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Secure Central Architectural Blueprint Vault
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      An architect draws a master house blueprint (Docker Image). Instead of emailing unencrypted PDFs, they store the blueprint in a high-security vault (Amazon ECR). Before any construction worker (ECS/Fargate) pulls the blueprint to build a house, a building inspector (ECR Image Scanner) verifies the blueprint for structural flaws and missing safety beams!
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                      <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>ECR Best Practices:</h4>
+                      
+                      <ul className="list-disc pl-4 space-y-2">
+                        <li><strong style={{ color: 'var(--color-text-primary)' }}>Image Tag Immutability:</strong> Enable immutable tags so production tags (e.g. <code>v1.0.4</code>) can never be accidentally overwritten by another developer build!</li>
+                        <li><strong style={{ color: 'var(--color-text-primary)' }}>Lifecycle Policies:</strong> Automatically clean up old untagged images older than 14 days to prevent storage bloat.</li>
+                        <li><strong style={{ color: 'var(--color-text-primary)' }}>Cross-Region Replication:</strong> Automatically sync container images to a secondary AWS region for multi-region disaster recovery.</li>
+                      </ul>
+                    </div>
+
+                    <div className="ecs-card p-4 rounded-xl flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>ECR Docker Authentication CLI</span>
+                        <button 
+                          onClick={() => {
+                            const snippet = `aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com\n\ndocker build -t my-app .\ndocker tag my-app:latest 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:latest\ndocker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:latest`;
+                            navigator.clipboard.writeText(snippet);
+                            setCopiedNoteId('ecr-cli');
+                            setTimeout(() => setCopiedNoteId(null), 2000);
+                          }}
+                          className="ecs-tb text-[10px] p-1 flex items-center gap-1"
+                        >
+                          {copiedNoteId === 'ecr-cli' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
+                      <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-36">
+{`# 1. Authenticate Docker CLI to ECR
+aws ecr get-login-password --region us-east-1 | \\
+  docker login --username AWS --password-stdin \\
+  1234.dkr.ecr.us-east-1.amazonaws.com
+
+# 2. Tag and Push Image
+docker build -t my-web-app .
+docker push 1234.dkr.ecr.us-east-1.amazonaws.com/my-web-app:v1.0`}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.1: TASK DEFS, TASKS & SERVICES */}
+              {selectedNote === 'ecs_tasks_services' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · ECS &amp; Fargate</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        2.1 Amazon ECS: Task Definitions, Tasks &amp; Managed Services
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('ecs-core')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to ECS Core Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> To run containers in **Amazon ECS (Elastic Container Service)**, you use 3 core building blocks:
+                    <br />• <strong>Task Definition (JSON Blueprint)</strong>: Defines the container image, CPU, memory, environment variables, and IAM roles.
+                    <br />• <strong>Task (Running Instance)</strong>: An active running instance of your Task Definition container.
+                    <br />• <strong>ECS Service (Auto-Healing Manager)</strong>: Maintains your desired number of tasks (e.g. &ldquo;Keep 10 tasks running&rdquo;), connects them to an Application Load Balancer, and automatically replaces crashed tasks!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Restaurant Recipe, Active Dish &amp; Restaurant Floor Manager
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Task Definition (Master Recipe Card)</strong>: Writes down the ingredients (2 vCPUs, 4 GB RAM, Node.js image) to cook a meal.
+                      <br />• <strong>Task (Hot Meal Plated in Kitchen)</strong>: The actual food dish prepared and served to a customer.
+                      <br />• <strong>ECS Service (Restaurant Floor Manager)</strong>: Ensures there are always 5 waiters (Tasks) serving guests. If 1 waiter trips and falls (Task Crash), the manager immediately hires a replacement waiter in 3 seconds!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.2: FARGATE VS EC2 */}
+              {selectedNote === 'fargate_vs_ec2' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · ECS &amp; Fargate</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        2.2 EC2 Launch Type vs AWS Fargate (Serverless Containers)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('simulation')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Scaling Playground
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> When running ECS tasks, you choose how underlying servers are managed:
+                    <br />• <strong>EC2 Launch Type</strong>: You manage the underlying EC2 server instances (patching OS, capacity planning, packing tasks).
+                    <br />• <strong>AWS Fargate (Serverless)</strong>: You manage zero servers! AWS provisions, scales, and patches virtual micro-VMs per task. You pay strictly for the exact vCPU &amp; Memory used by your containers per second!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Owning a Fleet of Delivery Vans vs Uber On-Demand Rides
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>EC2 Launch Type (Owning Delivery Vans)</strong>: You buy 5 delivery vans, pay for insurance, oil changes, and gasoline whether the vans sit empty in the parking lot or drive around.
+                      <br />• <strong>AWS Fargate (Uber On-Demand Rides)</strong>: You hail an Uber when you need a ride, get driven to your destination, pay strictly for the 12-minute trip, and walk away with zero vehicle maintenance headaches!
+                    </p>
+                  </div>
+
+                  {/* Interactive Fargate Cost & Capacity Calculator HUD */}
+                  <div className="ecs-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--ecs-card-border)' }}>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Fargate Serverless Cost Estimator</span>
+                    
+                    <div className="space-y-2 text-xs">
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          <span>Active Container Tasks: {nbFargateTasks} tasks</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="50" 
+                          value={nbFargateTasks} 
+                          onChange={(e) => setNbFargateTasks(parseInt(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                          <span>vCPU per Task: {nbFargateCpu} vCPU</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="0.25" 
+                          max="4" 
+                          step="0.25" 
+                          value={nbFargateCpu} 
+                          onChange={(e) => setNbFargateCpu(parseFloat(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const fargateVcpuRate = 0.04048; // $/vCPU-hour
+                      const fargateMemRate = 0.004445; // $/GB-hour
+                      const memGb = nbFargateCpu * 2; // 1:2 ratio assumption
+                      const hourlyCost = nbFargateTasks * ((nbFargateCpu * fargateVcpuRate) + (memGb * fargateMemRate));
+                      const monthlyCost = hourlyCost * 730;
+                      return (
+                        <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--ecs-card-border)' }}>
+                          <p>Total vCPU Pool: <span className="text-indigo-600 font-bold">{(nbFargateTasks * nbFargateCpu).toFixed(1)} vCPUs</span> | Memory: <span className="text-indigo-600 font-bold">{(nbFargateTasks * memGb).toFixed(1)} GB</span></p>
+                          <p>Fargate Serverless Cost: <span className="text-emerald-500 font-bold">${monthlyCost.toFixed(2)} / month</span> (${hourlyCost.toFixed(3)} / hour)</p>
+                          <p>Operational Benefit: <span className="text-blue font-bold">Zero OS patching, zero EC2 cluster management overhead!</span></p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: EKS CONTROL PLANE & PODS */}
+              {selectedNote === 'eks_control_plane' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">☸️ Level 3 · Amazon EKS</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        3.1 Amazon EKS: Managed Kubernetes Control Plane &amp; Pods
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('eks-k8s')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to EKS Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Kubernetes (K8s)** is the open-source industry standard for container orchestration. Operating Kubernetes yourself requires managing highly complex etcd databases and API master nodes across multiple availability zones. **Amazon EKS (Elastic Kubernetes Service)** provides a 100% compliant managed Kubernetes control plane with automated upgrades, high availability, and native AWS VPC networking!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Master Airport Control Tower &amp; Flight Crew Pods
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>EKS Managed Control Plane (Airport Control Tower)</strong>: AWS runs the radar, air traffic controllers, and runway scheduling tower 24/7 across 3 Availability Zones. You don&apos;t build the control tower; you just fly your planes into the airport!
+                      <br />• <strong>Kubernetes Pod (Flight Crew Capsule)</strong>: A Pod is a small team consisting of a pilot (Main Application Container) and a co-pilot (Sidecar Helper Container) sharing the exact same cockpit seat (IP address &amp; network namespace).
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: EKS KARPENTER */}
+              {selectedNote === 'karpenter_autoscaling' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">☸️ Level 3 · Amazon EKS</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        3.2 EKS Karpenter Autoscaler vs Cluster Autoscaler (CAS)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('eks-k8s')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to EKS Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Traditional Kubernetes Cluster Autoscaler (CAS) uses fixed EC2 Auto Scaling Groups—taking 3 to 5 minutes to launch new nodes when workloads spike. **Karpenter** is an open-source high-performance Kubernetes node autoscaler designed by AWS that bypasses node groups entirely—provisioning the **exact right-sized EC2 instance** for pending pods in <strong>under 15 seconds</strong>!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Smart Tetris Packing Master
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Cluster Autoscaler (CAS)</strong>: When 3 extra suitcases arrive, you are forced to order a giant 50-passenger bus even if you only needed a small minivan.
+                      <br />• <strong>Karpenter (Smart Tetris Master)</strong>: Inspects the exact dimensions of the 3 pending suitcases, instantly orders a custom fitting minivan, packs the suitcases with zero wasted empty space, and cancels the vehicle the second the trip finishes!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: AWS APP RUNNER */}
+              {selectedNote === 'app_runner' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">⚡ Level 4 · App Runner &amp; Net</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        4.1 AWS App Runner: Zero-Infrastructure Container PaaS
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('runner-migration')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to App Runner Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> If you want to deploy a web application without setting up VPC subnets, Application Load Balancers, ECS Clusters, or IAM roles, **AWS App Runner** is the fastest path. Simply point App Runner to your Git repository or ECR container image—and it automatically builds, provisions load balancers, issues SSL certificates, and scales out web instances on demand!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Tesla Self-Driving Autopilot
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of manually shifting gears, checking oil pressure, and navigating city streets (Configuring ECS clusters &amp; ALBs), you get into a self-driving Tesla (AWS App Runner), type your destination address (Git Repo URL), and relax in the backseat as the car automatically drives you straight to production!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: ECS NETWORKING MODES */}
+              {selectedNote === 'ecs_networking' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                    <div>
+                      <span className="acad-hero-badge">⚡ Level 4 · App Runner &amp; Net</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                        4.2 ECS Networking Modes: awsvpc vs Bridge vs Host
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('ecs-advanced')}
+                        className="ecs-tb ecs-on"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Advanced Patterns Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> ECS supports 4 container networking modes:
+                    <br />• <strong>awsvpc (Recommended Default)</strong>: Every task gets its own dedicated Elastic Network Interface (ENI) and private VPC IP address—enabling granular Security Group firewall rules per container!
+                    <br />• <strong>Bridge</strong>: Uses Docker virtual bridges and dynamic host port mapping.
+                    <br />• <strong>Host</strong>: Bypasses Docker networking, binding container ports directly to the EC2 host IP.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Private Hotel Room Telephone Line vs Shared Switchboard Extension
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>awsvpc Mode (Private Dedicated Telephone Line)</strong>: Every hotel guest (Container Task) receives their own direct 10-digit phone number (Private VPC IP). Outside callers can ring room #402 directly without going through a central operator.
+                      <br />• <strong>Bridge Mode (Shared Hotel Switchboard Extension)</strong>: Everyone shares 1 main hotel phone number. You must dial Extension #104 (Dynamic Port Mapping) to reach room #402!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
 
         {/* TAB 1: DOCKER VS VM BASICS */}
         {activeTab === 'intro' && (

@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Zap,
   Shield,
   Key,
   Play,
   SlidersHorizontal,
-  BookOpen,
   Terminal,
   Server,
   Activity,
   Layers,
   Search,
-  Eye,
-  ChevronRight,
-  ChevronDown,
-  Copy,
-  Check
+  Eye
 } from 'lucide-react';
 import NetworkAndEdgeSecurityComparativeView from '../../components/visualizers/NetworkAndEdgeSecurityComparativeView';
 import UniqueNetworkAndEdgeSecurityFeatures from '../../components/visualizers/UniqueNetworkAndEdgeSecurityFeatures';
@@ -34,6 +36,11 @@ interface NetworkAndEdgeSecurityVisualizerProps {
 
 export default function NetworkAndEdgeSecurityVisualizer({ provider = 'aws', setProvider }: NetworkAndEdgeSecurityVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('waf_vs_netfw');
+  const [expandedCategory, setExpandedCategory] = useState<string>('net_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
   const isComparative = provider === 'comparative';
 
@@ -98,18 +105,9 @@ export default function NetworkAndEdgeSecurityVisualizer({ provider = 'aws', set
     setActiveTab(tab === 'firewall' ? 'waf' : tab === 'architect' ? 'notebook' : tab);
   };
 
-  // Visual Architect Academy Notebook states
-  const [selectedNote, setSelectedNote] = useState<string>('waf_webacl');
-  const [expandedCategory, setExpandedCategory] = useState<string>('firewalls_resilience');
-  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
-  const handleCopyCode = (code: string, id: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedNoteId(id);
-    setTimeout(() => {
-      setCopiedNoteId(null);
-    }, 2000);
-  };
+
+
 
   // ==========================================
   // TAB 1 STATE: Topics & Compare Selection
@@ -442,6 +440,252 @@ export default function NetworkAndEdgeSecurityVisualizer({ provider = 'aws', set
       {/* Isolated visualizer styles */}
       <style>{`
         .da-container {
+      .acad-dir-container {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.9)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+        backdrop-filter: blur(12px);
+      }
+      .dark .acad-dir-container {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-dir-header {
+        background: var(--da-tab-bg, rgba(248, 250, 252, 0.9));
+        color: var(--da-text-title, #0f172a);
+        border-bottom: 1.5px solid var(--da-card-border, rgba(226, 232, 240, 0.8));
+        padding: 14px 16px;
+        font-weight: 800;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dark .acad-dir-header {
+        background: rgba(15, 23, 42, 0.9);
+        color: #ffffff;
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-dir-folder-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--da-card-border, rgba(226, 232, 240, 0.6));
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--da-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .dark .acad-dir-folder-btn {
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+        color: #94a3b8;
+      }
+      .acad-dir-folder-btn:hover {
+        background: rgba(241, 245, 249, 0.6);
+      }
+      .dark .acad-dir-folder-btn:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+      .acad-dir-item-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--da-text-muted, #475569);
+        border: none;
+        border-left: 3px solid transparent;
+        background: transparent;
+        transition: all 0.15s ease;
+        text-align: left;
+        cursor: pointer;
+      }
+      .dark .acad-dir-item-btn {
+        color: #94a3b8;
+      }
+      .acad-dir-item-btn:hover {
+        background: rgba(241, 245, 249, 0.6);
+        color: var(--da-text-title, #0f172a);
+      }
+      .dark .acad-dir-item-btn:hover {
+        background: rgba(30, 41, 59, 0.6);
+        color: #f1f5f9;
+      }
+      .acad-dir-item-btn.acad-active {
+        background: rgba(2, 132, 199, 0.08);
+        color: #0284c7;
+        border-left-color: #0ea5e9;
+        font-weight: 800;
+      }
+      .dark .acad-dir-item-btn.acad-active {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border-left-color: #38bdf8;
+      }
+      .acad-detail-card {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.95)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        backdrop-filter: blur(16px);
+      }
+      .dark .acad-detail-card {
+        background: rgba(15, 23, 42, 0.75);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-hero-badge {
+        background: rgba(2, 132, 199, 0.08);
+        border: 1.5px solid rgba(2, 132, 199, 0.3);
+        color: #0284c7;
+        font-size: 9.5px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3.5px 10px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .dark .acad-hero-badge {
+        background: rgba(56, 189, 248, 0.15);
+        border-color: rgba(56, 189, 248, 0.3);
+        color: #38bdf8;
+      }
+      .acad-plain-english {
+        background: rgba(2, 132, 199, 0.07);
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: var(--da-text-title, var(--sl-text-title, #0f172a));
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-plain-english {
+        background: rgba(56, 189, 248, 0.12);
+        border-left-color: #38bdf8;
+        color: #f1f5f9;
+        border-top-color: rgba(51, 65, 85, 0.6);
+        border-right-color: rgba(51, 65, 85, 0.6);
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12px;
+        line-height: 1.65;
+        color: var(--da-text-title, var(--sl-text-title, #0f172a));
+      }
+      .dark .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #f1f5f9;
+      }
+      .acad-advice-box {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.8)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        color: var(--da-text-muted, var(--sl-text-muted, #64748b));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
+      .dark .acad-advice-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.06);
+        border-left: 4px solid #ef4444;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 16px 0;
+        font-size: 11.5px;
+        line-height: 1.55;
+        color: var(--da-text-muted, var(--sl-text-muted, #64748b));
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.12);
+        color: #fca5a5;
+      }
+      .acad-takeaway-box {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.9)));
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--da-text-muted, var(--sl-text-muted, #475569));
+        font-weight: 600;
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-takeaway-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-left-color: #38bdf8;
+        color: #cbd5e1;
+        border-top-color: rgba(51, 65, 85, 0.6);
+        border-right-color: rgba(51, 65, 85, 0.6);
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+      }
+      .acad-table th {
+        background: var(--da-table-th-bg, var(--sl-table-th-bg, #f8fafc));
+        color: var(--da-table-th-text, var(--sl-table-th-text, #475569));
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1.5px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+        text-align: left;
+      }
+      .dark .acad-table th {
+        background: rgba(15, 23, 42, 0.8);
+        color: #94a3b8;
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+        color: var(--da-table-td-text, var(--sl-table-td-text, #334155));
+      }
+      .dark .acad-table td {
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-table tr:last-child td {
+        border-bottom: none;
+      }
+
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
           color: var(--da-text);
           background-color: var(--da-bg);
@@ -967,29 +1211,31 @@ export default function NetworkAndEdgeSecurityVisualizer({ provider = 'aws', set
 
       {/* Tab navigation bar */}
       {!isComparative && (
+        <Translate>
         <div className="da-tabs">
           <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+            <BookOpen className="w-4 h-4 text-indigo-500" /> 📖 1) Visual Notes &amp; Theories
           </button>
           <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <BookOpen className="w-4 h-4" /> 1. Edge Scopes Comparative Grid
+            <SlidersHorizontal className="w-4 h-4 text-sky-500" /> 🎯 2) Edge Scopes Comparative Grid
           </button>
           <button className={`da-tb ${activeTab === 'acm' ? 'da-on' : ''}`} onClick={() => setActiveTab('acm')}>
-            <Key className="w-4 h-4" /> 2. ACM Certificates &amp; HTTPS redirects
+            <Key className="w-4 h-4" /> 🔒 3) ACM Certificates &amp; HTTPS
           </button>
           <button className={`da-tb ${activeTab === 'waf' ? 'da-on' : ''}`} onClick={() => setActiveTab('waf')}>
-            <Layers className="w-4 h-4" /> 3. AWS WAF Rules &amp; API Gateways
+            <Layers className="w-4 h-4" /> 🛡️ 4) AWS WAF Rules &amp; Gateways
           </button>
           <button className={`da-tb ${activeTab === 'ddos' ? 'da-on' : ''}`} onClick={() => setActiveTab('ddos')}>
-            <Activity className="w-4 h-4" /> 4. DDoS Resilience E2E Map
+            <Activity className="w-4 h-4" /> 🌊 5) DDoS Resilience &amp; Shield
           </button>
           <button className={`da-tb ${activeTab === 'scanners' ? 'da-on' : ''}`} onClick={() => setActiveTab('scanners')}>
-            <Search className="w-4 h-4" /> 5. Threat Intelligence &amp; CVE Scans
+            <Search className="w-4 h-4" /> 👁️ 6) Threat Intel &amp; Inspector Scans
           </button>
           <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
           </button>
         </div>
+      </Translate>
       )}
 
       {isComparative && (
@@ -1007,461 +1253,623 @@ export default function NetworkAndEdgeSecurityVisualizer({ provider = 'aws', set
       {/* ========================================================================= */}
       {/* TAB 1: EDGE SCOPES MATRIX                                                 */}
       {/* ========================================================================= */}
-      {activeTab === 'notebook' && (
-        <div className="space-y-6 animate-fadeIn text-left">
+            {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--da-text)' }}>
           
-          <div className="da-card text-left">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
-              <Shield className="w-5 h-5 text-indigo-600" /> Network &amp; Edge Security Architect Notes
-            </h2>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
-              This guide covers WAF WebACL inspection logic, volumetric Shield DDoS mitigation, TLS certificate management via ACM, and API Gateway access control to secure external endpoints.
-            </p>
+          {/* Header Hero Card */}
+          <div className="da-card text-left" style={{ borderLeft: '4px solid #4f46e5', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-indigo-600" /> AWS Network &amp; Edge Security Notes &amp; Mental Models
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--da-text-muted)' }}>
+                  Simplified, beginner-friendly security theories sorted progressively from WAF vs Network Firewall vs Security Groups to SSL/TLS via ACM, Volumetric DDoS Protection (AWS Shield), Suricata Inspection, Firewall Manager, GuardDuty AI Threat Detection, and Amazon Inspector CVE Scans.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Left Sidebar Category Explorer */}
             <div className="lg:col-span-3 space-y-4 text-left">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">VPC Directory Tree:</span>
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--da-text-muted)' }}>Curriculum Directory:</span>
               
               <div className="acad-dir-container">
                 <div className="acad-dir-header">
-                  <BookOpen className="w-4 h-4 text-blue-400" />
-                  <span>Module Explorer</span>
+                  <Shield className="w-4 h-4 text-indigo-600" />
+                  <span>Security Modules</span>
                 </div>
 
-                {/* CATEGORY 1: FIREWALLS & RESILIENCE */}
+                {/* LEVEL 1: PERIMETERS & CERTIFICATES */}
                 <div>
                   <button 
-                    onClick={() => setExpandedCategory(expandedCategory === 'firewalls_resilience' ? '' : 'firewalls_resilience')}
+                    onClick={() => setExpandedCategory(expandedCategory === 'net_fundamentals' ? '' : 'net_fundamentals')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Shield className="w-3.5 h-3.5 text-blue-500" />
-                      1. Firewalls &amp; Resilience
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-500" />
+                      🐣 Level 1 · Perimeters &amp; SSL
                     </span>
-                    {expandedCategory === 'firewalls_resilience' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    {expandedCategory === 'net_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
-                  {expandedCategory === 'firewalls_resilience' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                  {expandedCategory === 'net_fundamentals' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('waf_vs_netfw')}
+                        className={`acad-dir-item-btn ${selectedNote === 'waf_vs_netfw' ? 'acad-active' : ''}`}
+                      >
+                        1.1 WAF vs NetFW vs SecGroups
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('acm_ssl_tls')}
+                        className={`acad-dir-item-btn ${selectedNote === 'acm_ssl_tls' ? 'acad-active' : ''}`}
+                      >
+                        1.2 ACM Certificates &amp; HTTPS
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: L7 WAF & DDOS PROTECTION */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'l7_ddos' ? '' : 'l7_ddos')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-sky-500" />
+                      ⚙️ Level 2 · WAF &amp; DDoS Shield
+                    </span>
+                    {expandedCategory === 'l7_ddos' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'l7_ddos' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
                         onClick={() => setSelectedNote('waf_webacl')}
                         className={`acad-dir-item-btn ${selectedNote === 'waf_webacl' ? 'acad-active' : ''}`}
                       >
-                        WAF WebACL Rules
+                        2.1 WAF WebACL &amp; SQLi/XSS Rules
                       </button>
                       <button 
-                        onClick={() => setSelectedNote('shield_ddos')}
-                        className={`acad-dir-item-btn ${selectedNote === 'shield_ddos' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('aws_shield')}
+                        className={`acad-dir-item-btn ${selectedNote === 'aws_shield' ? 'acad-active' : ''}`}
                       >
-                        DDoS: Shield Std vs Adv
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* CATEGORY 2: CRYPTOGRAPHY & INGRESS */}
-                <div>
-                  <button 
-                    onClick={() => setExpandedCategory(expandedCategory === 'crypto_ingress' ? '' : 'crypto_ingress')}
-                    className="acad-dir-folder-btn"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5 text-blue-500" />
-                      2. Cryptography &amp; Ingress
-                    </span>
-                    {expandedCategory === 'crypto_ingress' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </button>
-                  {expandedCategory === 'crypto_ingress' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
-                      <button 
-                        onClick={() => setSelectedNote('acm_lifecycle')}
-                        className={`acad-dir-item-btn ${selectedNote === 'acm_lifecycle' ? 'acad-active' : ''}`}
-                      >
-                        ACM TLS Certificate Lifecycle
-                      </button>
-                      <button 
-                        onClick={() => setSelectedNote('apigw_endpoints')}
-                        className={`acad-dir-item-btn ${selectedNote === 'apigw_endpoints' ? 'acad-active' : ''}`}
-                      >
-                        API Gateway Endpoints
+                        2.2 AWS Shield Std vs Advanced
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* CATEGORY 3: INTELLIGENT SCANNERS */}
+                {/* LEVEL 3: NETWORK FIREWALL & FIREWALL MANAGER */}
                 <div>
                   <button 
-                    onClick={() => setExpandedCategory(expandedCategory === 'security_audits' ? '' : 'security_audits')}
+                    onClick={() => setExpandedCategory(expandedCategory === 'netfw_fms' ? '' : 'netfw_fms')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Search className="w-3.5 h-3.5 text-blue-500" />
-                      3. Security Audits &amp; ML
+                      <Server className="w-3.5 h-3.5 text-purple-500" />
+                      🏛️ Level 3 · VPC Firewall &amp; FMS
                     </span>
-                    {expandedCategory === 'security_audits' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    {expandedCategory === 'netfw_fms' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
-                  {expandedCategory === 'security_audits' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                  {expandedCategory === 'netfw_fms' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
-                        onClick={() => setSelectedNote('intelligent_scanners')}
-                        className={`acad-dir-item-btn ${selectedNote === 'intelligent_scanners' ? 'acad-active' : ''}`}
+                        onClick={() => setSelectedNote('network_firewall')}
+                        className={`acad-dir-item-btn ${selectedNote === 'network_firewall' ? 'acad-active' : ''}`}
                       >
-                        GuardDuty, Inspector &amp; Macie
+                        3.1 Network Firewall &amp; Suricata
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('firewall_manager')}
+                        className={`acad-dir-item-btn ${selectedNote === 'firewall_manager' ? 'acad-active' : ''}`}
+                      >
+                        3.2 AWS Firewall Manager (FMS)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: THREAT INTEL & CVE SCANS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'threat_cve' ? '' : 'threat_cve')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                      🛡️ Level 4 · GuardDuty &amp; Inspector
+                    </span>
+                    {expandedCategory === 'threat_cve' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'threat_cve' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('guardduty_ai')}
+                        className={`acad-dir-item-btn ${selectedNote === 'guardduty_ai' ? 'acad-active' : ''}`}
+                      >
+                        4.1 GuardDuty AI Threat Detection
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('inspector_cve')}
+                        className={`acad-dir-item-btn ${selectedNote === 'inspector_cve' ? 'acad-active' : ''}`}
+                      >
+                        4.2 Inspector Vulnerability Scans
                       </button>
                     </div>
                   )}
                 </div>
 
               </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--da-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any security topic to explore real-world analogies, WAF WebACL rules, and copyable JSON firewall policies!
+              </div>
             </div>
 
-            {/* Right Note Detail Container */}
+            {/* Right Active Note Workspace */}
             <div className="lg:col-span-9 space-y-6 text-left">
-              
-              {/* ========================================================================= */}
-              {/* CONCEPT 1: WAF WEBACL RULES                                               */}
-              {/* ========================================================================= */}
-              {selectedNote === 'waf_webacl' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+
+              {/* NOTE 1.1: WAF VS NETFW VS SECURITY GROUPS */}
+              {selectedNote === 'waf_vs_netfw' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Layer-7 Application Protection</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS WAF WebACL Rules &amp; Custom Filtering</h3>
+                      <span className="acad-hero-badge">🐣 Level 1 · Perimeters &amp; SSL</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.1 AWS WAF vs AWS Network Firewall vs Security Groups
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
-                        onClick={() => setActiveTab('waf')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        onClick={() => setActiveTab('intro')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <Layers className="w-3.5 h-3.5" /> Go to WAF Simulator
+                        <Zap className="w-3.5 h-3.5" /> Go to Edge Scopes Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 1 of 5</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    AWS WAF (Web Application Firewall) operates at Layer 7 (HTTP/HTTPS) of the OSI model to inspect inbound traffic payloads. It allows you to configure a **Web Access Control List (WebACL)** containing custom and AWS-managed rules to filter malicious payloads before they hit public load balancers or API gateway targets.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Rule Evaluation Pipeline</strong>
-                        WAF rules inside a WebACL are evaluated sequentially based on priority. If a request matches a rule, the configured action (**Allow**, **Block**, **Count**, or **CAPTCHA**) is applied. Count rules allow auditing traffic without blocking it, useful for testing new rules in production.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Custom Rule Types</strong>
-                        - **IP Sets**: Explicit blacklists or whitelists (CIDR notation).
-                        - **String Matching**: Inspects request parameters, headers, cookies, or request bodies for specific strings or regex patterns.
-                        - **SQL Injection (SQLi) Detection**: Parsers inspect payloads for database manipulation signatures (e.g. `' OR '1'='1`).
-                        - **Geo-Matching**: Restricts traffic by country codes via IP lookup tables.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Sliding Window Rate Limiting</strong>
-                        Rate-based rules track request volume from specific IPs over a sliding 5-minute window. If requests exceed the threshold (e.g., 100 requests per 5 minutes), WAF automatically blocks the source IP until the rate drops below the limit.
-                      </div>
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Shield className="w-3.5 h-3.5 text-indigo-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Cloud applications face threats at different network OSI layers: HTTP web exploits (Layer 7), unauthorized IP port scans (Layer 4), and malicious outbound data exfiltration. Different firewall layers are required to block malicious traffic before it reaches servers!
+                      </p>
                     </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws wafv2 create-ip-set \\\n  --name BlockedIPs \\\n  --scope REGIONAL \\\n  --ip-address-version IPV4 \\\n  --addresses 198.51.100.44/32 203.0.113.0/24`, 'cli_waf')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_waf' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_waf' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_waf' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Create WAF IP Set (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws wafv2 create-ip-set \\
-  --name BlockedIPs \\
-  --scope REGIONAL \\
-  --ip-address-version IPV4 \\
-  --addresses 198.51.100.44/32 203.0.113.0/24`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Architect's Tip:</strong> Always deploy WAF rules in **Count** mode first to verify that legitimate customer transactions are not blocked by false positives.
-                      </div>
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Terminal className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Protects web applications against SQL injections, Cross-Site Scripting (XSS), bot scrapers, port scanning, and unauthorized SSH/RDP access attempts at the cloud edge and VPC perimeters!
+                      </p>
                     </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>AWS WAF (Layer 7 Web Application Firewall)</strong>: Inspects HTTP/HTTPS requests (URLs, headers, cookies, query strings) attached to CloudFront, ALB, or API Gateway.
+                    <br />• <strong>AWS Network Firewall (Layer 3/4/7 VPC Gateway)</strong>: Stateful &amp; stateless packet inspection at the VPC boundary (Suricata IDS/IPS engine).
+                    <br />• <strong>Security Groups (Layer 4 Stateful Host Firewall)</strong>: Virtual firewalls attached directly to EC2 instances or ENIs controlling IP addresses and ports (e.g. Allow Port 443).
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport Security Check vs Highway Toll Gate vs Room Keycard
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>AWS WAF (Airport TSA Luggage Scanner)</strong>: Opens every bag (HTTP payload) to make sure nobody is carrying liquid explosives or weapons (`SQL Injection / XSS`).
+                      <br />• <strong>AWS Network Firewall (Border Control Toll Gate)</strong>: Inspects every car entering or leaving the state highway, checking license plates and cargo manifests.
+                      <br />• <strong>Security Groups (Hotel Room Door Lock)</strong>: Only lets people holding keycard #402 (Authorized IP Address &amp; Port) open the specific room door!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Firewall Primitive</th>
+                          <th>OSI Layer</th>
+                          <th>Attachment Target</th>
+                          <th>Primary Specialty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>AWS WAF</strong></td>
+                          <td>Layer 7 (Application)</td>
+                          <td>CloudFront, ALB, API Gateway, AppSync</td>
+                          <td>SQLi, XSS, Rate-limiting, Bot Control</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Network Firewall</strong></td>
+                          <td>Layer 3, 4 &amp; 7 (VPC Boundary)</td>
+                          <td>VPC Subnet / Internet Gateway Route</td>
+                          <td>Deep Packet Inspection, Domain Filtering</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Security Group</strong></td>
+                          <td>Layer 4 (Transport)</td>
+                          <td>EC2 ENI, RDS, Lambda VPC Interface</td>
+                          <td>Stateful IP &amp; Port allow rules</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Real World Production Scenario */}
+                  <div className="p-4 rounded-xl border font-sans text-xs space-y-1.5" style={{ background: 'var(--da-card-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <span className="font-bold uppercase tracking-wider text-[10px] text-indigo-500 block">🚀 Real-World Production Defense Architecture:</span>
+                    <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                      An e-commerce application uses <strong>AWS WAF</strong> attached to CloudFront to block SQL injection attempts on `/checkout`. Traffic passes into the VPC through <strong>AWS Network Firewall</strong> to block outbound connections to known malware C2 domains, while <strong>Security Groups</strong> restrict RDS database access exclusively to incoming connections from the App Server security group on port 5432!
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 2: SHIELD STANDARD VS ADVANCED                                    */}
-              {/* ========================================================================= */}
-              {selectedNote === 'shield_ddos' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              {/* NOTE 1.2: ACM & HTTPS REDIRECTS */}
+              {selectedNote === 'acm_ssl_tls' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Volumetric DDoS Protection</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Shield Standard vs. Shield Advanced</h3>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('ddos')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Activity className="w-3.5 h-3.5" /> Go to DDoS Map
-                      </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 2 of 5</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    DDoS (Distributed Denial of Service) attacks exhaust network bandwidth or compute resources. AWS provides continuous monitoring at the Edge via AWS Shield, structured in standard and advanced tiers.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. AWS Shield Standard</strong>
-                        Automatically enabled at no extra cost on all AWS resources. It protects against common Layer 3 (e.g. SYN floods) and Layer 4 (e.g. UDP reflection) volumetric attacks, utilizing inline scrubbing systems to drop spoofed packets before they enter the regional subnet.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. AWS Shield Advanced</strong>
-                        A paid subscription offering comprehensive enterprise-tier security:
-                        - **24/7 SRT Team:** Direct escalation to the AWS Shield Response Team to write custom rules during an active attack.
-                        - **Financial Protection:** Mitigates scaling costs incurred due to auto-scaling events triggered by volumetric spikes on ALB/EIP.
-                        - **Health-based Detection:** Integrates with Route 53 health checks to initiate failovers during quiet, low-rate volumetric attacks.
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws shield create-protection \\\n  --name ALB-DDoS-Mitigation \\\n  --resource-arn arn:aws:elasticloadbalancing:eu-west-1:123456789012:loadbalancer/app/corporate-alb/9876abc`, 'cli_shield')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_shield' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_shield' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_shield' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Enable Shield Advanced Protection (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws shield create-protection \\
-  --name ALB-DDoS-Mitigation \\
-  --resource-arn arn:aws:elasticloadbalancing:eu-west-1:123456789012:loadbalancer/app/corporate-alb/9876`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Architect's Tip:</strong> Shield Standard only handles Layer 3 and 4 network attacks. To mitigate Layer 7 application floods (HTTP Floods), you must deploy AWS WAF with rate-limiting rules.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ========================================================================= */}
-              {/* CONCEPT 3: ACM TLS LIFECYCLE                                              */}
-              {/* ========================================================================= */}
-              {selectedNote === 'acm_lifecycle' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="acad-hero-badge">Secure Cryptography &amp; PKI</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">ACM Certificate Provisioning, Redirects &amp; Audits</h3>
+                      <span className="acad-hero-badge">🐣 Level 1 · Perimeters &amp; SSL</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.2 AWS Certificate Manager (ACM) &amp; Automated SSL/TLS Renewal
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('acm')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <Key className="w-3.5 h-3.5" /> Go to ACM Simulator
+                        <Zap className="w-3.5 h-3.5" /> Go to ACM Certificates Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 3 of 5</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    AWS Certificate Manager (ACM) manages the lifecycle of public/private SSL/TLS certificates. Using ACM, developers can provision secure endpoints with DNS validation and enforce HTTPS port redirection at the Load Balancer layer.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Requested vs. Imported Certificates</strong>
-                        - **Requested Certificates:** Validated via DNS (CNAME records) or Email. Renewal is fully automated by AWS, completing silently 60 days before expiration.
-                        - **Imported Certificates:** Certificates purchased from 3rd-party Certificate Authorities (CAs). ACM cannot manage renewals for imported certificates. They must be tracked manually, triggering alarms via **AWS Config managed check rules**.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Port Redirection (Port 80 to 443)</strong>
-                        A key security best practice is to configure ALB HTTP listener rules on Port 80 to issue a `HTTP 301 Permanent Redirect` pointing to Port 443. The secure TLS session is terminated at the ALB using the ACM certificate, allowing the ALB to inspect headers and route unencrypted HTTP traffic to EC2 targets over the private subnet.
-                      </div>
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Shield className="w-3.5 h-3.5 text-indigo-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        HTTPS encrypts web traffic between browsers and servers. Managing SSL/TLS certificates manually involves paying third-party certificate authorities, uploading CRT/KEY files, and remembering to manually renew them before expiration warnings break production sites!
+                      </p>
                     </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws acm request-certificate \\\n  --domain-name app.corporate.internal \\\n  --validation-method DNS \\\n  --subject-alternative-names *.corporate.internal`, 'cli_acm')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_acm' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_acm' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_acm' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Request ACM Certificate (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws acm request-certificate \\
-  --domain-name app.corporate.internal \\
-  --validation-method DNS \\
-  --subject-alternative-names *.corporate.internal`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Compliance Tip:</strong> Enable the AWS Config managed rule `acm-certificate-expiration-check` with a parameter like `daysToExpiration=30` to alert security teams when imported certs near expiration.
-                      </div>
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Terminal className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        <strong>AWS Certificate Manager (ACM)</strong> provisions, manages, and **automatically renews public SSL/TLS certificates for FREE**! Certificates deploy directly to CloudFront distributions and Application Load Balancers with zero maintenance.
+                      </p>
                     </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>DNS Validation</strong>: ACM adds a CNAME record to Route 53 to instantly verify domain ownership.
+                    <br />• <strong>Automatic Zero-Downtime Renewal</strong>: ACM automatically renews certificates 60 days before expiration without developer intervention or site downtime!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Automated Passport Renewal Office
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of standing in a 4-hour line at the DMV every year to renew your physical ID card (`Manual Certificate Renewal`), a digital passport office (`ACM`) automatically prints and mails you a fresh valid ID card 2 months before your current card expires!
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 4: API GATEWAY ENDPOINTS                                          */}
-              {/* ========================================================================= */}
-              {selectedNote === 'apigw_endpoints' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              {/* NOTE 2.1: WAF WEBACL & RULES */}
+              {selectedNote === 'waf_webacl' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">API Ingress Architectures</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon API Gateway Endpoint Types &amp; Associations</h3>
+                      <span className="acad-hero-badge">⚙️ Level 2 · WAF &amp; DDoS Shield</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.1 AWS WAF WebACL, Managed Rules &amp; Rate Limiting
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('waf')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <Layers className="w-3.5 h-3.5" /> Go to WAF Simulator
+                        <Zap className="w-3.5 h-3.5" /> Go to WAF Rules Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 4 of 5</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Amazon API Gateway acts as a secure front door for backend microservices. Depending on where your users reside, you must choose between three distinct endpoint architectures:
-                  </p>
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> An **AWS WAF WebACL** contains prioritized inspection rules:
+                    <br />• <strong>AWS Managed Rulesets</strong>: Pre-configured threat intelligence from AWS Security (Core Rule Set, SQLi Rule Set, Known Bad Inputs).
+                    <br />• <strong>Rate-Based Rules</strong>: Tracks request counts per IP address over a 5-minute sliding window (e.g. block IP if requests &gt; 2,000 in 5 mins).
+                    <br />• <strong>Custom Rules</strong>: Block specific country IP ranges (Geo-match) or custom HTTP headers (`X-Custom-Secret`).
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Edge-Optimized Endpoints</strong>
-                        Best for geographically distributed clients. Traffic is routed through Amazon's global **CloudFront Edge points of presence**. Request caching and TLS handshakes are processed near the client to minimize latency. 
-                        *Note:* The ACM certificate associated with the API Gateway custom domain must reside in the `us-east-1` region.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Regional Endpoints</strong>
-                        Best for regional services, like clients or serverless processes running in the same AWS region. Regional endpoints bypass CloudFront distribution overhead. 
-                        *Note:* ACM certificates must reside in the same local target region.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Private Endpoints</strong>
-                        Exposes APIs exclusively inside a Private VPC. Access is routed using **Interface VPC Endpoints (VPCE)** powered by AWS PrivateLink. Legitimate traffic remains strictly private on the AWS fiber network, bypassing the public internet entirely.
-                      </div>
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Nightclub Bouncer Checklist &amp; Speedometer
                     </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A nightclub bouncer stands at the door holding a checklist (`WebACL Rules`). Rule #1: Check photo ID for fake passports (`AWS Managed Rules`). Rule #2: If someone tries to run through the door 10 times in 10 seconds (`Rate-Based Rule`), lock them out for 15 minutes!
+                    </p>
+                  </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws apigatewayv2 create-domain-name \\\n  --domain-name api.corporate.internal \\\n  --domain-name-configurations CertificateArn=arn:aws:acm:eu-west-1:123456789012:certificate/wildcard-cert,EndpointType=REGIONAL`, 'cli_apigw')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_apigw' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_apigw' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_apigw' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Configure API Gateway Custom Domain (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws apigatewayv2 create-domain-name \\
-  --domain-name api.corporate.internal \\
-  --domain-name-configurations \\
-    CertificateArn=arn:aws:acm:eu-west-1:123... \\
-    EndpointType=REGIONAL`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Architect's Tip:</strong> Attach AWS WAF to Edge-Optimized and Regional endpoints to prevent volumetric request spikes from draining API Gateway concurrent execution limits.
-                      </div>
+                  {/* Copyable WAF Rate Limit Rule Snippet */}
+                  <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--da-card-bg)' }}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--da-text-muted)' }}>WAF Rate-Limiting Rule JSON Snippet</span>
+                      <button 
+                        onClick={() => {
+                          const snippet = `{\n  "Name": "RateLimit2000PerIP",\n  "Priority": 1,\n  "Statement": {\n    "RateBasedStatement": {\n      "Limit": 2000,\n      "AggregateKeyType": "IP"\n    }\n  },\n  "Action": { "Block": {} }\n}`;
+                          navigator.clipboard.writeText(snippet);
+                          setCopiedNoteId('waf-rate-rule');
+                          setTimeout(() => setCopiedNoteId(null), 2000);
+                        }}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'waf-rate-rule' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
                     </div>
+                    <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-24">
+{`{
+  "Name": "RateLimit2000PerIP",
+  "Priority": 1,
+  "Statement": {
+    "RateBasedStatement": {
+      "Limit": 2000,
+      "AggregateKeyType": "IP"
+    }
+  },
+  "Action": { "Block": {} }
+}`}
+                    </pre>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 5: INTELLIGENT SCANNERS                                           */}
-              {/* ========================================================================= */}
-              {selectedNote === 'intelligent_scanners' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              {/* NOTE 2.2: AWS SHIELD */}
+              {selectedNote === 'aws_shield' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Threat Intel &amp; Machine Learning</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">GuardDuty, Inspector &amp; Macie Security Audits</h3>
+                      <span className="acad-hero-badge">⚙️ Level 2 · WAF &amp; DDoS Shield</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.2 AWS Shield Standard vs AWS Shield Advanced (DDoS Protection)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('ddos')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to DDoS Resilience Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Shield className="w-3.5 h-3.5 text-indigo-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Distributed Denial of Service (DDoS) attacks flood servers with terabytes of junk traffic (SYN floods, UDP reflection attacks) to crash websites. **AWS Shield** mitigates volumetric network attacks at the global AWS edge.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Terminal className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Prevents application downtime during massive multithreaded attacks. **Shield Advanced** provides 24/7 access to the AWS Shield Response Team (SRT) and **DDoS Cost Protection** (reimbursing auto-scaling bills caused by attack spikes)!
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>AWS Shield Standard (FREE)</strong>: Automatically active on all AWS services, protecting against common Layer 3/4 network floods (SYN/ACK floods).
+                    <br />• <strong>AWS Shield Advanced ($3,000/mo)</strong>: Enterprise protection for CloudFront, Route 53, ALB, and Elastic IPs with 24/7 SRT incident response and bill refund insurance!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Standard Weatherproof Roof vs Flood Control Dam &amp; Fire Squad
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Shield Standard (Weatherproof Roof)</strong>: Built into every house by default to handle ordinary rainstorms (`Standard Network Noise`).
+                      <br />• <strong>Shield Advanced (Flood Barrier &amp; 24/7 On-Call Fire Brigade)</strong>: When a massive 100-year hurricane hits (`1 Tbps Botnet Attack`), a dedicated SWAT team rushes in with heavy water pumps to protect your building while paying for any water damage repairs!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: NETWORK FIREWALL */}
+              {selectedNote === 'network_firewall' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · VPC Firewall &amp; FMS</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.1 AWS Network Firewall &amp; Suricata IPS Rule Engine
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('waf')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to WAF Rules Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AWS Network Firewall** is a managed stateful firewall deployed directly into dedicated firewall subnets inside a VPC. It supports **Suricata open-source IDS/IPS rules**, performing deep packet inspection to filter non-HTTP traffic, block malicious outbound outbound domain calls (TLDs), and prevent malware command-and-control exfiltration!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Interstate Highway Toll Booth &amp; Cargo X-Ray
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A highway toll booth (`Network Firewall Subnet`) sits on the main highway leading into the city (`VPC`). Inspectors X-ray every semi-truck cargo container (`Deep Packet Inspection`). If a truck attempts to leave the city headed toward an illegal drop zone (`Malware Command Server`), the gate drops instantly!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: FIREWALL MANAGER */}
+              {selectedNote === 'firewall_manager' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · VPC Firewall &amp; FMS</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.2 AWS Firewall Manager (FMS): Multi-Account Central Security Policy Sync
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('scanners')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <Search className="w-3.5 h-3.5" /> Go to Scanners Simulator
+                        <Zap className="w-3.5 h-3.5" /> Go to Scanners Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 5 of 5</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    AWS implements automated scanning tools using machine learning algorithms and signature lookup databases to detect security threats, software dependencies vulnerabilities, and public leaks.
-                  </p>
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Managing WAF rules, Security Groups, and Shield Advanced protection across 100+ AWS accounts manually leads to configuration drift. **AWS Firewall Manager (FMS)** automatically audits and enforces security rules across all accounts in AWS Organizations centrally!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Amazon GuardDuty (Network &amp; IAM Threat Intel)</strong>
-                        A continuous security monitoring service that analyzes VPC Flow Logs, CloudTrail Management logs, S3 Data logs, and Route 53 DNS Queries. By extracting logs from the hypervisor layer, GuardDuty does not affect the performance of running EC2 instances. It uses machine learning to detect crypto-mining activity, IAM privilege escalation, or unauthorized data access.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Amazon Inspector (CVE Vulnerability Scans)</strong>
-                        Inspects package dependencies on running EC2 instances and ECR container registries. It references a database of Common Vulnerabilities and Exposures (CVEs) and audits security groups to ensure ports are not publicly exposed.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Amazon Macie (S3 PII Classification)</strong>
-                        A fully managed data security service that parses S3 bucket objects using regex pattern classifiers and natural language processing to identify sensitive Personal Identifiable Information (PII) like Credit Cards, SSNs, and private keys.
-                      </div>
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Central Hotel Franchise Security Command Center
                     </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Corporate security headquarters (`Firewall Manager`) pushes a button, and the electronic door locks on 500 franchise hotel locations across the world immediately update their master access code simultaneously!
+                    </p>
+                  </div>
+                </div>
+              )}
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws guardduty create-detector --enable`, 'cli_guardduty')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_guardduty' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_guardduty' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_guardduty' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Enable Amazon GuardDuty Detector (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws guardduty create-detector --enable`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Automation Tip:</strong> Route GuardDuty, Inspector, and Macie findings to **Amazon EventBridge**. This enables launching automated AWS Lambda functions to isolate compromised instances or immediately block public S3 access.
-                      </div>
+              {/* NOTE 4.1: GUARDDUTY AI */}
+              {selectedNote === 'guardduty_ai' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · GuardDuty &amp; Inspector</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.1 Amazon GuardDuty: Intelligent Threat Detection &amp; Anomaly Analysis
+                      </h3>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('scanners')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Threat Intelligence Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon GuardDuty** continuously analyzes AWS CloudTrail logs, VPC Flow Logs, DNS logs, and EKS audit logs using Machine Learning. It detects compromised IAM credentials, unusual EC2 crypto-mining spikes, and unauthorized database exfiltration without installing agents or impacting performance!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Smart Security AI CCTV Camera
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      An AI CCTV camera watches the bank lobby 24/7. It notices that employee Bob suddenly logged into the vault at 3:00 AM from a location in Russia (`Credential Compromise`) and immediately alerts security guards!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: AMAZON INSPECTOR */}
+              {selectedNote === 'inspector_cve' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · GuardDuty &amp; Inspector</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.2 Amazon Inspector: Automated Vulnerability &amp; CVE Management
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('scanners')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Threat Intelligence Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon Inspector** automatically scans EC2 instances, ECR container images, and Lambda functions for software vulnerabilities (Common Vulnerabilities and Exposures - CVEs) and unintended network exposure. It assigns an **Inspector Risk Score** prioritized by exploitability!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Car Diagnostic Medical Checkup
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A mechanic plugs a computer scanner into your car&apos;s OBD-II port (`Amazon Inspector`). It checks engine belts, brake pads, and tire pressure (`Software Packages &amp; OS`), handing you a report stating: &ldquo;Critical: Replace front brake pads before driving on highway (`CVE-2024-1234`)!&rdquo;
+                    </p>
                   </div>
                 </div>
               )}
 
             </div>
-
           </div>
         </div>
       )}
 
-      {activeTab === 'intro' && (
+
+        {activeTab === 'intro' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             

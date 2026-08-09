@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
-  RefreshCw,
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Zap,
+  Shield,
+  Globe,
   Activity,
   Play,
-  Shield,
-  Zap,
   Database,
-  Globe,
   Lock,
   Unlock,
   AlertTriangle,
-  BookOpen,
   Sliders,
   Trash2,
-  ChevronRight,
-  ChevronDown,
-  Info
+  RefreshCw,
 } from 'lucide-react';
 import DisasterRecoveryComparativeView from '../../components/visualizers/DisasterRecoveryComparativeView';
 import UniqueDisasterRecoveryFeatures from '../../components/visualizers/UniqueDisasterRecoveryFeatures';
 
-type TabType = 'strategies' | 'multiregion' | 'dms' | 'backup' | 'playbook' | 'notebook' | 'unique';
+type TabType = 'notebook' | 'strategies' | 'multiregion' | 'dms' | 'backup' | 'playbook' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -549,29 +549,31 @@ export default function DisasterRecoveryVisualizer({ provider = 'aws', setProvid
 
       {/* Tab navigation bar */}
       {!isComparative && (
+        <Translate>
         <div className="da-tabs">
           <button className={`da-tb ${activeTab === 'notebook' ? 'da-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>
-            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+            <BookOpen className="w-4 h-4 text-amber-500" /> 📖 1) Visual Notes &amp; Theories
           </button>
           <button className={`da-tb ${activeTab === 'strategies' ? 'da-on-strategies' : ''}`} onClick={() => setActiveTab('strategies')}>
-            <Sliders className="w-4 h-4" /> 1. DR Strategies &amp; Cost Optimizer
+            <Sliders className="w-4 h-4 text-sky-500" /> 🎯 2) DR Strategies &amp; Cost Optimizer
           </button>
           <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on-multiregion' : ''}`} onClick={() => setActiveTab('multiregion')}>
-            <Globe className="w-4 h-4" /> 2. Multi-Region Failover Simulator
+            <Globe className="w-4 h-4 text-blue-500" /> 🌐 3) Multi-Region Failover Simulator
           </button>
           <button className={`da-tb ${activeTab === 'dms' ? 'da-on-dms' : ''}`} onClick={() => setActiveTab('dms')}>
-            <Database className="w-4 h-4" /> 3. Database Migration Service (DMS)
+            <Database className="w-4 h-4 text-orange-500" /> 🛢️ 4) Database Migration Service (DMS)
           </button>
           <button className={`da-tb ${activeTab === 'backup' ? 'da-on-backup' : ''}`} onClick={() => setActiveTab('backup')}>
-            <Shield className="w-4 h-4" /> 4. AWS Backup &amp; Vault Lock
+            <Shield className="w-4 h-4 text-emerald-500" /> 🔒 5) AWS Backup &amp; Vault Lock
           </button>
           <button className={`da-tb ${activeTab === 'playbook' ? 'da-on-playbook' : ''}`} onClick={() => setActiveTab('playbook')}>
-            <BookOpen className="w-4 h-4" /> 5. Recovery Playbook
+            <BookOpen className="w-4 h-4 text-purple-500" /> 📑 6) Recovery Playbook
           </button>
           <button className={`da-tb ${activeTab === 'unique' ? 'da-on-backup' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
           </button>
         </div>
+      </Translate>
       )}
 
       {isComparative && (
@@ -1576,1515 +1578,846 @@ export default function DisasterRecoveryVisualizer({ provider = 'aws', setProvid
         </div>
       )}
       {activeTab === 'notebook' && (
-        <div className="space-y-6 animate-fadeIn text-left">
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--da-text)' }}>
           
-          <div className="da-card border-t-4 border-t-amber-500 dark:border-t-amber-500/50 text-left">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
-              <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" /> Disaster Recovery &amp; Database Migration Notes
-            </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed font-sans font-semibold">
-              Explore Disaster Recovery metrics (RTO/RPO), AWS Database Migration Service (DMS) continuous replication, Schema Conversion Tool (SCT), and Backup Vault Lock governance strategies.
-            </p>
+          {/* Header Hero Card */}
+          <div className="da-card text-left" style={{ borderLeft: '4px solid #f59e0b', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-amber-500" /> AWS, Azure &amp; GCP Disaster Recovery &amp; Database Migration Academy
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--da-text-muted)' }}>
+                  Complete 11-topic interactive disaster recovery and enterprise migration curriculum sorted across 4 core levels. Master RTO &amp; RPO SLAs, the 4 DR Strategy Archetypes, FIS Chaos Engineering, Route 53 Failover, Aurora Global DBs, DMS Change Data Capture (CDC), Schema Conversion Tool (SCT), Backup Vault Lock, MGN Orchestration, and Snowball Data Transfer.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 11 Complete Modules</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.35)', color: '#10b981' }}>🌐 AWS / Azure / GCP</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Left Sidebar Category Explorer */}
             <div className="lg:col-span-3 space-y-4 text-left">
-              <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block pl-1">DR Module Directory:/</span>
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--da-text-muted)' }}>Curriculum Directory (11 Modules):</span>
               
               <div className="acad-dir-container">
                 <div className="acad-dir-header">
-                  <BookOpen className="w-4 h-4 text-indigo-400" />
-                  <span>Module Explorer</span>
+                  <BookOpen className="w-4 h-4 text-amber-500" />
+                  <span>DR &amp; Migration Explorer</span>
                 </div>
 
-                {/* CATEGORY 1: DISASTER RECOVERY FUNDAMENTALS */}
+                {/* LEVEL 1: DR FUNDAMENTALS */}
                 <div>
                   <button 
                     onClick={() => setExpandedCategory(expandedCategory === 'fundamentals' ? '' : 'fundamentals')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Sliders className="w-3.5 h-3.5 text-indigo-500" />
-                      1. DR Fundamentals
+                      <Sliders className="w-3.5 h-3.5 text-amber-500" />
+                      1. DR Core Fundamentals
                     </span>
                     {expandedCategory === 'fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'fundamentals' && (
-                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
                         onClick={() => setSelectedNote('rto_rpo')}
                         className={`acad-dir-item-btn ${selectedNote === 'rto_rpo' ? 'acad-active' : ''}`}
                       >
-                        RTO &amp; RPO Taxonomy
+                        1.1 RTO &amp; RPO SLA Metrics
                       </button>
                       <button 
                         onClick={() => setSelectedNote('dr_strategies')}
                         className={`acad-dir-item-btn ${selectedNote === 'dr_strategies' ? 'acad-active' : ''}`}
                       >
-                        DR Strategy Blueprints
+                        1.2 The 4 DR Blueprints
                       </button>
                       <button 
                         onClick={() => setSelectedNote('dr_tips')}
                         className={`acad-dir-item-btn ${selectedNote === 'dr_tips' ? 'acad-active' : ''}`}
                       >
-                        HA &amp; Chaos Tips
+                        1.3 HA vs DR &amp; FIS Chaos
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* CATEGORY 2: MULTI-REGION & HYBRID */}
+                {/* LEVEL 2: MULTI-REGION & HYBRID */}
                 <div>
                   <button 
                     onClick={() => setExpandedCategory(expandedCategory === 'failover' ? '' : 'failover')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Globe className="w-3.5 h-3.5 text-indigo-500" />
-                      2. Multi-Region &amp; Hybrid
+                      <Globe className="w-3.5 h-3.5 text-blue-500" />
+                      2. Multi-Region Failover
                     </span>
                     {expandedCategory === 'failover' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'failover' && (
-                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
                         onClick={() => setSelectedNote('failover_routing')}
                         className={`acad-dir-item-btn ${selectedNote === 'failover_routing' ? 'acad-active' : ''}`}
                       >
-                        Route 53 Failover Routing
+                        2.1 Route 53 DNS Failover
                       </button>
                       <button 
                         onClick={() => setSelectedNote('aurora_global_db')}
                         className={`acad-dir-item-btn ${selectedNote === 'aurora_global_db' ? 'acad-active' : ''}`}
                       >
-                        Aurora Global Databases
+                        2.2 Aurora Global Databases
                       </button>
                       <button 
                         onClick={() => setSelectedNote('hybrid_backup')}
                         className={`acad-dir-item-btn ${selectedNote === 'hybrid_backup' ? 'acad-active' : ''}`}
                       >
-                        On-Premises &amp; Hybrid Backup
+                        2.3 On-Prem &amp; Hybrid Backup
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* CATEGORY 3: DB & BACKUP GOVERNANCE */}
+                {/* LEVEL 3: DB & BACKUP GOVERNANCE */}
                 <div>
                   <button 
                     onClick={() => setExpandedCategory(expandedCategory === 'governance' ? '' : 'governance')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Shield className="w-3.5 h-3.5 text-indigo-500" />
+                      <Shield className="w-3.5 h-3.5 text-emerald-500" />
                       3. DB &amp; Backup Governance
                     </span>
                     {expandedCategory === 'governance' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'governance' && (
-                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1 border-b border-slate-100 dark:border-slate-800">
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
                         onClick={() => setSelectedNote('dms_replication')}
                         className={`acad-dir-item-btn ${selectedNote === 'dms_replication' ? 'acad-active' : ''}`}
                       >
-                        AWS DMS CDC Continuous Sync
+                        3.1 AWS DMS CDC Continuous Sync
                       </button>
                       <button 
                         onClick={() => setSelectedNote('aws_sct')}
                         className={`acad-dir-item-btn ${selectedNote === 'aws_sct' ? 'acad-active' : ''}`}
                       >
-                        AWS Schema Conversion Tool (SCT)
+                        3.2 AWS Schema Conversion (SCT)
                       </button>
                       <button 
                         onClick={() => setSelectedNote('backup_vault_lock')}
                         className={`acad-dir-item-btn ${selectedNote === 'backup_vault_lock' ? 'acad-active' : ''}`}
                       >
-                        AWS Backup Vault Lock &amp; WORM
+                        3.3 Backup Vault Lock (WORM)
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* CATEGORY 4: ENTERPRISE MIGRATION SUITE */}
+                {/* LEVEL 4: ENTERPRISE MIGRATION SUITE */}
                 <div>
                   <button 
                     onClick={() => setExpandedCategory(expandedCategory === 'migration_suite' ? '' : 'migration_suite')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Database className="w-3.5 h-3.5 text-indigo-500" />
-                      4. Enterprise Migration Suite
+                      <Database className="w-3.5 h-3.5 text-purple-500" />
+                      4. Enterprise Migration
                     </span>
                     {expandedCategory === 'migration_suite' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
                   {expandedCategory === 'migration_suite' && (
-                    <div className="bg-slate-50/50 dark:bg-slate-900/50 py-1">
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)' }}>
                       <button 
                         onClick={() => setSelectedNote('mgn_ads')}
                         className={`acad-dir-item-btn ${selectedNote === 'mgn_ads' ? 'acad-active' : ''}`}
                       >
-                        ADS &amp; MGN Orchestration
+                        4.1 ADS Audit &amp; MGN Migration
                       </button>
                       <button 
                         onClick={() => setSelectedNote('large_data_transfer')}
                         className={`acad-dir-item-btn ${selectedNote === 'large_data_transfer' ? 'acad-active' : ''}`}
                       >
-                        Large Scale Data Transfer
+                        4.2 Snow Family &amp; DataSync ETA
                       </button>
                     </div>
                   )}
                 </div>
+
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-[11px] leading-relaxed text-slate-400 font-semibold space-y-1">
-                <span className="text-white font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]">
-                  <Info className="w-3.5 h-3.5 text-indigo-400" /> Academy Advice
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--da-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
                 </span>
-                "Choose any module from the tree above. Each view includes custom interactive elements, dynamic code blocks, or structural system architecture diagrams."
+                Click any of the 11 Disaster Recovery modules to explore multi-cloud AWS, Azure &amp; GCP comparison tables, real-world analogies, and interactive simulators!
               </div>
             </div>
 
             {/* Right Active Note Workspace */}
             <div className="lg:col-span-9 space-y-6 text-left">
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 1: RTO & RPO TAXONOMY                                             */}
-              {/* ========================================================================= */}
+              {/* MODULE 1.1: RTO & RPO TAXONOMY */}
               {selectedNote === 'rto_rpo' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Disaster Recovery Metrics</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">RTO &amp; RPO Technical Taxonomy</h3>
+                      <span className="acad-hero-badge">1.1 DR Core Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.1 Recovery Time Objective (RTO) &amp; Recovery Point Objective (RPO) Metrics
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('strategies')}
-                        className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Info className="w-3 h-3" /> Go to DR Strategies
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 1 of 10</span>
+                    <button 
+                      onClick={() => setActiveTab('strategies')}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Strategies Optimizer
+                    </button>
+                  </div>
+
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Globe className="w-3.5 h-3.5 text-amber-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        **RPO (Recovery Point Objective)** specifies how much data loss your business can tolerate (measured in time before disaster). **RTO (Recovery Time Objective)** specifies how much system downtime your business can tolerate before systems must be back online.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Activity className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Provides quantifiable business SLAs that dictate how frequently database backups must occur (for low RPO) and how automated infrastructure provisioning/failover must be (for low RTO).
+                      </p>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Recovery Point Objective (RPO) and Recovery Time Objective (RTO) are the critical architectural pillars that dictate the engineering complexity, system redundancy, and cost requirements of a Disaster Recovery framework.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>RPO (Data Loss Clock)</strong>: &ldquo;If a datacenter catches fire at 2:00 PM and our last database backup was at 1:00 PM, we lost 1 hour of customer data.&rdquo; (RPO = 1 Hour).
+                    <br />• <strong>RTO (Downtime Clock)</strong>: &ldquo;If the site goes down at 2:00 PM and we get servers running in standby region by 2:15 PM, our downtime was 15 minutes.&rdquo; (RTO = 15 Mins).
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">Core Architecture Characteristics:</span>
-                      <table className="acad-table">
-                        <thead>
-                          <tr>
-                            <th>Parameter</th>
-                            <th>Recovery Point (RPO)</th>
-                            <th>Recovery Time (RTO)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td className="font-extrabold">Definition</td>
-                            <td className="text-slate-600 dark:text-slate-300">Maximum tolerable data loss margin</td>
-                            <td className="text-slate-600 dark:text-slate-300">Maximum tolerable downtime duration</td>
-                          </tr>
-                          <tr>
-                            <td className="font-extrabold">Focus Area</td>
-                            <td className="text-blue-700 dark:text-blue-400 font-semibold">Databases &amp; Backups frequency</td>
-                            <td className="text-indigo-700 dark:text-indigo-400 font-semibold">Infrastructure spin-up &amp; routing</td>
-                          </tr>
-                          <tr>
-                            <td className="font-extrabold">Measured In</td>
-                            <td>Seconds, Minutes, or Hours</td>
-                            <td>Minutes, Hours, or Days</td>
-                          </tr>
-                          <tr>
-                            <td className="font-extrabold">Cost Dependency</td>
-                            <td className="text-emerald-700 dark:text-emerald-400 font-bold">Continuous replication cost</td>
-                            <td className="text-emerald-700 dark:text-emerald-400 font-bold">Standby resources provisioning cost</td>
-                          </tr>
-                        </tbody>
-                      </table>
-
-                      <div className="acad-takeaway-box">
-                        <strong>💡 Professional Architect Takeaway:</strong><br />
-                        Achieving near-zero RTO and RPO requires a Multi-Site Active-Active configuration, which forces you to run identical, fully operational production infrastructure in both regions. This doubles your baseline computing and licensing costs. Ensure stakeholders align business value with these budgets!
-                      </div>
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Word Document Auto-Save vs Computer Boot Time
                     </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>RPO</strong>: How often Microsoft Word auto-saves your essay. If it auto-saves every 5 minutes and your laptop battery dies, you lose at most 5 minutes of typing!
+                      <br />• <strong>RTO</strong>: How many minutes it takes you to find a spare laptop charger, plug it in, press the power button, and reopen your document!
+                    </p>
+                  </div>
 
-                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Disaster Timeline Visualizer</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Understand where RPO and RTO apply relative to a disaster event</p>
-                      </div>
-
-                      <div className="w-full py-4 rounded-xl border border-slate-100 flex items-center justify-center da-svg-bg">
-                        <svg className="w-full max-w-[360px] h-[180px]" viewBox="0 0 360 180">
-                          {/* Timeline horizontal line */}
-                          <line x1="20" y1="90" x2="340" y2="90" stroke="var(--da-card-border)" strokeWidth="3" />
-                          
-                          {/* Events nodes */}
-                          {/* 1. Last Backup Commit */}
-                          <circle cx="60" cy="90" r="6" fill="var(--da-svg-indigo-border)" />
-                          <text x="60" y="65" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Last Backup Commit</text>
-                          <text x="60" y="75" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">12:00 PM</text>
-
-                          {/* 2. Disaster Event */}
-                          <circle cx="180" cy="90" r="8" fill="var(--da-svg-red-border)" className="dr-node-glow" />
-                          <text x="180" y="65" fill="var(--da-svg-red-text)" fontSize="8" fontWeight="black" textAnchor="middle">💥 DISASTER EVENT</text>
-                          <text x="180" y="75" fill="var(--da-svg-red-border)" fontSize="7" fontWeight="bold" textAnchor="middle">1:00 PM</text>
-
-                          {/* 3. Restoration Point */}
-                          <circle cx="300" cy="90" r="6" fill="var(--da-svg-green-border)" />
-                          <text x="300" y="65" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">System Restored</text>
-                          <text x="300" y="75" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">5:00 PM</text>
-
-                          {/* RPO Bracket line */}
-                          <path d="M 60 110 H 180" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <path d="M 60 106 V 114" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                          <path d="M 180 106 V 114" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                          <text x="120" y="125" fill="var(--da-svg-indigo-text)" fontSize="8" fontWeight="black" textAnchor="middle">RPO (Data Loss)</text>
-                          <text x="120" y="135" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">Margin: 60 Minutes</text>
-
-                          {/* RTO Bracket line */}
-                          <path d="M 180 110 H 300" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                          <path d="M 180 106 V 114" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
-                          <path d="M 300 106 V 114" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
-                          <text x="240" y="125" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="black" textAnchor="middle">RTO (Downtime)</text>
-                          <text x="240" y="135" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">Duration: 4 Hours</text>
-                        </svg>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                        📊 Note: RPO limits are strictly dictated by data persistence strategies (backups frequency vs continuous replication), whereas RTO is capped by deployment orchestration speed.
-                      </span>
-                    </div>
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Parameter</th>
+                          <th>Recovery Point (RPO)</th>
+                          <th>Recovery Time (RTO)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Focus Area</strong></td>
+                          <td style={{ color: '#2563eb', fontWeight: 600 }}>Databases, Snapshots &amp; Transaction Logs</td>
+                          <td style={{ color: '#7c3aed', fontWeight: 600 }}>Infrastructure spin-up &amp; DNS Failover routing</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Cost Driver</strong></td>
+                          <td>Continuous cross-region data replication bandwidth</td>
+                          <td>Pre-provisioned standby server capacity</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 2: DR STRATEGY BLUEPRINTS                                         */}
-              {/* ========================================================================= */}
+              {/* MODULE 1.2: DR STRATEGY BLUEPRINTS */}
               {selectedNote === 'dr_strategies' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Architecture Blueprints</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS DR Strategy Blueprints &amp; Redundancies</h3>
+                      <span className="acad-hero-badge">1.2 DR Core Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.2 The 4 Disaster Recovery Strategy Blueprints
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('strategies')}
-                        className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 dark:bg-teal-700 dark:hover:bg-teal-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Info className="w-3 h-3" /> Go to DR Strategies
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 2 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('strategies')}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Strategies Optimizer
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    AWS categorizes disaster recovery strategies into four distinct archetypes. Selecting a strategy is a trade-off between the Cost of Infrastructure and the Cost of Downtime. Explore the architectures below:
-                  </p>
-
                   <div className="space-y-4">
-                    {/* Inner strategy tab switcher */}
-                    <div className="flex flex-wrap gap-2 mb-4 da-inner-card p-1.5 rounded-xl border w-fit">
+                    {/* Strategy Switcher */}
+                    <div className="flex flex-wrap gap-2 p-1.5 rounded-xl border w-fit" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
                       {(['backup', 'pilot', 'warm', 'hot'] as const).map((strat) => (
                         <button
                           key={strat}
                           onClick={() => setActiveStrategyTab(strat)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all select-none ${
                             activeStrategyTab === strat
-                              ? 'bg-amber-600 text-white shadow-md shadow-amber-500/10'
-                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                              ? 'bg-amber-600 text-white shadow'
+                              : 'hover:bg-slate-200 dark:hover:bg-slate-800'
                           }`}
                         >
-                          {strat === 'backup' && '💾 Backup & Restore'}
-                          {strat === 'pilot' && '🔥 Pilot Light'}
-                          {strat === 'warm' && '⛅ Warm Standby'}
-                          {strat === 'hot' && '⚡ Multi-Site Active'}
+                          {strat === 'backup' && '💾 1. Backup & Restore'}
+                          {strat === 'pilot' && '🔥 2. Pilot Light'}
+                          {strat === 'warm' && '⛅ 3. Warm Standby'}
+                          {strat === 'hot' && '⚡ 4. Multi-Site Active'}
                         </button>
                       ))}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                      
-                      <div className="md:col-span-7 flex flex-col justify-between">
-                        <div className="da-inner-card border rounded-xl p-4 space-y-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-                          {activeStrategyTab === 'backup' && (
-                            <div>
-                              <strong className="text-blue-700 dark:text-blue-400 block text-sm mb-1">💾 Backup &amp; Restore Strategy (Highest RTO/RPO)</strong>
-                              Daily or hourly snapshots and database transactions are stored securely in Amazon S3. In the recovery region, the compute environment is entirely <strong>Cold (0 active servers)</strong>. During disaster recovery, standard scripts provision network infrastructure, deploy server templates (AMIs), and restore backups from S3.
-                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
-                                <strong>RPO:</strong> &lt; 24 hours | <strong>RTO:</strong> &lt; 24 hours | <strong>Cost:</strong> Minimal ($)
-                              </div>
-                            </div>
-                          )}
-                          {activeStrategyTab === 'pilot' && (
-                            <div>
-                              <strong className="text-indigo-700 dark:text-indigo-400 block text-sm mb-1">🔥 Pilot Light Strategy (Low Cost Standby)</strong>
-                              The databases and persistent storages are <strong>actively running</strong> in the standby region to replicate data in real time. However, application servers and other components are completely turned off or unprovisioned.
-                              When a failover triggers, we quickly boot standby EC2 instances from AMIs and map endpoints.
-                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
-                                <strong>RPO:</strong> &lt; 60 mins | <strong>RTO:</strong> &lt; 4 hours | <strong>Cost:</strong> Low ($$)
-                              </div>
-                            </div>
-                          )}
-                          {activeStrategyTab === 'warm' && (
-                            <div>
-                              <strong className="text-purple-700 dark:text-purple-400 block text-sm mb-1">⛅ Warm Standby Strategy (Scaled Down Fleet)</strong>
-                              A scaled-down but <strong>fully functional</strong> copy of the primary infrastructure runs in the secondary region. Web servers are active (e.g. running 1 instance instead of 4), and database replication is live. Upon failover, the system automatically triggers an Auto Scaling Group scale-up rule to expand computing to full production size, resulting in sub-hour RTO.
-                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
-                                <strong>RPO:</strong> &lt; 15 mins | <strong>RTO:</strong> &lt; 1 hour | <strong>Cost:</strong> Medium ($$$)
-                              </div>
-                            </div>
-                          )}
-                          {activeStrategyTab === 'hot' && (
-                            <div>
-                              <strong className="text-rose-700 dark:text-rose-400 block text-sm mb-1">⚡ Multi-Site Active-Active (Zero Downtime)</strong>
-                              Two fully operational, mirrored environments handle traffic concurrently in both regions. Route 53 utilizes Anycast latency routing to split traffic between Region A and Region B. Database replication is handled at the hardware physical layer (e.g. Aurora Global Database), guaranteeing sub-second replication and immediate RTO failovers.
-                              <div className="mt-2 text-[10.5px] text-slate-600 dark:text-slate-400">
-                                <strong>RPO:</strong> Near-Zero | <strong>RTO:</strong> Near-Zero | <strong>Cost:</strong> Extreme ($$$$)
-                              </div>
-                            </div>
-                          )}
+                    <div className="p-4 rounded-xl border text-xs leading-relaxed" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      {activeStrategyTab === 'backup' && (
+                        <div>
+                          <strong className="text-blue-600 block text-sm mb-1">💾 1. Backup &amp; Restore Strategy (Lowest Cost, Highest RTO/RPO)</strong>
+                          Snapshots and backups are saved to S3. Secondary region compute is <strong>Cold (0 servers running)</strong>. On failure, Terraform/CloudFormation provisions subnets, EC2, and restores DBs from S3.
+                          <div className="mt-2 font-bold" style={{ color: 'var(--da-text-muted)' }}>
+                            RPO: &lt; 24 hours | RTO: &lt; 24 hours | Cost: $ (Minimal)
+                          </div>
                         </div>
-
-                        <div className="acad-takeaway-box mt-3 text-[11px]">
-                          <strong>🛠️ Structural Selection Rule:</strong><br />
-                          Choose the strategy that aligns with your business SLAs. If downtime costs $50,000/hour, investing in a Warm Standby or Multi-Site is financially justified. If downtime is tolerable, choose Backup &amp; Restore to conserve cloud budget.
+                      )}
+                      {activeStrategyTab === 'pilot' && (
+                        <div>
+                          <strong className="text-amber-600 block text-sm mb-1">🔥 2. Pilot Light Strategy (Active Database, Cold Compute)</strong>
+                          The database is actively replicating to the standby region in real time, but app servers are OFF (or AMIs ready). Upon failover, Auto Scaling Groups quickly launch EC2 instances and connect to the active DB.
+                          <div className="mt-2 font-bold" style={{ color: 'var(--da-text-muted)' }}>
+                            RPO: &lt; 60 mins | RTO: &lt; 4 hours | Cost: $$ (Low)
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="md:col-span-5 acad-sim-diagram flex flex-col justify-center items-center relative overflow-hidden min-h-[220px] da-svg-bg border border-slate-200">
-                        <span className="absolute top-2 left-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">Architectural Blueprint</span>
-                        
-                        {activeStrategyTab === 'backup' && (
-                          <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
-                            {/* Region A (Primary: Active) */}
-                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="100" y="42" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
-                            
-                            {/* Active Compute */}
-                            <rect x="25" y="55" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="55" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Web Server</text>
-                            <text x="55" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Live</text>
-
-                            {/* Active Database */}
-                            <rect x="115" y="55" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="145" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Primary DB</text>
-                            <text x="145" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Active</text>
-
-                            {/* Cloud S3 */}
-                            <rect x="65" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="105" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Amazon S3</text>
-                            <text x="105" y="139" fill="var(--da-svg-indigo-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Snapshots OK</text>
-
-                            {/* Region B (Secondary: Cold) */}
-                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-card-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="320" y="42" fill="var(--da-text-muted)" fontSize="9" fontWeight="bold" textAnchor="middle">Secondary (Cold DR)</text>
-
-                            {/* Cold Compute Silhouette */}
-                            <rect x="245" y="55" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" strokeDasharray="3,3" />
-                            <text x="275" y="74" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">EC2 (Cold)</text>
-
-                            {/* Cold Storage / DB S3 replica */}
-                            <rect x="280" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" strokeDasharray="3,3" />
-                            <text x="320" y="134" fill="var(--da-text-muted)" fontSize="7.5" fontWeight="bold" textAnchor="middle">S3 Standby</text>
-
-                            {/* DB Backup Cross Region replication pipeline */}
-                            <path d="M 145 130 H 280" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="4,4" className="dr-flow-blue" />
-                            <text x="212.5" y="122" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Snapshot Copy</text>
-                          </svg>
-                        )}
-
-                        {activeStrategyTab === 'pilot' && (
-                          <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
-                            {/* Region A (Primary: Active) */}
-                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="100" y="42" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
-                            
-                            {/* Web App */}
-                            <rect x="65" y="55" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="105" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Web Server</text>
-                            <text x="105" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Running</text>
-
-                            {/* DB Primary */}
-                            <rect x="65" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="105" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Writer</text>
-                            <text x="105" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Read/Write</text>
-
-                            {/* Region B (Secondary: Pilot Light) */}
-                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="320" y="42" fill="var(--da-svg-green-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Pilot Light (eu-west-1)</text>
-
-                            {/* EC2 dormant (ASG templates ready, 0 instances) */}
-                            <rect x="280" y="55" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" strokeDasharray="3,3" />
-                            <text x="320" y="70" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">Compute (ASG=0)</text>
-                            <text x="320" y="79" fill="var(--da-svg-amber-text)" fontSize="6" fontWeight="bold" textAnchor="middle">💤 Cold AMI</text>
-
-                            {/* DB Active Replica */}
-                            <rect x="280" y="115" width="80" height="30" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="320" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Standby</text>
-                            <text x="320" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 Live Replica</text>
-
-                            {/* Replication line */}
-                            <path d="M 145 130 H 280" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" className="dr-flow-green" />
-                            <text x="212.5" y="122" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active DB Sync</text>
-                          </svg>
-                        )}
-
-                        {activeStrategyTab === 'warm' && (
-                          <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
-                            {/* Region A (Primary: Active) */}
-                            <rect x="10" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="100" y="42" fill="var(--da-svg-indigo-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Active Region (us-east-1)</text>
-
-                            {/* Web App */}
-                            <rect x="65" y="55" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="105" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Active Fleet (N=4)</text>
-                            <text x="105" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Running</text>
-
-                            {/* DB Primary */}
-                            <rect x="65" y="115" width="80" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="105" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Primary Writer</text>
-                            <text x="105" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">● Read/Write</text>
-
-                            {/* Region B (Warm Standby Secondary) */}
-                            <rect x="230" y="25" width="180" height="150" rx="8" fill="none" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" strokeDasharray="3,3" />
-                            <text x="320" y="42" fill="var(--da-svg-purple-text)" fontSize="9" fontWeight="bold" textAnchor="middle">Warm Standby (eu-west-1)</text>
-
-                            {/* EC2 warm compute */}
-                            <rect x="280" y="55" width="80" height="30" rx="4" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.2" />
-                            <text x="320" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">EC2 Warm (N=1)</text>
-                            <text x="320" y="79" fill="var(--da-svg-purple-text)" fontSize="6" fontWeight="bold" textAnchor="middle">⛅ Active Minimal</text>
-
-                            {/* DB Active Replica */}
-                            <rect x="280" y="115" width="80" height="30" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="320" y="130" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">RDS Standby</text>
-                            <text x="320" y="139" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 Live Replica</text>
-
-                            {/* Replication line */}
-                            <path d="M 145 130 H 280" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" className="dr-flow-green" />
-                            <text x="212.5" y="122" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Active DB Sync</text>
-                          </svg>
-                        )}
-
-                        {activeStrategyTab === 'hot' && (
-                          <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 420 190">
-                            {/* Route 53 Anycast */}
-                            <g transform="translate(180, 5)">
-                              <rect x="0" y="0" width="60" height="20" rx="3" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1" />
-                              <text x="30" y="12" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Route 53</text>
-                            </g>
-
-                            {/* Region A (Active Mirror) */}
-                            <rect x="10" y="45" width="180" height="130" rx="8" fill="none" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                            <text x="100" y="60" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Active us-east-1 (50%)</text>
-
-                            {/* Web nodes */}
-                            <rect x="25" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="55" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">App Fleet</text>
-                            <text x="55" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active</text>
-
-                            {/* Storage database */}
-                            <rect x="115" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.2" />
-                            <text x="145" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Aurora Volume</text>
-                            <text x="145" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active-Active</text>
-
-                            {/* Region B (Active Mirror) */}
-                            <rect x="230" y="45" width="180" height="130" rx="8" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="1.5" />
-                            <text x="320" y="60" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Active eu-west-1 (50%)</text>
-
-                            {/* Web nodes */}
-                            <rect x="245" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="275" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">App Fleet</text>
-                            <text x="275" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active</text>
-
-                            {/* Storage database */}
-                            <rect x="335" y="75" width="60" height="30" rx="4" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="365" y="90" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Aurora Volume</text>
-                            <text x="365" y="99" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">● Active-Active</text>
-
-                            {/* Anycast Flow lines */}
-                            <path d="M 180 15 L 100 45" fill="none" className="dr-flow-blue" strokeWidth="1.5" />
-                            <path d="M 240 15 L 320 45" fill="none" className="dr-flow-blue" strokeWidth="1.5" />
-
-                            {/* NVMe physical block sync pipeline */}
-                            <path d="M 175 90 H 335" fill="none" stroke="var(--da-svg-green-border)" strokeWidth="2.5" className="dr-flow-green" />
-                            <text x="255" y="82" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync Mirror</text>
-                          </svg>
-                        )}
-                      </div>
-
+                      )}
+                      {activeStrategyTab === 'warm' && (
+                        <div>
+                          <strong className="text-purple-600 block text-sm mb-1">⛅ 3. Warm Standby Strategy (Scaled-Down Live Fleet)</strong>
+                          A minimal, scaled-down copy of full infrastructure runs 24/7 in the secondary region (e.g. 1 EC2 instance instead of 10). Upon failover, Auto Scaling immediately scales up the fleet to 100% capacity.
+                          <div className="mt-2 font-bold" style={{ color: 'var(--da-text-muted)' }}>
+                            RPO: &lt; 15 mins | RTO: &lt; 1 hour | Cost: $$$ (Medium)
+                          </div>
+                        </div>
+                      )}
+                      {activeStrategyTab === 'hot' && (
+                        <div>
+                          <strong className="text-emerald-600 block text-sm mb-1">⚡ 4. Multi-Site Active-Active (Zero Downtime, Near-Zero RPO/RTO)</strong>
+                          Two identical, fully operational production regions handle live customer traffic simultaneously. Route 53 splits traffic 50/50. Physical storage mirrors commits instantly.
+                          <div className="mt-2 font-bold" style={{ color: 'var(--da-text-muted)' }}>
+                            RPO: Near-Zero | RTO: Near-Zero | Cost: $$$$ (High)
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Strategy</th>
+                          <th>Standby Compute State</th>
+                          <th>Database State</th>
+                          <th>Typical RTO</th>
+                          <th>Typical RPO</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>Backup &amp; Restore</strong></td>
+                          <td>None (Cold)</td>
+                          <td>Periodic Snapshots in S3</td>
+                          <td>Hours to Days</td>
+                          <td>24 Hours</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Pilot Light</strong></td>
+                          <td>Cold (AMIs/Templates Ready)</td>
+                          <td>Live Replicating DB Writer/Reader</td>
+                          <td>1 to 4 Hours</td>
+                          <td>Minutes</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Warm Standby</strong></td>
+                          <td>Live Scaled-Down Fleet (e.g. 20% capacity)</td>
+                          <td>Live Synchronized Replica</td>
+                          <td>Minutes</td>
+                          <td>Seconds</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Multi-Site Active</strong></td>
+                          <td>Live 100% Mirrored Capacity</td>
+                          <td>Bi-Directional Synchronous Cluster</td>
+                          <td>Sub-Second</td>
+                          <td>Sub-Second</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 3: HIGH AVAILABILITY & CHAOS TIPS                                  */}
-              {/* ========================================================================= */}
+              {/* MODULE 1.3: HA VS DR & CHAOS ENGINEERING */}
               {selectedNote === 'dr_tips' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Resilience &amp; Testing</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">High Availability &amp; Chaos Engineering</h3>
+                      <span className="acad-hero-badge">1.3 DR Core Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.3 High Availability vs Disaster Recovery &amp; AWS FIS Chaos Engineering
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('multiregion')}
-                        className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Zap className="w-3 h-3" /> Go to Failover Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 3 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('multiregion')}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Chaos Simulator
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Surviving a regional failure requires separating High Availability (HA) from Disaster Recovery (DR) and continuously validating systems via automated backups and chaos injection.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>High Availability (HA)</strong>: Protects against localized hardware failures within a single region (spanning multiple Availability Zones). Synchronous failover happens in seconds!
+                    <br />• <strong>Disaster Recovery (DR)</strong>: Protects against regional catastrophes (e.g. natural disaster destroying an entire AWS region). Asynchronous failover across global regions.
+                    <br />• <strong>AWS Fault Injection Service (FIS)</strong>: A managed chaos engineering service that lets you safely inject artificial faults (RDS failover, CPU spikes, network latency) to test runbooks before real disasters strike!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    
-                    <div className="md:col-span-6 space-y-4">
-                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">1. High Availability (HA) vs. Disaster Recovery (DR)</strong>
-                          <strong>HA (Multi-AZ)</strong> targets localized hardware/software failures, providing automated synchronous failover within a single AWS region under minute boundaries. <strong>DR (Multi-Region)</strong> targets geographic catastrophe, re-routing traffic across global networks under hours boundaries.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">2. Automated Restore Validation</strong>
-                          Backing up data is useless if the recovery points are corrupted. Automate backup verification using **AWS Backup Restore Testing**: it triggers isolated, mock restores on a cron schedule, logs output telemetry, and destroys test instances automatically.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">3. Chaos Engineering: Test to Trust</strong>
-                          Do not wait for a real failure to find out if your Route 53 health checks work. Use **AWS Fault Injection Service (FIS)** to routinely execute automated disruption scenarios (RDS crash, packet leaks, AZ blackholes) to guarantee resilient runbooks.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs leading-normal">
-                        <strong>💡 Chaos Philosophy:</strong> System failure is an absolute certainty. Chaos engineering does not create instability; it exposes latent bugs that already exist.
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[320px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">AWS FIS Chaos Sandbox Terminal</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Select a failure drill and trigger the automated attack simulator</p>
-                      </div>
-
-                      <div className="space-y-2 mt-4">
-                        <span className="text-[9.5px] font-extrabold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">Select Chaos Target Vector:</span>
-                        <div className="grid grid-cols-3 gap-1">
-                          <button
-                            onClick={() => setChaosSimType('rds_failover')}
-                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
-                              chaosSimType === 'rds_failover'
-                                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-600 dark:border-amber-500 text-amber-900 dark:text-amber-200 shadow-sm'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-800'
-                            }`}
-                          >
-                            🛢️ RDS Failover
-                          </button>
-                          <button
-                            onClick={() => setChaosSimType('az_blackhole')}
-                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
-                              chaosSimType === 'az_blackhole'
-                                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-600 dark:border-amber-500 text-amber-900 dark:text-amber-200 shadow-sm'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-800'
-                            }`}
-                          >
-                            🔌 AZ Blackhole
-                          </button>
-                          <button
-                            onClick={() => setChaosSimType('dns_split_brain')}
-                            className={`p-1.5 rounded-lg border text-[10px] font-bold text-center transition-all ${
-                              chaosSimType === 'dns_split_brain'
-                                ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-600 dark:border-amber-500 text-amber-900 dark:text-amber-200 shadow-sm'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-800'
-                            }`}
-                          >
-                            🌐 DNS Brain
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Blinking Retro Terminal Console Output */}
-                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md mt-3">
-                        <div className="bg-slate-50 dark:bg-slate-950 px-3 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-rose-400" />
-                            <span className="w-2 h-2 rounded-full bg-amber-400" />
-                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                          </div>
-                          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">aws-fis-chaos.log</span>
-                        </div>
-                        <div className="bg-slate-900 dark:bg-slate-950 p-3 h-32 overflow-y-auto text-[10px] font-mono leading-relaxed text-slate-300">
-                          {chaosConsoleLogs.length === 0 ? (
-                            <div className="text-slate-400 italic py-6 text-center">
-                              Console idle. Ready for FIS Injection.<br />
-                              <span className="animate-pulse">_</span>
-                            </div>
-                          ) : (
-                            chaosConsoleLogs.map((log, idx) => (
-                              <div key={idx} className="flex gap-2">
-                                <span className="text-amber-500">{log.timestamp}</span>
-                                <span className={log.type === 'error' ? 'text-rose-500 font-bold' : log.type === 'warn' ? 'text-amber-400' : 'text-emerald-400'}>
-                                  {log.message}
-                                </span>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-
+                  {/* Interactive Chaos Simulator */}
+                  <div className="p-4 rounded-xl border space-y-3" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <h4 className="text-xs font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                      <Zap className="w-4 h-4 text-amber-500" /> Interactive AWS FIS Fault Injection Simulator
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
                       <button
-                        onClick={runChaosSimulation}
-                        disabled={chaosSimStatus === 'running'}
-                        className={`w-full font-black text-xs py-2 rounded-xl mt-3 transition-all flex items-center justify-center gap-1.5 shadow-md ${
-                          chaosSimStatus === 'running'
-                            ? 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/80 cursor-not-allowed'
-                            : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm shadow-rose-500/10 dark:shadow-rose-500/20'
-                        }`}
+                        onClick={() => setChaosSimType('rds_failover')}
+                        className={`p-2 rounded-lg border text-xs font-extrabold ${chaosSimType === 'rds_failover' ? 'bg-amber-600 text-white' : ''}`}
                       >
-                        <Zap className="w-4 h-4" /> {chaosSimStatus === 'running' ? 'Injecting Fault...' : '⚡ Inject Chaos Simulation'}
+                        🛢️ RDS Primary Crash
+                      </button>
+                      <button
+                        onClick={() => setChaosSimType('az_blackhole')}
+                        className={`p-2 rounded-lg border text-xs font-extrabold ${chaosSimType === 'az_blackhole' ? 'bg-amber-600 text-white' : ''}`}
+                      >
+                        🔌 AZ Network Blackhole
+                      </button>
+                      <button
+                        onClick={() => setChaosSimType('dns_split_brain')}
+                        className={`p-2 rounded-lg border text-xs font-extrabold ${chaosSimType === 'dns_split_brain' ? 'bg-amber-600 text-white' : ''}`}
+                      >
+                        🌐 DNS Latency Spike
                       </button>
                     </div>
 
+                    <button
+                      onClick={runChaosSimulation}
+                      disabled={chaosSimStatus === 'running'}
+                      className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-lg transition-all shadow active:scale-95"
+                    >
+                      {chaosSimStatus === 'running' ? '⚡ Injecting Fault Scenario...' : '💥 Run Chaos Experiment'}
+                    </button>
+
+                    <div className="p-3 bg-slate-900 rounded-lg text-[10px] font-mono text-emerald-400 max-h-32 overflow-y-auto space-y-1">
+                      {chaosConsoleLogs.length === 0 ? (
+                        <div className="text-slate-500 italic">Terminal idle. Click &quot;Run Chaos Experiment&quot; to test runbook resiliency.</div>
+                      ) : (
+                        chaosConsoleLogs.map((log, i) => (
+                          <div key={i} className="flex gap-2">
+                            <span className="text-amber-400">{log.timestamp}</span>
+                            <span className={log.type === 'error' ? 'text-rose-400 font-bold' : 'text-emerald-400'}>{log.message}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 4: ROUTE 53 FAILOVER ROUTING                                      */}
-              {/* ========================================================================= */}
+              {/* MODULE 2.1: ROUTE 53 FAILOVER */}
               {selectedNote === 'failover_routing' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Multi-Region &amp; Hybrid</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">Route 53 Active-Passive DNS Failover</h3>
+                      <span className="acad-hero-badge">2.1 Multi-Region &amp; Hybrid</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.1 Route 53 Active-Passive &amp; Active-Active DNS Failover Routing
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('multiregion')}
-                        className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 dark:bg-sky-700 dark:hover:bg-sky-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Activity className="w-3 h-3" /> Go to Failover Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 4 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('multiregion')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Failover Simulator
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Amazon Route 53 routes globally distributed users to active resources. During a region-wide outage, Route 53 automatically shifts DNS resolutions to the disaster recovery region using health probe status feeds.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Route 53 continuously sends health check pings (HTTP/HTTPS/TCP) every 10 or 30 seconds to your primary region. If the primary region fails 3 consecutive health checks, Route 53 automatically updates DNS records to direct incoming users to the standby DR region!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">Technical Failover Pillars:</span>
-                      
-                      <div className="space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">1. Anycast Routing Plane</strong>
-                          Users connect to any of the dozens of Route 53 Edge Locations worldwide. Requests are processed at the nearest POP, optimizing latency and resilience against Layer-3/4 DDoS attacks.
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">2. Route 53 Health Checks</strong>
-                          Route 53 probes endpoints every 10 or 30 seconds. If an endpoint fails consecutive checks, it is flagged as Unhealthy, removing its A/CNAME record from DNS answers.
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">3. DNS TTL (Time To Live) Limits</strong>
-                          Browsers and local ISP recursive resolvers cache DNS answers. To ensure immediate failover re-routing, set the TTL for failover records to <strong>60 seconds or lower</strong> (e.g. 10s or 30s) to minimize cached stale routes.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box">
-                        <strong>🛡️ Active-Passive vs Active-Active:</strong><br />
-                        Active-Passive routes 100% of traffic to Primary, sending traffic to standby only if Primary fails. Active-Active utilizes Latency or Weighted records to split traffic between both regions concurrently, facilitating immediate near-zero RTO failover.
-                      </div>
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airport Traffic Controller Re-Routing Flights
                     </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      If Airport A gets hit by a severe blizzard (`Regional Outage`), the central air traffic controller (`Route 53`) redirects all incoming passenger planes to land safely at Airport B (`Standby Region`).
+                    </p>
+                  </div>
 
-                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">DNS Routing Topology</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Route 53 re-routing active traffic around degraded Region A</p>
-                      </div>
-
-                      <div className="w-full rounded-xl p-4 flex items-center justify-center da-svg-bg border border-slate-200">
-                        <svg className="w-full max-w-[340px] h-[190px]" viewBox="0 0 340 190">
-                          {/* Client node */}
-                          <g transform="translate(140, 10)">
-                            <rect x="0" y="0" width="60" height="24" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
-                            <text x="30" y="15" fill="var(--da-text-title)" fontSize="7" fontWeight="bold" textAnchor="middle">Global Clients</text>
-                          </g>
-
-                          {/* Route 53 Edge Node */}
-                          <g transform="translate(125, 60)">
-                            <rect x="0" y="0" width="90" height="30" rx="4" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                            <text x="45" y="18" fill="var(--da-svg-indigo-text)" fontSize="8" fontWeight="black" textAnchor="middle">Route 53 Edge</text>
-                            <text x="45" y="26" fill="var(--da-svg-indigo-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">TTL: 10s Active</text>
-                          </g>
-
-                          {/* Client to Route 53 Conduit */}
-                          <path d="M 170 34 V 60" fill="none" className="dr-flow-blue" strokeWidth="2" />
-
-                          {/* Region A Node (DEGRADED) */}
-                          <g transform="translate(15, 130)">
-                            <rect x="0" y="0" width="110" height="45" rx="4" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1.2" />
-                            <text x="55" y="15" fill="var(--da-svg-red-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Region A (us-east-1)</text>
-                            <rect x="25" y="24" width="60" height="12" rx="2" fill="var(--da-svg-red-border)" />
-                            <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">⚠️ UNHEALTHY</text>
-                          </g>
-
-                          {/* Region B (HEALTHY STANDBY) */}
-                          <g transform="translate(215, 130)">
-                            <rect x="0" y="0" width="110" height="45" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="55" y="15" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Region B (eu-west-1)</text>
-                            <rect x="25" y="24" width="60" height="12" rx="2" fill="var(--da-svg-green-border)" />
-                            <text x="55" y="32" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">🟢 ACTIVE STANDBY</text>
-                          </g>
-
-                          {/* Conduit paths */}
-                          {/* Route 53 to Region A (Blocked) */}
-                          <path d="M 145 90 H 70 V 130" fill="none" stroke="var(--da-svg-red-border)" strokeWidth="2" strokeDasharray="3,3" />
-                          <g transform="translate(95, 95)">
-                            <circle cx="8" cy="8" r="8" fill="var(--da-svg-red-border)" />
-                            <text x="8" y="11" fill="#ffffff" fontSize="9.5" fontWeight="black" textAnchor="middle">×</text>
-                          </g>
-
-                          {/* Route 53 to Region B (Active) */}
-                          <path d="M 195 90 H 270 V 130" fill="none" className="dr-flow-green" strokeWidth="2.5" />
-                        </svg>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                        💡 Health probes measure latency and TCP/HTTP return status. Unhealthy nodes are removed automatically without administrator intervention.
-                      </span>
-                    </div>
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Cloud Provider</th>
+                          <th>DNS Failover Service</th>
+                          <th>Health Check Frequency</th>
+                          <th>Recommended Failover Record TTL</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>AWS</strong></td>
+                          <td>Amazon Route 53 / Application Recovery Controller</td>
+                          <td>10s Fast Probe / 30s Standard</td>
+                          <td>10s to 60s (To prevent ISP caching stale IPs)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Azure</strong></td>
+                          <td>Azure Traffic Manager / Azure Front Door</td>
+                          <td>10s to 30s Probes</td>
+                          <td>30s TTL</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>GCP</strong></td>
+                          <td>Google Cloud DNS Failover Routing Policies</td>
+                          <td>5s to 30s Health Checks</td>
+                          <td>30s TTL</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 5: AURORA GLOBAL DATABASES                                        */}
-              {/* ========================================================================= */}
+              {/* MODULE 2.2: AURORA GLOBAL DATABASES */}
               {selectedNote === 'aurora_global_db' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Database Synchronization</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">Amazon Aurora Global Databases</h3>
+                      <span className="acad-hero-badge">2.2 Multi-Region &amp; Hybrid</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.2 Amazon Aurora Global Databases: Sub-Second Cross-Region Replication
+                      </h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 5 of 10</span>
+                    <button 
+                      onClick={() => setActiveTab('multiregion')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Multi-Region Tab
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Amazon Aurora Global Databases enable low-latency cross-region replication by executing physical replication directly within the storage volume cluster layer, completely bypassing the compute database engines.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Standard database replication sends SQL logs over the network, which the replica must execute line-by-line. **Aurora Global Database** bypasses the database engine entirely: dedicated storage hardware mirrors raw physical NVMe storage blocks directly between regions with **less than 1 second replication lag**!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">Aurora Storage Layer Mechanics:</span>
-                      
-                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">1. Physical Block Replication</strong>
-                          Standard database replication streams SQL statements or logical binlogs, which must be executed by the target DB node. Aurora Global Databases stream raw physical blocks directly between NVMe storage systems, minimizing lag.
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">2. Sub-Second Cross-Region Latency</strong>
-                          Replication lag between us-east-1 and eu-west-1 is typically <strong>under 1 second (1000ms)</strong>. This guarantees a near-zero RPO boundary, ensuring that database commits are copied to the DR region almost immediately.
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">3. Multi-Region Write Forwarding</strong>
-                          Normally replica endpoints are strictly read-only. Aurora write-forwarding allows secondary clusters to accept write requests from local apps, automatically forwarding them to the Primary Writer region under the hood.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box">
-                        <strong>🔄 Database Promotion Failover:</strong><br />
-                        During a regional outage, promoting the secondary Aurora replica in eu-west-1 to Primary Writer role takes less than 30 seconds. The local engine is converted to standalone mode with zero reboots required.
-                      </div>
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Dictating a Book vs Instant Photo Photocopy
                     </div>
-
-                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Physical Storage Replication</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Continuous block transfers bypass SQL execution overheads</p>
-                      </div>
-
-                      <div className="w-full rounded-xl p-4 flex flex-col items-center justify-center da-svg-bg border border-slate-200">
-                        <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
-                          {/* Region 1 Storage Node */}
-                          <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="110" height="70" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                            <text x="55" y="15" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Primary Cluster</text>
-                            <text x="55" y="25" fill="var(--da-svg-indigo-text)" fontSize="6.5" opacity="0.8" fontWeight="bold" textAnchor="middle">us-east-1</text>
-                            
-                            <rect x="10" y="34" width="90" height="28" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
-                            <text x="55" y="44" fill="var(--da-text-title)" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
-                            <text x="55" y="54" fill="var(--da-svg-indigo-border)" fontSize="6" fontWeight="bold" textAnchor="middle">Active Writes OK</text>
-                          </g>
-
-                          {/* Region 2 Storage Node */}
-                          <g transform="translate(220, 45)">
-                            <rect x="0" y="0" width="110" height="70" rx="6" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.5" />
-                            <text x="55" y="15" fill="var(--da-text-title)" fontSize="7.5" fontWeight="bold" textAnchor="middle">Standby Cluster</text>
-                            <text x="55" y="25" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold" textAnchor="middle">eu-west-1</text>
-                            
-                            <rect x="10" y="34" width="90" height="28" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
-                            <text x="55" y="44" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="black" textAnchor="middle">NVMe Storage SSD</text>
-                            <text x="55" y="54" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Replica Read OK</text>
-                          </g>
-
-                          {/* Replication Conduit arrow */}
-                          <path d="M 120 80 H 220" fill="none" className="dr-flow-green" strokeWidth="3.5" />
-                          
-                          <text x="170" y="65" fill="var(--da-svg-green-text)" fontSize="7" fontWeight="black" textAnchor="middle">Physical Storage Sync</text>
-                          <text x="170" y="73" fill="var(--da-text-muted)" fontSize="6" fontWeight="bold" textAnchor="middle">Lag &lt; 900ms</text>
-                        </svg>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                        💡 Since storage replication is handled asynchronously, there is no performance penalty or writing latency impact on the Primary DB cluster.
-                      </span>
-                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Traditional Logical DB Replication</strong>: Reading a book out loud page-by-page over a telephone so someone in another city can write down every word (`Slow &amp; CPU Intensive`).
+                      <br />• <strong>Aurora Physical Block Mirroring</strong>: Taking an instant high-speed photocopy of the page and transmitting the image via laser satellite (`Sub-second &amp; Zero DB Overhead`)!
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 6: ON-PREMISES & HYBRID BACKUP                                    */}
-              {/* ========================================================================= */}
+              {/* MODULE 2.3: HYBRID BACKUP */}
               {selectedNote === 'hybrid_backup' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">On-Premises Integration</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Backup Gateway &amp; Hybrid Storage DR</h3>
+                      <span className="acad-hero-badge">2.3 Multi-Region &amp; Hybrid</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.3 On-Premises Hybrid Backup &amp; AWS Storage Gateway
+                      </h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 6 of 10</span>
+                    <button 
+                      onClick={() => setActiveTab('backup')}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Backup Tab
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Bridging legacy infrastructure with AWS requires seamless hybrid backup channels. Deploying AWS Backup Gateway connects on-premises hypervisors natively to secure cloud vaults.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    
-                    <div className="md:col-span-6 space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">Hybrid Backup Architecture:</span>
-                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">1. AWS Backup Gateway</strong>
-                          A lightweight VMware ESXi, Hyper-V, or physical virtual appliance deployed locally on-premises. It connects local hypervisors directly to AWS Backup endpoints over the internet, public endpoints, or private VPC interfaces via AWS Direct Connect.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">2. Cross-Account Backup Vault Copying</strong>
-                          To isolate data from primary AWS account compromises (ransomware or root logins), configure automated cross-account copies. Backup jobs replicate snapshots into a secondary AWS account containing a strictly guarded backup vault.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">3. Immutable WORM Vaults</strong>
-                          Lock the vaults using **AWS Backup Vault Lock**. Write-Once-Read-Many policies ensure recovery points remain completely undeletable by standard users or external hijackers.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Lock Compliance Recommendation:</strong> Always combine local network encryption with an enforced AWS Backup Vault Lock policy in Compliance Mode to achieve high-grade resilience.
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Hybrid Backup Flow Topology</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">On-premises VMs replicating snapshots directly to immutable cloud vaults</p>
-                      </div>
-
-                      <div className="w-full rounded-xl p-3 flex items-center justify-center da-svg-bg border border-slate-200">
-                        <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 340 170">
-                          {/* On Premises Datacenter */}
-                          <rect x="5" y="25" width="105" height="120" rx="5" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
-                          <text x="57.5" y="38" fill="var(--da-text-title)" fontSize="8" fontWeight="bold" textAnchor="middle">On-Premises Data</text>
-                          
-                          <rect x="15" y="55" width="85" height="26" rx="3" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
-                          <text x="57.5" y="71" fill="var(--da-text-muted)" fontSize="7" fontWeight="bold" textAnchor="middle">VMware ESXi Cluster</text>
-
-                          <rect x="15" y="90" width="85" height="26" rx="3" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1" />
-                          <text x="57.5" y="106" fill="var(--da-svg-amber-text)" fontSize="7" fontWeight="bold" textAnchor="middle">Backup Gateway</text>
-
-                          {/* Network connection */}
-                          <path d="M 110 103 H 220" fill="none" className="dr-flow-blue" strokeWidth="2.5" />
-                          <text x="165" y="93" fill="var(--da-svg-indigo-text)" fontSize="7" fontWeight="black" textAnchor="middle">IPSec / DX Link</text>
-
-                          {/* AWS Cloud */}
-                          <rect x="220" y="25" width="115" height="120" rx="5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                          <text x="277.5" y="38" fill="var(--da-svg-green-text)" fontSize="8" fontWeight="bold" textAnchor="middle">AWS Cloud Region</text>
-
-                          <rect x="230" y="55" width="95" height="30" rx="3" fill="var(--da-card-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                          <text x="277.5" y="70" fill="var(--da-text-title)" fontSize="7" fontWeight="black" textAnchor="middle">Backup Vault</text>
-                          <text x="277.5" y="79" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">🔒 Locked WORM</text>
-                        </svg>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold">
-                        📊 Note: Deploying the lightweight gateway appliance requires zero modifications to existing virtual machine configurations.
-                      </span>
-                    </div>
-
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Connects physical datacenters (VMware ESXi, Hyper-V) to cloud backup vaults using **AWS Backup Gateway** or **Volume Gateway**. Local servers keep writing to local SAN/NAS storage while snapshots automatically stream to S3 and Glacier in the cloud!
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 7: AWS DMS CDC CONTINUOUS SYNC                                    */}
-              {/* ========================================================================= */}
+              {/* MODULE 3.1: DMS CDC CONTINUOUS SYNC */}
               {selectedNote === 'dms_replication' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Database &amp; Backup Governance</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS DMS CDC Continuous Sync</h3>
+                      <span className="acad-hero-badge">3.1 DB &amp; Backup Governance</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.1 AWS Database Migration Service (DMS) &amp; Change Data Capture (CDC)
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('dms')}
-                        className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Database className="w-3 h-3" /> Go to DMS Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 7 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('dms')}
+                      className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch DMS Simulator
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    AWS Database Migration Service (DMS) executes continuous database synchronizations. Integrating **Change Data Capture (CDC)** engines reads native log buffers in real time to capture active commits without database downtime.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AWS DMS** performs zero-downtime database migrations. **Full Load** copies existing tables, while **CDC (Change Data Capture)** reads native transaction log buffers (Oracle Redo Logs, MySQL Binlogs, Postgres WAL) in real time to keep cloud databases in sync while your business keeps taking live orders!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    
-                    {/* Left Column: Interactive compatibility matrix */}
-                    <div className="md:col-span-6 space-y-4 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                      
-                      <div className="da-inner-card border rounded-xl p-4 space-y-3">
-                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest block">DMS Migration Pair Compatibility Matrix</span>
-                        
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 block mb-1">1. Select Source DB:</label>
-                            <select
-                              value={dmsMatrixSource}
-                              onChange={(e) => setDmsMatrixSource(e.target.value)}
-                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-1 text-[11px] font-extrabold text-slate-700 dark:text-slate-300"
-                            >
-                              <option value="oracle">Oracle Enterprise</option>
-                              <option value="sqlserver">Microsoft SQL Server</option>
-                              <option value="mysql">MySQL Engine</option>
-                              <option value="postgres">PostgreSQL Engine</option>
-                              <option value="mongodb">MongoDB / NoSQL</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 block mb-1">2. Select Target DB:</label>
-                            <select
-                              value={dmsMatrixTarget}
-                              onChange={(e) => setDmsMatrixTarget(e.target.value)}
-                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded p-1 text-[11px] font-extrabold text-slate-700 dark:text-slate-300"
-                            >
-                              <option value="aurora">Amazon Aurora Cluster</option>
-                              <option value="rds_pg">RDS PostgreSQL</option>
-                              <option value="s3">Amazon S3 Lakehouse</option>
-                              <option value="redshift">Amazon Redshift</option>
-                              <option value="dynamodb">Amazon DynamoDB</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Calculated Compatibility Card */}
-                        <div className="da-svg-bg border p-2.5 rounded-lg text-[10.5px] leading-relaxed text-slate-600 dark:text-slate-300">
-                          {dmsMatrixSource === dmsMatrixTarget || 
-                          (dmsMatrixSource === 'mysql' && dmsMatrixTarget === 'aurora') ||
-                          (dmsMatrixSource === 'postgres' && dmsMatrixTarget === 'rds_pg') ? (
-                            <div>
-                              <span className="text-emerald-700 dark:text-emerald-400 font-extrabold block">✅ HOMOGENEOUS MIGRATION PATH</span>
-                              Engines are highly compatible. Schema conversion is NOT required. You can load DDL tables directly using AWS DMS with high structural conversion rates.
-                              <span className="block mt-1 font-bold text-slate-700 dark:text-slate-200">Recommended CDC Mode: Native Replication Logs</span>
-                            </div>
-                          ) : (
-                            <div>
-                              <span className="text-indigo-700 dark:text-indigo-400 font-extrabold block">🔄 HETEROGENEOUS MIGRATION PATH</span>
-                              Engines are completely different! **AWS Schema Conversion Tool (SCT)** MUST be executed first to parse legacy procedures/triggers into compatible dialects.
-                              <span className="block mt-1 font-bold text-slate-700 dark:text-slate-200">
-                                {dmsMatrixSource === 'oracle' && 'CDC mechanism: Oracle Redo Logs via LogMiner or Binary Reader.'}
-                                {dmsMatrixSource === 'sqlserver' && 'CDC mechanism: MS-CDC (Microsoft Change Data Capture).'}
-                                {dmsMatrixSource === 'mysql' && 'CDC mechanism: MySQL Binary Logs (row-based binlog).'}
-                                {dmsMatrixSource === 'postgres' && 'CDC mechanism: PostgreSQL Replication Slots (pglogical).'}
-                                {dmsMatrixSource === 'mongodb' && 'CDC mechanism: MongoDB Replication Oplog buffer.'}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box">
-                        <strong>⚡ CDC Stream Engine Lag:</strong><br />
-                        AWS DMS runs Multi-AZ replication instances inside private VPC subnets. It continuously streams changes asynchronously from source transaction logs to the cloud, guaranteeing replication lags <strong>under 100ms</strong> under typical operations.
-                      </div>
+                  {/* Interactive Matrix & CDC Animation Control */}
+                  <div className="p-4 rounded-xl border space-y-3" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-xs font-bold" style={{ color: 'var(--da-text-title)' }}>
+                        🧪 Interactive DMS Migration Engine Selector
+                      </h4>
+                      <button
+                        onClick={() => setIsCdcAnimating(!isCdcAnimating)}
+                        className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-[10px] font-black transition-all active:scale-95"
+                      >
+                        {isCdcAnimating ? '⏸️ Pause CDC Stream' : '▶️ Play CDC Stream'}
+                      </button>
                     </div>
 
-                    {/* Right Column: Flowchart SVG with play-pause animation toggle */}
-                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px] relative overflow-hidden">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Change Data Capture (CDC) Pipeline</span>
-                          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Real-time log-scraping and delivery parser channel</p>
-                        </div>
-                        <button
-                          onClick={() => setIsCdcAnimating(!isCdcAnimating)}
-                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[10px] font-black transition-all select-none shadow-sm"
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <label className="font-bold block mb-1">Source DB:</label>
+                        <select
+                          value={dmsMatrixSource}
+                          onChange={(e) => setDmsMatrixSource(e.target.value)}
+                          className="w-full p-2 border rounded-lg font-bold"
+                          style={{ background: 'var(--da-card-bg)', borderColor: 'var(--da-card-border)' }}
                         >
-                          {isCdcAnimating ? '⏸️ Pause CDC' : '▶️ Play CDC Stream'}
-                        </button>
+                          <option value="oracle">Oracle Enterprise</option>
+                          <option value="sqlserver">Microsoft SQL Server</option>
+                          <option value="mysql">MySQL Engine</option>
+                          <option value="postgres">PostgreSQL Engine</option>
+                        </select>
                       </div>
 
-                      <div className="w-full rounded-xl p-4 flex items-center justify-center my-4 da-svg-bg border border-slate-200">
-                        <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
-                          {/* Source Database */}
-                          <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="80" height="60" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="var(--da-text-title)" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
-                            <text x="40" y="24" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Oracle/MySQL</text>
-                            
-                            <rect x="8" y="34" width="64" height="18" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
-                            <text x="40" y="46" fill="var(--da-text-muted)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Redo/Binlogs</text>
-                          </g>
-
-                          {/* DMS Replication Node */}
-                          <g transform="translate(125, 45)">
-                            <rect x="0" y="0" width="90" height="60" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                            <text x="45" y="16" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">AWS DMS</text>
-                            <text x="45" y="24" fill="var(--da-svg-indigo-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Host</text>
-                            <rect x="15" y="34" width="60" height="18" rx="2" fill="var(--da-svg-indigo-border)" />
-                            <text x="45" y="46" fill="#ffffff" fontSize="6.5" fontWeight="black" textAnchor="middle">CDC Parser</text>
-                          </g>
-
-                          {/* Target Aurora DB */}
-                          <g transform="translate(250, 45)">
-                            <rect x="0" y="0" width="80" height="60" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Target Aurora</text>
-                            <text x="40" y="24" fill="var(--da-svg-green-text)" opacity="0.8" fontSize="6" textAnchor="middle">AWS Cloud</text>
-                            <rect x="15" y="34" width="50" height="18" rx="1.5" fill="var(--da-svg-green-border)" />
-                            <text x="40" y="46" fill="#ffffff" fontSize="6.5" fontWeight="bold" textAnchor="middle">SQL Tables</text>
-                          </g>
-
-                          {/* CDC conduits and flying packet dots */}
-                          <path d="M 90 75 H 125" fill="none" className={isCdcAnimating ? 'dr-flow-blue' : 'dr-flow-gray'} strokeWidth="2.5" />
-                          <path d="M 215 75 H 250" fill="none" className={isCdcAnimating ? 'dr-flow-green' : 'dr-flow-gray'} strokeWidth="2.5" />
-                        </svg>
+                      <div>
+                        <label className="font-bold block mb-1">Target DB:</label>
+                        <select
+                          value={dmsMatrixTarget}
+                          onChange={(e) => setDmsMatrixTarget(e.target.value)}
+                          className="w-full p-2 border rounded-lg font-bold"
+                          style={{ background: 'var(--da-card-bg)', borderColor: 'var(--da-card-border)' }}
+                        >
+                          <option value="aurora">Amazon Aurora Cluster</option>
+                          <option value="rds_pg">RDS PostgreSQL</option>
+                          <option value="s3">Amazon S3 Lakehouse</option>
+                          <option value="dynamodb">Amazon DynamoDB</option>
+                        </select>
                       </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold leading-normal">
-                        📊 Note: Continuous replication reduces application cutover downtime to just a few seconds since target schemas are fully synchronized.
-                      </span>
                     </div>
 
+                    <div className="p-3 rounded-lg border text-xs font-semibold" style={{ background: 'var(--da-card-bg)', borderColor: 'var(--da-card-border)' }}>
+                      {dmsMatrixSource === dmsMatrixTarget || (dmsMatrixSource === 'mysql' && dmsMatrixTarget === 'aurora') ? (
+                        <span className="text-emerald-600 font-bold">✅ Homogeneous Path: Schema is 100% compatible. SCT not required!</span>
+                      ) : (
+                        <span className="text-indigo-600 font-bold">🔄 Heterogeneous Path: Different engines! Requires AWS Schema Conversion Tool (SCT) first to convert stored procedures &amp; triggers.</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 8: AWS SCHEMA CONVERSION TOOL (SCT)                                */}
-              {/* ========================================================================= */}
+              {/* MODULE 3.2: AWS SCHEMA CONVERSION TOOL */}
               {selectedNote === 'aws_sct' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Database &amp; Backup Governance</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Schema Conversion Tool (SCT)</h3>
+                      <span className="acad-hero-badge">3.2 DB &amp; Backup Governance</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.2 AWS Schema Conversion Tool (SCT) Code Translation
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('dms')}
-                        className="px-2.5 py-1 bg-orange-600 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Database className="w-3 h-3" /> Go to DMS Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 8 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('dms')}
+                      className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch DMS Simulator
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Migrating databases across different engines (heterogeneous, e.g. Oracle to PostgreSQL) requires schema translation. **AWS Schema Conversion Tool (SCT)** handles code and database object conversion natively.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **SCT** converts database schemas, tables, indexes, views, stored procedures, and triggers from one database dialect (e.g. Oracle PL/SQL or SQL Server T-SQL) into compatible target dialects (e.g. PostgreSQL PL/pgSQL or MySQL DDL).
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    
-                    <div className="md:col-span-6 space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">SCT Structural Conversion Process:</span>
-                      
-                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">1. Translation Report Generation</strong>
-                          SCT scans source database schemas, tables, functions, stored procedures, packages, and triggers. It produces an evaluation report detailing how much code can be converted automatically (typically 80-90%) and highlights compatibility remediation items.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">2. Schema Translation &amp; DDL Loading</strong>
-                          Once rules are verified, SCT writes clean compatible DDL scripts (e.g. converting Oracle PL/SQL to PostgreSQL PL/pgSQL). It loads these directly onto the target Amazon Aurora cluster.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">3. SCT Extension Pack</strong>
-                          For native functions that have no equivalent standard target dialect SQL blocks, the SCT Extension Pack is installed on the target database, emulating source functions to maintain application behavior.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ DMS vs SCT Roles:</strong> Remember: **SCT** converts the structural containers (tables, procedures, columns, views), while **DMS** handles loading and replicating the raw data blocks.
-                      </div>
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Language Translator vs Moving Truck
                     </div>
-
-                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px] relative overflow-hidden">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Multi-Phase Schema Translation Flow</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">How SCT converts structures before DMS loads database tables</p>
-                      </div>
-
-                      <div className="w-full rounded-xl p-4 flex items-center justify-center my-4 da-svg-bg border border-slate-200">
-                        <svg className="w-full max-w-[340px] h-[160px]" viewBox="0 0 340 160">
-                          {/* Source Database */}
-                          <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="var(--da-text-title)" fontSize="7.5" fontWeight="black" textAnchor="middle">Source DB</text>
-                            <text x="40" y="26" fill="var(--da-text-muted)" fontSize="6.5" textAnchor="middle">PL/SQL Schema</text>
-                            
-                            <rect x="10" y="38" width="60" height="24" rx="2" fill="var(--da-svg-red-bg)" stroke="var(--da-svg-red-border)" strokeWidth="1" />
-                            <text x="40" y="48" fill="var(--da-svg-red-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Triggers &amp; Stored</text>
-                            <text x="40" y="56" fill="var(--da-svg-red-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">Procedures</text>
-                          </g>
-
-                          {/* SCT Engine */}
-                          <g transform="translate(125, 45)">
-                            <rect x="0" y="0" width="90" height="70" rx="6" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1.5" />
-                            <text x="45" y="18" fill="var(--da-svg-purple-text)" fontSize="8" fontWeight="black" textAnchor="middle">AWS SCT</text>
-                            <rect x="15" y="28" width="60" height="34" rx="2" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
-                            <text x="45" y="40" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Translation</text>
-                            <text x="45" y="49" fill="var(--da-svg-purple-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Engine</text>
-                            <text x="45" y="56" fill="var(--da-svg-purple-text)" opacity="0.8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Applying Rules...</text>
-                          </g>
-
-                          {/* Target Database */}
-                          <g transform="translate(250, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Target DB</text>
-                            <text x="40" y="26" fill="var(--da-svg-green-text)" opacity="0.8" fontSize="6.5" textAnchor="middle">PL/pgSQL Schema</text>
-                            
-                            <rect x="10" y="38" width="60" height="24" rx="2" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
-                            <text x="40" y="48" fill="var(--da-svg-green-text)" fontSize="6" fontWeight="bold" textAnchor="middle">Converted SQL</text>
-                            <text x="40" y="56" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">DDL Loaded</text>
-                          </g>
-
-                          {/* Flow channels */}
-                          <path d="M 90 80 H 125" fill="none" className="dr-flow-blue" strokeWidth="2.5" />
-                          <path d="M 215 80 H 250" fill="none" className="dr-flow-green" strokeWidth="2.5" />
-                        </svg>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold leading-normal">
-                        💡 Note: Running the conversion utility does not access or duplicate production records, avoiding performance overheads.
-                      </span>
-                    </div>
-
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>AWS SCT (Language Translator)</strong>: Translates an instruction manual written in German into English so English readers can understand it (`Converts SQL code &amp; table definitions`).
+                      <br />• <strong>AWS DMS (Moving Truck)</strong>: Loads all the heavy furniture out of the house into the truck and drives it across town to the new house (`Loads actual data rows`).
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 9: AWS BACKUP VAULT LOCK & WORM                                    */}
-              {/* ========================================================================= */}
+              {/* MODULE 3.3: BACKUP VAULT LOCK */}
               {selectedNote === 'backup_vault_lock' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Database &amp; Backup Governance</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Backup Vault Lock &amp; WORM</h3>
+                      <span className="acad-hero-badge">3.3 DB &amp; Backup Governance</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.3 AWS Backup Vault Lock &amp; Immutable WORM Compliance
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('backup')}
-                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Shield className="w-3 h-3" /> Go to Backup &amp; Vault
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 9 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('backup')}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Backup Tab
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    AWS Backup Vault Lock enforces write-once-read-many (WORM) storage controls on backup recovery points. By lock-securing vaults, you prevent accidental deletions, rogue administrator adjustments, or ransomware backup sabotage.
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>Governance Mode</strong>: Prevents standard IAM users from deleting backups. Admins with root permissions can override if necessary.
+                    <br />• <strong>Compliance Mode (Irreversible WORM)</strong>: Locks backups completely. **NO ONE—not even the AWS root account or AWS Support—can delete backup snapshots** until the retention period expires!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">Vault Lock Technical Modes:</span>
-                      
-                      <div className="space-y-3.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">1. Governance Mode</strong>
-                          Enforces block permissions that prevent backup deletions by standard users. However, authorized administrators with explicit, highly guarded IAM roles can override restrictions and delete backups if required.
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">2. Compliance Mode (Immutable WORM)</strong>
-                          Locks the vault permanently. Once the cooling-off period expires, **no user—not even the AWS root account or AWS support—can delete the vault lock or remove backup recovery points** until their retention expiration date.
-                        </div>
-                        <div>
-                          <strong className="text-slate-800 dark:text-white block">3. Cooling-Off Grace Period</strong>
-                          Compliance Mode provides a custom cooling-off window (1 to 7 days). During this grace period, you can still test, adjust, or disable the compliance lock. Once the window closes, the lock is irreversible.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box">
-                        <strong>🛡️ Ransomware Prevention Strategy:</strong><br />
-                        Hackers compromising credentials frequently target backups first, deleting all recovery points to force ransom payouts. Vault Lock in Compliance Mode makes backups completely immune to deletions, ensuring recovery points remain secure and available.
-                      </div>
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Time-Locked Bank Deposit Safe
                     </div>
-
-                    <div className="acad-sim-diagram flex flex-col justify-between min-h-[300px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Ransomware Sabotage Attack Test</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Attempt to delete immutable backups under Vault Compliance Lock</p>
-                      </div>
-
-                      <div className="w-full rounded-xl p-4 flex flex-col items-center justify-center space-y-4 da-svg-bg border border-slate-200">
-                        <div className="flex items-center gap-3 bg-red-950/80 border border-red-800/40 p-3 rounded-lg w-full">
-                          <span className="p-1.5 bg-red-900 rounded text-red-200">
-                            <AlertTriangle className="w-4 h-4 stroke-[2]" />
-                          </span>
-                          <div>
-                            <span className="text-[9px] font-black text-red-300 block uppercase tracking-wider">Unauthorized Hacker Terminal</span>
-                            <span className="font-mono text-[10.5px] text-red-100 block mt-0.5">aws backup delete-recovery-point --vault-name SecVault</span>
-                          </div>
-                        </div>
-
-                        <div className="w-12 h-12 bg-[var(--da-svg-green-bg)] border border-[var(--da-svg-green-border)] text-[var(--da-svg-green-text)] rounded-full flex items-center justify-center dr-node-glow">
-                          <Lock className="w-6 h-6 stroke-[2.5]" />
-                        </div>
-
-                        <div className="bg-slate-950 border border-red-900/40 p-2.5 rounded-md w-full text-center">
-                          <span className="font-mono text-[10px] text-rose-500 font-extrabold block">🚨 ACCESS DENIED: delete-recovery-point failed</span>
-                          <span className="text-[9px] text-slate-400 block mt-0.5">Reason: Vault Lock in Compliance Mode forbids manual deletions.</span>
-                        </div>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                        💡 Combining Compliance Lock with cross-account backup vault copies protects your enterprise data against root account compromises.
-                      </span>
-                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      You drop cash into a steel time-locked vault configured to unlock on January 1st. Even if a thief holds a gun to the bank manager&apos;s head (`Stolen Root Credentials`), the mechanical timer will physically refuse to open until January 1st!
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 10: AWS ADS & MGN MIGRATION                                       */}
-              {/* ========================================================================= */}
+              {/* MODULE 4.1: MGN & ADS */}
               {selectedNote === 'mgn_ads' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Enterprise Migration Suite</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">AWS Application Discovery Service &amp; MGN Orchestration</h3>
+                      <span className="acad-hero-badge">4.1 Enterprise Migration</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.1 AWS Application Discovery Service (ADS) &amp; Application Migration Service (MGN)
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('playbook')}
-                        className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <BookOpen className="w-3 h-3" /> Go to Recovery Playbook
-                      </button>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 10 of 10</span>
-                    </div>
+                    <button 
+                      onClick={() => setActiveTab('playbook')}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Playbook Tab
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Large-scale cloud migrations require structured planning and block-level replication pipelines. AWS utilizes **ADS** for environmental audits and **MGN** for continuous server conversions.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    
-                    <div className="md:col-span-6 space-y-4">
-                      <span className="text-xs font-black text-slate-800 dark:text-white block">System Technical Profiles:</span>
-                      
-                      <div className="space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">1. AWS Application Discovery Service (ADS)</strong>
-                          Discovers on-premises infrastructure dependencies. Deploys **Discovery Agents** on servers or runs **Agentless Collectors** on VMware vCenter. It builds a map of CPU/RAM limits, hardware specifications, and network traffic, exporting a migration roadmap.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">2. AWS Application Migration Service (MGN)</strong>
-                          AWS's primary tool for lifting-and-shifting physical servers or hypervisors into AWS. It uses an **AWS Replication Agent** installed on source VMs to stream block-level modifications continuously into a private replication staging area in AWS.
-                        </div>
-                        <div>
-                          <strong className="text-slate-900 dark:text-white block font-bold">3. Staging Area &amp; Cutover Conversions</strong>
-                          The Staging Area runs low-cost replication instances and lightweight EBS storage nodes. During cutover, MGN automatically executes driver conversions (converting hypervisor drivers to AWS PV/NVMe drivers) and boots a production EC2 instance.
-                        </div>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Cutover Objective:</strong> MGN block replication occurs asynchronously during active runtime. Cutover downtime is strictly limited to the reboot sequence (typically under 5 minutes).
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[300px]">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">AWS MGN Block Replication Pipeline</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Streaming continuous host storage sectors into cloud staging subnets</p>
-                      </div>
-
-                      <div className="w-full rounded-xl p-4 flex items-center justify-center da-svg-bg border border-slate-200">
-                        <svg className="w-full max-w-[340px] h-[170px]" viewBox="0 0 340 170">
-                          {/* On Premises Server */}
-                          <g transform="translate(10, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="var(--da-text-title)" fontSize="7.5" fontWeight="black" textAnchor="middle">Source Server</text>
-                            <text x="40" y="25" fill="var(--da-text-muted)" fontSize="6" textAnchor="middle">Physical Host / VM</text>
-                            
-                            <rect x="10" y="36" width="60" height="24" rx="2" fill="var(--da-svg-amber-bg)" stroke="var(--da-svg-amber-border)" strokeWidth="1" />
-                            <text x="40" y="47" fill="var(--da-svg-amber-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Replication Agent</text>
-                            <text x="40" y="55" fill="var(--da-svg-amber-text)" opacity="0.8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Block Parser</text>
-                          </g>
-
-                          {/* AWS MGN Staging Subnet */}
-                          <g transform="translate(125, 30)">
-                            <rect x="0" y="0" width="90" height="100" rx="6" fill="var(--da-svg-indigo-bg)" stroke="var(--da-svg-indigo-border)" strokeWidth="1.5" />
-                            <text x="45" y="14" fill="var(--da-svg-indigo-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">MGN Staging Area</text>
-                            <text x="45" y="21" fill="var(--da-svg-indigo-text)" opacity="0.8" fontSize="5.5" textAnchor="middle">us-east-1a Subnet</text>
-                            
-                            <rect x="10" y="32" width="70" height="24" rx="2" fill="var(--da-card-bg)" stroke="var(--da-card-border)" strokeWidth="1" />
-                            <text x="45" y="43" fill="var(--da-text-title)" fontSize="6" fontWeight="bold" textAnchor="middle">Replication Instance</text>
-
-                            <rect x="10" y="64" width="70" height="24" rx="2" fill="var(--da-svg-purple-bg)" stroke="var(--da-svg-purple-border)" strokeWidth="1" />
-                            <text x="45" y="75" fill="var(--da-svg-purple-text)" fontSize="6.5" fontWeight="bold" textAnchor="middle">Staging EBS</text>
-                            <text x="45" y="83" fill="var(--da-svg-purple-text)" opacity="0.8" fontSize="5.5" fontWeight="bold" textAnchor="middle">Continuous Copy</text>
-                          </g>
-
-                          {/* Launched Target EC2 */}
-                          <g transform="translate(250, 45)">
-                            <rect x="0" y="0" width="80" height="70" rx="4" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1.2" />
-                            <text x="40" y="16" fill="var(--da-svg-green-text)" fontSize="7.5" fontWeight="black" textAnchor="middle">Target EC2</text>
-                            <text x="40" y="25" fill="var(--da-svg-green-text)" opacity="0.8" fontSize="6" textAnchor="middle">Converted VM</text>
-                            <rect x="10" y="36" width="60" height="24" rx="1.5" fill="var(--da-svg-green-bg)" stroke="var(--da-svg-green-border)" strokeWidth="1" />
-                            <text x="40" y="47" fill="var(--da-svg-green-text)" fontSize="6.5" fontWeight="black" textAnchor="middle">AMI Conversion</text>
-                            <text x="40" y="55" fill="var(--da-svg-green-text)" fontSize="5.5" fontWeight="bold" textAnchor="middle">● Ready for Cut</text>
-                          </g>
-
-                          {/* Replication pathways */}
-                          <path d="M 90 80 H 125" fill="none" className="dr-flow-blue" strokeWidth="2.5" />
-                          <path d="M 215 80 H 250" fill="none" className="dr-flow-green" strokeWidth="2.5" />
-                        </svg>
-                      </div>
-
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 font-semibold leading-normal">
-                        💡 Note: Drivers are dynamically injected into the target filesystem during staging, allowing instant booting upon final promotion.
-                      </span>
-                    </div>
-
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>AWS ADS (Discovery Agent)</strong>: Audits your physical datacenter to map server dependencies, RAM/CPU utilization, and active network connections.
+                    <br />• <strong>AWS MGN (Replication Agent)</strong>: Performs block-level lift-and-shift server replication into AWS staging subnets without taking servers offline. Cuts over in &lt; 5 mins!
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 11: LARGE SCALE DATA TRANSFER                                     */}
-              {/* ========================================================================= */}
+              {/* MODULE 4.2: LARGE SCALE DATA TRANSFER */}
               {selectedNote === 'large_data_transfer' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Large Scale Migration</span>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2 font-display">Large Scale Data Transfer Channels</h3>
+                      <span className="acad-hero-badge">4.2 Enterprise Migration</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.2 Large Scale Data Transfer (DataSync vs AWS Snowball Edge / Snowmobile)
+                      </h3>
                     </div>
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Concept 11 of 10</span>
+                    <button 
+                      onClick={() => setActiveTab('playbook')}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Zap className="w-3.5 h-3.5" /> Launch Playbook Tab
+                    </button>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Transferring large datasets (terabytes or petabytes) requires balancing network bandwidth constraints against physical shipping times. Explore standard pathways and run our calculator below:
-                  </p>
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>AWS DataSync</strong>: High-speed multi-threaded network transfer over Direct Connect or internet. Best for dataset sizes &lt; 10 TB.
+                    <br />• <strong>AWS Snowcone (8 TB) / Snowball Edge (80 TB) / Snowmobile (100 PB)</strong>: Ruggedized physical hardware appliances shipped via courier when network bandwidth is too slow!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 dark:text-white block font-bold">1. Network Transfer (DataSync &amp; Direct Connect)</strong>
-                        **AWS DataSync** automates network replication over NFS, SMB, or S3, utilizing custom multi-threaded transfers. Pair with a dedicated **AWS Direct Connect** (1G/10G/100G fiber connection) to guarantee bandwidth speeds.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 dark:text-white block font-bold">2. Physical Snow Family Transport</strong>
-                        When bandwidth is narrow, transfer physically:
-                        <ul className="list-disc pl-4 mt-1 space-y-1">
-                          <li><strong>Snowcone (8–14 TB)</strong>: Lightweight, ruggedized edge-computing and file transfer unit.</li>
-                          <li><strong>Snowball Edge (80–100 TB)</strong>: Heavy-duty storage or compute optimized device with local KMS encryption.</li>
-                          <li><strong>Snowmobile (Up to 100 PB)</strong>: A 45-foot shipping container towed by a semi-trailer to ingest massive datacenters.</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 dark:text-white block font-bold">3. AWS Transfer Family</strong>
-                        A managed service to ingest daily transfers using legacy SFTP, FTPS, and FTP structures directly into Amazon S3 or EFS files.
-                      </div>
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Downloading vs Mailing a Hard Drive
                     </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      &ldquo;Never underestimate the bandwidth of a station wagon full of tapes hurtling down the highway.&rdquo; If downloading 500 Terabytes over a slow 100 Mbps internet line takes 460 days, shipping a Snowball Edge appliance via FedEx takes 3 days!
+                    </p>
+                  </div>
 
-                    <div className="md:col-span-6 acad-sim-diagram flex flex-col justify-between min-h-[340px]">
+                  {/* Interactive ETA & Feasibility Calculator */}
+                  <div className="p-4 rounded-xl border space-y-3" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <h4 className="text-xs font-bold" style={{ color: 'var(--da-text-title)' }}>
+                      🧮 Interactive Data Transfer ETA &amp; Feasibility Calculator
+                    </h4>
+
+                    <div className="space-y-3 text-xs">
                       <div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 block uppercase tracking-wider">Feasibility &amp; ETA Calculator</span>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Determine if physical transport saves time over network streaming</p>
+                        <div className="flex justify-between font-bold mb-1">
+                          <span>Dataset Size:</span>
+                          <span className="text-amber-600">{calcDataSizeTB} TB</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5000"
+                          value={calcDataSizeTB}
+                          onChange={(e) => setCalcDataSizeTB(Number(e.target.value))}
+                          className="w-full accent-amber-500"
+                        />
                       </div>
 
-                      {/* Calculator Sliders */}
-                      <div className="space-y-3 mt-3">
-                        <div>
-                          <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
-                            <span>📦 Total Dataset Size:</span>
-                            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{calcDataSizeTB} TB</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="1"
-                            max="5000"
-                            value={calcDataSizeTB}
-                            onChange={(e) => setCalcDataSizeTB(Number(e.target.value))}
-                            className="w-full accent-indigo-600 dark:accent-indigo-500 bg-slate-200 dark:bg-slate-800 h-1 rounded"
-                          />
+                      <div>
+                        <div className="flex justify-between font-bold mb-1">
+                          <span>Network Bandwidth:</span>
+                          <span className="text-amber-600">
+                            {calcBandwidthMbps >= 1000 ? `${(calcBandwidthMbps / 1000).toFixed(1)} Gbps` : `${calcBandwidthMbps} Mbps`}
+                          </span>
                         </div>
-
-                        <div>
-                          <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
-                            <span>🌐 Available Net Bandwidth:</span>
-                            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
-                              {calcBandwidthMbps >= 1000 ? `${(calcBandwidthMbps / 1000).toFixed(1)} Gbps` : `${calcBandwidthMbps} Mbps`}
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min="10"
-                            max="10000"
-                            step="10"
-                            value={calcBandwidthMbps}
-                            onChange={(e) => setCalcBandwidthMbps(Number(e.target.value))}
-                            className="w-full accent-indigo-600 dark:accent-indigo-500 bg-slate-200 dark:bg-slate-800 h-1 rounded"
-                          />
-                        </div>
+                        <input
+                          type="range"
+                          min="10"
+                          max="10000"
+                          step="10"
+                          value={calcBandwidthMbps}
+                          onChange={(e) => setCalcBandwidthMbps(Number(e.target.value))}
+                          className="w-full accent-amber-500"
+                        />
                       </div>
 
-                      {/* Computed Outputs */}
-                      <div className="da-svg-bg border p-3 rounded-lg text-[10px] font-mono leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 mt-3">
+                      <div className="p-3 rounded-lg border font-mono text-[11px] space-y-1" style={{ background: 'var(--da-card-bg)', borderColor: 'var(--da-card-border)' }}>
                         <div className="flex justify-between">
-                          <span>🌐 Network Transfer (80% Eff):</span>
-                          <span className="text-amber-600 dark:text-amber-400 font-extrabold">
+                          <span>Online DataSync Transfer Time:</span>
+                          <span className="font-bold text-blue-600">
                             {(() => {
                               const days = (calcDataSizeTB * 8000000) / (calcBandwidthMbps * 0.8) / 86400;
                               if (days < 1) return `${(days * 24).toFixed(1)} hours`;
@@ -3094,36 +2427,59 @@ export default function DisasterRecoveryVisualizer({ provider = 'aws', setProvid
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span>📦 Physical Snow Family Ingest:</span>
-                          <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">~7 to 10 days (Est)</span>
-                        </div>
-                        <div className="border-t border-slate-200 dark:border-slate-800 pt-1.5 text-[9.5px] leading-normal font-sans text-slate-500 dark:text-slate-400">
-                          <strong className="text-slate-900 dark:text-white block font-bold text-[10px] mb-0.5">🧠 Architect Smart Recommendation:</strong>
-                          {(() => {
-                            const days = (calcDataSizeTB * 8000000) / (calcBandwidthMbps * 0.8) / 86400;
-                            if (days < 5) {
-                              return '🚀 Stream Online: Network transfer is highly feasible and faster than ordering, copying, and shipping physical devices. Utilize AWS DataSync.';
-                            } else if (calcDataSizeTB < 15) {
-                              return '📦 Deploy AWS Snowcone: Faster and more secure physical transport. Bypass local network congestion limits.';
-                            } else if (calcDataSizeTB < 400) {
-                              return '📦 Deploy AWS Snowball Edge: Ordering a storage-optimized Snowball Edge will save weeks of network congestion and secure raw disks.';
-                            } else {
-                              return '🚛 Dispatch AWS Snowmobile: Extreme petabyte scale warrants ordering a physical ruggedized shipping trailer to prevent months of ingestion delay.';
-                            }
-                          })()}
+                          <span>Physical Snowball Courier Transit:</span>
+                          <span className="font-bold text-emerald-600">~5 to 7 days (Total transit + ingest)</span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Transfer Method</th>
+                          <th>Capacity Unit</th>
+                          <th>Best Use Case</th>
+                          <th>Estimated Transfer Window</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>AWS DataSync</strong></td>
+                          <td>Continuous Stream</td>
+                          <td>Active file sync over Direct Connect / Internet</td>
+                          <td>Hours to Days (Bandwidth dependent)</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Snowcone</strong></td>
+                          <td>8 TB to 14 TB</td>
+                          <td>Edge computing &amp; small remote site backups</td>
+                          <td>2 to 4 Days (Courier transit)</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Snowball Edge</strong></td>
+                          <td>80 TB to 100 TB</td>
+                          <td>Datacenter migrations &amp; petabyte archives</td>
+                          <td>3 to 5 Days (Courier transit)</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Snowmobile</strong></td>
+                          <td>Up to 100 PB</td>
+                          <td>Exabyte-scale complete datacenter evacuations</td>
+                          <td>Weeks (Semi-truck transit)</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
 
             </div>
-
           </div>
         </div>
       )}
+
           </>
         </Translate>
       )}
@@ -3620,6 +2976,67 @@ function styleBlock() {
         display: inline-flex;
         align-items: center;
         gap: 5px;
+      }
+      .acad-plain-english {
+        background: rgba(2, 132, 199, 0.07);
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: var(--da-text-title);
+        border-top: 1px solid var(--da-card-border);
+        border-right: 1px solid var(--da-card-border);
+        border-bottom: 1px solid var(--da-card-border);
+      }
+      .dark .acad-plain-english {
+        background: rgba(56, 189, 248, 0.12);
+        border-left-color: #38bdf8;
+        color: #f1f5f9;
+      }
+      .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12px;
+        line-height: 1.65;
+        color: var(--da-text-title);
+      }
+      .dark .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #f1f5f9;
+      }
+      .acad-advice-box {
+        background: var(--da-card-bg);
+        border: 1px solid var(--da-card-border);
+        color: var(--da-text-muted);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
+      .dark .acad-advice-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.06);
+        border-left: 4px solid #ef4444;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 16px 0;
+        font-size: 11.5px;
+        line-height: 1.55;
+        color: var(--da-text-muted);
+        border-top: 1px solid var(--da-card-border);
+        border-right: 1px solid var(--da-card-border);
+        border-bottom: 1px solid var(--da-card-border);
+      }
+      .dark .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.12);
+        color: #fca5a5;
       }
       .acad-takeaway-box {
         background: var(--acad-takeaway-bg);

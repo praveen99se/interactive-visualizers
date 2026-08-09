@@ -889,7 +889,40 @@ export default function OperationsAndMLVisualizer({ provider = 'aws', setProvide
         .acad-dir-item-btn:hover { background: var(--acad-dir-item-hover-bg); color: var(--acad-dir-item-hover-text); }
         .acad-dir-item-btn.acad-active { background: var(--acad-dir-item-active-bg); color: var(--acad-dir-item-active-text); border-left-color: var(--acad-dir-item-active-border); font-weight: 800; }
         .acad-detail-card { background: var(--acad-detail-bg); border: 1px solid var(--acad-detail-border); border-radius: 16px; padding: 24px; box-shadow: var(--ops-card-shadow); }
-        .acad-hero-badge { background: var(--acad-hero-badge-bg); border: 1px solid var(--acad-hero-badge-border); color: var(--acad-hero-badge-text); font-size: 9.5px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 8px; display: inline-flex; align-items: center; }
+        .acad-plain-english {
+        background: rgba(2, 132, 199, 0.07);
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: var(--da-text-title);
+        border-top: 1px solid var(--da-card-border);
+        border-right: 1px solid var(--da-card-border);
+        border-bottom: 1px solid var(--da-card-border);
+      }
+      .dark .acad-plain-english {
+        background: rgba(56, 189, 248, 0.12);
+        border-left-color: #38bdf8;
+        color: #f1f5f9;
+      }
+      .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12px;
+        line-height: 1.65;
+        color: var(--da-text-title);
+      }
+      .dark .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #f1f5f9;
+      }
+      .acad-hero-badge { background: var(--acad-hero-badge-bg); border: 1px solid var(--acad-hero-badge-border); color: var(--acad-hero-badge-text); font-size: 9.5px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 8px; display: inline-flex; align-items: center; }
         .acad-takeaway-box { background: var(--acad-takeaway-bg); border-left: 4px solid var(--acad-takeaway-border); border-radius: 12px; padding: 16px; font-size: 11.5px; line-height: 1.6; color: var(--acad-takeaway-text); font-weight: 600; border-top: 1px solid var(--ops-card-border); border-right: 1px solid var(--ops-card-border); border-bottom: 1px solid var(--ops-card-border); }
         .acad-terminal { background: var(--acad-terminal-bg); border-radius: 12px; padding: 12px; font-family: monospace; color: var(--acad-terminal-text); font-size: 10px; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
         
@@ -985,15 +1018,31 @@ export default function OperationsAndMLVisualizer({ provider = 'aws', setProvide
 
         {/* Tab Navigation */}
         {!isComparative && (
-          <div className="ops-tabs">
-            <button className={`ops-tb ${activeTab === 'notebook' ? 'ops-on' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
-            <button className={`ops-tb ${activeTab === 'cfn_ssm' ? 'ops-on' : ''}`} onClick={() => setActiveTab('cfn_ssm')}>🏗️ IaC &amp; Runbooks</button>
-            <button className={`ops-tb ${activeTab === 'fleet' ? 'ops-on' : ''}`} onClick={() => setActiveTab('fleet')}>💻 SSM Fleet Manager</button>
-            <button className={`ops-tb ${activeTab === 'hybrid_batch' ? 'ops-on' : ''}`} onClick={() => setActiveTab('hybrid_batch')}>🌎 Batch &amp; App Channels</button>
-            <button className={`ops-tb ${activeTab === 'ml_analytics' ? 'ops-on' : ''}`} onClick={() => setActiveTab('ml_analytics')}>🤖 SageMaker &amp; AI APIs</button>
-            <button className={`ops-tb ${activeTab === 'finops' ? 'ops-on' : ''}`} onClick={() => setActiveTab('finops')}>📊 Cost &amp; Trusted Advisor</button>
-            <button className={`ops-tb ${activeTab === 'unique' ? 'ops-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
-          </div>
+          <Translate>
+            <div className="ops-tabs">
+              <button className={`ops-tb ${activeTab === 'notebook' ? 'ops-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+                <BookOpen className="w-4 h-4 text-amber-500" /> 📖 1) Visual Notes &amp; Theories
+              </button>
+              <button className={`ops-tb ${activeTab === 'cfn_ssm' ? 'ops-on' : ''}`} onClick={() => setActiveTab('cfn_ssm')}>
+                <Code className="w-4 h-4 text-sky-500" /> 🏗️ 2) IaC &amp; Runbooks
+              </button>
+              <button className={`ops-tb ${activeTab === 'fleet' ? 'ops-on' : ''}`} onClick={() => setActiveTab('fleet')}>
+                <Server className="w-4 h-4 text-blue-500" /> 💻 3) SSM Fleet Manager
+              </button>
+              <button className={`ops-tb ${activeTab === 'hybrid_batch' ? 'ops-on' : ''}`} onClick={() => setActiveTab('hybrid_batch')}>
+                <Mail className="w-4 h-4 text-emerald-500" /> 🌎 4) Batch &amp; App Channels
+              </button>
+              <button className={`ops-tb ${activeTab === 'ml_analytics' ? 'ops-on' : ''}`} onClick={() => setActiveTab('ml_analytics')}>
+                <Bot className="w-4 h-4 text-purple-500" /> 🤖 5) SageMaker &amp; AI APIs
+              </button>
+              <button className={`ops-tb ${activeTab === 'finops' ? 'ops-on' : ''}`} onClick={() => setActiveTab('finops')}>
+                <DollarSign className="w-4 h-4 text-indigo-500" /> 📊 6) Cost &amp; Trusted Advisor
+              </button>
+              <button className={`ops-tb ${activeTab === 'unique' ? 'ops-on' : ''}`} onClick={() => setActiveTab('unique')}>
+                ✨ Unique Features
+              </button>
+            </div>
+          </Translate>
         )}
       </div>
 
@@ -1013,645 +1062,709 @@ export default function OperationsAndMLVisualizer({ provider = 'aws', setProvide
         {/* TAB 1: VISUAL ARCHITECT NOTES (DEVELOPER ACADEMY)                         */}
         {/* ========================================================================= */}
         {activeTab === 'notebook' && (
-          <div className="space-y-6 text-left">
-            <div className="card text-left">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
-                <BookOpen className="w-5 h-5 text-indigo-600" /> Operations &amp; Artificial Intelligence Notes
-              </h2>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
-                Understand operations governance, automation runbooks, secure SSH-less session controls via SSM, SMTP delivery telemetry, SageMaker endpoints routing, and cost allocation tags.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Directory Sidebar */}
-              <div className="lg:col-span-3 space-y-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1 font-mono">Operations Directory:</span>
-                
-                <div className="acad-dir-container">
-                  <div className="acad-dir-header">
-                    <BookOpen className="w-4 h-4 text-emerald-600" />
-                    <span>Module Explorer</span>
-                  </div>
-
-                  {/* CATEGORY 1: AUTOMATION & IAC */}
-                  <div>
-                    <button 
-                      onClick={() => setExpandedCategory(expandedCategory === 'iac_automation' ? '' : 'iac_automation')}
-                      className="acad-dir-folder-btn"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Code className="w-3.5 h-3.5 text-emerald-500" />
-                        1. IaC &amp; Runbooks
-                      </span>
-                      {expandedCategory === 'iac_automation' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
-                    {expandedCategory === 'iac_automation' && (
-                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
-                        <button 
-                          onClick={() => setSelectedNote('cloudformation')}
-                          className={`acad-dir-item-btn ${selectedNote === 'cloudformation' ? 'acad-active' : ''}`}
-                        >
-                          CloudFormation Rollbacks
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('ssm_automation')}
-                          className={`acad-dir-item-btn ${selectedNote === 'ssm_automation' ? 'acad-active' : ''}`}
-                        >
-                          SSM Automation Books
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CATEGORY 2: FLEET OPERATIONS */}
-                  <div>
-                    <button 
-                      onClick={() => setExpandedCategory(expandedCategory === 'fleet_mgmt' ? '' : 'fleet_mgmt')}
-                      className="acad-dir-folder-btn"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Server className="w-3.5 h-3.5 text-blue-500" />
-                        2. Fleet &amp; Compliance
-                      </span>
-                      {expandedCategory === 'fleet_mgmt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
-                    {expandedCategory === 'fleet_mgmt' && (
-                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
-                        <button 
-                          onClick={() => setSelectedNote('session_manager')}
-                          className={`acad-dir-item-btn ${selectedNote === 'session_manager' ? 'acad-active' : ''}`}
-                        >
-                          SSM Session Manager
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('patch_manager')}
-                          className={`acad-dir-item-btn ${selectedNote === 'patch_manager' ? 'acad-active' : ''}`}
-                        >
-                          SSM Patch &amp; MW
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('scheduler_advisor')}
-                          className={`acad-dir-item-btn ${selectedNote === 'scheduler_advisor' ? 'acad-active' : ''}`}
-                        >
-                          Trusted Advisor checks
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CATEGORY 3: APP DELIVERY & HYBRID */}
-                  <div>
-                    <button 
-                      onClick={() => setExpandedCategory(expandedCategory === 'hybrid_delivery' ? '' : 'hybrid_delivery')}
-                      className="acad-dir-folder-btn"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-amber-500" />
-                        3. Delivery &amp; Hybrid
-                      </span>
-                      {expandedCategory === 'hybrid_delivery' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
-                    {expandedCategory === 'hybrid_delivery' && (
-                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
-                        <button 
-                          onClick={() => setSelectedNote('ses_pinpoint')}
-                          className={`acad-dir-item-btn ${selectedNote === 'ses_pinpoint' ? 'acad-active' : ''}`}
-                        >
-                          SES &amp; Pinpoint Loops
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('outposts_batch')}
-                          className={`acad-dir-item-btn ${selectedNote === 'outposts_batch' ? 'acad-active' : ''}`}
-                        >
-                          Batch &amp; Outposts queues
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('appflow_amplify')}
-                          className={`acad-dir-item-btn ${selectedNote === 'appflow_amplify' ? 'acad-active' : ''}`}
-                        >
-                          AppFlow &amp; Amplify
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CATEGORY 4: ML & ANALYTICS */}
-                  <div>
-                    <button 
-                      onClick={() => setExpandedCategory(expandedCategory === 'ml_analytics_worksheets' ? '' : 'ml_analytics_worksheets')}
-                      className="acad-dir-folder-btn"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <Bot className="w-3.5 h-3.5 text-purple-500" />
-                        4. AWS ML Services
-                      </span>
-                      {expandedCategory === 'ml_analytics_worksheets' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
-                    {expandedCategory === 'ml_analytics_worksheets' && (
-                      <div className="acad-dir-subfolder py-1 border-b border-slate-100">
-                        <button 
-                          onClick={() => setSelectedNote('sagemaker_workspace')}
-                          className={`acad-dir-item-btn ${selectedNote === 'sagemaker_workspace' ? 'acad-active' : ''}`}
-                        >
-                          SageMaker Endpoints
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('vision_text_ocr')}
-                          className={`acad-dir-item-btn ${selectedNote === 'vision_text_ocr' ? 'acad-active' : ''}`}
-                        >
-                          Rekognition &amp; Textract
-                        </button>
-                        <button 
-                          onClick={() => setSelectedNote('lex_polly_translate')}
-                          className={`acad-dir-item-btn ${selectedNote === 'lex_polly_translate' ? 'acad-active' : ''}`}
-                        >
-                          Polly, Lex &amp; Translate
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CATEGORY 5: COST MANAGEMENT */}
-                  <div>
-                    <button 
-                      onClick={() => setExpandedCategory(expandedCategory === 'finops_mgmt' ? '' : 'finops_mgmt')}
-                      className="acad-dir-folder-btn"
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <DollarSign className="w-3.5 h-3.5 text-indigo-500" />
-                        5. FinOps &amp; Budgets
-                      </span>
-                      {expandedCategory === 'finops_mgmt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                    </button>
-                    {expandedCategory === 'finops_mgmt' && (
-                      <div className="acad-dir-subfolder py-1">
-                        <button 
-                          onClick={() => setSelectedNote('cost_explorer')}
-                          className={`acad-dir-item-btn ${selectedNote === 'cost_explorer' ? 'acad-active' : ''}`}
-                        >
-                          Cost Explorer tag rules
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--da-text)' }}>
+          
+          {/* Header Hero Card */}
+          <div className="da-card text-left" style={{ borderLeft: '4px solid #6366f1', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-indigo-500" /> AWS, Azure &amp; GCP Operations, DevOps, ML &amp; FinOps Academy
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--da-text-muted)' }}>
+                  Complete 11-topic interactive operations and artificial intelligence curriculum sorted across 5 core levels. Master CloudFormation IaC, SSM Automation Runbooks, SSH-less Session Manager, Patch Manager, Trusted Advisor, SES Deliverability, AWS Batch &amp; Outposts, SageMaker Endpoints, Rekognition, Textract, Lex, Polly, and FinOps Cost Explorer allocation rules.
+                </p>
               </div>
-
-              {/* Right Workspace */}
-              <div className="lg:col-span-9 space-y-6">
-
-                {/* CLOUDFORMATION WORKSHEET */}
-                {selectedNote === 'cloudformation' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Infrastructure as Code</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">CloudFormation Deployment &amp; Drift Loops</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('cfn_ssm')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to IaC Simulator
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      AWS CloudFormation translates declarative template files (JSON or YAML) into live cloud resources. When updates fail, CloudFormation executes an automatic rollback sequence to return the environment to a known safe state.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs">
-                        <span className="font-extrabold text-slate-800 block">Critical IaC Life Cycles:</span>
-                        <ul className="list-disc pl-4 space-y-1.5 text-slate-600">
-                          <li><strong>Nested Stacks:</strong> Allow breaking complex configs into modular child files (e.g. database child stack, network child stack) imported under a parent coordinator.</li>
-                          <li><strong>StackSets:</strong> Enable provisioning the same template simultaneously across multiple AWS Accounts and Regions with centralized deployment limits.</li>
-                          <li><strong>Drift Detection:</strong> Identifies resources altered manually outside of CloudFormation commands. Helps enforce compliance and prevent code-to-infrastructure drifts.</li>
-                        </ul>
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Deploy Stack CLI Snippet</span>
-                          <button 
-                            onClick={() => handleCopyCode(cfnDeployCli, 'cfn-cli')}
-                            className="acad-copy-btn"
-                          >
-                            {copiedNoteId === 'cfn-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-40">
-                          {cfnDeployCli}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* SSM AUTOMATION WORKSHEET */}
-                {selectedNote === 'ssm_automation' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Runbooks &amp; Orchestration</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Systems Manager Automation</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('cfn_ssm')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to IaC Simulator
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      SSM Automation coordinates administrative tasks (like server diagnostics, volume expansion, or custom OS updates) using JSON/YAML execution documents. Runbooks execute tasks step-by-step with safety thresholds and approval requirements.
-                    </p>
-
-                    <div className="acad-takeaway-box">
-                      <strong>💡 Event-Driven Remediation:</strong> You can configure AWS Config or Amazon EventBridge to trigger SSM Automation runbooks automatically when security rules fail (for example, to automatically close open SSH security ports).
-                    </div>
-                  </div>
-                )}
-
-                {/* SSM SESSION MANAGER WORKSHEET */}
-                {selectedNote === 'session_manager' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">SSH-less Access Control</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSM Session Manager Audit Logs</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('fleet')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to SSM Fleet
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      SSM Session Manager provides secure, auditable, and credentials-less access to EC2 instances without opening inbound port 22 or managing bastion hosts. All shell commands are logged to Amazon S3 or CloudWatch logs.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-600">
-                        <span className="font-extrabold text-slate-800 block">Security Features:</span>
-                        <ul className="list-disc pl-4 space-y-1.5">
-                          <li><strong>Port Forwarding:</strong> Port forwarding lets you tunnel database ports (e.g. MySQL port 3306) securely from a private VPC back to your local client device.</li>
-                          <li><strong>KMS Encryption:</strong> Encrypts session payloads locally before they are transmitted, preventing network interception.</li>
-                          <li><strong>IAM Policy Enforcement:</strong> Control which users can start sessions on which EC2 tags with strict IAM policies.</li>
-                        </ul>
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">SSM Start-Session CLI Command</span>
-                          <button 
-                            onClick={() => handleCopyCode(ssmStartSessionCli, 'ssm-cli')}
-                            className="acad-copy-btn"
-                          >
-                            {copiedNoteId === 'ssm-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-40">
-                          {ssmStartSessionCli}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* SSM PATCH & MW WORKSHEET */}
-                {selectedNote === 'patch_manager' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Fleet Compliance</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSM Patch Manager &amp; Maintenance Windows</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('fleet')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to SSM Fleet
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      SSM Patch Manager automates the process of scanning and installing security patches on your OS fleet. It evaluates target nodes against custom **Patch Baselines** containing rules for auto-approving patches within specific days of release.
-                    </p>
-
-                    <div className="acad-takeaway-box">
-                      <strong>⚠️ Maintenance Windows:</strong> To prevent performance degradation during patch installations, associate Patch Manager execution scripts with SSM Maintenance Windows. This schedules patching tasks only within designated hours (e.g. Sundays between 02:00 and 04:00).
-                    </div>
-                  </div>
-                )}
-
-                {/* TRUSTED ADVISOR WORKSHEET */}
-                {selectedNote === 'scheduler_advisor' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Resource Optimization</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Trusted Advisor &amp; Instance Scheduler</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('finops')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to FinOps
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 5 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      AWS Trusted Advisor evaluates your entire account infrastructure against AWS best practices across five categories: Cost Optimization, Security, Fault Tolerance, Performance, and Service Limits.
-                    </p>
-
-                    <div className="acad-takeaway-box">
-                      <strong>💡 AWS Instance Scheduler:</strong> A script-driven solution that automates starting and stopping EC2/RDS instances based on custom business schedules (for example, shutting down development instances at 18:00 on weekdays and starting them at 08:00, saving up to 70% of compute costs).
-                    </div>
-                  </div>
-                )}
-
-                {/* SES & PINPOINT WORKSHEET */}
-                {selectedNote === 'ses_pinpoint' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Email &amp; Messaging</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon SES &amp; Pinpoint Feedback Loops</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('hybrid_batch')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to App Channels
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Amazon SES provides highly scalable SMTP email delivery. Amazon Pinpoint coordinates targeting campaigns, dividing users into segments, and tracking engagement metrics (like open rates).
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-600">
-                        <span className="font-extrabold text-slate-800 block">Deliverability Architecture:</span>
-                        <ul className="list-disc pl-4 space-y-1.5">
-                          <li><strong>Domain Verification:</strong> Set up SPF, DKIM, and DMARC DNS records to verify sender identity and prevent spoofing.</li>
-                          <li><strong>Feedback Loop:</strong> Triggers notifications to SQS queues / SNS topics when an email bounces or a recipient files a spam complaint.</li>
-                          <li><strong>Suppression Lists:</strong> Automatically blocks sending emails to addresses that recently bounced, protecting your sender score.</li>
-                        </ul>
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Verify Domain SES CLI Command</span>
-                          <button 
-                            onClick={() => handleCopyCode(sesVerifyDomainCli, 'ses-cli')}
-                            className="acad-copy-btn"
-                          >
-                            {copiedNoteId === 'ses-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-40">
-                          {sesVerifyDomainCli}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* BATCH & OUTPOSTS WORKSHEET */}
-                {selectedNote === 'outposts_batch' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Hybrid &amp; Batch Computing</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Batch &amp; AWS Outposts Orchestration</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('hybrid_batch')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to App Channels
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      AWS Batch plans and executes batch container workloads across Spot or On-Demand EC2 clusters. AWS Outposts extends native AWS services directly to your on-premises data centers for low-latency, hybrid execution requirements.
-                    </p>
-
-                    <div className="acad-takeaway-box font-sans">
-                      <strong>💡 Local Gateway Routing:</strong> AWS Outposts uses a Local Gateway (LGW) routing table to bridge on-premises local area networks with your virtual VPC networks in the cloud.
-                    </div>
-                  </div>
-                )}
-
-                {/* APPFLOW & AMPLIFY WORKSHEET */}
-                {selectedNote === 'appflow_amplify' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">App Integrations</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon AppFlow &amp; AWS Amplify Pipelines</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('hybrid_batch')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to App Channels
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Amazon AppFlow securely connects SaaS applications (like Salesforce or Slack) to AWS storage or database resources without writing custom code. AWS Amplify accelerates building web and mobile apps by automating serverless database and auth integrations with a built-in CI/CD hosting pipeline.
-                    </p>
-                  </div>
-                )}
-
-                {/* SAGEMAKER WORKSHEET */}
-                {selectedNote === 'sagemaker_workspace' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Machine Learning</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon SageMaker Model Endpoints</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('ml_analytics')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to ML Sandbox
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 1 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Amazon SageMaker manages model training pipelines, hosting endpoints, and shadow deployments. Shadow deployments split live traffic (e.g. 90/10) to audit new models without affecting production responses.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-600">
-                        <span className="font-extrabold text-slate-800 block">ML Endpoint Management:</span>
-                        <ul className="list-disc pl-4 space-y-1.5">
-                          <li><strong>Shadow Deployments:</strong> Test models with live traffic in parallel with your current model without affecting client responses.</li>
-                          <li><strong>Model Registry:</strong> Version control models and automate review and approval gates.</li>
-                        </ul>
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Invoke SageMaker Endpoint CLI</span>
-                          <button 
-                            onClick={() => handleCopyCode(sagemakerInferenceCli, 'sm-cli')}
-                            className="acad-copy-btn"
-                          >
-                            {copiedNoteId === 'sm-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-40">
-                          {sagemakerInferenceCli}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* REKOGNITION & TEXTRACT WORKSHEET */}
-                {selectedNote === 'vision_text_ocr' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">AI Vision &amp; OCR</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Rekognition &amp; Textract Form Extraction</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('ml_analytics')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to ML Sandbox
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 2 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Amazon Rekognition provides out-of-the-box computer vision models for identifying objects, text, and facial features in images. Amazon Textract uses OCR models to extract text from tabular documents and forms.
-                    </p>
-
-                    <div className="acad-takeaway-box">
-                      <strong>💡 Document Extraction:</strong> Textract uses layout mapping models to maintain key-value context. This lets you extract structured data from forms (like invoice fields) without needing manual coordinate mapping templates.
-                    </div>
-                  </div>
-                )}
-
-                {/* POLLY, LEX & TRANSLATE WORKSHEET */}
-                {selectedNote === 'lex_polly_translate' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">Conversational AI</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Amazon Polly, Lex Intent Slots &amp; Translate</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('ml_analytics')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to ML Sandbox
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 3 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      Amazon Polly converts text into lifelike synthetic speech. Amazon Lex provides conversational bot intent and slots processing, and Amazon Translate handles translation across multiple languages.
-                    </p>
-                  </div>
-                )}
-
-                {/* COST EXPLORER WORKSHEET */}
-                {selectedNote === 'cost_explorer' && (
-                  <div className="acad-detail-card space-y-6 animate-fadeIn">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
-                      <div>
-                        <span className="acad-hero-badge">FinOps &amp; Budgets</span>
-                        <h3 className="text-xl font-black text-slate-900 mt-2 font-display">AWS Cost Explorer Allocation Tags</h3>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setActiveTab('finops')}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                        >
-                          <Play className="w-3.5 h-3.5" /> Go to FinOps
-                        </button>
-                        <span className="text-xs font-bold text-slate-400 font-mono">Concept 4 of 5</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      AWS Cost Explorer provides dashboards and APIs to analyze historical spending and forecast future costs. Using Cost Allocation Tags lets you group and filter unblended costs by project or environment (e.g. `Env: Production`).
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4 text-xs text-slate-600">
-                        <span className="font-extrabold text-slate-800 block">Cost Control Features:</span>
-                        <ul className="list-disc pl-4 space-y-1.5">
-                          <li><strong>Anomaly Detection:</strong> Uses ML models to monitor cost trends and alert you to unexpected cost anomalies (like recursive Lambda execution loops).</li>
-                          <li><strong>Savings Plans:</strong> Calculate commit-based discounts (e.g. EC2/Compute Savings Plans) based on historical compute usage profiles.</li>
-                        </ul>
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider font-mono">Cost Query CE Command</span>
-                          <button 
-                            onClick={() => handleCopyCode(costExplorerQueryCli, 'ce-cli')}
-                            className="acad-copy-btn"
-                          >
-                            {copiedNoteId === 'ce-cli' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                        <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-40">
-                          {costExplorerQueryCli}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 11 Complete Modules</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(99, 102, 241, 0.12)', borderColor: 'rgba(99, 102, 241, 0.35)', color: '#6366f1' }}>💡 Everyday Mental Models</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.35)', color: '#10b981' }}>🌐 AWS / Azure / GCP</span>
               </div>
             </div>
           </div>
-        )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--da-text-muted)' }}>Curriculum Directory (11 Modules):</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <BookOpen className="w-4 h-4 text-indigo-500" />
+                  <span>Ops &amp; ML Explorer</span>
+                </div>
+
+                {/* LEVEL 1: AUTOMATION & IAC */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'iac_automation' ? '' : 'iac_automation')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-emerald-500" />
+                      1. IaC &amp; Runbooks
+                    </span>
+                    {expandedCategory === 'iac_automation' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'iac_automation' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('cloudformation')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cloudformation' ? 'acad-active' : ''}`}
+                      >
+                        1.1 CloudFormation IaC &amp; Drift
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('ssm_automation')}
+                        className={`acad-dir-item-btn ${selectedNote === 'ssm_automation' ? 'acad-active' : ''}`}
+                      >
+                        1.2 SSM Automation Runbooks
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: FLEET & COMPLIANCE */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'fleet_mgmt' ? '' : 'fleet_mgmt')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Server className="w-3.5 h-3.5 text-blue-500" />
+                      2. Fleet &amp; Compliance
+                    </span>
+                    {expandedCategory === 'fleet_mgmt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'fleet_mgmt' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('session_manager')}
+                        className={`acad-dir-item-btn ${selectedNote === 'session_manager' ? 'acad-active' : ''}`}
+                      >
+                        2.1 SSM Session Manager
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('patch_manager')}
+                        className={`acad-dir-item-btn ${selectedNote === 'patch_manager' ? 'acad-active' : ''}`}
+                      >
+                        2.2 SSM Patch Manager &amp; MW
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('scheduler_advisor')}
+                        className={`acad-dir-item-btn ${selectedNote === 'scheduler_advisor' ? 'acad-active' : ''}`}
+                      >
+                        2.3 Trusted Advisor &amp; Scheduler
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: APP DELIVERY & HYBRID */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'hybrid_delivery' ? '' : 'hybrid_delivery')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-amber-500" />
+                      3. Delivery &amp; Hybrid
+                    </span>
+                    {expandedCategory === 'hybrid_delivery' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'hybrid_delivery' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('ses_pinpoint')}
+                        className={`acad-dir-item-btn ${selectedNote === 'ses_pinpoint' ? 'acad-active' : ''}`}
+                      >
+                        3.1 SES &amp; Pinpoint Deliverability
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('outposts_batch')}
+                        className={`acad-dir-item-btn ${selectedNote === 'outposts_batch' ? 'acad-active' : ''}`}
+                      >
+                        3.2 AWS Batch &amp; Outposts
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('appflow_amplify')}
+                        className={`acad-dir-item-btn ${selectedNote === 'appflow_amplify' ? 'acad-active' : ''}`}
+                      >
+                        3.3 AppFlow SaaS &amp; Amplify
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: ML & MANAGED AI */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'ml_analytics_worksheets' ? '' : 'ml_analytics_worksheets')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Bot className="w-3.5 h-3.5 text-purple-500" />
+                      4. AWS ML Services
+                    </span>
+                    {expandedCategory === 'ml_analytics_worksheets' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'ml_analytics_worksheets' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('sagemaker_workspace')}
+                        className={`acad-dir-item-btn ${selectedNote === 'sagemaker_workspace' ? 'acad-active' : ''}`}
+                      >
+                        4.1 SageMaker Endpoints
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('vision_text_ocr')}
+                        className={`acad-dir-item-btn ${selectedNote === 'vision_text_ocr' ? 'acad-active' : ''}`}
+                      >
+                        4.2 Rekognition &amp; Textract OCR
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('lex_polly_translate')}
+                        className={`acad-dir-item-btn ${selectedNote === 'lex_polly_translate' ? 'acad-active' : ''}`}
+                      >
+                        4.3 Polly, Lex &amp; Translate
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 5: COST MANAGEMENT */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'finops_mgmt' ? '' : 'finops_mgmt')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <DollarSign className="w-3.5 h-3.5 text-indigo-500" />
+                      5. FinOps &amp; Budgets
+                    </span>
+                    {expandedCategory === 'finops_mgmt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'finops_mgmt' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('cost_explorer')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cost_explorer' ? 'acad-active' : ''}`}
+                      >
+                        5.1 Cost Explorer &amp; Anomalies
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--da-text-title)' }}>
+                  💡 Interactive Operations Quick-Launch
+                </span>
+                Click any module to explore beginner-friendly breakdowns, real-world analogies, multi-cloud AWS vs Azure vs GCP tables, and copyable CLI snippets!
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* MODULE 1.1: CLOUDFORMATION IAC */}
+              {selectedNote === 'cloudformation' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">1.1 IaC &amp; Runbooks</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.1 CloudFormation Stacks, Nested Stacks &amp; Drift Detection
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('cfn_ssm')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch IaC Simulator
+                    </button>
+                  </div>
+
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Code className="w-3.5 h-3.5 text-blue-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        **AWS CloudFormation** translates declarative template files (JSON/YAML) into live cloud resources. It manages resource dependency order and automatically executes an **atomic rollback sequence** if deployment encounters errors.
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Server className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Eliminates manual console click-ops errors. **Drift Detection** identifies out-of-band manual changes made to infrastructure, preventing security risks and configuration divergence.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Writing a master blueprint for your cloud infrastructure instead of building each server manually. If building a room fails, CloudFormation automatically dismantles the incomplete room so you aren&apos;t left with half-built broken servers!
+                  </div>
+
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      💡 The Everyday Real-World Analogy: Architectural Blueprint for a Modular Prefab Home
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of building a house by hand without instructions, you submit a digital blueprint (`YAML Template`). The factory constructs the foundation, plumbing, and roof in perfect order. If the plumbing check fails, the factory resets the assembly line (`Rollback`)!
+                    </p>
+                  </div>
+
+                  {/* Copyable CLI Snippet */}
+                  <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-mono font-bold" style={{ color: 'var(--da-text-title)' }}>⌨️ CLI: Deploy CloudFormation Stack</span>
+                      <button 
+                        onClick={() => handleCopyCode(cfnDeployCli, 'cfn-cli')}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'cfn-cli' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedNoteId === 'cfn-cli' ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto p-3 rounded-lg">
+                      {cfnDeployCli}
+                    </pre>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Cloud Provider</th>
+                          <th>Native IaC Engine</th>
+                          <th>Multi-Account Orchestrator</th>
+                          <th>Drift Scan Capability</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>AWS</strong></td>
+                          <td>AWS CloudFormation (YAML/JSON) / AWS CDK</td>
+                          <td>CloudFormation StackSets</td>
+                          <td>Native DetectStackDrift API</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Azure</strong></td>
+                          <td>Azure Resource Manager (ARM) / Bicep</td>
+                          <td>Azure Management Groups &amp; Blueprints</td>
+                          <td>What-If Analysis &amp; Resource Policy Engine</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>GCP</strong></td>
+                          <td>Google Cloud Deployment Manager / Terraform</td>
+                          <td>Google Cloud Resource Manager</td>
+                          <td>Terraform Plan Drift Detection</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 1.2: SSM AUTOMATION */}
+              {selectedNote === 'ssm_automation' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">1.2 IaC &amp; Runbooks</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.2 AWS Systems Manager (SSM) Automation &amp; Event-Driven Remediation
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('cfn_ssm')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch Runbooks
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> An automated digital checklist for IT operators. When a cloud alert triggers (for example, disk space full or open security port), an SSM Automation Runbook automatically fires to fix the problem without waking up an engineer at 3:00 AM!
+                  </div>
+
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      💡 The Everyday Real-World Analogy: Airplane Cockpit Automated Pre-Flight Checklist
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Instead of relying on a pilot to memorize 100 complex emergency steps, the onboard computer runs an automated diagnostic sequence and fixes pressure drops automatically!
+                    </p>
+                  </div>
+
+                  <div className="acad-takeaway-box">
+                    <strong>⚡ EventBridge Auto-Remediation:</strong> Pair Amazon EventBridge or AWS Config with Systems Manager Automation to automatically run remediation runbooks when compliance rules are violated.
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 2.1: SESSION MANAGER */}
+              {selectedNote === 'session_manager' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">2.1 Fleet &amp; Compliance</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.1 SSM Session Manager: SSH-less Access &amp; Keystroke Audit Logging
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('fleet')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch SSM Fleet
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Logging into remote servers through a secure cloud tunnel without needing SSH keys or opening port 22 on firewalls. Every single command typed by an engineer is recorded to S3 and CloudWatch for security compliance!
+                  </div>
+
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      💡 The Everyday Real-World Analogy: Remote Desktop Access with Security Camera Video Recording
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      You don&apos;t hand over a physical key to your house (`No SSH key management`). Instead, you grant a temporary remote video session (`SSM Agent`) where every key turn and open door is logged on security cameras (`S3 Audit Logs`).
+                    </p>
+                  </div>
+
+                  {/* Copyable CLI Snippet */}
+                  <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-mono font-bold" style={{ color: 'var(--da-text-title)' }}>⌨️ CLI: Start SSM Session Manager</span>
+                      <button 
+                        onClick={() => handleCopyCode(ssmStartSessionCli, 'ssm-cli')}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'ssm-cli' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedNoteId === 'ssm-cli' ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto p-3 rounded-lg">
+                      {ssmStartSessionCli}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 2.2: PATCH MANAGER */}
+              {selectedNote === 'patch_manager' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">2.2 Fleet &amp; Compliance</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.2 SSM Patch Manager &amp; Maintenance Windows
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('fleet')}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch SSM Fleet
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Automatically installing OS security patches across hundreds of EC2 instances during off-peak hours (Maintenance Windows) so vulnerabilities are fixed while zero customers are using the application.
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 2.3: TRUSTED ADVISOR */}
+              {selectedNote === 'scheduler_advisor' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">2.3 Fleet &amp; Compliance</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.3 AWS Trusted Advisor &amp; Instance Scheduler
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('finops')}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch FinOps
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Having an expert cloud auditor inspect your account 24/7. It alerts you when databases are left unencrypted, security groups have open ports, or dev servers are left running over the weekend wasting money!
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 3.1: SES & PINPOINT */}
+              {selectedNote === 'ses_pinpoint' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">3.1 Delivery &amp; Hybrid</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.1 Amazon SES &amp; Pinpoint Deliverability Feedback Loops
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('hybrid_batch')}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch App Channels
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> High-volume transactional email engine (Amazon SES) paired with customer engagement tracking (Pinpoint). Uses SPF, DKIM, and DMARC authentication to guarantee password reset emails land in the inbox instead of spam!
+                  </div>
+
+                  {/* Copyable CLI Snippet */}
+                  <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-mono font-bold" style={{ color: 'var(--da-text-title)' }}>⌨️ CLI: Verify Domain Identity SES</span>
+                      <button 
+                        onClick={() => handleCopyCode(sesVerifyDomainCli, 'ses-cli')}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'ses-cli' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedNoteId === 'ses-cli' ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto p-3 rounded-lg">
+                      {sesVerifyDomainCli}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 3.2: BATCH & OUTPOSTS */}
+              {selectedNote === 'outposts_batch' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">3.2 Delivery &amp; Hybrid</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.2 AWS Batch &amp; AWS Outposts On-Premises Orchestration
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('hybrid_batch')}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch App Channels
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AWS Batch** automatically provisions temporary compute fleets to run heavy batch jobs (video encoding, AI data prep). **AWS Outposts** delivers physical AWS server hardware directly to your local datacenter for ultra-low latency!
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 3.3: APPFLOW & AMPLIFY */}
+              {selectedNote === 'appflow_amplify' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">3.3 Delivery &amp; Hybrid</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.3 Amazon AppFlow SaaS Integrations &amp; AWS Amplify CI/CD
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('hybrid_batch')}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch App Channels
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AppFlow** is an automated conveyor belt moving SaaS data (Salesforce, Slack) securely into AWS S3 without custom code. **Amplify** gives web and mobile developers instant backend databases, auth, and automated Git deployment hosting!
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 4.1: SAGEMAKER */}
+              {selectedNote === 'sagemaker_workspace' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">4.1 AWS ML Services</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.1 Amazon SageMaker Model Endpoints &amp; Shadow Deployments
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('ml_analytics')}
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch ML Sandbox
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> An end-to-end factory for AI models. It trains machine learning models, hosts them on auto-scaling endpoints, and uses **Shadow Deployments** to test new model versions on live traffic invisibly without impacting users!
+                  </div>
+
+                  {/* Copyable CLI Snippet */}
+                  <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-mono font-bold" style={{ color: 'var(--da-text-title)' }}>⌨️ CLI: Invoke SageMaker Endpoint</span>
+                      <button 
+                        onClick={() => handleCopyCode(sagemakerInferenceCli, 'sm-cli')}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'sm-cli' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedNoteId === 'sm-cli' ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto p-3 rounded-lg">
+                      {sagemakerInferenceCli}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 4.2: REKOGNITION & TEXTRACT */}
+              {selectedNote === 'vision_text_ocr' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">4.2 AWS ML Services</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.2 Amazon Rekognition Vision &amp; Textract Form Extraction OCR
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('ml_analytics')}
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch ML Sandbox
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Ready-to-use AI models: **Rekognition** gives your software computer vision to detect objects and faces in photos. **Textract** reads scanned PDF receipts and invoices, extracting form fields directly into database tables!
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 4.3: POLLY, LEX & TRANSLATE */}
+              {selectedNote === 'lex_polly_translate' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">4.3 AWS ML Services</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.3 Amazon Polly Speech, Lex Intent Slots &amp; Translate
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('ml_analytics')}
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch ML Sandbox
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Polly** converts text to lifelike human speech. **Lex** provides intelligent chatbot intent &amp; slots parsing (powering Alexa-like bots). **Translate** converts text across 75+ languages automatically!
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE 5.1: COST EXPLORER */}
+              {selectedNote === 'cost_explorer' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">5.1 FinOps &amp; Budgets</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        5.1 AWS Cost Explorer, Cost Allocation Tags &amp; Anomaly Detection
+                      </h3>
+                    </div>
+                    <button 
+                      onClick={() => setActiveTab('finops')}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5" /> Launch FinOps
+                    </button>
+                  </div>
+
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> An itemized bank statement for your cloud bill. Using **Cost Allocation Tags** (e.g. `Project: Alpha`), you filter costs by team. **Cost Anomaly Detection** sends instant SMS alerts if a rogue script causes a cost spike!
+                  </div>
+
+                  {/* Copyable CLI Snippet */}
+                  <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-mono font-bold" style={{ color: 'var(--da-text-title)' }}>⌨️ CLI: Query AWS Cost Explorer</span>
+                      <button 
+                        onClick={() => handleCopyCode(costExplorerQueryCli, 'ce-cli')}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'ce-cli' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {copiedNoteId === 'ce-cli' ? 'Copied!' : 'Copy Code'}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto p-3 rounded-lg">
+                      {costExplorerQueryCli}
+                    </pre>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Cloud Provider</th>
+                          <th>Cost Analytics Dashboard</th>
+                          <th>Resource Tagging Engine</th>
+                          <th>Anomaly Alert Mechanism</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>AWS</strong></td>
+                          <td>AWS Cost Explorer / AWS CUR</td>
+                          <td>AWS Cost Allocation Tags</td>
+                          <td>AWS Cost Anomaly Detection (ML)</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Azure</strong></td>
+                          <td>Azure Cost Management &amp; Billing</td>
+                          <td>Azure Resource Tags &amp; Management Groups</td>
+                          <td>Azure Anomaly Alerts &amp; Budget Alarms</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>GCP</strong></td>
+                          <td>Google Cloud Billing Reports &amp; BigQuery Export</td>
+                          <td>GCP Resource Labels</td>
+                          <td>GCP Budget &amp; Anomaly Detection Alerts</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* ========================================================================= */}
         {/* TAB 2: IAC & AUTOMATION SIMULATOR                                         */}

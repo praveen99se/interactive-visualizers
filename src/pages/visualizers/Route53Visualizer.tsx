@@ -3,7 +3,7 @@ import {
   BookOpen,
   ChevronRight,
   ChevronDown,
-  Info,
+  Lightbulb,
   Copy,
   Network,
   Zap,
@@ -1605,6 +1605,100 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
 
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--r53-inner-card-border);
+          border-right: 1px solid var(--r53-inner-card-border);
+          border-bottom: 1px solid var(--r53-inner-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--r53-inner-card-border);
+          border-right: 1px solid var(--r53-inner-card-border);
+          border-bottom: 1px solid var(--r53-inner-card-border);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.07);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--r53-inner-card-border);
+          border-right: 1px solid var(--r53-inner-card-border);
+          border-bottom: 1px solid var(--r53-inner-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--r53-inner-card-border);
+          border-right: 1px solid var(--r53-inner-card-border);
+          border-bottom: 1px solid var(--r53-inner-card-border);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+
         /* Academy Grid Layouts */
         .acad-grid-12 {
           display: grid;
@@ -1833,14 +1927,14 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
         {/* Tab Navigation */}
         {!isComparative && (
           <div className="r53-tabs">
-            <button className={`r53-tb ${activeSection === 'notebook' ? 'r53-on r53-on-notebook' : ''}`} onClick={() => setActiveSection('notebook')}>📓 Visual Architect Notes</button>
-            <button className={`r53-tb ${activeSection === 'dns' ? 'r53-on r53-on-dns' : ''}`} onClick={() => setActiveSection('dns')}>🔍 How DNS Works</button>
-            <button className={`r53-tb ${activeSection === 'r53' ? 'r53-on r53-on-r53' : ''}`} onClick={() => setActiveSection('r53')}>🚀 Route 53 Overview</button>
-            <button className={`r53-tb ${activeSection === 'records' ? 'r53-on r53-on-records' : ''}`} onClick={() => setActiveSection('records')}>📋 Records &amp; Zones</button>
-            <button className={`r53-tb ${activeSection === 'routing' ? 'r53-on r53-on-routing' : ''}`} onClick={() => setActiveSection('routing')}>🗺️ Routing Policies</button>
-            <button className={`r53-tb ${activeSection === 'health' ? 'r53-on r53-on-health' : ''}`} onClick={() => setActiveSection('health')}>❤️ Health Checks</button>
-            <button className={`r53-tb ${activeSection === 'hybrid' ? 'r53-on r53-on-hybrid' : ''}`} onClick={() => setActiveSection('hybrid')}>🔌 Hybrid DNS</button>
-            <button className={`r53-tb ${activeSection === 'arch' ? 'r53-on r53-on-arch' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
+            <button className={`r53-tb ${activeSection === 'notebook' ? 'r53-on r53-on-notebook' : ''}`} onClick={() => setActiveSection('notebook')}>📖 1. Visual Notes &amp; Theories</button>
+            <button className={`r53-tb ${activeSection === 'dns' ? 'r53-on r53-on-dns' : ''}`} onClick={() => setActiveSection('dns')}>🔍 2. How DNS Works</button>
+            <button className={`r53-tb ${activeSection === 'r53' ? 'r53-on r53-on-r53' : ''}`} onClick={() => setActiveSection('r53')}>🚀 3. Route 53 Overview</button>
+            <button className={`r53-tb ${activeSection === 'records' ? 'r53-on r53-on-records' : ''}`} onClick={() => setActiveSection('records')}>📋 4. Records &amp; Zones</button>
+            <button className={`r53-tb ${activeSection === 'routing' ? 'r53-on r53-on-routing' : ''}`} onClick={() => setActiveSection('routing')}>🗺️ 5. Routing Policies</button>
+            <button className={`r53-tb ${activeSection === 'health' ? 'r53-on r53-on-health' : ''}`} onClick={() => setActiveSection('health')}>❤️ 6. Health Checks</button>
+            <button className={`r53-tb ${activeSection === 'hybrid' ? 'r53-on r53-on-hybrid' : ''}`} onClick={() => setActiveSection('hybrid')}>🔌 7. Hybrid DNS</button>
+            <button className={`r53-tb ${activeSection === 'arch' ? 'r53-on r53-on-arch' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ 8. Architecture</button>
             <button className={`r53-tb ${activeSection === 'unique' ? 'r53-on r53-on-unique' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
           </div>
         )}
@@ -1860,7 +1954,7 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
           <Translate>
             <>
 
-        {/* VISUAL ARCHITECT ACADEMY NOTEBOOK PANEL */}
+                        {/* VISUAL ARCHITECT ACADEMY NOTEBOOK PANEL */}
         {activeSection === 'notebook' && (() => {
           const recordCodeSnippet = `resource "aws_route53_record" "apex_alb" {
   zone_id = aws_route53_zone.primary.zone_id
@@ -1925,13 +2019,22 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left', animation: 'fadeIn 0.3s ease-in-out' }}>
               
-              <div className="r53-card" style={{ marginBottom: '14px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> Route 53 Global Routing Notes
-                </h2>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45' }}>
-                  Explore Domain Name System (DNS) fundamentals, Route 53 routing policies (geolocation, latency, failover), virtual aliases, and hybrid DNS resolution.
-                </p>
+              {/* Hero Banner Card */}
+              <div className="r53-card" style={{ marginBottom: '14px', borderLeft: '4px solid #6366f1' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                      <BookOpen style={{ width: '20px', height: '20px', color: '#6366f1' }} /> Amazon Route 53 &amp; Global DNS Notes &amp; Mental Models
+                    </h2>
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45', marginBottom: 0 }}>
+                      Simplified, beginner-friendly DNS routing theories sorted progressively from the 5-step DNS phonebook resolution to Route 53 ALIAS records, Latency/Geo policies, 100% SLA Anycast resilience, and Hybrid Resolver endpoints.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className="acad-hero-badge" style={{ background: '#ede9fe', borderColor: '#c4b5fd', color: '#6d28d9' }}>🎓 Beginner to Pro</span>
+                    <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+                  </div>
+                </div>
               </div>
 
               {/* Grid Layout */}
@@ -1941,11 +2044,11 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                 <div className="acad-col-3">
                   <div className="acad-dir-container">
                     <div className="acad-dir-header">
-                      <BookOpen style={{ width: '16px', height: '16px', color: '#818cf8' }} />
-                      <span>Module Index</span>
+                      <Globe style={{ width: '16px', height: '16px', color: '#818cf8' }} />
+                      <span>Route 53 Modules</span>
                     </div>
 
-                    {/* Category 1: DNS Fundamentals */}
+                    {/* LEVEL 1: DNS FUNDAMENTALS */}
                     <div>
                       <button
                         className="acad-dir-folder-btn"
@@ -1953,7 +2056,7 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Sliders style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
-                          1. DNS Fundamentals
+                          🐣 Level 1 · DNS Fundamentals
                         </span>
                         {expandedCategory === 'dns_fundamentals' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
@@ -1963,19 +2066,19 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                             className={`acad-dir-item-btn ${selectedNote === 'dns_queries' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('dns_queries')}
                           >
-                            DNS Resolution Path
+                            1.1 DNS Resolution (Smartphone Contacts)
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'record_taxonomy' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('record_taxonomy')}
                           >
-                            Record Taxonomy &amp; ALIAS
+                            1.2 Records &amp; ALIAS (Speed Dial vs Answering Service)
                           </button>
                         </div>
                       )}
                     </div>
 
-                    {/* Category 2: Routing Policies */}
+                    {/* LEVEL 2: ROUTING POLICIES */}
                     <div>
                       <button
                         className="acad-dir-folder-btn"
@@ -1983,7 +2086,7 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Globe style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
-                          2. Routing Policies
+                          🗺️ Level 2 · Routing Policies
                         </span>
                         {expandedCategory === 'routing_policies' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
@@ -1993,19 +2096,49 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                             className={`acad-dir-item-btn ${selectedNote === 'latency_geo' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('latency_geo')}
                           >
-                            Latency &amp; Geo-Routing
+                            2.1 Latency, Geo &amp; Geoproximity (Pizza Hub)
                           </button>
                           <button
-                            className={`acad-dir-item-btn ${selectedNote === 'failover_health' ? 'acad-active' : ''}`}
-                            onClick={() => setSelectedNote('failover_health')}
+                            className={`acad-dir-item-btn ${selectedNote === 'weighted_routing' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('weighted_routing')}
                           >
-                            Failover &amp; Health Probes
+                            2.2 Weighted &amp; Multi-Value (Canary Tasting)
                           </button>
                         </div>
                       )}
                     </div>
 
-                    {/* Category 3: Advanced Topologies */}
+                    {/* LEVEL 3: HIGH AVAILABILITY & FAILOVER */}
+                    <div>
+                      <button
+                        className="acad-dir-folder-btn"
+                        onClick={() => setExpandedCategory(expandedCategory === 'ha_failover' ? '' : 'ha_failover')}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Zap style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
+                          ❤️ Level 3 · Failover &amp; SLA
+                        </span>
+                        {expandedCategory === 'ha_failover' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
+                      </button>
+                      {expandedCategory === 'ha_failover' && (
+                        <div style={{ background: 'var(--r53-inner-card-bg)', padding: '4px 0' }}>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'failover_health' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('failover_health')}
+                          >
+                            3.1 Failover &amp; Health Checks (ICU Heartbeat)
+                          </button>
+                          <button
+                            className={`acad-dir-item-btn ${selectedNote === 'route53_sla' ? 'acad-active' : ''}`}
+                            onClick={() => setSelectedNote('route53_sla')}
+                          >
+                            3.2 100% SLA &amp; Anycast (Unsinkable Ocean Liner)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 4: ADVANCED HYBRID & GTM */}
                     <div>
                       <button
                         className="acad-dir-folder-btn"
@@ -2013,7 +2146,7 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                       >
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Network style={{ width: '14px', height: '14px', color: '#4f46e5' }} />
-                          3. Advanced Topologies
+                          🔌 Level 4 · Hybrid &amp; GTM
                         </span>
                         {expandedCategory === 'advanced_topologies' ? <ChevronDown style={{ width: '14px', height: '14px' }} /> : <ChevronRight style={{ width: '14px', height: '14px' }} />}
                       </button>
@@ -2023,13 +2156,13 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                             className={`acad-dir-item-btn ${selectedNote === 'hybrid_resolver' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('hybrid_resolver')}
                           >
-                            Route 53 Resolver
+                            4.1 Route 53 Resolver (Two-Way Interpreter)
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'gtm_architecture' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('gtm_architecture')}
                           >
-                            Global GTM Architectures
+                            4.2 Split-View DNS &amp; Global GTM
                           </button>
                         </div>
                       )}
@@ -2039,38 +2172,45 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
 
                   <div style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)', borderRadius: '16px', padding: '16px', color: 'var(--color-text-secondary)', fontSize: '11px', marginTop: '16px', lineHeight: '1.5' }}>
                     <span style={{ color: 'var(--color-text-primary)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '11.5px' }}>
-                      <Info style={{ width: '14px', height: '14px', color: '#6366f1' }} /> Academy Tips
+                      <Lightbulb style={{ width: '14px', height: '14px', color: '#6366f1' }} /> Interactive Quick-Launch
                     </span>
-                    Jump to target simulations directly using the buttons in the note view. All notes are optimized for AWS Solutions Architect exam prep.
+                    Jump to target simulations directly using the buttons in the note view. All notes are organized from beginner concepts to advanced enterprise topologies!
                   </div>
                 </div>
 
                 {/* Right Content Panel */}
                 <div className="acad-col-9">
 
-                  {/* NOTE 1: DNS Resolution Path */}
+                  {/* NOTE 1.1: DNS Resolution Path */}
                   {selectedNote === 'dns_queries' && (
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>DNS Resolution Path &amp; Cache Hierarchy</h3>
-                        <span className="acad-hero-badge">Core Protocol</span>
+                        <span className="acad-hero-badge">🐣 Level 1 · DNS Fundamentals</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>1.1 What is DNS &amp; The Resolution Path?</h3>
                       </div>
                       
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        DNS translates human-readable domains (like <code>www.example.com</code>) into IP addresses. Resolution is hierarchical, querying from root nameservers down to authoritative servers.
-                      </p>
-
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>💡 Key Takeaway:</strong> To prevent nameservers from buckling under massive global lookup volumes, caching is enforced at every layer (browser, OS, local gateway, and ISP recursors). Standardizing client and server TTLs (Time To Live) is critical for system update propagation speed vs query efficiency.
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Computers don&apos;t know what <code>google.com</code> means—they only understand numerical IP addresses like <code>142.250.190.46</code>. The Domain Name System (DNS) is the internet&apos;s global directory that translates human-friendly domain names into computer IP addresses in milliseconds.
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>The 5-Step DNS Resolution Sequence</h4>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Smartphone Contacts vs Remembering 500 Phone Numbers
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          You don&apos;t memorize your best friend&apos;s 10-digit telephone number. You open your phone, tap &ldquo;Alex&rdquo; in your Contacts app, and your phone instantly dials <code>+1 (555) 019-2834</code>. DNS is the world&apos;s contact book for every website on Earth!
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>The 5-Step DNS Resolution Sequence:</h4>
                       <ol style={{ paddingLeft: '18px', margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <li><strong>Local Client:</strong> Checks its internal browser cache and OS hosts file. If a match is found (cache hit), it resolves in micro-seconds.</li>
-                        <li><strong>Recursive Resolver:</strong> If local miss, queries the client-configured resolver (e.g. ISP or Google 8.8.8.8) which acts as a proxy lookup agent.</li>
-                        <li><strong>Root Server (<code>.</code>):</strong> The resolver queries Root Nameservers, which respond with delegation hints pointing to the Top-Level Domain (TLD) server.</li>
-                        <li><strong>TLD Nameserver:</strong> The resolver queries the TLD server (e.g. <code>.com</code> registry), which responds with the Authoritative Nameserver addresses.</li>
-                        <li><strong>Authoritative Server (Route 53):</strong> The resolver queries the Authoritative nameserver. It returns the final A record IP address, which the resolver caches and delivers to the client.</li>
+                        <li><strong>1. Browser / OS Cache:</strong> Checks local memory. If you visited the site 1 minute ago, it connects instantly (0 ms).</li>
+                        <li><strong>2. Recursive Resolver (ISP / 8.8.8.8):</strong> The local librarian that searches on your behalf if the cache is empty.</li>
+                        <li><strong>3. Root Nameserver (<code>.</code>):</strong> Points the resolver to the Top-Level Domain (TLD) registry for <code>.com</code>.</li>
+                        <li><strong>4. TLD Nameserver (<code>.com</code>):</strong> Points the resolver to the domain&apos;s Authoritative Nameservers.</li>
+                        <li><strong>5. Authoritative Nameserver (Amazon Route 53):</strong> Holds the actual truth and returns the final IP address (e.g. <code>192.0.2.100</code>).</li>
                       </ol>
 
                       <div style={{ background: 'var(--r53-inner-card-bg)', border: '1px solid var(--r53-inner-card-border)', borderRadius: '12px', padding: '16px', margin: '20px 0' }}>
@@ -2107,58 +2247,66 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Interactive DNS Simulation Tab
+                          Go to DNS Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 2: Record Taxonomy & ALIAS */}
+                  {/* NOTE 1.2: Record Taxonomy & ALIAS */}
                   {selectedNote === 'record_taxonomy' && (
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>DNS Record Taxonomy &amp; Route 53 ALIAS</h3>
-                        <span className="acad-hero-badge">AWS Specs</span>
+                        <span className="acad-hero-badge">🐣 Level 1 · DNS Fundamentals</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>1.2 Record Taxonomy &amp; The Route 53 ALIAS Record</h3>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        DNS records dictate host routing behaviors. While traditional DNS uses standard records like A, AAAA, and CNAME, Route 53 introduces a native, virtual extension: the **ALIAS record**.
-                      </p>
-
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>⭐ Why ALIAS over CNAME?</strong> Traditional DNS specs prohibit CNAME records at the naked domain apex (e.g., <code>example.com</code>). CNAMEs also require a client to resolve two DNS queries sequentially. Route 53 ALIAS solves both limitations: it works at the zone apex and resolves internally to AWS resource IPs in a single query cycle.
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Standard DNS defines record types like <strong>A</strong> (maps name to IPv4), <strong>AAAA</strong> (IPv6), <strong>CNAME</strong> (domain nickname), <strong>MX</strong> (email), and <strong>TXT</strong> (security). Traditional DNS forbids CNAME at the root zone apex (<code>example.com</code>). AWS Route 53 created the <strong>ALIAS record</strong>—a virtual record that works at the zone apex with <strong>zero query billing costs</strong>!
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>CNAME vs ALIAS Feature Matrix</h4>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Speed Dial Button vs An Answering Service
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>CNAME (Answering Service)</strong>: You call a number, an answering machine tells you &ldquo;Our office moved, please hang up and call 555-9999&rdquo; (requires two round-trip phone calls).
+                          <br />• <strong>Route 53 ALIAS (Direct Speed Dial)</strong>: A smart speed-dial button that instantly connects you to the AWS load balancer or CloudFront distribution in 1 hop for free!
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>CNAME vs Route 53 ALIAS Comparison</h4>
                       <div style={{ overflowX: 'auto', margin: '12px 0 20px' }}>
                         <table className="acad-table">
                           <thead>
                             <tr>
                               <th>Capability / Metric</th>
                               <th>Standard CNAME Record</th>
-                              <th>Route 53 ALIAS Record</th>
+                              <th>Route 53 ALIAS Record ⭐</th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr>
-                              <td><strong>Zone Apex Support (example.com)</strong></td>
-                              <td>❌ Forbidden (collides with SOA/NS records)</td>
+                              <td><strong>Zone Apex Support (<code>example.com</code>)</strong></td>
+                              <td>❌ Strictly Forbidden (Collides with SOA/NS)</td>
                               <td>✅ Fully Supported natively by AWS</td>
                             </tr>
                             <tr>
                               <td><strong>Target Endpoints</strong></td>
-                              <td>Any external hostname (FQDN)</td>
-                              <td>Selected AWS endpoints (ALB, S3, CloudFront)</td>
+                              <td>Any external hostname (e.g. <code>app.herokuapp.com</code>)</td>
+                              <td>AWS Resources (ALB, S3, CloudFront, API Gateway)</td>
                             </tr>
                             <tr>
                               <td><strong>Lookup Queries</strong></td>
-                              <td>Two queries (resolves target name separately)</td>
-                              <td>One query (returns IP direct from AWS engine)</td>
+                              <td>2 Queries (Must resolve target hostname separately)</td>
+                              <td>1 Query (Returns IP directly from Route 53 edge)</td>
                             </tr>
                             <tr>
-                              <td><strong>Query Cost Billing</strong></td>
-                              <td>Billed standard DNS rate per lookup</td>
-                              <td>🆓 Free resolution for registered AWS resources</td>
+                              <td><strong>Query Cost</strong></td>
+                              <td>Standard DNS billing per million queries</td>
+                              <td>🆓 100% Free query resolution for AWS targets!</td>
                             </tr>
                           </tbody>
                         </table>
@@ -2190,32 +2338,45 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Interactive Records Explorer Tab
+                          Go to Records Explorer Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 3: Latency & Geo-Routing */}
+                  {/* NOTE 2.1: Latency & Geo-Routing */}
                   {selectedNote === 'latency_geo' && (
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Latency, Geolocation &amp; Geoproximity</h3>
-                        <span className="acad-hero-badge">Global Traffic</span>
+                        <span className="acad-hero-badge">🗺️ Level 2 · Routing Policies</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>2.1 Latency, Geolocation &amp; Geoproximity</h3>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        AWS Route 53 supports advanced routing policies designed to direct global traffic to optimal locations based on latency, geographical mapping, or physical proximity weights.
-                      </p>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong>
+                        <br />• <strong>Latency Routing:</strong> Routes each user to the AWS data center with the fastest network response time (lowest ping ms).
+                        <br />• <strong>Geolocation Routing:</strong> Routes based on real-world borders/countries (perfect for European GDPR compliance or local language sites).
+                        <br />• <strong>Geoproximity Routing:</strong> Routes based on geographic distance with an adjustable &ldquo;Bias&rdquo; slider to expand or shrink a region&apos;s coverage area!
+                      </div>
 
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>🧠 Exam Tip:</strong> <em>Latency Routing</em> focuses on network speeds measured over time, whereas <em>Geolocation Routing</em> respects physical borders (ideal for location compliance like GDPR, or local language content).
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Global Pizza Delivery Hub with Territory Bias
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          When you order a pizza online:
+                          <br />• <strong>Latency Routing</strong> sends the order to the store that can deliver fastest right now based on live traffic.
+                          <br />• <strong>Geolocation Routing</strong> sends you to the store licensed for your city district.
+                          <br />• <strong>Geoproximity with Bias (+25)</strong> lets a giant downtown store expand its delivery zone to help a tiny overwhelmed neighborhood shop!
+                        </p>
                       </div>
 
                       {/* Interactive Widget 1: Latency Region Matcher */}
                       <div style={{ background: 'var(--r53-inner-card-bg)', border: '1px solid var(--r53-inner-card-border)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
                         <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 12px' }}>
-                          ⚡ Interactive Latency routing calculator
+                          ⚡ Interactive Latency Routing Calculator
                         </h4>
                         
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -2330,7 +2491,63 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                         </div>
                       </div>
 
-                      {/* Interactive Widget 2: Canary Rollout Simulator */}
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Latency Routing Terraform Configuration</h4>
+                      <div style={{ background: 'var(--r53-inner-card-bg)', border: '1px solid var(--r53-inner-card-border)', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>latency_routing.tf</span>
+                          <button
+                            onClick={() => handleCopyCode(latencyCodeSnippet, 'tf_latency')}
+                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
+                          >
+                            <Copy style={{ width: '12px', height: '12px' }} />
+                            {copiedNoteId === 'tf_latency' ? 'Copied!' : 'Copy Code'}
+                          </button>
+                        </div>
+                        <div className="acad-terminal">
+                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
+                            <code>{latencyCodeSnippet}</code>
+                          </pre>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="r53-btn r53-on"
+                          onClick={() => setActiveSection('routing')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Go to Routing Simulator Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.2: Weighted & Multi-Value Routing */}
+                  {selectedNote === 'weighted_routing' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <span className="acad-hero-badge">🗺️ Level 2 · Routing Policies</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>2.2 Weighted &amp; Multi-Value Routing</h3>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> <strong>Weighted Routing</strong> splits incoming web traffic between different backend versions by percentage (e.g. 90% traffic to stable v1, 10% to new canary v2). <strong>Multi-Value Routing</strong> returns up to 8 healthy random IP addresses for simple client-side load balancing with health checks.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The 90/10 Canary Tasting Menu &amp; Shuffled Cards
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Weighted Routing (Canary Testing)</strong>: A restaurant serves 90% of customers the classic secret recipe, while 10% of customers try a brand new dessert recipe to collect feedback safely without risking the whole restaurant.
+                          <br />• <strong>Multi-Value Routing (Shuffled Deck)</strong>: Handing customers a list of 8 open parking spots—if one spot fills up, they simply park in another open spot on their list!
+                        </p>
+                      </div>
+
+                      {/* Interactive Canary Rollout Simulator */}
                       <div style={{ background: 'var(--r53-inner-card-bg)', border: '1px solid var(--r53-inner-card-border)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
                         <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>
                           ⚖️ Canary Routing Simulator (Weighted Policy)
@@ -2391,25 +2608,6 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                         </div>
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Weighted Policy Configuration Code</h4>
-                      <div style={{ background: 'var(--r53-inner-card-bg)', border: '1px solid var(--r53-inner-card-border)', borderRadius: '12px', padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>canary.tf</span>
-                          <button
-                            onClick={() => handleCopyCode(latencyCodeSnippet, 'tf_latency')}
-                            style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10.5px' }}
-                          >
-                            <Copy style={{ width: '12px', height: '12px' }} />
-                            {copiedNoteId === 'tf_latency' ? 'Copied!' : 'Copy Code'}
-                          </button>
-                        </div>
-                        <div className="acad-terminal">
-                          <pre style={{ margin: 0, fontSize: '10.5px', color: '#cbd5e1', overflowX: 'auto' }}>
-                            <code>{latencyCodeSnippet}</code>
-                          </pre>
-                        </div>
-                      </div>
-
                       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                         <button
                           className="r53-btn r53-on"
@@ -2417,40 +2615,44 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Interactive Routing Policy Simulator Tab
+                          Go to Routing Policies Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 4: Failover & Health Checks */}
+                  {/* NOTE 3.1: Failover & Health Checks */}
                   {selectedNote === 'failover_health' && (
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Failover &amp; Active Health Checks</h3>
-                        <span className="acad-hero-badge">Resiliency</span>
+                        <span className="acad-hero-badge">❤️ Level 3 · Failover &amp; SLA</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>3.1 Failover &amp; Active Health Checks</h3>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        Configuring active-passive disaster recovery (DR) architectures relies on Route 53's dynamic health probes. Heartbeat checks monitor regional targets and switch the active records automatically when failures exceed thresholds.
-                      </p>
-
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>⚠️ The Failover Delay Math:</strong> Failover is NOT instantaneous. The time window before DNS resolves to Standby equals: <br />
-                        <span style={{ display: 'inline-block', marginTop: '4px', color: '#4f46e5', fontWeight: 'bold' }}>
-                          Failover Window = (Request Interval * Failure Threshold) + Record TTL
-                        </span> <br />
-                        Using standard 30s checks and 3 failures threshold with a 300s TTL means clients can suffer up to 390 seconds (6.5 minutes) of outage! Always use fast 10s intervals and low 60s TTLs for critical endpoint records.
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> In an <strong>Active-Passive Failover</strong> setup, Route 53 continuously tests your Primary server with heartbeat probes every 10–30 seconds. If the Primary server fails 3 consecutive checks, Route 53 automatically switches DNS traffic to your Standby backup server or S3 disaster recovery page!
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Health Probe Parameter Tunings</h4>
-                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <li><strong>Request Interval:</strong> Selects check rate. <em>Standard (30s)</em> is cost-effective. <em>Fast (10s)</em> resolves failure detection 3x faster but incurs higher billing costs.</li>
-                        <li><strong>Failure Threshold:</strong> The consecutive check failures required to trigger a state change. A setting of 3 prevents erratic failovers due to temporary network packets drop.</li>
-                        <li><strong>String Matching:</strong> Optionally queries a specific endpoint (e.g. <code>/healthz</code>) and parses the body response for an exact keyword match (like <code>"status": "OK"</code>).</li>
-                      </ul>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Hospital ICU Heartbeat Monitors &amp; Backup Generators
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          In a hospital, a patient&apos;s heartbeat monitor beeps every second. If the pulse stops for 3 beats, the emergency alarm sounds immediately and the backup power generator kicks in automatically to keep all life-support equipment running!
+                        </p>
+                      </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Terraform active-passive configuration</h4>
+                      <div className="acad-gotcha-box">
+                        <strong>⚠️ The Failover Delay Math: Failover is NOT Instantaneous!</strong>
+                        <p style={{ margin: '4px 0 0' }}>
+                          Total Outage Window = <code>(Probe Interval &times; Failure Threshold) + Record TTL</code>.
+                          <br />If you use 30s intervals, 3 failures threshold, and a standard 300s (5-minute) TTL, your users can experience up to <strong>390 seconds (6.5 minutes)</strong> of downtime before their local DNS cache expires! Always configure critical failover records with low 60s TTLs.
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Terraform Active-Passive Disaster Recovery Code</h4>
                       <div style={{ background: 'var(--r53-inner-card-bg)', border: '1px solid var(--r53-inner-card-border)', borderRadius: '12px', padding: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>failover.tf</span>
@@ -2476,37 +2678,92 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Interactive Health Checks Tab
+                          Go to Health Checks Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 5: Route 53 Resolver */}
+                  {/* NOTE 3.2: 100% Availability SLA & Anycast */}
+                  {selectedNote === 'route53_sla' && (
+                    <div className="acad-detail-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                        <span className="acad-hero-badge">❤️ Level 3 · Failover &amp; SLA</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>3.2 Route 53 ARC &amp; 100% Availability SLA</h3>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Amazon Route 53 is one of the only AWS services offering a <strong>100% Availability Service Level Agreement (SLA)</strong>! Route 53 uses global Anycast routing across hundreds of worldwide edge locations so DNS queries never go down. **Route 53 Application Recovery Controller (ARC)** allows you to execute instantaneous Zonal Shifts during Availability Zone brownouts.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Unsinkable 100-Compartment Ocean Liner
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If a ship has only 1 giant hull and hits an iceberg, it sinks. Route 53 is built like an advanced ocean liner with 100 independent watertight compartments (Anycast Edge Nodes). Even if 5 compartments flood simultaneously, the ship remains 100% afloat and cruises ahead without slowing down!
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', margin: '20px 0' }}>
+                        <div className="r53-met">
+                          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', fontWeight: 800 }}>Availability Guarantee</span>
+                          <p style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-green)', margin: '4px 0 0' }}>100.00% SLA</p>
+                        </div>
+                        <div className="r53-met">
+                          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', fontWeight: 800 }}>Global Anycast Locations</span>
+                          <p style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-blue)', margin: '4px 0 0' }}>300+ Edge POPs</p>
+                        </div>
+                        <div className="r53-met">
+                          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', textTransform: 'uppercase', fontWeight: 800 }}>Zonal Shift Recovery</span>
+                          <p style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-purple)', margin: '4px 0 0' }}>&lt; 60 Seconds</p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                        <button
+                          className="r53-btn r53-on"
+                          onClick={() => setActiveSection('r53')}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          <Zap style={{ width: '14px', height: '14px' }} />
+                          Go to Route 53 Overview Tab
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.1: Route 53 Resolver */}
                   {selectedNote === 'hybrid_resolver' && (
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Route 53 Resolver — Hybrid DNS</h3>
-                        <span className="acad-hero-badge">Enterprise Hybrid</span>
+                        <span className="acad-hero-badge">🔌 Level 4 · Hybrid &amp; GTM</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>4.1 Route 53 Resolver (Hybrid Inbound &amp; Outbound)</h3>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        AWS VPC DNS (the +2 resolver IP at <code>169.254.169.253</code>) is natively sandboxed inside its VPC. External corporate servers cannot query it, nor can it forward queries to on-premise Active Directories. **Route 53 Resolver** endpoints resolve this gap.
-                      </p>
-
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>🔌 Inbound vs Outbound:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px' }}>
-                          <li><strong>Inbound Endpoints:</strong> Expose private elastic network interfaces (ENIs) inside the VPC. On-premise DNS servers forward corp queries for <code>*.aws.internal</code> here.</li>
-                          <li><strong>Outbound Endpoints:</strong> Allow VPC DNS to exit the AWS network boundary to query on-premise DNS servers for suffixes like <code>*.corp.local</code>.</li>
-                        </ul>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> AWS VPC private DNS (the +2 resolver IP at <code>169.254.169.253</code>) is sandboxed inside AWS. On-premises corporate servers cannot query it, and EC2 instances cannot query on-prem Active Directories. **Route 53 Resolver Endpoints** bridge your corporate data centers and AWS VPCs seamlessly!
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Resolver Security &amp; Placement Best Practices</h4>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Two-Way Language Interpreter Phone Line
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Inbound Endpoint (Incoming Hotline)</strong>: On-premises corporate servers speak to an AWS interpreter inside the VPC to look up <code>*.aws.internal</code> databases.
+                          <br />• <strong>Outbound Endpoint (Outgoing Line)</strong>: AWS EC2 instances speak through an outgoing line to ask on-premise Active Directory servers for <code>*.corp.local</code> addresses.
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Resolver Architecture Breakdown</h4>
                       <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <li><strong>High Availability:</strong> Always configure Resolver Endpoint interfaces in at least TWO separate Availability Zones (AZs) with dedicated subnets.</li>
-                        <li><strong>Security Groups:</strong> Clamp down security rules. Inbound endpoints should restrict traffic to port 53 (UDP/TCP) from corporate server IP CIDR blocks only.</li>
-                        <li><strong>VPC Peering/Transit Gateway:</strong> Endpoints can be shared. A single central resolver endpoint set in a Hub Shared Services VPC can serve multiple Spoke VPCs to optimize costs.</li>
+                        <li><strong>Inbound Endpoints:</strong> Creates Elastic Network Interfaces (ENIs) with private IP addresses in your VPC. On-premise DNS forwarders send queries for AWS private hosted zones to these IPs over Direct Connect or AWS Site-to-Site VPN.</li>
+                        <li><strong>Outbound Endpoints &amp; Rules:</strong> Creates forwarding rules so VPC instances trying to reach <code>corp.local</code> forward queries to your on-premises DNS servers.</li>
+                        <li><strong>Multi-AZ Placement:</strong> Always provision resolver endpoints across at least 2 distinct Availability Zones for enterprise redundancy.</li>
                       </ul>
 
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Resolver Terraform Configuration</h4>
@@ -2535,33 +2792,36 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Interactive Hybrid DNS Simulator Tab
+                          Go to Hybrid DNS Simulator Tab
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* NOTE 6: Global GTM Architectures */}
+                  {/* NOTE 4.2: Global GTM Architectures */}
                   {selectedNote === 'gtm_architecture' && (
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Global Traffic Management (GTM) Architectures</h3>
-                        <span className="acad-hero-badge">Pro Architect</span>
+                        <span className="acad-hero-badge">🔌 Level 4 · Hybrid &amp; GTM</span>
+                        <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>4.2 Split-View DNS &amp; Global Traffic Management</h3>
                       </div>
 
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        High-availability enterprise systems leverage split-view DNS hosted zones, active-active regional load balancers, and global databases to ensure continuous system availability and low-latency responses.
-                      </p>
-
-                      <div className="acad-takeaway-box" style={{ margin: '18px 0' }}>
-                        <strong>🧠 Splitting DNS Hosted Zones:</strong>
-                        <ul style={{ margin: '6px 0 0', paddingLeft: '16px', listStyleType: 'square' }}>
-                          <li><strong>Public Hosted Zone:</strong> Directs external customers via Geo-routing or Latency-routing rules to public endpoints (ALBs, CloudFront distributions).</li>
-                          <li><strong>Private Hosted Zone:</strong> Resolves database replicas, internal microservices (e.g. <code>db.internal</code>) safely inside VPC borders away from the public web scope.</li>
-                        </ul>
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> <strong>Split-View (Split-Horizon) DNS</strong> uses the exact same domain name (e.g. <code>api.example.com</code>) with two separate hosted zones: a <strong>Public Hosted Zone</strong> that directs internet customers to public CloudFront/ALB IPs, and a <strong>Private Hosted Zone</strong> that directs internal backend microservices to secure private VPC IPs.
                       </div>
 
-                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>GTM Design Checklists</h4>
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Public Front Reception Desk vs The Secure Internal Employee Hallway
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          When a visitor asks for &ldquo;Accounting&rdquo; at the front desk, they are guided to the public guest reception counter. When an employee with a security badge asks for &ldquo;Accounting&rdquo; inside the office, they are directed to the private 4th-floor vault hallway without ever touching the public lobby!
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '20px 0 10px' }}>Global GTM Design Checklists</h4>
                       <ol style={{ paddingLeft: '18px', margin: 0, fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <li><strong>Target Health Evaluation:</strong> Always enable <code>evaluate_target_health = true</code> on ALIAS records. Route 53 will bypass DNS cache timeouts and stop routing queries to unhealthy ALBs instantly.</li>
                         <li><strong>Split-Brain Protection:</strong> Use Route 53 health checking rather than local cluster scripting for multi-region active-passive failover decisions to prevent dual-master database promotion issues.</li>
@@ -2594,19 +2854,18 @@ export default function Route53Visualizer({ provider = 'aws', setProvider }: Rou
                           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                         >
                           <Zap style={{ width: '14px', height: '14px' }} />
-                          Interactive Architecture Visualizer Tab
+                          Go to Architecture Visualizer Tab
                         </button>
                       </div>
                     </div>
                   )}
 
                 </div>
-
               </div>
-
             </div>
           );
         })()}
+
 
         {/* DNS WORKS PANEL */}
         {activeSection === 'dns' && (

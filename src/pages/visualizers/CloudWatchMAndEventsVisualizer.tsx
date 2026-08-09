@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Zap,
   Activity,
   Terminal,
   Shield,
@@ -16,14 +23,13 @@ import {
   Search,
   Send,
   Download,
-  Info,
-  BookOpen
+  Info
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import CloudWatchMAndEventsComparativeView from '../../components/visualizers/CloudWatchMAndEventsComparativeView';
 import UniqueCloudWatchMAndEventsFeatures from '../../components/visualizers/UniqueCloudWatchMAndEventsFeatures';
 
-type TabType = 'intro' | 'logs' | 'metrics' | 'eventbridge' | 'compliance' | 'matrix' | 'unique';
+type TabType = 'notebook' | 'intro' | 'logs' | 'metrics' | 'eventbridge' | 'compliance' | 'matrix' | 'unique';
 
 interface LogRow {
   timestamp: string;
@@ -44,7 +50,17 @@ interface CloudWatchMAndEventsVisualizerProps {
 }
 
 export default function CloudWatchMAndEventsVisualizer({ provider = 'aws', setProvider }: CloudWatchMAndEventsVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('intro');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('logs_metrics_traces');
+  const [expandedCategory, setExpandedCategory] = useState<string>('obs_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Log Estimator State
+  const [nbLogGbPerDay, setNbLogGbPerDay] = useState<number>(20);
+  const [nbRetentionDays, setNbRetentionDays] = useState<number>(30);
+  const [nbMetricCount, setNbMetricCount] = useState<number>(100);
 
   const isComparative = provider === 'comparative';
   const isAzure = provider === 'azure';
@@ -844,6 +860,171 @@ export default function CloudWatchMAndEventsVisualizer({ provider = 'aws', setPr
           --cw-svg-node-border: rgba(51, 65, 85, 0.8);
         }
 
+        .acad-dir-container {
+          background: var(--cw-card-bg);
+          border: 1px solid var(--cw-card-border);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: var(--cw-card-shadow);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--cw-tab-bg);
+          border-bottom: 1px solid var(--cw-card-border);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--cw-text-title);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--cw-card-bg);
+          color: var(--cw-text);
+          border-bottom: 1px solid var(--cw-card-border);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--cw-tab-hover-bg);
+          color: var(--cw-text-title);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--cw-text-muted);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--cw-card-bg);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--cw-tab-hover-bg);
+          color: var(--cw-text-title);
+          border-left-color: var(--cw-card-border);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: rgba(99, 102, 241, 0.12);
+          color: #6366f1;
+          border-left-color: #6366f1;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(129, 140, 248, 0.2);
+          color: #818cf8;
+          border-left-color: #818cf8;
+        }
+        .acad-detail-card {
+          background: var(--cw-card-bg);
+          border: 1px solid var(--cw-card-border);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: var(--cw-card-shadow);
+        }
+        .acad-hero-badge {
+          background: rgba(99, 102, 241, 0.1);
+          border: 1.5px solid rgba(99, 102, 241, 0.3);
+          color: #4f46e5;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .dark .acad-hero-badge {
+          background: rgba(129, 140, 248, 0.18);
+          border-color: rgba(129, 140, 248, 0.4);
+          color: #c7d2fe;
+        }
+        .acad-plain-english {
+          background: rgba(99, 102, 241, 0.08);
+          border-left: 4px solid #6366f1;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--cw-text);
+          border-top: 1px solid var(--cw-card-border);
+          border-right: 1px solid var(--cw-card-border);
+          border-bottom: 1px solid var(--cw-card-border);
+        }
+        .dark .acad-plain-english {
+          background: rgba(99, 102, 241, 0.18);
+          color: #f1f5f9;
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--cw-text);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%);
+          border-color: rgba(245, 158, 11, 0.4);
+          color: #f1f5f9;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--cw-table-border);
+        }
+        .acad-table th {
+          background: var(--cw-table-th-bg);
+          color: var(--cw-table-th-text);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--cw-table-border);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--cw-table-border);
+          color: var(--cw-table-td-text);
+        }
+        .acad-terminal {
+          background: #090d16;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--cw-card-bg);
+          border: 1px solid var(--cw-card-border);
+          color: var(--cw-text-muted);
+        }
+
         .cw-card {
           background: var(--cw-card-bg);
           border: 1.5px solid var(--cw-card-border);
@@ -1071,51 +1252,58 @@ export default function CloudWatchMAndEventsVisualizer({ provider = 'aws', setPr
           `}</style>
 
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6">
-        <div className="flex items-center gap-2">
-          <span className={`p-2 rounded-lg text-white ${provider === 'azure' ? 'bg-blue-600' : provider === 'gcp' ? 'bg-emerald-600' : 'bg-indigo-500'}`}>
-            <Eye className="w-6 h-6" />
-          </span>
-          <div className="text-left">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {provider === 'azure' ? 'Azure Monitor, Event Grid & Policy Compliance Hub' :
-               provider === 'gcp' ? 'Google Cloud Monitoring, Logging, Eventarc & Audit Hub' :
-               'AWS Observability, Events & Compliance Hub'}
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {provider === 'azure' ? 'Explore Azure Monitor Log Analytics, Metrics Streams, Event Grid routing rules, Activity Log audits, and Azure Policy guardrails' :
-               provider === 'gcp' ? 'Explore Google Cloud Logging Log Router, Cloud Monitoring telemetry, Eventarc routing rules, Audit Logs, and Security Command Center guardrails' :
-               'Explore CloudWatch Metric Streams, Log Agent Ingestion, EventBridge routing rules, CloudTrail audits, and AWS Config compliance guardrails'}
-            </p>
+      <Translate>
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-gray-200 mb-6">
+          <div className="flex items-center gap-2">
+            <span className={`p-2 rounded-lg text-white ${provider === 'azure' ? 'bg-blue-600' : provider === 'gcp' ? 'bg-emerald-600' : 'bg-indigo-500'}`}>
+              <Eye className="w-6 h-6" />
+            </span>
+            <div className="text-left">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {provider === 'azure' ? 'Azure Monitor, Event Grid & Policy Compliance Hub' :
+                 provider === 'gcp' ? 'Google Cloud Monitoring, Logging, Eventarc & Audit Hub' :
+                 'AWS Observability, Events & Compliance Hub'}
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {provider === 'azure' ? 'Explore Azure Monitor Log Analytics, Metrics Streams, Event Grid routing rules, Activity Log audits, and Azure Policy guardrails' :
+                 provider === 'gcp' ? 'Explore Google Cloud Logging Log Router, Cloud Monitoring telemetry, Eventarc routing rules, Audit Logs, and Security Command Center guardrails' :
+                 'Explore CloudWatch Metric Streams, Log Agent Ingestion, EventBridge routing rules, CloudTrail audits, and AWS Config compliance guardrails'}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </Translate>
 
       {/* Tab navigation bar */}
       {!isComparative && (
+        <Translate>
         <div className="cw-tabs">
+          <button className={`cw-tb ${activeTab === 'notebook' ? 'cw-on' : ''}`} onClick={() => setActiveTab('notebook')}>
+            <BookOpen className="w-4 h-4 text-indigo-500" /> 📖 1) Visual Notes &amp; Theories
+          </button>
           <button className={`cw-tb ${activeTab === 'intro' ? 'cw-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <BookOpen className="w-4 h-4" /> 1. Choosing Observability vs Auditing
+            <Sliders className="w-4 h-4 text-sky-500" /> 🎯 2) Observability vs Auditing
           </button>
           <button className={`cw-tb ${activeTab === 'logs' ? 'cw-on' : ''}`} onClick={() => setActiveTab('logs')}>
-            <FileText className="w-4 h-4" /> 2. {provider === 'azure' ? 'Azure Log Analytics' : provider === 'gcp' ? 'Cloud Logging' : 'CloudWatch Logs & Insights'}
+            <FileText className="w-4 h-4" /> 📑 3) {provider === 'azure' ? 'Azure Log Analytics' : provider === 'gcp' ? 'Cloud Logging' : 'CloudWatch Logs & Insights'}
           </button>
           <button className={`cw-tb ${activeTab === 'metrics' ? 'cw-on' : ''}`} onClick={() => setActiveTab('metrics')}>
-            <Activity className="w-4 h-4" /> 3. {provider === 'azure' ? 'Azure Metrics & Alerts' : provider === 'gcp' ? 'Cloud Monitoring & Alerts' : 'Metric Streams & Alarms'}
+            <Activity className="w-4 h-4" /> 📊 4) {provider === 'azure' ? 'Azure Metrics & Alerts' : provider === 'gcp' ? 'Cloud Monitoring & Alerts' : 'Metric Streams & Alarms'}
           </button>
           <button className={`cw-tb ${activeTab === 'eventbridge' ? 'cw-on' : ''}`} onClick={() => setActiveTab('eventbridge')}>
-            <Workflow className="w-4 h-4" /> 4. {provider === 'azure' ? 'Event Grid Router' : provider === 'gcp' ? 'Eventarc Event Router' : 'EventBridge Schema Router'}
+            <Workflow className="w-4 h-4" /> 🔀 5) {provider === 'azure' ? 'Event Grid Router' : provider === 'gcp' ? 'Eventarc Event Router' : 'EventBridge Schema Router'}
           </button>
           <button className={`cw-tb ${activeTab === 'compliance' ? 'cw-on' : ''}`} onClick={() => setActiveTab('compliance')}>
-            <Shield className="w-4 h-4" /> 5. {provider === 'azure' ? 'Activity Log & Azure Policy' : provider === 'gcp' ? 'Audit Logs & SCC Remediation' : 'CloudTrail & Config Remediation'}
+            <Shield className="w-4 h-4" /> 🛡️ 6) {provider === 'azure' ? 'Activity Log & Azure Policy' : provider === 'gcp' ? 'Audit Logs & SCC Remediation' : 'CloudTrail & Config Remediation'}
           </button>
           <button className={`cw-tb ${activeTab === 'matrix' ? 'cw-on' : ''}`} onClick={() => setActiveTab('matrix')}>
-            <Sliders className="w-4 h-4" /> 6. Observability Comparison &amp; Aggregation Map
+            <Sliders className="w-4 h-4" /> 🗺️ 7) Observability Comparison &amp; Map
           </button>
           <button className={`cw-tb ${activeTab === 'unique' ? 'cw-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
           </button>
         </div>
+      </Translate>
       )}
 
       {isComparative && (
@@ -1133,7 +1321,615 @@ export default function CloudWatchMAndEventsVisualizer({ provider = 'aws', setPr
       {/* ========================================================================= */}
       {/* TAB 1: HOW TO CHOOSE THE RIGHT TELEMETRY ENGINE & COMPARISON MATRIX       */}
       {/* ========================================================================= */}
-      {activeTab === 'intro' && (
+            {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--cw-text)' }}>
+          
+          {/* Header Hero Card */}
+          <div className="cw-card text-left" style={{ borderLeft: '4px solid #6366f1', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-indigo-500" /> CloudWatch, EventBridge &amp; Audit Compliance Notes &amp; Mental Models
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--cw-text-muted)' }}>
+                  Simplified, beginner-friendly observability theories sorted progressively from Logs vs Metrics vs Traces to CloudWatch Alarms, EventBridge Bus routing rules, CloudTrail Security Audits, and AWS Config compliance remediation.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Sidebar Category Explorer */}
+            <div className="lg:col-span-3 space-y-4 text-left">
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--cw-text-muted)' }}>Curriculum Directory:</span>
+              
+              <div className="acad-dir-container">
+                <div className="acad-dir-header">
+                  <Eye className="w-4 h-4 text-indigo-500" />
+                  <span>Observability Modules</span>
+                </div>
+
+                {/* LEVEL 1: OBSERVABILITY FUNDAMENTALS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'obs_fundamentals' ? '' : 'obs_fundamentals')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Sliders className="w-3.5 h-3.5 text-indigo-500" />
+                      🐣 Level 1 · Fundamentals
+                    </span>
+                    {expandedCategory === 'obs_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'obs_fundamentals' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--cw-card-bg)', borderBottom: '1px solid var(--cw-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('logs_metrics_traces')}
+                        className={`acad-dir-item-btn ${selectedNote === 'logs_metrics_traces' ? 'acad-active' : ''}`}
+                      >
+                        1.1 Logs vs Metrics vs Traces (Journal vs Gauge)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('cloudwatch_logs')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cloudwatch_logs' ? 'acad-active' : ''}`}
+                      >
+                        1.2 CloudWatch Logs &amp; Insights (Filing Cabinet)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: METRICS & ALARMS */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'metrics_alarms' ? '' : 'metrics_alarms')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-sky-500" />
+                      ⚙️ Level 2 · Metrics &amp; Alarms
+                    </span>
+                    {expandedCategory === 'metrics_alarms' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'metrics_alarms' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--cw-card-bg)', borderBottom: '1px solid var(--cw-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('cloudwatch_metrics')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cloudwatch_metrics' ? 'acad-active' : ''}`}
+                      >
+                        2.1 Telemetry Metrics (Cockpit Dashboard)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('cloudwatch_alarms')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cloudwatch_alarms' ? 'acad-active' : ''}`}
+                      >
+                        2.2 Alarms &amp; Auto-Scaling (Smoke Alarm)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 3: EVENT-DRIVEN ROUTING */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'event_routing' ? '' : 'event_routing')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Workflow className="w-3.5 h-3.5 text-purple-500" />
+                      🔀 Level 3 · EventBridge Bus
+                    </span>
+                    {expandedCategory === 'event_routing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'event_routing' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--cw-card-bg)', borderBottom: '1px solid var(--cw-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('eventbridge_bus')}
+                        className={`acad-dir-item-btn ${selectedNote === 'eventbridge_bus' ? 'acad-active' : ''}`}
+                      >
+                        3.1 EventBridge Bus &amp; Rules (Post Office Depot)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('schema_pipes')}
+                        className={`acad-dir-item-btn ${selectedNote === 'schema_pipes' ? 'acad-active' : ''}`}
+                      >
+                        3.2 Schema Registry &amp; EventBridge Pipes
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: AUDIT LOGGING & COMPLIANCE */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'audit_compliance' ? '' : 'audit_compliance')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                      🛡️ Level 4 · Audit &amp; Config
+                    </span>
+                    {expandedCategory === 'audit_compliance' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'audit_compliance' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--cw-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('cloudtrail_audits')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cloudtrail_audits' ? 'acad-active' : ''}`}
+                      >
+                        4.1 AWS CloudTrail (Security CCTV Camera)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('aws_config_remediation')}
+                        className={`acad-dir-item-btn ${selectedNote === 'aws_config_remediation' ? 'acad-active' : ''}`}
+                      >
+                        4.2 AWS Config &amp; Auto-Remediation Wrench
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--cw-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any topic to explore real-world analogies, interactive log cost calculators, and copyable CLI/Filter rules!
+              </div>
+            </div>
+
+            {/* Right Active Note Workspace */}
+            <div className="lg:col-span-9 space-y-6 text-left">
+
+              {/* NOTE 1.1: LOGS VS METRICS VS TRACES */}
+              {selectedNote === 'logs_metrics_traces' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        1.1 The 3 Pillars of Observability: Logs vs Metrics vs Traces
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('intro')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Overview Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Observability gives you complete insight into cloud infrastructure health:
+                    <br />• <strong>Logs (What happened?)</strong>: Detailed text records of events, stack traces, and application print statements.
+                    <br />• <strong>Metrics (How much / How fast?)</strong>: Numerical data points over time (CPU %, Memory MB, Latency ms, Error Count).
+                    <br />• <strong>Traces (Where is the bottleneck?)</strong>: End-to-end request lifecycle paths across microservices (AWS X-Ray).
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Security Guard Journal vs Building Thermometer vs Package GPS Tracker
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Logs (Security Guard Logbook)</strong>: Handwritten timestamps recording every person entering the building: &ldquo;10:04 AM: John entered room #302&rdquo;.
+                      <br />• <strong>Metrics (Building Thermometer)</strong>: A wall thermometer checking the room temperature every minute: &ldquo;72°F, 74°F, 98°F (SPIKE!)&rdquo;.
+                      <br />• <strong>Traces (FedEx Package GPS Tracker)</strong>: Tracks a parcel from Origin Warehouse &rarr; Delivery Truck &rarr; Doorstep, showing exactly 40 minutes stuck in traffic at Highway 101!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Observability Pillar</th>
+                          <th>AWS Service</th>
+                          <th>Data Structure</th>
+                          <th>Primary Use Case</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--cw-text-title)' }}>Logs</strong></td>
+                          <td>Amazon CloudWatch Logs</td>
+                          <td>Timestamped String/JSON text events</td>
+                          <td>Debugging errors, auditing, exception tracebacks</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--cw-text-title)' }}>Metrics</strong></td>
+                          <td>CloudWatch Metrics &amp; Alarms</td>
+                          <td>Numeric Time-Series values</td>
+                          <td>System health dashboards, auto-scaling triggers</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--cw-text-title)' }}>Traces</strong></td>
+                          <td>AWS X-Ray / Amazon CloudWatch ServiceLens</td>
+                          <td>Segment trees &amp; trace IDs</td>
+                          <td>Microservice latency bottleneck analysis &amp; map</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 1.2: CLOUDWATCH LOGS & INSIGHTS */}
+              {selectedNote === 'cloudwatch_logs' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        1.2 CloudWatch Log Groups, Log Streams &amp; Logs Insights Queries
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('logs')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to CloudWatch Logs Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **CloudWatch Logs** collects logs from EC2, Lambda, ECS, and API Gateway:
+                    <br />• <strong>Log Group</strong>: A folder organizing logs of a specific application (e.g. `/aws/lambda/PaymentService`).
+                    <br />• <strong>Log Stream</strong>: Individual log files written by a specific server instance or Lambda container.
+                    <br />• <strong>CloudWatch Logs Insights</strong>: A fast, SQL-like query engine that searches terabytes of log data in seconds!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Central Filing Drawer &amp; High-Speed Scanner
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Log Group (Filing Cabinet Drawer)</strong>: A drawer labeled &ldquo;2024 Accounting Invoices&rdquo;.
+                      <br />• <strong>Log Stream (Individual Folder inside Drawer)</strong>: Folder #4 written by Accountant Alex.
+                      <br />• <strong>Logs Insights (High-Speed Scanner Wrench)</strong>: You feed 10,000 invoices into an optical scanner, and it immediately highlights every invoice containing the word &ldquo;REJECTED&rdquo; in 2 seconds!
+                    </p>
+                  </div>
+
+                  {/* Interactive Log Cost & Retention Estimator */}
+                  <div className="acad-detail-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--cw-card-border)' }}>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--cw-text-muted)' }}>Interactive CloudWatch Logs Monthly Cost Estimator</span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--cw-text-muted)' }}>
+                          <span>Daily Ingestion: {nbLogGbPerDay} GB/day</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="200" 
+                          step="1" 
+                          value={nbLogGbPerDay} 
+                          onChange={(e) => setNbLogGbPerDay(parseInt(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--cw-text-muted)' }}>
+                          <span>Retention Policy: {nbRetentionDays} days</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="7" 
+                          max="365" 
+                          step="7" 
+                          value={nbRetentionDays} 
+                          onChange={(e) => setNbRetentionDays(parseInt(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--cw-text-muted)' }}>
+                          <span>Custom Metrics: {nbMetricCount} metrics</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="2000" 
+                          step="10" 
+                          value={nbMetricCount} 
+                          onChange={(e) => setNbMetricCount(parseInt(e.target.value))}
+                          className="accent-indigo-600 w-full"
+                        />
+                      </div>
+                    </div>
+
+                    {(() => {
+                      const monthlyIngestionGb = nbLogGbPerDay * 30;
+                      const ingestionCost = monthlyIngestionGb * 0.50; // $0.50 per GB
+                      const storageGb = monthlyIngestionGb * (nbRetentionDays / 30);
+                      const storageCost = storageGb * 0.03; // $0.03 per GB/mo
+                      const metricsCost = nbMetricCount * 0.30; // $0.30 per metric/mo
+                      const totalCost = ingestionCost + storageCost + metricsCost;
+                      return (
+                        <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--cw-tab-bg)', border: '1px solid var(--cw-card-border)' }}>
+                          <p>Monthly Log Ingestion: <span className="text-indigo-500 font-bold">{monthlyIngestionGb.toLocaleString()} GB / month</span> (${ingestionCost.toFixed(2)})</p>
+                          <p>Estimated Total CloudWatch Monthly Bill: <span className="text-emerald-500 font-bold">${totalCost.toFixed(2)} / month</span></p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Copyable Logs Insights Query */}
+                  <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--cw-card-bg)' }}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--cw-text-muted)' }}>CloudWatch Logs Insights Query Snippet</span>
+                      <button 
+                        onClick={() => {
+                          const snippet = `fields @timestamp, @message, @requestId\n| filter @message like /ERROR/ or @message like /Exception/\n| sort @timestamp desc\n| limit 50`;
+                          navigator.clipboard.writeText(snippet);
+                          setCopiedNoteId('insights-query');
+                          setTimeout(() => setCopiedNoteId(null), 2000);
+                        }}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'insights-query' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                    <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-24">
+{`fields @timestamp, @message, @requestId
+| filter @message like /ERROR/ or @message like /Exception/
+| sort @timestamp desc
+| limit 50`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.1: CLOUDWATCH METRICS */}
+              {selectedNote === 'cloudwatch_metrics' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Metrics &amp; Alarms</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        2.1 CloudWatch Metrics, Resolution &amp; Metric Streams
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('metrics')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Metrics &amp; Alarms Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **CloudWatch Metrics** track numeric data over time (e.g., `CPUUtilization`, `DBLoad`, `5XXErrorCount`).
+                    <br />• <strong>Standard Resolution (1-min)</strong>: Metrics published every 60 seconds (Default for AWS services).
+                    <br />• <strong>High-Resolution (1-sec)</strong>: Tracks critical telemetry per second for high-frequency trading or ultra-fast scaling.
+                    <br />• <strong>Metric Streams</strong>: Streams real-time metrics continuously to S3 or Datadog/Splunk using Kinesis Firehose!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Airplane Cockpit Speedometer Gauges
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      An airplane cockpit display panel shows airspeed, altitude, and engine RPM gauges. Standard resolution checks fuel level once per minute. High-resolution telemetry checks engine vibration every second during high-speed takeoffs!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.2: CLOUDWATCH ALARMS */}
+              {selectedNote === 'cloudwatch_alarms' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Metrics &amp; Alarms</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        2.2 CloudWatch Alarms &amp; Auto-Remediation Actions
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('metrics')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Metrics &amp; Alarms Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> A **CloudWatch Alarm** monitors a single metric over a specified period. When the metric crosses a threshold (e.g. `CPUUtilization &gt; 85%` for 3 consecutive minutes), the alarm transitions from `OK` to `ALARM` and automatically triggers actions: EC2 Auto Scaling, SNS Email/SMS notifications, or Systems Manager automation scripts!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Kitchen Smoke Alarm &amp; Automatic Sprinkler
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A smoke alarm continuously measures air smoke density. When smoke exceeds 50 ppm for 10 seconds (`ALARM`), it automatically triggers 2 actions: sound the loud siren (SNS Notification) and open the ceiling water sprinkler valve (EC2 Auto-Scaling / Remediation)!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: EVENTBRIDGE BUS */}
+              {selectedNote === 'eventbridge_bus' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🔀 Level 3 · EventBridge Bus</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        3.1 Amazon EventBridge Event Bus, Rules &amp; JSON Event Pattern Matching
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('eventbridge')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to EventBridge Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **Amazon EventBridge** is a serverless event bus that connects application data from AWS services, SaaS applications (Salesforce, Zendesk), and custom microservices. **Event Rules** evaluate incoming JSON events against filter patterns and route events asynchronously to 20+ targets (Lambda, SQS, Step Functions, Kinesis).
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Central Automated Postal Sorting Depot
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Thousands of packages drop onto a high-speed conveyor belt (Event Bus). An automated scanner (EventBridge Rule) reads package labels. If ZIP Code == 90210 (`JSON Filter Rule`), it drops the box into Shuttle Bus A (Lambda). If label says &ldquo;Fragile Glass&rdquo;, it sends a copy to Vault B (SQS Queue)!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: SCHEMA REGISTRY & PIPES */}
+              {selectedNote === 'schema_pipes' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🔀 Level 3 · EventBridge Bus</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        3.2 EventBridge Schema Registry &amp; EventBridge Pipes
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('eventbridge')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to EventBridge Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>Schema Registry</strong>: Automatically detects and stores JSON event structures, generating TypeScript/Java code bindings for developer IDE autocomplete.
+                    <br />• <strong>EventBridge Pipes</strong>: Connects point-to-point event producers (DynamoDB Streams, SQS, Kinesis) directly to consumers (Lambda, Step Functions) with built-in filtering, enrichment, and transformation—without writing glue code!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Universal Adapter Plug &amp; Inline Luggage Filter
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Schema Registry (Universal Adapter Dictionary)</strong>: Translates French electrical plugs into US sockets so developer code plugs in with zero friction.
+                      <br />• <strong>EventBridge Pipes (Inline Conveyor Belt Adapter)</strong>: Connects Factory A directly to Truck B, automatically stripping off plastic wrapping (JSON Filtering &amp; Transformation) along the way!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: AWS CLOUDTRAIL */}
+              {selectedNote === 'cloudtrail_audits' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · Audit &amp; Config</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        4.1 AWS CloudTrail: Governance, Compliance &amp; API Security Audit Logs
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('compliance')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Compliance &amp; Audit Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AWS CloudTrail** records all API calls and user activity across your AWS account. It answers 4 critical security questions for every single action: **Who** (IAM User/Role), **What** (API call e.g. `TerminateInstances`), **When** (Exact timestamp), and **From Where** (Source IP address &amp; User Agent).
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: 24/7 Security CCTV Camera Recording
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A 4K CCTV camera records every movement in a bank vault 24 hours a day. If a safety deposit box goes missing at 3:15 AM, security guards rewind the video footage (CloudTrail Event History) to see exactly who unlocked the door using keycard #402!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: AWS CONFIG */}
+              {selectedNote === 'aws_config_remediation' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--cw-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · Audit &amp; Config</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--cw-text-title)' }}>
+                        4.2 AWS Config: Resource Inventory, Compliance &amp; Auto-Remediation
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('compliance')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Compliance &amp; Audit Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> **AWS Config** continuously monitors, records, and evaluates resource configuration changes against security rules (e.g. `s3-bucket-public-read-prohibited`, `ec2-volume-inuse-check`). If a resource becomes `NON_COMPLIANT` (e.g. someone accidentally makes an S3 bucket public), AWS Config triggers Systems Manager Automation to **automatically lock the bucket in real-time**!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Building Safety Inspector &amp; Auto-Locking Wrench
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A building inspector walks the floor carrying a building code checklist. If an employee unlocks a fire exit door and leaves it wide open (`NON_COMPLIANT`), the inspector&apos;s automatic remote tool (Auto-Remediation Wrench) immediately swings the door shut and locks the bolt in 0.5 seconds!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
+        {activeTab === 'intro' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             

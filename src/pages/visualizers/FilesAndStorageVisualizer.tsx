@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
+import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Folder,
+  Sliders,
+  Server,
+  Zap,
+  Globe
+} from 'lucide-react';
 import FilesAndStorageComparativeView from '../../components/visualizers/FilesAndStorageComparativeView';
 import UniqueFilesAndStorageFeatures from '../../components/visualizers/UniqueFilesAndStorageFeatures';
 
-type TabType = 'overview' | 'windows' | 'lustre' | 'hybrid' | 'sim' | 'matrix' | 'unique';
+type TabType = 'notebook' | 'overview' | 'windows' | 'lustre' | 'hybrid' | 'sim' | 'matrix' | 'unique';
 type ScenarioType = 'lustre_ml' | 'windows_multiaz' | 'zfs_dev' | 'ontap_enterprise' | 'gateway_hybrid' | 'datasync_migration';
 
 interface SimLog {
@@ -17,7 +30,16 @@ interface FilesAndStorageVisualizerProps {
 }
 
 export default function FilesAndStorageVisualizer({ provider = 'aws', setProvider }: FilesAndStorageVisualizerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('fs_block_file_object');
+  const [expandedCategory, setExpandedCategory] = useState<string>('fs_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Storage Pricing Calculator State
+  const [nbStorageGb, setNbStorageGb] = useState<number>(5000);
+  const [nbEfsIaPercent, setNbEfsIaPercent] = useState<number>(80);
 
   const isComparative = provider === 'comparative';
   const isAzure = provider === 'azure';
@@ -553,6 +575,196 @@ export default function FilesAndStorageVisualizer({ provider = 'aws', setProvide
           backdrop-filter: blur(16px);
           margin-bottom: 18px;
           box-shadow: var(--fs-card-shadow);
+        }
+
+        /* Developer Academy Notes & Visual Mental Models Styling */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--fs-border-primary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--fs-border-primary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--color-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--fs-border-primary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--fs-border-primary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #ecfdf5;
+          color: #059669;
+          border-left-color: #10b981;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(16, 185, 129, 0.15);
+          color: #34d399;
+          border-left-color: #10b981;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--fs-border-primary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #d1fae5;
+          border: 1.5px solid #6ee7b7;
+          color: #065f46;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #10b981;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--fs-border-primary);
+          border-right: 1px solid var(--fs-border-primary);
+          border-bottom: 1px solid var(--fs-border-primary);
+        }
+        .acad-plain-english {
+          background: rgba(16, 185, 129, 0.07);
+          border-left: 4px solid #10b981;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--fs-border-primary);
+          border-right: 1px solid var(--fs-border-primary);
+          border-bottom: 1px solid var(--fs-border-primary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(16, 185, 129, 0.15);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--fs-border-primary);
+          border-right: 1px solid var(--fs-border-primary);
+          border-bottom: 1px solid var(--fs-border-primary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--fs-border-primary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--fs-border-primary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--fs-border-primary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--fs-border-primary);
+          color: var(--color-text-secondary);
         }
         .fs-sec {
           font-size: 12px;
@@ -1148,12 +1360,13 @@ export default function FilesAndStorageVisualizer({ provider = 'aws', setProvide
 
         {!isComparative && (
           <div className="fs-tabs">
-            <button className={`fs-tb ${activeTab === 'overview' ? 'fs-on' : ''}`} onClick={() => setActiveTab('overview')}>📂 1) File System Basics</button>
-            <button className={`fs-tb ${activeTab === 'windows' ? 'fs-on' : ''}`} onClick={() => setActiveTab('windows')}>🗄️ 2) Windows &amp; NetApp ONTAP</button>
-            <button className={`fs-tb ${activeTab === 'lustre' ? 'fs-on' : ''}`} onClick={() => setActiveTab('lustre')}>🚀 3) Lustre &amp; OpenZFS</button>
-            <button className={`fs-tb ${activeTab === 'hybrid' ? 'fs-on' : ''}`} onClick={() => setActiveTab('hybrid')}>🔌 4) Hybrid &amp; Migration</button>
-            <button className={`fs-tb ${activeTab === 'sim' ? 'fs-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 5) Live Storage Simulator</button>
-            <button className={`fs-tb ${activeTab === 'matrix' ? 'fs-on' : ''}`} onClick={() => setActiveTab('matrix')}>📊 6) Decision Advisor &amp; Matrix</button>
+            <button className={`fs-tb ${activeTab === 'notebook' ? 'fs-on' : ''}`} onClick={() => setActiveTab('notebook')}>📖 1) Visual Notes &amp; Theories</button>
+            <button className={`fs-tb ${activeTab === 'overview' ? 'fs-on' : ''}`} onClick={() => setActiveTab('overview')}>📂 2) File System Basics</button>
+            <button className={`fs-tb ${activeTab === 'windows' ? 'fs-on' : ''}`} onClick={() => setActiveTab('windows')}>🗄️ 3) Windows &amp; NetApp ONTAP</button>
+            <button className={`fs-tb ${activeTab === 'lustre' ? 'fs-on' : ''}`} onClick={() => setActiveTab('lustre')}>🚀 4) Lustre &amp; OpenZFS</button>
+            <button className={`fs-tb ${activeTab === 'hybrid' ? 'fs-on' : ''}`} onClick={() => setActiveTab('hybrid')}>🔌 5) Hybrid &amp; Migration</button>
+            <button className={`fs-tb ${activeTab === 'sim' ? 'fs-on' : ''}`} onClick={() => setActiveTab('sim')}>🎮 6) Live Storage Simulator</button>
+            <button className={`fs-tb ${activeTab === 'matrix' ? 'fs-on' : ''}`} onClick={() => setActiveTab('matrix')}>📊 7) Decision Advisor &amp; Matrix</button>
             <button className={`fs-tb ${activeTab === 'unique' ? 'fs-on' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
           </div>
         )}
@@ -1169,6 +1382,789 @@ export default function FilesAndStorageVisualizer({ provider = 'aws', setProvide
         {!isComparative && activeTab !== 'unique' && (
           <Translate>
             <>
+
+        {activeTab === 'notebook' && (
+            <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+              
+              {/* Header Hero Card */}
+              <div className="fs-card text-left" style={{ borderLeft: '4px solid #10b981' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                      <BookOpen style={{ width: '20px', height: '20px', color: '#10b981' }} /> AWS Files &amp; Storage (EFS &amp; FSx Family) Notes &amp; Mental Models
+                    </h2>
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '6px', lineHeight: '1.45', marginBottom: 0 }}>
+                      Simplified, beginner-friendly cloud file storage theories sorted progressively from POSIX/NFS shared drives to enterprise Windows SMB, ultra-fast sub-millisecond AI Lustre scratch disks, multi-protocol NetApp ONTAP, and hybrid on-premises Storage Gateways.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className="acad-hero-badge" style={{ background: '#d1fae5', borderColor: '#6ee7b7', color: '#065f46' }}>🎓 Beginner to Pro</span>
+                    <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Sidebar Category Explorer */}
+                <div className="lg:col-span-3 space-y-4 text-left">
+                  <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
+                  
+                  <div className="acad-dir-container">
+                    <div className="acad-dir-header">
+                      <Folder className="w-4 h-4 text-emerald-500" />
+                      <span>File Storage Modules</span>
+                    </div>
+
+                    {/* LEVEL 1: FUNDAMENTALS & EFS */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'fs_fundamentals' ? '' : 'fs_fundamentals')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5 text-emerald-500" />
+                          🐣 Level 1 · Fundamentals &amp; EFS
+                        </span>
+                        {expandedCategory === 'fs_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'fs_fundamentals' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--fs-border-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('fs_block_file_object')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_block_file_object' ? 'acad-active' : ''}`}
+                          >
+                            1.1 File vs Block vs Object Storage (Whiteboard vs SSD)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('fs_efs_scaling')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_efs_scaling' ? 'acad-active' : ''}`}
+                          >
+                            1.2 Amazon EFS Elastic Scaling &amp; IA (Rubber Band)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 2: WINDOWS & NETAPP ONTAP */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'fs_windows_ontap' ? '' : 'fs_windows_ontap')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Server className="w-3.5 h-3.5 text-blue-500" />
+                          🗄️ Level 2 · Windows &amp; ONTAP
+                        </span>
+                        {expandedCategory === 'fs_windows_ontap' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'fs_windows_ontap' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--fs-border-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('fs_windows_smb')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_windows_smb' ? 'acad-active' : ''}`}
+                          >
+                            2.1 FSx for Windows File Server (Corporate Z-Drive)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('fs_netapp_ontap')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_netapp_ontap' ? 'acad-active' : ''}`}
+                          >
+                            2.2 FSx for NetApp ONTAP (Universal Translator)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 3: HPC, LUSTRE & OPENZFS */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'fs_hpc_lustre' ? '' : 'fs_hpc_lustre')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-amber-500" />
+                          🚀 Level 3 · Lustre &amp; OpenZFS
+                        </span>
+                        {expandedCategory === 'fs_hpc_lustre' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'fs_hpc_lustre' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--fs-border-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('fs_lustre_hpc')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_lustre_hpc' ? 'acad-active' : ''}`}
+                          >
+                            3.1 FSx for Lustre &amp; S3 AI Ingest (F1 Rocket Engine)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('fs_openzfs_clones')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_openzfs_clones' ? 'acad-active' : ''}`}
+                          >
+                            3.2 FSx for OpenZFS &amp; Instant Cloning (Sandbox Clone)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 4: HYBRID GATEWAYS & MIGRATION */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'fs_hybrid_migration' ? '' : 'fs_hybrid_migration')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Globe className="w-3.5 h-3.5 text-purple-500" />
+                          🔌 Level 4 · Hybrid &amp; Migration
+                        </span>
+                        {expandedCategory === 'fs_hybrid_migration' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'fs_hybrid_migration' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('fs_storage_gateway')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_storage_gateway' ? 'acad-active' : ''}`}
+                          >
+                            4.1 AWS Storage Gateway (Local Caching Bridge)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('fs_datasync_snow')}
+                            className={`acad-dir-item-btn ${selectedNote === 'fs_datasync_snow' ? 'acad-active' : ''}`}
+                          >
+                            4.2 AWS DataSync &amp; Snow Family (Armored Data Vaults)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+
+                  <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                    <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                    </span>
+                    Click any cloud storage concept to explore real-world analogies, interactive pricing calculators, and direct simulator links!
+                  </div>
+                </div>
+
+                {/* Right Active Note Workspace */}
+                <div className="lg:col-span-9 space-y-6 text-left">
+
+                  {/* NOTE 1.1: FILE VS BLOCK VS OBJECT */}
+                  {selectedNote === 'fs_block_file_object' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            1.1 File Storage (EFS) vs Block Storage (EBS) vs Object Storage (S3)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('overview')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to File Basics Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> AWS offers 3 main storage paradigms:
+                        <br />• <strong>Block Storage (EBS)</strong>: A dedicated virtual hard drive attached to exactly 1 EC2 instance for operating systems and databases.
+                        <br />• <strong>File Storage (EFS / FSx)</strong>: A shared network folder mounted simultaneously by thousands of servers with folders and file hierarchies (POSIX/SMB/NFS).
+                        <br />• <strong>Object Storage (S3)</strong>: A flat web-accessible bucket for unlimited files with unique URL keys and HTTP GET/PUT APIs.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Personal Laptop SSD vs Family Whiteboard vs Public Library
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>EBS (Personal Internal Laptop SSD)</strong>: Only you can plug into your laptop. Super fast, but cannot be physically attached to 50 computers at once.
+                          <br />• <strong>EFS (Family Kitchen Whiteboard)</strong>: Mounted in the hallway where all 5 family members (EC2 / Lambda) can read, write, and erase grocery items simultaneously!
+                          <br />• <strong>S3 (Public City Library)</strong>: You hand a ticket number at the checkout desk to receive a complete book. You cannot edit 1 sentence inside the book on the shelf; you must replace the whole book.
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Storage Type</th>
+                              <th>AWS Service</th>
+                              <th>Concurrent Clients</th>
+                              <th>Access Method</th>
+                              <th>Max Throughput</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Block Storage</strong></td>
+                              <td>Amazon EBS</td>
+                              <td>1 EC2 Instance (Single-AZ)</td>
+                              <td>OS Raw Block Device</td>
+                              <td>Up to 4,000 MB/s (io2 Block Express)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>File Storage</strong></td>
+                              <td>Amazon EFS / FSx</td>
+                              <td>Thousands of EC2/Containers/Lambda</td>
+                              <td>NFSv4 / SMB / POSIX File Tree</td>
+                              <td>10+ GB/s (EFS) / Hundreds GB/s (Lustre)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Object Storage</strong></td>
+                              <td>Amazon S3</td>
+                              <td>Millions of Global Web Clients</td>
+                              <td>REST API (HTTPS GET/PUT)</td>
+                              <td>Virtually Unlimited (Multi-GB/s)</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 1.2: AMAZON EFS SCALING & LIFECYCLE */}
+                  {selectedNote === 'fs_efs_scaling' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            1.2 Amazon EFS Elastic Scaling &amp; Automated Lifecycle (Save 92%)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('overview')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to File Basics Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> **Amazon EFS** is a fully serverless, automatically elastic NFS file system. You never provision drive size or manage storage capacity—it automatically grows when you add files and shrinks when you delete files. **EFS Lifecycle Management** automatically moves files you haven&apos;t opened in 30 days to the **EFS Infrequent Access (IA)** tier—cutting your monthly storage bill by <strong>92%</strong>!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Self-Expanding Elastic Accordion Folder
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Instead of buying a bulky 500-page binder that sits 90% empty, you have a magic accordion folder that expands instantly when you drop 100 receipts into it, and contracts to paper-thin when you take them out. When receipts get older than 30 days, an invisible butler moves them to a cheap storage box in the basement ($0.025/GB) without changing the folder index!
+                        </p>
+                      </div>
+
+                      {/* Interactive EFS Pricing Calculator */}
+                      <div className="fs-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--fs-border-primary)' }}>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive EFS Storage Cost &amp; Lifecycle Savings Calculator</span>
+                        
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                              <span>Total Shared Storage: {nbStorageGb.toLocaleString()} GB ({(nbStorageGb / 1000).toFixed(1)} TB)</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="100" 
+                              max="20000" 
+                              step="100" 
+                              value={nbStorageGb} 
+                              onChange={(e) => setNbStorageGb(parseInt(e.target.value))}
+                              className="accent-emerald-600 w-full"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                              <span>Infrequent Access (IA) Cold Tier Proportion: {nbEfsIaPercent}%</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="95" 
+                              step="5" 
+                              value={nbEfsIaPercent} 
+                              onChange={(e) => setNbEfsIaPercent(parseInt(e.target.value))}
+                              className="accent-emerald-600 w-full"
+                            />
+                          </div>
+                        </div>
+
+                        {(() => {
+                          const standardGb = nbStorageGb * ((100 - nbEfsIaPercent) / 100);
+                          const iaGb = nbStorageGb * (nbEfsIaPercent / 100);
+                          const allStandardCost = nbStorageGb * 0.30;
+                          const blendedCost = (standardGb * 0.30) + (iaGb * 0.025);
+                          const savingsPercent = ((allStandardCost - blendedCost) / allStandardCost) * 100;
+                          return (
+                            <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--fs-border-primary)' }}>
+                              <p>100% EFS Standard Cost: <span className="text-amber font-bold">${allStandardCost.toFixed(2)} / month</span> ($0.30/GB)</p>
+                              <p>With EFS Lifecycle (Blended IA): <span className="text-emerald-500 font-bold">${blendedCost.toFixed(2)} / month</span></p>
+                              <p>Monthly Dollar Savings: <span className="text-green font-bold">${(allStandardCost - blendedCost).toFixed(2)}/mo saved ({savingsPercent.toFixed(1)}% reduction!)</span></p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.1: FSX FOR WINDOWS SMB */}
+                  {selectedNote === 'fs_windows_smb' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🗄️ Level 2 · Windows &amp; ONTAP</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            2.1 FSx for Windows File Server (Enterprise Active Directory &amp; SMB)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('windows')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Windows Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Enterprise Windows applications require native Windows features like **SMB protocol (v2.0 to 3.1.1)**, Microsoft Active Directory integration, Windows NTFS permissions (ACLs), and **Shadow Copies** for self-service file restores. **Amazon FSx for Windows File Server** provides a fully managed native Windows Server file system with automatic Multi-AZ failover and data deduplication saving 50–60% storage space!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Corporate Office Z: Drive with Employee ID Badges
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          When you open your work laptop at a Fortune 500 company and double-click <code>Z:\Shared\Finance\Q3_Report.xlsx</code>, your computer authenticates against Active Directory using your corporate ID. If an employee accidentally overwrites a spreadsheet, they right-click &rarr; &ldquo;Restore Previous Versions&rdquo; (Shadow Copies) to retrieve yesterday&apos;s copy in 5 seconds without calling IT support!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Enterprise Features Included:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Active Directory Integration:</strong> Join AWS Managed Microsoft AD or your existing on-premises Active Directory.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Multi-AZ High Availability:</strong> Synchronous continuous replication to a standby file server in a 2nd Availability Zone with automatic sub-minute failover.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Data Deduplication:</strong> Automatically finds and eliminates duplicate chunks across thousands of user home directories, cutting storage requirements in half.</li>
+                          </ul>
+                        </div>
+
+                        <div className="fs-card p-4 rounded-xl flex flex-col justify-between">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Windows PowerShell Mount</span>
+                            <button 
+                              onClick={() => {
+                                const snippet = `New-PSDrive -Name "Z" -PSProvider FileSystem -Root "\\\\fs-12345678.corp.example.com\\share" -Persist`;
+                                navigator.clipboard.writeText(snippet);
+                                setCopiedNoteId('win-mount');
+                                setTimeout(() => setCopiedNoteId(null), 2000);
+                              }}
+                              className="fs-btn text-[10px] p-1 flex items-center gap-1"
+                            >
+                              {copiedNoteId === 'win-mount' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                          <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-36">
+{`# 1. Map Network Drive to FSx for Windows
+New-PSDrive -Name "Z" \\
+  -PSProvider FileSystem \\
+  -Root "\\\\fs-1234.corp.local\\share" \\
+  -Persist
+
+# 2. Enable Data Deduplication
+Enable-FSxDataDeduplication`}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.2: FSX FOR NETAPP ONTAP */}
+                  {selectedNote === 'fs_netapp_ontap' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🗄️ Level 2 · Windows &amp; ONTAP</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            2.2 FSx for NetApp ONTAP (Multi-Protocol NFS + SMB + iSCSI)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('windows')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to ONTAP Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Thousands of enterprise datacenters run on NetApp ONTAP. **Amazon FSx for NetApp ONTAP** brings complete native ONTAP storage to AWS. It is a true **multi-protocol powerhouse**—allowing Linux (NFS), Windows (SMB), and Block storage (iSCSI) to access the exact same dataset concurrently, with automatic intelligent tiering to elastic NVMe and S3 storage!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Universal Multi-Language Diplomatic Translator
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Imagine a United Nations negotiation table where a French delegate speaks French (Linux NFS), an English delegate speaks English (Windows SMB), and an engineer transmits binary Morse code (iSCSI Block). NetApp ONTAP seamlessly translates between all 3 in real-time, letting everyone collaborate on the same master document without converting files!
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Feature</th>
+                              <th>FSx for NetApp ONTAP</th>
+                              <th>Standard EFS</th>
+                              <th>FSx for Windows</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Protocols Supported</strong></td>
+                              <td>NFSv3, NFSv4, SMB 2/3, iSCSI Block, NVMe-oF</td>
+                              <td>NFSv4.0 &amp; NFSv4.1 only</td>
+                              <td>SMB 2.0 to 3.1.1 only</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Deduplication &amp; Compression</strong></td>
+                              <td>✅ Yes (65%+ reduction across blocks)</td>
+                              <td>❌ No</td>
+                              <td>✅ Yes (NTFS Dedup)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Replication Engine</strong></td>
+                              <td>NetApp SnapMirror (Direct on-prem sync)</td>
+                              <td>AWS Backup / EFS Replication</td>
+                              <td>DFS Replication / AWS Backup</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Automatic Storage Tiering</strong></td>
+                              <td>Primary SSD Tier &rarr; Elastic Capacity Pool (S3)</td>
+                              <td>EFS Standard &rarr; EFS-IA</td>
+                              <td>SSD &rarr; HDD Tiers</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.1: FSX FOR LUSTRE */}
+                  {selectedNote === 'fs_lustre_hpc' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 3 · Lustre &amp; OpenZFS</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            3.1 FSx for Lustre &amp; Direct S3 AI/ML Ingest (Hundreds of GB/s)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('lustre')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Lustre Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Training deep learning neural networks (LLMs, computer vision) and running scientific simulations require massive bandwidth (hundreds of Gigabytes per second with sub-millisecond latencies). **Amazon FSx for Lustre** is an ultra-high performance POSIX file system that links directly to your S3 bucket—**lazy-loading files on demand** so GPU clusters can train immediately without waiting hours for data to copy!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Formula 1 High-Flow Fuel Pump Feeding 1,000 HP Racecars
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Standard S3 is like a giant fuel storage lake (cheap, vast, 100 TBs). But 256 NVIDIA H100 GPUs are like a Formula 1 racing engine requiring 500 liters of fuel per second. FSx for Lustre is the <strong>high-pressure turbo pump</strong> that connects directly to the S3 lake, streaming gigabytes of training data into GPU memory at lightspeed!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Lustre Deployment Options:</h4>
+                          
+                          <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--fs-border-primary)' }}>
+                            <strong className="text-amber font-bold block">1. Scratch File System (Temporary HPC):</strong>
+                            <p>Designed for cost-optimized short-term processing (e.g. 4-hour batch ML training job). Data is not replicated across servers; after the job finishes, results sync to S3 and the cluster is deleted!</p>
+                          </div>
+                          <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--fs-border-primary)' }}>
+                            <strong className="text-emerald-600 font-bold block">2. Persistent File System (Long-Term):</strong>
+                            <p>Data is automatically replicated within the Availability Zone for multi-month financial modeling and autonomous vehicle processing.</p>
+                          </div>
+                        </div>
+
+                        <div className="fs-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>POSIX Lustre Mount Command</span>
+                          
+                          <pre className="acad-terminal text-[9.5px] leading-relaxed text-left overflow-x-auto">
+{`# 1. Install Lustre client drivers
+sudo amazon-linux-extras install -y lustre
+
+# 2. Create mount directory
+sudo mkdir -p /mnt/fsx_lustre
+
+# 3. Mount filesystem linked to S3
+sudo mount -t lustre -o noatime,flock \\
+  fs-01234567.fsx.us-east-1.amazonaws.com@tcp:/fsx \\
+  /mnt/fsx_lustre`}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.2: FSX FOR OPENZFS */}
+                  {selectedNote === 'fs_openzfs_clones' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 3 · Lustre &amp; OpenZFS</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            3.2 FSx for OpenZFS &amp; Sub-Second Snapshot Cloning
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('lustre')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to OpenZFS Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> **Amazon FSx for OpenZFS** delivers up to <strong>1 million IOPS and sub-half-millisecond (0.5ms) latencies</strong> powered by NVMe SSDs. Its killer feature is **Instant Copy-on-Write Snapshot Cloning**—allowing software development teams to spawn 50 identical isolated test environments from a 10 TB production database in <strong>under 1 second with 0 extra storage cost</strong>!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Git Branching for a 10 Terabyte Hard Drive
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Instead of waiting 4 hours to copy a 10 TB production disk for 50 developers to test a new code patch, OpenZFS creates 50 instant &ldquo;Git-like branches&rdquo; of the entire 10 TB filesystem instantly. Developers can write, test, delete, and corrupt their sandbox clone without affecting the master production database!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>OpenZFS Superpowers:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>1,000,000+ IOPS:</strong> Highest per-volume performance of any general NFS file system on AWS.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Sub-Millisecond NVMe Cache:</strong> Reads hot application data directly from NVMe caching layers in under 0.5 ms.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Zstandard (ZSTD) Compression:</strong> High-speed inline data compression reducing storage footprints by up to 50%.</li>
+                          </ul>
+                        </div>
+
+                        <div className="fs-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>OpenZFS Performance Metrics</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded flex justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="font-bold text-green">Read Latency:</span>
+                              <span className="text-green font-bold">&lt; 0.5 ms (Sub-half millisecond)</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <span className="font-bold text-blue">Throughput:</span>
+                              <span className="text-blue font-bold">Up to 21 GB/s</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <span className="font-bold text-purple">Snapshot Speed:</span>
+                              <span className="text-purple font-bold">&lt; 1 second for 10+ TB</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.1: AWS STORAGE GATEWAY */}
+                  {selectedNote === 'fs_storage_gateway' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🔌 Level 4 · Hybrid &amp; Migration</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            4.1 AWS Storage Gateway (Volume, File &amp; Tape Gateways)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('hybrid')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Hybrid Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Many companies have on-premises datacenters and cannot move all servers to AWS overnight. **AWS Storage Gateway** is a hybrid appliance (deployed as a VMware/Hyper-V virtual machine or hardware server) that provides <strong>local low-latency caching in your office</strong> while automatically backing up all data seamlessly to Amazon S3!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Local Office Refrigerator Connected to a Central Grocery Warehouse
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Instead of your office employees driving 45 minutes to the central grocery warehouse (AWS S3) every time they want a sandwich, you have a <strong>smart office refrigerator (Storage Gateway)</strong> stocked with today&apos;s food. When workers put new leftovers in the fridge, it automatically syncs a copy to the cloud warehouse in the background!
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Gateway Type</th>
+                              <th>Local Protocol</th>
+                              <th>Cloud Backend</th>
+                              <th>Best Use Case</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Amazon S3 File Gateway</strong></td>
+                              <td>NFS &amp; SMB</td>
+                              <td>Amazon S3 Buckets</td>
+                              <td>On-prem apps writing files directly into S3</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Amazon FSx File Gateway</strong></td>
+                              <td>SMB</td>
+                              <td>FSx for Windows File Server</td>
+                              <td>Low-latency local Windows file shares</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Volume Gateway (Cached)</strong></td>
+                              <td>iSCSI Block Storage</td>
+                              <td>Amazon S3 + EBS Snapshots</td>
+                              <td>Local on-prem hard drives backed by S3</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Tape Gateway (VTL)</strong></td>
+                              <td>iSCSI VTL (Virtual Tape Library)</td>
+                              <td>S3 Glacier &amp; Deep Archive</td>
+                              <td>Replacing physical magnetic tape backup robots</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.2: DATASYNC & SNOW FAMILY */}
+                  {selectedNote === 'fs_datasync_snow' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🔌 Level 4 · Hybrid &amp; Migration</span>
+                          <h3 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-primary)', marginTop: '8px' }}>
+                            4.2 AWS DataSync vs AWS Snow Family (Petabyte Offline Transport)
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveTab('hybrid')}
+                            className="fs-btn fs-on"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Migration Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Moving massive data into AWS depends on network bandwidth. **AWS DataSync** is an automated high-speed transfer software that maximizes your internet/Direct Connect connection (up to 10x faster than rsync). But when moving **100 Terabytes to Exabytes**, internet transfers would take months—so you use the **AWS Snow Family** (rugged physical appliances shipped by courier)!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Fiber-Optic High-Speed Highway vs Armored Suitcase on an Airplane
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>AWS DataSync</strong>: A dedicated multi-lane high-speed fiber tunnel streaming water pipes continuously into AWS.
+                          <br />• <strong>AWS Snowball Edge</strong>: An armored, weather-proof steel suitcase holding 80 TB delivered by FedEx. You plug it into your datacenter, load 80 TB in a few hours, and FedEx flies the suitcase straight into the AWS datacenter!
+                          <br />• <strong>AWS Snowmobile</strong>: A 45-foot rugged semi-trailer truck driven to your datacenter that holds <strong>100 Petabytes</strong> of data!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>When to Use Online vs Offline Migration:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Data &lt; 10 TB (Fast Network):</strong> Use <strong>AWS DataSync</strong> over internet or Direct Connect.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Data 10 TB to 10 Petabytes:</strong> Order <strong>AWS Snowball Edge</strong> (80 TB or 210 TB per device) via courier.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Data &gt; 10 Petabytes (Exabyte Scale):</strong> Request the <strong>AWS Snowmobile</strong> semi-truck.</li>
+                          </ul>
+                        </div>
+
+                        <div className="fs-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Snow Family Hardware Specs</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <p className="font-bold text-green">AWS Snowcone (Pocket Sized):</p>
+                              <span>8 TB HDD / 14 TB SSD · Lightweight (4.5 lbs) · Battery powered</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <p className="font-bold text-blue">AWS Snowball Edge (Armored Vault):</p>
+                              <span>80 TB Storage Optimized / Compute with GPU for edge AI</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <p className="font-bold text-purple">AWS Snowmobile (45-foot Semi Truck):</p>
+                              <span>100 Petabytes per truck · Tamper-proof, climate-controlled</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          )}
+
 
         {/* Tab 1: File System Basics */}
         {activeTab === 'overview' && (

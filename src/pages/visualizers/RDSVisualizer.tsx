@@ -1,8 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  BookOpen,
+  Shield,
+  Activity,
+  ChevronRight,
+  ChevronDown,
+  Network,
+  Lightbulb,
+  Sliders,
+  Zap,
+  Database,
+  HardDrive,
+  RefreshCw,
+  Layers,
+  Cloud
+} from 'lucide-react';
 import RDSComparativeView from '../../components/visualizers/RDSComparativeView';
 import UniqueRDSFeatures from '../../components/visualizers/UniqueRDSFeatures';
 
-type TabType = 'overview' | 'connect' | 'multiaz' | 'replicas' | 'sim' | 'advanced' | 'best' | 'unique';
+type TabType = 'overview' | 'connect' | 'multiaz' | 'replicas' | 'sim' | 'advanced' | 'best' | 'notebook' | 'unique';
 type EngineType = 'postgres' | 'mysql' | 'maria' | 'oracle' | 'mssql' | 'aurora';
 type FeatureTab = 'backup' | 'clone' | 'security' | 'ml' | 'proxy';
 
@@ -236,7 +252,16 @@ interface RDSVisualizerProps {
 }
 
 export default function RDSVisualizer({ provider = 'aws', setProvider }: RDSVisualizerProps) {
-  const [activeSection, setActiveSection] = useState<TabType>('overview');
+  const [activeSection, setActiveSection] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Mental Models State
+  const [selectedNote, setSelectedNote] = useState<string>('rds_what_is');
+  const [expandedCategory, setExpandedCategory] = useState<string>('rds_fundamentals');
+
+  // Interactive Note Simulator State
+  const [nbTpsSimulation, setNbTpsSimulation] = useState<number>(500);
+  const [nbReadRatio, setNbReadRatio] = useState<number>(80);
+  const [nbReplicaCount, setNbReplicaCount] = useState<number>(3);
   const [selectedEngine, setSelectedEngine] = useState<EngineType>('postgres');
 
   const isComparative = provider === 'comparative';
@@ -1471,6 +1496,207 @@ export default function RDSVisualizer({ provider = 'aws', setProvider }: RDSVisu
         .rds-svg-text-secondary {
           fill: var(--color-text-secondary) !important;
         }
+
+        /* Developer Academy Notes & Visual Mental Models Styling */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--color-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--color-border-tertiary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eff6ff;
+          color: #0284c7;
+          border-left-color: #0ea5e9;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.15);
+          color: #38bdf8;
+          border-left-color: #38bdf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #e0f2fe;
+          border: 1.5px solid #bae6fd;
+          color: #0369a1;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-plain-english {
+          background: rgba(2, 132, 199, 0.07);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(56, 189, 248, 0.12);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-flow-step {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-radius: 8px;
+          border: 1px solid var(--color-border-tertiary);
+          font-size: 11.5px;
+          flex: 1 1 160px;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--color-border-tertiary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
       `}</style>
 
       {/* Flagship Header */}
@@ -1502,13 +1728,14 @@ export default function RDSVisualizer({ provider = 'aws', setProvider }: RDSVisu
       {/* Main Navigation Tabs */}
       {!isComparative && (
         <div className="rds-tabs">
-          <button className={`rds-tb ${activeSection === 'overview' ? 'rds-on' : ''}`} onClick={() => setActiveSection('overview')}>⚖️ 1) Concept &amp; Engines</button>
-          <button className={`rds-tb ${activeSection === 'connect' ? 'rds-on' : ''}`} onClick={() => setActiveSection('connect')}>🔌 2) Connectivity &amp; SGs</button>
-          <button className={`rds-tb ${activeSection === 'multiaz' ? 'rds-on' : ''}`} onClick={() => setActiveSection('multiaz')}>🛡️ 3) High Availability HA</button>
-          <button className={`rds-tb ${activeSection === 'replicas' ? 'rds-on' : ''}`} onClick={() => setActiveSection('replicas')}>📖 4) Read Scaling</button>
-          <button className={`rds-tb ${activeSection === 'sim' ? 'rds-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 5) Live Simulation</button>
-          <button className={`rds-tb ${activeSection === 'advanced' ? 'rds-on' : ''}`} onClick={() => setActiveSection('advanced')}>🚀 6) Advanced Features</button>
-          <button className={`rds-tb ${activeSection === 'best' ? 'rds-on' : ''}`} onClick={() => setActiveSection('best')}>🏗️ 7) Best-Practice Guides</button>
+          <button className={`rds-tb ${activeSection === 'notebook' ? 'rds-on' : ''}`} onClick={() => setActiveSection('notebook')}>📖 1) Visual Notes &amp; Theories</button>
+          <button className={`rds-tb ${activeSection === 'overview' ? 'rds-on' : ''}`} onClick={() => setActiveSection('overview')}>⚖️ 2) Concept &amp; Engines</button>
+          <button className={`rds-tb ${activeSection === 'connect' ? 'rds-on' : ''}`} onClick={() => setActiveSection('connect')}>🔌 3) Connectivity &amp; SGs</button>
+          <button className={`rds-tb ${activeSection === 'multiaz' ? 'rds-on' : ''}`} onClick={() => setActiveSection('multiaz')}>🛡️ 4) High Availability HA</button>
+          <button className={`rds-tb ${activeSection === 'replicas' ? 'rds-on' : ''}`} onClick={() => setActiveSection('replicas')}>📖 5) Read Scaling</button>
+          <button className={`rds-tb ${activeSection === 'sim' ? 'rds-on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 6) Live Simulation</button>
+          <button className={`rds-tb ${activeSection === 'advanced' ? 'rds-on' : ''}`} onClick={() => setActiveSection('advanced')}>🚀 7) Advanced Features</button>
+          <button className={`rds-tb ${activeSection === 'best' ? 'rds-on' : ''}`} onClick={() => setActiveSection('best')}>🏗️ 8) Best-Practice Guides</button>
           <button className={`rds-tb ${activeSection === 'unique' ? 'rds-on' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
         </div>
       )}
@@ -3157,6 +3384,1091 @@ export default function RDSVisualizer({ provider = 'aws', setProvider }: RDSVisu
                   </div>
                 )}
 
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* TAB 8: VISUAL ARCHITECT NOTES & THEORIES (HUMANIZED & SORTED)             */}
+          {/* ========================================================================= */}
+          {activeSection === 'notebook' && (
+            <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+              
+              {/* Header Hero Card */}
+              <div className="card text-left" style={{ borderLeft: '4px solid #0284c7' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 className="text-xl font-bold flex items-center gap-2 font-display">
+                      <BookOpen className="w-5 h-5 text-sky-600" /> Relational Database (RDS &amp; Aurora) Notes &amp; Mental Models
+                    </h2>
+                    <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                      Simplified, beginner-friendly relational database theories sorted progressively from managed fundamentals to synchronous Multi-AZ failovers, read scaling, cloud-native Aurora storage, and PITR backups with everyday real-world analogies.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className="acad-hero-badge" style={{ background: '#e0f2fe', borderColor: '#7dd3fc', color: '#0369a1' }}>🎓 Beginner to Pro</span>
+                    <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Real-World Mental Models</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Sidebar Category Explorer */}
+                <div className="lg:col-span-3 space-y-4 text-left">
+                  <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
+                  
+                  <div className="acad-dir-container">
+                    <div className="acad-dir-header">
+                      <Database className="w-4 h-4 text-sky-600" />
+                      <span>Database Modules</span>
+                    </div>
+
+                    {/* LEVEL 1: RDS FUNDAMENTALS */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'rds_fundamentals' ? '' : 'rds_fundamentals')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5 text-sky-500" />
+                          🐣 Level 1 · Fundamentals
+                        </span>
+                        {expandedCategory === 'rds_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'rds_fundamentals' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('rds_what_is')}
+                            className={`acad-dir-item-btn ${selectedNote === 'rds_what_is' ? 'acad-active' : ''}`}
+                          >
+                            1.1 What is Managed RDS? (Apartment Handyman)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('engine_selection')}
+                            className={`acad-dir-item-btn ${selectedNote === 'engine_selection' ? 'acad-active' : ''}`}
+                          >
+                            1.2 Engine Comparison (Vehicle Types)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('subnet_groups_vpc')}
+                            className={`acad-dir-item-btn ${selectedNote === 'subnet_groups_vpc' ? 'acad-active' : ''}`}
+                          >
+                            1.3 Subnet Groups &amp; VPC Security (Bank Vault)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 2: HIGH AVAILABILITY */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'high_availability' ? '' : 'high_availability')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                          🛡️ Level 2 · High Availability
+                        </span>
+                        {expandedCategory === 'high_availability' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'high_availability' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('multiaz_synchronous')}
+                            className={`acad-dir-item-btn ${selectedNote === 'multiaz_synchronous' ? 'acad-active' : ''}`}
+                          >
+                            2.1 Multi-AZ Failover (Cockpit Co-Pilot)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('multiaz_readable_clusters')}
+                            className={`acad-dir-item-btn ${selectedNote === 'multiaz_readable_clusters' ? 'acad-active' : ''}`}
+                          >
+                            2.2 Multi-AZ with 2 Readable Standbys
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 3: READ SCALING */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'read_scaling' ? '' : 'read_scaling')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                          📖 Level 3 · Read Scaling
+                        </span>
+                        {expandedCategory === 'read_scaling' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'read_scaling' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('read_replicas_scaling')}
+                            className={`acad-dir-item-btn ${selectedNote === 'read_replicas_scaling' ? 'acad-active' : ''}`}
+                          >
+                            3.1 Read Replicas (Chef vs Waiters)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('replica_promotion_dr')}
+                            className={`acad-dir-item-btn ${selectedNote === 'replica_promotion_dr' ? 'acad-active' : ''}`}
+                          >
+                            3.2 Replica Promotion &amp; Cross-Region DR
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 4: AURORA ARCHITECTURE */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'aurora_arch' ? '' : 'aurora_arch')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Cloud className="w-3.5 h-3.5 text-purple-500" />
+                          🌌 Level 4 · Aurora Cloud-Native
+                        </span>
+                        {expandedCategory === 'aurora_arch' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'aurora_arch' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('aurora_storage_engine')}
+                            className={`acad-dir-item-btn ${selectedNote === 'aurora_storage_engine' ? 'acad-active' : ''}`}
+                          >
+                            4.1 Distributed Storage (Shared Google Doc)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('aurora_global_cloning')}
+                            className={`acad-dir-item-btn ${selectedNote === 'aurora_global_cloning' ? 'acad-active' : ''}`}
+                          >
+                            4.2 Global Database &amp; Fast Clones
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 5: BACKUPS & OPTIMIZATION */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'backups_opt' ? '' : 'backups_opt')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <RefreshCw className="w-3.5 h-3.5 text-amber-500" />
+                          🚀 Level 5 · Backups &amp; Proxy
+                        </span>
+                        {expandedCategory === 'backups_opt' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'backups_opt' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('backups_pitr')}
+                            className={`acad-dir-item-btn ${selectedNote === 'backups_pitr' ? 'acad-active' : ''}`}
+                          >
+                            5.1 Backups &amp; PITR (DVR Time Machine)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('rds_proxy_pooling')}
+                            className={`acad-dir-item-btn ${selectedNote === 'rds_proxy_pooling' ? 'acad-active' : ''}`}
+                          >
+                            5.2 RDS Proxy (Nightclub Bouncer)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+
+                  <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                    <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                    </span>
+                    Click any topic to reveal beginner-friendly mental models, real-world analogies, interactive widgets, and instant simulator links!
+                  </div>
+                </div>
+
+                {/* Right Active Note Workspace */}
+                <div className="lg:col-span-9 space-y-6 text-left">
+
+                  {/* NOTE 1.1: WHAT IS MANAGED RDS */}
+                  {selectedNote === 'rds_what_is' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 className="text-xl font-black mt-2 font-display">1.1 What is Amazon RDS? (The Managed Database Service)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('overview')}
+                            className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Open Concept Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Amazon RDS (Relational Database Service) is a <strong>fully managed database service</strong>. Instead of manually buying servers, installing Linux, configuring PostgreSQL or MySQL, scheduling daily backup cron jobs, and patching security vulnerabilities yourself on EC2, AWS takes care of all the server maintenance so you can focus 100% on writing SQL queries and building your app.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Full-Service Luxury Apartment vs Buying an Empty House
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Self-Managed Database on EC2 (Buying an Empty House)</strong>: If a pipe bursts (hard drive fails), you have to fix the plumbing yourself. If the roof leaks (OS security bug), you have to climb the ladder and patch it. If you need more rooms (storage full), you have to hire contractors and take down walls manually.
+                          <br />• <strong>Managed RDS (Luxury Concierge Condo)</strong>: The building maintenance staff automatically fixes broken pipes, security guards protect the building, and if you need a bigger apartment, the manager upgrades your unit with one click!
+                        </p>
+                      </div>
+
+                      <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>The 4 Core Superpowers of Managed RDS</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+                        <div className="acad-flow-step">
+                          <RefreshCw style={{ width: '20px', height: '20px', color: 'var(--color-blue)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>1. Automated Patching</strong>
+                            <span style={{ fontSize: '10.5px' }}>Security patches and engine minor updates apply automatically during your maintenance window.</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <Shield style={{ width: '20px', height: '20px', color: 'var(--color-green)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>2. Point-in-Time Recovery</strong>
+                            <span style={{ fontSize: '10.5px' }}>Continuous transaction log backups allow 1-second precision rollbacks up to 35 days in the past.</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <Layers style={{ width: '20px', height: '20px', color: 'var(--color-purple)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>3. 1-Click Multi-AZ HA</strong>
+                            <span style={{ fontSize: '10.5px' }}>Synchronous physical standby in a second datacenter with automatic 60-second DNS failover.</span>
+                          </div>
+                        </div>
+                        <div className="acad-flow-step">
+                          <HardDrive style={{ width: '20px', height: '20px', color: 'var(--color-orange)', flexShrink: 0 }} />
+                          <div>
+                            <strong style={{ color: 'var(--color-text-primary)' }}>4. Storage Auto-Scaling</strong>
+                            <span style={{ fontSize: '10.5px' }}>EBS storage automatically grows up to 64 TiB with zero database downtime or lockouts.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Gotcha Warning */}
+                      <div className="acad-gotcha-box">
+                        <strong>⚠️ Crucial Beginner Rule: No Direct SSH / Root Operating System Access</strong>
+                        <p style={{ margin: '4px 0 0' }}>
+                          Because RDS is a managed service, AWS manages the underlying operating system. You connect to RDS using standard database clients (like <code>psql</code>, <code>mysql</code>, or DBeaver) over standard database ports, but you <strong>cannot SSH into the virtual machine</strong> or access root bash commands!
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+                        <button 
+                          onClick={() => setActiveSection('overview')}
+                          className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                        >
+                          <Zap className="w-3.5 h-3.5" /> Explore Supported Engines &amp; Specs
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 1.2: ENGINE SELECTION */}
+                  {selectedNote === 'engine_selection' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 className="text-xl font-black mt-2 font-display">1.2 Database Engine Comparison (Choosing the Right Tool)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('overview')}
+                            className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Engines Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> RDS supports 6 major relational database engines. Picking the right engine depends on your application needs, licensing budget, and performance requirements.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Choosing the Right Vehicle for the Job
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>PostgreSQL (The Swiss Army Knife 4x4)</strong>: Can handle highway driving (standard SQL), heavy cargo (JSON documents), mountain trails (GIS maps), and AI vector search (pgvector).
+                          <br />• <strong>MySQL / MariaDB (The Popular Commuter Sedan)</strong>: Reliable, low cost, easy to maintain, and powers the vast majority of web applications worldwide.
+                          <br />• <strong>Amazon Aurora (The Formula 1 Supersonic Racecar)</strong>: Custom-engineered for extreme speed, delivering up to 5x higher throughput with distributed cloud-native storage.
+                          <br />• <strong>Oracle &amp; SQL Server (The Armored Corporate Limousines)</strong>: Heavy, high enterprise license fees, built for legacy corporate software and Active Directory compliance.
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Engine</th>
+                              <th>Port</th>
+                              <th>Max Storage</th>
+                              <th>Read Replicas</th>
+                              <th>Best Used For</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>🐘 PostgreSQL</strong></td>
+                              <td><code>5432</code></td>
+                              <td>64 TiB</td>
+                              <td>Up to 15 (WAL)</td>
+                              <td>Modern web apps, JSON data, pgvector AI similarity, PostGIS</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>🐬 MySQL</strong></td>
+                              <td><code>3306</code></td>
+                              <td>64 TiB</td>
+                              <td>Up to 15 (Binlog)</td>
+                              <td>E-commerce carts, WordPress, LAMP web stacks, high concurrency</td>
+                            </tr>
+                            <tr>
+                              <td><strong className="text-purple font-bold">🌌 Amazon Aurora ⭐</strong></td>
+                              <td><code>5432 / 3306</code></td>
+                              <td>128 TiB (Auto)</td>
+                              <td>Up to 15 (&lt;10ms lag)</td>
+                              <td>High-throughput enterprise workloads, 5x standard performance</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>🪟 Microsoft SQL Server</strong></td>
+                              <td><code>1433</code></td>
+                              <td>64 TiB</td>
+                              <td>AlwaysOn AG (Multi-AZ)</td>
+                              <td>Enterprise .NET backends, Windows Active Directory environments</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>🔶 Oracle DB</strong></td>
+                              <td><code>1521</code></td>
+                              <td>64 TiB</td>
+                              <td>Active Data Guard</td>
+                              <td>Core banking, enterprise ERP systems, legacy corporate migrations</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 1.3: SUBNET GROUPS & VPC */}
+                  {selectedNote === 'subnet_groups_vpc' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 className="text-xl font-black mt-2 font-display">1.3 DB Subnet Groups &amp; VPC Security Shield</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('connect')}
+                            className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Network className="w-3.5 h-3.5" /> Go to Connectivity Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> A <strong>DB Subnet Group</strong> is a bundle of private VPC subnets spanning at least 2 distinct Availability Zones. Databases must <strong>never have a Public IP address</strong>—they live strictly inside private subnets and only accept inbound traffic from your application servers.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Bank Vault in the Underground Basement
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          You would never build a bank vault on the public sidewalk with a glass front door! Instead, you place the vault in the <strong>restricted underground basement (Private Subnets)</strong>. The only way inside is through the bank teller counter (EC2 Web Servers) who check your security ID badge (Security Group rules) before retrieving money from the vault!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>3-Tier Defense-in-Depth Pipeline:</h4>
+                          
+                          <div className="space-y-2 font-mono text-[10.5px]">
+                            <div className="p-2 rounded" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <p className="font-bold text-blue">Tier 1: Public Subnet (ALB)</p>
+                              <span>Accepts Port 443 HTTPS from the public Internet.</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <p className="font-bold text-green">Tier 2: Private App Subnet (EC2)</p>
+                              <span>Accepts Port 80/8080 traffic ONLY from the ALB Security Group.</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <p className="font-bold text-purple">Tier 3: Private Data Subnet (RDS)</p>
+                              <span>Accepts Port 5432/3306 ONLY from the EC2 App Security Group!</span>
+                            </div>
+                          </div>
+
+                          <div className="acad-takeaway-box">
+                            <strong>💡 Pro Security Rule:</strong> Set <code>PubliclyAccessible = false</code> and configure the RDS Security Group Inbound Rule to authorize <code>sg-app-servers</code> by Security Group ID instead of IP ranges!
+                          </div>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Multi-AZ Subnet Group Architecture</span>
+                          
+                          <div className="space-y-2 font-mono text-[10px] text-left">
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="text-orange font-bold">us-east-1a (Private Subnet 1)</span>
+                              <span className="text-green font-bold">Primary Writer (10.0.10.5)</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="text-blue font-bold">us-east-1b (Private Subnet 2)</span>
+                              <span className="text-blue font-bold">Multi-AZ Standby (10.0.20.8)</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="text-purple font-bold">us-east-1c (Private Subnet 3)</span>
+                              <span className="text-purple font-bold">Read Replica 1 (10.0.30.12)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.1: MULTI-AZ SYNCHRONOUS FAILOVER */}
+                  {selectedNote === 'multiaz_synchronous' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🛡️ Level 2 · High Availability</span>
+                          <h3 className="text-xl font-black mt-2 font-display">2.1 Multi-AZ Synchronous Failover (Disaster Recovery)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('multiaz')}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Go to High Availability Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Enabling Multi-AZ creates a <strong>synchronous physical clone</strong> of your database in a completely different physical data center building. Every write transaction is committed to both zones simultaneously. If lightning strikes the primary zone, AWS automatically redirects your database DNS endpoint to the standby in under 60 seconds with <strong>zero data loss</strong>!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Co-Pilot in the Airplane Cockpit
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          While Captain Primary flies the plane and writes into the flight log, Co-Pilot Standby records every entry simultaneously in real time. If Captain Primary suddenly faints (datacenter outage or hardware crash), Co-Pilot Standby grabs the controls in 60 seconds and continues flying the plane smoothly without dropping altitude or losing a single flight log entry!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Multi-AZ Automatic Failover Sequence:</h4>
+                          
+                          <ol className="list-decimal pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>1. Primary Outage Detected:</strong> AWS automated health probes detect unresponsiveness in Zone A.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>2. Promote Standby:</strong> Standby database in Zone B is promoted to primary read-write status.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>3. DNS CNAME Flip:</strong> Database endpoint (e.g. <code>db.xyz.us-east-1.rds.amazonaws.com</code>) is updated to point to Zone B's IP.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>4. Auto-Rebuild:</strong> Once Zone A recovers, RDS provisions a new standby in Zone A to restore redundancy.</li>
+                          </ol>
+
+                          <div className="acad-gotcha-box">
+                            <strong>⚠️ Critical Exam &amp; Production Fact:</strong>
+                            <p style={{ margin: '4px 0 0' }}>
+                              In standard RDS Multi-AZ, the Standby instance is <strong>INACTIVE and CANNOT be queried</strong>! It does NOT offload read traffic. To query backup nodes, use <em>Multi-AZ DB Clusters with 2 Readable Standbys</em> or <em>Read Replicas</em>.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Synchronous Replication Cycle</span>
+                          
+                          <div className="space-y-2 font-mono text-[10px] text-left">
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="text-green font-bold">1. App writes SQL INSERT</span>
+                              <span className="text-green font-bold">Primary AZ-1a</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <span className="text-blue font-bold">2. Synchronous Storage Replication</span>
+                              <span className="text-blue font-bold">Standby AZ-1b</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="font-bold">3. ACK returned to Application</span>
+                              <span className="text-green font-bold">Commit Complete</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.2: MULTI-AZ READABLE CLUSTERS */}
+                  {selectedNote === 'multiaz_readable_clusters' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🛡️ Level 2 · High Availability</span>
+                          <h3 className="text-xl font-black mt-2 font-display">2.2 Multi-AZ with 2 Readable Standbys (Active-Active Scaling)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('multiaz')}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Go to High Availability Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Multi-AZ DB Clusters provide <strong>1 Primary Writer + 2 Readable Standbys across 3 separate Availability Zones</strong>. Unlike standard Multi-AZ, the two standbys are active and serve read-only queries, while local NVMe SSD storage delivers up to 2x faster commit speeds (&lt;35ms)!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Two Backup Pilots Who Also Assist Passengers
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          Instead of having an emergency co-pilot who sits silently in the corner doing nothing, the airline has two fully qualified co-pilots who serve refreshments and help passengers during normal flight, but are ready to take control of the airplane in under 35 seconds if needed!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Key Architectural Advantages:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Sub-35ms Commit Latency:</strong> Uses local NVMe SSD storage for lightning-fast write transactions.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Readable Standby Endpoints:</strong> Route reporting, dashboard, and analytical queries to standbys via the Reader Endpoint.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>35-Second Failovers:</strong> Zero-downtime failovers that are 2x faster than traditional Multi-AZ.</li>
+                          </ul>
+
+                          <div className="acad-takeaway-box">
+                            <strong>💡 Engine Support:</strong> Available for MySQL 8.0+ and PostgreSQL 13.4+ on Amazon RDS.
+                          </div>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>3-AZ Cluster Topology</span>
+                          
+                          <div className="space-y-2 text-left text-[10.5px]">
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="text-green font-bold">AZ-1a: Primary Writer</span>
+                              <span className="text-green font-bold">Read / Write</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <span className="text-blue font-bold">AZ-1b: Readable Standby 1</span>
+                              <span className="text-blue font-bold">Read-Only</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <span className="text-purple font-bold">AZ-1c: Readable Standby 2</span>
+                              <span className="text-purple font-bold">Read-Only</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.1: READ REPLICAS & ASYNC WAL */}
+                  {selectedNote === 'read_replicas_scaling' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">📖 Level 3 · Read Scaling</span>
+                          <h3 className="text-xl font-black mt-2 font-display">3.1 Read Replicas &amp; Async WAL Streaming</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('replicas')}
+                            className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Activity className="w-3.5 h-3.5" /> Go to Read Scaling Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> In most web applications, <strong>80% to 90% of all database queries are Reads</strong> (browsing products, viewing feeds, running analytical reports). <strong>Read Replicas</strong> allow you to create up to 15 read-only copies of your database to offload query load from the primary writer.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Master Chef Cooking vs Waiters Handing Out Menus
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If the Master Chef (Primary Writer) had to stop cooking every time 50 diners asked to see the dessert menu (SELECT queries), the kitchen would crash with huge delays! Instead, the chef focuses 100% on cooking the food (Writes), while 4 waiters distribute printed copies of the menu to all tables (Read Replicas).
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Interactive Read/Write TPS Simulator HUD */}
+                        <div className="asg-card p-4 rounded-xl space-y-3">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Read Scaling Load Calculator</span>
+                          
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                                <span>Total App TPS: {nbTpsSimulation} queries/sec</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="100" 
+                                max="2000" 
+                                step="50"
+                                value={nbTpsSimulation} 
+                                onChange={(e) => setNbTpsSimulation(parseInt(e.target.value))}
+                                className="accent-indigo-600 w-full"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                                <span>Read vs Write Ratio: {nbReadRatio}% Reads / {100 - nbReadRatio}% Writes</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="50" 
+                                max="95" 
+                                value={nbReadRatio} 
+                                onChange={(e) => setNbReadRatio(parseInt(e.target.value))}
+                                className="accent-indigo-600 w-full"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                                <span>Active Read Replicas: {nbReplicaCount} nodes</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="1" 
+                                max="10" 
+                                value={nbReplicaCount} 
+                                onChange={(e) => setNbReplicaCount(parseInt(e.target.value))}
+                                className="accent-indigo-600 w-full"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <p>Writer Load (Writes only): <span className="text-orange font-bold font-semibold">{Math.round(nbTpsSimulation * ((100 - nbReadRatio) / 100))} TPS</span></p>
+                            <p>Offloaded Read Load: <span className="text-blue font-bold font-semibold">{Math.round(nbTpsSimulation * (nbReadRatio / 100))} TPS</span></p>
+                            <p>Load Per Replica: <span className="text-green font-bold font-semibold">{Math.round((nbTpsSimulation * (nbReadRatio / 100)) / nbReplicaCount)} TPS / node</span></p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Asynchronous Replication &amp; Lag:</h4>
+                          <p className="leading-relaxed">
+                            Read Replicas use <strong>Asynchronous Replication</strong> (streaming PostgreSQL WAL logs or MySQL Binary Logs). The master does NOT wait for replicas before confirming transactions.
+                          </p>
+
+                          <div className="acad-gotcha-box">
+                            <strong>⚠️ The Replication Lag Gotcha (Eventual Consistency):</strong>
+                            <p style={{ margin: '4px 0 0' }}>
+                              If a user updates their profile picture and immediately refreshes their feed from a lagging Read Replica, they might see the old picture for 200 milliseconds until the replica catches up! For strict consistency, read immediately-updated data from the Primary.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.2: REPLICA PROMOTION & DR */}
+                  {selectedNote === 'replica_promotion_dr' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">📖 Level 3 · Read Scaling</span>
+                          <h3 className="text-xl font-black mt-2 font-display">3.2 Read Replica Promotion &amp; Cross-Region DR</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('replicas')}
+                            className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Activity className="w-3.5 h-3.5" /> Go to Read Scaling Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> You can take any Read Replica and <strong>promote it into an independent read-write database</strong>. Cross-Region Read Replicas also serve as the ultimate Disaster Recovery shield against entire AWS datacenter regional blackouts.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Promoting the Vice President to President During an Emergency
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If a company president (Primary in US-East) becomes unavailable due to a hurricane, the Vice President located safely in Europe (Cross-Region Read Replica in EU-West) is immediately sworn into office (Promoted) to make executive decisions and keep the entire company running without interruption!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Top 3 Use Cases for Replica Promotion:</h4>
+                          
+                          <ol className="list-decimal pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Cross-Region Disaster Recovery:</strong> Failover to a secondary region (e.g. <code>us-east-1</code> &rarr; <code>eu-west-1</code>) during catastrophic regional outages.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Zero-Downtime Major Engine Upgrades:</strong> Upgrade a replica to a new major PostgreSQL version (e.g. v14 &rarr; v16), test thoroughly, and promote to become the new primary master.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Staging &amp; Testing Sandboxes:</strong> Promote a replica into a standalone staging database to run heavy destructive load tests on real production data with zero risk to live customers.</li>
+                          </ol>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Cross-Region Replication Topology</span>
+                          
+                          <div className="space-y-2 text-left">
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="text-orange font-bold">us-east-1 (N. Virginia)</span>
+                              <span className="text-green font-bold">Primary Master (Writes)</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="text-blue font-bold">eu-west-1 (Ireland)</span>
+                              <span className="text-blue font-bold">Cross-Region Replica (&lt;1s Lag)</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span className="text-purple font-bold">ap-northeast-1 (Tokyo)</span>
+                              <span className="text-purple font-bold">Cross-Region Replica (&lt;1s Lag)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.1: AURORA STORAGE ENGINE */}
+                  {selectedNote === 'aurora_storage_engine' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🌌 Level 4 · Aurora Cloud-Native</span>
+                          <h3 className="text-xl font-black mt-2 font-display">4.1 Aurora Distributed Storage Virtualization</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('sim')}
+                            className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Simulator
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Traditional databases attach a single virtual hard drive (EBS volume) to a single database server. Amazon Aurora completely redesigns this by <strong>decoupling compute from storage</strong>. Aurora storage is a distributed, auto-healing storage fleet that automatically replicates database records <strong>6 ways across 3 separate Availability Zones</strong>.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: A Shared Live Google Doc vs Emailing Word Attachments
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Standard RDS (Emailing Word Attachments)</strong>: When you want to save a change, you have to write the entire heavy document to disk and email the 50MB file to backup replicas.
+                          <br />• <strong>Aurora (Shared Live Cloud Google Doc)</strong>: Up to 15 team members can view the document simultaneously. The database engine never writes heavy disk pages—it only streams tiny, lightweight keystrokes (redo log records) across 100 Gbps cloud networks, making it 5x faster!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 4/6 Write &amp; 3/6 Read Quorum System:</h4>
+                          <p className="leading-relaxed">
+                            Every 10 GB storage chunk is duplicated 6 times (2 copies in AZ-A, 2 in AZ-B, 2 in AZ-C).
+                          </p>
+                          <ul className="list-disc pl-4 space-y-1.5">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Write Quorum (4 of 6):</strong> A write is confirmed as soon as 4 out of 6 storage nodes acknowledge receipt. Even if 2 nodes are down, writes continue smoothly!</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Read Quorum (3 of 6):</strong> Aurora can sustain the total loss of an entire Availability Zone + 1 additional node (3 nodes down) without losing read availability!</li>
+                          </ul>
+
+                          <div className="acad-takeaway-box">
+                            <strong>💡 Auto-Healing:</strong> If a storage disk suffers bit-rot or failure, Aurora automatically heals the corrupted block in the background by copying healthy segments from the other 5 copies!
+                          </div>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>6-Way Storage Quorum Visualizer</span>
+                          
+                          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                            <div className="p-2 rounded" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <p className="font-bold text-blue">AZ-A (2 copies)</p>
+                              <span>Disk 1 &bull; Disk 2</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <p className="font-bold text-green">AZ-B (2 copies)</p>
+                              <span>Disk 3 &bull; Disk 4</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <p className="font-bold text-purple">AZ-C (2 copies)</p>
+                              <span>Disk 5 &bull; Disk 6</span>
+                            </div>
+                          </div>
+
+                          <p className="text-[10px] mt-4 leading-normal" style={{ color: 'var(--color-text-secondary)' }}>
+                            Storage auto-expands from 10 GB up to 128 TiB dynamically in 10 GB increments. You only pay for the exact storage you write.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.2: AURORA GLOBAL & CLONING */}
+                  {selectedNote === 'aurora_global_cloning' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🌌 Level 4 · Aurora Cloud-Native</span>
+                          <h3 className="text-xl font-black mt-2 font-display">4.2 Aurora Global Database &amp; Fast Database Cloning</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('advanced')}
+                            className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Advanced Features
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> <strong>Aurora Global Database</strong> spans across up to 5 global AWS regions with storage replication latency under 1 second. <strong>Fast Database Cloning</strong> creates a complete, isolated copy of a 20 Terabyte database in 15 seconds for testing with zero storage cost until you write new data!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Bookmark Pointers vs Photocopying 10,000 Pages
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If you want to give a 10,000-page book to a colleague to edit, traditional databases make you stand at the copy machine for 4 hours photocopying every page (slow &amp; wastes paper). Aurora Fast Clone simply places a bookmark pointer pointing to the original pages (<strong>Copy-on-Write</strong>). When your colleague edits page 42, Aurora only stores the new page 42—saving you hours of time and 99% on storage costs!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Superpowers of Aurora Global &amp; Clones:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Under 1-Second Global Replication:</strong> Storage-level dedicated network replication across 5 AWS regions with zero performance penalty on the primary writer.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>1-Minute Cross-Region Disaster Recovery:</strong> If a primary region suffers a total disaster, promote a secondary region in &lt;1 minute with zero data loss ($RPO &lt; 1s$).</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Instant Sandbox CI/CD Environments:</strong> Spin up fresh 50TB database clones in seconds to run automated end-to-end integration tests.</li>
+                          </ul>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Aurora Global Cluster Architecture</span>
+                          
+                          <div className="space-y-2 text-left text-[10.5px]">
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="text-green font-bold">us-east-1 (Primary Region)</span>
+                              <span className="text-green font-bold">Read / Write Leader</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <span className="text-blue font-bold">eu-central-1 (Frankfurt)</span>
+                              <span className="text-blue font-bold">Global Replica (&lt;800ms)</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <span className="text-purple font-bold">ap-southeast-1 (Singapore)</span>
+                              <span className="text-purple font-bold">Global Replica (&lt;900ms)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 5.1: BACKUPS & PITR */}
+                  {selectedNote === 'backups_pitr' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 5 · Backups &amp; Proxy</span>
+                          <h3 className="text-xl font-black mt-2 font-display">5.1 Automated Backups &amp; Point-in-Time Recovery (PITR)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('advanced')}
+                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" /> Go to Advanced Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> RDS continuously streams transaction logs (WAL) to Amazon S3 alongside daily automated volume snapshots. This enables <strong>Point-in-Time Recovery (PITR)</strong> down to the exact second so you can recover from accidental deletions or corrupted data.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The DVR Security Camera Rewind / Time Machine
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If a rogue script or tired engineer accidentally runs <code>DROP TABLE customers;</code> in production at <strong>14:22:15 UTC</strong>, you don&apos;t have to restore from yesterday&apos;s backup and lose 24 hours of sales. You open RDS PITR and tell AWS: <em>&ldquo;Restore a new database instance to exactly 14:22:14 UTC (1 second before the disaster)!&rdquo;</em>
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Automated Backups vs Manual DB Snapshots:</h4>
+                          
+                          <table className="acad-table">
+                            <thead>
+                              <tr>
+                                <th>Feature</th>
+                                <th>Automated Backups</th>
+                                <th>Manual Snapshots</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><strong style={{ color: 'var(--color-text-primary)' }}>Retention</strong></td>
+                                <td>1 to 35 days (Configurable)</td>
+                                <td>Kept forever until deleted</td>
+                              </tr>
+                              <tr>
+                                <td><strong style={{ color: 'var(--color-text-primary)' }}>Precision</strong></td>
+                                <td>Exact second Point-In-Time</td>
+                                <td>Exact point of snapshot trigger</td>
+                              </tr>
+                              <tr>
+                                <td><strong style={{ color: 'var(--color-text-primary)' }}>On DB Delete</strong></td>
+                                <td>Deleted with database</td>
+                                <td>Preserved in AWS account</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Point-In-Time Timeline Restoration</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span>00:00 UTC &rarr; Daily Snapshot</span>
+                              <span className="text-green font-bold">Base Backup Saved</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span>00:00 - 14:22 UTC &rarr; WAL Streaming</span>
+                              <span className="text-blue font-bold">Logs continuous in S3</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid #fca5a5' }}>
+                              <span className="text-red font-bold">14:22:15 UTC &rarr; Accidental Drop</span>
+                              <span className="text-red font-bold">Disaster Occurred</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="text-green font-bold">PITR Target: 14:22:14 UTC</span>
+                              <span className="text-green font-bold">100% Data Restored!</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 5.2: RDS PROXY & POOLING */}
+                  {selectedNote === 'rds_proxy_pooling' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 5 · Backups &amp; Proxy</span>
+                          <h3 className="text-xl font-black mt-2 font-display">5.2 Amazon RDS Proxy &amp; Connection Pooling</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('advanced')}
+                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Advanced Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Opening a database connection is CPU-heavy and consumes megabytes of server RAM. Serverless workloads (like AWS Lambda) can spin up 5,000 functions simultaneously, which can crash database memory with connection overload. <strong>Amazon RDS Proxy</strong> sits between your apps and the database, pooling connections and sharing them efficiently.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Velvet Rope Bouncer at an Exclusive Club
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If 1,000 party guests (Lambda functions) all rushed through the front door at once, the doors would break and the club would descend into chaos! Instead, the velvet rope bouncer (RDS Proxy) manages the door, maintaining 50 VIP tables (warm connection pool) and escorting guests in and out quickly and smoothly!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Why RDS Proxy is Essential for Serverless:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Multiplexing / Connection Sharing:</strong> Allows thousands of Lambda invocations to share a small pool of database connections without exhausting database memory limits.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>66% Faster Failovers:</strong> RDS Proxy automatically bypasses DNS caching during Multi-AZ failover, cutting failover times from 60 seconds down to &lt;20 seconds!</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>IAM Authentication &amp; Secrets Manager:</strong> Enforces IAM authentication and manages database passwords through AWS Secrets Manager automatically.</li>
+                          </ul>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>RDS Proxy Architecture Pipeline</span>
+                          
+                          <div className="flex items-center justify-center gap-1.5 text-[9.5px]">
+                            <div className="p-2.5 rounded-lg" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid #fde68a' }}>
+                              <p className="font-bold text-orange">⚡ 1,000 Lambdas</p>
+                              <span>High Concurrency</span>
+                            </div>
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>&rarr;</span>
+                            <div className="p-2.5 rounded-lg" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <p className="font-bold text-blue">🛡️ RDS Proxy</p>
+                              <span>50 Pooled Conns</span>
+                            </div>
+                            <span style={{ color: 'var(--color-text-tertiary)' }}>&rarr;</span>
+                            <div className="p-2.5 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <p className="font-bold text-green">🛢️ RDS Database</p>
+                              <span>Protected CPU &amp; RAM</span>
+                            </div>
+                          </div>
+
+                          <p className="text-[10px] mt-4 leading-normal max-w-xs mx-auto" style={{ color: 'var(--color-text-secondary)' }}>
+                            Protects your database from connection pool exhaustion while preserving application response times.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               </div>
             </div>
           )}

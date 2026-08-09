@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import {
+  BookOpen,
+  ChevronRight,
+  ChevronDown,
+  Lightbulb,
+  Copy,
+  Check,
+  Zap,
   Shield,
   Key,
   Play,
   RefreshCw,
   SlidersHorizontal,
-  BookOpen,
   Terminal,
   Network,
   Server,
   Lock,
   Unlock,
-  AlertTriangle,
-  ChevronRight,
-  ChevronDown,
-  Copy,
-  Check
+  AlertTriangle
 } from 'lucide-react';
 import SecretsAndKMSEncryptionComparativeView from '../../components/visualizers/SecretsAndKMSEncryptionComparativeView';
 import UniqueSecretsAndKMSEncryptionFeatures from '../../components/visualizers/UniqueSecretsAndKMSEncryptionFeatures';
@@ -35,6 +37,11 @@ interface SecretsAndKMSEncryptionVisualizerProps {
 
 export default function SecretsAndKMSEncryptionVisualizer({ provider = 'aws', setProvider }: SecretsAndKMSEncryptionVisualizerProps) {
   const [activeTab, setActiveTab] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('kms_vs_secrets');
+  const [expandedCategory, setExpandedCategory] = useState<string>('kms_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
   const isComparative = provider === 'comparative';
 
@@ -99,18 +106,7 @@ export default function SecretsAndKMSEncryptionVisualizer({ provider = 'aws', se
     setActiveTab(tab === 'secrets' ? 'intro' : tab === 'architect' ? 'notebook' : tab);
   };
 
-  // Visual Architect Academy Notebook states
-  const [selectedNote, setSelectedNote] = useState<string>('kms_envelope');
-  const [expandedCategory, setExpandedCategory] = useState<string>('keys_cryptography');
-  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
 
-  const handleCopyCode = (code: string, id: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedNoteId(id);
-    setTimeout(() => {
-      setCopiedNoteId(null);
-    }, 2000);
-  };
 
   // ==========================================
   // TAB 1 STATE: Topics & Compare Selection
@@ -458,6 +454,252 @@ export default function SecretsAndKMSEncryptionVisualizer({ provider = 'aws', se
     <div className="da-container animate-fadeIn">
       <style>{`
         .da-container {
+      .acad-dir-container {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.9)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.05);
+        backdrop-filter: blur(12px);
+      }
+      .dark .acad-dir-container {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-dir-header {
+        background: var(--da-tab-bg, rgba(248, 250, 252, 0.9));
+        color: var(--da-text-title, #0f172a);
+        border-bottom: 1.5px solid var(--da-card-border, rgba(226, 232, 240, 0.8));
+        padding: 14px 16px;
+        font-weight: 800;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dark .acad-dir-header {
+        background: rgba(15, 23, 42, 0.9);
+        color: #ffffff;
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-dir-folder-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--da-card-border, rgba(226, 232, 240, 0.6));
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--da-text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .dark .acad-dir-folder-btn {
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+        color: #94a3b8;
+      }
+      .acad-dir-folder-btn:hover {
+        background: rgba(241, 245, 249, 0.6);
+      }
+      .dark .acad-dir-folder-btn:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+      .acad-dir-item-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--da-text-muted, #475569);
+        border: none;
+        border-left: 3px solid transparent;
+        background: transparent;
+        transition: all 0.15s ease;
+        text-align: left;
+        cursor: pointer;
+      }
+      .dark .acad-dir-item-btn {
+        color: #94a3b8;
+      }
+      .acad-dir-item-btn:hover {
+        background: rgba(241, 245, 249, 0.6);
+        color: var(--da-text-title, #0f172a);
+      }
+      .dark .acad-dir-item-btn:hover {
+        background: rgba(30, 41, 59, 0.6);
+        color: #f1f5f9;
+      }
+      .acad-dir-item-btn.acad-active {
+        background: rgba(2, 132, 199, 0.08);
+        color: #0284c7;
+        border-left-color: #0ea5e9;
+        font-weight: 800;
+      }
+      .dark .acad-dir-item-btn.acad-active {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border-left-color: #38bdf8;
+      }
+      .acad-detail-card {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.95)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.06);
+        backdrop-filter: blur(16px);
+      }
+      .dark .acad-detail-card {
+        background: rgba(15, 23, 42, 0.75);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-hero-badge {
+        background: rgba(2, 132, 199, 0.08);
+        border: 1.5px solid rgba(2, 132, 199, 0.3);
+        color: #0284c7;
+        font-size: 9.5px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3.5px 10px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .dark .acad-hero-badge {
+        background: rgba(56, 189, 248, 0.15);
+        border-color: rgba(56, 189, 248, 0.3);
+        color: #38bdf8;
+      }
+      .acad-plain-english {
+        background: rgba(2, 132, 199, 0.07);
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12.5px;
+        line-height: 1.65;
+        color: var(--da-text-title, var(--sl-text-title, #0f172a));
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-plain-english {
+        background: rgba(56, 189, 248, 0.12);
+        border-left-color: #38bdf8;
+        color: #f1f5f9;
+        border-top-color: rgba(51, 65, 85, 0.6);
+        border-right-color: rgba(51, 65, 85, 0.6);
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+        border: 1.5px solid rgba(245, 158, 11, 0.35);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+        font-size: 12px;
+        line-height: 1.65;
+        color: var(--da-text-title, var(--sl-text-title, #0f172a));
+      }
+      .dark .acad-analogy-box {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #f1f5f9;
+      }
+      .acad-advice-box {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.8)));
+        border: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        color: var(--da-text-muted, var(--sl-text-muted, #64748b));
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      }
+      .dark .acad-advice-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.06);
+        border-left: 4px solid #ef4444;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 16px 0;
+        font-size: 11.5px;
+        line-height: 1.55;
+        color: var(--da-text-muted, var(--sl-text-muted, #64748b));
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-gotcha-box {
+        background: rgba(239, 68, 68, 0.12);
+        color: #fca5a5;
+      }
+      .acad-takeaway-box {
+        background: var(--da-card-bg, var(--sl-card-bg, rgba(255, 255, 255, 0.9)));
+        border-left: 4px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--da-text-muted, var(--sl-text-muted, #475569));
+        font-weight: 600;
+        border-top: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-right: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+        border-bottom: 1px solid var(--da-card-border, var(--sl-card-border, rgba(226, 232, 240, 0.8)));
+      }
+      .dark .acad-takeaway-box {
+        background: rgba(15, 23, 42, 0.6);
+        border-left-color: #38bdf8;
+        color: #cbd5e1;
+        border-top-color: rgba(51, 65, 85, 0.6);
+        border-right-color: rgba(51, 65, 85, 0.6);
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+      }
+      .acad-table th {
+        background: var(--da-table-th-bg, var(--sl-table-th-bg, #f8fafc));
+        color: var(--da-table-th-text, var(--sl-table-th-text, #475569));
+        font-weight: 800;
+        padding: 12px 14px;
+        border-bottom: 1.5px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+        text-align: left;
+      }
+      .dark .acad-table th {
+        background: rgba(15, 23, 42, 0.8);
+        color: #94a3b8;
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+      }
+      .acad-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--da-table-border, var(--sl-table-border, rgba(226, 232, 240, 0.8)));
+        color: var(--da-table-td-text, var(--sl-table-td-text, #334155));
+      }
+      .dark .acad-table td {
+        border-bottom-color: rgba(51, 65, 85, 0.6);
+        color: #cbd5e1;
+      }
+      .acad-table tr:last-child td {
+        border-bottom: none;
+      }
+
           font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
           color: var(--da-text);
           background-color: var(--da-bg);
@@ -982,29 +1224,31 @@ export default function SecretsAndKMSEncryptionVisualizer({ provider = 'aws', se
 
       {/* Tab navigation bar */}
       {!isComparative && (
+        <Translate>
         <div className="da-tabs">
           <button className={`da-tb ${activeTab === 'notebook' ? 'da-on' : ''}`} onClick={() => setActiveTab('notebook')}>
-            <BookOpen className="w-4 h-4" /> 📓 Visual Architect Notes
+            <BookOpen className="w-4 h-4 text-indigo-500" /> 📖 1) Visual Notes &amp; Theories
           </button>
           <button className={`da-tb ${activeTab === 'intro' ? 'da-on' : ''}`} onClick={() => setActiveTab('intro')}>
-            <BookOpen className="w-4 h-4" /> 1. KMS vs SSM vs Secrets Manager
+            <SlidersHorizontal className="w-4 h-4 text-sky-500" /> 🎯 2) KMS vs SSM vs Secrets Manager
           </button>
           <button className={`da-tb ${activeTab === 'kms' ? 'da-on' : ''}`} onClick={() => setActiveTab('kms')}>
-            <Shield className="w-4 h-4" /> 2. Key Architecture &amp; Rotations
+            <Shield className="w-4 h-4" /> 🔑 3) Key Architecture &amp; Rotations
           </button>
           <button className={`da-tb ${activeTab === 'envelope' ? 'da-on' : ''}`} onClick={() => setActiveTab('envelope')}>
-            <Terminal className="w-4 h-4" /> 3. Envelope Encryption Simulator
+            <Terminal className="w-4 h-4" /> ✉️ 4) Envelope Encryption Simulator
           </button>
           <button className={`da-tb ${activeTab === 'multiregion' ? 'da-on' : ''}`} onClick={() => setActiveTab('multiregion')}>
-            <Network className="w-4 h-4" /> 4. Global Multi-Region Replication
+            <Network className="w-4 h-4" /> 🌐 5) Global Multi-Region Replication
           </button>
           <button className={`da-tb ${activeTab === 'crossaccount' ? 'da-on' : ''}`} onClick={() => setActiveTab('crossaccount')}>
-            <Server className="w-4 h-4" /> 5. Shared AMIs &amp; Key Policies
+            <Server className="w-4 h-4" /> 🤝 6) Shared AMIs &amp; Key Policies
           </button>
           <button className={`da-tb ${activeTab === 'unique' ? 'da-on' : ''}`} onClick={() => setActiveTab('unique')}>
             ✨ Unique Features
           </button>
         </div>
+      </Translate>
       )}
 
       {isComparative && (
@@ -1022,550 +1266,628 @@ export default function SecretsAndKMSEncryptionVisualizer({ provider = 'aws', se
       {/* ========================================================================= */}
       {/* TAB 1: INTRO MATRIX & SCHEMES                                             */}
       {/* ========================================================================= */}
-      {activeTab === 'notebook' && (
-        <div className="space-y-6 animate-fadeIn text-left">
+            {activeTab === 'notebook' && (
+        <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--da-text)' }}>
           
-          <div className="da-card text-left">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 font-display">
-              <Key className="w-5 h-5 text-indigo-600" /> AWS Secrets &amp; KMS Cryptographic Notes
-            </h2>
-            <p className="text-xs text-slate-600 mt-1.5 leading-relaxed font-sans font-semibold">
-              Learn how to manage data security using Key Management Service (KMS) envelope encryption, IAM key policies, parameter storage secrets, and cross-account key sharing.
-            </p>
+          {/* Header Hero Card */}
+          <div className="da-card text-left" style={{ borderLeft: '4px solid #6366f1', padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                  <BookOpen className="w-5 h-5 text-indigo-500" /> AWS Secrets &amp; KMS Cryptographic Notes &amp; Mental Models
+                </h2>
+                <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--da-text-muted)' }}>
+                  Simplified, beginner-friendly cryptography theories sorted progressively from KMS vs Secrets Manager to Envelope Encryption, Key Policies, Automatic Rotations, Cross-Account Sharing, Multi-Region Replicas, and CloudHSM.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <span className="acad-hero-badge">🎓 Beginner to Pro</span>
+                <span className="acad-hero-badge" style={{ background: 'rgba(245, 158, 11, 0.12)', borderColor: 'rgba(245, 158, 11, 0.35)', color: '#d97706' }}>💡 Everyday Mental Models</span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* Left Sidebar Category Explorer */}
             <div className="lg:col-span-3 space-y-4 text-left">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block pl-1">VPC Directory Tree:</span>
+              <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--da-text-muted)' }}>Curriculum Directory:</span>
               
               <div className="acad-dir-container">
                 <div className="acad-dir-header">
-                  <BookOpen className="w-4 h-4 text-blue-400" />
-                  <span>Module Explorer</span>
+                  <Key className="w-4 h-4 text-indigo-500" />
+                  <span>Cryptography Modules</span>
                 </div>
 
-                {/* CATEGORY 1: KEYS & CRYPTOGRAPHY */}
+                {/* LEVEL 1: ENCRYPTION & SECRETS FUNDAMENTALS */}
                 <div>
                   <button 
-                    onClick={() => setExpandedCategory(expandedCategory === 'keys_cryptography' ? '' : 'keys_cryptography')}
+                    onClick={() => setExpandedCategory(expandedCategory === 'kms_fundamentals' ? '' : 'kms_fundamentals')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5 text-blue-500" />
-                      1. Keys &amp; Cryptography
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-500" />
+                      🐣 Level 1 · Fundamentals
                     </span>
-                    {expandedCategory === 'keys_cryptography' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    {expandedCategory === 'kms_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
-                  {expandedCategory === 'keys_cryptography' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                  {expandedCategory === 'kms_fundamentals' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('kms_vs_secrets')}
+                        className={`acad-dir-item-btn ${selectedNote === 'kms_vs_secrets' ? 'acad-active' : ''}`}
+                      >
+                        1.1 KMS vs Secrets Mgr vs SSM
+                      </button>
                       <button 
                         onClick={() => setSelectedNote('kms_envelope')}
                         className={`acad-dir-item-btn ${selectedNote === 'kms_envelope' ? 'acad-active' : ''}`}
                       >
-                        Symmetric vs Asymmetric
+                        1.2 Symmetric vs Asymmetric Keys
                       </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 2: ENVELOPE ENCRYPTION & ROTATION */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'kms_envelope_rotation' ? '' : 'kms_envelope_rotation')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-sky-500" />
+                      ⚙️ Level 2 · Envelope &amp; Rotation
+                    </span>
+                    {expandedCategory === 'kms_envelope_rotation' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'kms_envelope_rotation' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
                         onClick={() => setSelectedNote('envelope_encryption')}
                         className={`acad-dir-item-btn ${selectedNote === 'envelope_encryption' ? 'acad-active' : ''}`}
                       >
-                        Envelope Encryption
+                        2.1 Envelope Encryption &amp; DEKs
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('key_rotation')}
+                        className={`acad-dir-item-btn ${selectedNote === 'key_rotation' ? 'acad-active' : ''}`}
+                      >
+                        2.2 Automated Secret &amp; Key Rotation
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* CATEGORY 2: KEY POLICIES & COMPLIANCE */}
+                {/* LEVEL 3: ACCESS POLICIES & CROSS-ACCOUNT */}
                 <div>
                   <button 
-                    onClick={() => setExpandedCategory(expandedCategory === 'policies_compliance' ? '' : 'policies_compliance')}
+                    onClick={() => setExpandedCategory(expandedCategory === 'kms_policies_sharing' ? '' : 'kms_policies_sharing')}
                     className="acad-dir-folder-btn"
                   >
                     <span className="flex items-center gap-1.5">
-                      <Shield className="w-3.5 h-3.5 text-blue-500" />
-                      2. Key Policies &amp; Config
+                      <Shield className="w-3.5 h-3.5 text-purple-500" />
+                      🏛️ Level 3 · Policies &amp; Sharing
                     </span>
-                    {expandedCategory === 'policies_compliance' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                    {expandedCategory === 'kms_policies_sharing' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                   </button>
-                  {expandedCategory === 'policies_compliance' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
+                  {expandedCategory === 'kms_policies_sharing' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)', borderBottom: '1px solid var(--da-card-border)' }}>
                       <button 
                         onClick={() => setSelectedNote('key_policies')}
                         className={`acad-dir-item-btn ${selectedNote === 'key_policies' ? 'acad-active' : ''}`}
                       >
-                        KMS Policies &amp; Lockout
-                      </button>
-                      <button 
-                        onClick={() => setSelectedNote('parameter_secrets')}
-                        className={`acad-dir-item-btn ${selectedNote === 'parameter_secrets' ? 'acad-active' : ''}`}
-                      >
-                        SSM vs Secrets Manager
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* CATEGORY 3: ENTERPRISE GLOBAL DATA */}
-                <div>
-                  <button 
-                    onClick={() => setExpandedCategory(expandedCategory === 'global_data' ? '' : 'global_data')}
-                    className="acad-dir-folder-btn"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Network className="w-3.5 h-3.5 text-blue-500" />
-                      3. Enterprise Global Data
-                    </span>
-                    {expandedCategory === 'global_data' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </button>
-                  {expandedCategory === 'global_data' && (
-                    <div className="bg-slate-50/50 py-1 border-b border-slate-100">
-                      <button 
-                        onClick={() => setSelectedNote('global_mrk')}
-                        className={`acad-dir-item-btn ${selectedNote === 'global_mrk' ? 'acad-active' : ''}`}
-                      >
-                        Multi-Region Replica Keys
+                        3.1 Key Policies vs IAM Policies
                       </button>
                       <button 
                         onClick={() => setSelectedNote('cross_account_kms')}
                         className={`acad-dir-item-btn ${selectedNote === 'cross_account_kms' ? 'acad-active' : ''}`}
                       >
-                        Cross-Account Key Shares
+                        3.2 Cross-Account Key Sharing &amp; AMIs
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* LEVEL 4: RESILIENCY & HARDWARE HSM */}
+                <div>
+                  <button 
+                    onClick={() => setExpandedCategory(expandedCategory === 'kms_resiliency_hsm' ? '' : 'kms_resiliency_hsm')}
+                    className="acad-dir-folder-btn"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Network className="w-3.5 h-3.5 text-emerald-500" />
+                      🛡️ Level 4 · Replicas &amp; CloudHSM
+                    </span>
+                    {expandedCategory === 'kms_resiliency_hsm' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  </button>
+                  {expandedCategory === 'kms_resiliency_hsm' && (
+                    <div className="py-1 font-semibold" style={{ background: 'var(--da-card-bg)' }}>
+                      <button 
+                        onClick={() => setSelectedNote('global_mrk')}
+                        className={`acad-dir-item-btn ${selectedNote === 'global_mrk' ? 'acad-active' : ''}`}
+                      >
+                        4.1 Multi-Region Replica Keys (MRKs)
+                      </button>
+                      <button 
+                        onClick={() => setSelectedNote('cloudhsm')}
+                        className={`acad-dir-item-btn ${selectedNote === 'cloudhsm' ? 'acad-active' : ''}`}
+                      >
+                        4.2 AWS CloudHSM Hardware Security
                       </button>
                     </div>
                   )}
                 </div>
 
               </div>
+
+              <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--da-text-title)' }}>
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                </span>
+                Click any cryptography topic to explore real-world analogies, envelope encryption flowcharts, and copyable Key Policies!
+              </div>
             </div>
 
-            {/* Right Note Detail Container */}
+            {/* Right Active Note Workspace */}
             <div className="lg:col-span-9 space-y-6 text-left">
-              
-              {/* ========================================================================= */}
-              {/* CONCEPT 1: KMS SYMMETRIC VS ASYMMETRIC KEYS                               */}
-              {/* ========================================================================= */}
-              {selectedNote === 'kms_envelope' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+
+              {/* NOTE 1.1: KMS VS SECRETS MANAGER VS SSM */}
+              {selectedNote === 'kms_vs_secrets' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Key Taxonomy &amp; Hardware Security Modules</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Symmetric, Asymmetric &amp; HMAC KMS Keys</h3>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('kms')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Shield className="w-3.5 h-3.5" /> Go to Key Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 1 of 6</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    AWS KMS keys reside inside hardware security modules (HSMs) validated under **FIPS 140-2 Level 3**. KMS supports symmetric keys, asymmetric key pairs, and HMAC signing keys, each optimized for distinct enterprise compliance environments.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Symmetric Encryption Keys (AES-256)</strong>
-                        A single 256-bit key wraps and unwraps data. Plaintext data is sent to KMS, and ciphertext is returned (or vice-versa). Symmetric keys support **envelope encryption** (data keys generation) and are adopted natively by S3, EBS, and RDS encryption mechanisms. Key material never leaves the KMS HSM boundary.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Asymmetric Cryptography (RSA &amp; ECC)</strong>
-                        Consists of a mathematically linked public and private key pair. You can download the public key to encrypt data or verify signatures client-side. The private key remains securely sealed inside KMS HSMs to execute decrypt and sign operations.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Practical Real-Life Use Cases</strong>
-                        - **Symmetric Keys:** Native AWS storage volume encryption, S3 server-side encryption (SSE-KMS), and parameter store secrets.
-                        - **Asymmetric Keys:** Generating digital signatures for external transaction API handshakes, code signing binaries, and secure payload exchanges with external contractors.
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws kms create-key \\\n  --description "App Symmetric CMK" \\\n  --key-usage ENCRYPT_DECRYPT \\\n  --customer-master-key-spec SYMMETRIC_DEFAULT`, 'cli_kms_spec')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_kms_spec' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_kms_spec' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_kms_spec' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Create Symmetric Key (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws kms create-key \\
-  --description "App Symmetric CMK" \\
-  --key-usage ENCRYPT_DECRYPT \\
-  --customer-master-key-spec SYMMETRIC_DEFAULT`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Key Management Tip:</strong> AWS Managed Keys rotate automatically every 3 years. Customer Managed Keys can be configured to rotate automatically every year, preserving older material automatically to decrypt legacy ciphertext blocks.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ========================================================================= */}
-              {/* CONCEPT 2: ENVELOPE ENCRYPTION ARCHITECTURE                               */}
-              {/* ========================================================================= */}
-              {selectedNote === 'envelope_encryption' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="acad-hero-badge">Envelope Encryption Conduit</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Client-Side Envelope Encryption Mechanics</h3>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('envelope')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Terminal className="w-3.5 h-3.5" /> Go to Envelope Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 2 of 6</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Envelope encryption is the practice of encrypting plaintext data locally with a **Data Key**, and then encrypting the data key itself under a KMS root **Customer Master Key (CMK)**. It is a critical best practice for processing large files or high-throughput network data without exceeding KMS API limit thresholds.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Inbound Key Generation Sequence</strong>
-                        The application invokes the `GenerateDataKey` API pointing to the KMS CMK. KMS returns two keys:
-                        - **Plaintext Data Key:** Used by the application locally to encrypt the payload.
-                        - **Encrypted Data Key (Ciphertext):** A wrapped copy of the key.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Local Encryption &amp; Memory Purging</strong>
-                        The client application encrypts the raw data block using the plaintext data key. Immediately after encryption completes, the plaintext data key **must be purged from client memory** to establish a zero-trust state. The application stores the encrypted data along with the encrypted data key.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Practical Real-Life Use Cases</strong>
-                        - **EBS Volume Encryption:** EC2 host boot volumes use envelope encryption. The EC2 host caches the decrypted data key inside protected hypervisor memory, decrypting blocks on the fly without making repeated KMS network calls.
-                        - **High-throughput application data:** Encrypting user profile logs, custom video uploads, or customer files stored inside S3 buckets locally.
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws kms generate-data-key \\\n  --key-id alias/app-key \\\n  --key-spec AES_256`, 'cli_env_key')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_env_key' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_env_key' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_env_key' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Request Data Key (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws kms generate-data-key \\
-  --key-id alias/app-key \\
-  --key-spec AES_256`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Decryption Pipeline:</strong> To decrypt, the client sends the encrypted data key to KMS. KMS decrypts the key using the root CMK and returns the plaintext key. The client decrypts the payload locally and purges the plaintext key.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ========================================================================= */}
-              {/* CONCEPT 3: KMS KEY POLICIES & LOCKOUT                                     */}
-              {/* ========================================================================= */}
-              {selectedNote === 'key_policies' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="acad-hero-badge">Resource Access &amp; Compliance Locks</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">KMS Key Policies &amp; Critical Key Lockouts</h3>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveTab('kms')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
-                      >
-                        <Shield className="w-3.5 h-3.5" /> Go to Policies Simulator
-                      </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 3 of 6</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    KMS keys are governed strictly by resource-based **Key Policies**. Standard IAM policies inside an AWS account have zero effect on KMS keys unless the Key Policy explicitly delegates authority back to the account.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Default Account Root Delegation</strong>
-                        KMS policies default to including a statement that grants the root account user permissions:
-                        `"Principal": {"{"}"AWS": "arn:aws:iam::123456789012:root"{"}"}`.
-                        This statement enables IAM policies within the account to control key permissions. If this statement is deleted, IAM permissions are ignored, locking access strictly to principals defined inside the Key Policy itself.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. Lockout State Mitigation</strong>
-                        If a key policy is updated to delete administrative permissions and the IAM root delegation statement, the key enters a **critical lockout state**. No user, including the root account admin, can edit the key policy or decrypt data. Overriding a lockout state requires submitting an AWS support request.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Practical Real-Life Use Cases</strong>
-                        - **Compliance Lockdowns:** Hardening critical payment transaction databases (PCI-DSS compliance) by writing policies that deny key decryption privileges to administrative accounts, leaving them accessible only to automated transactional microservices.
-                        - **Audit drift controls:** Preventing configuration changes by removing direct admin permissions.
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`{\n  "Sid": "Enable IAM User Permissions",\n  "Effect": "Allow",\n  "Principal": { "AWS": "arn:aws:iam::123456789012:root" },\n  "Action": "kms:*",\n  "Resource": "*"\n}`, 'json_kms_policy')}
-                          className={`acad-copy-btn ${copiedNoteId === 'json_kms_policy' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'json_kms_policy' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'json_kms_policy' ? 'Copied' : 'Copy JSON'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Delegated Key Policy Statement (JSON)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`{
-  "Sid": "Enable IAM User Permissions",
-  "Effect": "Allow",
-  "Principal": { 
-    "AWS": "arn:aws:iam::123456789012:root" 
-  },
-  "Action": "kms:*",
-  "Resource": "*"
-}`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Audit Rule:</strong> Regularly audit Key Policies to verify that the Root delegation statement is present, preventing administrative lockouts on business-critical KMS keys.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ========================================================================= */}
-              {/* CONCEPT 4: PARAMETER STORE VS SECRETS MANAGER                            */}
-              {/* ========================================================================= */}
-              {selectedNote === 'parameter_secrets' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-                    <div>
-                      <span className="acad-hero-badge">Configuration vs. Secrets Management</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">SSM Parameter Store vs. AWS Secrets Manager</h3>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.1 AWS KMS vs AWS Secrets Manager vs SSM Parameter Store
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('intro')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <BookOpen className="w-3.5 h-3.5" /> Go to Comparative Matrix
+                        <Zap className="w-3.5 h-3.5" /> Go to Comparison Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 4 of 6</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    AWS provides two main services to store configurations and passwords. Choosing between them depends on cost models, rotation requirements, and database integrations.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. SSM Parameter Store (Centralized Configuration)</strong>
-                        Designed for standard app configurations and simple secrets. Standard parameters are free (limit of 10,000 keys per region). SecureString parameters leverage KMS symmetric keys to encrypt data blocks in transit and at rest. Config values are organized hierarchically (e.g. `/prod/rds/endpoint`).
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. AWS Secrets Manager (Dynamic Credentials)</strong>
-                        A paid secrets database offering advanced features:
-                        - **Lambda Rotation:** Out-of-the-box integration to dynamically rotate database passwords on RDS without application downtime.
-                        - **Cross-Account Sharing:** Allows other accounts to read secrets directly via resource policies.
-                        - **Global Replication:** Replicates secrets automatically across regions.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Practical Real-Life Use Cases</strong>
-                        - **SSM Parameter Store:** Injecting environment flags, endpoint paths, or standard API keys that do not rotate frequently.
-                        - **Secrets Manager:** Storing and rotating RDS MySQL/PostgreSQL root credentials, OAuth API tokens, or multi-region application connection strings.
-                      </div>
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Shield className="w-3.5 h-3.5 text-indigo-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Modern applications require database credentials, API tokens, and encryption keys. Storing passwords in plain text in code or GitHub repositories leads to catastrophic security breaches! AWS security services provide encrypted, audited storage for sensitive credentials.
+                      </p>
                     </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws secretsmanager create-secret \\\n  --name /prod/db/secret \\\n  --secret-string '{"username":"admin","password":"DBPassword123"}'`, 'cli_secrets_mgr')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_secrets_mgr' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_secrets_mgr' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_secrets_mgr' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Create Secret (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws secretsmanager create-secret \\
-  --name /prod/db/secret \\
-  --secret-string '{"username":"admin","password":"DBPassword123"}'`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Cost Optimization Tip:</strong> Parameter Store standard parameters are free, whereas Secrets Manager charges per secret and per 10,000 API calls. Use Parameter Store for standard app configs and Secrets Manager for sensitive credentials that require automated rotation.
-                      </div>
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Lock className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Eliminates hardcoded passwords in application code, satisfies PCI-DSS &amp; HIPAA compliance audits, automates zero-downtime database password rotations, and encrypts disk volumes (EBS, S3, RDS) transparently!
+                      </p>
                     </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>AWS KMS (Key Management Service)</strong>: The master key maker that locks and unlocks data using hardware security modules (HSMs).
+                    <br />• <strong>SSM Parameter Store</strong>: A lightweight, free key-value store for app configuration settings (e.g. `/app/db_url`).
+                    <br />• <strong>AWS Secrets Manager</strong>: A specialized vault built for database passwords &amp; OAuth tokens with **automatic Lambda rotation** and cross-account sharing!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Lock Manufacturer vs Label Maker vs Hotel Password Vault
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>AWS KMS (Lock Manufacturer)</strong>: Forges heavy brass padlocks and master keys. It does not store your luggage; it creates the locks that secure your suitcases.
+                      <br />• <strong>SSM Parameter Store (Kitchen Label Maker)</strong>: Prints simple sticky labels (&ldquo;Sugar&rdquo;, &ldquo;Salt&rdquo;, &ldquo;DB Host URL&rdquo;). Free and organized!
+                      <br />• <strong>Secrets Manager (Automated Hotel Safe)</strong>: A locked safe inside your room that automatically changes its 4-digit PIN combination every 30 days without you lifting a finger!
+                    </p>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="acad-table">
+                      <thead>
+                        <tr>
+                          <th>Feature</th>
+                          <th>AWS KMS</th>
+                          <th>SSM Parameter Store</th>
+                          <th>AWS Secrets Manager</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Primary Purpose</strong></td>
+                          <td>Cryptographic key generation &amp; envelope encryption</td>
+                          <td>Configuration parameters &amp; simple strings</td>
+                          <td>Database passwords, OAuth tokens &amp; API keys</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Cost</strong></td>
+                          <td>$1.00 / KMS Key / month</td>
+                          <td>Standard parameters: FREE (Up to 10k)</td>
+                          <td>$0.40 / Secret / month</td>
+                        </tr>
+                        <tr>
+                          <td><strong style={{ color: 'var(--da-text-title)' }}>Auto-Rotation</strong></td>
+                          <td>Key material rotated annually (AWS KMS)</td>
+                          <td>Manual updates or custom scripts</td>
+                          <td>Native automatic rotation via built-in Lambda</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Real World Production Scenario */}
+                  <div className="p-4 rounded-xl border font-sans text-xs space-y-1.5" style={{ background: 'var(--da-card-bg)', borderColor: 'var(--da-card-border)' }}>
+                    <span className="font-bold uppercase tracking-wider text-[10px] text-indigo-500 block">🚀 Real-World Production Architecture Scenario:</span>
+                    <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                      A microservice running on AWS Fargate needs to connect to an RDS PostgreSQL database. Instead of storing the database password in a Git repo, the Fargate task fetches the secret ARN from <strong>AWS Secrets Manager</strong> at runtime. Secrets Manager decrypts the secret using a custom <strong>AWS KMS Key</strong>, returning temporary DB credentials while automatically rotating the password every 30 days in RDS!
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 5: MULTI-REGION KEYS & GLOBAL REPLICATION                          */}
-              {/* ========================================================================= */}
-              {selectedNote === 'global_mrk' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              {/* NOTE 1.2: SYMMETRIC VS ASYMMETRIC KEYS */}
+              {selectedNote === 'kms_envelope' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Multi-Region Disaster Recovery</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Multi-Region Replica Keys &amp; Storage Optimization</h3>
+                      <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        1.2 Symmetric Encryption vs Asymmetric KMS Keys
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
-                        onClick={() => setActiveTab('multiregion')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        onClick={() => setActiveTab('kms')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <Network className="w-3.5 h-3.5" /> Go to Global Replication
+                        <Zap className="w-3.5 h-3.5" /> Go to Key Architecture Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 5 of 6</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Standard KMS keys are regional resource blocks; you cannot decrypt a ciphertext generated in `us-east-1` using a standard key in `eu-west-1`. To support globally distributed data layers, AWS provides **Multi-Region Keys (MRKs)**.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Multi-Region Keys (MRKs)</strong>
-                        MRKs are replica keys provisioned in different regions that share the identical Key ID, key material, and key rotation state. They allow applications to encrypt data in one region and decrypt it in another region locally without making cross-region KMS network calls.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. S3 Bucket Keys &amp; Cost Reduction</strong>
-                        By default, SSE-KMS generates a new data key for every object write, leading to massive KMS API request charges at scale. **S3 Bucket Keys** cache a bucket-level data key for brief windows, reducing KMS API calls by up to 99%.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Practical Real-Life Use Cases</strong>
-                        - **DynamoDB Global Tables:** Multi-Region replica keys encrypt and decrypt replicated database partitions locally, minimizing regional network latency.
-                        - **Aurora Global Database:** Replicating encrypted storage volumes between regions. Aurora decrypts storage pages at the primary cluster boundary and re-encrypts them using the local regional KMS key at the replica target boundary.
-                      </div>
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Shield className="w-3.5 h-3.5 text-indigo-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Encryption algorithms use keys to lock data. <strong>Symmetric keys</strong> use the exact same key to encrypt and decrypt. <strong>Asymmetric keys</strong> use a public key pair (Public Key encrypts, Private Key decrypts) for external partners who shouldn&apos;t hold private keys!
+                      </p>
                     </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws kms replicate-key \\\n  --key-id arn:aws:kms:us-east-1:123456789012:key/mrk-9b8a7c6 \\\n  --replica-region eu-west-1`, 'cli_mrk_replicate')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_mrk_replicate' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_mrk_replicate' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_mrk_replicate' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Replicate Multi-Region Key (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws kms replicate-key \\
-  --key-id arn:aws:kms:us-east-1:123456789012:key/mrk-9b8a7c6 \\
-  --replica-region eu-west-1`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ S3 Bucket Key Setup:</strong> Always enable S3 Bucket Keys when encrypting high-throughput S3 buckets with KMS to drastically lower KMS API costs.
-                      </div>
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Lock className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Symmetric keys power fast bulk disk encryption (EBS, S3, RDS). Asymmetric keys allow external clients or vendor partners to encrypt sensitive data or verify RSA digital signatures without giving them access to AWS KMS private decryption keys!
+                      </p>
                     </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong>
+                    <br />• <strong>Symmetric KMS Key (AES-256)</strong>: Single key used for both encryption and decryption. Fast, highly performant, used by 99% of AWS services.
+                    <br />• <strong>Asymmetric KMS Key (RSA / ECC)</strong>: Public Key encrypts / verifies signatures; Private Key decrypts / signs. The Private Key **NEVER leaves the KMS Hardware Security Module (HSM)**!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Physical House Key vs Lockbox Drop Slot
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>Symmetric Key (Physical House Key)</strong>: You use the same metal key to lock your front door when leaving and unlock it when returning home.
+                      <br />• <strong>Asymmetric Key (Post Office Mail Slot)</strong>: Anyone on the street can drop a letter into the public mail slot (`Public Key`). But only the mail carrier holding the private brass key (`Private Key`) can open the box and read the mail!
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* ========================================================================= */}
-              {/* CONCEPT 6: CROSS-ACCOUNT KEY SHARING                                      */}
-              {/* ========================================================================= */}
-              {selectedNote === 'cross_account_kms' && (
-                <div className="acad-detail-card space-y-6 animate-fadeIn">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+              {/* NOTE 2.1: ENVELOPE ENCRYPTION */}
+              {selectedNote === 'envelope_encryption' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
                     <div>
-                      <span className="acad-hero-badge">Cross-Account Trust Boundaries</span>
-                      <h3 className="text-xl font-black text-slate-900 mt-2 font-display">Cross-Account Sharing &amp; KMS Grants for AMIs/Snapshots</h3>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Envelope &amp; Rotation</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.1 Envelope Encryption &amp; Data Encryption Keys (DEKs)
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('envelope')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Simulator Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* What & Why Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Shield className="w-3.5 h-3.5 text-indigo-500" /> What Is It &amp; Why Needed?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        AWS KMS has a maximum payload limit of 4 KB per direct API call. Sending a 10 GB video file or a 100 GB database dump directly to KMS over the network to encrypt is impossible! **Envelope Encryption** solves this by encrypting data locally with a fast Data Encryption Key (DEK).
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border space-y-1.5" style={{ background: 'var(--da-tab-bg)', borderColor: 'var(--da-card-border)' }}>
+                      <h4 className="font-bold flex items-center gap-1.5" style={{ color: 'var(--da-text-title)' }}>
+                        <Lock className="w-3.5 h-3.5 text-emerald-500" /> What Problem Does It Solve?
+                      </h4>
+                      <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.5' }}>
+                        Allows high-speed local encryption of gigabyte-sized files without network latency, while protecting the local Data Key by encrypting it under the master AWS KMS Root Key (KMS CMK)!
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Envelope Encryption works in 3 quick steps:
+                    <br />1. **Generate Data Key**: Call `kms:GenerateDataKey` to get a plaintext Data Key (`DEK`) and an encrypted Data Key.
+                    <br />2. **Encrypt Payload**: Use the plaintext DEK locally to encrypt large files (S3 objects, EBS volumes) in sub-milliseconds.
+                    <br />3. **Store Encrypted DEK**: Store the encrypted DEK alongside the encrypted file in S3, and wipe the plaintext DEK from RAM memory!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Lockbox Inside a Bank Vault
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      You lock your heavy diamond collection inside a small portable steel box (`Data Key`). Then, instead of carrying the steel key in your pocket where you might lose it, you put the small steel key inside a massive 10-ton bank vault (`AWS KMS Master Key`). To open your diamonds, the bank vault unlocks your small key, and your small key unlocks the diamonds!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 2.2: KEY ROTATION */}
+              {selectedNote === 'key_rotation' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">⚙️ Level 2 · Envelope &amp; Rotation</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        2.2 Automated Secret &amp; KMS Key Rotation
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('kms')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Key Architecture Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Keeping the same encryption key or database password for years increases security risk if keys leak. AWS provides 2 automatic rotation mechanisms:
+                    <br />• <strong>AWS KMS Key Rotation (Automatic)</strong>: KMS automatically generates new cryptographic key material every year (or 90 days for customer keys) without changing the Key ARN or re-encrypting existing data!
+                    <br />• <strong>AWS Secrets Manager Rotation</strong>: Uses an AWS Lambda function to update the database password in RDS and update the secret in Secrets Manager simultaneously without application downtime.
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Monthly Hotel Passcard Reset
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      At midnight on the 1st of every month, hotel reception automatically updates room electronic locks with a fresh security code (`Secret Rotation`). Existing guests don&apos;t get locked out because the hotel app automatically receives the new keycode in the background!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.1: KEY POLICIES */}
+              {selectedNote === 'key_policies' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · Policies &amp; Sharing</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.1 KMS Key Policies vs IAM Policies
+                      </h3>
                     </div>
                     <div className="flex items-center gap-3">
                       <button 
                         onClick={() => setActiveTab('crossaccount')}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                       >
-                        <Server className="w-3.5 h-3.5" /> Go to Shared AMIs
+                        <Zap className="w-3.5 h-3.5" /> Go to Shared Keys Tab
                       </button>
-                      <span className="text-xs font-bold text-slate-400">Concept 6 of 6</span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Sharing encrypted resources (EBS snapshots, AMIs, or S3 objects) across AWS accounts requires configuring permissions in the KMS key policy, IAM policies, and creating a **KMS Grant**.
-                  </p>
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> You cannot access a KMS Key using IAM policies alone! **Every KMS Key MUST have a Key Policy** attached directly to the key. The Key Policy is the primary access control mechanism—if the Key Policy does not grant access to the root account or IAM role, even `AdministratorAccess` IAM users are locked out!
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                    <div className="md:col-span-6 space-y-3.5 text-xs text-slate-700 leading-relaxed">
-                      <div>
-                        <strong className="text-slate-900 block font-bold">1. Key Policy Grant statement</strong>
-                        The resource owner (Account A) must update the custom KMS Key Policy to trust the receiver (Account B). You cannot share resources encrypted with default AWS Managed Keys (`aws/ebs` or `aws/s3`) across accounts. You must use a **Customer Managed Key** for cross-account sharing.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">2. KMS Grants (`CreateGrant`)</strong>
-                        A **KMS Grant** is a policy mechanism that allows principal roles inside Account B to perform cryptographic operations (like `Decrypt`). The EC2 service role in Account B creates a grant to decrypt Account A's shared EBS snapshot when booting an EC2 instance.
-                      </div>
-                      <div>
-                        <strong className="text-slate-900 block font-bold">3. Practical Real-Life Use Cases</strong>
-                        - **Golden AMIs Distribution:** A central security account builds and encrypts "Golden AMIs" using a customer managed key, sharing them with application accounts that run EC2 auto-scaling groups.
-                        - **Cross-account database copies:** Copying encrypted database snapshots from production to staging/testing environments.
-                      </div>
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Heavy Vault Door Locks vs Employee Security Badge
                     </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Your company security badge (`IAM Policy`) might state &ldquo;Allowed to open all doors in building&rdquo;. But the bank vault door itself has a combination lock (`Key Policy`). If the vault door combination lock does not explicitly list your badge ID, the vault door remains locked!
+                    </p>
+                  </div>
 
-                    <div className="md:col-span-6 flex flex-col justify-between space-y-4 relative">
-                      <div className="acad-terminal">
-                        <button 
-                          onClick={() => handleCopyCode(`aws kms create-grant \\\n  --key-id arn:aws:kms:us-east-1:AccountA:key/key-9b8a7c6 \\\n  --grantee-principal arn:aws:iam::AccountB:root \\\n  --operations Decrypt CreateGrant`, 'cli_kms_grant')}
-                          className={`acad-copy-btn ${copiedNoteId === 'cli_kms_grant' ? 'copied' : ''}`}
-                        >
-                          {copiedNoteId === 'cli_kms_grant' ? <Check size={10} /> : <Copy size={10} />}
-                          {copiedNoteId === 'cli_kms_grant' ? 'Copied' : 'Copy Command'}
-                        </button>
-                        <span className="text-[10px] font-black text-indigo-400 block uppercase tracking-wider mb-2">Create KMS Grant (AWS CLI)</span>
-                        <pre className="text-[9.5px] leading-relaxed text-slate-300 font-mono overflow-x-auto">
-{`aws kms create-grant \\
-  --key-id arn:aws:kms:us-east-1:AccountA:key/key-9b8a7c6 \\
-  --grantee-principal arn:aws:iam::AccountB:root \\
-  --operations Decrypt CreateGrant`}
-                        </pre>
-                      </div>
-
-                      <div className="acad-takeaway-box text-xs">
-                        <strong>🛡️ Sharing Prerequisite:</strong> The target account B must also have an IAM policy granting the local role permissions to use the key (`kms:Decrypt` and `kms:CreateGrant`) alongside the cross-account trust setup in the key policy.
-                      </div>
+                  {/* Copyable KMS Key Policy Snippet */}
+                  <div className="acad-advice-box p-4 rounded-xl flex flex-col justify-between" style={{ background: 'var(--da-card-bg)' }}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--da-text-muted)' }}>KMS Key Policy JSON (Root Enablement)</span>
+                      <button 
+                        onClick={() => {
+                          const snippet = `{\n  "Version": "2012-10-17",\n  "Id": "key-policy-1",\n  "Statement": [\n    {\n      "Sid": "Enable IAM User Permissions",\n      "Effect": "Allow",\n      "Principal": { "AWS": "arn:aws:iam::111122223333:root" },\n      "Action": "kms:*",\n      "Resource": "*"\n    }\n  ]\n}`;
+                          navigator.clipboard.writeText(snippet);
+                          setCopiedNoteId('kms-key-policy');
+                          setTimeout(() => setCopiedNoteId(null), 2000);
+                        }}
+                        className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded text-[10px] font-mono flex items-center gap-1 transition-all"
+                      >
+                        {copiedNoteId === 'kms-key-policy' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
                     </div>
+                    <pre className="acad-terminal text-[9.5px] leading-relaxed overflow-x-auto h-24">
+{`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Enable IAM User Permissions",
+      "Effect": "Allow",
+      "Principal": { "AWS": "arn:aws:iam::111122223333:root" },
+      "Action": "kms:*",
+      "Resource": "*"
+    }
+  ]
+}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 3.2: CROSS ACCOUNT KMS */}
+              {selectedNote === 'cross_account_kms' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🏛️ Level 3 · Policies &amp; Sharing</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        3.2 Cross-Account Key Sharing &amp; Encrypted Shared AMIs
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('crossaccount')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Shared Keys Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> You cannot share AWS Managed Keys (e.g. `aws/s3`, `aws/ebs`) across different AWS accounts! To share encrypted S3 objects, EBS snapshots, or custom AMIs with another AWS account:
+                    <br />1. Use a **Customer Managed Key (CMK)** instead of AWS Managed Key.
+                    <br />2. Add the target account ID to the KMS **Key Policy** (`Principal: &#123; AWS: "arn:aws:iam::TARGET-ACCOUNT:root" &#125;`).
+                    <br />3. Add `kms:Decrypt` and `kms:CreateGrant` permissions to the target account&apos;s IAM role!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Corporate Escrow Authorization
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      Company A wants to send a locked briefcase to Company B. Company A cannot use its internal master key (`AWS Managed Key`). Instead, Company A buys a custom dual-lock box (`Customer Managed Key`) and registers Company B&apos;s representative on the authorized opener list (`KMS Key Grant`).
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.1: MULTI-REGION REPLICA KEYS */}
+              {selectedNote === 'global_mrk' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · Replicas &amp; CloudHSM</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.1 Multi-Region KMS Replica Keys (MRKs) &amp; Disaster Recovery
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('multiregion')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Multi-Region Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> Standard KMS keys are strictly single-region. **Multi-Region Keys (MRKs)** share the exact same key ID and key material across multiple AWS regions (e.g. `us-east-1` Primary and `eu-west-1` Replica). Data encrypted in New York can be decrypted in London **without making cross-region network calls to KMS**!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Identical Master Keys in London &amp; New York Vaults
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      A global bank creates 2 identical master brass keys. Key #1 stays in the New York vault; Key #2 stays in the London vault. When an encrypted document is flown from New York to London, London officers unlock the document locally in 1 second using Key #2 without calling New York!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* NOTE 4.2: CLOUDHSM */}
+              {selectedNote === 'cloudhsm' && (
+                <div className="acad-detail-card space-y-5 animate-fadeIn">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4" style={{ borderColor: 'var(--da-card-border)' }}>
+                    <div>
+                      <span className="acad-hero-badge">🛡️ Level 4 · Replicas &amp; CloudHSM</span>
+                      <h3 className="text-xl font-black mt-2 font-display" style={{ color: 'var(--da-text-title)' }}>
+                        4.2 AWS CloudHSM: Dedicated Single-Tenant Hardware Security Modules
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setActiveTab('kms')}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                      >
+                        <Zap className="w-3.5 h-3.5" /> Go to Key Architecture Tab
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plain English Box */}
+                  <div className="acad-plain-english">
+                    <strong>✨ In Plain English:</strong> While AWS KMS is a multi-tenant managed service, **AWS CloudHSM** gives you dedicated, single-tenant FIPS 140-2 Level 3 hardware security appliances inside your VPC. You hold complete administrative control of the HSM device—AWS engineers have zero access to your cryptographic keys!
+                  </div>
+
+                  {/* Everyday Analogy Box */}
+                  <div className="acad-analogy-box">
+                    <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Shared Safety Deposit Box vs Private Dedicated Steel Vault
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                      • <strong>AWS KMS (Shared Bank Safety Deposit Vault)</strong>: Highly secure bank vault where AWS manages the hardware infrastructure for thousands of customers.
+                      <br />• <strong>AWS CloudHSM (Private Dedicated Steel Armored Car Vault)</strong>: You rent the entire armored car. Only your company officers hold the combination codes; the bank staff doesn&apos;t even have master keys!
+                    </p>
                   </div>
                 </div>
               )}
 
             </div>
-
           </div>
         </div>
       )}
 
-      {activeTab === 'intro' && (
+
+        {activeTab === 'intro' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             

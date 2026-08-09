@@ -1,8 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import {
+  BookOpen,
+  Shield,
+  Activity,
+  ChevronRight,
+  ChevronDown,
+  Check,
+  Copy,
+  Lightbulb,
+  Sliders,
+  Zap,
+  Layers,
+  Lock
+} from 'lucide-react';
 import ElastiCacheComparativeView from '../../components/visualizers/ElastiCacheComparativeView';
 import UniqueElastiCacheFeatures from '../../components/visualizers/UniqueElastiCacheFeatures';
 
-type TabType = 'concept' | 'compare' | 'arch' | 'usecases' | 'security' | 'sim' | 'unique';
+type TabType = 'notebook' | 'concept' | 'compare' | 'arch' | 'usecases' | 'security' | 'sim' | 'unique';
 
 const ucData = {
   session: {
@@ -162,7 +176,17 @@ interface ElastiCacheVisualizerProps {
 }
 
 export default function ElastiCacheVisualizer({ provider = 'aws', setProvider }: ElastiCacheVisualizerProps) {
-  const [activeSection, setActiveSection] = useState<TabType>('concept');
+  const [activeSection, setActiveSection] = useState<TabType>('notebook');
+
+  // Visual Architect Notes & Theories Academy State
+  const [selectedNote, setSelectedNote] = useState<string>('cache_what_is');
+  const [expandedCategory, setExpandedCategory] = useState<string>('cache_fundamentals');
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+
+  // Interactive Caching Latency & Savings Calculator State
+  const [nbCacheHitRate, setNbCacheHitRate] = useState<number>(85);
+  const [nbDbQueryLatencyMs, setNbDbQueryLatencyMs] = useState<number>(35);
+  const [nbTotalRps, setNbTotalRps] = useState<number>(1000);
 
   const isComparative = provider === 'comparative';
   const isAzure = provider === 'azure';
@@ -681,6 +705,207 @@ export default function ElastiCacheVisualizer({ provider = 'aws', setProvider }:
           color: #f1f5f9 !important;
           border-color: rgba(51, 65, 85, 0.8) !important;
         }
+
+        /* Developer Academy Notes & Visual Mental Models Styling */
+        .acad-dir-container {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .acad-dir-header {
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: var(--color-text-primary);
+        }
+        .acad-dir-folder-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          border: none;
+          background: var(--color-background-primary);
+          color: var(--color-text-primary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .acad-dir-folder-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+        }
+        .acad-dir-item-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px 8px 24px;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--color-text-secondary);
+          border: none;
+          border-left: 3px solid transparent;
+          background: var(--color-background-primary);
+          transition: all 0.15s ease;
+          text-align: left;
+          cursor: pointer;
+        }
+        .acad-dir-item-btn:hover {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          border-left-color: var(--color-border-tertiary);
+        }
+        .acad-dir-item-btn.acad-active {
+          background: #eff6ff;
+          color: #0284c7;
+          border-left-color: #0ea5e9;
+          font-weight: 800;
+        }
+        .dark .acad-dir-item-btn.acad-active {
+          background: rgba(2, 132, 199, 0.15);
+          color: #38bdf8;
+          border-left-color: #38bdf8;
+        }
+        .acad-detail-card {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .acad-hero-badge {
+          background: #e0f2fe;
+          border: 1.5px solid #bae6fd;
+          color: #0369a1;
+          font-size: 9.5px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 3.5px 10px;
+          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .acad-takeaway-box {
+          background: linear-gradient(135deg, var(--color-background-primary) 0%, var(--color-background-secondary) 100%);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 12px;
+          padding: 14px 16px;
+          font-size: 11.5px;
+          line-height: 1.6;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .acad-plain-english {
+          background: rgba(2, 132, 199, 0.07);
+          border-left: 4px solid #0ea5e9;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 16px;
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-plain-english {
+          background: rgba(56, 189, 248, 0.12);
+        }
+        .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%);
+          border: 1.5px solid rgba(245, 158, 11, 0.35);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 16px 0;
+          font-size: 12px;
+          line-height: 1.6;
+          color: var(--color-text-primary);
+        }
+        .dark .acad-analogy-box {
+          background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%);
+          border-color: rgba(245, 158, 11, 0.3);
+        }
+        .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.06);
+          border-left: 4px solid #ef4444;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin: 16px 0;
+          font-size: 11.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+          border-top: 1px solid var(--color-border-tertiary);
+          border-right: 1px solid var(--color-border-tertiary);
+          border-bottom: 1px solid var(--color-border-tertiary);
+        }
+        .dark .acad-gotcha-box {
+          background: rgba(239, 68, 68, 0.12);
+        }
+        .acad-flow-step {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: var(--color-background-secondary);
+          border-radius: 8px;
+          border: 1px solid var(--color-border-tertiary);
+          font-size: 11.5px;
+          flex: 1 1 160px;
+        }
+        .acad-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 11.5px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--color-border-tertiary);
+        }
+        .acad-table th {
+          background: var(--color-background-secondary);
+          color: var(--color-text-primary);
+          font-weight: 800;
+          padding: 10px 12px;
+          border-bottom: 1.5px solid var(--color-border-tertiary);
+          text-align: left;
+        }
+        .acad-table td {
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
+        .acad-table tr:last-child td {
+          border-bottom: none;
+        }
+        .acad-terminal {
+          background: #0f172a;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 12px;
+          font-family: 'Fira Code', 'Courier New', Courier, monospace;
+          color: #cbd5e1;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .acad-advice-box {
+          background: var(--color-background-primary);
+          border: 1px solid var(--color-border-tertiary);
+          color: var(--color-text-secondary);
+        }
       `}</style>
 
       <div style={{ padding: '14px 16px 4px' }}>
@@ -710,12 +935,13 @@ export default function ElastiCacheVisualizer({ provider = 'aws', setProvider }:
 
       {!isComparative && (
         <div className="ec-tabs">
-          <button className={`ec-tb ${activeSection === 'concept' ? 'on' : ''}`} onClick={() => setActiveSection('concept')}>💡 Concept &amp; Overview</button>
-          <button className={`ec-tb ${activeSection === 'compare' ? 'on' : ''}`} onClick={() => setActiveSection('compare')}>⚖️ Redis vs Memcached</button>
-          <button className={`ec-tb ${activeSection === 'arch' ? 'on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ Architecture</button>
-          <button className={`ec-tb ${activeSection === 'usecases' ? 'on' : ''}`} onClick={() => setActiveSection('usecases')}>🎯 Use-Case Design</button>
-          <button className={`ec-tb ${activeSection === 'security' ? 'on' : ''}`} onClick={() => setActiveSection('security')}>🛡️ Security &amp; Auth</button>
-          <button className={`ec-tb ${activeSection === 'sim' ? 'on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 Live Traffic Sim</button>
+          <button className={`ec-tb ${activeSection === 'notebook' ? 'on' : ''}`} onClick={() => setActiveSection('notebook')}>📖 1) Visual Notes &amp; Theories</button>
+          <button className={`ec-tb ${activeSection === 'concept' ? 'on' : ''}`} onClick={() => setActiveSection('concept')}>💡 2) Concept &amp; Overview</button>
+          <button className={`ec-tb ${activeSection === 'compare' ? 'on' : ''}`} onClick={() => setActiveSection('compare')}>⚖️ 3) Redis vs Memcached</button>
+          <button className={`ec-tb ${activeSection === 'arch' ? 'on' : ''}`} onClick={() => setActiveSection('arch')}>🏗️ 4) Architecture</button>
+          <button className={`ec-tb ${activeSection === 'usecases' ? 'on' : ''}`} onClick={() => setActiveSection('usecases')}>🎯 5) Use-Case Design</button>
+          <button className={`ec-tb ${activeSection === 'security' ? 'on' : ''}`} onClick={() => setActiveSection('security')}>🛡️ 6) Security &amp; Auth</button>
+          <button className={`ec-tb ${activeSection === 'sim' ? 'on' : ''}`} onClick={() => setActiveSection('sim')}>🎮 7) Live Traffic Sim</button>
           <button className={`ec-tb ${activeSection === 'unique' ? 'on' : ''}`} onClick={() => setActiveSection('unique')}>✨ Unique Features</button>
         </div>
       )}
@@ -732,7 +958,884 @@ export default function ElastiCacheVisualizer({ provider = 'aws', setProvider }:
         {!isComparative && activeSection !== 'unique' && (
           <Translate>
             <>
-              {activeSection === 'concept' && (
+              {activeSection === 'notebook' && (
+            <div className="space-y-6 animate-fadeIn text-left" style={{ color: 'var(--color-text-primary)' }}>
+              
+              {/* Header Hero Card */}
+              <div className="card text-left" style={{ borderLeft: '4px solid #ef4444' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h2 className="text-xl font-bold flex items-center gap-2 font-display">
+                      <BookOpen className="w-5 h-5 text-red-600" /> In-Memory Caching (ElastiCache Redis &amp; Memcached) Notes &amp; Mental Models
+                    </h2>
+                    <p className="text-xs mt-1.5 leading-relaxed font-sans font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                      Simplified, beginner-friendly in-memory caching theories sorted progressively from sub-millisecond RAM lookups to Redis vs Memcached tradeoffs, Cache-Aside strategies, Cluster Sharding, and real-world session/leaderboard implementations.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <span className="acad-hero-badge" style={{ background: '#fee2e2', borderColor: '#fca5a5', color: '#b91c1c' }}>🎓 Beginner to Pro</span>
+                    <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💡 Everyday Mental Models</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left Sidebar Category Explorer */}
+                <div className="lg:col-span-3 space-y-4 text-left">
+                  <span className="text-[10px] font-black uppercase tracking-widest block pl-1 font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Curriculum Directory:</span>
+                  
+                  <div className="acad-dir-container">
+                    <div className="acad-dir-header">
+                      <Zap className="w-4 h-4 text-red-600" />
+                      <span>Cache Modules</span>
+                    </div>
+
+                    {/* LEVEL 1: CACHING FUNDAMENTALS */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cache_fundamentals' ? '' : 'cache_fundamentals')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Sliders className="w-3.5 h-3.5 text-red-500" />
+                          🐣 Level 1 · Fundamentals
+                        </span>
+                        {expandedCategory === 'cache_fundamentals' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cache_fundamentals' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('cache_what_is')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cache_what_is' ? 'acad-active' : ''}`}
+                          >
+                            1.1 What is In-Memory Caching? (Post-It Note)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('redis_vs_memcached')}
+                            className={`acad-dir-item-btn ${selectedNote === 'redis_vs_memcached' ? 'acad-active' : ''}`}
+                          >
+                            1.2 Redis vs Memcached (Scratchpad vs iPad)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 2: CACHING STRATEGIES */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cache_strategies' ? '' : 'cache_strategies')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5 text-amber-500" />
+                          📐 Level 2 · Caching Strategies
+                        </span>
+                        {expandedCategory === 'cache_strategies' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cache_strategies' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('lazy_loading')}
+                            className={`acad-dir-item-btn ${selectedNote === 'lazy_loading' ? 'acad-active' : ''}`}
+                          >
+                            2.1 Cache-Aside / Lazy Loading (Fridge Check)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('write_through')}
+                            className={`acad-dir-item-btn ${selectedNote === 'write_through' ? 'acad-active' : ''}`}
+                          >
+                            2.2 Write-Through &amp; Write-Around Patterns
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('eviction_ttl')}
+                            className={`acad-dir-item-btn ${selectedNote === 'eviction_ttl' ? 'acad-active' : ''}`}
+                          >
+                            2.3 Eviction Policies &amp; TTL (Closet Cleaning)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 3: CLUSTERING & HIGH AVAILABILITY */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'cluster_ha' ? '' : 'cluster_ha')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                          🏗️ Level 3 · High Availability
+                        </span>
+                        {expandedCategory === 'cluster_ha' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'cluster_ha' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)', borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('redis_multiaz')}
+                            className={`acad-dir-item-btn ${selectedNote === 'redis_multiaz' ? 'acad-active' : ''}`}
+                          >
+                            3.1 Multi-AZ &amp; Auto-Failover (Pit Lane Backup)
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('cluster_sharding')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cluster_sharding' ? 'acad-active' : ''}`}
+                          >
+                            3.2 Cluster Sharding &amp; Hash Slots (ZIP Codes)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* LEVEL 4: USE CASES & SECURITY */}
+                    <div>
+                      <button 
+                        onClick={() => setExpandedCategory(expandedCategory === 'usecases_sec' ? '' : 'usecases_sec')}
+                        className="acad-dir-folder-btn"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5 text-sky-500" />
+                          🚀 Level 4 · Use Cases &amp; Auth
+                        </span>
+                        {expandedCategory === 'usecases_sec' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                      </button>
+                      {expandedCategory === 'usecases_sec' && (
+                        <div className="py-1 font-semibold" style={{ background: 'var(--color-background-primary)' }}>
+                          <button 
+                            onClick={() => setSelectedNote('redis_use_cases')}
+                            className={`acad-dir-item-btn ${selectedNote === 'redis_use_cases' ? 'acad-active' : ''}`}
+                          >
+                            4.1 Sessions, Leaderboards &amp; Rate Limits
+                          </button>
+                          <button 
+                            onClick={() => setSelectedNote('cache_security')}
+                            className={`acad-dir-item-btn ${selectedNote === 'cache_security' ? 'acad-active' : ''}`}
+                          >
+                            4.2 Security, IAM Auth &amp; Encryption
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+
+                  <div className="acad-advice-box rounded-2xl p-4 text-[11px] leading-relaxed font-semibold space-y-1">
+                    <span className="font-extrabold flex items-center gap-1.5 mb-1 text-[11.5px]" style={{ color: 'var(--color-text-primary)' }}>
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Interactive Quick-Launch
+                    </span>
+                    Click any caching concept to explore real-world analogies, interactive latency calculators, and instant simulator links!
+                  </div>
+                </div>
+
+                {/* Right Active Note Workspace */}
+                <div className="lg:col-span-9 space-y-6 text-left">
+
+                  {/* NOTE 1.1: WHAT IS IN-MEMORY CACHING */}
+                  {selectedNote === 'cache_what_is' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 className="text-xl font-black mt-2 font-display">1.1 What is In-Memory Caching? (Sub-Millisecond Speed)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('concept')}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Concept Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Traditional relational databases (PostgreSQL, MySQL) store data on virtual hard disks (EBS/SSD), taking <strong>10 to 50 milliseconds</strong> per query. In-memory caching stores frequently requested data directly in ultra-fast <strong>RAM memory</strong>, returning answers in <strong>less than 1 millisecond (&lt;1ms)</strong> while protecting your database from crashing under high traffic.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Sticky Note on your Monitor vs The City Library
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If your boss asks you for the company Wi-Fi password 50 times a day, you don&apos;t drive 30 minutes to the central city library archives to look up the password every single time (Database Query). You write the password on a <strong>sticky Post-It note right next to your keyboard (RAM Cache)</strong> and read it in 0.1 seconds!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Interactive Latency Calculator HUD */}
+                        <div className="asg-card p-4 rounded-xl space-y-3" style={{ border: '1px solid var(--color-border-tertiary)' }}>
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block" style={{ color: 'var(--color-text-tertiary)' }}>Interactive Cache Latency &amp; Load Calculator</span>
+                          
+                          <div className="space-y-2 text-xs">
+                            <div>
+                              <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                                <span>Cache Hit Rate: {nbCacheHitRate}%</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={nbCacheHitRate} 
+                                onChange={(e) => setNbCacheHitRate(parseInt(e.target.value))}
+                                className="accent-red-600 w-full"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                                <span>Raw Database Latency: {nbDbQueryLatencyMs} ms</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="5" 
+                                max="100" 
+                                value={nbDbQueryLatencyMs} 
+                                onChange={(e) => setNbDbQueryLatencyMs(parseInt(e.target.value))}
+                                className="accent-red-600 w-full"
+                              />
+                            </div>
+
+                            <div>
+                              <div className="flex justify-between font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                                <span>Total Incoming Traffic: {nbTotalRps} req/sec</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="100" 
+                                max="10000" 
+                                step="100" 
+                                value={nbTotalRps} 
+                                onChange={(e) => setNbTotalRps(parseInt(e.target.value))}
+                                className="accent-red-600 w-full"
+                              />
+                            </div>
+                          </div>
+
+                          {(() => {
+                            const cacheLatency = 0.8;
+                            const avgLatency = ((nbCacheHitRate / 100) * cacheLatency) + (((100 - nbCacheHitRate) / 100) * nbDbQueryLatencyMs);
+                            const dbTps = Math.round(nbTotalRps * ((100 - nbCacheHitRate) / 100));
+                            const cacheTps = Math.round(nbTotalRps * (nbCacheHitRate / 100));
+                            return (
+                              <div className="p-3 rounded-lg font-mono text-[10.5px] space-y-1.5" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                                <p>Average Response Time: <span className="text-green font-bold">{avgLatency.toFixed(2)} ms</span> (vs {nbDbQueryLatencyMs} ms)</p>
+                                <p>Offloaded to RAM Cache: <span className="text-blue font-bold">{cacheTps} req/sec</span> (&lt;1ms)</p>
+                                <p>Queries Hitting Database: <span className="text-orange font-bold">{dbTps} req/sec</span></p>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 3 Pillars of In-Memory Speed:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Sub-Millisecond Reads (&lt;1ms):</strong> Accessing RAM memory is 100,000x faster than reading rotational magnetic disks or NVMe SSDs.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Database Shielding:</strong> Absorbs 95%+ of repetitive read queries, allowing your core database to run on smaller, cheaper instance sizes.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>Elastic Throughput:</strong> Handles millions of operations per second with minimal CPU consumption.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 1.2: REDIS VS MEMCACHED */}
+                  {selectedNote === 'redis_vs_memcached' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
+                          <h3 className="text-xl font-black mt-2 font-display">1.2 Redis vs Memcached (Choosing the Right Engine)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('compare')}
+                            className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Comparison Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> <strong>Memcached</strong> is a simple, multi-threaded in-memory key-value dictionary. <strong>Redis</strong> is a powerful in-memory data structures engine supporting persistence, replication, clustering, pub/sub, geospatial indexes, and automated failover.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: A Plain Dry-Erase Whiteboard vs A Smart iPad Device
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Memcached (Dry-Erase Whiteboard)</strong>: Ultra-fast to scribble notes on, supports multiple people writing at once (multi-threaded), but if someone wipes it clean or turns off the lights, all notes are permanently gone!
+                          <br />• <strong>Redis (Smart iPad Device)</strong>: Has built-in calculator, maps, lists, alarms, and automatically syncs all notes to cloud backups so you never lose your data!
+                        </p>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="acad-table">
+                          <thead>
+                            <tr>
+                              <th>Feature</th>
+                              <th>Memcached</th>
+                              <th>Redis</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Data Types</strong></td>
+                              <td>Simple Strings only (Key-Value)</td>
+                              <td>Strings, Hashes, Lists, Sets, Sorted Sets, Bitmaps, Geo, HyperLogLog</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Threading</strong></td>
+                              <td>Multi-threaded (Scales vertically with CPU cores)</td>
+                              <td>Single-threaded event loop (Scales horizontally via Sharding)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>High Availability &amp; Multi-AZ</strong></td>
+                              <td>❌ No (Independent isolated nodes)</td>
+                              <td>✅ Yes (Primary + up to 5 Multi-AZ Read Replicas)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Data Persistence &amp; Snapshots</strong></td>
+                              <td>❌ No (Purely ephemeral)</td>
+                              <td>✅ Yes (RDB automated snapshots &amp; AOF append logs)</td>
+                            </tr>
+                            <tr>
+                              <td><strong style={{ color: 'var(--color-text-primary)' }}>Pub/Sub &amp; Geospatial</strong></td>
+                              <td>❌ No</td>
+                              <td>✅ Yes (Real-time message broadcasting &amp; GPS queries)</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.1: LAZY LOADING */}
+                  {selectedNote === 'lazy_loading' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">📐 Level 2 · Caching Strategies</span>
+                          <h3 className="text-xl font-black mt-2 font-display">2.1 Cache-Aside / Lazy Loading (On-Demand Caching)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('usecases')}
+                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Activity className="w-3.5 h-3.5" /> Go to Use-Case Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> In the <strong>Cache-Aside (Lazy Loading)</strong> pattern, data is only loaded into the cache when specifically requested by a user. If the cache doesn&apos;t have it (**Cache Miss**), your application fetches it from the database, writes it into the cache with a TTL (expiration timer), and returns it to the user.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Checking your Home Refrigerator First
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          When you want a glass of orange juice, you check your home fridge first (<strong>Cache Check</strong>). If there is juice (**Cache Hit**), you drink it in 2 seconds! If the fridge is empty (**Cache Miss**), you drive to the supermarket (Database Query), buy a carton, put it in the fridge (Write to Cache), and now it is ready in 2 seconds next time you are thirsty!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>3 Steps in Cache-Aside:</h4>
+                          
+                          <ol className="list-decimal pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>1. Check Cache:</strong> App issues <code>GET user:123</code> to Redis.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>2. On Miss:</strong> App runs <code>SELECT * FROM users WHERE id=123</code> on RDS.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>3. Populate Cache:</strong> App runs <code>SETEX user:123 300 data</code> with a 5-minute TTL.</li>
+                          </ol>
+
+                          <div className="acad-takeaway-box">
+                            <strong>💡 Why Developers Love It:</strong> You only cache data that real users actually read—preventing unused data from bloating expensive RAM!
+                          </div>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Cache-Aside Decision Flow</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <span>1. User requests Profile</span>
+                              <span className="text-blue font-bold">Query App</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="text-green font-bold">2. HIT in Redis (&lt;1ms)</span>
+                              <span className="text-green font-bold">Return Fast!</span>
+                            </div>
+                            <div className="p-2 rounded flex justify-between items-center" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid #fde68a' }}>
+                              <span className="text-orange font-bold">3. MISS &rarr; Query RDS (35ms)</span>
+                              <span className="text-orange font-bold">Write to Redis + Return</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.2: WRITE-THROUGH */}
+                  {selectedNote === 'write_through' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">📐 Level 2 · Caching Strategies</span>
+                          <h3 className="text-xl font-black mt-2 font-display">2.2 Write-Through &amp; Write-Around Patterns</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('usecases')}
+                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Activity className="w-3.5 h-3.5" /> Go to Use-Case Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> In <strong>Write-Through</strong>, whenever data is created or modified, the application writes to the cache AND the database simultaneously. The cache is guaranteed to always be fresh, but write operations take slightly longer. In <strong>Write-Around</strong>, writes go only to the database, and the cache is filled later when someone reads the item.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Updating your Personal Calendar AND the Office Board
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          When a new meeting is scheduled, you write it on your personal smartphone calendar (Database) AND immediately write it on the kitchen wall whiteboard (Cache) at the exact same moment. Anyone walking by the whiteboard instantly sees the fresh meeting without ever experiencing a missing note!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Strategy Tradeoff Comparison:</h4>
+                          
+                          <table className="acad-table">
+                            <thead>
+                              <tr>
+                                <th>Strategy</th>
+                                <th>Write Speed</th>
+                                <th>Read Freshness</th>
+                                <th>RAM Usage</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><strong style={{ color: 'var(--color-text-primary)' }}>Lazy Loading</strong></td>
+                                <td>Fast</td>
+                                <td>Can be stale until TTL</td>
+                                <td>Low (Only requested data)</td>
+                              </tr>
+                              <tr>
+                                <td><strong style={{ color: 'var(--color-text-primary)' }}>Write-Through</strong></td>
+                                <td>Slightly Slower</td>
+                                <td>100% Always Fresh</td>
+                                <td>Higher (Caches all writes)</td>
+                              </tr>
+                              <tr>
+                                <td><strong style={{ color: 'var(--color-text-primary)' }}>Write-Around</strong></td>
+                                <td>Fastest</td>
+                                <td>Miss on first read</td>
+                                <td>Optimal for write-heavy apps</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="acad-gotcha-box">
+                          <strong>⚠️ Gotcha: Cache Churn in Write-Through</strong>
+                          <p style={{ margin: '4px 0 0' }}>
+                            If you write 1,000,000 log records or telemetry points to your database every hour, using Write-Through will flush out all your valuable user session keys from RAM. For write-heavy telemetry, always use <strong>Write-Around</strong>!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 2.3: EVICTION POLICIES & TTL */}
+                  {selectedNote === 'eviction_ttl' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">📐 Level 2 · Caching Strategies</span>
+                          <h3 className="text-xl font-black mt-2 font-display">2.3 Cache Eviction Policies &amp; TTL Expiration</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('usecases')}
+                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Activity className="w-3.5 h-3.5" /> Go to Use-Case Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> RAM memory is finite and expensive. When Redis reaches <code>maxmemory</code> (100% full), it uses <strong>Eviction Policies</strong> to decide which old items to discard, while <strong>TTL (Time-To-Live)</strong> automatically deletes expired keys like expiring carton milk.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: Cleaning Out your Bedroom Clothes Closet
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>LRU (Least Recently Used)</strong>: When your closet is bursting full and you buy a new jacket, you donate the coat you haven&apos;t worn for the longest time.
+                          <br />• <strong>LFU (Least Frequently Used)</strong>: You discard the clothes you only wore once in the entire year.
+                          <br />• <strong>TTL (Time-To-Live Expiration)</strong>: Like the expiration date on fresh milk—after 7 days, it is thrown out automatically without you having to check!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Top Redis Eviction Policies:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>allkeys-lru (Recommended):</strong> Evicts the least recently used keys out of all keys in memory.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>volatile-lru:</strong> Evicts least recently used keys among those that have an expiration TTL set.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>allkeys-lfu:</strong> Evicts keys that are queried least frequently across the entire dataset.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>noeviction:</strong> Returns an error on new write commands when memory is full (protects mission-critical data).</li>
+                          </ul>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Redis TTL Commands</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <p className="font-bold text-green">SET key value EX 3600</p>
+                              <span>Sets key with 1-hour (3,600 seconds) expiration</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <p className="font-bold text-blue">TTL key</p>
+                              <span>Returns remaining seconds before key auto-deletes</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                              <p className="font-bold text-orange">PERSIST key</p>
+                              <span>Removes expiration timer (makes key permanent)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.1: MULTI-AZ REPLICATION */}
+                  {selectedNote === 'redis_multiaz' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🏗️ Level 3 · High Availability</span>
+                          <h3 className="text-xl font-black mt-2 font-display">3.1 Redis Multi-AZ Replication &amp; Auto-Failover</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('arch')}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Go to Architecture Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> A Redis Replication Group has <strong>1 Primary writer node and up to 5 Read Replicas</strong> distributed across multiple Availability Zones. If the primary node crashes or loses power, ElastiCache automatically elects a healthy read replica and promotes it to primary in <strong>under 15 seconds</strong> with zero application code changes!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Formula 1 Backup Driver in the Pit Lane
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          While the lead racecar driver (Primary Node) navigates the track, a reserve driver (Read Replica in AZ-B) monitors every telemetry sensor in real time. If the lead car suffers engine failure, the reserve driver jumps into the backup racecar in 15 seconds and continues the race smoothly without disqualification!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>Multi-AZ Auto-Failover Sequence:</h4>
+                          
+                          <ol className="list-decimal pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>1. Outage Detected:</strong> Automated cluster health monitors detect primary node unresponsiveness in Zone A.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>2. Replica Election:</strong> The replica with the lowest replication lag in Zone B is elected.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>3. Promotion &amp; DNS Flip:</strong> The Primary Endpoint DNS automatically updates to point to the new master node in &lt;15 seconds.</li>
+                          </ol>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Replication Group Architecture</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span className="text-green font-bold">us-east-1a: Primary Node</span>
+                              <span className="text-green font-bold">Read &amp; Write</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <span className="text-blue font-bold">us-east-1b: Read Replica 1</span>
+                              <span className="text-blue font-bold">Read-Only (&lt;1ms Lag)</span>
+                            </div>
+                            <div className="p-2.5 rounded-lg flex items-center justify-between" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <span className="text-purple font-bold">us-east-1c: Read Replica 2</span>
+                              <span className="text-purple font-bold">Read-Only (&lt;1ms Lag)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 3.2: CLUSTER SHARDING */}
+                  {selectedNote === 'cluster_sharding' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🏗️ Level 3 · High Availability</span>
+                          <h3 className="text-xl font-black mt-2 font-display">3.2 Redis Cluster Sharding &amp; Hash Slots (Terabyte Scale)</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('arch')}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Go to Architecture Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> A single Redis node is limited to ~400 GiB of RAM. When your cache needs multiple Terabytes or millions of writes per second, <strong>Redis Cluster Mode</strong> partitions your keys across up to <strong>500 shards using 16,384 Hash Slots</strong>!
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Postal Mail Sorting Bins (16,384 ZIP Codes)
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          If a single mail carrier cannot carry 1,000,000 letters, the central post office splits letters into 16,384 regional ZIP code bins:
+                          <br />• <strong>Shard 1</strong> carries ZIP codes 0 to 5,460.
+                          <br />• <strong>Shard 2</strong> carries ZIP codes 5,461 to 10,922.
+                          <br />• <strong>Shard 3</strong> carries ZIP codes 10,923 to 16,383.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 16,384 Hash Slot Formula:</h4>
+                          <div className="p-2 rounded font-mono text-[11px]" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <code>Slot = CRC16(key) MOD 16384</code>
+                          </div>
+
+                          <p className="leading-relaxed">
+                            Every key is hashed using CRC16. The resulting number modulo 16384 determines the exact shard holding the key.
+                          </p>
+
+                          <div className="acad-takeaway-box">
+                            <strong>💡 Hash Tags:</strong> By wrapping curly braces around part of a key (e.g. <code>&#123;user123&#125;.profile</code> and <code>&#123;user123&#125;.cart</code>), you guarantee related keys hash to the same slot for fast multi-key transactions!
+                          </div>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>3-Shard Cluster Partitioning</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded" style={{ background: 'rgba(2, 132, 199, 0.08)', border: '1px solid #7dd3fc' }}>
+                              <p className="font-bold text-blue">Shard 1: Slots 0 &rarr; 5,460</p>
+                              <span>Primary 1 (AZ-A) + Replica 1 (AZ-B)</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <p className="font-bold text-green">Shard 2: Slots 5,461 &rarr; 10,922</p>
+                              <span>Primary 2 (AZ-B) + Replica 2 (AZ-C)</span>
+                            </div>
+                            <div className="p-2 rounded" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid #c084fc' }}>
+                              <p className="font-bold text-purple">Shard 3: Slots 10,923 &rarr; 16,383</p>
+                              <span>Primary 3 (AZ-C) + Replica 3 (AZ-A)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.1: TOP REDIS USE CASES */}
+                  {selectedNote === 'redis_use_cases' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 4 · Use Cases &amp; Auth</span>
+                          <h3 className="text-xl font-black mt-2 font-display">4.1 Top Redis Use Cases: Sessions, Leaderboards &amp; Rate Limits</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('usecases')}
+                            className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Zap className="w-3.5 h-3.5" /> Go to Use-Case Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> Beyond caching SQL queries, Redis shines at <strong>User Session Storage</strong>, <strong>Real-Time Gaming Leaderboards</strong>, <strong>API Rate Limiting</strong>, and <strong>Decoupled Pub/Sub Messaging</strong>.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Olympics Live Leaderboard &amp; The Club Bouncer Clicker
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          • <strong>Leaderboards (Sorted Sets ZSET)</strong>: Like the Olympic scoreboard—whenever a runner scores points (<code>ZINCRBY</code>), their rank updates instantly in $O(\log N)$ time among 10 million players!
+                          <br />• <strong>Rate Limiting (Atomic INCR + EXPIRE)</strong>: Like the nightclub bouncer with a digital hand-clicker counter—if 100 requests arrive from the same IP within 60 seconds, the door locks automatically!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <strong className="text-red font-bold block">1. User Session Store:</strong>
+                            <p>Store login tokens in RAM with a 1-hour TTL: <code>SETEX session:xyz 3600 JSON</code>. Validates logins in &lt;1ms!</p>
+                          </div>
+                          <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <strong className="text-amber font-bold block">2. Real-Time Leaderboard:</strong>
+                            <p>Rank players by score: <code>ZADD leaderboard 9500 user:alice</code> &amp; <code>ZREVRANGE 0 9 WITHSCORES</code>.</p>
+                          </div>
+                          <div className="p-3 rounded-lg space-y-1" style={{ background: 'var(--color-background-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                            <strong className="text-green font-bold block">3. Sliding Window Rate Limiter:</strong>
+                            <p>Atomic counters prevent brute-force attacks: <code>INCR rate:ip:min</code> with a 60-second TTL.</p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-between">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-bold font-mono" style={{ color: 'var(--color-text-tertiary)' }}>Node.js Redis Query Snippet</span>
+                            <button 
+                              onClick={() => {
+                                const snippet = `// Validate Session in <1ms\nconst session = await redis.get(\`session:\${token}\`);\nif (!session) return res.status(401).send("Expired");\n\n// Increment Player Score in Leaderboard ZSET\nawait redis.zincrby("leaderboard:global", 100, userId);\nconst top10 = await redis.zrevrange("leaderboard:global", 0, 9, "WITHSCORES");\n\n// Atomic API Rate Limiting Counter\nconst count = await redis.incr(\`rate:\${userId}:\${windowKey}\`);\nif (count === 1) await redis.expire(\`rate:\${userId}:\${windowKey}\`, 60);\nif (count > 100) throw new Error("Rate limit exceeded");`;
+                                navigator.clipboard.writeText(snippet);
+                                setCopiedNoteId('redis-code');
+                                setTimeout(() => setCopiedNoteId(null), 2000);
+                              }}
+                              className="ec-btn p-1 text-[10px] flex items-center gap-1"
+                            >
+                              {copiedNoteId === 'redis-code' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                          <pre className="acad-terminal text-[10px] leading-relaxed overflow-x-auto h-52">
+                            {`// Validate Session in <1ms
+const session = await redis.get(\`session:\${token}\`);
+if (!session) return res.status(401).send("Expired");
+
+// Increment Player Score in Leaderboard ZSET
+await redis.zincrby("leaderboard:global", 100, userId);
+const top10 = await redis.zrevrange("leaderboard:global", 0, 9, "WITHSCORES");
+
+// Atomic API Rate Limiting Counter
+const count = await redis.incr(\`rate:\${userId}:\${windowKey}\`);
+if (count === 1) await redis.expire(\`rate:\${userId}:\${windowKey}\`, 60);
+if (count > 100) throw new Error("Rate limit exceeded");`}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NOTE 4.2: CACHE SECURITY */}
+                  {selectedNote === 'cache_security' && (
+                    <div className="acad-detail-card space-y-5 animate-fadeIn">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-200 pb-4">
+                        <div>
+                          <span className="acad-hero-badge">🚀 Level 4 · Use Cases &amp; Auth</span>
+                          <h3 className="text-xl font-black mt-2 font-display">4.2 ElastiCache Security, IAM Auth &amp; Encryption</h3>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={() => setActiveSection('security')}
+                            className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[10px] font-black flex items-center gap-1 transition-all active:scale-95 shadow-sm"
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Go to Security Tab
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Plain English Box */}
+                      <div className="acad-plain-english">
+                        <strong>✨ In Plain English:</strong> ElastiCache clusters live strictly inside private VPC subnets (never assigned public IPs). Access is guarded by Security Groups, KMS encryption at rest, TLS encryption in transit, and Redis AUTH token or AWS IAM authentication.
+                      </div>
+
+                      {/* Everyday Analogy Box */}
+                      <div className="acad-analogy-box">
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Lightbulb style={{ width: '15px', height: '15px' }} /> 💡 The Everyday Real-World Analogy: The Restricted VIP Lounge with Encrypted Keycards
+                        </div>
+                        <p style={{ margin: 0, fontSize: '11.8px', lineHeight: '1.6' }}>
+                          The VIP caching lounge has no doors facing the public street (No Public IP). The only entrance is through the private staff hallway (Private VPC Subnet), protected by armed guards (Security Groups), encrypted radio communications (TLS), and biometric fingerprint badges (IAM / Redis AUTH)!
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          <h4 className="font-bold text-xs" style={{ color: 'var(--color-text-primary)' }}>The 4 Layers of Cache Security:</h4>
+                          
+                          <ul className="list-disc pl-4 space-y-2">
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>1. VPC Isolation:</strong> Deployed in private subnets; accessible only from EC2/Lambda instances in authorized security groups.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>2. Encryption in Transit (TLS):</strong> Encrypts all TCP commands and payloads travelling over the network wire.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>3. Encryption at Rest (KMS):</strong> Encrypts cached memory snapshots and sync files on disk using AWS KMS customer managed keys.</li>
+                            <li><strong style={{ color: 'var(--color-text-primary)' }}>4. Redis AUTH &amp; IAM:</strong> Requires strong password tokens or IAM role database credentials before executing commands.</li>
+                          </ul>
+                        </div>
+
+                        <div className="asg-card p-4 rounded-xl flex flex-col justify-center text-center font-mono text-xs">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider block mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Security Audit Checklist</span>
+                          
+                          <div className="space-y-2 text-left text-[10px]">
+                            <div className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span>1. Private VPC Subnet Placement</span>
+                              <span className="text-green font-bold">✓ Enforced</span>
+                            </div>
+                            <div className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span>2. TransitEncryptionEnabled = true</span>
+                              <span className="text-green font-bold">✓ TLS Active</span>
+                            </div>
+                            <div className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span>3. AtRestEncryptionEnabled = true</span>
+                              <span className="text-green font-bold">✓ KMS Active</span>
+                            </div>
+                            <div className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid #86efac' }}>
+                              <span>4. AuthToken / IAM Role Configured</span>
+                              <span className="text-green font-bold">✓ Password Guarded</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          )}
+
+
+          {activeSection === 'concept' && (
                 <div className="ec-g2" style={{ marginBottom: '10px' }}>
               <div>
                 <div className="ec-sec">What is ElastiCache?</div>
