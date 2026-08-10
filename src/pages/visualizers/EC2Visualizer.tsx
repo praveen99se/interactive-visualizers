@@ -9,7 +9,6 @@ import {
   Globe,
   Search,
   CheckCircle2,
-  AlertTriangle,
   Cpu,
   Layers,
   Sparkles,
@@ -18,6 +17,7 @@ import {
   Table as TableIcon,
   ShieldCheck,
   HardDrive,
+  Terminal,
   DollarSign,
   Lightbulb,
   Server,
@@ -584,7 +584,10 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         .replace(/IAM Role/g, 'Service Account')
         .replace(/IAM Roles/g, 'Service Accounts')
         .replace(/EC2 Metadata Token/g, 'Metadata Server Token')
-        .replace(/IMDSv2/g, 'Metadata Server v1')
+        .replace(/IMDSv2/g, 'Metadata Server')
+        .replace(/IMDS/g, 'Metadata Server')
+        .replace(/NACLs/g, 'Subnet Rules')
+        .replace(/NACL/g, 'Subnet Rule')
         .replace(/AWS/g, 'Google Cloud')
         .replace(/aws/g, 'gcloud')
         .replace(/t3, m6g, m7i/g, 'e2, n2, n2d')
@@ -647,6 +650,9 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         .replace(/IAM Roles/g, 'Managed Identities')
         .replace(/EC2 Metadata Token/g, 'IMDS Header')
         .replace(/IMDSv2/g, 'Azure Instance Metadata Service (IMDS)')
+        .replace(/IMDS/g, 'Azure IMDS')
+        .replace(/NACLs/g, 'Subnet Rules')
+        .replace(/NACL/g, 'Subnet Rule')
         .replace(/AWS/g, 'Azure')
         .replace(/aws/g, 'az')
         .replace(/t3, m6g, m7i/g, 'B, Dsv5, Dasv5')
@@ -810,11 +816,10 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
   const [ebsVolumeType, setEbsVolumeType] = useState<'gp3' | 'io2' | 'st1' | 'sc1'>('gp3');
   const [ebsSize, setEbsSize] = useState<number>(100);
   const [ebsIops, setEbsIops] = useState<number>(3000);
-  const [efsThroughput, setEfsThroughput] = useState<'bursting' | 'elastic' | 'provisioned'>('elastic');
-  const [efsPerfMode, setEfsPerfMode] = useState<'general' | 'max_io'>('general');
-  const [efsLifecycleDays, setEfsLifecycleDays] = useState<number>(30);
+  const [efsThroughput] = useState<'bursting' | 'elastic' | 'provisioned'>('elastic');
+  const [efsLifecycleDays] = useState<number>(30);
   const [efsSize, setEfsSize] = useState<number>(500);
-  const [efsProvisionedMb, setEfsProvisionedMb] = useState<number>(50);
+  const [efsProvisionedMb] = useState<number>(50);
   const [efsInactiveRatio, setEfsInactiveRatio] = useState<number>(70);
 
   // Tab 5: Virtual Console States
@@ -1084,6 +1089,22 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         consoleStorageType === 'ephemeral' || consoleStorageType === 'both'
           ? `⚠️ DATA LOSS WARNING: Ephemeral Instance Store NVMe (/dev/nvme0n1) was fully wiped/formatted by AWS hypervisor on stop!`
           : `[storage] EBS Volume data safely preserved. Root disks intact.`,
+      ]);
+    }, 2000);
+  };
+
+  const handleConsoleHibernate = () => {
+    if (vmState !== 'Running') return;
+    setVmState('Stopping');
+    setConsoleCpuGauge(0);
+    setConsoleLogs(l => [...l, `[system] Initiating EC2 Hibernate... Freezing RAM memory state (hiberfile.sys) to root EBS volume...`]);
+
+    setTimeout(() => {
+      setVmState('Stopped');
+      setConsoleLogs(l => [
+        ...l,
+        `[system] RAM memory state safely dumped to EBS. Instance state: STOPPED (Hibernated).`,
+        `[system] Re-starting will restore RAM contents into memory instantly without cold boot!`,
       ]);
     }, 2000);
   };
@@ -1798,13 +1819,12 @@ export default function EC2Visualizer({ provider = 'aws', setProvider }: EC2Visu
         {/* Tab Navigation */}
         {!isComparative && (
           <div className="ec2-tabs">
-            <button className={`ec2-tb ${activeTab === 'notebook' ? 'ec2-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>📓 Visual Architect Notes</button>
-            <button className={`ec2-tb ${activeTab === 'overview' ? 'ec2-on-overview' : ''}`} onClick={() => setActiveTab('overview')}>💻 Core &amp; Bootstrap</button>
-            <button className={`ec2-tb ${activeTab === 'security' ? 'ec2-on-security' : ''}`} onClick={() => setActiveTab('security')}>🛡️ Security Groups &amp; Network</button>
-            <button className={`ec2-tb ${activeTab === 'purchasing' ? 'ec2-on-purchasing' : ''}`} onClick={() => setActiveTab('purchasing')}>💰 Spot &amp; Purchasing</button>
-            <button className={`ec2-tb ${activeTab === 'storage' ? 'ec2-on-storage' : ''}`} onClick={() => setActiveTab('storage')}>💾 Storage: EBS vs EFS</button>
-            <button className={`ec2-tb ${activeTab === 'lifecycle' ? 'ec2-on-lifecycle' : ''}`} onClick={() => setActiveTab('lifecycle')}>🎮 Virtual Console</button>
-            <button className={`ec2-tb ${activeTab === 'best' ? 'ec2-on-best' : ''}`} onClick={() => setActiveTab('best')}>🏗️ Architecture &amp; Audit</button>
+            <button className={`ec2-tb ${activeTab === 'notebook' ? 'ec2-on-notebook' : ''}`} onClick={() => setActiveTab('notebook')}>📓 1) Visual Notes &amp; Theories</button>
+            <button className={`ec2-tb ${activeTab === 'overview' ? 'ec2-on-overview' : ''}`} onClick={() => setActiveTab('overview')}>💻 2) Core VM &amp; Bootstrapping</button>
+            <button className={`ec2-tb ${activeTab === 'security' ? 'ec2-on-security' : ''}`} onClick={() => setActiveTab('security')}>🛡️ 3) Security Groups &amp; Network</button>
+            <button className={`ec2-tb ${activeTab === 'purchasing' ? 'ec2-on-purchasing' : ''}`} onClick={() => setActiveTab('purchasing')}>💰 4) Spot &amp; Purchasing</button>
+            <button className={`ec2-tb ${activeTab === 'storage' ? 'ec2-on-storage' : ''}`} onClick={() => setActiveTab('storage')}>💾 5) Storage: EBS vs EFS</button>
+            <button className={`ec2-tb ${activeTab === 'best' ? 'ec2-on-best' : ''}`} onClick={() => setActiveTab('best')}>🏗️ 6) Architecture &amp; Audit</button>
             <button className={`ec2-tb ${activeTab === 'unique' ? 'ec2-on-unique' : ''}`} onClick={() => setActiveTab('unique')}>✨ Unique Features</button>
           </div>
         )}
@@ -1990,13 +2010,13 @@ sudo mount /dev/sdb /var/www/html`
                             className={`acad-dir-item-btn ${selectedNote === 'ec2_what_is' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('ec2_what_is')}
                           >
-                            1.1 What is EC2? (Rent-a-Laptop)
+                            {t('1.1 What is EC2? (Rent-a-Laptop)')}
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'ec2_bootstrap' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('ec2_bootstrap')}
                           >
-                            1.2 Setup Scripts &amp; Digital ID (IMDS)
+                            {t('1.2 Setup Scripts & Digital ID (IMDS)')}
                           </button>
                         </div>
                       )}
@@ -2020,7 +2040,7 @@ sudo mount /dev/sdb /var/www/html`
                             className={`acad-dir-item-btn ${selectedNote === 'security_groups' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('security_groups')}
                           >
-                            2.1 Doorman vs Customs (SG &amp; NACL)
+                            {t('2.1 Doorman vs Customs (Security Groups & NACLs)')}
                           </button>
                         </div>
                       )}
@@ -2044,13 +2064,13 @@ sudo mount /dev/sdb /var/www/html`
                             className={`acad-dir-item-btn ${selectedNote === 'purchasing_models' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('purchasing_models')}
                           >
-                            3.1 Pricing Models (Uber vs Lease vs Standby)
+                            {t('3.1 EC2 Pricing Models (On-Demand vs Reserved vs Spot)')}
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'burstable_performance' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('burstable_performance')}
                           >
-                            3.2 Burstable CPU Credit Bank
+                            {t('3.2 Burstable CPU Credit Bank')}
                           </button>
                         </div>
                       )}
@@ -2074,7 +2094,7 @@ sudo mount /dev/sdb /var/www/html`
                             className={`acad-dir-item-btn ${selectedNote === 'storage_comparison' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('storage_comparison')}
                           >
-                            4.1 USB Drive vs Scratchpad vs Google Drive
+                            {t('4.1 Storage Architecture (EBS vs EFS vs Instance Store)')}
                           </button>
                         </div>
                       )}
@@ -2098,13 +2118,13 @@ sudo mount /dev/sdb /var/www/html`
                             className={`acad-dir-item-btn ${selectedNote === 'placement_groups' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('placement_groups')}
                           >
-                            5.1 Placement Groups Explained
+                            {t('5.1 Placement Groups Explained')}
                           </button>
                           <button
                             className={`acad-dir-item-btn ${selectedNote === 'best_practices' ? 'acad-active' : ''}`}
                             onClick={() => setSelectedNote('best_practices')}
                           >
-                            5.2 The 4 Golden Rules of Cloud HA
+                            {t('5.2 The 4 Golden Rules of Cloud HA')}
                           </button>
                         </div>
                       )}
@@ -2128,7 +2148,7 @@ sudo mount /dev/sdb /var/www/html`
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
-                          1.1 What is Amazon EC2? (Elastic Compute Cloud)
+                          {t('1.1 What is Amazon EC2? (Elastic Compute Cloud)')}
                         </h3>
                         <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
                       </div>
@@ -2175,6 +2195,19 @@ sudo mount /dev/sdb /var/www/html`
 
                       {/* Lifecycle Flow */}
                       <h4 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)', margin: '18px 0 10px' }}>The 5 Instance Lifecycle States</h4>
+                      
+                      {/* 💡 Humanized EC2 State Transition Breakdown */}
+                      <div className="acad-analogy-box" style={{ margin: '12px 0 16px', fontSize: '11.5px', textAlign: 'left' }}>
+                        <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          💡 What Happens During Each EC2 State Transition?
+                        </div>
+                        <ul className="list-disc pl-4 space-y-1.5" style={{ lineHeight: '1.55' }}>
+                          <li><strong>▶️ Start:</strong> Hypervisor assigns CPU/RAM capacity on a physical host and attaches root EBS disk. Instance receives a new public IP address.</li>
+                          <li><strong>⏹️ Stop:</strong> Compute billing stops, RAM memory is wiped, but data on root EBS disk persists. Re-starting assigns a NEW public IP unless using an Elastic IP (EIP).</li>
+                          <li><strong>❄️ Hibernate:</strong> RAM memory contents are frozen onto the root EBS volume before powering off. Re-starting resumes application state instantly!</li>
+                          <li><strong>❌ Terminate:</strong> Hypervisor permanently destroys the virtual machine and deletes default root EBS volumes.</li>
+                        </ul>
+                      </div>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '10px 0 16px' }}>
                         <span className="ec2-badge" style={{ background: '#64748b', color: '#fff', fontSize: '10.5px' }}>⏹️ Pending (Starting up)</span>
                         <span style={{ color: 'var(--color-text-secondary)', alignSelf: 'center' }}>➔</span>
@@ -2213,7 +2246,7 @@ sudo mount /dev/sdb /var/www/html`
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
-                          1.2 Bootstrapping (User Data), AMIs &amp; Digital ID (IMDSv2)
+                          {t('1.2 Bootstrapping (User Data), AMIs & Digital ID (IMDSv2)')}
                         </h3>
                         <span className="acad-hero-badge">🐣 Level 1 · Fundamentals</span>
                       </div>
@@ -2272,7 +2305,7 @@ sudo mount /dev/sdb /var/www/html`
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
-                          2.1 Security Groups vs Network ACLs (Firewalls Decoded)
+                          {t('2.1 Security Groups vs Network ACLs (Firewalls Decoded)')}
                         </h3>
                         <span className="acad-hero-badge" style={{ background: '#dcfce7', borderColor: '#bbf7d0', color: '#15803d' }}>🛡️ Level 2 · Network Security</span>
                       </div>
@@ -2390,7 +2423,7 @@ sudo mount /dev/sdb /var/www/html`
                     <div className="acad-detail-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
-                          3.1 EC2 Pricing Models: How to Buy Compute Smartly
+                          {t('3.1 EC2 Pricing Models: How to Buy Compute Smartly')}
                         </h3>
                         <span className="acad-hero-badge" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#b45309' }}>💰 Level 3 · Cost Optimization</span>
                       </div>
@@ -2888,9 +2921,459 @@ sudo mount /dev/sdb /var/www/html`
         })()}
 
         {/* OVERVIEW PANEL */}
+                {/* OVERVIEW PANEL: MERGED VIRTUAL CONSOLE & BOOTSTRAPPING */}
         {activeTab === 'overview' && (
           <div>
-            <div className="ec2-sec">EC2 Instance Core Architecture &amp; User Data Bootstrapping</div>
+            
+            {/* 🎮 Interactive Simulation Guidance Banner for Merged Tab 2 */}
+            <div className="p-4 rounded-xl border mb-5 shadow-sm space-y-3" style={{ background: 'var(--da-tab-bg, rgba(248, 250, 252, 0.9))', borderColor: 'var(--da-card-border, rgba(226, 232, 240, 0.8))' }}>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--da-text-title, #0f172a)' }}>
+                  <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" /> 🎮 Core Virtual Machine Console &amp; Bootstrapping Lab Guide
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider" style={{ background: '#0284c715', color: '#0284c7', border: '1px solid #0284c740' }}>
+                  Interactive Core Lab
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-lg border space-y-1" style={{ background: 'var(--da-card-bg, #ffffff)', borderColor: 'var(--da-card-border, rgba(226, 232, 240, 0.8))' }}>
+                  <span className="font-bold flex items-center gap-1 text-slate-800" style={{ color: 'var(--da-text-title)' }}>
+                    🎯 Why This Simulation Exists
+                  </span>
+                  <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.45' }}>
+                    Models the complete virtual server lifecycle: from hypervisor state transitions (Start, Stop, Hibernate, Terminate) to automated first-boot scripts (User Data) and pre-baked Golden AMIs.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg border space-y-1" style={{ background: 'var(--da-card-bg, #ffffff)', borderColor: 'var(--da-card-border, rgba(226, 232, 240, 0.8))' }}>
+                  <span className="font-bold flex items-center gap-1 text-sky-600">
+                    👉 When &amp; How to Click
+                  </span>
+                  <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.45' }}>
+                    Step 1: Test hypervisor state actions (Start ▶️, Stop ⏹️, Hibernate ❄️). Step 2: Test User Data script templates. Step 3: Observe Golden AMI baking pipeline.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg border space-y-1" style={{ background: 'var(--da-card-bg, #ffffff)', borderColor: 'var(--da-card-border, rgba(226, 232, 240, 0.8))' }}>
+                  <span className="font-bold flex items-center gap-1 text-emerald-600">
+                    🎓 Key Lessons &amp; What You Learned
+                  </span>
+                  <p style={{ color: 'var(--da-text-muted)', lineHeight: '1.45' }}>
+                    Stopping a VM pauses CPU billing &amp; clears RAM. User Data scripts run ONCE on first boot. Pre-baked Golden AMIs allow scaling 100 VMs in under 30 seconds!
+                  </p>
+                </div>
+              </div>
+
+              <div className="acad-plain-english" style={{ marginTop: '8px', marginBottom: '0' }}>
+                <strong>✨ In Plain English:</strong> This lab lets you test the full life of a virtual computer: starting it, executing first-time setup scripts, baking a blueprint copy, and stopping or terminating it!
+              </div>
+            </div>
+  
+            {/* 1. INTERACTIVE VIRTUAL HYPERVISOR CONSOLE & INSTANCE STATE MACHINE */}
+            <div className="ec2-sec">1. Interactive Virtual Hypervisor Console &amp; Instance State Machine</div>
+            <div className="ec2-card" style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.45' }}>
+                Test instance behavior through standard hypervisor controls on the left. Watch live state transitions, storage attachments, CPU meter, and boot logs in the expanded console terminal on the right.
+              </div>
+
+              {/* SIDE-BY-SIDE PRO DASHBOARD: LEFT CONTROLS (5 COLS) + RIGHT TERMINAL CONSOLE (7 COLS) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch" style={{ marginBottom: '16px' }}>
+                
+                {/* LEFT SIDE: CONTROLS, UNIFORM ACTION BUTTONS & MOTHERBOARD VISUAL (5 COLS) */}
+                <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
+                  
+                  {/* CARD 1: HARDWARE & LAUNCH PARAMETERS */}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sliders style={{ width: '14px', height: '14px', color: 'var(--color-blue)' }} />
+                      <span>🛠️ EC2 Hardware Launch Parameters</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div>
+                        <label style={{ fontSize: '10px', fontWeight: 600, display: 'block', marginBottom: '3px' }}>Instance Class</label>
+                        <select value={consoleInstanceType} onChange={(e) => setConsoleInstanceType(e.target.value)} style={{ padding: '6px 8px', fontSize: '11px', width: '100%', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-secondary)' }}>
+                          <option value="t3.medium">t3.medium (General)</option>
+                          <option value="c6g.large">c6g.large (Compute)</option>
+                          <option value="r6g.xlarge">r6g.xlarge (Memory)</option>
+                          <option value="i3.xlarge">i3.xlarge (Local Store NVMe)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '10px', fontWeight: 600, display: 'block', marginBottom: '3px' }}>Launch Model</label>
+                        <select value={consolePurchaseModel} onChange={(e) => setConsolePurchaseModel(e.target.value as any)} style={{ padding: '6px 8px', fontSize: '11px', width: '100%', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-secondary)' }}>
+                          <option value="ondemand">On-Demand ($/hr)</option>
+                          <option value="spot">Spot Capacity</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label style={{ fontSize: '10px', fontWeight: 600, display: 'block', marginBottom: '3px' }}>Storage Setup</label>
+                        <select value={consoleStorageType} onChange={(e) => setConsoleStorageType(e.target.value as any)} style={{ padding: '6px 8px', fontSize: '11px', width: '100%', borderRadius: '6px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-secondary)' }}>
+                          <option value="ebs">EBS Only (/dev/xvda)</option>
+                          <option value="ephemeral">Local Instance Store Only</option>
+                          <option value="both">Both (EBS Root + NVMe local)</option>
+                        </select>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', paddingTop: '14px' }}>
+                        <label style={{ fontSize: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontWeight: 600 }}>
+                          <input type="checkbox" checked={deleteEbsOnTerm} onChange={(e) => setDeleteEbsOnTerm(e.target.checked)} />
+                          Delete EBS on Term
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CARD 2: UNIFORM & INFORMATIVE POWER STATE ACTION BUTTONS */}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Zap style={{ width: '14px', height: '14px', color: '#eab308' }} />
+                      <span>🎮 Hypervisor Power State Actions</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {/* LAUNCH / START */}
+                      <button
+                        onClick={handleConsoleLaunch}
+                        disabled={vmState !== 'Stopped' && vmState !== 'Terminated'}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #16a34a',
+                          background: vmState === 'Stopped' || vmState === 'Terminated' ? 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)' : 'var(--color-background-primary)',
+                          color: vmState === 'Stopped' || vmState === 'Terminated' ? '#ffffff' : 'var(--color-text-tertiary)',
+                          cursor: vmState === 'Stopped' || vmState === 'Terminated' ? 'pointer' : 'not-allowed',
+                          opacity: vmState === 'Stopped' || vmState === 'Terminated' ? 1 : 0.45,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease',
+                          boxShadow: vmState === 'Stopped' || vmState === 'Terminated' ? '0 2px 6px rgba(22, 163, 74, 0.25)' : 'none'
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>🚀 Launch / Start</span>
+                        </div>
+                        <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>Power On &amp; Attach Disk</div>
+                      </button>
+
+                      {/* TRIGGER USER DATA */}
+                      <button
+                        onClick={handleConsoleUserData}
+                        disabled={vmState !== 'Running' || vmUserDataTested}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #0284c7',
+                          background: vmState === 'Running' && !vmUserDataTested ? 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)' : 'var(--color-background-primary)',
+                          color: vmState === 'Running' && !vmUserDataTested ? '#ffffff' : 'var(--color-text-tertiary)',
+                          cursor: vmState === 'Running' && !vmUserDataTested ? 'pointer' : 'not-allowed',
+                          opacity: vmState === 'Running' && !vmUserDataTested ? 1 : 0.45,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>📄 User Data</span>
+                        </div>
+                        <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>Run Boot Shell Script</div>
+                      </button>
+
+                      {/* LOAD CPU */}
+                      <button
+                        onClick={handleConsoleLoad}
+                        disabled={vmState !== 'Running' || isConsoleSimulatingCpu}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #d97706',
+                          background: vmState === 'Running' && !isConsoleSimulatingCpu ? 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)' : 'var(--color-background-primary)',
+                          color: vmState === 'Running' && !isConsoleSimulatingCpu ? '#ffffff' : 'var(--color-text-tertiary)',
+                          cursor: vmState === 'Running' && !isConsoleSimulatingCpu ? 'pointer' : 'not-allowed',
+                          opacity: vmState === 'Running' && !isConsoleSimulatingCpu ? 1 : 0.45,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>⚡ Load CPU</span>
+                        </div>
+                        <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>Stress Test Cores</div>
+                      </button>
+
+                      {/* STOP INSTANCE */}
+                      <button
+                        onClick={handleConsoleStop}
+                        disabled={vmState !== 'Running'}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #dc2626',
+                          background: vmState === 'Running' ? 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)' : 'var(--color-background-primary)',
+                          color: vmState === 'Running' ? '#ffffff' : 'var(--color-text-tertiary)',
+                          cursor: vmState === 'Running' ? 'pointer' : 'not-allowed',
+                          opacity: vmState === 'Running' ? 1 : 0.45,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>🛑 Stop VM</span>
+                        </div>
+                        <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>Wipe RAM, Keep EBS</div>
+                      </button>
+
+                      {/* HIBERNATE */}
+                      <button
+                        onClick={handleConsoleHibernate}
+                        disabled={vmState !== 'Running'}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #7c3aed',
+                          background: vmState === 'Running' ? 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)' : 'var(--color-background-primary)',
+                          color: vmState === 'Running' ? '#ffffff' : 'var(--color-text-tertiary)',
+                          cursor: vmState === 'Running' ? 'pointer' : 'not-allowed',
+                          opacity: vmState === 'Running' ? 1 : 0.45,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>❄️ Hibernate</span>
+                        </div>
+                        <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>Freeze RAM to EBS</div>
+                      </button>
+
+                      {/* TERMINATE */}
+                      <button
+                        onClick={handleConsoleTerminate}
+                        disabled={vmState !== 'Running' && vmState !== 'Stopped'}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1.5px solid #991b1b',
+                          background: vmState === 'Running' || vmState === 'Stopped' ? 'linear-gradient(135deg, #991b1b 0%, #b91c1c 100%)' : 'var(--color-background-primary)',
+                          color: vmState === 'Running' || vmState === 'Stopped' ? '#ffffff' : 'var(--color-text-tertiary)',
+                          cursor: vmState === 'Running' || vmState === 'Stopped' ? 'pointer' : 'not-allowed',
+                          opacity: vmState === 'Running' || vmState === 'Stopped' ? 1 : 0.45,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>❌ Terminate</span>
+                        </div>
+                        <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>Permanently Destroy</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CARD 3: VIRTUAL MOTHERBOARD CHASSIS VISUAL */}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--color-text-primary)' }}>🖥️ Motherboard Hardware Chassis</span>
+                      <span className="ec2-badge" style={{ 
+                        background: vmState === 'Running' ? 'var(--color-green)' : vmState === 'Stopped' ? 'var(--color-red)' : vmState === 'Terminated' ? 'var(--color-text-tertiary)' : 'var(--color-amber)', 
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        fontSize: '9.5px'
+                      }}>{vmState.toUpperCase()}</span>
+                    </div>
+
+                    {(() => {
+                      const isEbsPresent = consoleStorageType === 'ebs' || consoleStorageType === 'both';
+                      const isEbsRendered = isEbsPresent && !(vmState === 'Terminated' && deleteEbsOnTerm);
+                      const isEbsDetached = vmState === 'Terminated' && !deleteEbsOnTerm;
+                      const isNvmePresent = consoleStorageType === 'ephemeral' || consoleStorageType === 'both' || consoleInstanceType === 'i3.xlarge';
+                      return (
+                        <div style={{ margin: '4px 0', textAlign: 'center' }}>
+                          <svg viewBox="0 0 320 170" width="100%" className="ec2-svg-bg" style={{ borderRadius: '8px', border: '1px solid var(--color-border-tertiary)' }}>
+                            <defs>
+                              <pattern id="motherboard-grid-c" width="10" height="10" patternUnits="userSpaceOnUse">
+                                <circle cx="2" cy="2" r="0.6" fill="var(--color-border-secondary)" />
+                              </pattern>
+                              <linearGradient id="board-cpu-grad-c" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="var(--color-blue)" stopOpacity="0.8" />
+                                <stop offset="100%" stopColor="var(--color-blue)" />
+                              </linearGradient>
+                              <filter id="motherboard-glow-c" x="-10%" y="-10%" width="120%" height="120%">
+                                <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="var(--color-blue)" floodOpacity="0.4" />
+                              </filter>
+                            </defs>
+                            <rect width="320" height="170" fill="var(--color-background-secondary)" />
+                            <rect width="320" height="170" fill="url(#motherboard-grid-c)" opacity="0.6" />
+                            
+                            <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                            <path d="M 60,70 L 120,105" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
+                            <path d="M 60,70 L 215,105" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
+
+                            <g transform="translate(20, 40)" style={vmState === 'Running' ? { filter: 'url(#motherboard-glow-c)' } : {}}>
+                              <rect x="0" y="0" width="60" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="1.5" />
+                              <rect x="10" y="10" width="40" height="40" rx="4" fill="url(#board-cpu-grad-c)" opacity={vmState === 'Running' ? '0.3' : '0.05'} />
+                              <text x="30" y="32" textAnchor="middle" fontSize="9" fill="var(--color-text-secondary)" fontWeight="bold">CPU</text>
+                              <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">vCPU Cores</text>
+                              
+                              {vmState === 'Running' && (
+                                <g>
+                                  <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? 'var(--color-amber)' : 'var(--color-blue)'} strokeWidth="1.5">
+                                    <animate attributeName="r" values="10;25" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
+                                    <animate attributeName="opacity" values="1;0" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
+                                  </circle>
+                                </g>
+                              )}
+                            </g>
+
+                            <g transform="translate(120, 22)">
+                              <rect x="0" y="0" width="80" height="34" rx="4" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                              <text x="40" y="10" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">RAM slots</text>
+                              
+                              <line x1="10" y1="16" x2="70" y2="16" stroke="var(--color-text-tertiary)" strokeWidth="2" />
+                              <line x1="10" y1="22" x2="70" y2="22" stroke="var(--color-text-tertiary)" strokeWidth="2" />
+
+                              <g transform="translate(15, 14)">
+                                <circle cx="0" cy="0" r="1.5" fill={vmState === 'Running' ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                                <circle cx="10" cy="0" r="1.5" fill={vmState === 'Running' && ['c6g.large', 'r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                                <circle cx="20" cy="0" r="1.5" fill={vmState === 'Running' && ['r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                                <circle cx="30" cy="0" r="1.5" fill={vmState === 'Running' && consoleInstanceType === 'r6g.xlarge' ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
+                              </g>
+                              <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">
+                                {consoleInstanceType === 't3.medium' ? '4 GiB (Standard)' :
+                                 consoleInstanceType === 'c6g.large' ? '8 GiB (Compute)' :
+                                 consoleInstanceType === 'r6g.xlarge' ? '32 GiB (Memory!)' :
+                                 '16 GiB (Storage Opt)'}
+                              </text>
+                            </g>
+
+                            {isEbsRendered && (
+                              <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`} style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
+                                <rect x="0" y="0" width="80" height="38" rx="4" 
+                                  fill={isEbsDetached ? 'var(--color-background-secondary)' : 'var(--color-background-primary)'} 
+                                  stroke={isEbsDetached ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
+                                  strokeWidth="1.2" 
+                                />
+                                <rect x="2" y="2" width="76" height="6" rx="1" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-blue)'} />
+                                <text x="40" y="17" textAnchor="middle" fontSize="7" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-text-primary)'} fontWeight="extrabold">EBS Root</text>
+                                <text x="40" y="25" textAnchor="middle" fontSize="6" fill={isEbsDetached ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)'} fontWeight="bold">/dev/xvda</text>
+                                
+                                <text x="40" y="33" textAnchor="middle" fontSize="6" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-green)'} fontWeight="extrabold">
+                                  {isEbsDetached ? '⚠️ DETACHED' : vmState === 'Running' ? '● MOUNT ACTIVE' : '● STANDBY'}
+                                </text>
+                              </g>
+                            )}
+                            
+                            {!isEbsRendered && isEbsPresent && (
+                              <g transform="translate(120, 90)">
+                                <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="var(--color-red)" strokeWidth="1" strokeDasharray="3,3" />
+                                <text x="40" y="20" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">EBS DELETED</text>
+                                <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)">(Terminated)</text>
+                              </g>
+                            )}
+
+                            {isNvmePresent && (
+                              <g transform="translate(215, 90)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
+                                <rect x="0" y="0" width="80" height="38" rx="4" 
+                                  fill={['Stopped', 'Terminated'].includes(vmState) ? 'rgba(239, 68, 68, 0.05)' : 'var(--color-background-primary)'} 
+                                  stroke={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
+                                  strokeWidth="1.2" 
+                                />
+                                <rect x="2" y="2" width="76" height="6" rx="1" fill={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : 'var(--color-purple)'} />
+                                <text x="40" y="17" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="extrabold">NVMe SSD</text>
+                                <text x="40" y="25" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)" fontWeight="bold">/dev/nvme0n1</text>
+                                
+                                {['Stopped', 'Terminated'].includes(vmState) ? (
+                                  <g>
+                                    <rect x="5" y="28" width="70" height="7" rx="1.5" fill="var(--color-red)">
+                                      <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" />
+                                    </rect>
+                                    <text x="40" y="34" textAnchor="middle" fontSize="5.5" fill="#fff" fontWeight="extrabold">WIPED / LOSS</text>
+                                  </g>
+                                ) : (
+                                  <text x="40" y="34" textAnchor="middle" fontSize="6" fill={vmState === 'Running' ? 'var(--color-green)' : 'var(--color-text-secondary)'} fontWeight="extrabold">
+                                    {vmState === 'Running' ? '⚡ VOLATILE' : 'STANDBY'}
+                                  </text>
+                                )}
+                              </g>
+                            )}
+
+                            {!isNvmePresent && (
+                              <g transform="translate(215, 90)">
+                                <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                                <text x="40" y="18" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">No Inst Store</text>
+                                <text x="40" y="28" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)">(EBS Only)</text>
+                              </g>
+                            )}
+                          </svg>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE: EXPANDED PROMINENT TERMINAL CONSOLE (7 COLS) */}
+                <div className="lg:col-span-7 flex flex-col justify-between" style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '12px', border: '1.5px solid var(--color-border-tertiary)' }}>
+                  
+                  {/* Console Header Bar */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid var(--color-border-secondary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Terminal style={{ width: '18px', height: '18px', color: 'var(--color-green)' }} />
+                      <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-primary)' }}>
+                        Hypervisor Execution Console &amp; Boot Logs
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {/* CPU Gauge Pill */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-background-primary)', padding: '3px 10px', borderRadius: '999px', border: '1px solid var(--color-border-tertiary)', fontSize: '11px' }}>
+                        <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>CPU:</span>
+                        <b style={{ color: consoleCpuGauge > 50 ? 'var(--color-red)' : 'var(--color-green)' }}>{consoleCpuGauge}%</b>
+                      </div>
+
+                      {/* State Badge */}
+                      <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider" style={{
+                        background: vmState === 'Running' ? '#22c55e20' : vmState === 'Stopped' ? '#ef444420' : '#f59e0b20',
+                        color: vmState === 'Running' ? '#16a34a' : vmState === 'Stopped' ? '#dc2626' : '#d97706',
+                        border: `1px solid ${vmState === 'Running' ? '#22c55e50' : vmState === 'Stopped' ? '#ef444450' : '#f59e0b50'}`
+                      }}>
+                        {vmState}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* EXPANDED TERMINAL WINDOW */}
+                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '400px', maxHeight: '480px', background: '#0b132b', border: '1px solid #1e293b', borderRadius: '10px', padding: '14px', overflowY: 'auto' }}>
+                    {consoleLogs.map((log, index) => (
+                      <div key={index} style={{ 
+                        color: log.includes('⚠️') ? '#f87171' : log.includes('[system]') ? '#4ade80' : log.includes('[user-data]') ? '#fbbf24' : '#38bdf8',
+                        fontSize: '11px',
+                        lineHeight: '1.6',
+                        fontFamily: 'monospace'
+                      }}>
+                        <span style={{ color: '#64748b', marginRight: '8px', fontSize: '10px' }}>[{index + 1}]</span>
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 💡 Humanized Virtual Console State Machine Explanation */}
+              <div className="acad-analogy-box" style={{ marginTop: '16px', fontSize: '11.5px', textAlign: 'left' }}>
+                <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  💡 What Happens During Each EC2 State Transition?
+                </div>
+                <ul className="list-disc pl-4 space-y-1.5" style={{ lineHeight: '1.55' }}>
+                  <li><strong>▶️ Start / Launch:</strong> Hypervisor assigns CPU/RAM capacity on a physical host and attaches root EBS disk. Instance receives a new public IP address.</li>
+                  <li><strong>⏹️ Stop:</strong> Compute billing stops, RAM memory is wiped, but data on root EBS disk persists. Re-starting assigns a NEW public IP unless using an Elastic IP (EIP).</li>
+                  <li><strong>❄️ Hibernate:</strong> RAM memory contents are frozen onto the root EBS volume before powering off. Re-starting resumes application state instantly!</li>
+                  <li><strong>❌ Terminate:</strong> Hypervisor permanently destroys the virtual machine and deletes default root EBS volumes.</li>
+                </ul>
+              </div>
+            </div>
+<div className="ec2-sec">2. User Data Bootstrapping Shell &amp; Metadata (IMDSv2)</div>
             <div className="ec2-card">
               <div className="ec2-g2">
                 <div>
@@ -3223,7 +3706,6 @@ sudo mount /dev/sdb /var/www/html`
                         <th style={{ width: '130px' }}>Max Network / EBS</th>
                         <th>Core Architectural Differentiator</th>
                         <th style={{ width: '170px' }}>Best Target Workloads</th>
-                        <th style={{ width: '80px', textAlign: 'center' }}>Details</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -3359,19 +3841,7 @@ sudo mount /dev/sdb /var/www/html`
                                 </div>
                               </td>
 
-                              {/* Column 8: Action */}
-                              <td style={{ textAlign: 'center' }}>
-                                <button
-                                  className={`ec2-btn ${isSelected ? 'ec2-on' : ''}`}
-                                  style={{ padding: '4px 8px', fontSize: '10.5px' }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedFamily(famKey);
-                                  }}
-                                >
-                                  {isSelected ? 'Active ✓' : 'Inspect'}
-                                </button>
-                              </td>
+                              
                             </tr>
                           );
                         })}
@@ -3469,175 +3939,6 @@ sudo mount /dev/sdb /var/www/html`
                     })}
                 </div>
               )}
-
-              {/* SELECTED FAMILY DEEP-DIVE & ARCHITECTURAL DIFFERENTIATOR DRAWER */}
-              {selectedFamily && INSTANCE_FAMILIES[selectedFamily] && (
-                <div
-                  style={{
-                    background: 'var(--color-background-secondary)',
-                    borderRadius: '12px',
-                    border: `1.5px solid ${INSTANCE_FAMILIES[selectedFamily].themeColor}50`,
-                    padding: '20px',
-                    marginTop: '12px',
-                    boxShadow: `0 8px 24px -6px ${INSTANCE_FAMILIES[selectedFamily].themeColor}20`
-                  }}
-                >
-                  {/* Drawer Header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-secondary)', paddingBottom: '12px', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '26px' }}>{INSTANCE_FAMILIES[selectedFamily].icon}</span>
-                      <div>
-                        <div style={{ fontWeight: 800, fontSize: '15px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          {INSTANCE_FAMILIES[selectedFamily].name}
-                          <span
-                            style={{
-                              fontSize: '10.5px',
-                              fontWeight: 800,
-                              padding: '2px 8px',
-                              borderRadius: '6px',
-                              background: INSTANCE_FAMILIES[selectedFamily].accentBg,
-                              color: INSTANCE_FAMILIES[selectedFamily].themeColor,
-                              border: `1px solid ${INSTANCE_FAMILIES[selectedFamily].themeColor}40`
-                            }}
-                          >
-                            Class Code: {INSTANCE_FAMILIES[selectedFamily].classCode}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                          Architecture: {INSTANCE_FAMILIES[selectedFamily].hardwareTech}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          background: INSTANCE_FAMILIES[selectedFamily].themeColor,
-                          color: '#ffffff'
-                        }}
-                      >
-                        Ratio: {INSTANCE_FAMILIES[selectedFamily].ratio}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Architecture Description */}
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.6' }}>
-                    {INSTANCE_FAMILIES[selectedFamily].desc}
-                  </div>
-
-                  {/* PROS & TRADE-OFFS DIFFERENTIATION COMPARISON GRID */}
-                  <div className="ec2-g2" style={{ marginBottom: '16px' }}>
-                    {/* Why Choose */}
-                    <div
-                      style={{
-                        background: 'var(--color-background-primary)',
-                        padding: '14px 16px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--ec-success-border, rgba(34, 197, 94, 0.3))'
-                      }}
-                    >
-                      <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--color-green)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                        <CheckCircle2 style={{ width: '15px', height: '15px' }} />
-                        <span>✅ Why Choose This Family (Key Strengths)</span>
-                      </div>
-                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        {INSTANCE_FAMILIES[selectedFamily].idealFor.map((item, idx) => (
-                          <li key={idx} style={{ marginBottom: '4px' }}>
-                            <b>{item}</b>: Highly cost-effective and architecturally tuned for this profile.
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* When to Avoid / Trade-offs */}
-                    <div
-                      style={{
-                        background: 'var(--color-background-primary)',
-                        padding: '14px 16px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--ec-error-border, rgba(239, 68, 68, 0.3))'
-                      }}
-                    >
-                      <div style={{ fontWeight: 800, fontSize: '12px', color: 'var(--color-red)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                        <AlertTriangle style={{ width: '15px', height: '15px' }} />
-                        <span>⚠️ When to Avoid &amp; Architectural Trade-offs</span>
-                      </div>
-                      <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '11px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
-                        {INSTANCE_FAMILIES[selectedFamily].tradeoffs.map((item, idx) => (
-                          <li key={idx} style={{ marginBottom: '4px' }}>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Multi-Cloud Equivalents Matrix */}
-                  <div style={{ background: 'var(--color-background-primary)', padding: '12px 14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)', marginBottom: '16px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Globe style={{ width: '13px', height: '13px', color: 'var(--color-blue)' }} />
-                      <span>Multi-Cloud Cross-Provider Equivalents:</span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '11px' }}>
-                      <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #ff9900' }}>
-                        <div style={{ fontWeight: 700, color: '#ff9900', fontSize: '10px', textTransform: 'uppercase' }}>AWS Instances</div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{INSTANCE_FAMILIES[selectedFamily].cloudEquivalents.aws}</div>
-                      </div>
-                      <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #0078d4' }}>
-                        <div style={{ fontWeight: 700, color: '#0078d4', fontSize: '10px', textTransform: 'uppercase' }}>Azure VM Series</div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{INSTANCE_FAMILIES[selectedFamily].cloudEquivalents.azure}</div>
-                      </div>
-                      <div style={{ background: 'var(--color-background-secondary)', padding: '8px 10px', borderRadius: '6px', borderLeft: '3px solid #0f9d58' }}>
-                        <div style={{ fontWeight: 700, color: '#0f9d58', fontSize: '10px', textTransform: 'uppercase' }}>Google Cloud (GCP) Machine Types</div>
-                        <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{INSTANCE_FAMILIES[selectedFamily].cloudEquivalents.gcp}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Representative Sample Instances Table */}
-                  <div style={{ background: 'var(--color-background-primary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
-                    <div style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Layers style={{ width: '14px', height: '14px', color: 'var(--color-purple)' }} />
-                      <span>Representative Real-World Configurations ({INSTANCE_FAMILIES[selectedFamily].name.split(' ')[0]} Family):</span>
-                    </div>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
-                        <thead>
-                          <tr style={{ background: 'var(--color-background-secondary)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
-                            <th style={{ padding: '8px 10px' }}>Instance Type</th>
-                            <th style={{ padding: '8px 10px' }}>vCPU Cores</th>
-                            <th style={{ padding: '8px 10px' }}>Memory (RAM)</th>
-                            <th style={{ padding: '8px 10px' }}>Storage</th>
-                            <th style={{ padding: '8px 10px' }}>Network Speed</th>
-                            <th style={{ padding: '8px 10px' }}>Hourly Est. (On-Demand)</th>
-                            <th style={{ padding: '8px 10px' }}>Target Application</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {INSTANCE_FAMILIES[selectedFamily].sampleInstances.map((sample, idx) => (
-                            <tr key={idx} style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
-                              <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'var(--font-mono)' }}>
-                                {sample.name}
-                              </td>
-                              <td style={{ padding: '8px 10px', fontWeight: 600 }}>{sample.vcpu} vCPUs</td>
-                              <td style={{ padding: '8px 10px', fontWeight: 600 }}>{sample.ramGiB} GiB</td>
-                              <td style={{ padding: '8px 10px', color: 'var(--color-text-secondary)' }}>{sample.storage}</td>
-                              <td style={{ padding: '8px 10px', color: 'var(--color-text-secondary)' }}>{sample.network}</td>
-                              <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--color-blue)' }}>{sample.hourlyEst}</td>
-                              <td style={{ padding: '8px 10px', color: 'var(--color-text-secondary)' }}>{sample.useCase}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -3646,301 +3947,384 @@ sudo mount /dev/sdb /var/www/html`
         {activeTab === 'security' && (
           <div>
             <div className="ec2-sec">Stateful Security Group Firewall Rules Simulator</div>
-            <div className="ec2-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
-                Security Groups act as virtual, stateful firewalls on the network interface card (NIC) level of your EC2 host. If no inbound traffic rule matches, the packets are **dropped silently** (timeout). Stateful logic means that allowing inbound traffic automatically permits outbound return connections.
+            <div className="ec2-card" style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.45' }}>
+                Security Groups act as virtual, stateful firewalls on the network interface card (NIC) level of your EC2 host. Test inbound rules on the left and simulate real-time packet evaluation on the right.
               </div>
 
-              <div className="ec2-g2">
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>🛠️ Inbound Security Group Rules (Active Ingress Rules)</div>
-                  <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse', marginBottom: '12px' }}>
-                    <thead>
-                      <tr style={{ background: 'var(--color-background-secondary)', textAlign: 'left', borderBottom: '1px solid var(--color-border-secondary)' }}>
-                        <th style={{ padding: '6px' }}>Rule Type</th>
-                        <th style={{ padding: '6px' }}>Port</th>
-                        <th style={{ padding: '6px' }}>Source CIDR / Reference</th>
-                        <th style={{ padding: '6px', textAlign: 'center' }}>Remove</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sgRules.map((rule) => (
-                        <tr key={rule.id} style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
-                          <td style={{ padding: '6px', fontWeight: 600 }}>{rule.type}</td>
-                          <td style={{ padding: '6px' }}>{rule.port}</td>
-                          <td style={{ padding: '6px', color: '#0284c7' }}>{rule.source}</td>
-                          <td style={{ padding: '6px', textAlign: 'center' }}>
-                            <button onClick={() => deleteSgRule(rule.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px' }}>✕</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  {/* Add rule UI */}
-                  <div style={{ display: 'flex', gap: '6px', background: 'var(--color-background-secondary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: '9px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Type</label>
-                      <select value={newRuleType} onChange={(e) => {
-                        setNewRuleType(e.target.value);
-                        if (e.target.value === 'SSH') setNewRulePort('22');
-                        else if (e.target.value === 'HTTP') setNewRulePort('80');
-                        else if (e.target.value === 'HTTPS') setNewRulePort('443');
-                        else if (e.target.value === 'PostgreSQL') setNewRulePort('5432');
-                      }} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                        <option value="Custom TCP">Custom TCP</option>
-                        <option value="SSH">SSH (Port 22)</option>
-                        <option value="HTTP">HTTP (Port 80)</option>
-                        <option value="HTTPS">HTTPS (Port 443)</option>
-                        <option value="PostgreSQL">PostgreSQL (Port 5432)</option>
-                      </select>
+              {/* 12-COLUMN DASHBOARD GRID: LEFT RULES TABLE (5 COLS) + RIGHT PACKET SIMULATOR (7 COLS) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch" style={{ marginBottom: '16px' }}>
+                
+                {/* LEFT SIDE: ACTIVE INGRESS RULES TABLE & RULE ADDER (5 COLS) */}
+                <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                  
+                  {/* ACTIVE INBOUND RULES CARD */}
+                  <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)', flex: 1 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ShieldCheck style={{ width: '15px', height: '15px', color: '#0284c7' }} />
+                      <span>🛠️ Active Ingress Rules Table</span>
                     </div>
 
-                    <div style={{ width: '60px' }}>
-                      <label style={{ fontSize: '9px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Port</label>
-                      <input type="text" value={newRulePort} onChange={(e) => setNewRulePort(e.target.value)} style={{ padding: '4px', fontSize: '11px', width: '100%', border: '0.5px solid var(--color-border-secondary)', borderRadius: '4px', background: 'var(--color-background-primary)', color: 'var(--color-text-primary)' }} />
+                    <div style={{ overflowX: 'auto', marginBottom: '12px' }}>
+                      <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ background: 'var(--color-background-primary)', textAlign: 'left', borderBottom: '1.5px solid var(--color-border-secondary)' }}>
+                            <th style={{ padding: '6px 8px' }}>Type</th>
+                            <th style={{ padding: '6px 8px' }}>Port</th>
+                            <th style={{ padding: '6px 8px' }}>Source CIDR</th>
+                            <th style={{ padding: '6px 8px', textAlign: 'center' }}>Remove</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sgRules.map((rule) => (
+                            <tr key={rule.id} style={{ borderBottom: '1px solid var(--color-border-tertiary)' }}>
+                              <td style={{ padding: '6px 8px', fontWeight: 700 }}>
+                                <span style={{
+                                  fontSize: '9.5px',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  background: rule.type === 'SSH' ? '#7c3aed15' : rule.type === 'HTTP' ? '#0284c715' : '#16a34a15',
+                                  color: rule.type === 'SSH' ? '#7c3aed' : rule.type === 'HTTP' ? '#0284c7' : '#16a34a',
+                                  border: `1px solid ${rule.type === 'SSH' ? '#7c3aed40' : rule.type === 'HTTP' ? '#0284c740' : '#16a34a40'}`
+                                }}>
+                                  {rule.type}
+                                </span>
+                              </td>
+                              <td style={{ padding: '6px 8px', fontWeight: 600 }}>{rule.port}</td>
+                              <td style={{ padding: '6px 8px', color: '#0284c7', fontFamily: 'monospace' }}>{rule.source}</td>
+                              <td style={{ padding: '6px 8px', textAlign: 'center' }}>
+                                <button
+                                  onClick={() => deleteSgRule(rule.id)}
+                                  style={{ background: '#ef444415', border: '1px solid #ef444440', color: '#ef4444', borderRadius: '4px', padding: '2px 6px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}
+                                >
+                                  ✕
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
 
-                    <div style={{ flex: 1.5 }}>
-                      <label style={{ fontSize: '9px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Source IP subnet</label>
-                      <select value={newRuleSource} onChange={(e) => setNewRuleSource(e.target.value)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                        <option value="0.0.0.0/0">0.0.0.0/0 (Global Public)</option>
-                        <option value="10.0.1.50/32">10.0.1.50/32 (VPC Bastion)</option>
-                        <option value="Corporate Intranet">192.168.0.0/16 (Corp VPN)</option>
-                      </select>
-                    </div>
+                    {/* ADD RULE FORM */}
+                    <div style={{ background: 'var(--color-background-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border-secondary)' }}>
+                      <div style={{ fontSize: '10.5px', fontWeight: 700, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                        ➕ Add New Ingress Rule
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2 mb-2">
+                        <div>
+                          <label style={{ fontSize: '9.5px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Type</label>
+                          <select value={newRuleType} onChange={(e) => {
+                            setNewRuleType(e.target.value);
+                            if (e.target.value === 'SSH') setNewRulePort('22');
+                            else if (e.target.value === 'HTTP') setNewRulePort('80');
+                            else if (e.target.value === 'HTTPS') setNewRulePort('443');
+                            else if (e.target.value === 'PostgreSQL') setNewRulePort('5432');
+                          }} style={{ padding: '4px 6px', fontSize: '10.5px', width: '100%', borderRadius: '4px', background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', color: 'var(--color-text-primary)' }}>
+                            <option value="Custom TCP">Custom TCP</option>
+                            <option value="SSH">SSH (Port 22)</option>
+                            <option value="HTTP">HTTP (Port 80)</option>
+                            <option value="HTTPS">HTTPS (Port 443)</option>
+                            <option value="PostgreSQL">PostgreSQL (5432)</option>
+                          </select>
+                        </div>
 
-                    <button onClick={addSgRule} className="ec2-btn ec2-on" style={{ alignSelf: 'flex-end', padding: '6px 10px' }}>+</button>
+                        <div>
+                          <label style={{ fontSize: '9.5px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Port</label>
+                          <input type="text" value={newRulePort} onChange={(e) => setNewRulePort(e.target.value)} style={{ padding: '4px 6px', fontSize: '10.5px', width: '100%', border: '1px solid var(--color-border-tertiary)', borderRadius: '4px', background: 'var(--color-background-secondary)', color: 'var(--color-text-primary)' }} />
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '9.5px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Source CIDR</label>
+                          <select value={newRuleSource} onChange={(e) => setNewRuleSource(e.target.value)} style={{ padding: '4px 6px', fontSize: '10.5px', width: '100%', borderRadius: '4px', background: 'var(--color-background-secondary)', border: '1px solid var(--color-border-tertiary)', color: 'var(--color-text-primary)' }}>
+                            <option value="0.0.0.0/0">0.0.0.0/0 (Global Public)</option>
+                            <option value="10.0.1.50/32">10.0.1.50/32 (VPC Bastion)</option>
+                            <option value="Corporate Intranet">192.168.0.0/16 (Corp VPN)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={addSgRule}
+                        className="ec2-btn ec2-on"
+                        style={{ width: '100%', padding: '6px', fontSize: '11px', fontWeight: 'bold' }}
+                      >
+                        + Add Ingress Rule
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Packet Simulator Panel */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '10px' }}>📡 Network Packet Transference Ingress Playground</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
-                    Click a source Node to compile a TCP handshake request to the EC2 Host (listening on ports 22, 80, or 8080).
+                {/* RIGHT SIDE: PACKET TEST PLAYGROUND & SVG VISUALIZER (7 COLS) */}
+                <div className="lg:col-span-7 flex flex-col justify-between" style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
+                  
+                  <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Globe style={{ width: '15px', height: '15px', color: '#10b981' }} />
+                    <span>📡 Stateful Network Packet Transference Simulator</span>
                   </div>
 
-                  <div className="ec2-g2" style={{ gap: '8px', marginBottom: '12px' }}>
-                    <button onClick={() => testSecurityTraffic('internet')} disabled={!!sendingPacket} className="ec2-btn" style={{ padding: '10px', textAlign: 'left' }}>
-                      🌐 Public Client (HTTP/80)
+                  {/* PRESET QUICK TEST BUTTONS */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                    <button
+                      onClick={() => testSecurityTraffic('internet')}
+                      disabled={!!sendingPacket}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '6px',
+                        border: '1.5px solid #0284c7',
+                        background: 'var(--color-background-primary)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        cursor: sendingPacket ? 'not-allowed' : 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      🌐 Web (Port 80)
                     </button>
-                    <button onClick={() => testSecurityTraffic('bastion')} disabled={!!sendingPacket} className="ec2-btn" style={{ padding: '10px', textAlign: 'left' }}>
-                      🔒 Bastion Host (SSH/22)
+                    
+                    <button
+                      onClick={() => testSecurityTraffic('bastion')}
+                      disabled={!!sendingPacket}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '6px',
+                        border: '1.5px solid #7c3aed',
+                        background: 'var(--color-background-primary)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        cursor: sendingPacket ? 'not-allowed' : 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      🔒 Bastion (Port 22)
                     </button>
-                    <button onClick={() => testSecurityTraffic('corp_app')} disabled={!!sendingPacket} className="ec2-btn" style={{ padding: '10px', textAlign: 'left' }}>
-                      🏢 Corp Server (Custom/8080)
+
+                    <button
+                      onClick={() => testSecurityTraffic('corp_app')}
+                      disabled={!!sendingPacket}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '6px',
+                        border: '1.5px solid #16a34a',
+                        background: 'var(--color-background-primary)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        cursor: sendingPacket ? 'not-allowed' : 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      🏢 Corp (Port 8080)
                     </button>
-                    <button onClick={() => testSecurityTraffic('hacker')} disabled={!!sendingPacket} className="ec2-btn" style={{ padding: '10px', textAlign: 'left' }}>
-                      🚨 Anonymous Hacker (SSH/22)
+
+                    <button
+                      onClick={() => testSecurityTraffic('hacker')}
+                      disabled={!!sendingPacket}
+                      style={{
+                        padding: '8px',
+                        borderRadius: '6px',
+                        border: '1.5px solid #dc2626',
+                        background: 'var(--color-background-primary)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        cursor: sendingPacket ? 'not-allowed' : 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      🚨 Hacker (Port 22)
                     </button>
                   </div>
 
-                  {/* Visual packet trace */}
-                  <div style={{ flex: 1, border: '1.5px solid var(--color-border-tertiary)', background: 'var(--color-background-secondary)', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
-                    <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                      
-                      {/* Interactive SVG Sandbox */}
-                      <svg viewBox="0 0 450 180" width="100%" className="ec2-svg-bg">
-                        <defs>
-                          <marker id="firewall-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-text-tertiary)"/></marker>
-                          <linearGradient id="shield-grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="var(--color-blue)" />
-                            <stop offset="100%" stopColor="#1d4ed8" />
-                          </linearGradient>
-                          <linearGradient id="shield-grad-green" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="var(--color-green)" />
-                            <stop offset="100%" stopColor="#059669" />
-                          </linearGradient>
-                          <linearGradient id="shield-grad-red" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="var(--color-red)" />
-                            <stop offset="100%" stopColor="#dc2626" />
-                          </linearGradient>
-                          <filter id="ec2-shadow-net2" x="-10%" y="-10%" width="120%" height="120%">
-                            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
-                          </filter>
-                        </defs>
+                  {/* SVG ANIMATED SANDBOX */}
+                  <div style={{ flex: 1, border: '1.5px solid var(--color-border-tertiary)', background: 'var(--color-background-primary)', borderRadius: '10px', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '210px' }}>
+                    <svg viewBox="0 0 450 180" width="100%" className="ec2-svg-bg">
+                      <defs>
+                        <marker id="firewall-arrow" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-text-tertiary)"/></marker>
+                        <linearGradient id="shield-grad-blue" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="var(--color-blue)" />
+                          <stop offset="100%" stopColor="#1d4ed8" />
+                        </linearGradient>
+                        <linearGradient id="shield-grad-green" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="var(--color-green)" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                        <linearGradient id="shield-grad-red" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="var(--color-red)" />
+                          <stop offset="100%" stopColor="#dc2626" />
+                        </linearGradient>
+                        <filter id="ec2-shadow-net2" x="-10%" y="-10%" width="120%" height="120%">
+                          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#0f172a" floodOpacity="0.06" />
+                        </filter>
+                      </defs>
 
-                        {/* PREMIUM NESTED BOUNDARIES */}
-                        {/* Public Ingress Boundary */}
-                        <rect x="5" y="8" width="115" height="164" rx="8" fill="rgba(148, 163, 184, 0.02)" stroke="var(--color-text-tertiary)" strokeWidth="1" strokeDasharray="3,3" />
-                        <text x="62" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">🌐 PUBLIC INGRESS NETS</text>
+                      <rect x="5" y="8" width="115" height="164" rx="8" fill="rgba(148, 163, 184, 0.02)" stroke="var(--color-text-tertiary)" strokeWidth="1" strokeDasharray="3,3" />
+                      <text x="62" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">🌐 PUBLIC INGRESS NETS</text>
 
-                        {/* SG Gateway Shield Boundary */}
-                        <rect x="130" y="8" width="140" height="164" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="4,2" />
-                        <text x="200" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">🛡️ STATEFUL SG GATEWAY</text>
+                      <rect x="130" y="8" width="140" height="164" rx="8" fill="rgba(37, 99, 235, 0.02)" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="4,2" />
+                      <text x="200" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">🛡️ STATEFUL SG GATEWAY</text>
 
-                        {/* Secure Compute Subnet */}
-                        <rect x="280" y="8" width="165" height="164" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="3,3" />
-                        <text x="362" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">💻 SECURE COMPUTE SUBNET</text>
+                      <rect x="280" y="8" width="165" height="164" rx="8" fill="rgba(16, 185, 129, 0.02)" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="3,3" />
+                      <text x="362" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-green)" fontWeight="bold">💻 SECURE COMPUTE SUBNET</text>
 
-                        {/* Connection Paths from Left Nodes to Firewall Center (200, 90) */}
-                        <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
-                        <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
-                        <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
-                        <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
+                      <path d="M 110, 30 L 200, 90" stroke={sendingPacket === 'internet' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'internet' ? 'none' : '3,3'} />
+                      <path d="M 110, 70 L 200, 90" stroke={sendingPacket === 'bastion' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'bastion' ? 'none' : '3,3'} />
+                      <path d="M 110, 110 L 200, 90" stroke={sendingPacket === 'corp_app' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'corp_app' ? 'none' : '3,3'} />
+                      <path d="M 110, 150 L 200, 90" stroke={sendingPacket === 'hacker' ? 'var(--color-amber)' : 'var(--ec-svg-line-stroke)'} strokeWidth="1.5" strokeDasharray={sendingPacket === 'hacker' ? 'none' : '3,3'} />
 
-                        {/* Connection Path from Firewall to EC2 (230, 90) to (315, 90) */}
-                        <path d="M 230, 90 L 290, 90" stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--ec-svg-line-stroke)'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
+                      <path d="M 230, 90 L 290, 90" stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--ec-svg-line-stroke)'} strokeWidth="2" markerEnd="url(#firewall-arrow)" />
 
-                        {/* Animated Packets */}
-                        {sendingPacket === 'internet' && (
-                          <circle r="5" fill="var(--color-amber)">
-                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 30 L 200, 90" />
-                          </circle>
-                        )}
-                        {sendingPacket === 'bastion' && (
-                          <circle r="5" fill="var(--color-amber)">
-                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 70 L 200, 90" />
-                          </circle>
-                        )}
-                        {sendingPacket === 'corp_app' && (
-                          <circle r="5" fill="var(--color-amber)">
-                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 110 L 200, 90" />
-                          </circle>
-                        )}
-                        {sendingPacket === 'hacker' && (
-                          <circle r="5" fill="var(--color-amber)">
-                            <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 150 L 200, 90" />
-                          </circle>
-                        )}
+                      {sendingPacket === 'internet' && (
+                        <circle r="5" fill="var(--color-amber)">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 30 L 200, 90" />
+                        </circle>
+                      )}
+                      {sendingPacket === 'bastion' && (
+                        <circle r="5" fill="var(--color-amber)">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 70 L 200, 90" />
+                        </circle>
+                      )}
+                      {sendingPacket === 'corp_app' && (
+                        <circle r="5" fill="var(--color-amber)">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 110 L 200, 90" />
+                        </circle>
+                      )}
+                      {sendingPacket === 'hacker' && (
+                        <circle r="5" fill="var(--color-amber)">
+                          <animateMotion dur="0.8s" repeatCount="indefinite" path="M 110, 150 L 200, 90" />
+                        </circle>
+                      )}
 
-                        {/* Green Allowed Flow through the Gate */}
-                        {firewallTestResult?.status === 'ALLOW' && (
+                      {firewallTestResult?.status === 'ALLOW' && (
+                        <g>
                           <circle r="5" fill="var(--color-green)">
                             <animateMotion dur="0.6s" repeatCount="indefinite" path="M 230, 90 L 290, 90" />
                           </circle>
-                        )}
-
-                        {/* Red Packet Drop / Collision at Firewall */}
-                        {firewallTestResult?.status === 'DROP' && (
-                          <g>
-                            <circle cx="200" cy="90" r="8" fill="none" stroke="var(--color-red)" strokeWidth="2">
-                              <animate attributeName="r" values="5;18" dur="0.6s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="1;0" dur="0.6s" repeatCount="indefinite" />
-                            </circle>
-                            <circle cx="200" cy="90" r="3.5" fill="var(--color-red)" />
-                          </g>
-                        )}
-
-                        {/* Left Clients / Nodes */}
-                        {/* 1. Public Client */}
-                        <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(12, 23)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🌐 Public (Port 80)</text>
+                          <path d="M 290, 95 L 230, 95" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="3,2" />
+                          <circle r="3" fill="var(--color-green)">
+                            <animateMotion dur="0.6s" repeatCount="indefinite" path="M 290, 95 L 230, 95" />
+                          </circle>
                         </g>
+                      )}
 
-                        {/* 2. Bastion */}
-                        <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(12, 60)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🔒 Bastion (Port 22)</text>
+                      {firewallTestResult?.status === 'DROP' && (
+                        <g>
+                          <circle cx="200" cy="90" r="8" fill="none" stroke="var(--color-red)" strokeWidth="2">
+                            <animate attributeName="r" values="5;18" dur="0.6s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="1;0" dur="0.6s" repeatCount="indefinite" />
+                          </circle>
+                          <circle cx="200" cy="90" r="3.5" fill="var(--color-red)" />
                         </g>
+                      )}
 
-                        {/* 3. Corporate Intranet */}
-                        <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(12, 97)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🏢 Corp App (Port 8080)</text>
-                        </g>
+                      <g onClick={() => testSecurityTraffic('internet')} style={{ cursor: 'pointer' }} transform="translate(12, 23)" filter="url(#ec2-shadow-net2)">
+                        <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1" />
+                        <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🌐 Public (Port 80)</text>
+                      </g>
 
-                        {/* 4. Anonymous Hacker */}
-                        <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(12, 134)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-red)" strokeWidth="1" />
-                          <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🚨 Hacker (Port 22)</text>
-                        </g>
+                      <g onClick={() => testSecurityTraffic('bastion')} style={{ cursor: 'pointer' }} transform="translate(12, 60)" filter="url(#ec2-shadow-net2)">
+                        <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-purple)" strokeWidth="1" />
+                        <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🔒 Bastion (Port 22)</text>
+                      </g>
 
-                        {/* Firewall Stateful Shield Gate */}
-                        <g transform="translate(145, 20)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="40" height="140" rx="8" fill="var(--ec-terminal-bg)" stroke="var(--ec-terminal-border)" strokeWidth="1" />
-                          <text x="20" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">FIREWALL</text>
-                          
-                          {/* Stateful brick segments */}
-                          <line x1="5" y1="28" x2="35" y2="28" stroke="var(--ec-terminal-border)" strokeWidth="1" />
-                          <line x1="5" y1="48" x2="35" y2="48" stroke="var(--ec-terminal-border)" strokeWidth="1" />
-                          <line x1="5" y1="68" x2="35" y2="68" stroke="var(--ec-terminal-border)" strokeWidth="1" />
-                          <line x1="5" y1="88" x2="35" y2="88" stroke="var(--ec-terminal-border)" strokeWidth="1" />
-                          <line x1="5" y1="108" x2="35" y2="108" stroke="var(--ec-terminal-border)" strokeWidth="1" />
-                          <line x1="5" y1="128" x2="35" y2="128" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                      <g onClick={() => testSecurityTraffic('corp_app')} style={{ cursor: 'pointer' }} transform="translate(12, 97)" filter="url(#ec2-shadow-net2)">
+                        <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
+                        <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🏢 Corp App (Port 8080)</text>
+                      </g>
 
-                          {/* Glowing central SG Shield */}
-                          <circle cx="20" cy="70" r="15" 
-                            fill={
-                              firewallTestResult?.status === 'ALLOW' ? 'url(#shield-grad-green)' :
-                              firewallTestResult?.status === 'DROP' ? 'url(#shield-grad-red)' :
-                              'url(#shield-grad-blue)'
-                            }
-                            stroke="var(--color-text-primary)" 
-                            strokeWidth="1.5" 
-                          />
-                          <text x="20" y="73" textAnchor="middle" fontSize="9" fill="#fff" fontWeight="bold">SG</text>
-                        </g>
+                      <g onClick={() => testSecurityTraffic('hacker')} style={{ cursor: 'pointer' }} transform="translate(12, 134)" filter="url(#ec2-shadow-net2)">
+                        <rect x="0" y="0" width="100" height="28" rx="6" fill="var(--color-background-primary)" stroke="var(--color-red)" strokeWidth="1" />
+                        <text x="50" y="17" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)" fontWeight="bold">🚨 Hacker (Port 22)</text>
+                      </g>
 
-                        {/* Destination EC2 Host on Right */}
-                        <g transform="translate(305, 45)" filter="url(#ec2-shadow-net2)">
-                          <rect x="0" y="0" width="115" height="90" rx="8" fill="var(--color-background-primary)" 
-                            stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--color-border-tertiary)'} 
-                            strokeWidth={firewallTestResult?.status === 'ALLOW' ? '2.5' : '1.5'} 
-                          />
-                          
-                          {/* Server header */}
-                          <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-background-secondary)'} />
-                          <text x="57.5" y="17" textAnchor="middle" fontSize="8.5" fill="var(--color-text-primary)" fontWeight="bold">EC2 Guest Host</text>
+                      <g transform="translate(145, 20)" filter="url(#ec2-shadow-net2)">
+                        <rect x="0" y="0" width="40" height="140" rx="8" fill="var(--ec-terminal-bg)" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                        <text x="20" y="18" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">FIREWALL</text>
+                        
+                        <line x1="5" y1="28" x2="35" y2="28" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                        <line x1="5" y1="48" x2="35" y2="48" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                        <line x1="5" y1="68" x2="35" y2="68" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                        <line x1="5" y1="88" x2="35" y2="88" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                        <line x1="5" y1="108" x2="35" y2="108" stroke="var(--ec-terminal-border)" strokeWidth="1" />
+                        <line x1="5" y1="128" x2="35" y2="128" stroke="var(--ec-terminal-border)" strokeWidth="1" />
 
-                          {/* Interactive status bulb */}
-                          <circle cx="20" cy="40" r="4.5" 
-                            fill={
-                              firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' :
-                              firewallTestResult?.status === 'DROP' ? 'var(--color-red)' :
-                              'var(--color-text-tertiary)'
-                            } 
-                          />
-                          <text x="32" y="43" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">
-                            {firewallTestResult ? `PORT: ${firewallTestResult.status}` : 'PORT IDLE'}
-                          </text>
+                        <circle cx="20" cy="70" r="15" 
+                          fill={
+                            firewallTestResult?.status === 'ALLOW' ? 'url(#shield-grad-green)' :
+                            firewallTestResult?.status === 'DROP' ? 'url(#shield-grad-red)' :
+                            'url(#shield-grad-blue)'
+                          }
+                          stroke="var(--color-text-primary)" 
+                          strokeWidth="1.5" 
+                        />
+                        <text x="20" y="73" textAnchor="middle" fontSize="9" fill="#fff" fontWeight="bold">SG</text>
+                      </g>
 
-                          {/* Details mock */}
-                          <rect x="15" y="55" width="85" height="4" rx="2" fill="var(--color-border-tertiary)" />
-                          <rect x="15" y="65" width="65" height="4" rx="2" fill="var(--color-border-tertiary)" />
-                          <rect x="15" y="75" width="75" height="4" rx="2" fill="var(--color-border-tertiary)" />
-                        </g>
+                      <g transform="translate(305, 45)" filter="url(#ec2-shadow-net2)">
+                        <rect x="0" y="0" width="115" height="90" rx="8" fill="var(--color-background-primary)" 
+                          stroke={firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' : 'var(--color-border-tertiary)'} 
+                          strokeWidth={firewallTestResult?.status === 'ALLOW' ? '2.5' : '1.5'} 
+                        />
+                        
+                        <rect x="5" y="5" width="105" height="18" rx="4" fill={firewallTestResult?.status === 'ALLOW' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-background-secondary)'} />
+                        <text x="57.5" y="17" textAnchor="middle" fontSize="8.5" fill="var(--color-text-primary)" fontWeight="bold">EC2 Guest Host</text>
 
-                      </svg>
+                        <circle cx="20" cy="40" r="4.5" 
+                          fill={
+                            firewallTestResult?.status === 'ALLOW' ? 'var(--color-green)' :
+                            firewallTestResult?.status === 'DROP' ? 'var(--color-red)' :
+                            'var(--color-text-tertiary)'
+                          } 
+                        />
+                        <text x="32" y="43" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">
+                          {firewallTestResult ? `PORT: ${firewallTestResult.status}` : 'PORT IDLE'}
+                        </text>
 
-                      {/* Stateful text explanation below SVG */}
-                      <div style={{ textAlign: 'center', background: 'var(--color-background-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border-tertiary)' }}>
-                        {sendingPacket ? (
-                          <div style={{ fontSize: '11px', color: 'var(--color-amber)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-amber)', animation: 'ping 1s infinite' }} />
-                            Evaluating packet headers against Ingress Security Group rules table...
-                          </div>
-                        ) : firewallTestResult ? (
-                          <div>
-                            <span className="ec2-badge" style={{ 
-                              background: firewallTestResult.status === 'ALLOW' ? 'var(--color-green)' : 'var(--color-red)', 
-                              color: '#fff', 
-                              fontSize: '11px',
-                              marginBottom: '6px',
-                              fontWeight: 'bold'
-                            }}>
-                              {firewallTestResult.status}
-                            </span>
-                            <div style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 500, lineHeight: '1.45', padding: '0 8px' }}>
-                              {firewallTestResult.msg}
-                            </div>
-                          </div>
-                        ) : (
-                          <div style={{ fontSize: '11.5px', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
-                            💡 <b>Test network:</b> Click any left client node directly in the SVG sandbox to fire a simulated TCP connection!
-                          </div>
-                        )}
+                        <rect x="15" y="55" width="85" height="4" rx="2" fill="var(--color-border-tertiary)" />
+                        <rect x="15" y="65" width="65" height="4" rx="2" fill="var(--color-border-tertiary)" />
+                        <rect x="15" y="75" width="75" height="4" rx="2" fill="var(--color-border-tertiary)" />
+                      </g>
+                    </svg>
+                  </div>
+
+                  {/* EVALUATION RESULT EXPLANATION */}
+                  <div style={{ marginTop: '10px', textAlign: 'center', background: 'var(--color-background-primary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border-tertiary)' }}>
+                    {sendingPacket ? (
+                      <div style={{ fontSize: '11px', color: 'var(--color-amber)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-amber)', animation: 'ping 1s infinite' }} />
+                        Evaluating packet headers against Ingress Security Group rules table...
                       </div>
-
-                    </div>
+                    ) : firewallTestResult ? (
+                      <div>
+                        <span className="ec2-badge" style={{ 
+                          background: firewallTestResult.status === 'ALLOW' ? 'var(--color-green)' : 'var(--color-red)', 
+                          color: '#fff', 
+                          fontSize: '11px',
+                          marginBottom: '6px',
+                          fontWeight: 'bold'
+                        }}>
+                          {firewallTestResult.status === 'ALLOW' ? '✅ TRAFFIC ALLOWED (STATEFUL RETURN AUTO-APPROVED)' : '❌ TRAFFIC DROPPED (SILENT TIMEOUT)'}
+                        </span>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 500, lineHeight: '1.45', padding: '0 8px', marginTop: '4px' }}>
+                          {firewallTestResult.msg}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '11.5px', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
+                        💡 <b>Test Traffic:</b> Click any preset button above or any node in the SVG diagram to run a simulated firewall inspection!
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="ec2-sec">EC2 Instance Placement Groups Architectures</div>
+            
+
+<div className="ec2-sec">EC2 Instance Placement Groups Architectures</div>
             <div className="ec2-card">
               <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.4' }}>
                 Placement Groups control the physical distribution logic of your EC2 instances within the AWS underlying physical hardware backplane.
@@ -4265,42 +4649,217 @@ sudo mount /dev/sdb /var/www/html`
         {/* STORAGE PANEL */}
         {activeTab === 'storage' && (
           <div>
-            <div className="ec2-sec">EC2 Instance Storage Architectures (EBS vs EFS vs Instance Store)</div>
-            <div className="ec2-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.4' }}>
-                EC2 hosts integrate block and file storage via network connections or direct bus attachments. Understanding these properties prevents data loss.
+            <div className="ec2-sec">EC2 Instance Storage Architectures (Cumulative 3-Way Comparison: EBS vs Instance Store vs EFS)</div>
+            <div className="ec2-card" style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: '1.5' }}>
+                Cloud storage is divided into three distinct architectural models: <strong>Network Block SAN (EBS)</strong>, <strong>Direct Physical NVMe (Instance Store)</strong>, and <strong>Multi-AZ Shared NAS (EFS)</strong>. Review the cumulative topology and side-by-side matrix below to understand key performance, persistence, and connectivity differences:
               </div>
 
-              <div className="ec2-g3" style={{ marginBottom: '14px' }}>
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>💾 EBS (Block Storage)</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '6px' }}>
-                    Network attached virtual drive. Replication is constrained inside **one AZ**. The volume lifecycle is independent of the instance state (survives stopping).
-                  </div>
-                  <span className="ec2-badge" style={{ background: 'var(--color-blue)', color: '#fff', fontSize: '9px' }}>Type: SAN Block</span>
+              {/* CUMULATIVE 3-WAY ARCHITECTURAL TOPOLOGY SVG DIAGRAM */}
+              <div style={{ background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '12px', border: '1.5px solid var(--color-border-tertiary)', marginBottom: '20px' }}>
+                <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <HardDrive style={{ width: '16px', height: '16px', color: 'var(--color-blue)' }} />
+                  <span>Cumulative Storage Topology &amp; Physical Attachment Paths</span>
                 </div>
 
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>⚡ Instance Store (Local)</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '6px' }}>
-                    Direct physical NVMe/SSD buses on the host machine. **Ephemeral** storage. **If instance STOPS or TERMINATES, data is completely wiped!**
-                  </div>
-                  <span className="ec2-badge" style={{ background: 'var(--color-red)', color: '#fff', fontSize: '9px' }}>Type: Ephemeral Direct</span>
+                <svg viewBox="0 0 850 260" width="100%" className="ec2-svg-bg" style={{ borderRadius: '10px', border: '1px solid var(--color-border-tertiary)' }}>
+                  <defs>
+                    <marker id="cum-arrow-blue" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-blue)"/></marker>
+                    <marker id="cum-arrow-green" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-green)"/></marker>
+                    <marker id="cum-arrow-purple" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="var(--color-purple)"/></marker>
+                  </defs>
+
+                  {/* BACKGROUND BOUNDARY PANELS */}
+                  {/* Panel 1: EBS */}
+                  <rect x="15" y="15" width="260" height="230" rx="10" fill="var(--color-blue)" fillOpacity="0.04" stroke="var(--color-blue)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="145" y="32" textAnchor="middle" fontSize="10" fill="var(--color-blue)" fontWeight="extrabold">💾 1. EBS (Network SAN Block)</text>
+
+                  {/* Panel 2: Instance Store */}
+                  <rect x="295" y="15" width="260" height="230" rx="10" fill="var(--color-red)" fillOpacity="0.04" stroke="var(--color-red)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="425" y="32" textAnchor="middle" fontSize="10" fill="var(--color-red)" fontWeight="extrabold">⚡ 2. Instance Store (Physical NVMe)</text>
+
+                  {/* Panel 3: EFS */}
+                  <rect x="575" y="15" width="260" height="230" rx="10" fill="var(--color-green)" fillOpacity="0.04" stroke="var(--color-green)" strokeWidth="1.2" strokeDasharray="4,2" />
+                  <text x="705" y="32" textAnchor="middle" fontSize="10" fill="var(--color-green)" fontWeight="extrabold">📁 3. EFS (Multi-AZ Shared NAS)</text>
+
+                  {/* DETAILS INSIDE PANEL 1: EBS */}
+                  <g transform="translate(30, 48)">
+                    {/* EC2 Instance Node */}
+                    <rect x="0" y="0" width="100" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1.5" />
+                    <text x="50" y="24" textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-text-primary)">EC2 Instance</text>
+                    <text x="50" y="38" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">Compute Node (AZ-1)</text>
+
+                    {/* Network Cable Path */}
+                    <path d="M 50, 60 L 50, 110" stroke="var(--color-blue)" strokeWidth="2" strokeDasharray="3,3" markerEnd="url(#cum-arrow-blue)" />
+                    <circle r="3" fill="var(--color-blue)">
+                      <animateMotion dur="1.8s" repeatCount="indefinite" path="M 50, 60 L 50, 110" />
+                    </circle>
+                    <text x="58" y="88" fontSize="7" fill="var(--color-blue)" fontWeight="bold">SAN Network</text>
+
+                    {/* EBS Disk Node */}
+                    <g transform="translate(0, 110)">
+                      <rect x="0" y="0" width="100" height="55" rx="6" fill="var(--color-background-primary)" stroke="var(--color-blue)" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="92" height="10" rx="2" fill="var(--color-blue)" />
+                      <text x="50" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">EBS Volume</text>
+                      <text x="50" y="30" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-text-primary)">/dev/xvda (gp3)</text>
+                      <text x="50" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-green)">✅ PERSISTENT (AZ-1)</text>
+                    </g>
+                  </g>
+                  <text x="145" y="232" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">Single-AZ SAN Network Volume</text>
+
+                  {/* DETAILS INSIDE PANEL 2: INSTANCE STORE */}
+                  <g transform="translate(310, 48)">
+                    {/* Motherboard Chassis Box */}
+                    <rect x="0" y="0" width="230" height="165" rx="8" fill="var(--color-background-primary)" stroke="var(--color-red)" strokeWidth="1.5" />
+                    <text x="115" y="16" textAnchor="middle" fontSize="8.5" fontWeight="bold" fill="var(--color-red)">Physical Motherboard Chassis</text>
+
+                    {/* CPU Box */}
+                    <rect x="15" y="30" width="85" height="50" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
+                    <text x="57" y="55" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-text-primary)">vCPU &amp; RAM</text>
+
+                    {/* Direct PCIe Bus Line */}
+                    <path d="M 100, 55 L 130, 55" stroke="var(--color-red)" strokeWidth="3" />
+                    <text x="115" y="48" textAnchor="middle" fontSize="7" fill="var(--color-red)" fontWeight="extrabold">PCIe Bus</text>
+
+                    {/* NVMe SSD Box */}
+                    <rect x="130" y="30" width="85" height="50" rx="4" fill="var(--color-background-secondary)" stroke="var(--color-red)" strokeWidth="1.5" />
+                    <text x="172" y="52" textAnchor="middle" fontSize="8" fontWeight="extrabold" fill="var(--color-red)">NVMe SSD</text>
+                    <text x="172" y="66" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-text-tertiary)">/dev/nvme0n1</text>
+
+                    {/* Wiped Warning Box */}
+                    <rect x="15" y="95" width="200" height="55" rx="6" fill="rgba(239, 68, 68, 0.08)" stroke="var(--color-red)" strokeWidth="1" />
+                    <text x="115" y="114" textAnchor="middle" fontSize="8.5" fontWeight="extrabold" fill="var(--color-red)">⚠️ EPHEMERAL VOLATILE STORAGE</text>
+                    <text x="115" y="128" textAnchor="middle" fontSize="7.5" fill="var(--color-text-primary)">Data is completely WIPED if EC2 instance</text>
+                    <text x="115" y="140" textAnchor="middle" fontSize="7.5" fill="var(--color-red)" fontWeight="bold">STOPS, TERMINATES, or suffers hardware failure!</text>
+                  </g>
+                  <text x="425" y="232" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">Direct Motherboard PCIe Bus Attachment</text>
+
+                  {/* DETAILS INSIDE PANEL 3: EFS */}
+                  <g transform="translate(590, 48)">
+                    {/* 3 Concurrent EC2 Instances */}
+                    <g transform="translate(0, 0)">
+                      <rect x="0" y="0" width="65" height="35" rx="4" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
+                      <text x="32" y="21" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-text-primary)">EC2 (AZ-A)</text>
+                    </g>
+                    <g transform="translate(82, 0)">
+                      <rect x="0" y="0" width="65" height="35" rx="4" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
+                      <text x="32" y="21" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-text-primary)">EC2 (AZ-B)</text>
+                    </g>
+                    <g transform="translate(164, 0)">
+                      <rect x="0" y="0" width="65" height="35" rx="4" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1" />
+                      <text x="32" y="21" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-text-primary)">EC2 (AZ-C)</text>
+                    </g>
+
+                    {/* NFS Network Mount Arrows */}
+                    <path d="M 32, 35 L 115, 110" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="3,3" />
+                    <path d="M 115, 35 L 115, 110" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="3,3" />
+                    <path d="M 196, 35 L 115, 110" stroke="var(--color-green)" strokeWidth="1.5" strokeDasharray="3,3" />
+
+                    <circle r="2.5" fill="var(--color-green)">
+                      <animateMotion dur="2s" repeatCount="indefinite" path="M 32, 35 L 115, 110" />
+                    </circle>
+                    <circle r="2.5" fill="var(--color-green)">
+                      <animateMotion dur="2s" repeatCount="indefinite" path="M 115, 35 L 115, 110" />
+                    </circle>
+                    <circle r="2.5" fill="var(--color-green)">
+                      <animateMotion dur="2s" repeatCount="indefinite" path="M 196, 35 L 115, 110" />
+                    </circle>
+
+                    {/* Shared EFS Cloud NAS Box */}
+                    <g transform="translate(25, 110)">
+                      <rect x="0" y="0" width="180" height="55" rx="6" fill="var(--color-background-primary)" stroke="var(--color-green)" strokeWidth="1.5" />
+                      <rect x="4" y="4" width="172" height="10" rx="2" fill="var(--color-green)" />
+                      <text x="90" y="12" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#fff">Shared EFS NFS Network File System</text>
+                      <text x="90" y="30" textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-text-primary)">📁 Multi-AZ Mount Target (/mnt/efs)</text>
+                      <text x="90" y="44" textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-green)">✅ 100s of EC2s Read &amp; Write Concurrently</text>
+                    </g>
+                  </g>
+                  <text x="705" y="232" textAnchor="middle" fontSize="7.5" fill="var(--color-text-secondary)" fontWeight="bold">Multi-AZ NFS Shared Filesystem</text>
+                </svg>
+              </div>
+
+              {/* SIDE-BY-SIDE CUMULATIVE COMPARISON MATRIX TABLE */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontWeight: 800, fontSize: '13px', color: 'var(--color-text-primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Layers style={{ width: '15px', height: '15px', color: 'var(--color-purple)' }} />
+                  <span>Cumulative Side-by-Side Storage Comparison Matrix</span>
                 </div>
 
-                <div style={{ background: 'var(--color-background-secondary)', padding: '12px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '6px', color: 'var(--color-text-primary)' }}>📁 EFS (Shared File Storage)</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: '1.45', marginBottom: '6px' }}>
-                    Managed network filesystem (NFS). Multi-AZ accessible. Scales storage and throughput dynamically. Hundreds of EC2s can mount it concurrently.
-                  </div>
-                  <span className="ec2-badge" style={{ background: 'var(--color-green)', color: '#fff', fontSize: '9px' }}>Type: Shared NAS</span>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="acad-table" style={{ width: '100%', fontSize: '11.5px' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '160px' }}>Architectural Dimension</th>
+                        <th style={{ width: '220px', background: 'rgba(2, 132, 199, 0.08)' }}>💾 EBS (Block SAN Storage)</th>
+                        <th style={{ width: '220px', background: 'rgba(239, 68, 68, 0.08)' }}>⚡ Instance Store (Local NVMe)</th>
+                        <th style={{ width: '220px', background: 'rgba(34, 197, 94, 0.08)' }}>📁 EFS (Shared NAS File System)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Storage Layer &amp; Protocol</strong></td>
+                        <td>Virtual SAN Block Storage (NVMe-oF / iSCSI)</td>
+                        <td>Physical Direct Bus NVMe PCIe / SSD</td>
+                        <td>Shared Network File System (NFSv4.0 / NFSv4.1)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Accessibility &amp; Scope</strong></td>
+                        <td><strong>1 EC2 Instance in 1 AZ</strong> (or Multi-Attach in same AZ)</td>
+                        <td><strong>1 Physical Host Machine Only</strong></td>
+                        <td><strong>100s of EC2 Instances concurrently</strong> across Multi-AZs</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Data Persistence on Instance Stop</strong></td>
+                        <td><strong style={{ color: 'var(--color-green)' }}>✅ PERSISTENT</strong> (Files remain safe when instance stops)</td>
+                        <td><strong style={{ color: 'var(--color-red)' }}>⚠️ EPHEMERAL / WIPED</strong> (Data erased when instance stops!)</td>
+                        <td><strong style={{ color: 'var(--color-green)' }}>✅ PERSISTENT</strong> (Independent of EC2 instance lifecycle)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Speed &amp; Latency Profile</strong></td>
+                        <td>Low Latency (1ms – 10ms network SAN)</td>
+                        <td><strong style={{ color: 'var(--color-blue)' }}>⚡ Sub-Millisecond (&lt;100 µs PCIe speed)</strong></td>
+                        <td>Scalable Latency (1ms – 5ms network NFS)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Max Capacity &amp; Scaling</strong></td>
+                        <td>Up to 64 TiB per EBS Volume (Expand online)</td>
+                        <td>Fixed by host hardware (Up to 30 TB per VM)</td>
+                        <td><strong style={{ color: 'var(--color-green)' }}>Elastic Auto-Scaling (Petabytes+)</strong></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Ideal Cloud Use Cases</strong></td>
+                        <td>Relational Databases (PostgreSQL, MySQL), Root OS Boot Disks</td>
+                        <td>Scratchpad Data, Temporary Caching, High-Speed Swap, HDFS</td>
+                        <td>Web Content Management (WordPress, Drupal), Code Repos, Shared Media</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Multi-Cloud Equivalents</strong></td>
+                        <td>
+                          AWS: EBS (gp3, io2)<br />
+                          Azure: Managed Disk (Premium SSD)<br />
+                          GCP: Persistent Disk (PD)
+                        </td>
+                        <td>
+                          AWS: Instance Store (NVMe)<br />
+                          Azure: Local Temp NVMe Disk<br />
+                          GCP: Local SSD
+                        </td>
+                        <td>
+                          AWS: EFS<br />
+                          Azure: Azure Files Share<br />
+                          GCP: Google Cloud Filestore
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              {/* EBS Volume Calculator */}
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ flex: 4, minWidth: '320px', background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>🧮 Interactive EBS Performance Calculator</div>
+              {/* PERFORMANCE & COST ESTIMATORS GRID */}
+              <div className="ec2-g2" style={{ gap: '16px' }}>
+                {/* Left Card: EBS Performance & Cost Estimator */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>💾 EBS Volume Performance &amp; Pricing Estimator</div>
                   
                   <div style={{ marginBottom: '8px' }}>
                     <label style={{ fontSize: '11px', display: 'block', marginBottom: '2px' }}>EBS Volume Type</label>
@@ -4308,7 +4867,7 @@ sudo mount /dev/sdb /var/www/html`
                       setEbsVolumeType(e.target.value as any);
                       if (e.target.value === 'gp3') setEbsIops(3000);
                       else if (e.target.value === 'io2') setEbsIops(16000);
-                      else setEbsIops(0); // HDDs do not support custom provisioned IOPS
+                      else setEbsIops(0);
                     }} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
                       <option value="gp3">gp3 (General Purpose SSD - cost optimized)</option>
                       <option value="io2">io2 Block Express (Provisioned IOPS SSD - mission critical)</option>
@@ -4344,126 +4903,47 @@ sudo mount /dev/sdb /var/www/html`
                   )}
 
                   <div style={{ borderTop: '1px solid var(--color-border-secondary)', paddingTop: '8px', marginTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                    <span>Estimated Monthly Cost:</span>
+                    <span>Estimated Monthly EBS Cost:</span>
                     <b style={{ color: 'var(--color-blue)', fontSize: '12px' }}>${getEbsPricing()} / Month</b>
                   </div>
                 </div>
 
-                {/* EFS settings */}
-                <div style={{ flex: 6, minWidth: '320px', background: 'var(--color-background-secondary)', padding: '16px', borderRadius: '8px', border: '0.5px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '10px', color: 'var(--color-text-primary)' }}>📁 EFS Performance, Throughput &amp; Cost Simulator</div>
+                {/* Right Card: EFS Multi-AZ Lifecycle Tiering & Savings Estimator */}
+                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '0.5px solid var(--color-border-tertiary)' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>📁 EFS Multi-AZ Lifecycle Tiering &amp; Savings Estimator</div>
                   
-                  <div className="ec2-g2" style={{ gap: '16px' }}>
-                    {/* Left Column: Sliders & Selects */}
-                    <div>
-                      <div className="ec2-kv">
-                        <span className="ec2-kk" style={{ fontSize: '11px' }}>Throughput Mode:</span>
-                        <select value={efsThroughput} onChange={(e) => setEfsThroughput(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                          <option value="bursting">Bursting Mode (Scales with size + credit accumulation)</option>
-                          <option value="elastic">Elastic (Auto scales dynamically to spikes)</option>
-                          <option value="provisioned">Provisioned (Dedicated speed set by user)</option>
-                        </select>
-                      </div>
-
-                      {efsThroughput === 'provisioned' && (
-                        <div style={{ marginBottom: '8px', background: 'var(--color-background-primary)', padding: '8px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                            <span>Provisioned Throughput speed:</span>
-                            <b>{efsProvisionedMb} MB/s</b>
-                          </div>
-                          <input 
-                            type="range" min="1" max="256" value={efsProvisionedMb} 
-                            onChange={(e) => setEfsProvisionedMb(Number(e.target.value))} 
-                            style={{ width: '100%', accentColor: 'var(--color-blue)' }}
-                          />
-                        </div>
-                      )}
-
-                      <div className="ec2-kv">
-                        <span className="ec2-kk" style={{ fontSize: '11px' }}>Performance Mode:</span>
-                        <select value={efsPerfMode} onChange={(e) => setEfsPerfMode(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                          <option value="general">General Purpose (Lowest latency, standard systems)</option>
-                          <option value="max_io">Max I/O (Slightly higher latency, massive scale)</option>
-                        </select>
-                      </div>
-
-                      <div className="ec2-kv">
-                        <span className="ec2-kk" style={{ fontSize: '11px' }}>Lifecycle transition policy:</span>
-                        <select value={efsLifecycleDays} onChange={(e) => setEfsLifecycleDays(Number(e.target.value))} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                          <option value={7}>Move to IA after 7 days idle</option>
-                          <option value={30}>Move to IA after 30 days idle</option>
-                          <option value={90}>Move to IA after 90 days idle</option>
-                        </select>
-                      </div>
-
-                      <div style={{ marginTop: '10px', padding: '8px', background: 'var(--color-background-primary)', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                          <span>Shared NAS Volume Size:</span>
-                          <b>{efsSize} GB</b>
-                        </div>
-                        <input 
-                          type="range" min="10" max="5000" step="50" value={efsSize} 
-                          onChange={(e) => setEfsSize(Number(e.target.value))} 
-                          style={{ width: '100%', accentColor: 'var(--color-blue)' }}
-                        />
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '8px' }}>
-                          <span>Inactive File Ratio (IA tier):</span>
-                          <b>{efsInactiveRatio}%</b>
-                        </div>
-                        <input 
-                          type="range" min="0" max="100" step="5" value={efsInactiveRatio} 
-                          onChange={(e) => setEfsInactiveRatio(Number(e.target.value))} 
-                          style={{ width: '100%', accentColor: 'var(--color-blue)' }}
-                        />
-                      </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                      <span>Shared NAS Volume Size:</span>
+                      <b>{efsSize} GB</b>
                     </div>
+                    <input 
+                      type="range" min="10" max="5000" step="50" value={efsSize} 
+                      onChange={(e) => setEfsSize(Number(e.target.value))} 
+                      style={{ width: '100%', accentColor: 'var(--color-green)' }}
+                    />
+                  </div>
 
-                    {/* Right Column: Dynamic Performance and Savings Calculations */}
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <div style={{ background: 'var(--color-background-primary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)', marginBottom: '8px' }}>
-                        <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>⚡ Performance &amp; Latency Profile</div>
-                        <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-blue)' }}>
-                          {efsPerfMode === 'general' ? '🟢 GP Mode: Low Latency Focus' : '🔵 Max I/O: Infinite Scale Focus'}
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '2px', lineHeight: '1.3' }}>
-                          {efsPerfMode === 'general' 
-                            ? 'Optimal for single-threaded or low-scale apps (max 35,000 read IOPS). Provides sub-millisecond local caching speeds.' 
-                            : 'Supports thousands of client hosts concurrently. Designed for massive parallel processing, parallel analytics, and high scale data pools.'}
-                        </div>
-                      </div>
-
-                      <div style={{ background: 'var(--color-background-primary)', padding: '10px', borderRadius: '6px', border: '0.5px solid var(--color-border-secondary)' }}>
-                        <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginBottom: '6px' }}>💰 Interactive Financial Savings Audit</div>
-                        
-                        <div style={{ fontSize: '10.5px', margin: '4px 0', display: 'flex', justifyContent: 'space-between' }}>
-                          <span>Baseline Cost (100% Standard):</span>
-                          <b>${getEfsPricing(false)} / mo</b>
-                        </div>
-                        
-                        <div style={{ fontSize: '10.5px', margin: '4px 0', display: 'flex', justifyContent: 'space-between', color: 'var(--color-green)', fontWeight: 'bold' }}>
-                          <span>Tiered Cost (Lifecycle Active):</span>
-                          <span>${getEfsPricing(true)} / mo</span>
-                        </div>
-
-                        <div style={{ borderTop: '1px solid var(--color-border-secondary)', marginTop: '6px', paddingTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '10.5px', fontWeight: 'bold' }}>Monthly Net Savings:</span>
-                          <span className="ec2-badge" style={{ background: 'var(--color-green)', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>
-                            ${(Number(getEfsPricing(false)) - Number(getEfsPricing(true))).toFixed(2)} / mo (Save {efsInactiveRatio}%)
-                          </span>
-                        </div>
-                      </div>
-
-                      <div style={{ fontSize: '9.5px', color: 'var(--color-text-secondary)', marginTop: '8px', lineHeight: '1.35' }}>
-                        ℹ️ <b>Throughput pricing:</b> Bursting is bundled. Provisioned charges fixed $6.00 per MB/s. Elastic handles spiky requests automatically ($0.03/GB read). Lifecycle transition is calculated on Standard ($0.30/GB) vs IA ($0.025/GB) tier storage splits.
-                      </div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                      <span>Inactive File Ratio (EFS Infrequent Access):</span>
+                      <b>{efsInactiveRatio}%</b>
                     </div>
+                    <input 
+                      type="range" min="0" max="100" step="5" value={efsInactiveRatio} 
+                      onChange={(e) => setEfsInactiveRatio(Number(e.target.value))} 
+                      style={{ width: '100%', accentColor: 'var(--color-green)' }}
+                    />
+                  </div>
+
+                  <div style={{ borderTop: '1px solid var(--color-border-secondary)', paddingTop: '8px', marginTop: '10px', display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+                    <span>Optimized EFS Tiered Cost:</span>
+                    <b style={{ color: 'var(--color-green)', fontSize: '12px' }}>${getEfsPricing(true)} / Month (Save {efsInactiveRatio}%)</b>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="ec2-sec">Advanced Storage Features: EBS Multi-Attach &amp; EFS Lifecycle Tiering</div>
+<div className="ec2-sec">Advanced Storage Features: EBS Multi-Attach &amp; EFS Lifecycle Tiering</div>
             <div className="ec2-card">
               <div className="ec2-g2">
                 {/* EFS Storage Classes & Transitions */}
@@ -4630,275 +5110,6 @@ sudo mount /dev/sdb /var/www/html`
                         <text x="75" y="80" textAnchor="middle" fontSize="6.5" fill="var(--color-text-secondary)" fontWeight="bold">Safe Persistent Network SAN Block</text>
                       </g>
                     </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIRTUAL LIFECYCLE CONSOLE */}
-        {activeTab === 'lifecycle' && (
-          <div>
-            <div className="ec2-sec">Interactive EC2 Virtual Hypervisor Console</div>
-            <div className="ec2-card">
-              <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '12px', lineHeight: '1.4' }}>
-                Test instance behavior through standard hypervisor actions. Watch how stop vs termination affects local storage vs EBS, and how spot interruptions manifest.
-              </div>
-
-              <div className="ec2-g2">
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>🛠️ EC2 Hardware Launch Parameters</div>
-                  
-                  <div className="ec2-g2" style={{ gap: '8px', marginBottom: '8px' }}>
-                    <div>
-                      <label style={{ fontSize: '10px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Instance Class</label>
-                      <select value={consoleInstanceType} onChange={(e) => setConsoleInstanceType(e.target.value)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                        <option value="t3.medium">t3.medium (General)</option>
-                        <option value="c6g.large">c6g.large (Compute)</option>
-                        <option value="r6g.xlarge">r6g.xlarge (Memory)</option>
-                        <option value="i3.xlarge">i3.xlarge (Local Store NVMe)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label style={{ fontSize: '10px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Launch Model</label>
-                      <select value={consolePurchaseModel} onChange={(e) => setConsolePurchaseModel(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                        <option value="ondemand">On-Demand ($/hr)</option>
-                        <option value="spot">Spot Capacity</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="ec2-g2" style={{ gap: '8px', marginBottom: '10px' }}>
-                    <div>
-                      <label style={{ fontSize: '10px', fontWeight: 600, display: 'block', marginBottom: '2px' }}>Storage Setup</label>
-                      <select value={consoleStorageType} onChange={(e) => setConsoleStorageType(e.target.value as any)} style={{ padding: '4px', fontSize: '11px', width: '100%' }}>
-                        <option value="ebs">EBS Only (/dev/xvda)</option>
-                        <option value="ephemeral">Local Instance Store Only</option>
-                        <option value="both">Both (EBS Root + NVMe local)</option>
-                      </select>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <label style={{ fontSize: '10px', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={deleteEbsOnTerm} onChange={(e) => setDeleteEbsOnTerm(e.target.checked)} />
-                        Delete EBS on Termination
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Operational controls based on state */}
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '12px', borderTop: '1px solid var(--color-border-secondary)', paddingTop: '12px' }}>
-                    <button 
-                      onClick={handleConsoleLaunch} 
-                      disabled={vmState !== 'Stopped' && vmState !== 'Terminated'} 
-                      className="ec2-btn ec2-on"
-                      style={{ padding: '6px 12px' }}
-                    >
-                      🚀 Launch Instance
-                    </button>
-                    <button 
-                      onClick={handleConsoleUserData} 
-                      disabled={vmState !== 'Running' || vmUserDataTested} 
-                      className="ec2-btn"
-                      style={{ padding: '6px 12px' }}
-                    >
-                      📄 Trigger User Data
-                    </button>
-                    <button 
-                      onClick={handleConsoleLoad} 
-                      disabled={vmState !== 'Running' || isConsoleSimulatingCpu} 
-                      className="ec2-btn"
-                      style={{ padding: '6px 12px' }}
-                    >
-                      {isConsoleSimulatingCpu ? '⏳ Loading VM...' : '⚡ Load VM'}
-                    </button>
-                    <button 
-                      onClick={handleConsoleStop} 
-                      disabled={vmState !== 'Running'} 
-                      className="ec2-btn"
-                      style={{ padding: '6px 12px', background: 'var(--color-amber)', color: '#fff', border: 'none' }}
-                    >
-                      🛑 Stop Instance
-                    </button>
-                    <button 
-                      onClick={handleConsoleTerminate} 
-                      disabled={vmState !== 'Running' && vmState !== 'Stopped'} 
-                      className="ec2-btn"
-                      style={{ padding: '6px 12px', background: 'var(--color-red)', color: '#fff', border: 'none' }}
-                    >
-                      ❌ Terminate
-                    </button>
-                  </div>
-                </div>
-
-                {/* Hypervisor status screen */}
-                <div style={{ background: 'var(--color-background-secondary)', padding: '14px', borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>🖥️ Virtual Motherboard Chassis:</span>
-                    <span className="ec2-badge" style={{ 
-                      background: vmState === 'Running' ? 'var(--color-green)' : vmState === 'Stopped' ? 'var(--color-red)' : vmState === 'Terminated' ? 'var(--color-text-tertiary)' : 'var(--color-amber)', 
-                      color: '#fff',
-                      fontWeight: 'bold',
-                      fontSize: '10px'
-                    }}>{vmState.toUpperCase()}</span>
-                  </div>
-
-                  {(() => {
-                    const isEbsPresent = consoleStorageType === 'ebs' || consoleStorageType === 'both';
-                    const isEbsRendered = isEbsPresent && !(vmState === 'Terminated' && deleteEbsOnTerm);
-                    const isEbsDetached = vmState === 'Terminated' && !deleteEbsOnTerm;
-                    const isNvmePresent = consoleStorageType === 'ephemeral' || consoleStorageType === 'both' || consoleInstanceType === 'i3.xlarge';
-                    return (
-                      <div style={{ margin: '6px 0', textAlign: 'center' }}>
-                        <svg viewBox="0 0 320 170" width="100%" className="ec2-svg-bg" style={{ borderRadius: '10px', border: '1.5px solid var(--color-border-tertiary)' }}>
-                          {/* Grid background on board */}
-                          <defs>
-                            <pattern id="motherboard-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                              <circle cx="2" cy="2" r="0.6" fill="var(--color-border-secondary)" />
-                            </pattern>
-                            <linearGradient id="board-cpu-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="var(--color-blue)" stopOpacity="0.8" />
-                              <stop offset="100%" stopColor="var(--color-blue)" />
-                            </linearGradient>
-                            <filter id="motherboard-glow" x="-10%" y="-10%" width="120%" height="120%">
-                              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="var(--color-blue)" floodOpacity="0.4" />
-                            </filter>
-                          </defs>
-                          <rect width="320" height="170" fill="var(--color-background-secondary)" />
-                          <rect width="320" height="170" fill="url(#motherboard-grid)" opacity="0.6" />
-                          
-                          {/* Circuits / Buses */}
-                          <path d="M 60,70 L 120,70" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
-                          <path d="M 60,70 L 120,105" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
-                          <path d="M 60,70 L 215,105" stroke={vmState === 'Running' ? 'var(--color-blue)' : 'var(--color-border-secondary)'} strokeWidth="1.5" fill="none" opacity="0.6" />
- 
-                           {/* CPU Socket */}
-                          <g transform="translate(20, 40)" style={vmState === 'Running' ? { filter: 'url(#motherboard-glow)' } : {}}>
-                            <rect x="0" y="0" width="60" height="60" rx="6" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="1.5" />
-                            <rect x="10" y="10" width="40" height="40" rx="4" fill="url(#board-cpu-grad)" opacity={vmState === 'Running' ? '0.3' : '0.05'} />
-                            <text x="30" y="32" textAnchor="middle" fontSize="9" fill="var(--color-text-secondary)" fontWeight="bold">CPU</text>
-                            <text x="30" y="42" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)" fontWeight="bold">vCPU Cores</text>
-                            
-                            {/* Pulse paths if running */}
-                            {vmState === 'Running' && (
-                              <g>
-                                <circle cx="30" cy="30" r="22" fill="none" stroke={isConsoleSimulatingCpu ? 'var(--color-amber)' : 'var(--color-blue)'} strokeWidth="1.5">
-                                  <animate attributeName="r" values="10;25" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
-                                  <animate attributeName="opacity" values="1;0" dur={isConsoleSimulatingCpu ? "0.4s" : "1.5s"} repeatCount="indefinite" />
-                                </circle>
-                              </g>
-                            )}
-                          </g>
- 
-                           {/* RAM DIMMs */}
-                          <g transform="translate(120, 22)">
-                            <rect x="0" y="0" width="80" height="34" rx="4" fill="var(--color-background-primary)" stroke="var(--color-border-secondary)" strokeWidth="1" />
-                            <text x="40" y="10" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">RAM slots</text>
-                            
-                            {/* DIMM sticks */}
-                            <line x1="10" y1="16" x2="70" y2="16" stroke="var(--color-text-tertiary)" strokeWidth="2" />
-                            <line x1="10" y1="22" x2="70" y2="22" stroke="var(--color-text-tertiary)" strokeWidth="2" />
- 
-                             {/* RAM LEDs based on instance class */}
-                            <g transform="translate(15, 14)">
-                              <circle cx="0" cy="0" r="1.5" fill={vmState === 'Running' ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
-                              <circle cx="10" cy="0" r="1.5" fill={vmState === 'Running' && ['c6g.large', 'r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
-                              <circle cx="20" cy="0" r="1.5" fill={vmState === 'Running' && ['r6g.xlarge', 'i3.xlarge'].includes(consoleInstanceType) ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
-                              <circle cx="30" cy="0" r="1.5" fill={vmState === 'Running' && consoleInstanceType === 'r6g.xlarge' ? 'var(--color-green)' : 'var(--color-text-tertiary)'} />
-                            </g>
-                            <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-blue)" fontWeight="bold">
-                              {consoleInstanceType === 't3.medium' ? '4 GiB (Standard)' :
-                               consoleInstanceType === 'c6g.large' ? '8 GiB (Compute)' :
-                               consoleInstanceType === 'r6g.xlarge' ? '32 GiB (Memory!)' :
-                               '16 GiB (Storage Opt)'}
-                            </text>
-                          </g>
- 
-                           {/* Storage Mount Area */}
-                          {/* 1. EBS Volume */}
-                          {isEbsRendered && (
-                            <g transform={`translate(120, ${isEbsDetached ? '122' : '90'})`} style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
-                              <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={isEbsDetached ? 'var(--color-background-secondary)' : 'var(--color-background-primary)'} 
-                                stroke={isEbsDetached ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
-                                strokeWidth="1.2" 
-                              />
-                              <rect x="2" y="2" width="76" height="6" rx="1" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-blue)'} />
-                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-text-primary)'} fontWeight="extrabold">EBS Root</text>
-                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill={isEbsDetached ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)'} fontWeight="bold">/dev/xvda</text>
-                              
-                              <text x="40" y="33" textAnchor="middle" fontSize="6" fill={isEbsDetached ? 'var(--color-red)' : 'var(--color-green)'} fontWeight="extrabold">
-                                {isEbsDetached ? '⚠️ DETACHED' : vmState === 'Running' ? '● MOUNT ACTIVE' : '● STANDBY'}
-                              </text>
-                            </g>
-                          )}
-                          
-                          {/* EBS deleted representation placeholder */}
-                          {!isEbsRendered && isEbsPresent && (
-                            <g transform="translate(120, 90)">
-                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="var(--color-red)" strokeWidth="1" strokeDasharray="3,3" />
-                              <text x="40" y="20" textAnchor="middle" fontSize="8" fill="var(--color-red)" fontWeight="bold">EBS DELETED</text>
-                              <text x="40" y="30" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)">(Terminated)</text>
-                            </g>
-                          )}
- 
-                           {/* 2. NVMe Ephemeral SSD */}
-                          {isNvmePresent && (
-                            <g transform="translate(215, 90)" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.15))' }}>
-                              <rect x="0" y="0" width="80" height="38" rx="4" 
-                                fill={['Stopped', 'Terminated'].includes(vmState) ? 'rgba(239, 68, 68, 0.05)' : 'var(--color-background-primary)'} 
-                                stroke={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : vmState === 'Running' ? 'var(--color-green)' : 'var(--color-border-secondary)'} 
-                                strokeWidth="1.2" 
-                              />
-                              <rect x="2" y="2" width="76" height="6" rx="1" fill={['Stopped', 'Terminated'].includes(vmState) ? 'var(--color-red)' : 'var(--color-purple)'} />
-                              <text x="40" y="17" textAnchor="middle" fontSize="7" fill="var(--color-text-primary)" fontWeight="extrabold">NVMe SSD</text>
-                              <text x="40" y="25" textAnchor="middle" fontSize="6" fill="var(--color-text-tertiary)" fontWeight="bold">/dev/nvme0n1</text>
-                              
-                              {['Stopped', 'Terminated'].includes(vmState) ? (
-                                <g>
-                                  {/* flashing alert */}
-                                  <rect x="5" y="28" width="70" height="7" rx="1.5" fill="var(--color-red)">
-                                    <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite" />
-                                  </rect>
-                                  <text x="40" y="34" textAnchor="middle" fontSize="5.5" fill="#fff" fontWeight="extrabold">WIPED / LOSS</text>
-                                </g>
-                              ) : (
-                                <text x="40" y="34" textAnchor="middle" fontSize="6" fill={vmState === 'Running' ? 'var(--color-green)' : 'var(--color-text-secondary)'} fontWeight="extrabold">
-                                  {vmState === 'Running' ? '⚡ VOLATILE' : 'STANDBY'}
-                                </text>
-                              )}
-                            </g>
-                          )}
- 
-                           {/* If NVMe is not present */}
-                          {!isNvmePresent && (
-                            <g transform="translate(215, 90)">
-                              <rect x="0" y="0" width="80" height="38" rx="4" fill="none" stroke="var(--color-border-secondary)" strokeWidth="1" />
-                              <text x="40" y="18" textAnchor="middle" fontSize="7" fill="var(--color-text-secondary)" fontWeight="bold">No Inst Store</text>
-                              <text x="40" y="28" textAnchor="middle" fontSize="6.5" fill="var(--color-text-tertiary)">(EBS Only)</text>
-                            </g>
-                          )}
-                        </svg>
-                      </div>
-                    );
-                  })()}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', marginBottom: '8px', background: 'var(--color-background-secondary)', padding: '6px', borderRadius: '4px', border: '1px solid var(--ec-metric-card-border)' }}>
-                    <span>Compute CPU Meter:</span>
-                    <b style={{ color: consoleCpuGauge > 50 ? 'var(--color-red)' : 'var(--color-green)' }}>{consoleCpuGauge}%</b>
-                  </div>
-
-                  <div ref={consoleTerminalRef} className="ec2-terminal" style={{ flex: 1, minHeight: '140px', background: 'var(--ec-terminal-bg)' }}>
-                    {consoleLogs.map((log, index) => (
-                      <div key={index} style={{ 
-                        color: log.includes('⚠️') ? 'var(--color-red)' : log.includes('[system]') ? 'var(--color-green)' : log.includes('[user-data]') ? 'var(--color-amber)' : 'var(--color-blue)',
-                        fontSize: '10px'
-                      }}>
-                        {log}
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

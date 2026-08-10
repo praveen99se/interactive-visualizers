@@ -2341,13 +2341,13 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                           onClick={() => setSelectedNote('asg_what_is')}
                           className={`acad-dir-item-btn ${selectedNote === 'asg_what_is' ? 'acad-active' : ''}`}
                         >
-                          1.1 What is an ASG? (Restaurant Staff)
+                          {t('1.1 What is an ASG? (Restaurant Staff)')}
                         </button>
                         <button 
                           onClick={() => setSelectedNote('launch_templates')}
                           className={`acad-dir-item-btn ${selectedNote === 'launch_templates' ? 'acad-active' : ''}`}
                         >
-                          1.2 Launch Templates (Master Recipe)
+                          {t('1.2 Launch Templates (Master Recipe)')}
                         </button>
                         <button 
                           onClick={() => setSelectedNote('capacity_boundaries')}
@@ -2413,7 +2413,7 @@ export default function ASGVisualizer({ provider = 'aws', setProvider }: ASGVisu
                           onClick={() => setSelectedNote('ec2_vs_elb_checks')}
                           className={`acad-dir-item-btn ${selectedNote === 'ec2_vs_elb_checks' ? 'acad-active' : ''}`}
                         >
-                          3.1 EC2 vs ELB Health Checks
+                          {t('3.1 VM vs Load Balancer Health Checks')}
                         </button>
                         <button 
                           onClick={() => setSelectedNote('lifecycle_hooks')}
