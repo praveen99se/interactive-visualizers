@@ -4322,9 +4322,20 @@ sudo mount /dev/sdb /var/www/html`
               </div>
             </div>
 
-            
+            {/* 💡 Humanized Bastion & Security Group Explanation */}
+            <div className="acad-analogy-box" style={{ marginTop: '16px', marginBottom: '24px', fontSize: '11.5px', textAlign: 'left' }}>
+              <div style={{ fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                💡 Security Group Legend: How Bastion Proxies &amp; Stateful Rules Protect Private VPC Networks
+              </div>
+              <ul className="list-disc pl-4 space-y-1.5" style={{ lineHeight: '1.55' }}>
+                <li><strong>🚫 Public Internet Access Blocked:</strong> Direct SSH access (Port 22) from the public internet (<code>0.0.0.0/0</code>) to your private application servers is strictly blocked by Security Groups.</li>
+                <li><strong>🛡️ Bastion Host Jump Server:</strong> Engineers connect to a single hardened Bastion Proxy inside a public subnet (or via SSM Session Manager).</li>
+                <li><strong>🔒 Private Subnet Tunnel:</strong> The Bastion host safely proxies the SSH tunnel to internal private IP addresses (e.g. <code>10.0.1.50</code>) without exposing them to the internet!</li>
+                <li><strong>🔄 Stateful Connection Tracking:</strong> Security Groups automatically approve returning outbound response traffic without needing explicit outbound firewall rules.</li>
+              </ul>
+            </div>
 
-<div className="ec2-sec">EC2 Instance Placement Groups Architectures</div>
+            <div className="ec2-sec">EC2 Instance Placement Groups Architectures</div>
             <div className="ec2-card">
               <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: '1.4' }}>
                 Placement Groups control the physical distribution logic of your EC2 instances within the AWS underlying physical hardware backplane.
@@ -4523,6 +4534,18 @@ sudo mount /dev/sdb /var/www/html`
                   </div>
                   <span className="ec2-badge" style={{ background: 'var(--color-blue)', color: '#fff', fontSize: '9px', textAlign: 'center' }}>Best for: Kafka, HDFS, Cassandra, Hadoop</span>
                 </div>
+              </div>
+
+              {/* 💡 Humanized Placement Groups Explanation Box */}
+              <div className="acad-analogy-box" style={{ marginTop: '16px', fontSize: '11.5px', textAlign: 'left' }}>
+                <div style={{ fontWeight: 800, color: '#14b8a6', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  💡 Placement Groups Legend: How Hardware Placement Policies Control Fault Isolation &amp; Latency
+                </div>
+                <ul className="list-disc pl-4 space-y-1.5" style={{ lineHeight: '1.55' }}>
+                  <li><strong>📍 Cluster Placement Group:</strong> Packs instances close together on the same physical rack inside 1 AZ. Provides ultra-low 10Gbps latency. Perfect for High Performance Computing (HPC) &amp; AI model training.</li>
+                  <li><strong>🛡️ Spread Placement Group:</strong> Strictly places each instance on separate hardware power racks (max 7 per AZ). Prevents simultaneous hardware crashes. Perfect for critical single points of failure.</li>
+                  <li><strong>📦 Partition Placement Group:</strong> Divides instances into logical partitions across distinct racks. Partitions do not share hardware. Perfect for distributed big data pools (HDFS, Apache Kafka, Cassandra).</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -5112,6 +5135,18 @@ sudo mount /dev/sdb /var/www/html`
                     </svg>
                   </div>
                 </div>
+
+                {/* 💡 Humanized Storage Explanation Box */}
+                <div className="acad-analogy-box" style={{ marginTop: '16px', fontSize: '11.5px', textAlign: 'left' }}>
+                  <div style={{ fontWeight: 800, color: '#8b5cf6', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                    💡 Cumulative Storage Architecture Legend: How EBS, Ephemeral NVMe &amp; EFS Serve Different Use Cases
+                  </div>
+                  <ul className="list-disc pl-4 space-y-1.5" style={{ lineHeight: '1.55' }}>
+                    <li><strong>💾 EBS Block Storage:</strong> Virtual hard drives network-attached to 1 EC2 instance in 1 AZ. Data persists even when EC2 stops. Perfect for Databases (PostgreSQL, MySQL).</li>
+                    <li><strong>⚡ Instance Store NVMe:</strong> Physical SSD disks physically attached to the host motherboard. Blazing fast (100k+ IOPS) but <strong>EPHEMERAL</strong> — data is lost permanently when EC2 host stops! Perfect for temporary caches &amp; buffer pools.</li>
+                    <li><strong>🌐 EFS Shared Network File System:</strong> Elastic, Multi-AZ NFS file system concurrently accessible by thousands of EC2 instances simultaneously. Ideal for CMS web farms (WordPress, Drupal) and shared enterprise file repositories.</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -5426,10 +5461,10 @@ sudo mount /dev/sdb /var/www/html`
             </div>
           </div>
         )}
-            </>
-          </Translate>
-        )}
-      </div>
-    </div>
-  );
+      </>
+    </Translate>
+  )}
+</div>
+</div>
+);
 }
